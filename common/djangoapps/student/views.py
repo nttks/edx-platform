@@ -46,7 +46,8 @@ from student.models import (
     CourseEnrollmentAllowed, UserStanding, LoginFailures,
     create_comments_service_user, PasswordHistory
 )
-from student.forms import PasswordResetFormNoActive, ResignForm, SetResignReasonForm
+from student.forms import (PasswordResetFormNoActive, ResignForm, SetResignReasonForm,
+                           SetPasswordFormErrorMessages)
 from student.firebase_token_generator import create_token
 
 from verify_student.models import SoftwareSecurePhotoVerification, MidcourseReverificationWindow
@@ -1536,14 +1537,21 @@ def password_reset_confirm_wrapper(
         return TemplateResponse(request, 'registration/password_reset_confirm.html', context)
     else:
         # we also want to pass settings.PLATFORM_NAME in as extra_context
-        extra_context = {"platform_name": settings.PLATFORM_NAME}
+        extra_context = {
+            'platform_name': settings.PLATFORM_NAME,
+            'mktg_url_faq': marketing_link('FAQ'),
+        }
 
         if request.method == 'POST':
             # remember what the old password hash is before we call down
             old_password_hash = user.password
 
             result = password_reset_confirm(
-                request, uidb36=uidb36, token=token, extra_context=extra_context
+                request,
+                uidb36=uidb36,
+                token=token,
+                set_password_form=SetPasswordFormErrorMessages,
+                extra_context=extra_context,
             )
 
             # get the updated user
