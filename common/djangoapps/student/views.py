@@ -1639,6 +1639,84 @@ def resign_confirm(
     return TemplateResponse(request, "registration/resign_confirm.html", context)
 
 
+@ensure_csrf_cookie
+def resign(request):
+    """ Attempts to send an e-mail to resign. """
+    if request.method != "POST":
+        raise Http404
+
+    # Add some rate limiting here by re-using the RateLimitMixin as a helper class
+    limiter = BadRequestRateLimiter()
+    if limiter.is_rate_limit_exceeded(request):
+        AUDIT_LOG.warning("Rate limit exceeded in resign")
+        return HttpResponseForbidden()
+
+    form = ResignForm(request.POST)
+    if form.is_valid():
+        form.save(use_https=request.is_secure(),
+                  from_email=settings.DEFAULT_FROM_EMAIL,
+                  request=request,
+                  domain_override=request.get_host())
+    else:
+        # bad user? tick the rate limiter counter
+        AUDIT_LOG.info("Bad resign user passed in.")
+        limiter.tick_bad_request_counter(request)
+
+    return JsonResponse({"success": True})
+
+
+# Doesn't need csrf_protect since no-one can guess the URL
+@sensitive_post_parameters()
+@never_cache
+def resign_confirm(
+    request,
+    uidb36=None,
+    token=None,
+):
+    """
+    Checks the hash in a resignation link and
+    presents a form for entering a resign reason.
+    """
+    # cribbed from django.contrib.auth.views.password_reset_confirm
+    try:
+        uid_int = base36_to_int(uidb36)
+        user = User.objects.get(id=uid_int)
+    except (ValueError, User.DoesNotExist):
+        user = None
+
+    if user is not None and default_token_generator.check_token(user, token):
+        validlink = True
+        if request.method == 'POST':
+            form = SetResignReasonForm(user, request.POST)
+            if form.is_valid():
+                # disables the user's account and stores a resign reason
+                form.save()
+                log.info("{} disabled his/her own account".format(user))
+                # NOTE(yokose): need to logout
+                logout_user(request)
+                # NOTE(yokose): cannot return HttpResponseRedirect()
+                #               because of common.djangoapps.student.middleware.UserStandingMiddleware
+                return TemplateResponse(
+                    request,
+                    "registration/resign_complete.html", {
+                        'platform_name': settings.PLATFORM_NAME,
+                        'support_email': settings.DEFAULT_FEEDBACK_EMAIL,
+                    }
+                )
+        else:
+            form = SetResignReasonForm(None)
+    else:
+        validlink = False
+        form = None
+    context = {
+        'form': form,
+        'validlink': validlink,
+        'platform_name': settings.PLATFORM_NAME,
+        'mktg_url_faq': marketing_link('FAQ'),
+    }
+    return TemplateResponse(request, "registration/resign_confirm.html", context)
+
+
 def reactivation_email_for_user(user):
     try:
         reg = Registration.objects.get(user=user)
