@@ -10,7 +10,7 @@ class Migration(SchemaMigration):
     def forwards(self, orm):
         # Adding field 'UserStanding.resign_reason'
         db.add_column('student_userstanding', 'resign_reason',
-                      self.gf('django.db.models.fields.TextField')(max_length=1000, null=True, blank=False),
+                      self.gf('django.db.models.fields.TextField')(max_length=1000, null=True),
                       keep_default=False)
 
 
@@ -87,6 +87,13 @@ class Migration(SchemaMigration):
             'lockout_until': ('django.db.models.fields.DateTimeField', [], {'null': 'True'}),
             'user': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['auth.User']"})
         },
+        'student.passwordhistory': {
+            'Meta': {'object_name': 'PasswordHistory'},
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'password': ('django.db.models.fields.CharField', [], {'max_length': '128'}),
+            'time_set': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
+            'user': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['auth.User']"})
+        },
         'student.pendingemailchange': {
             'Meta': {'object_name': 'PendingEmailChange'},
             'activation_key': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '32', 'db_index': 'True'}),
@@ -130,7 +137,7 @@ class Migration(SchemaMigration):
             'account_status': ('django.db.models.fields.CharField', [], {'max_length': '31', 'blank': 'True'}),
             'changed_by': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['auth.User']", 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'resign_reason': ('django.db.models.fields.TextField', [], {'max_length': '1000', 'null': 'True', 'blank': 'False'}),
+            'resign_reason': ('django.db.models.fields.TextField', [], {'max_length': '1000', 'null': 'True'}),
             'standing_last_changed_at': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'}),
             'user': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'standing'", 'unique': 'True', 'to': "orm['auth.User']"})
         },
