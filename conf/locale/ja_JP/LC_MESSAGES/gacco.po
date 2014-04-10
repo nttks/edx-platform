@@ -156,10 +156,27 @@ msgstr ""
 msgid "The following errors occurred while processing your password reset: "
 msgstr "パスワード変更処理をする際にエラーが発生しました："
 
-# common/djangoapps/student/forms.py
+#: common/djangoapps/student/forms.py
 msgid "New password is required."
 msgstr "新パスワードは必須です。"
 
-# common/djangoapps/student/forms.py
+#: common/djangoapps/student/forms.py
 msgid "New password confirmation is required."
 msgstr "新パスワード(再入力)は必須です。"
+
+#: Temporary Transifex only has {CERT_SHORT_NAME} version
+#: lms/templates/dashboard.py
+msgid "Enter your desired full name, as it will appear on the {platform} certificates:"
+msgstr "新しい氏名を入力してください。{platform}の修了書で表示されます："
+
+#: lms/djangoapps/open_ended_grading/views.py
+msgid "Problems you have submitted"
+msgstr "あなたが投稿した問題"
+
+#: lms/djangoapps/open_ended_grading/views.py
+msgid "Flagged Submission"
+msgstr "フラグされた投稿"
+
+#: Temporary Show Answer(s) has been deleted
+msgid "Show Answer(s)"
+msgstr "答えを見る"
