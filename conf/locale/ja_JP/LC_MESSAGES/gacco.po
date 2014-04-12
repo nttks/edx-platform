@@ -28,7 +28,7 @@ msgstr "退会確認メールが送信されました"
 
 #: lms/templates/dashboard.html
 msgid "An email has been sent to {email}. Follow the link in the email to resign."
-msgstr "まだ退会手続きは完了していません。「{email}」宛に確認メールが送信されます。メール文中にある退会確認用のリンクをクリックをすることで、退会処理をすることができます。別途メールを確認いただき、メール文中の案内をご覧ください。"
+msgstr "まだ退会手続きは完了していません。「{email}」宛に確認メールが送信されます。メール文中にある退会確認用のリンクをクリックをすることで、退会処理をすることができます。別途メールを確認いただき、メール文中の案内をご覧ください。<br /></br /><span style=\"color: red;\">なお、同じメールアドレスでの新規登録はできませんのでご注意ください。</span>"
 
 #: lms/templates/registration/resign_subject.txt
 msgid "Resignation from %(site_name)s"
