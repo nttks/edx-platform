@@ -180,3 +180,7 @@ msgstr "フラグされた投稿"
 #: Temporary Show Answer(s) has been deleted
 msgid "Show Answer(s)"
 msgstr "答えを見る"
+
+#: lms/templates/video.html
+msgid "Download timed transcript"
+msgstr "字幕をダウンロード"
