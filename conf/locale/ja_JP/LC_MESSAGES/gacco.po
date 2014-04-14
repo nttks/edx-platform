@@ -184,3 +184,15 @@ msgstr "答えを見る"
 #: lms/templates/video.html
 msgid "Download timed transcript"
 msgstr "字幕をダウンロード"
+
+#: lms/templates/discussion/_user_profile.html
+msgid "User Role:"
+msgstr "ユーザー種別"
+
+#: lms/templates/discussion/_user_profile.html
+msgid "Posted Discussion:"
+msgstr "投稿状況"
+
+#: lms/templates/discussion/_user_profile.html
+msgid "Posted Comments:"
+msgstr "コメント状況"
