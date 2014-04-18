@@ -56,6 +56,7 @@ def instructor_dashboard_2(request, course_id):
         _section_student_admin(course_id, access),
         _section_data_download(course_id, access),
         _section_analytics(course_id, access),
+        _section_survey(course_id, access),
     ]
 
     if (settings.FEATURES.get('INDIVIDUAL_DUE_DATES') and access['instructor']):
@@ -296,3 +297,14 @@ def spoc_gradebook(request, course_id):
         'staff_access': True,
         'ordered_grades': sorted(course.grade_cutoffs.items(), key=lambda i: i[1], reverse=True),
     })
+
+
+def _section_survey(course_id, access):
+    """ Provide data for the corresponding survey section """
+    section_data = {
+        'section_key': 'survey',
+        'section_display_name': _('Survey'),
+        'access': access,
+        'get_survey_url': reverse('get_survey', kwargs={'course_id': course_id}),
+    }
+    return section_data

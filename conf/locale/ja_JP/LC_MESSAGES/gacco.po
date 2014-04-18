@@ -196,3 +196,19 @@ msgstr "投稿状況:"
 #: lms/templates/discussion/_user_profile.html
 msgid "Posted Comments:"
 msgstr "コメント状況:"
+
+#: lms/djangoapps/instructor/views/instructor_dashboard.py
+msgid "Survey"
+msgstr "アンケート"
+
+#: lms/templates/instructor/instructor_dashboard_2/survey.html
+msgid "Survey Download"
+msgstr "アンケート結果ダウンロード"
+
+#: lms/templates/instructor/instructor_dashboard_2/survey.html
+msgid "The survey result can be downloaded as a CSV file."
+msgstr "アンケート結果がCSVファイルでダウンロードできます。"
+
+#: lms/templates/instructor/instructor_dashboard_2/survey.html
+msgid "Get Survey CSV"
+msgstr "アンケート結果をCSVとしてダウンロードする"
