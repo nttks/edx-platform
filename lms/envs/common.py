@@ -1245,6 +1245,9 @@ INSTALLED_APPS = (
 
     # Monitoring functionality
     'monitoring',
+
+    # Entrance/Exit Survey
+    'survey',
 )
 
 ######################### MARKETING SITE ###############################

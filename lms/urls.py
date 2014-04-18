@@ -75,6 +75,9 @@ urlpatterns = ('',  # nopep8
     
     # Feedback Form endpoint
     url(r'^submit_feedback$', 'util.views.submit_feedback'),
+
+    url(r'^survey_init$', 'survey.views.survey_init', name="survey_init"),
+    url(r'^survey_ajax$', 'survey.views.survey_ajax', name="survey_ajax"),
 )
 
 # if settings.FEATURES.get("MULTIPLE_ENROLLMENT_ROLES"):
