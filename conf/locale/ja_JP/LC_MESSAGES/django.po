@@ -32,6 +32,7 @@
 # junskyblue <junya.inoue@nttps.co.jp>, 2013
 # ushige <ushige@live.com>, 2013-2014
 # Shoji Kajita <kajita.shoji.5z@kyoto-u.ac.jp>, 2013
+# sunk <s.kim@nttks.co.jp>, 2014
 # ngi644 <ngi644@gmail.com>, 2014
 # ushige <ushige@live.com>, 2013-2014
 # yamamoto.daisuke <yamamoto.daisuke@nitech.ac.jp>, 2013
@@ -210,6 +211,18 @@ msgstr "この講座に受講登録されていません。"
 #: common/djangoapps/student/views.py
 msgid "Enrollment action is invalid"
 msgstr "登録は無効です"
+
+#. Translators: provider_name is the name of an external, third-party user
+#. authentication service (like
+#. Google or LinkedIn).
+#: common/djangoapps/student/views.py
+msgid ""
+"There is no {platform_name} account associated with your {provider_name} "
+"account. Please use your {platform_name} credentials or pick another "
+"provider."
+msgstr ""
+"{provider_name} アカウントに紐づいた{platform_name} アカウントがありません。 "
+"{platform_name}のアカウント情報を使用するか他の認証サービスを選択してください。"
 
 #: common/djangoapps/student/views.py
 msgid "There was an error receiving your login information. Please email us."
@@ -833,8 +846,8 @@ msgid "unanswered"
 msgstr "未回答"
 
 #: common/lib/capa/capa/inputtypes.py
-msgid "queued"
-msgstr "キュー済み"
+msgid "processing"
+msgstr "処理中"
 
 #: common/lib/capa/capa/inputtypes.py
 msgid ""
@@ -854,6 +867,10 @@ msgid ""
 "by that feedback."
 msgstr "投稿されました。応答があり次第、このメッセージはフィードバックに変更されます。"
 
+#: common/lib/capa/capa/inputtypes.py
+msgid "No response from Xqueue within {xqueue_timeout} seconds. Aborted."
+msgstr "{xqueue_timeout}秒間Xqueueからの応答がありません。中断しました。"
+
 #: common/lib/capa/capa/responsetypes.py
 msgid "Error {err} in evaluating hint function {hintfn}."
 msgstr "ヒント処理「 {hintfn}」にエラー「 {err} 」があります。 "
@@ -865,6 +882,28 @@ msgstr "(ソースコード行が利用できません)"
 #: common/lib/capa/capa/responsetypes.py
 msgid "See XML source line {sourcenum}."
 msgstr "XMLソースを確認してください　行番号： {sourcenum}"
+
+#. Translators: 'unmask_name' is a method name and should not be translated.
+#: common/lib/capa/capa/responsetypes.py
+msgid "unmask_name called on response that is not masked"
+msgstr "unmask_nameがマスクされていない応答に呼ばれました。"
+
+#. Translators: 'shuffle' and 'answer-pool' are attribute names and should not
+#. be translated.
+#: common/lib/capa/capa/responsetypes.py
+msgid "Do not use shuffle and answer-pool at the same time"
+msgstr "shuffleとanswer-poolを同時に使用しないでください。"
+
+#. Translators: 'answer-pool' is an attribute name and should not be
+#. translated.
+#: common/lib/capa/capa/responsetypes.py
+msgid "answer-pool value should be an integer"
+msgstr "answer-poolは正の整数である必要があります。"
+
+#. Translators: 'Choicegroup' is an input type and should not be translated.
+#: common/lib/capa/capa/responsetypes.py
+msgid "Choicegroup must include at least 1 correct and 1 incorrect choice"
+msgstr "choicegroupは1つ以上の正解と1つ以上の不正解の選択肢が必要です。"
 
 #: common/lib/capa/capa/responsetypes.py common/lib/capa/capa/responsetypes.py
 msgid "There was a problem with the staff answer to this problem."
@@ -901,8 +940,43 @@ msgid ""
 msgstr "この問題に対してスタッフの回答に問題がありました：空の境界"
 
 #: common/lib/capa/capa/responsetypes.py
+msgid "error"
+msgstr "エラー"
+
+#: common/lib/capa/capa/responsetypes.py
+#: common/templates/course_modes/choose.html
+msgid "or"
+msgstr "もしくは"
+
+#: common/lib/capa/capa/responsetypes.py
+msgid ""
+"[courseware.capa.responsetypes.customresponse] error getting student answer from {student_answers}\n"
+" idset = {idset}, error = {err}"
+msgstr ""
+"[courseware.capa.responsetypes.customresponse] error getting student answer from {student_answers}\n"
+" idset = {idset}, error = {err}"
+
+#: common/lib/capa/capa/responsetypes.py
+msgid "No answer entered!"
+msgstr "解答が入力されていません！"
+
+#: common/lib/capa/capa/responsetypes.py
 msgid "CustomResponse: check function returned an invalid dictionary!"
 msgstr "カスタム応答: チェック処理が無効な辞書を応答しました！"
+
+#. Translators: 'SymbolicResponse' is a problem type and should not be
+#. translated.
+#: common/lib/capa/capa/responsetypes.py
+msgid "oops in SymbolicResponse (cfn) error {error_msg}"
+msgstr "SymbolicResponse (cfn) にエラーがあります {error_msg}"
+
+#: common/lib/capa/capa/responsetypes.py
+msgid "No answer provided."
+msgstr "解答がありません。"
+
+#: common/lib/capa/capa/responsetypes.py
+msgid "Error checking problem: no external queueing server is configured."
+msgstr "問題の確認エラー：外部キューサーバーが設定されていません。"
 
 #: common/lib/capa/capa/responsetypes.py
 msgid ""
@@ -1372,8 +1446,22 @@ msgid "{exception_message}: Can't find uploaded transcripts: {user_filename}"
 msgstr "{exception_message}：アップロードされた字幕が見つかりません： {user_filename}"
 
 #: common/lib/xmodule/xmodule/video_module/video_module.py
-msgid "A YouTube URL or a link to a file hosted anywhere on the web."
-msgstr "YouTubeのURL、もしくは、ウェブ上のどこかでホスティングされているファイルへのリンク"
+msgid ""
+"The URL for your video. This can be a YouTube URL or a link to an .mp4, "
+".ogg, or .webm video file hosted elsewhere on the Internet."
+msgstr ""
+"ビデオのURL。YouTubeのURL またはインターネットのどこかにホストされた.mp4, .ogg, .webm "
+"ビデオファイルへのリンクを指定します。"
+
+#. Translators: This is a type of file used for captioning in the video
+#. player.
+#: common/lib/xmodule/xmodule/video_module/video_xfields.py
+msgid "SubRip (.srt) file"
+msgstr "SubRip (.srt) ファイル"
+
+#: common/lib/xmodule/xmodule/video_module/video_xfields.py
+msgid "Text (.txt) file"
+msgstr "Text (.txt)ファイル"
 
 #: common/static/js/vendor/mathjax-MathJax-c9db6ac/docs/source/mjtheme/layout.html
 msgid "Navigation"
@@ -1810,6 +1898,7 @@ msgstr "タスクは既に実行中です。"
 #: lms/djangoapps/instructor/views/legacy.py
 #: lms/djangoapps/instructor/views/legacy.py
 #: lms/djangoapps/instructor/views/tools.py
+#: lms/templates/staff_problem_info.html
 #: lms/templates/instructor/instructor_dashboard_2/metrics.html
 #: lms/templates/instructor/instructor_dashboard_2/metrics.html
 msgid "Username"
@@ -1859,6 +1948,15 @@ msgstr "住所"
 #: lms/djangoapps/instructor/views/api.py
 msgid "Goals"
 msgstr "目標"
+
+#: lms/djangoapps/instructor/views/api.py
+msgid "Module does not exist."
+msgstr "モジュールが存在しません。"
+
+#: lms/djangoapps/instructor/views/api.py
+#: lms/djangoapps/instructor/views/legacy.py
+msgid "An error occurred while deleting the score."
+msgstr "得点を削除する際にエラーが発生しました。"
 
 #: lms/djangoapps/instructor/views/api.py
 #: lms/templates/verify_student/midcourse_reverify_dash.html
@@ -2487,6 +2585,10 @@ msgstr "注文支払い確認"
 #: lms/djangoapps/shoppingcart/models.py
 msgid "Trying to add a different currency into the cart"
 msgstr "異なる通貨のものをカートに入れようとしています"
+
+#: lms/djangoapps/shoppingcart/models.py
+msgid "Registration for Course: {course_name}"
+msgstr "次のコースを登録：{course_name}"
 
 #: lms/djangoapps/shoppingcart/models.py
 msgid ""
@@ -3922,36 +4024,12 @@ msgstr "ページが見つかりません"
 msgid "close"
 msgstr "閉じる"
 
-#: cms/templates/component.html cms/templates/manage_users.html
-#: cms/templates/settings.html cms/templates/settings_advanced.html
-#: cms/templates/settings_graders.html cms/templates/widgets/header.html
-#: lms/templates/wiki/includes/article_menu.html
-msgid "Settings"
-msgstr "設定"
-
-#: cms/templates/component.html cms/templates/overview.html
+#: cms/templates/component.html cms/templates/container_xblock_component.html
+#: cms/templates/edit-tabs.html cms/templates/edit-tabs.html
 #: cms/templates/overview.html cms/templates/overview.html
-#: cms/templates/overview.html lms/templates/problem.html
-#: lms/templates/word_cloud.html
-#: lms/templates/combinedopenended/openended/open_ended.html
-#: lms/templates/combinedopenended/selfassessment/self_assessment_prompt.html
-#: lms/templates/verify_student/face_upload.html
-msgid "Save"
-msgstr "一時保存"
-
-#: cms/templates/component.html cms/templates/index.html
-#: cms/templates/manage_users.html cms/templates/overview.html
-#: cms/templates/overview.html cms/templates/overview.html
-#: lms/templates/discussion/_inline_new_post.html
-#: lms/templates/discussion/_new_post.html
-#: lms/templates/discussion/_underscore_templates.html
-#: lms/templates/discussion/_underscore_templates.html
-#: lms/templates/discussion/_underscore_templates.html
-#: lms/templates/discussion/mustache/_inline_discussion.mustache
-#: lms/templates/discussion/mustache/_inline_discussion_cohorted.mustache
-#: lms/templates/verify_student/face_upload.html
-msgid "Cancel"
-msgstr "キャンセル"
+#: lms/templates/vert_module_studio_view.html
+msgid "Drag to reorder"
+msgstr "ドラッグして並び替え"
 
 #: cms/templates/container.html
 #: lms/templates/courseware/instructor_dashboard.html
@@ -3974,6 +4052,19 @@ msgstr "エラー:"
 #: lms/templates/courseware/course_about.html
 msgid "Course Number"
 msgstr "講座番号"
+
+#: cms/templates/index.html cms/templates/manage_users.html
+#: cms/templates/overview.html cms/templates/overview.html
+#: cms/templates/overview.html lms/templates/discussion/_inline_new_post.html
+#: lms/templates/discussion/_new_post.html
+#: lms/templates/discussion/_underscore_templates.html
+#: lms/templates/discussion/_underscore_templates.html
+#: lms/templates/discussion/_underscore_templates.html
+#: lms/templates/discussion/mustache/_inline_discussion.mustache
+#: lms/templates/discussion/mustache/_inline_discussion_cohorted.mustache
+#: lms/templates/verify_student/face_upload.html
+msgid "Cancel"
+msgstr "キャンセル"
 
 #: cms/templates/index.html
 #: lms/templates/instructor/instructor_dashboard_2/course_info.html
@@ -3999,15 +4090,32 @@ msgstr "パスワードを忘れた方はこちら"
 #: cms/templates/login.html cms/templates/register.html
 #: lms/templates/login.html lms/templates/provider_login.html
 #: lms/templates/provider_login.html lms/templates/register.html
-#: lms/templates/signup_modal.html lms/templates/sysadmin_dashboard.html
+#: lms/templates/register.html lms/templates/signup_modal.html
+#: lms/templates/sysadmin_dashboard.html
 #: lms/templates/university_profile/edge.html
 msgid "Password"
 msgstr "パスワード"
+
+#: cms/templates/manage_users.html cms/templates/settings.html
+#: cms/templates/settings_advanced.html cms/templates/settings_graders.html
+#: cms/templates/widgets/header.html
+#: lms/templates/wiki/includes/article_menu.html
+msgid "Settings"
+msgstr "設定"
 
 #: cms/templates/manage_users.html
 #: lms/templates/courseware/instructor_dashboard.html
 msgid "Admin"
 msgstr "管理者"
+
+#: cms/templates/overview.html cms/templates/overview.html
+#: cms/templates/overview.html cms/templates/overview.html
+#: lms/templates/problem.html lms/templates/word_cloud.html
+#: lms/templates/combinedopenended/openended/open_ended.html
+#: lms/templates/combinedopenended/selfassessment/self_assessment_prompt.html
+#: lms/templates/verify_student/face_upload.html
+msgid "Save"
+msgstr "一時保存"
 
 #: cms/templates/register.html cms/templates/widgets/header.html
 #: lms/templates/index.html
@@ -4189,10 +4297,6 @@ msgstr ""
 "本人認証付き証明書には、写真とIDを伴う本人性を確認する証拠書類が必要であり、また、この書類を用いて本当に誰がこの講座を修了資格を得たのかを確認します。"
 
 #: common/templates/course_modes/choose.html
-msgid "or"
-msgstr "もしくは"
-
-#: common/templates/course_modes/choose.html
 msgid "Audit This Course"
 msgstr "この講座を評価"
 
@@ -4341,10 +4445,47 @@ msgstr "エラーが起きました。再度、お試しください。"
 msgid "Please verify your new email"
 msgstr "新しいメールをご確認ください"
 
+#. Translators: this message is displayed when a user tries to link their
+#. account with a third-party authentication provider (for example, Google or
+#. LinkedIn) with a given edX account, but their third-party account is
+#. already
+#. associated with another edX account. provider_name is the name of the
+#. third-party authentication provider, and platform_name is the name of the
+#. edX deployment.
+#: lms/templates/dashboard.html
+msgid ""
+"The selected {provider_name} account is already linked to another "
+"{platform_name} account. Please {link_start}log out{link_end}, then log in "
+"with your {provider_name} account."
+msgstr ""
+"選択された{provider_name}のアカウントは別の{platform_name}のアカウントに紐づけられています。{link_start}ログアウト{link_end}して、{provider_name}のアカウントでログインしてください。"
+
 #: lms/templates/dashboard.html lms/templates/dashboard.html
 #: lms/templates/dashboard/_dashboard_info_language.html
 msgid "edit"
 msgstr "編集"
+
+#. Translators: this section lists all the third-party authentication
+#. providers
+#. (for example, Google and LinkedIn) the user can link with or unlink from
+#. their edX account.
+#: lms/templates/dashboard.html
+msgid "Account Links"
+msgstr "アカウント関連付け"
+
+#. Translators: clicking on this removes the link between a user's edX account
+#. and their account with an external authentication provider (like Google or
+#. LinkedIn).
+#: lms/templates/dashboard.html
+msgid "unlink"
+msgstr "リンク解除"
+
+#. Translators: clicking on this creates a link between a user's edX account
+#. and their account with an external authentication provider (like Google or
+#. LinkedIn).
+#: lms/templates/dashboard.html
+msgid "link"
+msgstr "リンク"
 
 #: lms/templates/dashboard.html lms/templates/dashboard.html
 msgid "Reset Password"
@@ -4913,9 +5054,38 @@ msgstr "アカウント情報"
 msgid "Remember me"
 msgstr "ログイン状態を保存する"
 
+#. Translators: this is the last choice of a number of choices of how to log
+#. in
+#. to the site.
+#: lms/templates/login.html
+msgid "or, if you have connected one of these providers, log in below."
+msgstr "または、次の認証アカウントと接続している場合は以下でログイン。"
+
+#. Translators: provider_name is the name of an external, third-party user
+#. authentication provider (like Google or LinkedIn).
+#. Translators: provider_name is the name of an external, third-party user
+#. authentication service (like Google or LinkedIn).
+#: lms/templates/login.html lms/templates/register.html
+msgid "Sign in with {provider_name}"
+msgstr "{provider_name}でサインインする"
+
+#. Translators:  "External resource" means that this learning module is hosted
+#. on a platform external to the edX LMS
 #: lms/templates/lti.html
 msgid "External resource"
 msgstr "外部リソース"
+
+#. Translators: "points" is the student's achieved score on this LTI unit, and
+#. "total_points" is the maximum number of points achievable.
+#: lms/templates/lti.html
+msgid "{points} / {total_points} points"
+msgstr "{points} / {total_points} 点"
+
+#. Translators: "total_points" is the maximum number of points achievable on
+#. this LTI unit
+#: lms/templates/lti.html
+msgid "{total_points} points possible"
+msgstr "最高 {total_points} 点"
 
 #: lms/templates/lti.html
 msgid "View resource in a new window"
@@ -4925,6 +5095,10 @@ msgstr "新しいウインドウでリソースを見る"
 msgid ""
 "Please provide launch_url. Click \"Edit\", and fill in the required fields."
 msgstr "launch_urlを入力してください。そして、編集をクリックし、必須項目を入力してください。"
+
+#: lms/templates/lti.html
+msgid "Feedback on your work from the grader:"
+msgstr "評価者からのフィードバック："
 
 #: lms/templates/lti_form.html
 msgid "Press to Launch"
@@ -5037,6 +5211,10 @@ msgstr "他の選択肢をドロップダウン"
 #: lms/templates/navigation.html
 msgid "Log Out"
 msgstr "ログアウト"
+
+#: lms/templates/navigation.html
+msgid "Shopping Cart"
+msgstr "ショッピングカート"
 
 #: lms/templates/navigation.html
 msgid "How it Works"
@@ -5248,6 +5426,26 @@ msgid "Register below to create your {platform_name} account"
 msgstr "下記フォームより{platform_name}の会員登録をお願いします。"
 
 #: lms/templates/register.html
+msgid "Register to start learning today!"
+msgstr "今日から学習を始めるには登録を！"
+
+#: lms/templates/register.html
+msgid ""
+"or create your own {platform_name} account by completing all "
+"<strong>required*</strong> fields below."
+msgstr "または、以下の<strong>必須</strong>項目を入力して{platform_name}のアカウントを作成してください。"
+
+#. Translators: selected_provider is the name of an external, third-party user
+#. authentication service (like Google or LinkedIn).
+#: lms/templates/register.html
+msgid "You've successfully signed in with {selected_provider}."
+msgstr "{selected_provider}でのサインインに成功しました。"
+
+#: lms/templates/register.html
+msgid "Finish your account registration below to start learning."
+msgstr "学習を始めるには以下のアカウント登録を完了させてください。"
+
+#: lms/templates/register.html
 msgid "Please complete the following fields to register for an account. "
 msgstr "会員登録をするために下記項目の入力をお願いします。"
 
@@ -5432,6 +5630,24 @@ msgstr "コメントを追加"
 msgid "Staff Debug"
 msgstr "スタッフデバッグ"
 
+#: lms/templates/staff_problem_info.html
+msgid "Actions"
+msgstr "行動"
+
+#: lms/templates/staff_problem_info.html
+#: lms/templates/instructor/instructor_dashboard_2/student_admin.html
+msgid "Reset Student Attempts"
+msgstr "生徒の試行をリセットする"
+
+#: lms/templates/staff_problem_info.html
+msgid "Delete Student State"
+msgstr "受講者の状態を削除"
+
+#: lms/templates/staff_problem_info.html
+#: lms/templates/instructor/instructor_dashboard_2/student_admin.html
+msgid "Rescore Student Submission"
+msgstr "学生が提出した課題を再度採点する"
+
 #: lms/templates/staff_problem_info.html lms/templates/staff_problem_info.html
 msgid "Module Fields"
 msgstr "モジュール枠"
@@ -5485,6 +5701,7 @@ msgstr "ユーザー"
 msgid "Staffing and Enrollment"
 msgstr "スタッフ登録と受講登録"
 
+#. Translators: refers to http://git-scm.com/docs/git-log
 #: lms/templates/sysadmin_dashboard.html
 #: lms/templates/sysadmin_dashboard_gitlogs.html
 #: lms/templates/sysadmin_dashboard_gitlogs.html
@@ -5534,21 +5751,24 @@ msgid "Administer Courses"
 msgstr "管理者コース"
 
 #. Translators: Repo is short for git repository or source of
-#. courseware
+#. courseware; see http://git-scm.com/about
 #: lms/templates/sysadmin_dashboard.html
 msgid "Repo Location"
 msgstr "レポジトリロケーション"
 
-#. Translators: Repo is short for git repository or source of
+#. Translators: Repo is short for git repository (http://git-scm.com/about) or
+#. source of
 #. courseware and branch is a specific version within that repository
 #: lms/templates/sysadmin_dashboard.html
 msgid "Repo Branch (optional)"
 msgstr "レポジトリのブランチ(オプション)"
 
+#. Translators: Github is a popular website for hosting code
 #: lms/templates/sysadmin_dashboard.html
 msgid "Load new course from github"
 msgstr "GitHubから講座を読み込む"
 
+#. Translators: 'dir' is short for 'directory'
 #: lms/templates/sysadmin_dashboard.html
 msgid "Course ID or dir"
 msgstr "コースIDもしくはディレクトリ"
@@ -5556,10 +5776,6 @@ msgstr "コースIDもしくはディレクトリ"
 #: lms/templates/sysadmin_dashboard.html
 msgid "Delete course from site"
 msgstr "サイトから講座を削除する"
-
-#: lms/templates/sysadmin_dashboard.html
-msgid "Django PID"
-msgstr "Django PID"
 
 #. Translators: A version number appears after this string
 #: lms/templates/sysadmin_dashboard.html
@@ -5577,17 +5793,16 @@ msgstr "日付"
 msgid "Course ID"
 msgstr "講座番号"
 
+#. Translators: Git is a version-control system; see http://git-scm.com/about
+#: lms/templates/sysadmin_dashboard_gitlogs.html
 #: lms/templates/sysadmin_dashboard_gitlogs.html
 msgid "Git Action"
 msgstr "Gitアクション"
 
+#. Translators: Git is a version-control system; see http://git-scm.com/about
 #: lms/templates/sysadmin_dashboard_gitlogs.html
 msgid "Recent git load activity for"
 msgstr "直近のGitを読み込んだ動き"
-
-#: lms/templates/sysadmin_dashboard_gitlogs.html
-msgid "git action"
-msgstr "Gitアクション"
 
 #: lms/templates/textannotation.html
 msgid "Source:"
@@ -5687,7 +5902,7 @@ msgstr "ボリューム"
 
 #: lms/templates/video.html
 msgid "Fill browser"
-msgstr "ブラウザを満たせ"
+msgstr "ブラウザ内で最大化する"
 
 #: lms/templates/video.html
 msgid "HD off"
@@ -5719,9 +5934,9 @@ msgstr "ビデオをダウンロード"
 msgid "Download transcript"
 msgstr "字幕をダウンロード"
 
-#: lms/templates/video.html lms/templates/video.html
-msgid "{file_format}"
-msgstr "{file_format}"
+#: lms/templates/video.html
+msgid "Download Handout"
+msgstr "資料をダウンロード"
 
 #: lms/templates/word_cloud.html
 msgid "Your words:"
@@ -6181,11 +6396,8 @@ msgid "Course Handouts"
 msgstr "講座資料"
 
 #: lms/templates/courseware/instructor_dashboard.html
-#: lms/templates/courseware/instructor_dashboard.html
-#: lms/templates/instructor/instructor_dashboard_2/instructor_dashboard_2.html
-#: lms/templates/instructor/instructor_dashboard_2/instructor_dashboard_2.html
-msgid "Instructor Dashboard"
-msgstr "講師用マイページ"
+msgid "Legacy Instructor Dashboard"
+msgstr "インストラクターダッシュボード（旧式）"
 
 #: lms/templates/courseware/instructor_dashboard.html
 #: lms/templates/instructor/instructor_dashboard_2/instructor_dashboard_2.html
@@ -6193,8 +6405,30 @@ msgid "View Course in Studio"
 msgstr "講座をStudioで参照"
 
 #: lms/templates/courseware/instructor_dashboard.html
-msgid "Try New Beta Dashboard"
-msgstr "ベータ版ダッシュボードを試用"
+msgid "Back To Instructor Dashboard"
+msgstr "インストラクターダッシュボードに戻る"
+
+#: lms/templates/courseware/instructor_dashboard.html
+#: lms/templates/instructor/instructor_dashboard_2/instructor_dashboard_2.html
+#: lms/templates/instructor/instructor_dashboard_2/instructor_dashboard_2.html
+msgid "Instructor Dashboard"
+msgstr "講師用マイページ"
+
+#: lms/templates/courseware/instructor_dashboard.html
+msgid ""
+"You are using the legacy instructor dashboard, which we will retire in the "
+"near future."
+msgstr "旧式のインストラクターダッシュボードをお使いです。この機能は間もなく使用できなくなります。"
+
+#: lms/templates/courseware/instructor_dashboard.html
+msgid "Return to the Instructor Dashboard"
+msgstr "インストラクターダッシュボードに戻る"
+
+#: lms/templates/courseware/instructor_dashboard.html
+msgid ""
+"If the Instructor Dashboard is missing functionality, please contact your PM"
+" to let us know."
+msgstr "インストラクターダッシュボードが表示されない場合はお問い合わせください。"
 
 #: lms/templates/courseware/instructor_dashboard.html
 msgid "Psychometrics"
@@ -6658,6 +6892,10 @@ msgid "Course Progress for Student '{username}' ({email})"
 msgstr "'{username}'({email})の成績"
 
 #: lms/templates/courseware/progress.html
+msgid "Download your certificate"
+msgstr "修了書をダウンロード"
+
+#: lms/templates/courseware/progress.html
 msgid "{earned:.3n} of {total:.3n} possible points"
 msgstr "{total:.3n}分の{earned:.3n}の可能性のある点"
 
@@ -6688,6 +6926,10 @@ msgid ""
 "Final course details are being wrapped up at this time. Your final standing "
 "will be available shortly."
 msgstr "本講座はまもなく受講期間外（終了済）となります。"
+
+#: lms/templates/dashboard/_dashboard_certificate_information.html
+msgid "Your final standing is unrequested or unavailable at this time."
+msgstr "あなたの最終状態は現時点では未要求か無効です。"
 
 #: lms/templates/dashboard/_dashboard_certificate_information.html
 msgid "Your final grade:"
@@ -6765,16 +7007,36 @@ msgid "{course_number} {course_name} Cover Image"
 msgstr "{course_number} {course_name} カバー画像"
 
 #: lms/templates/dashboard/_dashboard_course_listing.html
+msgid "You're enrolled as a verified student"
+msgstr "認証された受講者として登録されています"
+
+#: lms/templates/dashboard/_dashboard_course_listing.html
+#: lms/templates/dashboard/_dashboard_course_listing.html
+#: lms/templates/dashboard/_dashboard_course_listing.html
 msgid "Enrolled as: "
 msgstr "右記として受講登録済："
 
 #: lms/templates/dashboard/_dashboard_course_listing.html
-#: lms/templates/shoppingcart/verified_cert_receipt.html
-#: lms/templates/verify_student/_verification_header.html
-#: lms/templates/verify_student/_verification_header.html
-#: lms/templates/verify_student/_verification_header.html
-msgid "ID Verified"
-msgstr "本人認証"
+msgid "Verified"
+msgstr "認証済み"
+
+#: lms/templates/dashboard/_dashboard_course_listing.html
+msgid "You're enrolled as an honor code student"
+msgstr "倫理規定受講者として登録されています。"
+
+#: lms/templates/dashboard/_dashboard_course_listing.html
+#: lms/templates/static_templates/honor.html
+#: lms/templates/static_templates/honor.html
+msgid "Honor Code"
+msgstr "倫理規定"
+
+#: lms/templates/dashboard/_dashboard_course_listing.html
+msgid "You're auditing this course"
+msgstr "あなたはこの講座を評価しています。"
+
+#: lms/templates/dashboard/_dashboard_course_listing.html
+msgid "Auditing"
+msgstr "評価"
 
 #: lms/templates/dashboard/_dashboard_course_listing.html
 msgid "Course Completed - {end_date}"
@@ -7339,10 +7601,6 @@ msgstr "このフォーラムは現在メンテナンス中です。スタッフ
 msgid "User Profile"
 msgstr "ユーザプロフィール"
 
-#: lms/templates/discussion/user_profile.html
-msgid "Active Threads"
-msgstr "活動中のスレッド"
-
 #: lms/templates/discussion/mustache/_inline_thread.mustache
 #: lms/templates/discussion/mustache/_inline_thread_cohorted.mustache
 msgid "Expand discussion"
@@ -7365,6 +7623,10 @@ msgstr "..."
 #: lms/templates/discussion/mustache/_profile_thread.mustache
 msgid "View discussion"
 msgstr "ディスカッションを見る"
+
+#: lms/templates/discussion/mustache/_user_profile.mustache
+msgid "Active Threads"
+msgstr "活動中のスレッド"
 
 #: lms/templates/emails/activation_email.txt
 msgid ""
@@ -7408,6 +7670,11 @@ msgid ""
 "You have been invited to be a beta tester for {course_name} at {site_name} "
 "by a member of the course staff."
 msgstr "講座スタッフのメンバーから{site_name}の{course_name}のベータテスターに招待されました。"
+
+#: lms/templates/emails/add_beta_tester_email_message.txt
+#: lms/templates/emails/enroll_email_enrolledmessage.txt
+msgid "To start accessing course materials, please visit {course_url}"
+msgstr "コース教材は {course_url} にアクセスしてください。"
 
 #: lms/templates/emails/add_beta_tester_email_message.txt
 msgid "Visit {course_about_url} to join the course and begin the beta test."
@@ -7519,10 +7786,6 @@ msgid ""
 "course staff. The course should now appear on your {site_name} dashboard."
 msgstr ""
 "講座スタッフによって{site_name}の{course_name}に登録されました。{site_name}のマイページに講座が表示されます。"
-
-#: lms/templates/emails/enroll_email_enrolledmessage.txt
-msgid "To start accessing course materials, please visit {course_url}"
-msgstr "コース教材は {course_url} にアクセスしてください。"
 
 #: lms/templates/emails/enroll_email_enrolledmessage.txt
 #: lms/templates/emails/unenroll_email_enrolledmessage.txt
@@ -7900,11 +8163,13 @@ msgstr ""
 msgid "Choose the graded unit:"
 msgstr "評価済の単元を選択："
 
+#. Translators: "format_string" is the string MM/DD/YYYY HH:MM, as that is the
+#. format the system requires.
 #: lms/templates/instructor/instructor_dashboard_2/extensions.html
 msgid ""
-"Specify the extension due date and time (in UTC; please specify MM/DD/YYYY "
-"HH:MM)"
-msgstr "延長日時を指定 (UTC：国際標準時にてMM/DD/YYYY HH:MM形式で指定)"
+"Specify the extension due date and time (in UTC; please specify "
+"{format_string})."
+msgstr "延長日時を指定 (UTC：国際標準時にて {format_string} 形式で指定)"
 
 #: lms/templates/instructor/instructor_dashboard_2/extensions.html
 msgid "Change due date for student"
@@ -7931,8 +8196,8 @@ msgid "List all students with due date extensions"
 msgstr "期日延長となった全受講者を表示"
 
 #: lms/templates/instructor/instructor_dashboard_2/extensions.html
-msgid "Specify a specific student to see all of that student's extensions."
-msgstr "受講者の延長事項を確認するには、受講者を特定してください。"
+msgid "Specify a student to see all of that student's extensions."
+msgstr "受講者の延長事項を確認するには、受講者を指定してください。"
 
 #: lms/templates/instructor/instructor_dashboard_2/extensions.html
 msgid "List date extensions for student"
@@ -7955,8 +8220,16 @@ msgid "Reset due date for student"
 msgstr "この受講者の期日をレセット"
 
 #: lms/templates/instructor/instructor_dashboard_2/instructor_dashboard_2.html
-msgid "Back to Standard Dashboard"
-msgstr "通常版ダッシュボードに戻る"
+msgid "Revert to Legacy Dashboard"
+msgstr "旧式のダッシュボードを表示する"
+
+#: lms/templates/instructor/instructor_dashboard_2/instructor_dashboard_2.html
+msgid ""
+"We've changed the look and feel of the Instructor Dashboard. During this "
+"transition time, you can still access the old Instructor Dashboard by "
+"clicking the 'Revert to Legacy Dashboard' button above."
+msgstr ""
+"インストラクターダッシュボードのインターフェースが変更されました。移行期間中は「旧式のダッシュボードを表示する」のボタンをクリックすると、旧式のインターフェースが表示されます。"
 
 #: lms/templates/instructor/instructor_dashboard_2/instructor_dashboard_2.html
 msgid "section_display_name"
@@ -7964,8 +8237,9 @@ msgstr "セクション表示名"
 
 #: lms/templates/instructor/instructor_dashboard_2/membership.html
 #: lms/templates/instructor/instructor_dashboard_2/membership.html
-msgid "Enter email addresses separated by new lines or commas."
-msgstr "メールアドレスを、改行またはカンマ区切りで入力してください。"
+msgid ""
+"Enter email addresses and/or usernames separated by new lines or commas."
+msgstr "メールアドレスと（または）ユーザー名を新しい行またはカンマ区切りで分けて入力してください。"
 
 #: lms/templates/instructor/instructor_dashboard_2/membership.html
 msgid ""
@@ -7975,9 +8249,10 @@ msgstr "バウンスするメールアドレスには通知は届きません。
 
 #: lms/templates/instructor/instructor_dashboard_2/membership.html
 #: lms/templates/instructor/instructor_dashboard_2/membership.html
-msgid "Email Addresses"
-msgstr "Eメールアドレス"
+msgid "Email Addresses/Usernames"
+msgstr "メールアドレス/ユーザ名"
 
+#: lms/templates/instructor/instructor_dashboard_2/membership.html
 #: lms/templates/instructor/instructor_dashboard_2/membership.html
 msgid "Auto Enroll"
 msgstr "自動受講登録"
@@ -8022,14 +8297,24 @@ msgid "Unenroll"
 msgstr "受講取消し"
 
 #: lms/templates/instructor/instructor_dashboard_2/membership.html
-msgid "Batch Beta Testers"
-msgstr "ベータテスターをバッチする"
+msgid "Batch Beta Tester Addition"
+msgstr "ベータテスターバッチ追加"
 
 #: lms/templates/instructor/instructor_dashboard_2/membership.html
 msgid ""
 "Note: Users must have an activated {platform_name} account before they can "
 "be enrolled as a beta tester."
 msgstr "注意：ベータテスターにする前に、ユーザは{platform_name}に有効化されたアカウントが必要です。"
+
+#: lms/templates/instructor/instructor_dashboard_2/membership.html
+msgid ""
+"If this option is <em>checked</em>, users who have not enrolled in your "
+"course will be automatically enrolled."
+msgstr "もし、このオプションが<em>有効</em>の場合、未登録のユーザも自動的に受講登録されます。"
+
+#: lms/templates/instructor/instructor_dashboard_2/membership.html
+msgid "Checking this box has no effect if 'Remove beta testers' is selected."
+msgstr "この項目は’ベータテスターを削除する’が選択されている場合は影響しません。"
 
 #: lms/templates/instructor/instructor_dashboard_2/membership.html
 msgid "Add beta testers"
@@ -8226,6 +8511,20 @@ msgid "Show Email Task History"
 msgstr "メール送信タスクの履歴を表示"
 
 #: lms/templates/instructor/instructor_dashboard_2/student_admin.html
+msgid "Student Gradebook"
+msgstr "成績表"
+
+#: lms/templates/instructor/instructor_dashboard_2/student_admin.html
+msgid ""
+"Click here to view the gradebook for enrolled students. This feature is only"
+" visible to courses with a small number of total enrolled students."
+msgstr "こちらをクリックすると、受講生の成績表を閲覧できます。本機能は少人数のコースでのみ使用できます。"
+
+#: lms/templates/instructor/instructor_dashboard_2/student_admin.html
+msgid "View Gradebook"
+msgstr "成績表を表示する"
+
+#: lms/templates/instructor/instructor_dashboard_2/student_admin.html
 msgid "Student-specific grade inspection"
 msgstr "特定の受講者の成績査閲"
 
@@ -8263,14 +8562,6 @@ msgstr ""
 #: lms/templates/instructor/instructor_dashboard_2/student_admin.html
 msgid "Next, select an action to perform for the given user and problem:"
 msgstr "次に、この所与のユーザーと問題に対して実行する行動を選択："
-
-#: lms/templates/instructor/instructor_dashboard_2/student_admin.html
-msgid "Reset Student Attempts"
-msgstr "生徒の試行をリセットする"
-
-#: lms/templates/instructor/instructor_dashboard_2/student_admin.html
-msgid "Rescore Student Submission"
-msgstr "学生が提出した課題を再度採点する"
 
 #: lms/templates/instructor/instructor_dashboard_2/student_admin.html
 msgid ""
@@ -8682,6 +8973,16 @@ msgid "Register for [Course Name] | Receipt (Order"
 msgstr "[Course Name]へ登録 | 右記を受領 (注文"
 
 #: lms/templates/shoppingcart/receipt.html
+msgid "Thank you for your Purchase!"
+msgstr "ご購入ありがとうございました"
+
+#: lms/templates/shoppingcart/receipt.html
+msgid ""
+"Please print this receipt page for your records. You should also have "
+"received a receipt in your email."
+msgstr "このレシートページを記録として印刷してください。同様のレシートをメールでもお送りしています。"
+
+#: lms/templates/shoppingcart/receipt.html
 msgid " () Electronic Receipt"
 msgstr "() 電子的レシート"
 
@@ -8726,6 +9027,13 @@ msgstr "今、登録されたものはこちら："
 #: lms/templates/shoppingcart/verified_cert_receipt.html
 msgid "Registered as: "
 msgstr "右記として登録済："
+
+#: lms/templates/shoppingcart/verified_cert_receipt.html
+#: lms/templates/verify_student/_verification_header.html
+#: lms/templates/verify_student/_verification_header.html
+#: lms/templates/verify_student/_verification_header.html
+msgid "ID Verified"
+msgstr "本人認証"
 
 #: lms/templates/shoppingcart/verified_cert_receipt.html
 #: lms/templates/verify_student/photo_reverification.html
@@ -8910,11 +9218,6 @@ msgid ""
 msgstr ""
 "システムは米国の経済的制裁、貿易制裁の対象の国のIPアドレスからedXの講座へアクセスしたことを検知しました。\n"
 "残念ながら、現在edXは輸出規制を現寿する必要があり、この特定の講座はアクセスを許可することができません。お気軽に他の受講したいコースを講座一覧から探してください。"
-
-#: lms/templates/static_templates/honor.html
-#: lms/templates/static_templates/honor.html
-msgid "Honor Code"
-msgstr "倫理規定"
 
 #: lms/templates/static_templates/media-kit.html
 #: lms/templates/static_templates/media-kit.html
@@ -9303,6 +9606,9 @@ msgstr "写真を送信&amp;再認証"
 msgid "Re-Verification Submission Confirmation"
 msgstr "再度の本人認証要求の確認"
 
+#. Translators: 'Credentials' refer to photographs the user has taken to
+#. verify
+#. their identity.
 #: lms/templates/verify_student/midcourse_reverification_confirmation.html
 #: lms/templates/verify_student/reverification_confirmation.html
 msgid "Your Credentials Have Been Updated"
@@ -10077,10 +10383,6 @@ msgid ""
 "immediately visible to other course team members."
 msgstr "あなたがこれらのチェックリストに加えた変更は自動的に保存され、他のコースチームのメンバーにすぐに表示されています。"
 
-#: cms/templates/component.html
-msgid "Editor"
-msgstr "エディタ"
-
 #: cms/templates/component.html cms/templates/studio_xblock_wrapper.html
 #: cms/templates/studio_xblock_wrapper.html
 msgid "Duplicate"
@@ -10093,12 +10395,6 @@ msgstr "このコンポーネントを複製"
 #: cms/templates/component.html
 msgid "Delete this component"
 msgstr "このコンポーネントを削除"
-
-#: cms/templates/component.html cms/templates/container_xblock_component.html
-#: cms/templates/edit-tabs.html cms/templates/edit-tabs.html
-#: cms/templates/overview.html cms/templates/overview.html
-msgid "Drag to reorder"
-msgstr "ドラッグして並び替え"
 
 #: cms/templates/container.html
 msgid "Container"
@@ -10394,11 +10690,11 @@ msgstr ""
 
 #: cms/templates/export.html
 msgid "Export My Course Content"
-msgstr "コースのコンテンツをエキスポートする"
+msgstr "講座コンテンツをエクスポートする"
 
 #: cms/templates/export.html
 msgid "Export Course Content"
-msgstr "コースのコンテンツをエキスポートする"
+msgstr "コースのコンテンツをエクスポートする"
 
 #: cms/templates/export.html
 msgid "Data {em_start}exported with{em_end} your course:"
@@ -10808,7 +11104,7 @@ msgstr "ファイルをサーバに転送中"
 
 #: cms/templates/import.html
 msgid "Unpacking"
-msgstr "解答中"
+msgstr "解凍中"
 
 #: cms/templates/import.html
 msgid ""
@@ -13096,3 +13392,15 @@ msgstr "アンケート結果がCSVファイルでダウンロードできます
 #: lms/templates/instructor/instructor_dashboard_2/survey.html
 msgid "Get Survey CSV"
 msgstr "アンケート結果をCSVとしてダウンロードする"
+
+#: lms/templates/dashboard/_dashboard_certificate_information.html
+msgid "Download Your Certificate (PDF)"
+msgstr "修了書の表示"
+
+#: lms/templates/dashboard/_dashboard_certificate_information.html
+msgid "Successfully passed the Certificate of gacco"
+msgstr "gaccoの修了書を取得しました"
+
+#: lms/templates/dashboard/_dashboard_certificate_information.html
+msgid "Grade required for a certificate:"
+msgstr "修了書取得に必要な成績："

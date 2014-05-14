@@ -10,8 +10,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: edx-platform\n"
 "Report-Msgid-Bugs-To: openedx-translation@googlegroups.com\n"
-"POT-Creation-Date: 2014-04-15 11:06-0400\n"
-"PO-Revision-Date: 2014-04-18 12:00+0000\n"
+"POT-Creation-Date: 2014-05-13 09:30-0400\n"
+"PO-Revision-Date: 2014-05-12 08:00+0000\n"
 "Last-Translator: h_yoshida <h_yoshida@matsumo-sys.com>\n"
 "Language-Team: Japanese (Japan) (http://www.transifex.com/projects/p/edx-platform/language/ja_JP/)\n"
 "MIME-Version: 1.0\n"
@@ -35,10 +35,10 @@ msgstr "Studio は作業の保存に問題があります。"
 #: cms/static/coffee/src/views/unit.js:72
 #: cms/static/coffee/src/xblock/cms.runtime.v1.js:39
 #: cms/static/js/models/section.js:28 cms/static/js/utils/drag_and_drop.js:282
-#: cms/static/js/views/asset.js:80
+#: cms/static/js/views/asset.js:80 cms/static/js/views/container.js:28
 #: cms/static/js/views/course_info_handout.js:59
 #: cms/static/js/views/course_info_update.js:80
-#: cms/static/js/views/overview.js:75 cms/static/js/views/xblock_editor.js:93
+#: cms/static/js/views/overview.js:75 cms/static/js/views/xblock_editor.js:98
 msgid "Saving&hellip;"
 msgstr "保存中&hellip;"
 
@@ -135,7 +135,7 @@ msgid ""
 "<%= fileExtensions %> to upload."
 msgstr "ファイルアップロードが可能なファイル形式は「<%= fileTypes %>」となります。拡張子が「<%= fileExtensions %>」となるファイルを選択し、アップロードしてください。"
 
-#: cms/static/js/models/uploads.js:64
+#: cms/static/js/models/uploads.js:65
 msgid "or"
 msgstr "もしくは"
 
@@ -245,6 +245,10 @@ msgid ""
 "extension."
 msgstr "ファイル形式がサポートされていません．<code>tar.gz</code> 拡張子がついたファイルをアップロードして下さい．"
 
+#: cms/static/js/views/metadata.js:533
+msgid "Upload File"
+msgstr "ファイルをアップロード"
+
 #: cms/static/js/views/overview.js:14
 msgid "Collapse All Sections"
 msgstr "すべてのセクションを折り畳む"
@@ -269,20 +273,27 @@ msgstr "章のリリース日を編集"
 msgid "Not Graded"
 msgstr "未採点"
 
-#: cms/static/js/views/paging.js:93
-msgid "ascending"
-msgstr "昇順"
-
-#: cms/static/js/views/paging.js:93
-msgid "descending"
-msgstr "降順"
-
-#: cms/static/js/views/paging_header.js:42
+#. Translators: sample result: "Showing 0-9 out of 25 total, sorted by Date
+#. Added ascending"
+#: cms/static/js/views/paging_header.js:37
 msgid ""
-"Showing %(current_span)s%(start)s-%(end)s%(end_span)s out of "
-"%(total_span)s%(total)s total%(end_span)s, sorted by "
-"%(order_span)s%(sort_order)s%(end_span)s %(sort_direction)s"
-msgstr "%(total_span)s%(total)s total%(end_span)s 中の %(current_span)s%(start)s-%(end)s%(end_span)s  sorted by %(order_span)s%(sort_order)s%(end_span)s %(sort_direction)s を表示中"
+"Showing %(current_item_range)s out of %(total_items_count)s, sorted by "
+"%(sort_name)s ascending"
+msgstr "%(sort_name)s で昇順にソートされた %(total_items_count)s 中の %(current_item_range)s 件を表示中"
+
+#. Translators: sample result: "Showing 0-9 out of 25 total, sorted by Date
+#. Added descending"
+#: cms/static/js/views/paging_header.js:40
+msgid ""
+"Showing %(current_item_range)s out of %(total_items_count)s, sorted by "
+"%(sort_name)s descending"
+msgstr "%(sort_name)s で降順にソートされた %(total_items_count)s 中の %(current_item_range)s 件を表示中"
+
+#. Translators: turns into "25 total" to be used in other sentences, e.g.
+#. "Showing 0-9 out of 25 total".
+#: cms/static/js/views/paging_header.js:64
+msgid "%(total_items)s total"
+msgstr "合計 %(total_items)s 件"
 
 #: cms/static/js/views/section_edit.js:50
 msgid "Your change could not be saved"
@@ -347,15 +358,15 @@ msgstr "エディタ"
 msgid "Settings"
 msgstr "設定"
 
-#: cms/static/js/views/modals/base_modal.js:84
+#: cms/static/js/views/modals/base_modal.js:86
 msgid "Save"
 msgstr "一時保存"
 
-#: cms/static/js/views/modals/edit_xblock.js:86
+#: cms/static/js/views/modals/edit_xblock.js:119
 msgid "Component"
 msgstr "コンポーネント"
 
-#: cms/static/js/views/modals/edit_xblock.js:89
+#: cms/static/js/views/modals/edit_xblock.js:122
 msgid "Editing: %(title)s"
 msgstr "編集中: %(title)s"
 

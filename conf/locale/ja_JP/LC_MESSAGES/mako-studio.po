@@ -16,9 +16,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: edx-platform\n"
 "Report-Msgid-Bugs-To: openedx-translation@googlegroups.com\n"
-"POT-Creation-Date: 2014-04-15 11:05-0400\n"
-"PO-Revision-Date: 2014-04-21 13:52+0000\n"
-"Last-Translator: h_yoshida <h_yoshida@matsumo-sys.com>\n"
+"POT-Creation-Date: 2014-05-13 09:29-0400\n"
+"PO-Revision-Date: 2014-05-08 12:27+0000\n"
+"Last-Translator: sarina <sarina@edx.org>\n"
 "Language-Team: Japanese (Japan) (http://www.transifex.com/projects/p/edx-platform/language/ja_JP/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -27,17 +27,17 @@ msgstr ""
 "Language: ja_JP\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
-#: cms/templates/404.html:11
+#: cms/templates/404.html:14
 msgid "The page that you were looking for was not found."
 msgstr "検索対象のページは見つかりませんでした．"
 
-#: cms/templates/404.html:12
+#: cms/templates/404.html:15
 msgid ""
 "Go back to the {homepage} or let us know about any pages that may have been "
 "moved at {email}."
 msgstr "{homepage}に戻る もしくは 移動してしまったとみられるページについて私達 {email} に知らせてください。"
 
-#: cms/templates/500.html:4
+#: cms/templates/500.html:3
 msgid "Studio Server Error"
 msgstr "Studio サーバエラー"
 
@@ -45,19 +45,19 @@ msgstr "Studio サーバエラー"
 msgid "The <em>Studio</em> servers encountered an error"
 msgstr "<em>Studio</em> でエラーが発生しました"
 
-#: cms/templates/500.html:12
+#: cms/templates/500.html:14
 msgid ""
 "An error occurred in Studio and the page could not be loaded. Please try "
 "again in a few moments."
 msgstr "Studioでエラーが発生し、ページが読み込めませんでした。数分後に改めてお試しください。"
 
-#: cms/templates/500.html:13
+#: cms/templates/500.html:15
 msgid ""
 "We've logged the error and our staff is currently working to resolve this "
 "error as soon as possible."
 msgstr "私たちはエラーを記録し、スタッフは現在、このエラーをできるだけ早く修正しようと働いています。"
 
-#: cms/templates/500.html:14
+#: cms/templates/500.html:16
 msgid "If the problem persists, please email us at {email_link}."
 msgstr "もし、不具合が解消されない場合は、{email_link}へメールでご連絡ください。"
 
@@ -230,29 +230,18 @@ msgid ""
 "immediately visible to other course team members."
 msgstr "あなたがこれらのチェックリストに加えた変更は自動的に保存され、他のコースチームのメンバーにすぐに表示されています。"
 
-#: cms/templates/component.html:10
-msgid "Editor"
-msgstr "エディタ"
-
-#: cms/templates/component.html:42 cms/templates/studio_xblock_wrapper.html:25
+#: cms/templates/component.html:16 cms/templates/studio_xblock_wrapper.html:25
 #: cms/templates/studio_xblock_wrapper.html:27
 msgid "Duplicate"
 msgstr "複製"
 
-#: cms/templates/component.html:44
+#: cms/templates/component.html:18
 msgid "Duplicate this component"
 msgstr "このコンポーネントを複製"
 
-#: cms/templates/component.html:50
+#: cms/templates/component.html:24
 msgid "Delete this component"
 msgstr "このコンポーネントを削除"
-
-#: cms/templates/component.html:55
-#: cms/templates/container_xblock_component.html:26
-#: cms/templates/edit-tabs.html:127 cms/templates/edit-tabs.html:128
-#: cms/templates/overview.html:200 cms/templates/overview.html:237
-msgid "Drag to reorder"
-msgstr "ドラッグして並び替え"
 
 #: cms/templates/container.html:9
 msgid "Container"
@@ -537,11 +526,11 @@ msgstr "講座はエクスポートしてStudioの外で編集することがで
 
 #: cms/templates/export.html:102
 msgid "Export My Course Content"
-msgstr "コースのコンテンツをエキスポートする"
+msgstr "講座コンテンツをエクスポートする"
 
 #: cms/templates/export.html:108
 msgid "Export Course Content"
-msgstr "コースのコンテンツをエキスポートする"
+msgstr "コースのコンテンツをエクスポートする"
 
 #: cms/templates/export.html:116
 msgid "Data {em_start}exported with{em_end} your course:"
@@ -937,7 +926,7 @@ msgstr "ファイルをサーバに転送中"
 
 #: cms/templates/import.html:76
 msgid "Unpacking"
-msgstr "解答中"
+msgstr "解凍中"
 
 #: cms/templates/import.html:77
 msgid ""
