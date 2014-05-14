@@ -13,8 +13,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: edx-platform\n"
 "Report-Msgid-Bugs-To: openedx-translation@googlegroups.com\n"
-"POT-Creation-Date: 2014-04-15 11:05-0400\n"
-"PO-Revision-Date: 2014-04-21 13:52+0000\n"
+"POT-Creation-Date: 2014-05-13 09:29-0400\n"
+"PO-Revision-Date: 2014-05-12 08:00+0000\n"
 "Last-Translator: h_yoshida <h_yoshida@matsumo-sys.com>\n"
 "Language-Team: Japanese (Japan) (http://www.transifex.com/projects/p/edx-platform/language/ja_JP/)\n"
 "MIME-Version: 1.0\n"
@@ -27,7 +27,7 @@ msgstr ""
 #. up a panel that
 #. displays information about open-ended problems that a user has submitted or
 #. needs to grade
-#: cms/djangoapps/contentstore/utils.py:25
+#: cms/djangoapps/contentstore/utils.py:24
 #: common/lib/xmodule/xmodule/tabs.py:633
 msgid "Open Ended Panel"
 msgstr "レポート管理"
@@ -37,7 +37,7 @@ msgid "Honor Code Certificate"
 msgstr "規約の証明"
 
 #: common/djangoapps/course_modes/views.py:81
-#: common/djangoapps/student/views.py:597
+#: common/djangoapps/student/views.py:610
 msgid "Enrollment is closed"
 msgstr "登録は終了しました"
 
@@ -80,283 +80,294 @@ msgstr "アカウントが失効しています。これがエラーだと思わ
 msgid "Disabled Account"
 msgstr "失効したアカウント"
 
-#: common/djangoapps/student/models.py:200
+#: common/djangoapps/student/models.py:198
 msgid "Male"
 msgstr "男性"
 
-#: common/djangoapps/student/models.py:201
+#: common/djangoapps/student/models.py:199
 msgid "Female"
 msgstr "女性"
 
 #. Translators: 'Other' refers to the student's gender
 #. Translators: 'Other' refers to the student's level of education
-#: common/djangoapps/student/models.py:203
-#: common/djangoapps/student/models.py:224
+#: common/djangoapps/student/models.py:201
+#: common/djangoapps/student/models.py:222
 msgid "Other"
 msgstr "その他"
 
-#: common/djangoapps/student/models.py:214
+#: common/djangoapps/student/models.py:212
 msgid "Doctorate"
 msgstr "大学院卒（博士課程修了）"
 
-#: common/djangoapps/student/models.py:215
+#: common/djangoapps/student/models.py:213
 msgid "Master's or professional degree"
 msgstr "大学院卒（修士課程修了）"
 
-#: common/djangoapps/student/models.py:216
+#: common/djangoapps/student/models.py:214
 msgid "Bachelor's degree"
 msgstr "4年制および6年制大学卒"
 
-#: common/djangoapps/student/models.py:217
+#: common/djangoapps/student/models.py:215
 msgid "Associate's degree"
 msgstr "短大・専門学校卒"
 
-#: common/djangoapps/student/models.py:218
+#: common/djangoapps/student/models.py:216
 msgid "Secondary/high school"
 msgstr "高校卒"
 
-#: common/djangoapps/student/models.py:219
+#: common/djangoapps/student/models.py:217
 msgid "Junior secondary/junior high/middle school"
 msgstr "中学校卒"
 
-#: common/djangoapps/student/models.py:220
+#: common/djangoapps/student/models.py:218
 msgid "Elementary/primary school"
 msgstr "小学校卒"
 
 #. Translators: 'None' refers to the student's level of education
-#: common/djangoapps/student/models.py:222
+#: common/djangoapps/student/models.py:220
 msgid "None"
 msgstr "なし"
 
-#: common/djangoapps/student/views.py:581
+#: common/djangoapps/student/views.py:594
 msgid "Course id not specified"
 msgstr "講座番号が指定されていません"
 
-#: common/djangoapps/student/views.py:594
+#: common/djangoapps/student/views.py:607
 msgid "Course id is invalid"
 msgstr "講座番号が無効です"
 
-#: common/djangoapps/student/views.py:603
+#: common/djangoapps/student/views.py:616
 msgid "Course is full"
 msgstr "コースは一杯です。"
 
-#: common/djangoapps/student/views.py:633
+#: common/djangoapps/student/views.py:646
 msgid "You are not enrolled in this course"
 msgstr "この講座に受講登録されていません。"
 
-#: common/djangoapps/student/views.py:637
+#: common/djangoapps/student/views.py:650
 msgid "Enrollment action is invalid"
 msgstr "登録は無効です"
 
-#: common/djangoapps/student/views.py:698
+#. Translators: provider_name is the name of an external, third-party user
+#. authentication service (like
+#. Google or LinkedIn).
+#: common/djangoapps/student/views.py:743
+#, python-brace-format
+msgid ""
+"There is no {platform_name} account associated with your {provider_name} "
+"account. Please use your {platform_name} credentials or pick another "
+"provider."
+msgstr "{provider_name} アカウントに紐づいた{platform_name} アカウントがありません。 {platform_name}のアカウント情報を使用するか他の認証サービスを選択してください。"
+
+#: common/djangoapps/student/views.py:752
 msgid "There was an error receiving your login information. Please email us."
 msgstr "ログイン情報の受信にエラーが発生しました。 管理者へメールをお願いします。"
 
-#: common/djangoapps/student/views.py:733
+#: common/djangoapps/student/views.py:786
 msgid ""
 "This account has been temporarily locked due to excessive login failures. "
 "Try again later."
 msgstr "このアカウントは過度のログイン失敗により、一時的にロックされました。しばらく時間をおいて実行してください。"
 
-#: common/djangoapps/student/views.py:740
+#: common/djangoapps/student/views.py:793
 msgid ""
 "Your password has expired due to password policy on this account. You must "
 "reset your password before you can log in again. Please click the Forgot "
 "Password\" link on this page to reset your password before logging in again."
 msgstr "あなたのパスワードはこのアカウントのパスワードポリシーによって期限が切れました。もう一度ログインする前にはパスワード変更が必要です。このページのパスワードを忘れた方はこちらのリンクをクリックしてログインする前にパスワードを変更してください。"
 
-#: common/djangoapps/student/views.py:755
+#: common/djangoapps/student/views.py:810
 msgid "Too many failed login attempts. Try again later."
 msgstr "ログイン試行に失敗し過ぎました、しばらく経った後にお試しください。"
 
-#: common/djangoapps/student/views.py:772
+#: common/djangoapps/student/views.py:828
 msgid "Email or password is incorrect."
 msgstr "メールアドレス、もしくはパスワードが間違っています。"
 
-#: common/djangoapps/student/views.py:829
+#: common/djangoapps/student/views.py:887
 msgid ""
 "This account has not been activated. We have sent another activation "
 "message. Please check your e-mail for the activation instructions."
 msgstr "このアカウントはアクティベーションが完了していません。 アクティベーション用のメッセージを送信していますので、メールでアクティベーション方法を確認してください。"
 
-#: common/djangoapps/student/views.py:898
+#: common/djangoapps/student/views.py:956
 msgid "Please enter a username"
 msgstr "ユーザー名を入力してください。"
 
-#: common/djangoapps/student/views.py:903
+#: common/djangoapps/student/views.py:961
 msgid "Please choose an option"
 msgstr "オプションを選択してください。"
 
-#: common/djangoapps/student/views.py:910
+#: common/djangoapps/student/views.py:968
 msgid "User with username {} does not exist"
 msgstr "ユーザー名「{}」は存在しません。"
 
-#: common/djangoapps/student/views.py:918
+#: common/djangoapps/student/views.py:976
 msgid "Successfully disabled {}'s account"
 msgstr "「{}」のアカウント失効を実施しました。"
 
-#: common/djangoapps/student/views.py:922
+#: common/djangoapps/student/views.py:980
 msgid "Successfully reenabled {}'s account"
 msgstr "「{}」のアカウント復活を実施しました。"
 
-#: common/djangoapps/student/views.py:925
+#: common/djangoapps/student/views.py:983
 msgid "Unexpected account status"
 msgstr "不慮のアカウント状態です。"
 
-#: common/djangoapps/student/views.py:978
+#: common/djangoapps/student/views.py:1036
 #, python-brace-format
 msgid "An account with the Public Username '{username}' already exists."
 msgstr "'{username}' は既に利用されています"
 
-#: common/djangoapps/student/views.py:983
+#: common/djangoapps/student/views.py:1041
 #, python-brace-format
 msgid "An account with the Email '{email}' already exists."
 msgstr " '{email}' は既に登録済みです。"
 
-#: common/djangoapps/student/views.py:1056
+#: common/djangoapps/student/views.py:1118
 #, python-brace-format
 msgid "Error (401 {field}). E-mail us."
 msgstr "エラー(401 {field})が発生しました。 管理者へメールをお願いします。"
 
-#: common/djangoapps/student/views.py:1062
+#: common/djangoapps/student/views.py:1124
 msgid "To enroll, you must follow the honor code."
 msgstr "プライバシーポリシーに同意いただく必要があります。"
 
-#: common/djangoapps/student/views.py:1078
+#: common/djangoapps/student/views.py:1140
 msgid "You must accept the terms of service."
 msgstr "サービス規約に同意する必要があります。"
 
-#: common/djangoapps/student/views.py:1102
+#: common/djangoapps/student/views.py:1164
 msgid "Username must be minimum of two characters long"
 msgstr "ユーザー名は2文字以上である必要があります。"
 
-#: common/djangoapps/student/views.py:1103
+#: common/djangoapps/student/views.py:1165
 msgid "A properly formatted e-mail is required"
 msgstr "正しく記述されたメールアドレスが必要です。"
 
-#: common/djangoapps/student/views.py:1104
+#: common/djangoapps/student/views.py:1166
 msgid "Your legal name must be a minimum of two characters long"
 msgstr "名前は2文字以上である必要があります。"
 
-#: common/djangoapps/student/views.py:1105
+#: common/djangoapps/student/views.py:1167
 msgid "A valid password is required"
 msgstr "有効なパスワードが必要です。"
 
-#: common/djangoapps/student/views.py:1106
+#: common/djangoapps/student/views.py:1168
 msgid "Accepting Terms of Service is required"
 msgstr "利用規約に同意が必要です。"
 
-#: common/djangoapps/student/views.py:1107
+#: common/djangoapps/student/views.py:1169
 msgid "Agreeing to the Honor Code is required"
 msgstr "プライバシーポリシーに同意が必要です。"
 
-#: common/djangoapps/student/views.py:1108
+#: common/djangoapps/student/views.py:1170
 msgid "A level of education is required"
 msgstr "最終学歴の選択が必要です。"
 
-#: common/djangoapps/student/views.py:1109
+#: common/djangoapps/student/views.py:1171
 msgid "Your gender is required"
 msgstr "性別の選択が必要です。"
 
-#: common/djangoapps/student/views.py:1110
+#: common/djangoapps/student/views.py:1172
 msgid "Your year of birth is required"
 msgstr "誕生年の選択が必要です。"
 
-#: common/djangoapps/student/views.py:1111
+#: common/djangoapps/student/views.py:1173
 msgid "Your mailing address is required"
 msgstr "住所の入力が必要です。"
 
-#: common/djangoapps/student/views.py:1112
+#: common/djangoapps/student/views.py:1174
 msgid "A description of your goals is required"
 msgstr "あなたのゴールに対する説明が必要です。"
 
-#: common/djangoapps/student/views.py:1113
+#: common/djangoapps/student/views.py:1175
 msgid "A city is required"
 msgstr "市の入力が必要です。"
 
-#: common/djangoapps/student/views.py:1114
+#: common/djangoapps/student/views.py:1176
 msgid "A country is required"
 msgstr "国の入力が必要です。"
 
-#: common/djangoapps/student/views.py:1126
+#: common/djangoapps/student/views.py:1188
 #, python-brace-format
 msgid "Username cannot be more than {0} characters long"
 msgstr "ユーザー名は{0}文字以下で入力してください。"
 
-#: common/djangoapps/student/views.py:1127
+#: common/djangoapps/student/views.py:1189
 #, python-brace-format
 msgid "Email cannot be more than {0} characters long"
 msgstr "メールアドレスは{0}文字以下で入力してください。"
 
-#: common/djangoapps/student/views.py:1136
+#: common/djangoapps/student/views.py:1198
 msgid "Valid e-mail is required."
 msgstr "正規のメールアドレスが必要です。"
 
-#: common/djangoapps/student/views.py:1143
+#: common/djangoapps/student/views.py:1205
 msgid "Username should only consist of A-Z and 0-9, with no spaces."
 msgstr "ユーザ名は半角英数の文字のみが利用可能です。なお、全角文字、記号およびスペースは利用できません。"
 
-#: common/djangoapps/student/views.py:1156
-#: common/djangoapps/student/views.py:1436
+#: common/djangoapps/student/views.py:1218
+#: common/djangoapps/student/views.py:1506
 msgid "Password: "
 msgstr "パスワード："
 
-#: common/djangoapps/student/views.py:1199
+#: common/djangoapps/student/views.py:1261
 msgid "Could not send activation e-mail."
 msgstr "アクティベーション用のメールが送信できませんでした。"
 
-#: common/djangoapps/student/views.py:1375
+#: common/djangoapps/student/views.py:1445
 msgid "Unknown error. Please e-mail us to let us know how it happened."
 msgstr "不明なエラーが発生しました。 管理者へメールをお願いします。できれば、どのようなことが起きたのか詳細を教えていただけますと幸いです。"
 
-#: common/djangoapps/student/views.py:1444
+#: common/djangoapps/student/views.py:1514
 #, python-brace-format
 msgid ""
 "You are re-using a password that you have used recently. You must have {0} "
 "distinct password(s) before reusing a previous password."
 msgstr "最近使用したパスワードを使用しようとしています。過去{0}回と違うパスワードを使用する必要があります。"
 
-#: common/djangoapps/student/views.py:1450
+#: common/djangoapps/student/views.py:1520
 #, python-brace-format
 msgid ""
 "You are resetting passwords too frequently. Due to security policies, {0} "
 "day(s) must elapse between password resets"
 msgstr "頻繁にパスワードを変更しすぎています。セキュリティポリシーでは{0}日間パスワード変更の間隔をあけてください。"
 
-#: common/djangoapps/student/views.py:1459
+#: common/djangoapps/student/views.py:1529
 msgid "Password reset unsuccessful"
 msgstr "パスワードの変更に失敗"
 
-#: common/djangoapps/student/views.py:1496
+#: common/djangoapps/student/views.py:1566
 msgid "No inactive user with this e-mail exists"
 msgstr "このメールのユーザはアクティベーションされていません。"
 
-#: common/djangoapps/student/views.py:1514
+#: common/djangoapps/student/views.py:1584
 msgid "Unable to send reactivation email"
 msgstr "再アクティベーション用のメールの送信ができません。"
 
-#: common/djangoapps/student/views.py:1533
+#: common/djangoapps/student/views.py:1603
 msgid "Invalid password"
 msgstr "不正なパスワード"
 
-#: common/djangoapps/student/views.py:1542
+#: common/djangoapps/student/views.py:1612
 msgid "Valid e-mail address required."
 msgstr "正しいメールアドレスが必要です。"
 
-#: common/djangoapps/student/views.py:1549
+#: common/djangoapps/student/views.py:1619
 msgid "An account with this e-mail already exists."
 msgstr "このメールアドレスのアカウントは既に存在しています。"
 
-#: common/djangoapps/student/views.py:1567
+#: common/djangoapps/student/views.py:1637
 msgid "Old email is the same as the new email."
 msgstr "旧メールアドレスが新しいメールアドレスと同じです。"
 
-#: common/djangoapps/student/views.py:1673
+#: common/djangoapps/student/views.py:1743
 msgid "Name required"
 msgstr "名前は必須"
 
-#: common/djangoapps/student/views.py:1716
-#: common/djangoapps/student/views.py:1729
+#: common/djangoapps/student/views.py:1786
+#: common/djangoapps/student/views.py:1799
 msgid "Invalid ID"
 msgstr "不正なID"
 
@@ -769,44 +780,48 @@ msgstr "辞書にある単語に類似すぎています。"
 msgid "Cannot rescore problems with possible file submissions"
 msgstr "ファイル送信による問題の再採点はできません。"
 
-#: common/lib/capa/capa/inputtypes.py:293
+#: common/lib/capa/capa/inputtypes.py:85
 msgid "correct"
 msgstr "正解"
 
-#: common/lib/capa/capa/inputtypes.py:294
+#: common/lib/capa/capa/inputtypes.py:86
 msgid "incorrect"
 msgstr "不正解"
 
-#: common/lib/capa/capa/inputtypes.py:295
+#: common/lib/capa/capa/inputtypes.py:87
 msgid "incomplete"
 msgstr "未完了"
 
-#: common/lib/capa/capa/inputtypes.py:296
-#: common/lib/capa/capa/inputtypes.py:297
+#: common/lib/capa/capa/inputtypes.py:88 common/lib/capa/capa/inputtypes.py:89
 msgid "unanswered"
 msgstr "未回答"
 
-#: common/lib/capa/capa/inputtypes.py:298
-msgid "queued"
-msgstr "キュー済み"
+#: common/lib/capa/capa/inputtypes.py:90
+msgid "processing"
+msgstr "処理中"
 
-#: common/lib/capa/capa/inputtypes.py:683
+#: common/lib/capa/capa/inputtypes.py:695
 msgid ""
 "Your file(s) have been submitted. As soon as your submission is graded, this"
 " message will be replaced with the grader's feedback."
 msgstr "ファイルが投稿されました。投稿が評価され次第、このメッセージは評価者のフィードバックに変更されます。"
 
-#: common/lib/capa/capa/inputtypes.py:755
+#: common/lib/capa/capa/inputtypes.py:767
 msgid ""
 "Your answer has been submitted. As soon as your submission is graded, this "
 "message will be replaced with the grader's feedback."
 msgstr "回答が投稿されました。投稿が評価され次第、このメッセージは評価者のフィードバックに変更されます。"
 
-#: common/lib/capa/capa/inputtypes.py:791
+#: common/lib/capa/capa/inputtypes.py:803
 msgid ""
 "Submitted. As soon as a response is returned, this message will be replaced "
 "by that feedback."
 msgstr "投稿されました。応答があり次第、このメッセージはフィードバックに変更されます。"
+
+#: common/lib/capa/capa/inputtypes.py:842
+#, python-brace-format
+msgid "No response from Xqueue within {xqueue_timeout} seconds. Aborted."
+msgstr "{xqueue_timeout}秒間Xqueueからの応答がありません。中断しました。"
 
 #: common/lib/capa/capa/responsetypes.py:314
 #, python-brace-format
@@ -822,50 +837,106 @@ msgstr "(ソースコード行が利用できません)"
 msgid "See XML source line {sourcenum}."
 msgstr "XMLソースを確認してください　行番号： {sourcenum}"
 
-#: common/lib/capa/capa/responsetypes.py:1136
-#: common/lib/capa/capa/responsetypes.py:1168
+#. Translators: 'unmask_name' is a method name and should not be translated.
+#: common/lib/capa/capa/responsetypes.py:848
+msgid "unmask_name called on response that is not masked"
+msgstr "unmask_nameがマスクされていない応答に呼ばれました。"
+
+#. Translators: 'shuffle' and 'answer-pool' are attribute names and should not
+#. be translated.
+#: common/lib/capa/capa/responsetypes.py:878
+msgid "Do not use shuffle and answer-pool at the same time"
+msgstr "shuffleとanswer-poolを同時に使用しないでください。"
+
+#. Translators: 'answer-pool' is an attribute name and should not be
+#. translated.
+#: common/lib/capa/capa/responsetypes.py:961
+msgid "answer-pool value should be an integer"
+msgstr "answer-poolは正の整数である必要があります。"
+
+#. Translators: 'Choicegroup' is an input type and should not be translated.
+#: common/lib/capa/capa/responsetypes.py:1028
+msgid "Choicegroup must include at least 1 correct and 1 incorrect choice"
+msgstr "choicegroupは1つ以上の正解と1つ以上の不正解の選択肢が必要です。"
+
+#: common/lib/capa/capa/responsetypes.py:1148
+#: common/lib/capa/capa/responsetypes.py:1180
 msgid "There was a problem with the staff answer to this problem."
 msgstr "この問題に対するスタッフの回答に問題があります。"
 
-#: common/lib/capa/capa/responsetypes.py:1181
+#: common/lib/capa/capa/responsetypes.py:1193
 #, python-brace-format
 msgid "Could not interpret '{student_answer}' as a number."
 msgstr " '{student_answer}' を数字として受け取ることができません。"
 
-#: common/lib/capa/capa/responsetypes.py:1190
+#: common/lib/capa/capa/responsetypes.py:1202
 #, python-brace-format
 msgid "You may not use variables ({bad_variables}) in numerical problems."
 msgstr "入力値 ({bad_variables}) は数的な問題では使用することが出来ません。"
 
-#: common/lib/capa/capa/responsetypes.py:1199
+#: common/lib/capa/capa/responsetypes.py:1211
 #, python-brace-format
 msgid "factorial function evaluated outside its domain:'{student_answer}'"
 msgstr "階乗関数が領域外で評価されました：'{student_answer}'"
 
-#: common/lib/capa/capa/responsetypes.py:1206
+#: common/lib/capa/capa/responsetypes.py:1218
 #, python-brace-format
 msgid "Invalid math syntax: '{student_answer}'"
 msgstr "数式構文に誤りがあります：'{student_answer}'"
 
-#: common/lib/capa/capa/responsetypes.py:1213
+#: common/lib/capa/capa/responsetypes.py:1225
 msgid "You may not use complex numbers in range tolerance problems"
 msgstr "範囲指定の問題では、複素数は使用することが出来ません。"
 
-#: common/lib/capa/capa/responsetypes.py:1218
+#: common/lib/capa/capa/responsetypes.py:1230
 msgid ""
 "There was a problem with the staff answer to this problem: complex boundary."
 msgstr "この問題に対してスタッフの回答に問題がありました：複雑な境界"
 
-#: common/lib/capa/capa/responsetypes.py:1220
+#: common/lib/capa/capa/responsetypes.py:1232
 msgid ""
 "There was a problem with the staff answer to this problem: empty boundary."
 msgstr "この問題に対してスタッフの回答に問題がありました：空の境界"
 
-#: common/lib/capa/capa/responsetypes.py:1663
+#: common/lib/capa/capa/responsetypes.py:1391
+msgid "error"
+msgstr "エラー"
+
+#: common/lib/capa/capa/responsetypes.py:1418
+msgid "or"
+msgstr "もしくは"
+
+#: common/lib/capa/capa/responsetypes.py:1525
+#, python-brace-format
+msgid ""
+"[courseware.capa.responsetypes.customresponse] error getting student answer from {student_answers}\n"
+" idset = {idset}, error = {err}"
+msgstr "[courseware.capa.responsetypes.customresponse] error getting student answer from {student_answers}\n idset = {idset}, error = {err}"
+
+#: common/lib/capa/capa/responsetypes.py:1546
+msgid "No answer entered!"
+msgstr "解答が入力されていません！"
+
+#: common/lib/capa/capa/responsetypes.py:1689
 msgid "CustomResponse: check function returned an invalid dictionary!"
 msgstr "カスタム応答: チェック処理が無効な辞書を応答しました！"
 
-#: common/lib/capa/capa/responsetypes.py:1933
+#. Translators: 'SymbolicResponse' is a problem type and should not be
+#. translated.
+#: common/lib/capa/capa/responsetypes.py:1799
+#, python-brace-format
+msgid "oops in SymbolicResponse (cfn) error {error_msg}"
+msgstr "SymbolicResponse (cfn) にエラーがあります {error_msg}"
+
+#: common/lib/capa/capa/responsetypes.py:1887
+msgid "No answer provided."
+msgstr "解答がありません。"
+
+#: common/lib/capa/capa/responsetypes.py:1906
+msgid "Error checking problem: no external queueing server is configured."
+msgstr "問題の確認エラー：外部キューサーバーが設定されていません。"
+
+#: common/lib/capa/capa/responsetypes.py:1966
 #, python-brace-format
 msgid ""
 "Unable to deliver your submission to grader (Reason: {error_msg}). Please "
@@ -877,45 +948,45 @@ msgstr "評価処理にあなたの投稿を送信することが出来ません
 #. problems
 #. are sent to, either to be machine-graded, peer-graded, or instructor-
 #. graded.
-#: common/lib/capa/capa/responsetypes.py:1963
+#: common/lib/capa/capa/responsetypes.py:1996
 #: common/lib/xmodule/xmodule/open_ended_grading_classes/open_ended_module.py:321
 msgid "Invalid grader reply. Please contact the course staff."
 msgstr "無効な評価処理の応答です。コーススタッフに連絡してください。"
 
-#: common/lib/capa/capa/responsetypes.py:2296
+#: common/lib/capa/capa/responsetypes.py:2329
 #, python-brace-format
 msgid "Invalid input: {bad_input} not permitted in answer."
 msgstr "無効な入力： {bad_input} は回答として許可されていません。"
 
-#: common/lib/capa/capa/responsetypes.py:2311
+#: common/lib/capa/capa/responsetypes.py:2344
 #, python-brace-format
 msgid ""
 "factorial function not permitted in answer for this problem. Provided answer"
 " was: {bad_input}"
 msgstr "階乗関数はこの問題の回答では許可されていません。入力された回答：{bad_input}"
 
-#: common/lib/capa/capa/responsetypes.py:2318
+#: common/lib/capa/capa/responsetypes.py:2351
 #, python-brace-format
 msgid "Invalid input: Could not parse '{bad_input}' as a formula."
 msgstr "無効な入力：'{bad_input}' は式として処理することが出来ません。"
 
-#: common/lib/capa/capa/responsetypes.py:2326
+#: common/lib/capa/capa/responsetypes.py:2359
 #, python-brace-format
 msgid "Invalid input: Could not parse '{bad_input}' as a formula"
 msgstr "無効な入力：'{bad_input}' は式として処理することが出来ません。"
 
 #. Translators: 'SchematicResponse' is a problem type and should not be
 #. translated.
-#: common/lib/capa/capa/responsetypes.py:2469
+#: common/lib/capa/capa/responsetypes.py:2502
 #, python-brace-format
 msgid "Error in evaluating SchematicResponse. The error was: {error_msg}"
 msgstr "回路図の評価に問題があります。 エラー内容：{error_msg}"
 
-#: common/lib/capa/capa/responsetypes.py:3041
+#: common/lib/capa/capa/responsetypes.py:3074
 msgid "The Staff answer could not be interpreted as a number."
 msgstr "スタッフの回答は数字で受け取ることは出来ません。"
 
-#: common/lib/capa/capa/responsetypes.py:3055
+#: common/lib/capa/capa/responsetypes.py:3088
 #, python-brace-format
 msgid "Could not interpret '{given_answer}' as a number."
 msgstr "'{given_answer}' を数字として受け取ることができません。"
@@ -1032,24 +1103,24 @@ msgid ""
 "refresh your page."
 msgstr "問題の状態がページをした時点より変更されています。ページをリフレッシュしてください。"
 
-#: common/lib/xmodule/xmodule/course_module.py:465
+#: common/lib/xmodule/xmodule/course_module.py:468
 msgid "General"
 msgstr "一般"
 
 #. Translators: TBD stands for 'To Be Determined' and is used when a course
 #. does not yet have an announced start date.
-#: common/lib/xmodule/xmodule/course_module.py:867
+#: common/lib/xmodule/xmodule/course_module.py:876
 msgid "TBD"
 msgstr "未定"
 
-#: common/lib/xmodule/xmodule/lti_module.py:229
+#: common/lib/xmodule/xmodule/lti_module.py:322
 #, python-brace-format
 msgid ""
 "Could not parse custom parameter: {custom_parameter}. Should be \"x=y\" "
 "string."
 msgstr "カスタムパラメータを解析することができませんでした。\"x=y\" の文字列である必要があります。：{custom_parameter} "
 
-#: common/lib/xmodule/xmodule/lti_module.py:661
+#: common/lib/xmodule/xmodule/lti_module.py:758
 #, python-brace-format
 msgid ""
 "Could not parse LTI passport: {lti_passport}. Should be \"id:key:secret\" "
@@ -1065,7 +1136,7 @@ msgstr "学習する"
 #. Translators: "Course Info" is the name of the course's information and
 #. updates page
 #: common/lib/xmodule/xmodule/tabs.py:293
-#: lms/djangoapps/instructor/views/instructor_dashboard.py:112
+#: lms/djangoapps/instructor/views/instructor_dashboard.py:114
 msgid "Course Info"
 msgstr "お知らせ"
 
@@ -1342,9 +1413,21 @@ msgstr "SubRip字幕ファイルの解析に問題があります。"
 msgid "{exception_message}: Can't find uploaded transcripts: {user_filename}"
 msgstr "{exception_message}：アップロードされた字幕が見つかりません： {user_filename}"
 
-#: common/lib/xmodule/xmodule/video_module/video_module.py:352
-msgid "A YouTube URL or a link to a file hosted anywhere on the web."
-msgstr "YouTubeのURL、もしくは、ウェブ上のどこかでホスティングされているファイルへのリンク"
+#: common/lib/xmodule/xmodule/video_module/video_module.py:360
+msgid ""
+"The URL for your video. This can be a YouTube URL or a link to an .mp4, "
+".ogg, or .webm video file hosted elsewhere on the Internet."
+msgstr "ビデオのURL。YouTubeのURL またはインターネットのどこかにホストされた.mp4, .ogg, .webm ビデオファイルへのリンクを指定します。"
+
+#. Translators: This is a type of file used for captioning in the video
+#. player.
+#: common/lib/xmodule/xmodule/video_module/video_xfields.py:128
+msgid "SubRip (.srt) file"
+msgstr "SubRip (.srt) ファイル"
+
+#: common/lib/xmodule/xmodule/video_module/video_xfields.py:129
+msgid "Text (.txt) file"
+msgstr "Text (.txt)ファイル"
 
 #: common/static/js/vendor/mathjax-MathJax-c9db6ac/docs/source/mjtheme/layout.html:23
 msgid "Navigation"
@@ -1427,7 +1510,7 @@ msgstr "ユーザー {username} は存在しません。"
 msgid "User {username} has never accessed problem {location}"
 msgstr "ユーザー {username} は問題 {location} をアクセスしたことがありません。 "
 
-#: lms/djangoapps/courseware/features/video.py:434
+#: lms/djangoapps/courseware/features/video.py:432
 msgid "ERROR: No playable video sources found!"
 msgstr "エラー：動画が見つかりません"
 
@@ -1474,134 +1557,134 @@ msgstr "指定されたリモートブランチは利用できません。"
 msgid "Unable to switch to specified branch. Please check your branch name."
 msgstr "指定のブランチにスイッチできません。ブランチ名を確認してください。"
 
-#: lms/djangoapps/dashboard/sysadmin.py:139
+#: lms/djangoapps/dashboard/sysadmin.py:140
 #, python-brace-format
 msgid "Failed in authenticating {0}, error {1}\n"
 msgstr "{0}の認証中に失敗しました（エラー{1}）\n"
 
-#: lms/djangoapps/dashboard/sysadmin.py:143
+#: lms/djangoapps/dashboard/sysadmin.py:144
 #, python-brace-format
 msgid "Failed in authenticating {0}\n"
 msgstr "{0}の認証中に失敗しました。\n"
 
-#: lms/djangoapps/dashboard/sysadmin.py:144
-#: lms/djangoapps/dashboard/tests/test_sysadmin.py:271
+#: lms/djangoapps/dashboard/sysadmin.py:145
+#: lms/djangoapps/dashboard/tests/test_sysadmin.py:272
 msgid "fixed password"
 msgstr "修正されたパスワード"
 
-#: lms/djangoapps/dashboard/sysadmin.py:149
-#: lms/djangoapps/dashboard/tests/test_sysadmin.py:280
+#: lms/djangoapps/dashboard/sysadmin.py:150
+#: lms/djangoapps/dashboard/tests/test_sysadmin.py:281
 msgid "All ok!"
 msgstr "整備完了。"
 
-#: lms/djangoapps/dashboard/sysadmin.py:156
-#: lms/djangoapps/dashboard/sysadmin.py:228
-#: lms/djangoapps/dashboard/tests/test_sysadmin.py:162
-#: lms/djangoapps/dashboard/tests/test_sysadmin.py:193
+#: lms/djangoapps/dashboard/sysadmin.py:157
+#: lms/djangoapps/dashboard/sysadmin.py:229
+#: lms/djangoapps/dashboard/tests/test_sysadmin.py:163
+#: lms/djangoapps/dashboard/tests/test_sysadmin.py:194
 msgid "Must provide username"
 msgstr "ユーザー名は必須です。"
 
-#: lms/djangoapps/dashboard/sysadmin.py:158
-#: lms/djangoapps/dashboard/tests/test_sysadmin.py:168
+#: lms/djangoapps/dashboard/sysadmin.py:159
+#: lms/djangoapps/dashboard/tests/test_sysadmin.py:169
 msgid "Must provide full name"
 msgstr "氏名は必須です。"
 
-#: lms/djangoapps/dashboard/sysadmin.py:169
+#: lms/djangoapps/dashboard/sysadmin.py:170
 msgid "email must end in"
 msgstr "メールは必須です。"
 
-#: lms/djangoapps/dashboard/sysadmin.py:174
+#: lms/djangoapps/dashboard/sysadmin.py:175
 #, python-brace-format
 msgid "Failed - email {0} already exists as external_id"
 msgstr "失敗：「{0}」は既に外部IDに存在します。"
 
-#: lms/djangoapps/dashboard/sysadmin.py:180
+#: lms/djangoapps/dashboard/sysadmin.py:181
 msgid "Password must be supplied if not using certificates"
 msgstr "パスワードは認証有無に関わらず必須です。"
 
-#: lms/djangoapps/dashboard/sysadmin.py:185
+#: lms/djangoapps/dashboard/sysadmin.py:186
 msgid "email address required (not username)"
 msgstr "メールアドレスは必須です(ユーザー名ではない)"
 
-#: lms/djangoapps/dashboard/sysadmin.py:194
+#: lms/djangoapps/dashboard/sysadmin.py:195
 #, python-brace-format
 msgid "Oops, failed to create user {0}, IntegrityError"
 msgstr "内部エラー：ユーザー「{0}」の生成に失敗しました。"
 
-#: lms/djangoapps/dashboard/sysadmin.py:221
+#: lms/djangoapps/dashboard/sysadmin.py:222
 #, python-brace-format
 msgid "User {0} created successfully!"
 msgstr "ユーザー「{0}」の生成に成功しました。"
 
-#: lms/djangoapps/dashboard/sysadmin.py:233
+#: lms/djangoapps/dashboard/sysadmin.py:234
 #, python-brace-format
 msgid "Cannot find user with email address {0}"
 msgstr "メールアドレス「{0}」ではユーザーを見つけられません。"
 
-#: lms/djangoapps/dashboard/sysadmin.py:239
+#: lms/djangoapps/dashboard/sysadmin.py:240
 #, python-brace-format
 msgid "Cannot find user with username {0} - {1}"
 msgstr "ユーザー名「{0} - {1}」ではユーザーを見つけられません。"
 
-#: lms/djangoapps/dashboard/sysadmin.py:243
+#: lms/djangoapps/dashboard/sysadmin.py:244
 #, python-brace-format
 msgid "Deleted user {0}"
 msgstr "ユーザー「{0}」を削除しました。"
 
-#: lms/djangoapps/dashboard/sysadmin.py:251
+#: lms/djangoapps/dashboard/sysadmin.py:252
 msgid "Statistic"
 msgstr "統計"
 
-#: lms/djangoapps/dashboard/sysadmin.py:251
+#: lms/djangoapps/dashboard/sysadmin.py:252
 msgid "Value"
 msgstr "値"
 
-#: lms/djangoapps/dashboard/sysadmin.py:252
+#: lms/djangoapps/dashboard/sysadmin.py:253
 msgid "Site statistics"
 msgstr "サイト統計"
 
-#: lms/djangoapps/dashboard/sysadmin.py:253
+#: lms/djangoapps/dashboard/sysadmin.py:254
 msgid "Total number of users"
 msgstr "ユーザー総数"
 
-#: lms/djangoapps/dashboard/sysadmin.py:257
+#: lms/djangoapps/dashboard/sysadmin.py:258
 msgid "Courses loaded in the modulestore"
 msgstr "モジュールストアで講座が読み込まれました。"
 
-#: lms/djangoapps/dashboard/sysadmin.py:291
-#: lms/djangoapps/dashboard/sysadmin.py:648
-#: lms/djangoapps/dashboard/tests/test_sysadmin.py:373
+#: lms/djangoapps/dashboard/sysadmin.py:292
+#: lms/djangoapps/dashboard/sysadmin.py:650
+#: lms/djangoapps/dashboard/tests/test_sysadmin.py:374
 msgid "username"
 msgstr "ユーザー名"
 
-#: lms/djangoapps/dashboard/sysadmin.py:291
-#: lms/djangoapps/dashboard/sysadmin.py:649
-#: lms/djangoapps/dashboard/tests/test_sysadmin.py:374
+#: lms/djangoapps/dashboard/sysadmin.py:292
+#: lms/djangoapps/dashboard/sysadmin.py:651
+#: lms/djangoapps/dashboard/tests/test_sysadmin.py:375
 msgid "email"
 msgstr "メールアドレス"
 
-#: lms/djangoapps/dashboard/sysadmin.py:298
+#: lms/djangoapps/dashboard/sysadmin.py:299
 msgid "Repair Results"
 msgstr "結果を修正する"
 
-#: lms/djangoapps/dashboard/sysadmin.py:307
+#: lms/djangoapps/dashboard/sysadmin.py:308
 msgid "Create User Results"
 msgstr "ユーザーの学習成果を生成。"
 
-#: lms/djangoapps/dashboard/sysadmin.py:312
+#: lms/djangoapps/dashboard/sysadmin.py:313
 msgid "Delete User Results"
 msgstr "ユーザーの学習結果を削除。"
 
-#: lms/djangoapps/dashboard/sysadmin.py:356
-#: lms/djangoapps/dashboard/tests/test_sysadmin.py:291
+#: lms/djangoapps/dashboard/sysadmin.py:361
+#: lms/djangoapps/dashboard/tests/test_sysadmin.py:292
 msgid "The git repo location should end with '.git', and be a valid url"
 msgstr "gitのレポジトリロケーションには'.git'で終わっている、また、適正なURLである必要があります。"
 
-#: lms/djangoapps/dashboard/sysadmin.py:407
+#: lms/djangoapps/dashboard/sysadmin.py:412
 msgid "Added Course"
 msgstr "追加された講座"
 
-#: lms/djangoapps/dashboard/sysadmin.py:419
+#: lms/djangoapps/dashboard/sysadmin.py:424
 msgid ""
 "Refusing to import. GIT_IMPORT_WITH_XMLMODULESTORE is not turned on, and it "
 "is generally not safe to import into an XMLModuleStore with multithreaded. "
@@ -1609,8 +1692,8 @@ msgid ""
 "is a development environment."
 msgstr "インポートを拒否するには「GIT_IMPORT_WITH_XMLMODULESTORE」がONではいけません。そして、マルチスレッドでXMLModuleStoreへインポートを行うことは一般的に安全とは言えません。開発環境でないのであれば、おすすめはXMLModuleStoreの代わりにMongoDBベースのインポートを可能とすることです。"
 
-#: lms/djangoapps/dashboard/sysadmin.py:427
-#: lms/djangoapps/dashboard/tests/test_sysadmin.py:354
+#: lms/djangoapps/dashboard/sysadmin.py:432
+#: lms/djangoapps/dashboard/tests/test_sysadmin.py:355
 #, python-brace-format
 msgid ""
 "The course {0} already exists in the data directory! (reloading anyway)"
@@ -1620,89 +1703,89 @@ msgstr "講座「{0} 」はデータディレクトリに既に存在します�
 #. the source git repository. Clone occurs if this is brand
 #. new, and pull is when it is being updated from the
 #. source.
-#: lms/djangoapps/dashboard/sysadmin.py:445
+#: lms/djangoapps/dashboard/sysadmin.py:450
 msgid ""
 "Unable to clone or pull repository. Please check your url. Output was: {0!r}"
 msgstr "レポジトリのcloneもしくはpullができません。URLを確認してください。出力結果は：{0!r}"
 
-#: lms/djangoapps/dashboard/sysadmin.py:450
+#: lms/djangoapps/dashboard/sysadmin.py:455
 #, python-brace-format
 msgid "Failed to clone repository to {0}"
 msgstr "「{0}」へレポジトリをcloneすることに失敗しました。"
 
-#: lms/djangoapps/dashboard/sysadmin.py:461
+#: lms/djangoapps/dashboard/sysadmin.py:466
 #, python-brace-format
 msgid "Successfully switched to branch: {branch_name}"
 msgstr "次のブランチへのスイッチに成功：{branch_name}"
 
-#: lms/djangoapps/dashboard/sysadmin.py:470
+#: lms/djangoapps/dashboard/sysadmin.py:475
 #, python-brace-format
 msgid "Loaded course {0} {1}<br/>Errors:"
 msgstr "講座「{0} {1}」を読み込みました。<br/>エラー："
 
-#: lms/djangoapps/dashboard/sysadmin.py:498
-#: lms/djangoapps/dashboard/sysadmin.py:614
+#: lms/djangoapps/dashboard/sysadmin.py:502
+#: lms/djangoapps/dashboard/sysadmin.py:616
 msgid "Course Name"
 msgstr "講座名"
 
-#: lms/djangoapps/dashboard/sysadmin.py:498
+#: lms/djangoapps/dashboard/sysadmin.py:502
 msgid "Directory/ID"
 msgstr "ディレクトリ/ID"
 
-#: lms/djangoapps/dashboard/sysadmin.py:499
+#: lms/djangoapps/dashboard/sysadmin.py:503
 msgid "Git Commit"
 msgstr "Git Commit"
 
-#: lms/djangoapps/dashboard/sysadmin.py:499
+#: lms/djangoapps/dashboard/sysadmin.py:503
 msgid "Last Change"
 msgstr "最終変更"
 
-#: lms/djangoapps/dashboard/sysadmin.py:500
+#: lms/djangoapps/dashboard/sysadmin.py:504
 msgid "Last Editor"
 msgstr "最終の編集者"
 
-#: lms/djangoapps/dashboard/sysadmin.py:501
+#: lms/djangoapps/dashboard/sysadmin.py:505
 msgid "Information about all courses"
 msgstr "全講座についての情報"
 
-#: lms/djangoapps/dashboard/sysadmin.py:547
+#: lms/djangoapps/dashboard/sysadmin.py:550
 #, python-brace-format
 msgid "Error - cannot get course with ID {0}<br/><pre>{1}</pre>"
 msgstr "エラー：講座ID「{0}」を取得できません。<br/><pre>{1}</pre>"
 
-#: lms/djangoapps/dashboard/sysadmin.py:577
+#: lms/djangoapps/dashboard/sysadmin.py:580
 msgid "Deleted"
 msgstr "削除済み"
 
-#: lms/djangoapps/dashboard/sysadmin.py:614
-#: lms/djangoapps/dashboard/sysadmin.py:647
-#: lms/djangoapps/dashboard/tests/test_sysadmin.py:373
+#: lms/djangoapps/dashboard/sysadmin.py:616
+#: lms/djangoapps/dashboard/sysadmin.py:649
+#: lms/djangoapps/dashboard/tests/test_sysadmin.py:374
 msgid "course_id"
 msgstr "講座ID"
 
-#: lms/djangoapps/dashboard/sysadmin.py:615
+#: lms/djangoapps/dashboard/sysadmin.py:617
 msgid "# enrolled"
 msgstr "# 受講登録済"
 
-#: lms/djangoapps/dashboard/sysadmin.py:615
+#: lms/djangoapps/dashboard/sysadmin.py:617
 msgid "# staff"
 msgstr "# スタッフ"
 
-#: lms/djangoapps/dashboard/sysadmin.py:616
+#: lms/djangoapps/dashboard/sysadmin.py:618
 msgid "instructors"
 msgstr "講師"
 
-#: lms/djangoapps/dashboard/sysadmin.py:617
+#: lms/djangoapps/dashboard/sysadmin.py:619
 msgid "Enrollment information for all courses"
 msgstr "全講座の受講登録情報"
 
-#: lms/djangoapps/dashboard/sysadmin.py:648
-#: lms/djangoapps/dashboard/tests/test_sysadmin.py:373
+#: lms/djangoapps/dashboard/sysadmin.py:650
+#: lms/djangoapps/dashboard/tests/test_sysadmin.py:374
 msgid "role"
 msgstr "権限"
 
-#: lms/djangoapps/dashboard/sysadmin.py:649
-#: lms/djangoapps/dashboard/tests/test_sysadmin.py:374
+#: lms/djangoapps/dashboard/sysadmin.py:651
+#: lms/djangoapps/dashboard/tests/test_sysadmin.py:375
 msgid "full_name"
 msgstr "フルネーム"
 
@@ -1712,23 +1795,23 @@ msgid ""
 " and optionally specified directory."
 msgstr "指定のgitレポジトリとオプション指定のブランチをモジュールストア、および指定のディレクトリにインポートする。"
 
-#: lms/djangoapps/dashboard/tests/test_sysadmin.py:200
+#: lms/djangoapps/dashboard/tests/test_sysadmin.py:201
 msgid "Cannot find user with email address"
 msgstr "メールアドレスではユーザーが見つかりません。"
 
-#: lms/djangoapps/dashboard/tests/test_sysadmin.py:206
+#: lms/djangoapps/dashboard/tests/test_sysadmin.py:207
 msgid "Cannot find user with username"
 msgstr "ユーザー名ではユーザーが見つかりません。"
 
-#: lms/djangoapps/dashboard/tests/test_sysadmin.py:269
+#: lms/djangoapps/dashboard/tests/test_sysadmin.py:270
 msgid "Failed in authenticating"
 msgstr "認証にて失敗。"
 
-#: lms/djangoapps/dashboard/tests/test_sysadmin.py:297
+#: lms/djangoapps/dashboard/tests/test_sysadmin.py:298
 msgid "Unable to clone or pull repository"
 msgstr "レポジトリのcloneもしくはpullに失敗。"
 
-#: lms/djangoapps/dashboard/tests/test_sysadmin.py:331
+#: lms/djangoapps/dashboard/tests/test_sysadmin.py:332
 msgid "Error - cannot get course with ID"
 msgstr "エラー：IDで講座を取得できません。"
 
@@ -1741,38 +1824,38 @@ msgid "Close thread"
 msgstr "閉じられたスレッド"
 
 #: lms/djangoapps/django_comment_client/base/views.py:87
-#: lms/djangoapps/django_comment_client/base/views.py:148
+#: lms/djangoapps/django_comment_client/base/views.py:149
 msgid "Title can't be empty"
 msgstr "件名は空白ではいけません。"
 
 #: lms/djangoapps/django_comment_client/base/views.py:89
-#: lms/djangoapps/django_comment_client/base/views.py:150
-#: lms/djangoapps/django_comment_client/base/views.py:168
-#: lms/djangoapps/django_comment_client/base/views.py:237
+#: lms/djangoapps/django_comment_client/base/views.py:151
+#: lms/djangoapps/django_comment_client/base/views.py:170
+#: lms/djangoapps/django_comment_client/base/views.py:239
 msgid "Body can't be empty"
 msgstr "本文は空白ではいけません。"
 
-#: lms/djangoapps/django_comment_client/base/views.py:210
-#: lms/djangoapps/django_comment_client/base/views.py:288
+#: lms/djangoapps/django_comment_client/base/views.py:212
+#: lms/djangoapps/django_comment_client/base/views.py:290
 msgid "Comment level too deep"
 msgstr "コメントレベルが深過ぎます"
 
-#: lms/djangoapps/django_comment_client/base/views.py:549
+#: lms/djangoapps/django_comment_client/base/views.py:551
 #, python-format
 msgid "allowed file types are '%(file_types)s'"
 msgstr "'%(file_types)s' 形式のファイルが利用できます"
 
-#: lms/djangoapps/django_comment_client/base/views.py:564
+#: lms/djangoapps/django_comment_client/base/views.py:566
 #, python-format
 msgid "maximum upload file size is %(file_size)sK"
 msgstr "%(file_size)sKまでのファイルがアップロードできます"
 
-#: lms/djangoapps/django_comment_client/base/views.py:573
+#: lms/djangoapps/django_comment_client/base/views.py:575
 msgid ""
 "Error uploading file. Please contact the site administrator. Thank you."
 msgstr "ファイルアップロードに失敗しました。システム管理者にご連絡ください。申し訳ございません。"
 
-#: lms/djangoapps/django_comment_client/base/views.py:576
+#: lms/djangoapps/django_comment_client/base/views.py:578
 msgid "Good"
 msgstr "良い"
 
@@ -1780,430 +1863,439 @@ msgstr "良い"
 msgid "All Groups"
 msgstr "全てのグループ"
 
-#: lms/djangoapps/instructor/views/api.py:82
+#: lms/djangoapps/instructor/views/api.py:87
 msgid "User does not exist."
 msgstr "ユーザが存在しません"
 
-#: lms/djangoapps/instructor/views/api.py:88
+#: lms/djangoapps/instructor/views/api.py:93
 msgid "Task is already running."
 msgstr "タスクは既に実行中です。"
 
-#: lms/djangoapps/instructor/views/api.py:545
-#: lms/djangoapps/instructor/views/legacy.py:987
-#: lms/djangoapps/instructor/views/legacy.py:1061
-#: lms/djangoapps/instructor/views/legacy.py:1254
-#: lms/djangoapps/instructor/views/tools.py:173
+#: lms/djangoapps/instructor/views/api.py:568
+#: lms/djangoapps/instructor/views/legacy.py:1016
+#: lms/djangoapps/instructor/views/legacy.py:1090
+#: lms/djangoapps/instructor/views/legacy.py:1283
+#: lms/djangoapps/instructor/views/tools.py:196
 msgid "Username"
 msgstr "ユーザー名"
 
-#: lms/djangoapps/instructor/views/api.py:546
+#: lms/djangoapps/instructor/views/api.py:569
 msgid "Name"
 msgstr "名前"
 
-#: lms/djangoapps/instructor/views/api.py:547
-#: lms/djangoapps/instructor/views/instructor_dashboard.py:215
+#: lms/djangoapps/instructor/views/api.py:570
+#: lms/djangoapps/instructor/views/instructor_dashboard.py:225
 msgid "Email"
 msgstr "メールアドレス"
 
-#: lms/djangoapps/instructor/views/api.py:548
+#: lms/djangoapps/instructor/views/api.py:571
 msgid "Language"
 msgstr "言語"
 
-#: lms/djangoapps/instructor/views/api.py:549
+#: lms/djangoapps/instructor/views/api.py:572
 msgid "Location"
 msgstr "場所"
 
-#: lms/djangoapps/instructor/views/api.py:550
+#: lms/djangoapps/instructor/views/api.py:573
 msgid "Birth Year"
 msgstr "誕生年"
 
-#: lms/djangoapps/instructor/views/api.py:551
+#: lms/djangoapps/instructor/views/api.py:574
 msgid "Gender"
 msgstr "性別"
 
-#: lms/djangoapps/instructor/views/api.py:552
+#: lms/djangoapps/instructor/views/api.py:575
 msgid "Level of Education"
 msgstr "教育レベル"
 
-#: lms/djangoapps/instructor/views/api.py:553
+#: lms/djangoapps/instructor/views/api.py:576
 msgid "Mailing Address"
 msgstr "住所"
 
-#: lms/djangoapps/instructor/views/api.py:554
+#: lms/djangoapps/instructor/views/api.py:577
 msgid "Goals"
 msgstr "目標"
 
-#: lms/djangoapps/instructor/views/api.py:837
+#: lms/djangoapps/instructor/views/api.py:765
+msgid "Module does not exist."
+msgstr "モジュールが存在しません。"
+
+#: lms/djangoapps/instructor/views/api.py:768
+#: lms/djangoapps/instructor/views/legacy.py:374
+msgid "An error occurred while deleting the score."
+msgstr "得点を削除する際にエラーが発生しました。"
+
+#: lms/djangoapps/instructor/views/api.py:864
 msgid "Complete"
 msgstr "完了"
 
-#: lms/djangoapps/instructor/views/api.py:837
+#: lms/djangoapps/instructor/views/api.py:864
 msgid "Incomplete"
 msgstr "完了できず"
 
-#: lms/djangoapps/instructor/views/api.py:929
+#: lms/djangoapps/instructor/views/api.py:956
 msgid ""
 "Your grade report is being generated! You can view the status of the "
 "generation task in the 'Pending Instructor Tasks' section."
 msgstr "成績レポートが生成されました。「保留中の講師タスク」にて、生成タスクの状況を確認することができます。"
 
-#: lms/djangoapps/instructor/views/api.py:932
+#: lms/djangoapps/instructor/views/api.py:959
 msgid ""
 "A grade report generation task is already in progress. Check the 'Pending "
 "Instructor Tasks' table for the status of the task. When completed, the "
 "report will be available for download in the table below."
 msgstr "成績レポートの生成タスクは現在進行中です。「保留中の講師タスク」にて、生成タスクの状況を確認することができます。完了時には、成績レポートはこのテーブル下部からダウンロードできるようになるでしょう。"
 
-#: lms/djangoapps/instructor/views/api.py:1173
+#: lms/djangoapps/instructor/views/api.py:1207
 #, python-brace-format
 msgid "Successfully changed due date for student {0} for {1} to {2}"
 msgstr "学習者：{0}の期日を{1} から {2} に変更しました。"
 
-#: lms/djangoapps/instructor/views/api.py:1193
+#: lms/djangoapps/instructor/views/api.py:1227
 #, python-brace-format
 msgid "Successfully reset due date for student {0} for {1} to {2}"
 msgstr "学習者：{0}の期日を{1} から {2} にリセットしました。"
 
-#: lms/djangoapps/instructor/views/instructor_dashboard.py:144
+#: lms/djangoapps/instructor/views/instructor_dashboard.py:146
 msgid "Membership"
 msgstr "メンバシップ"
 
-#: lms/djangoapps/instructor/views/instructor_dashboard.py:161
+#: lms/djangoapps/instructor/views/instructor_dashboard.py:169
 msgid "Student Admin"
 msgstr "受講者管理"
 
-#: lms/djangoapps/instructor/views/instructor_dashboard.py:176
+#: lms/djangoapps/instructor/views/instructor_dashboard.py:186
 msgid "Extensions"
 msgstr "拡張"
 
-#: lms/djangoapps/instructor/views/instructor_dashboard.py:191
+#: lms/djangoapps/instructor/views/instructor_dashboard.py:201
 msgid "Data Download"
 msgstr "データダウンロード"
 
-#: lms/djangoapps/instructor/views/instructor_dashboard.py:229
+#: lms/djangoapps/instructor/views/instructor_dashboard.py:239
 msgid "Analytics"
 msgstr "分析"
 
-#: lms/djangoapps/instructor/views/legacy.py:119
+#: lms/djangoapps/instructor/views/legacy.py:128
 msgid "Course Statistics At A Glance"
 msgstr "講座統計概要"
 
-#: lms/djangoapps/instructor/views/legacy.py:188
+#: lms/djangoapps/instructor/views/legacy.py:197
 msgid "Found a single student.  "
 msgstr "一人の学生を発見する"
 
-#: lms/djangoapps/instructor/views/legacy.py:192
+#: lms/djangoapps/instructor/views/legacy.py:201
 msgid "Couldn't find student with that email or username."
 msgstr "emalまたはusernameで学生を見つけることができませんでした．"
 
-#: lms/djangoapps/instructor/views/legacy.py:231
+#: lms/djangoapps/instructor/views/legacy.py:240
 #, python-brace-format
 msgid "List of students enrolled in {course_id}"
 msgstr "{course_id}を履修している受講生の一覧"
 
-#: lms/djangoapps/instructor/views/legacy.py:237
+#: lms/djangoapps/instructor/views/legacy.py:246
 #, python-brace-format
 msgid "Summary Grades of students enrolled in {course_id}"
 msgstr "{course_id}を履修している受講者の評価概要"
 
-#: lms/djangoapps/instructor/views/legacy.py:244
+#: lms/djangoapps/instructor/views/legacy.py:253
 #, python-brace-format
 msgid "Raw Grades of students enrolled in {course_id}"
 msgstr "{course_id}の受講者の評価の値"
 
-#: lms/djangoapps/instructor/views/legacy.py:273
+#: lms/djangoapps/instructor/views/legacy.py:282
 #, python-brace-format
 msgid "Failed to create a background task for rescoring \"{problem_url}\"."
 msgstr "\"{problem_url}\"の再採点バックグラウンドタスクの作成に失敗しました。"
 
-#: lms/djangoapps/instructor/views/legacy.py:281
+#: lms/djangoapps/instructor/views/legacy.py:290
 #, python-brace-format
 msgid ""
 "Failed to create a background task for rescoring \"{problem_url}\": problem "
 "not found."
 msgstr "\"{problem_url}\"の再採点バックグラウンドタスクの作成に失敗しました。問題がありません。"
 
-#: lms/djangoapps/instructor/views/legacy.py:288
+#: lms/djangoapps/instructor/views/legacy.py:297
 #, python-brace-format
 msgid "Failed to create a background task for rescoring \"{url}\": {message}."
 msgstr "\"{url}\"の再採点バックグラウンドタスクの作成に失敗しました:{message}"
 
-#: lms/djangoapps/instructor/views/legacy.py:300
+#: lms/djangoapps/instructor/views/legacy.py:309
 #, python-brace-format
 msgid "Failed to create a background task for resetting \"{problem_url}\"."
 msgstr "\"{problem_url}\"の初期化バックグラウンドタスクの作成に失敗しました。"
 
-#: lms/djangoapps/instructor/views/legacy.py:307
+#: lms/djangoapps/instructor/views/legacy.py:316
 #, python-brace-format
 msgid ""
 "Failed to create a background task for resetting \"{problem_url}\": problem "
 "not found."
 msgstr "\"{problem_url}\"の初期化バックグラウンドタスクの作成に失敗しました。問題がありません。"
 
-#: lms/djangoapps/instructor/views/legacy.py:314
+#: lms/djangoapps/instructor/views/legacy.py:323
 #, python-brace-format
 msgid "Failed to create a background task for resetting \"{url}\": {message}."
 msgstr "\"{url}\"の初期化バックグラウンドタスクの作成に失敗しました:{message}"
 
-#: lms/djangoapps/instructor/views/legacy.py:358
+#: lms/djangoapps/instructor/views/legacy.py:384
 msgid "Found module.  "
 msgstr "モジュールがあります。"
 
-#: lms/djangoapps/instructor/views/legacy.py:360
+#: lms/djangoapps/instructor/views/legacy.py:387
 #, python-brace-format
 msgid "Couldn't find module with that urlname: {url}. "
 msgstr "次のURLのモジュールがありません：{url}"
 
-#: lms/djangoapps/instructor/views/legacy.py:370
+#: lms/djangoapps/instructor/views/legacy.py:398
 #, python-brace-format
 msgid "Deleted student module state for {state}!"
 msgstr "受講者のモジュール状態を削除しました:{state}"
 
-#: lms/djangoapps/instructor/views/legacy.py:384
+#: lms/djangoapps/instructor/views/legacy.py:412
 #, python-brace-format
 msgid "Failed to delete module state for {id}/{url}. "
 msgstr "モジュール状態の削除に失敗しました：{id}/{url}"
 
-#: lms/djangoapps/instructor/views/legacy.py:408
+#: lms/djangoapps/instructor/views/legacy.py:436
 msgid "Module state successfully reset!"
 msgstr "モジュール状態のリセットに成功しました！"
 
-#: lms/djangoapps/instructor/views/legacy.py:411
+#: lms/djangoapps/instructor/views/legacy.py:439
 #, python-brace-format
 msgid "Couldn't reset module state for {id}/{url}. "
 msgstr "モジュール状態の初期化ができません：{id}/{url}"
 
-#: lms/djangoapps/instructor/views/legacy.py:422
+#: lms/djangoapps/instructor/views/legacy.py:450
 #, python-brace-format
 msgid ""
 "Failed to create a background task for rescoring \"{key}\" for student {id}."
 msgstr "受講者{id}の\"{key}\"の再採点バックグラウンドタスクの作成に失敗しました。"
 
-#: lms/djangoapps/instructor/views/legacy.py:430
+#: lms/djangoapps/instructor/views/legacy.py:458
 #, python-brace-format
 msgid "Failed to create a background task for rescoring \"{key}\": {id}."
 msgstr "\"{key}\"の再採点バックグラウンドタスクの作成に失敗しました：{id}"
 
-#: lms/djangoapps/instructor/views/legacy.py:449
+#: lms/djangoapps/instructor/views/legacy.py:477
 #, python-brace-format
 msgid "Progress page for username: {username} with email address: {email}"
 msgstr "メールアドレス：{email}のユーザー名：{username}の成績ページ"
 
-#: lms/djangoapps/instructor/views/legacy.py:466
+#: lms/djangoapps/instructor/views/legacy.py:494
 msgid "Assignment Name"
 msgstr "課題の名前"
 
-#: lms/djangoapps/instructor/views/legacy.py:490
+#: lms/djangoapps/instructor/views/legacy.py:518
 msgid "Please enter an assignment name"
 msgstr "課題の名前を入力してください"
 
-#: lms/djangoapps/instructor/views/legacy.py:495
+#: lms/djangoapps/instructor/views/legacy.py:523
 #, python-brace-format
 msgid "Invalid assignment name '{name}'"
 msgstr "無効な課題の名前：'{name}'"
 
-#: lms/djangoapps/instructor/views/legacy.py:499
-#: lms/djangoapps/instructor/views/legacy.py:1254
+#: lms/djangoapps/instructor/views/legacy.py:527
+#: lms/djangoapps/instructor/views/legacy.py:1283
 msgid "External email"
 msgstr "外部メールアドレス"
 
-#: lms/djangoapps/instructor/views/legacy.py:510
+#: lms/djangoapps/instructor/views/legacy.py:538
 #, python-brace-format
 msgid "Grades for assignment \"{name}\""
 msgstr "課題\"{name}\"の評価"
 
-#: lms/djangoapps/instructor/views/legacy.py:529
+#: lms/djangoapps/instructor/views/legacy.py:557
 msgid "List of Staff"
 msgstr "スタッフ一覧"
 
-#: lms/djangoapps/instructor/views/legacy.py:534
+#: lms/djangoapps/instructor/views/legacy.py:562
 msgid "List of Instructors"
 msgstr "インストラクター一覧"
 
-#: lms/djangoapps/instructor/views/legacy.py:574
+#: lms/djangoapps/instructor/views/legacy.py:602
 #, python-brace-format
 msgid "Student profile data for course {course_id}"
 msgstr "講座：{course_id}の受講者プロフィール"
 
-#: lms/djangoapps/instructor/views/legacy.py:590
+#: lms/djangoapps/instructor/views/legacy.py:618
 #, python-brace-format
 msgid "Found {num} records to dump."
 msgstr "ダンプする{num}レコードがあります。"
 
-#: lms/djangoapps/instructor/views/legacy.py:593
+#: lms/djangoapps/instructor/views/legacy.py:621
 msgid "Couldn't find module with that urlname."
 msgstr "そのURLのモジュールは見つかりません。"
 
-#: lms/djangoapps/instructor/views/legacy.py:601
+#: lms/djangoapps/instructor/views/legacy.py:629
 #, python-brace-format
 msgid "Student state for problem {problem}"
 msgstr "問題：{problem}の受講者の状態"
 
-#: lms/djangoapps/instructor/views/legacy.py:618
+#: lms/djangoapps/instructor/views/legacy.py:646
 msgid "List of Beta Testers"
 msgstr "ベータテスタ一覧"
 
-#: lms/djangoapps/instructor/views/legacy.py:758
+#: lms/djangoapps/instructor/views/legacy.py:787
 msgid ""
 "Your email was successfully queued for sending. Please note that for large "
 "classes, it may take up to an hour (or more, if other courses are "
 "simultaneously sending email) to send all emails."
 msgstr "メールは送信処理に送られました。大きな講座ではメールを送るのに１時間程度(ほかの講座も同時にメールを送っている場合はそれ以上)かかります。"
 
-#: lms/djangoapps/instructor/views/legacy.py:764
+#: lms/djangoapps/instructor/views/legacy.py:793
 msgid "Your email was successfully queued for sending."
 msgstr "メールは送信処理に送られました。"
 
-#: lms/djangoapps/instructor/views/legacy.py:841
+#: lms/djangoapps/instructor/views/legacy.py:872
 #, python-brace-format
 msgid "Grades from {course_id}"
 msgstr "{course_id}の評価"
 
-#: lms/djangoapps/instructor/views/legacy.py:934
+#: lms/djangoapps/instructor/views/legacy.py:963
 msgid "No remote gradebook defined in course metadata"
 msgstr "講座メタデータで遠隔評価エンジンが定義されていません"
 
-#: lms/djangoapps/instructor/views/legacy.py:939
+#: lms/djangoapps/instructor/views/legacy.py:968
 msgid "No remote gradebook url defined in settings.FEATURES"
 msgstr "遠隔の評価エンジンのURLがsetting.FEATURESで定義されていません"
 
-#: lms/djangoapps/instructor/views/legacy.py:944
+#: lms/djangoapps/instructor/views/legacy.py:973
 msgid "No gradebook name defined in course remote_gradebook metadata"
 msgstr "remote_gradebookメタデータで評価エンジン名が定義されていません"
 
-#: lms/djangoapps/instructor/views/legacy.py:956
+#: lms/djangoapps/instructor/views/legacy.py:985
 #, python-brace-format
 msgid "Failed to communicate with gradebook server at {url}"
 msgstr "{url}の評価エンジンサーバとの通信に失敗しました"
 
-#: lms/djangoapps/instructor/views/legacy.py:957
+#: lms/djangoapps/instructor/views/legacy.py:986
 #, python-brace-format
 msgid "Error: {err}"
 msgstr "エラー: {err}"
 
-#: lms/djangoapps/instructor/views/legacy.py:968
+#: lms/djangoapps/instructor/views/legacy.py:997
 #, python-brace-format
 msgid "Remote gradebook response for {action}"
 msgstr "遠隔の評価エンジンの応答：{action}"
 
-#: lms/djangoapps/instructor/views/legacy.py:987
-#: lms/djangoapps/instructor/views/legacy.py:1061
+#: lms/djangoapps/instructor/views/legacy.py:1016
+#: lms/djangoapps/instructor/views/legacy.py:1090
 msgid "Full name"
 msgstr "フルネーム"
 
-#: lms/djangoapps/instructor/views/legacy.py:987
+#: lms/djangoapps/instructor/views/legacy.py:1016
 msgid "Roles"
 msgstr "権限"
 
-#: lms/djangoapps/instructor/views/legacy.py:988
+#: lms/djangoapps/instructor/views/legacy.py:1017
 #, python-brace-format
 msgid "List of Forum {name}s in course {id}"
 msgstr "講座：{id}のフォーラム：{name}の一覧"
 
-#: lms/djangoapps/instructor/views/legacy.py:993
-#: lms/djangoapps/instructor/views/legacy.py:1021
+#: lms/djangoapps/instructor/views/legacy.py:1022
+#: lms/djangoapps/instructor/views/legacy.py:1050
 #, python-brace-format
 msgid "Error: unknown rolename \"{rolename}\""
 msgstr "エラー：不明な役割名\"{rolename}\""
 
-#: lms/djangoapps/instructor/views/legacy.py:1017
+#: lms/djangoapps/instructor/views/legacy.py:1046
 #, python-brace-format
 msgid "Error: unknown username \"{username}\""
 msgstr "エラー：不明なユーザー名\"{username}\""
 
-#: lms/djangoapps/instructor/views/legacy.py:1029
+#: lms/djangoapps/instructor/views/legacy.py:1058
 #, python-brace-format
 msgid ""
 "Error: user \"{username}\" does not have rolename \"{rolename}\", cannot "
 "remove"
 msgstr "エラー：ユーザー\"{username}\"は役割名\"{rolename}\"がありません。外すことはできません。"
 
-#: lms/djangoapps/instructor/views/legacy.py:1032
+#: lms/djangoapps/instructor/views/legacy.py:1061
 #, python-brace-format
 msgid "Removed \"{username}\" from \"{course_id}\" forum role = \"{rolename}\""
 msgstr "\"{course_id}\"から\"{username}\"を削除　フォーラムの権限 = \"{rolename}\""
 
-#: lms/djangoapps/instructor/views/legacy.py:1035
+#: lms/djangoapps/instructor/views/legacy.py:1064
 #, python-brace-format
 msgid "Error: user \"{username}\" already has rolename \"{rolename}\", cannot add"
 msgstr "エラー：ユーザー\"{username}\"は既に権限名\"{rolename}\"が付与されています。追加できません"
 
-#: lms/djangoapps/instructor/views/legacy.py:1038
+#: lms/djangoapps/instructor/views/legacy.py:1067
 #, python-brace-format
 msgid ""
 "Error: user \"{username}\" should first be added as staff before adding as a"
 " forum administrator, cannot add"
 msgstr "エラー：ユーザー\"{username}\"はフォーラム管理者に追加される前にまずスタッフに追加される必要があります。"
 
-#: lms/djangoapps/instructor/views/legacy.py:1041
+#: lms/djangoapps/instructor/views/legacy.py:1070
 #, python-brace-format
 msgid "Added \"{username}\" to \"{course_id}\" forum role = \"{rolename}\""
 msgstr "\"{course_id}\"に\"{username}\"を追加　フォーラム権限 = \"{rolename}\""
 
-#: lms/djangoapps/instructor/views/legacy.py:1063
+#: lms/djangoapps/instructor/views/legacy.py:1092
 #, python-brace-format
 msgid "{title} in course {course_id}"
 msgstr "{title}の講座{course_id}"
 
-#: lms/djangoapps/instructor/views/legacy.py:1254
+#: lms/djangoapps/instructor/views/legacy.py:1283
 msgid "ID"
 msgstr "ID"
 
-#: lms/djangoapps/instructor/views/legacy.py:1254
-#: lms/djangoapps/instructor/views/tools.py:173
+#: lms/djangoapps/instructor/views/legacy.py:1283
+#: lms/djangoapps/instructor/views/tools.py:196
 msgid "Full Name"
 msgstr "氏名"
 
-#: lms/djangoapps/instructor/views/legacy.py:1254
+#: lms/djangoapps/instructor/views/legacy.py:1283
 msgid "edX email"
 msgstr "edX email"
 
-#: lms/djangoapps/instructor/views/legacy.py:1466
+#: lms/djangoapps/instructor/views/legacy.py:1495
 msgid "Enrollment of students"
 msgstr "受講者の履修"
 
-#: lms/djangoapps/instructor/views/legacy.py:1542
+#: lms/djangoapps/instructor/views/legacy.py:1571
 msgid "Un-enrollment of students"
 msgstr "受講者の履修解除"
 
-#: lms/djangoapps/instructor/views/legacy.py:1748
+#: lms/djangoapps/instructor/views/legacy.py:1777
 #, python-brace-format
 msgid ""
 "Failed to find any background tasks for course \"{course}\", module "
 "\"{problem}\" and student \"{student}\"."
 msgstr "講座\"{course}\"、モジュール\"{problem}\"、受講者\"{student}\"のバックグラウンドタスクを見つけることができません。"
 
-#: lms/djangoapps/instructor/views/legacy.py:1751
+#: lms/djangoapps/instructor/views/legacy.py:1780
 #, python-brace-format
 msgid ""
 "Failed to find any background tasks for course \"{course}\" and module "
 "\"{problem}\"."
 msgstr "講座\"{course}\"、モジュール\"{problem}\"のバックグラウンドタスクを見つけることができません。"
 
-#: lms/djangoapps/instructor/views/tools.py:78
+#: lms/djangoapps/instructor/views/tools.py:101
 msgid "Unable to parse date: "
 msgstr "日付を解析できません："
 
-#: lms/djangoapps/instructor/views/tools.py:101
+#: lms/djangoapps/instructor/views/tools.py:124
 #, python-brace-format
 msgid "Couldn't find module for url: {0}"
 msgstr "モジュールを見つけることが出来ません url: {0}"
 
-#: lms/djangoapps/instructor/views/tools.py:173
-#: lms/djangoapps/instructor/views/tools.py:203
+#: lms/djangoapps/instructor/views/tools.py:196
+#: lms/djangoapps/instructor/views/tools.py:226
 msgid "Extended Due Date"
 msgstr "延長された期日"
 
-#: lms/djangoapps/instructor/views/tools.py:191
+#: lms/djangoapps/instructor/views/tools.py:214
 #, python-brace-format
 msgid "Users with due date extensions for {0}"
 msgstr "期日延長可能なユーザー：{0}"
 
-#: lms/djangoapps/instructor/views/tools.py:203
+#: lms/djangoapps/instructor/views/tools.py:226
 msgid "Unit"
 msgstr "単元"
 
-#: lms/djangoapps/instructor/views/tools.py:222
+#: lms/djangoapps/instructor/views/tools.py:245
 #, python-brace-format
 msgid "Due date extensions for {0} {1} ({2})"
 msgstr "期日延長： {0} {1} ({2})"
@@ -2501,28 +2593,33 @@ msgstr "注文支払い確認"
 msgid "Trying to add a different currency into the cart"
 msgstr "異なる通貨のものをカートに入れようとしています"
 
-#: lms/djangoapps/shoppingcart/models.py:408
+#: lms/djangoapps/shoppingcart/models.py:370
+#, python-brace-format
+msgid "Registration for Course: {course_name}"
+msgstr "次のコースを登録：{course_name}"
+
+#: lms/djangoapps/shoppingcart/models.py:409
 #, python-brace-format
 msgid ""
 "Please visit your <a href=\"{dashboard_link}\">dashboard</a> to see your new"
 " enrollments."
 msgstr "新たな受講者を確認するには<a href=\"{dashboard_link}\">マイページ</a>へ移動してください。"
 
-#: lms/djangoapps/shoppingcart/models.py:475
+#: lms/djangoapps/shoppingcart/models.py:476
 msgid "[Refund] User-Requested Refund"
 msgstr "[返済] ユーザ要求による返済"
 
-#: lms/djangoapps/shoppingcart/models.py:525
+#: lms/djangoapps/shoppingcart/models.py:526
 #, python-brace-format
 msgid "Mode {mode} does not exist for {course_id}"
 msgstr "{mode} モードは {course_id} にはありません"
 
-#: lms/djangoapps/shoppingcart/models.py:537
+#: lms/djangoapps/shoppingcart/models.py:538
 #, python-brace-format
 msgid "Certificate of Achievement, {mode_name} for course {course}"
 msgstr "「{course}」講座（{mode_name}）の修了証明書"
 
-#: lms/djangoapps/shoppingcart/models.py:580
+#: lms/djangoapps/shoppingcart/models.py:581
 #, python-brace-format
 msgid ""
 "Note - you have up to 2 weeks into the course to unenroll from the Verified "
@@ -2973,11 +3070,11 @@ msgid ""
 "            "
 msgstr "\n            認証リクエストはカード会社により認証されましたが、CyberSourceにより拒否されました.'\n            解決方法：別の支払方法をお試しください。\n            "
 
-#: lms/djangoapps/shoppingcart/tests/test_views.py:352
+#: lms/djangoapps/shoppingcart/tests/test_views.py:351
 msgid "Download CSV Reports"
 msgstr "CSVレポートをダウンロードする"
 
-#: lms/djangoapps/shoppingcart/tests/test_views.py:364
+#: lms/djangoapps/shoppingcart/tests/test_views.py:363
 msgid ""
 "There was an error in your date input.  It should be formatted as YYYY-MM-DD"
 msgstr "日付の入力形式にエラーがあります。日付はYYYY-MM-DDの形式で入力してください。"
@@ -3007,15 +3104,15 @@ msgstr "撮影された写真の画像であなたの顔が判別できません
 msgid "There was an error verifying your ID photos."
 msgstr "身分証明書の写真を確認する際にエラーが発生しました。"
 
-#: lms/djangoapps/verify_student/views.py:162
+#: lms/djangoapps/verify_student/views.py:164
 msgid "Selected price is not valid number."
 msgstr "選択された価格は正しい数字ではありません。"
 
-#: lms/djangoapps/verify_student/views.py:172
+#: lms/djangoapps/verify_student/views.py:174
 msgid "This course doesn't support verified certificates"
 msgstr "本講座は修了証明書の発行に対応していません。"
 
-#: lms/djangoapps/verify_student/views.py:175
+#: lms/djangoapps/verify_student/views.py:177
 msgid "No selected price or selected price is below minimum."
 msgstr "価格が選択されていない、もしくは最低価格を下回った価格が選択されています。"
 
