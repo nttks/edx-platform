@@ -27,6 +27,7 @@ else:
 <%! from django.conf import settings %>
 <% 
     facebook_url = settings.FB_URL
+    facebook_action_type = settings.FB_ACTION_TYPE
     twitter_url = settings.TW_URL
 %>
 
@@ -71,7 +72,7 @@ else:
         <a class="f_button radius left" href="${cert_status['download_url']}"
           title="${_('This link will open/download a PDF document')}" target="_blank">
          ${_("Download Your {cert_name_short} (PDF)").format(cert_name_short=cert_name_short,)}</a>
-        <a class="right" href="#" onclick='postToFB({"url":"${facebook_url}"}); return false;'>
+        <a class="right" href="#" onclick='postToFB({"url":"${facebook_url}", "action_type":"${facebook_action_type}"}); return false;'>
           <img src="/static/images/gacco_icon_facebook.png" alt="${_("facebook")}"></a>
         <a class="right" href="#" onclick="javascript:window.open('https://twitter.com/intent/tweet?url=${cert_status["download_url"]}&text=${_("Successfully passed the Certificate of gacco")}(${course.display_name_with_default})','','width=550,height=480,scrollbars=1,resizable=1',0);">
            <img src="/static/images/gacco_icon_twitter.png" alt="${_("twitter")}"></a>
