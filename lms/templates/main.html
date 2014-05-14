@@ -6,6 +6,18 @@
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <%block name="metaextra"/>
+    <meta property="fb:app_id" content="665268166877804"/>
+    <meta property="og:site_name" content="gacco.org"/>
+    <meta property="og:title" content="「gacco」で修了証を獲得"/>
+    <meta property="og:type" content="website"/>
+    <meta property="og:description" content="無料で学べる大学講座「gacco」（ガッコ）で、学習に取り組み、一定の基準を満たしたため修了証を獲得しました！"/>
+    <meta property="og:image" content="https://lms.gacco.org/static/images/edx.png"/>
+    <meta property="og:url" content="https://gacco.org/"/>
+##    <meta property="og:image" content="http://s3-ap-northeast-1.amazonaws.com/gacco.org/images/pass.png"/>
+##    <meta name="twitter:card" content="summary"/>
+##    <meta name="twitter:site" content=""/>
+
 <%! from django.utils.translation import ugettext as _ %>
 <%! from microsite_configuration import microsite %>
 <%! from microsite_configuration import page_title_breadcrumbs %>
@@ -104,6 +116,8 @@
 
 <body class="<%block name='bodyclass'/> lang_${LANGUAGE_CODE}">
   <a class="nav-skip" href="<%block name="nav_skip">#content</%block>">${_("Skip to this view's content")}</a>
+
+  <div id="fb-root"></div>
 
   <%include file="mathjax_accessible.html" />
 
