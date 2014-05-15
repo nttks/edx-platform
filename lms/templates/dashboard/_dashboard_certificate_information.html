@@ -74,7 +74,7 @@ else:
          ${_("Download Your {cert_name_short} (PDF)").format(cert_name_short=cert_name_short,)}</a>
         <a class="right" href="#" onclick='postToFB({"url":"${facebook_url}", "action_type":"${facebook_action_type}"}); return false;'>
           <img src="/static/images/gacco_icon_facebook.png" alt="${_("facebook")}"></a>
-        <a class="right" href="#" onclick="javascript:window.open('https://twitter.com/intent/tweet?url=${cert_status["download_url"]}&text=${_("Successfully passed the Certificate of gacco")}(${course.display_name_with_default})','','width=550,height=480,scrollbars=1,resizable=1',0);">
+        <a class="right" href="#" onclick="javascript:window.open('https://twitter.com/intent/tweet?url=${twitter_url}&text=${_("Successfully passed the Certificate of gacco")}(${course.display_name_with_default})','','width=550,height=480,scrollbars=1,resizable=1',0);">
            <img src="/static/images/gacco_icon_twitter.png" alt="${_("twitter")}"></a>
       </div>
     % elif cert_status['show_download_url'] and enrollment.mode == 'verified' and cert_status['mode'] == 'honor':
