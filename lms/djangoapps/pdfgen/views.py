@@ -102,7 +102,7 @@ class CertificateHonor(CertificateBase):
                     self.course_name)
                 form.create_pdf()
 
-            response_json = self.store.save(self.username,
+            response_json = self.store.save("_".join([self.username, self.key[:5]]),
                 self.course_id, temp[1])
         except OSError, e:
             msg = "OS Error: (%s)" % (e)
