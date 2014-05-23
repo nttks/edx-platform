@@ -1,0 +1,406 @@
+# edX translation file.
+# Copyright (C) 2014 EdX
+# This file is distributed under the GNU AFFERO GENERAL PUBLIC LICENSE.
+# 
+# Translators:
+# h_yoshida <h_yoshida@matsumo-sys.com>, 2014
+# Aoshi <support@225nou.com>, 2014
+# わたカフェの店長, 2013
+msgid ""
+msgstr ""
+"Project-Id-Version: edx-platform\n"
+"Report-Msgid-Bugs-To: openedx-translation@googlegroups.com\n"
+"POT-Creation-Date: 2014-05-19 08:16-0400\n"
+"PO-Revision-Date: 2014-05-12 08:00+0000\n"
+"Last-Translator: h_yoshida <h_yoshida@matsumo-sys.com>\n"
+"Language-Team: Japanese (Japan) (http://www.transifex.com/projects/p/edx-platform/language/ja_JP/)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: ja_JP\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: cms/static/coffee/src/main.js:35
+msgid ""
+"This may be happening because of an error with our server or your internet "
+"connection. Try refreshing the page or making sure you are online."
+msgstr "サーバーかあなたのインターネット接続に問題がある場合に発生します。ページの再読み込みをするか、インターネット接続を確認してください。"
+
+#: cms/static/coffee/src/main.js:38
+msgid "Studio's having trouble saving your work"
+msgstr "Studio は作業の保存に問題があります。"
+
+#: cms/static/coffee/src/views/tabs.js:56
+#: cms/static/coffee/src/views/tabs.js:89
+#: cms/static/coffee/src/views/unit.js:72
+#: cms/static/coffee/src/xblock/cms.runtime.v1.js:39
+#: cms/static/js/models/section.js:28 cms/static/js/utils/drag_and_drop.js:282
+#: cms/static/js/views/asset.js:80 cms/static/js/views/container.js:28
+#: cms/static/js/views/course_info_handout.js:59
+#: cms/static/js/views/course_info_update.js:80
+#: cms/static/js/views/overview.js:75 cms/static/js/views/xblock_editor.js:98
+msgid "Saving&hellip;"
+msgstr "保存中&hellip;"
+
+#: cms/static/coffee/src/views/tabs.js:129
+msgid "Delete Component Confirmation"
+msgstr "コンポーネント削除の確認"
+
+#: cms/static/coffee/src/views/tabs.js:130
+msgid ""
+"Are you sure you want to delete this component? This action cannot be "
+"undone."
+msgstr "このコンポーネントを削除してもよろしいですか？この動作は取り消すことが出来ません。"
+
+#: cms/static/coffee/src/views/tabs.js:144
+#: cms/static/coffee/src/views/unit.js:206 cms/static/js/base.js:281
+#: cms/static/js/views/course_info_update.js:148
+#: cms/static/js/views/pages/container.js:130
+msgid "Deleting&hellip;"
+msgstr "削除中&hellip;"
+
+#: cms/static/coffee/src/views/unit.js:152
+msgid "Adding&hellip;"
+msgstr "追加中&hellip;"
+
+#: cms/static/coffee/src/views/unit.js:168
+#: cms/static/js/views/pages/container.js:93
+msgid "Duplicating&hellip;"
+msgstr "複製中&hellip;"
+
+#: cms/static/coffee/src/views/unit.js:197
+#: cms/static/js/views/pages/container.js:122
+msgid "Delete this component?"
+msgstr "このコンポーネントを削除しますか？"
+
+#: cms/static/coffee/src/views/unit.js:198
+#: cms/static/js/views/pages/container.js:123
+msgid "Deleting this component is permanent and cannot be undone."
+msgstr "このコンポーネントの削除は恒久的で取り消すことができません。"
+
+#: cms/static/coffee/src/views/unit.js:201
+#: cms/static/js/views/pages/container.js:126
+msgid "Yes, delete this component"
+msgstr "はい、このコンポーネントを削除します"
+
+#: cms/static/js/base.js:75
+msgid "This link will open in a modal window"
+msgstr "モーダルウィンドウにこのリンクを開く"
+
+#: cms/static/js/base.js:265
+msgid "Delete this "
+msgstr "これを削除"
+
+#: cms/static/js/base.js:266
+msgid "Deleting this "
+msgstr "これを削除しています"
+
+#: cms/static/js/base.js:269
+msgid "Yes, delete this "
+msgstr "はい，これを削除します"
+
+#: cms/static/js/index.js:89
+msgid "Please do not use any spaces in this field."
+msgstr "このフィールドには空白を使用しないで下さい。"
+
+#: cms/static/js/index.js:94
+msgid "Please do not use any spaces or special characters in this field."
+msgstr "このフィールドには空白や特殊文字を使用しないで下さい．"
+
+#: cms/static/js/index.js:110
+msgid ""
+"The combined length of the organization, course number, and course run "
+"fields cannot be more than 65 characters."
+msgstr "組織名、講座番号、開講日付枠の合計の文字数は65文字を超えることができません。"
+
+#: cms/static/js/index.js:145
+msgid "Required field."
+msgstr "必須フィールドです．"
+
+#: cms/static/js/sock.js:22
+msgid "Hide Studio Help"
+msgstr "Studio ヘルプを非表示"
+
+#: cms/static/js/sock.js:24
+msgid "Looking for Help with Studio?"
+msgstr "Studio 用ヘルプを検索しています"
+
+#: cms/static/js/models/course.js:8 cms/static/js/models/section.js:10
+msgid "You must specify a name"
+msgstr "名前を指定する必要があります"
+
+#: cms/static/js/models/uploads.js:19
+msgid ""
+"Only <%= fileTypes %> files can be uploaded. Please select a file ending in "
+"<%= fileExtensions %> to upload."
+msgstr "ファイルアップロードが可能なファイル形式は「<%= fileTypes %>」となります。拡張子が「<%= fileExtensions %>」となるファイルを選択し、アップロードしてください。"
+
+#: cms/static/js/models/uploads.js:65
+msgid "or"
+msgstr "もしくは"
+
+#: cms/static/js/models/settings/course_details.js:43
+msgid "The course must have an assigned start date."
+msgstr "各講座には、受講開始日を設定する必要があります。"
+
+#: cms/static/js/models/settings/course_details.js:46
+msgid "The course end date cannot be before the course start date."
+msgstr "受講終了日は、受講開始日より前に設定することはできません。"
+
+#: cms/static/js/models/settings/course_details.js:49
+msgid "The course start date cannot be before the enrollment start date."
+msgstr "受講開始日は、受講登録開始日より前に設定することはできません。"
+
+#: cms/static/js/models/settings/course_details.js:52
+msgid "The enrollment start date cannot be after the enrollment end date."
+msgstr "登録開始日時は登録終了日時よりも後にはできません．"
+
+#: cms/static/js/models/settings/course_details.js:55
+msgid "The enrollment end date cannot be after the course end date."
+msgstr "受講登録終了日は、受講終了日より後に設定することはできません。"
+
+#: cms/static/js/models/settings/course_details.js:59
+msgid "Key should only contain letters, numbers, _, or -"
+msgstr "キーには英数字，_ または - のみ利用できます"
+
+#: cms/static/js/models/settings/course_grader.js:33
+msgid "There's already another assignment type with this name."
+msgstr "この名前の他の課題種別がすでに存在します．"
+
+#: cms/static/js/models/settings/course_grader.js:40
+msgid "Please enter an integer between 0 and 100."
+msgstr "0 と 100 の間の整数を入力して下さい．"
+
+#: cms/static/js/models/settings/course_grader.js:55
+msgid "Please enter an integer greater than 0."
+msgstr "0 より大きい整数を入力て下さい。"
+
+#: cms/static/js/models/settings/course_grader.js:62
+msgid "Please enter non-negative integer."
+msgstr "正の整数を入力してください。"
+
+#: cms/static/js/models/settings/course_grader.js:68
+msgid "Cannot drop more <% attrs.types %> than will assigned."
+msgstr "割り当てられる以上の <% attrs.types %> をドロップできません．"
+
+#: cms/static/js/models/settings/course_grading_policy.js:62
+msgid "Grace period must be specified in HH:MM format."
+msgstr "猶予期間は「HH:MM」の形式で記入される必要があります。"
+
+#: cms/static/js/views/asset.js:48
+msgid "Delete File Confirmation"
+msgstr "ファイル削除確認"
+
+#: cms/static/js/views/asset.js:49
+msgid ""
+"Are you sure you wish to delete this item. It cannot be reversed!\n"
+"\n"
+"Also any content that links/refers to this item will no longer work (e.g. broken images and/or links)"
+msgstr "このアイテムを削除してもよろしいですか? 元には戻せません．\n\nまた，このアイテムにリンクまたは参照しているコンテンツはすべて機能しなくなります (例: 画像切れやリンク切れ)"
+
+#: cms/static/js/views/asset.js:52 cms/static/js/views/show_textbook.js:36
+msgid "Delete"
+msgstr "削除"
+
+#: cms/static/js/views/asset.js:59
+msgid "Your file has been deleted."
+msgstr "ファイルは削除されました．"
+
+#: cms/static/js/views/assets.js:16
+msgid "Name"
+msgstr "名前"
+
+#: cms/static/js/views/assets.js:17
+msgid "Date Added"
+msgstr "追加日"
+
+#: cms/static/js/views/course_info_update.js:136
+msgid "Are you sure you want to delete this update?"
+msgstr "この変更を削除してもよろしいですか?"
+
+#: cms/static/js/views/course_info_update.js:137
+msgid "This action cannot be undone."
+msgstr "このアクションは取り消しできません．"
+
+#: cms/static/js/views/edit_chapter.js:55
+msgid "Upload a new PDF to “<%= name %>”"
+msgstr "“<%= name %>” に新しい PDF をアップロード"
+
+#: cms/static/js/views/edit_chapter.js:57
+msgid "Please select a PDF file to upload."
+msgstr "アップロードするPDFファイルを選択してください。"
+
+#: cms/static/js/views/edit_textbook.js:63
+#: cms/static/js/views/overview_assignment_grader.js:71
+msgid "Saving"
+msgstr "保存しています"
+
+#: cms/static/js/views/import.js:141
+msgid "There was an error with the upload"
+msgstr "アップロード時にエラーが発生"
+
+#: cms/static/js/views/import.js:159
+msgid ""
+"File format not supported. Please upload a file with a <code>tar.gz</code> "
+"extension."
+msgstr "ファイル形式がサポートされていません．<code>tar.gz</code> 拡張子がついたファイルをアップロードして下さい．"
+
+#: cms/static/js/views/metadata.js:533
+msgid "Upload File"
+msgstr "ファイルをアップロード"
+
+#: cms/static/js/views/overview.js:14
+msgid "Collapse All Sections"
+msgstr "すべてのセクションを折り畳む"
+
+#: cms/static/js/views/overview.js:16
+msgid "Expand All Sections"
+msgstr "すべてのセクションを展開"
+
+#: cms/static/js/views/overview.js:99
+msgid "Release date:"
+msgstr "リリース日："
+
+#: cms/static/js/views/overview.js:100
+msgid "{month}/{day}/{year} at {hour}:{minute} UTC"
+msgstr "{year}年{month}月{day}日{hour}時{minute}分 UTC"
+
+#: cms/static/js/views/overview.js:103
+msgid "Edit section release date"
+msgstr "章のリリース日を編集"
+
+#: cms/static/js/views/overview_assignment_grader.js:3
+msgid "Not Graded"
+msgstr "未採点"
+
+#. Translators: sample result: "Showing 0-9 out of 25 total, sorted by Date
+#. Added ascending"
+#: cms/static/js/views/paging_header.js:37
+msgid ""
+"Showing %(current_item_range)s out of %(total_items_count)s, sorted by "
+"%(sort_name)s ascending"
+msgstr "%(sort_name)s で昇順にソートされた %(total_items_count)s 中の %(current_item_range)s 件を表示中"
+
+#. Translators: sample result: "Showing 0-9 out of 25 total, sorted by Date
+#. Added descending"
+#: cms/static/js/views/paging_header.js:40
+msgid ""
+"Showing %(current_item_range)s out of %(total_items_count)s, sorted by "
+"%(sort_name)s descending"
+msgstr "%(sort_name)s で降順にソートされた %(total_items_count)s 中の %(current_item_range)s 件を表示中"
+
+#. Translators: turns into "25 total" to be used in other sentences, e.g.
+#. "Showing 0-9 out of 25 total".
+#: cms/static/js/views/paging_header.js:64
+msgid "%(total_items)s total"
+msgstr "合計 %(total_items)s 件"
+
+#: cms/static/js/views/section_edit.js:50
+msgid "Your change could not be saved"
+msgstr "変更を保存することができませんでした"
+
+#: cms/static/js/views/section_edit.js:54
+msgid "Return and resolve this issue"
+msgstr "この課題に戻り，解決する"
+
+#: cms/static/js/views/show_textbook.js:31
+msgid "Delete “<%= name %>”?"
+msgstr "“<%= name %>” を削除しますか?"
+
+#: cms/static/js/views/show_textbook.js:33
+msgid ""
+"Deleting a textbook cannot be undone and once deleted any reference to it in"
+" your courseware's navigation will also be removed."
+msgstr "テキストの削除は元に戻せません。削除すると講座メニューからも削除されます。"
+
+#: cms/static/js/views/show_textbook.js:40
+msgid "Deleting"
+msgstr "削除しています"
+
+#: cms/static/js/views/uploads.js:24
+msgid "Upload"
+msgstr "アップロード"
+
+#: cms/static/js/views/uploads.js:109
+msgid "We're sorry, there was an error"
+msgstr "申し訳ありません，エラーがありました"
+
+#: cms/static/js/views/validation.js:15
+msgid "You've made some changes"
+msgstr "何らかの変更がなされました"
+
+#: cms/static/js/views/validation.js:16
+msgid "Your changes will not take effect until you save your progress."
+msgstr "更新を保存するまで変更は反映されません．"
+
+#: cms/static/js/views/validation.js:17
+msgid "You've made some changes, but there are some errors"
+msgstr "変更がなされましたが，エラーがあります"
+
+#: cms/static/js/views/validation.js:18
+msgid ""
+"Please address the errors on this page first, and then save your progress."
+msgstr "このページのエラーをまず解決し，変更を保存して下さい．"
+
+#: cms/static/js/views/validation.js:106
+msgid "Save Changes"
+msgstr "変更を保存"
+
+#: cms/static/js/views/validation.js:134
+msgid "Your changes have been saved."
+msgstr "変更は保存されました．"
+
+#: cms/static/js/views/xblock_editor.js:43
+msgid "Editor"
+msgstr "エディタ"
+
+#: cms/static/js/views/xblock_editor.js:44
+msgid "Settings"
+msgstr "設定"
+
+#: cms/static/js/views/modals/base_modal.js:86
+msgid "Save"
+msgstr "一時保存"
+
+#: cms/static/js/views/modals/edit_xblock.js:119
+msgid "Component"
+msgstr "コンポーネント"
+
+#: cms/static/js/views/modals/edit_xblock.js:122
+msgid "Editing: %(title)s"
+msgstr "編集中: %(title)s"
+
+#: cms/static/js/views/settings/advanced.js:58
+msgid ""
+"Your changes will not take effect until you save your progress. Take care "
+"with key and value formatting, as validation is not implemented."
+msgstr "更新を保存するまで変更は反映されません．検証手段がないので，キーと値のフォーマッティングに気をつけて下さい．"
+
+#: cms/static/js/views/settings/advanced.js:106
+msgid "Your policy changes have been saved."
+msgstr "ポリシー変更が保存されました．"
+
+#: cms/static/js/views/settings/advanced.js:107
+msgid ""
+"Please note that validation of your policy key and value pairs is not "
+"currently in place yet. If you are having difficulties, please review your "
+"policy pairs."
+msgstr "キー・値ペアの方針の検証は現在はまだ準備が整っていないことにご注意下さい．問題があれば，ペアの方針を見直して下さい．"
+
+#: cms/static/js/views/settings/main.js:262
+msgid "Upload your course image."
+msgstr "本講座のイメージ画像をアップロードしてください。"
+
+#: cms/static/js/views/settings/main.js:263
+msgid "Files must be in JPEG or PNG format."
+msgstr "ファイル形式はJPEGもしくはPNG形式である必要があります。"
+
+#: cms/static/js/views/video/translations_editor.js:15
+msgid ""
+"Sorry, there was an error parsing the subtitles that you uploaded. Please "
+"check the format and try again."
+msgstr "申し訳ありません、アップロードされた字幕を処理する際にエラーが発生しました。フォーマットを確認して再試行してください。"
+
+#: cms/static/js/views/video/translations_editor.js:148
+msgid "Upload translation"
+msgstr "翻訳をアップロード"

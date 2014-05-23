@@ -1,0 +1,246 @@
+# edX translation file.
+# Copyright (C) 2014 EdX
+# This file is distributed under the GNU AFFERO GENERAL PUBLIC LICENSE.
+# 
+# Translators:
+# h_yoshida <h_yoshida@matsumo-sys.com>, 2014
+# ngi644 <ngi644@gmail.com>, 2014
+# ushige <ushige@live.com>, 2014
+# わたカフェの店長, 2013
+msgid ""
+msgstr ""
+"Project-Id-Version: edx-platform\n"
+"Report-Msgid-Bugs-To: openedx-translation@googlegroups.com\n"
+"POT-Creation-Date: 2014-05-19 08:15-0400\n"
+"PO-Revision-Date: 2014-03-20 02:00+0000\n"
+"Last-Translator: h_yoshida <h_yoshida@matsumo-sys.com>\n"
+"Language-Team: Japanese (Japan) (http://www.transifex.com/projects/p/edx-platform/language/ja_JP/)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: ja_JP\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: cms/djangoapps/contentstore/course_info_model.py:69
+#: cms/djangoapps/contentstore/course_info_model.py:156
+msgid "Invalid course update id."
+msgstr "無効な講座更新ID"
+
+#: cms/djangoapps/contentstore/course_info_model.py:121
+msgid "Course update not found."
+msgstr "講座更新がありません。"
+
+#: cms/djangoapps/contentstore/git_export_utils.py:34
+#, python-brace-format
+msgid ""
+"GIT_REPO_EXPORT_DIR not set or path {0} doesn't exist, please create it, or "
+"configure a different path with GIT_REPO_EXPORT_DIR"
+msgstr "GIT_REPO_EXPORT_DIR が設定されていないか、パス {0} が存在しません。作成するか、GIT_REPO_EXPORT_DIR に違うパスを指定してください。"
+
+#: cms/djangoapps/contentstore/git_export_utils.py:37
+msgid ""
+"Non writable git url provided. Expecting something like: "
+"git@github.com:mitocw/edx4edx_lite.git"
+msgstr "書き込みの出来ないgit urlです。「git@github.com:mitocw/edx4edx_lite.git」のような形式が期待値です。"
+
+#: cms/djangoapps/contentstore/git_export_utils.py:39
+msgid ""
+"If using http urls, you must provide the username and password in the url. "
+"Similar to https://user:pass@github.com/user/course."
+msgstr "httpのurlを使用している場合、ユーザー名とパスワードをurlに含めてください。「https://user:pass@github.com/user/course」のような形式です。"
+
+#: cms/djangoapps/contentstore/git_export_utils.py:42
+msgid "Unable to determine branch, repo in detached HEAD mode"
+msgstr "detached HEAD状態のレポジトリではブランチを決定することができません。"
+
+#: cms/djangoapps/contentstore/git_export_utils.py:43
+msgid "Unable to update or clone git repository."
+msgstr "gitレポジトリでupdateまたはcloneができません。"
+
+#: cms/djangoapps/contentstore/git_export_utils.py:44
+msgid "Unable to export course to xml."
+msgstr "講座をxmlでエクスポートすることができません。"
+
+#: cms/djangoapps/contentstore/git_export_utils.py:45
+msgid "Unable to configure git username and password"
+msgstr "gitのユーザー名とパスワードを設定することができません。"
+
+#: cms/djangoapps/contentstore/git_export_utils.py:46
+msgid ""
+"Unable to commit changes. This is usually because there are no changes to be"
+" committed"
+msgstr "変更をコミットすることができません。通常コミットする変更が無い場合にこの事象が発生します。"
+
+#: cms/djangoapps/contentstore/git_export_utils.py:48
+msgid ""
+"Unable to push changes.  This is usually because the remote repository "
+"cannot be contacted"
+msgstr "変更をプッシュすることができません。通常リモートレポジトリが接続できない場合にこの事象が発生します。"
+
+#: cms/djangoapps/contentstore/git_export_utils.py:50
+msgid "Bad course location provided"
+msgstr "問題のある講座の配置です"
+
+#: cms/djangoapps/contentstore/git_export_utils.py:51
+msgid "Missing branch on fresh clone"
+msgstr "新規クローンにブランチがありません"
+
+#: cms/djangoapps/contentstore/git_export_utils.py:61
+msgid "Command was: {0!r}. Working directory was: {1!r}"
+msgstr "コマンド：{0!r}. 作業ディレクトリ：{1!r}"
+
+#: cms/djangoapps/contentstore/git_export_utils.py:63
+msgid "Command output was: {0!r}"
+msgstr "コマンド出力： {0!r}"
+
+#: cms/djangoapps/contentstore/git_export_utils.py:102
+msgid ""
+"Directory already exists, doing a git reset and pull instead of git clone."
+msgstr "ディレクトリは既に存在します。「git clone」ではなく「git reset か pull」を使ってください。"
+
+#: cms/djangoapps/contentstore/utils.py:25
+msgid "My Notes"
+msgstr "マイノート"
+
+#: cms/djangoapps/contentstore/management/commands/git_export.py:40
+msgid ""
+"Take the specified course and attempt to export it to a git repository\n"
+". Course directory must already be a git repository. Usage:  git_export <course_loc> <git_url>"
+msgstr "gitレポジトリにエクスポートする講座を選んでください。\n講座ディレクトリはgitレポジトリである必要があります。使用方法：git_export <course_loc> <git_url>"
+
+#: cms/djangoapps/contentstore/views/assets.py:219
+msgid "Upload completed"
+msgstr "アップロード完了"
+
+#: cms/djangoapps/contentstore/views/course.py:329
+msgid ""
+"Special characters not allowed in organization, course number, and course "
+"run."
+msgstr "記号は組織、講座番号、コース開始では使用することができません。"
+
+#: cms/djangoapps/contentstore/views/course.py:337
+#, python-brace-format
+msgid ""
+"Unable to create course '{name}'.\n"
+"\n"
+"{err}"
+msgstr "講座名「'{name}」を生成に失敗しました。\n{err}"
+
+#: cms/djangoapps/contentstore/views/course.py:349
+msgid ""
+"There is already a course defined with the same organization, course number,"
+" and course run. Please change either organization or course number to be "
+"unique."
+msgstr "既に同じ組織、同じ講座番号、同じ受講開始日が設定されています。組織、講座番号をユニークなものに変更してください。"
+
+#: cms/djangoapps/contentstore/views/course.py:355
+#: cms/djangoapps/contentstore/views/course.py:359
+#: cms/djangoapps/contentstore/views/course.py:383
+#: cms/djangoapps/contentstore/views/course.py:386
+msgid ""
+"Please change either the organization or course number so that it is unique."
+msgstr "ユニークな情報とするため、組織もしくは講座番号を変更してください。"
+
+#: cms/djangoapps/contentstore/views/course.py:379
+msgid ""
+"There is already a course defined with the same organization and course "
+"number. Please change at least one field to be unique."
+msgstr "同様の組織、そして、講座番号で既に規定されている講座があります。少なくとも1つ以上のフィールドを変更することでユニークな情報としてください。"
+
+#: cms/djangoapps/contentstore/views/export_git.py:45
+msgid "Course successfully exported to git repository"
+msgstr "gitレポジトリへの講座エクスポートが完了しました。"
+
+#: cms/djangoapps/contentstore/views/import_export.py:79
+msgid "We only support uploading a .tar.gz file."
+msgstr ".tar.gz 形式のファイルのアップロードのみがサポートされています。"
+
+#: cms/djangoapps/contentstore/views/import_export.py:116
+msgid "File upload corrupted. Please try again"
+msgstr "ファイルアップロードが失敗しました。再度、お試しください。"
+
+#: cms/djangoapps/contentstore/views/import_export.py:204
+msgid "Could not find the course.xml file in the package."
+msgstr "パッケージ内に course.xml が見当たりませんでした。"
+
+#: cms/djangoapps/contentstore/views/item.py:458
+#, python-brace-format
+msgid "Duplicate of {0}"
+msgstr "'{0}' の重複"
+
+#: cms/djangoapps/contentstore/views/item.py:460
+#, python-brace-format
+msgid "Duplicate of '{0}'"
+msgstr "'{0}' の重複"
+
+#: cms/djangoapps/contentstore/views/transcripts_ajax.py:437
+msgid "Incoming video data is empty."
+msgstr "入力されたビデーオデータは空です。"
+
+#: cms/djangoapps/contentstore/views/transcripts_ajax.py:442
+msgid "Can't find item by locator."
+msgstr "ロケーターでアイテムを見つけることができません。"
+
+#: cms/djangoapps/contentstore/views/transcripts_ajax.py:445
+msgid "Transcripts are supported only for \"video\" modules."
+msgstr "字幕は「ビデオ」モジュールのみ対応します。"
+
+#: cms/djangoapps/contentstore/views/user.py:101
+msgid "Insufficient permissions"
+msgstr "権限が不十分です"
+
+#: cms/djangoapps/contentstore/views/user.py:109
+#, python-brace-format
+msgid "Could not find user by email address '{email}'."
+msgstr "電子メールアドレス「{email}」でユーザを見つけることができませんでした．"
+
+#: cms/djangoapps/contentstore/views/user.py:131
+#, python-brace-format
+msgid "User {email} has registered but has not yet activated his/her account."
+msgstr "ユーザ {email} は登録済みですが、まだアクティベーションが完了していません。"
+
+#: cms/djangoapps/contentstore/views/user.py:147
+msgid "`role` is required"
+msgstr "「ロール」は必須です"
+
+#: cms/djangoapps/contentstore/views/user.py:153
+msgid "Only instructors may create other instructors"
+msgstr "教員権限のユーザだけが別の教員権限のユーザを設定できます"
+
+#: cms/djangoapps/contentstore/views/user.py:189
+msgid "You may not remove the last instructor from a course"
+msgstr "講師は最低１ユーザー必要なので、講師を全削除はできません。"
+
+#: cms/djangoapps/course_creators/models.py:33
+msgid "unrequested"
+msgstr "要求されていない"
+
+#: cms/djangoapps/course_creators/models.py:34
+msgid "pending"
+msgstr "ペンディング"
+
+#: cms/djangoapps/course_creators/models.py:35
+msgid "granted"
+msgstr "許可済み"
+
+#: cms/djangoapps/course_creators/models.py:36
+msgid "denied"
+msgstr "不許可"
+
+#: cms/djangoapps/course_creators/models.py:39
+msgid "Studio user"
+msgstr "Studio ユーザ"
+
+#: cms/djangoapps/course_creators/models.py:41
+msgid "The date when state was last updated"
+msgstr "状態が最後に更新された日時"
+
+#: cms/djangoapps/course_creators/models.py:43
+msgid "Current course creator state"
+msgstr "現在の講座制作状況"
+
+#: cms/djangoapps/course_creators/models.py:44
+msgid ""
+"Optional notes about this user (for example, why course creation access was "
+"denied)"
+msgstr "このユーザへの補足説明 (たとえば、講座制作画面へのアクセス拒否理由、等)"
