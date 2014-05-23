@@ -842,6 +842,15 @@ main_vendor_js = [
     'js/vendor/ova/catch/js/catch.js',
     'js/vendor/ova/catch/js/handlebars-1.1.2.js',
     'js/vendor/URI.min.js',
+    'js/vendor/modernizr.js',
+]
+
+foundation_js = [
+##    'js/vendor/jquery.min.js',
+    'js/vendor/fastclick.js',
+    'js/vendor/foundation.min.js',
+##    'js/vendor/foundation.js',
+##    'js/vendor/foundation.f_dropdown.js',
 ]
 
 discussion_js = sorted(rooted_glob(COMMON_ROOT / 'static', 'coffee/src/discussion/**/*.js'))
@@ -916,6 +925,12 @@ PIPELINE_CSS = {
         ],
         'output_filename': 'css/lms-style-course.css',
     },
+    'style-gacco': {
+        'source_filenames': [
+            'sass/gacco/gacco.css',
+        ],
+        'output_filename': 'css/lms-style-gacco.css',
+    },
 }
 
 
@@ -987,6 +1002,11 @@ PIPELINE_JS = {
         'source_filenames': instructor_dash_js,
         'output_filename': 'js/instructor_dash.js',
         'test_order': 9,
+    },
+    'foundation': {
+        'source_filenames': foundation_js,
+        'output_filename': 'js/foundation.js',
+        'test_order': 10,
     },
 }
 
