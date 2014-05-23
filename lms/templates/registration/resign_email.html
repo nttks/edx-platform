@@ -1,5 +1,7 @@
-{% load i18n %}{% load url from future %}{% autoescape off %}
-{% blocktrans %}You're receiving this e-mail because you requested a resignation from {{ site_name }}.{% endblocktrans %}
+{% load i18n %}{% load url from future %}{% autoescape off %}{% comment %}{% blocktrans %}You're receiving this e-mail because you requested a resignation from {{ site_name }}.{% endblocktrans %} #}{% endcomment %}━━━━━━━━━
+■gacco 退会のご案内
+━━━━━━━━━
+いつもgaccoをご利用いただきまして、ありがとうございます。
 
 
 下記のURLをクリックし、退会手続きページへとお進みください。 
@@ -26,7 +28,7 @@ https://{{domain}}{% url 'student.views.resign_confirm' uidb36=uid token=token %
 ・gaccoに関する「よくあるご質問」はコチラ
 https://support.gacco.org/
 
-・お問い合わせはマイページよりお願いします
+・お問い合わせはマイページの「ヘルプ」ボタンよりお願いします
 https://lms.gacco.org/dashboard
 
 
@@ -43,5 +45,6 @@ https://{{domain}}{% url 'student.views.resign_confirm' uidb36=uid token=token %
 {% trans "Thanks for using our site!" %}
 
 {% blocktrans %}The edX Team{% endblocktrans %}
+{% endcomment %}
 
 {% endautoescape %}
