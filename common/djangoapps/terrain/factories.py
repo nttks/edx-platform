@@ -9,6 +9,9 @@ import course_modes.tests.factories as cmf
 from pgreport.tests.test_views import ProgressModulesFactory
 from lettuce import world
 
+# Unlock XBlock factories, because we're randomizing the collection
+# name above to prevent collisions
+xf.XMODULE_FACTORY_LOCK.enable()
 
 world.absorb(sf.UserFactory)
 world.absorb(sf.UserProfileFactory)

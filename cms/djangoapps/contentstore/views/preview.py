@@ -15,6 +15,7 @@ from xmodule.contentstore.django import contentstore
 from xmodule.error_module import ErrorDescriptor
 from xmodule.exceptions import NotFoundError, ProcessingError
 from xmodule.library_tools import LibraryToolsService
+from xmodule.services import SettingsService
 from xmodule.modulestore.django import modulestore, ModuleI18nService
 from opaque_keys.edx.keys import UsageKey
 from opaque_keys.edx.locator import LibraryUsageLocator
@@ -185,11 +186,13 @@ def _preview_module_system(request, descriptor, field_data):
         wrappers=wrappers,
         error_descriptor_class=ErrorDescriptor,
         get_user_role=lambda: get_user_role(request.user, course_id),
-        descriptor_runtime=descriptor.runtime,
+        # Get the raw DescriptorSystem, not the CombinedSystem
+        descriptor_runtime=descriptor._runtime,  # pylint: disable=protected-access
         services={
             "i18n": ModuleI18nService(),
             "field-data": field_data,
             "library_tools": LibraryToolsService(modulestore()),
+            "settings": SettingsService(),
             "user": DjangoXBlockUserService(request.user),
         },
     )

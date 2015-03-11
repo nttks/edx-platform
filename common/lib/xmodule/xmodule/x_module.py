@@ -3,6 +3,7 @@ import os
 import sys
 import yaml
 
+from contracts import contract, new_contract
 from functools import partial
 from lxml import etree
 from collections import namedtuple
@@ -402,7 +403,7 @@ class XModuleMixin(XBlockMixin):
         else:
             return [self.display_name_with_default]
 
-    def get_children(self):
+    def get_children(self, usage_key_filter=lambda location: True):
         """Returns a list of XBlock instances for the children of
         this module"""
 
@@ -412,6 +413,9 @@ class XModuleMixin(XBlockMixin):
         if getattr(self, '_child_instances', None) is None:
             self._child_instances = []  # pylint: disable=attribute-defined-outside-init
             for child_loc in self.children:
+                # Skip if it doesn't satisfy the filter function
+                if not usage_key_filter(child_loc):
+                    continue
                 try:
                     child = self.runtime.get_block(child_loc)
                     if child is None:
@@ -999,6 +1003,8 @@ class XModuleDescriptor(XModuleMixin, HTMLSnippet, ResourceTemplates, XBlock):
         # 3. A generic string editor for anything else (editing JSON representation of the value).
         editor_type = "Generic"
         values = field.values
+        if "values_provider" in field.runtime_options:
+            values = field.runtime_options['values_provider'](self)
         if isinstance(values, (tuple, list)) and len(values) > 0:
             editor_type = "Select"
             values = [jsonify_value(field, json_choice) for json_choice in values]
@@ -1307,6 +1313,9 @@ class DescriptorSystem(MetricsMixin, ConfigurableFragmentWrapper, Runtime):  # p
         pass
 
 
+new_contract('DescriptorSystem', DescriptorSystem)
+
+
 class XMLParsingSystem(DescriptorSystem):
     def __init__(self, process_xml, **kwargs):
         """
@@ -1427,6 +1436,8 @@ class ModuleSystem(MetricsMixin, ConfigurableFragmentWrapper, Runtime):  # pylin
     Note that these functions can be closures over e.g. a django request
     and user, or other environment-specific info.
     """
+
+    @contract(descriptor_runtime='DescriptorSystem')
     def __init__(
             self, static_url, track_function, get_module, render_template,
             replace_urls, descriptor_runtime, user=None, filestore=None,

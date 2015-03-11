@@ -5,35 +5,31 @@ import ddt
 import unittest
 from mock import patch
 
-from django.test.utils import override_settings
 from django.conf import settings
 from django.core.urlresolvers import reverse
-from xmodule.modulestore.tests.django_utils import (
-    ModuleStoreTestCase, mixed_store_config
-)
+from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
 from xmodule.modulestore.tests.factories import CourseFactory
+from util.testing import UrlResetMixin
+from embargo.test_utils import restrict_course
 from student.tests.factories import UserFactory, CourseModeFactory
 from student.models import CourseEnrollment
 
-# Since we don't need any XML course fixtures, use a modulestore configuration
-# that disables the XML modulestore.
-MODULESTORE_CONFIG = mixed_store_config(settings.COMMON_TEST_DATA_ROOT, {}, include_xml=False)
-
 
 @ddt.ddt
-@override_settings(MODULESTORE=MODULESTORE_CONFIG)
 @unittest.skipUnless(settings.ROOT_URLCONF == 'lms.urls', 'Test only valid in lms')
-class EnrollmentTest(ModuleStoreTestCase):
+class EnrollmentTest(UrlResetMixin, ModuleStoreTestCase):
     """
     Test student enrollment, especially with different course modes.
     """
+
     USERNAME = "Bob"
     EMAIL = "bob@example.com"
     PASSWORD = "edx"
 
+    @patch.dict(settings.FEATURES, {'EMBARGO': True})
     def setUp(self):
         """ Create a course and user, then log in. """
-        super(EnrollmentTest, self).setUp()
+        super(EnrollmentTest, self).setUp('embargo')
         self.course = CourseFactory.create()
         self.user = UserFactory.create(username=self.USERNAME, email=self.EMAIL, password=self.PASSWORD)
         self.client.login(username=self.USERNAME, password=self.PASSWORD)
@@ -137,6 +133,29 @@ class EnrollmentTest(ModuleStoreTestCase):
             mock_update_email_opt_in.assert_called_once_with(self.USERNAME, self.course.org, opt_in)
         else:
             self.assertFalse(mock_update_email_opt_in.called)
+
+    @patch.dict(settings.FEATURES, {'EMBARGO': True})
+    def test_embargo_restrict(self):
+        # When accessing the course from an embargoed country,
+        # we should be blocked.
+        with restrict_course(self.course.id) as redirect_url:
+            response = self._change_enrollment('enroll')
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.content, redirect_url)
+
+        # Verify that we weren't enrolled
+        is_enrolled = CourseEnrollment.is_enrolled(self.user, self.course.id)
+        self.assertFalse(is_enrolled)
+
+    @patch.dict(settings.FEATURES, {'EMBARGO': True})
+    def test_embargo_allow(self):
+        response = self._change_enrollment('enroll')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.content, '')
+
+        # Verify that we were enrolled
+        is_enrolled = CourseEnrollment.is_enrolled(self.user, self.course.id)
+        self.assertTrue(is_enrolled)
 
     def test_user_not_authenticated(self):
         # Log out, so we're no longer authenticated

@@ -110,14 +110,8 @@ CMS.URL.UPLOAD_ASSET = '${upload_asset_url}';
               <p>${_(
                 'Your course summary page will not be viewable until your course '
                 'has been announced. To provide content for the page and preview '
-                'it, follow the instructions provided by your {manager}.').format(
-                  manager='<abbr title="{program_manager}">{pm}</abbr>'.format(
-                    ## Translators: This is a job title
-                    program_manager=_("Program Manager"),
-                    ## Translators: This is an abbreviation for "Program Manager", which is a job title
-                    pm=_("PM"),
-                  )
-              )}</p>
+                'it, follow the instructions provided by your Program Manager.')
+              }</p>
             </div>
           </div>
           % endif
@@ -199,13 +193,7 @@ CMS.URL.UPLOAD_ASSET = '${upload_asset_url}';
                 'These dates impact <strong>when your courseware can be viewed</strong>, '
                 'but they are <strong>not the dates shown on your course summary page</strong>. '
                 'To provide the course start and registration dates as shown on your course '
-                'summary page, follow the instructions provided by your {manager}.').format(
-                  manager='<abbr title="{program_manager}">{pm}</abbr>'.format(
-                    ## Translators: This is a job title
-                    program_manager=_("Program Manager"),
-                    ## Translators: This is an abbreviation for "Program Manager", which is a job title
-                    pm=_("PM"),
-                  )
+                'summary page, follow the instructions provided by your Program Manager.'
               )}</p>
             </div>
           </div>
@@ -360,7 +348,7 @@ CMS.URL.UPLOAD_ASSET = '${upload_asset_url}';
             advanced_config_url = utils.reverse_course_url('advanced_settings_handler', context_course.id)
           %>
         <h3 class="title-3">${_("Other Course Settings")}</h3>
-        <nav class="nav-related">
+        <nav class="nav-related" aria-label="${_('Other Course Settings')}">
           <ul>
             <li class="nav-item"><a href="${grading_config_url}">${_("Grading")}</a></li>
             <li class="nav-item"><a href="${course_team_url}">${_("Course Team")}</a></li>

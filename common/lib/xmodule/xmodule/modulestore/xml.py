@@ -294,7 +294,8 @@ class XMLModuleStore(ModuleStoreReadBase):
     """
     def __init__(
             self, data_dir, default_class=None, course_dirs=None, course_ids=None,
-            load_error_modules=True, i18n_service=None, fs_service=None, user_service=None, **kwargs
+            load_error_modules=True, i18n_service=None, fs_service=None, user_service=None,
+            signal_handler=None, **kwargs   # pylint: disable=unused-argument
     ):
         """
         Initialize an XMLModuleStore from data_dir
@@ -705,7 +706,7 @@ class XMLModuleStore(ModuleStoreReadBase):
         """
         return CourseLocator(org, course, run, deprecated=True)
 
-    def get_courses(self, depth=0, **kwargs):
+    def get_courses(self, **kwargs):
         """
         Returns a list of course descriptors.  If there were errors on loading,
         some of these may be ErrorDescriptors instead.

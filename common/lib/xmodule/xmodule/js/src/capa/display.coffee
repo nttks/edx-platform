@@ -25,7 +25,7 @@ class @Problem
     window.update_schematics()
 
     problem_prefix = @element_id.replace(/problem_/,'')
-    @inputs = @$("[id^=input_#{problem_prefix}_]")
+    @inputs = @$("[id^='input_#{problem_prefix}_']")
     @$('div.action input:button').click @refreshAnswers
     @checkButton = @$('div.action input.check')
     @checkButtonCheckText = @checkButton.val()
@@ -34,6 +34,12 @@ class @Problem
     @$('div.action input.reset').click @reset
     @$('div.action button.show').click @show
     @$('div.action input.save').click @save
+    # Accessibility helper for sighted keyboard users to show <clarification> tooltips on focus:
+    @$('.clarification').focus (ev) =>
+      icon = $(ev.target).children "i"
+      window.globalTooltipManager.openTooltip icon
+    @$('.clarification').blur (ev) =>
+      window.globalTooltipManager.hide()
 
     @bindResetCorrectness()
 

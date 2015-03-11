@@ -7,6 +7,8 @@ import re
 
 from .utils.envs import Env
 
+ALL_SYSTEMS = 'lms,cms,common'
+
 
 @task
 @needs('pavelib.prereqs.install_python_prereqs')
@@ -18,7 +20,7 @@ def find_fixme(options):
     Run pylint on system code, only looking for fixme items.
     """
     num_fixme = 0
-    systems = getattr(options, 'system', 'lms,cms,common').split(',')
+    systems = getattr(options, 'system', ALL_SYSTEMS).split(',')
 
     for system in systems:
         # Directory to put the pylint report in.
@@ -72,7 +74,10 @@ def run_pylint(options):
     num_violations = 0
     violations_limit = int(getattr(options, 'limit', -1))
     errors = getattr(options, 'errors', False)
-    systems = getattr(options, 'system', 'lms,cms,common').split(',')
+    systems = getattr(options, 'system', ALL_SYSTEMS).split(',')
+    
+    # Make sure the metrics subdirectory exists
+    Env.METRICS_DIR.makedirs_p()
 
     for system in systems:
         # Directory to put the pylint report in.
@@ -112,7 +117,15 @@ def run_pylint(options):
         num_violations += _count_pylint_violations(
             "{report_dir}/pylint.report".format(report_dir=report_dir))
 
-    print("Number of pylint violations: " + str(num_violations))
+    # Print number of violations to log
+    violations_count_str = "Number of pylint violations: " + str(num_violations)
+    print(violations_count_str)
+
+    # Also write the number of violations to a file
+    with open(Env.METRICS_DIR / "pylint", "w") as f:
+        f.write(violations_count_str)
+
+    # Fail number of violations is greater than the limit
     if num_violations > violations_limit > -1:
         raise Exception("Failed. Too many pylint violations. "
                         "The limit is {violations_limit}.".format(violations_limit=violations_limit))
@@ -141,36 +154,67 @@ def _count_pylint_violations(report_file):
 @needs('pavelib.prereqs.install_python_prereqs')
 @cmdopts([
     ("system=", "s", "System to act on"),
-    ("limit=", "l", "limit for number of acceptable violations"),
 ])
 def run_pep8(options):
     """
-    Run pep8 on system code. When violations limit is passed in,
-    fail the task if too many violations are found.
+    Run pep8 on system code.
+    Fail the task if any violations are found.
     """
-    num_violations = 0
-    systems = getattr(options, 'system', 'lms,cms,common').split(',')
-    violations_limit = int(getattr(options, 'limit', -1))
+    systems = getattr(options, 'system', ALL_SYSTEMS).split(',')
+
+    report_dir = (Env.REPORT_DIR / 'pep8')
+    report_dir.rmtree(ignore_errors=True)
+    report_dir.makedirs_p()
+    
+    # Make sure the metrics subdirectory exists
+    Env.METRICS_DIR.makedirs_p()
 
     for system in systems:
-        # Directory to put the pep8 report in.
-        # This makes the folder if it doesn't already exist.
-        report_dir = (Env.REPORT_DIR / system).makedirs_p()
+        sh('pep8 {system} | tee {report_dir}/pep8.report -a'.format(system=system, report_dir=report_dir))
 
-        sh('pep8 {system} | tee {report_dir}/pep8.report'.format(system=system, report_dir=report_dir))
-        num_violations = num_violations + _count_pep8_violations(
-            "{report_dir}/pep8.report".format(report_dir=report_dir))
+    count = _count_pep8_violations(
+        "{report_dir}/pep8.report".format(report_dir=report_dir)
+    )
 
-    print("Number of pep8 violations: " + str(num_violations))
-    # Fail the task if the violations limit has been reached
-    if num_violations > violations_limit > -1:
-        raise Exception("Failed. Too many pep8 violations. "
-                        "The limit is {violations_limit}.".format(violations_limit=violations_limit))
+    # Print number of violations to log
+    violations_count_str = "Number of pep8 violations: {count}".format(count=count)
+    print(violations_count_str)
+
+    # Also write the number of violations to a file
+    with open(Env.METRICS_DIR / "pep8", "w") as f:
+        f.write(violations_count_str)
+
+    # Fail if any violations are found
+    if count:
+        raise Exception(
+            "Too many pep8 violations. Number of violations found: {count}.".format(
+                count=count
+            )
+        )
 
 
 def _count_pep8_violations(report_file):
     num_lines = sum(1 for line in open(report_file))
     return num_lines
+
+
+@task
+@needs('pavelib.prereqs.install_python_prereqs')
+def run_complexity():
+    """
+    Uses radon to examine cyclomatic complexity.
+    For additional details on radon, see http://radon.readthedocs.org/
+    """
+    system_string = 'cms/ lms/ common/ openedx/'
+    print "--> Calculating cyclomatic complexity of files..."
+    try:
+        sh(
+            "radon cc {system_string} --total-average".format(
+                system_string=system_string
+            )
+        )
+    except BuildFailure:
+        print "ERROR: Unable to calculate python-only code-complexity."
 
 
 @task

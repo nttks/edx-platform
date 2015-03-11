@@ -8,6 +8,7 @@
 # baris <brscvs@gmail.com>, 2013
 # Burak Özalp <realburq@gmail.com>, 2013
 # Burak Özalp <realburq@gmail.com>, 2013
+# Gencay <gencayerdem@hotmail.com>, 2015
 # Hakan Şenel <hgsenel@gmail.com>, 2014
 # Hakan Şenel <hgsenel@gmail.com>, 2014
 # msare <mervesareakin@gmail.com>, 2014
@@ -22,6 +23,7 @@
 # baris <brscvs@gmail.com>, 2013
 # Burak Özalp <realburq@gmail.com>, 2013
 # Ekin Hazal Bayar <ekinhazalbayar@gmail.com>, 2014
+# Emre B. <karivaara@turkcealtyazi.org>, 2015
 # Hakan Şenel <hgsenel@gmail.com>, 2014
 # Hakan Şenel <hgsenel@gmail.com>, 2014
 # İhsan Karataylı <ihsan.karatayli@gmail.com>, 2015
@@ -38,6 +40,7 @@
 # Burak Özalp <realburq@gmail.com>, 2013
 # Caner Başaran <basaran.caner@gmail.com>, 2014
 # emreusta <emreusta7@gmail.com>, 2014
+# Gencay <gencayerdem@hotmail.com>, 2015
 # Hakan Şenel <hgsenel@gmail.com>, 2014
 # Hakan Şenel <hgsenel@gmail.com>, 2014
 # Kerim Kaan <ben@kerimkaan.com>, 2013
@@ -87,7 +90,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: edx-platform\n"
 "Report-Msgid-Bugs-To: openedx-translation@googlegroups.com\n"
-"POT-Creation-Date: 2015-01-20 14:23+0000\n"
+"POT-Creation-Date: 2015-03-02 19:02+0000\n"
 "PO-Revision-Date: 2014-12-30 16:21+0000\n"
 "Last-Translator: Hakan Şenel <hgsenel@gmail.com>\n"
 "Language-Team: Turkish (Turkey) (http://www.transifex.com/projects/p/edx-platform/language/tr_TR/)\n"
@@ -115,11 +118,10 @@ msgstr ""
 #. Translators: 'Discussion' refers to the tab in the courseware that leads to
 #. the discussion forums
 #: cms/djangoapps/contentstore/views/component.py
-#: common/lib/xmodule/xmodule/tabs.py common/lib/xmodule/xmodule/tabs.py
+#: common/lib/xmodule/xmodule/tabs.py
 msgid "Discussion"
 msgstr "Tartışma"
 
-#: lms/templates/courseware/legacy_instructor_dashboard.html
 #: lms/templates/courseware/legacy_instructor_dashboard.html
 #: lms/templates/instructor/instructor_dashboard_2/instructor_analytics.html
 msgid "Problem"
@@ -132,8 +134,7 @@ msgstr ""
 
 #: cms/djangoapps/contentstore/views/helpers.py
 #: lms/djangoapps/class_dashboard/dashboard_data.py
-#: lms/djangoapps/class_dashboard/dashboard_data.py
-#: cms/templates/course_outline.html
+#: cms/templates/course_outline.html lms/templates/seq_module.html
 #: lms/templates/instructor/instructor_dashboard_2/metrics.html
 msgid "Section"
 msgstr ""
@@ -159,15 +160,10 @@ msgstr "Tamamlanmış"
 
 #: cms/djangoapps/contentstore/views/videos.py
 #: lms/djangoapps/class_dashboard/dashboard_data.py
-#: lms/djangoapps/class_dashboard/dashboard_data.py
-#: lms/djangoapps/class_dashboard/dashboard_data.py
 #: lms/djangoapps/instructor/views/api.py lms/templates/help_modal.html
 #: lms/templates/instructor/instructor_dashboard_2/generate_registarion_codes_modal.html
-#: lms/templates/instructor/instructor_dashboard_2/generate_registarion_codes_modal.html
-#: lms/templates/instructor/instructor_dashboard_2/metrics.html
 #: lms/templates/instructor/instructor_dashboard_2/metrics.html
 #: lms/templates/open_ended_problems/open_ended_flagged_problems.html
-#: lms/templates/shoppingcart/billing_details.html
 #: lms/templates/shoppingcart/billing_details.html
 #: lms/templates/shoppingcart/receipt.html
 msgid "Name"
@@ -177,7 +173,6 @@ msgstr "İsim"
 #: lms/djangoapps/shoppingcart/reports.py
 #: lms/templates/open_ended_problems/open_ended_problems.html
 #: lms/templates/shoppingcart/receipt.html
-#: lms/templates/shoppingcart/verified_cert_receipt.html
 msgid "Status"
 msgstr "Durum"
 
@@ -217,6 +212,128 @@ msgstr "Topluluk Öğretim Elemanı"
 msgid "Student"
 msgstr "Öğrenci"
 
+#: common/djangoapps/embargo/forms.py
+msgid "COURSE NOT FOUND.  Please check that the course ID is valid."
+msgstr ""
+
+#: common/djangoapps/embargo/models.py
+msgid "The course key for the restricted course."
+msgstr ""
+
+#: common/djangoapps/embargo/models.py
+msgid "The message to show when a user is blocked from enrollment."
+msgstr ""
+
+#: common/djangoapps/embargo/models.py
+msgid "The message to show when a user is blocked from accessing a course."
+msgstr ""
+
+#: common/djangoapps/embargo/models.py
+msgid "Two character ISO country code."
+msgstr ""
+
+#: common/djangoapps/embargo/models.py
+msgid ""
+"Whether to include or exclude the given course. If whitelist countries are "
+"specified, then ONLY users from whitelisted countries will be able to access"
+" the course.  If blacklist countries are specified, then users from "
+"blacklisted countries will NOT be able to access the course."
+msgstr ""
+
+#: common/djangoapps/embargo/models.py
+msgid "The course to which this rule applies."
+msgstr ""
+
+#: common/djangoapps/embargo/models.py
+msgid "The country to which this rule applies."
+msgstr ""
+
+#: common/djangoapps/embargo/models.py
+msgid "Whitelist {country} for {course}"
+msgstr ""
+
+#: common/djangoapps/embargo/models.py
+msgid "Blacklist {country} for {course}"
+msgstr ""
+
+#: common/djangoapps/student/forms.py
+msgid "Username must be minimum of two characters long"
+msgstr "En az iki harften oluşan kullanıcı ismi yazmanız gerekiyor"
+
+#: common/djangoapps/student/forms.py
+msgid "A properly formatted e-mail is required"
+msgstr "Geçerli biçimde e-posta adresi gerekiyor"
+
+#: common/djangoapps/student/forms.py
+msgid "A valid password is required"
+msgstr "Geçerli bir şifre gerekiyor"
+
+#: common/djangoapps/student/forms.py
+msgid "Your legal name must be a minimum of two characters long"
+msgstr "En az iki harften oluşan kimliğinizde yazan isminiz gerekiyor"
+
+#: common/djangoapps/student/forms.py
+msgid "Username should only consist of A-Z and 0-9, with no spaces."
+msgstr ""
+"Kullanıcı adınız sadece A-Z ve 0-9 karakterlerinden boşluk bulunmadan "
+"oluşabilir."
+
+#: common/djangoapps/student/forms.py
+msgid "Username cannot be more than %(limit_value)s characters long"
+msgstr ""
+
+#: common/djangoapps/student/forms.py
+msgid "Email cannot be more than %(limit_value)s characters long"
+msgstr ""
+
+#: common/djangoapps/student/forms.py
+msgid "You must accept the terms of service."
+msgstr "Hizmet koşullarını kabul etmelisiniz."
+
+#: common/djangoapps/student/forms.py
+msgid "A level of education is required"
+msgstr "En son eğitim seviyesinin girilmesi gerekiyor"
+
+#: common/djangoapps/student/forms.py
+msgid "Your gender is required"
+msgstr "Cinsiyetiniz gerekiyor"
+
+#: common/djangoapps/student/forms.py
+msgid "Your year of birth is required"
+msgstr "Doğum yılınız gerekiyor"
+
+#: common/djangoapps/student/forms.py
+msgid "Your mailing address is required"
+msgstr "Posta adresiniz gerekiyor"
+
+#: common/djangoapps/student/forms.py
+msgid "A description of your goals is required"
+msgstr "Hedeflerinizin tanımı gerekiyor"
+
+#: common/djangoapps/student/forms.py
+msgid "A city is required"
+msgstr "Bir şehir gerekiyor"
+
+#: common/djangoapps/student/forms.py
+msgid "A country is required"
+msgstr "Bir ülke gerekiyor"
+
+#: common/djangoapps/student/forms.py
+msgid "To enroll, you must follow the honor code."
+msgstr "Kaydolmak için onur kodunu kabul etmeniz gerekmektedir. "
+
+#: common/djangoapps/student/forms.py
+msgid "You are missing one or more required fields"
+msgstr ""
+
+#: common/djangoapps/student/forms.py
+msgid "Username and password fields cannot match"
+msgstr ""
+
+#: common/djangoapps/student/forms.py common/djangoapps/student/views.py
+msgid "Password: "
+msgstr "Şifre:"
+
 #: common/djangoapps/student/middleware.py
 msgid ""
 "Your account has been disabled. If you believe this was done in error, "
@@ -237,7 +354,7 @@ msgstr "Kadın"
 
 #. Translators: 'Other' refers to the student's gender
 #. Translators: 'Other' refers to the student's level of education
-#: common/djangoapps/student/models.py common/djangoapps/student/models.py
+#: common/djangoapps/student/models.py
 msgid "Other"
 msgstr "Diğer"
 
@@ -274,6 +391,35 @@ msgstr "Temel/İlkokul"
 #: common/lib/xmodule/xmodule/course_module.py
 msgid "None"
 msgstr "Hiçbiri"
+
+#: common/djangoapps/student/models.py
+msgid "{platform_name} Honor Code Certificate for {course_name}"
+msgstr ""
+
+#: common/djangoapps/student/models.py
+msgid "{platform_name} Verified Certificate for {course_name}"
+msgstr ""
+
+#: common/djangoapps/student/models.py
+msgid "{platform_name} Professional Certificate for {course_name}"
+msgstr ""
+
+#: common/djangoapps/student/models.py
+msgid ""
+"The company identifier for the LinkedIn Add-to-Profile button e.g "
+"0_0dPSPyS070e0HsE9HNz_13_d11_"
+msgstr ""
+
+#: common/djangoapps/student/models.py
+msgid ""
+"Short identifier for the LinkedIn partner used in the tracking code.  "
+"(Example: 'edx')  If no value is provided, tracking codes will not be sent "
+"to LinkedIn."
+msgstr ""
+
+#: common/djangoapps/student/models.py
+msgid "{platform_name} Certificate for {course_name}"
+msgstr ""
 
 #: common/djangoapps/student/views.py
 msgid "Course id not specified"
@@ -353,10 +499,8 @@ msgstr ""
 #: common/djangoapps/student/views.py
 msgid ""
 "This account has not been activated. We have sent another activation "
-"message. Please check your e-mail for the activation instructions."
+"message. Please check your email for the activation instructions."
 msgstr ""
-"Bu hesap henüz aktif hale getirilmedi. Size tekrar aktivasyon mesajı "
-"yolladık. Lütfen e-posta kutunuzu kontrol edin."
 
 #: common/djangoapps/student/views.py
 msgid "Please enter a username"
@@ -390,104 +534,6 @@ msgstr "Bu kullanıcı  '{username}' adı ile zaten mevcut."
 #: common/djangoapps/student/views.py
 msgid "An account with the Email '{email}' already exists."
 msgstr "Bu e-postaya '{email}' ait bir hesap zaten bulunmaktadır."
-
-#: common/djangoapps/student/views.py
-msgid "Error (401 {field}). E-mail us."
-msgstr "Hata (401 {field}). Bize e-posta atın."
-
-#: common/djangoapps/student/views.py
-msgid "To enroll, you must follow the honor code."
-msgstr "Kaydolmak için onur kodunu kabul etmeniz gerekmektedir. "
-
-#: common/djangoapps/student/views.py
-msgid "You must accept the terms of service."
-msgstr "Hizmet koşullarını kabul etmelisiniz."
-
-#: common/djangoapps/student/views.py
-msgid "Username must be minimum of two characters long"
-msgstr "En az iki harften oluşan kullanıcı ismi yazmanız gerekiyor"
-
-#: common/djangoapps/student/views.py
-msgid "A properly formatted e-mail is required"
-msgstr "Geçerli biçimde e-posta adresi gerekiyor"
-
-#: common/djangoapps/student/views.py
-msgid "Your legal name must be a minimum of two characters long"
-msgstr "En az iki harften oluşan kimliğinizde yazan isminiz gerekiyor"
-
-#: common/djangoapps/student/views.py
-msgid "A valid password is required"
-msgstr "Geçerli bir şifre gerekiyor"
-
-#: common/djangoapps/student/views.py
-msgid "Accepting Terms of Service is required"
-msgstr "Hizmet Şartlarını Kabul Gerekiyor"
-
-#: common/djangoapps/student/views.py
-msgid "Agreeing to the Honor Code is required"
-msgstr "Onur Kodunun kabul edilmesi gerekiyor"
-
-#: common/djangoapps/student/views.py
-msgid "A level of education is required"
-msgstr "En son eğitim seviyesinin girilmesi gerekiyor"
-
-#: common/djangoapps/student/views.py
-msgid "Your gender is required"
-msgstr "Cinsiyetiniz gerekiyor"
-
-#: common/djangoapps/student/views.py
-msgid "Your year of birth is required"
-msgstr "Doğum yılınız gerekiyor"
-
-#: common/djangoapps/student/views.py
-msgid "Your mailing address is required"
-msgstr "Posta adresiniz gerekiyor"
-
-#: common/djangoapps/student/views.py
-msgid "A description of your goals is required"
-msgstr "Hedeflerinizin tanımı gerekiyor"
-
-#: common/djangoapps/student/views.py
-msgid "A city is required"
-msgstr "Bir şehir gerekiyor"
-
-#: common/djangoapps/student/views.py
-msgid "A country is required"
-msgstr "Bir ülke gerekiyor"
-
-#: common/djangoapps/student/views.py
-msgid "You are missing one or more required fields"
-msgstr ""
-
-#: common/djangoapps/student/views.py
-msgid "Username cannot be more than {num} characters long"
-msgstr ""
-
-#: common/djangoapps/student/views.py
-msgid "Email cannot be more than {num} characters long"
-msgstr ""
-
-#: common/djangoapps/student/views.py
-msgid "Valid e-mail is required."
-msgstr "Geçerli bir e-posta adresi gerekmektedir."
-
-#: common/djangoapps/student/views.py
-msgid "Username should only consist of A-Z and 0-9, with no spaces."
-msgstr ""
-"Kullanıcı adınız sadece A-Z ve 0-9 karakterlerinden boşluk bulunmadan "
-"oluşabilir."
-
-#: common/djangoapps/student/views.py common/djangoapps/student/views.py
-msgid "Password: "
-msgstr "Şifre:"
-
-#: common/djangoapps/student/views.py
-msgid "Username and password fields cannot match"
-msgstr ""
-
-#: common/djangoapps/student/views.py
-msgid "Could not send activation e-mail."
-msgstr "Aktivasyon e-postası gönderilemedi."
 
 #: common/djangoapps/student/views.py
 msgid "Unknown error. Please e-mail us to let us know how it happened."
@@ -534,12 +580,12 @@ msgid "Valid e-mail address required."
 msgstr "Geçerli bir e-posta adresi gerekmektedir."
 
 #: common/djangoapps/student/views.py
-msgid "An account with this e-mail already exists."
-msgstr "Bu e-postaya ait bir hesap zaten bulunmaktadır."
-
-#: common/djangoapps/student/views.py
 msgid "Old email is the same as the new email."
 msgstr "Eski e-posta adresiniz yenisi ile aynıdır."
+
+#: common/djangoapps/student/views.py
+msgid "An account with this e-mail already exists."
+msgstr "Bu e-postaya ait bir hesap zaten bulunmaktadır."
 
 #: common/djangoapps/student/views.py
 msgid "Unable to send email activation link. Please try again later."
@@ -549,7 +595,7 @@ msgstr ""
 msgid "Name required"
 msgstr "İsim gerekmektedir."
 
-#: common/djangoapps/student/views.py common/djangoapps/student/views.py
+#: common/djangoapps/student/views.py
 msgid "Invalid ID"
 msgstr "Geçersiz ID"
 
@@ -982,7 +1028,7 @@ msgstr "yanlış"
 msgid "incomplete"
 msgstr "eksik"
 
-#: common/lib/capa/capa/inputtypes.py common/lib/capa/capa/inputtypes.py
+#: common/lib/capa/capa/inputtypes.py
 msgid "unanswered"
 msgstr "cevaplanmamış"
 
@@ -995,7 +1041,7 @@ msgstr ""
 msgid "ChoiceGroup: unexpected tag {tag_name}"
 msgstr ""
 
-#: common/lib/capa/capa/inputtypes.py common/lib/capa/capa/inputtypes.py
+#: common/lib/capa/capa/inputtypes.py
 msgid "Answer received."
 msgstr ""
 
@@ -1038,7 +1084,7 @@ msgstr ""
 msgid "Cannot connect to the queue"
 msgstr ""
 
-#: common/lib/capa/capa/inputtypes.py common/lib/capa/capa/inputtypes.py
+#: common/lib/capa/capa/inputtypes.py
 msgid "No formula specified."
 msgstr ""
 
@@ -1046,7 +1092,7 @@ msgstr ""
 msgid "Couldn't parse formula: {error_msg}"
 msgstr ""
 
-#: common/lib/capa/capa/inputtypes.py common/lib/capa/capa/inputtypes.py
+#: common/lib/capa/capa/inputtypes.py
 msgid "Error while rendering preview"
 msgstr ""
 
@@ -1084,11 +1130,9 @@ msgid "Execution of unsafe Javascript code is not allowed."
 msgstr ""
 
 #: cms/templates/widgets/problem-edit.html
-#: cms/templates/widgets/problem-edit.html
 msgid "Checkboxes"
 msgstr "Seçenek Kutucukları"
 
-#: cms/templates/widgets/problem-edit.html
 #: cms/templates/widgets/problem-edit.html
 msgid "Multiple Choice"
 msgstr "Çoktan Seçmeli"
@@ -1120,16 +1164,14 @@ msgid "True/False Choice"
 msgstr ""
 
 #: cms/templates/widgets/problem-edit.html
-#: cms/templates/widgets/problem-edit.html
 msgid "Dropdown"
 msgstr "Açılır Liste"
 
 #: cms/templates/widgets/problem-edit.html
-#: cms/templates/widgets/problem-edit.html
 msgid "Numerical Input"
 msgstr "Nümerik Girdi"
 
-#: common/lib/capa/capa/responsetypes.py common/lib/capa/capa/responsetypes.py
+#: common/lib/capa/capa/responsetypes.py
 msgid "There was a problem with the staff answer to this problem."
 msgstr "Bu probleme personelin verdiği yanıtta bir sorun vardı."
 
@@ -1173,7 +1215,6 @@ msgid ""
 "There was a problem with the staff answer to this problem: empty boundary."
 msgstr "Çalışanların bu soruya cevap vermesinde sorun yaşandı: boş sınır"
 
-#: cms/templates/widgets/problem-edit.html
 #: cms/templates/widgets/problem-edit.html
 msgid "Text Input"
 msgstr "Metin Girişi"
@@ -1329,7 +1370,6 @@ msgstr ""
 #: common/lib/xmodule/xmodule/combined_open_ended_module.py
 #: common/lib/xmodule/xmodule/discussion_module.py
 #: common/lib/xmodule/xmodule/html_module.py
-#: common/lib/xmodule/xmodule/html_module.py
 #: common/lib/xmodule/xmodule/imageannotation_module.py
 #: common/lib/xmodule/xmodule/library_content_module.py
 #: common/lib/xmodule/xmodule/lti_module.py
@@ -1360,7 +1400,6 @@ msgstr ""
 
 #: common/lib/xmodule/xmodule/capa_base.py
 #: common/lib/xmodule/xmodule/combined_open_ended_module.py
-#: common/lib/xmodule/xmodule/html_module.py
 #: common/lib/xmodule/xmodule/html_module.py
 msgid "This name appears in the horizontal navigation at the top of the page."
 msgstr ""
@@ -1412,7 +1451,6 @@ msgid ""
 msgstr ""
 
 #: common/lib/xmodule/xmodule/capa_base.py
-#: common/lib/xmodule/xmodule/capa_base.py
 msgid "Always"
 msgstr ""
 
@@ -1440,7 +1478,6 @@ msgstr ""
 msgid "Past Due"
 msgstr ""
 
-#: common/lib/xmodule/xmodule/capa_base.py
 #: common/lib/xmodule/xmodule/capa_base.py
 msgid "Never"
 msgstr ""
@@ -1582,8 +1619,6 @@ msgstr "Eğer hata devam ederse, lütfen dersin personeliyle temasa geçiniz."
 
 #. Translators: 'closed' means the problem's due date has passed. You may no
 #. longer attempt to solve the problem.
-#: common/lib/xmodule/xmodule/capa_base.py
-#: common/lib/xmodule/xmodule/capa_base.py
 #: common/lib/xmodule/xmodule/capa_base.py
 msgid "Problem is closed."
 msgstr "Problem yanıtlara kapandı."
@@ -1795,6 +1830,17 @@ msgstr ""
 msgid ""
 "Enter the passports for course LTI tools in the following format: "
 "\"id:client_key:client_secret\"."
+msgstr ""
+
+#: common/lib/xmodule/xmodule/course_module.py
+msgid "Cosmetic Course Display Price"
+msgstr ""
+
+#: common/lib/xmodule/xmodule/course_module.py
+msgid ""
+"The cost displayed to students for enrolling in the course. If a paid course"
+" registration price is set by an administrator in the database, that price "
+"will be displayed instead of this one."
 msgstr ""
 
 #: common/lib/xmodule/xmodule/course_module.py
@@ -2095,12 +2141,6 @@ msgid "Use your course outline to build your first Section and Subsection."
 msgstr ""
 
 #: common/lib/xmodule/xmodule/course_module.py
-#: common/lib/xmodule/xmodule/course_module.py
-#: common/lib/xmodule/xmodule/course_module.py
-#: common/lib/xmodule/xmodule/course_module.py
-#: common/lib/xmodule/xmodule/course_module.py
-#: common/lib/xmodule/xmodule/course_module.py
-#: common/lib/xmodule/xmodule/course_module.py
 msgid "Edit Course Outline"
 msgstr ""
 
@@ -2219,9 +2259,6 @@ msgid ""
 msgstr ""
 
 #: common/lib/xmodule/xmodule/course_module.py
-#: common/lib/xmodule/xmodule/course_module.py
-#: common/lib/xmodule/xmodule/course_module.py
-#: common/lib/xmodule/xmodule/course_module.py
 msgid "Edit Course Schedule &amp; Details"
 msgstr ""
 
@@ -2265,13 +2302,20 @@ msgid ""
 msgstr ""
 
 #: common/lib/xmodule/xmodule/course_module.py
+msgid ""
+"True if timezones should be shown on dates in the courseware. Deprecated in "
+"favor of due_date_display_format."
+msgstr ""
+
+#: common/lib/xmodule/xmodule/course_module.py
 msgid "Due Date Display Format"
 msgstr ""
 
 #: common/lib/xmodule/xmodule/course_module.py
 msgid ""
-"Enter the format due dates are displayed in. Due dates must be in MM-DD-"
-"YYYY, DD-MM-YYYY, YYYY-MM-DD, or YYYY-DD-MM format."
+"Enter the format for due dates. The default is Mon DD, YYYY. Enter "
+"\"%m-%d-%Y\" for MM-DD-YYYY, \"%d-%m-%Y\" for DD-MM-YYYY, \"%Y-%m-%d\" for "
+"YYYY-MM-DD, or \"%Y-%d-%m\" for YYYY-DD-MM."
 msgstr ""
 
 #: common/lib/xmodule/xmodule/course_module.py
@@ -2298,11 +2342,14 @@ msgstr ""
 
 #: common/lib/xmodule/xmodule/course_module.py
 msgid ""
-"Has three possible states: 'end', 'early_with_info', 'early_no_info'. 'end' "
-"is the default behavior, where certificates will only appear after a course "
-"has ended. 'early_with_info' will display all certificate information before"
-" a course has ended. 'early_no_info' will hide all certificate information "
-"unless a student has earned a certificate."
+"Enter end, early_with_info, or early_no_info. After certificate generation, "
+"students who passed see a link to their certificates on the dashboard and "
+"students who did not pass see information about the grading configuration. "
+"The default is end, which displays this certificate information to all "
+"students after the course end date. To display this certificate information "
+"to all students as soon as certificates are generated, enter "
+"early_with_info. To display only the links to passing students as soon as "
+"certificates are generated, enter early_no_info."
 msgstr ""
 
 #: common/lib/xmodule/xmodule/course_module.py
@@ -2411,6 +2458,10 @@ msgid "Invitation Only"
 msgstr ""
 
 #: common/lib/xmodule/xmodule/course_module.py
+msgid "Whether to restrict enrollment to invitation by the course staff."
+msgstr ""
+
+#: common/lib/xmodule/xmodule/course_module.py
 msgid "Pre-Course Survey Name"
 msgstr ""
 
@@ -2447,7 +2498,6 @@ msgstr ""
 
 #: lms/templates/footer-edx-new.html lms/templates/footer.html
 #: lms/templates/static_templates/about.html
-#: lms/templates/static_templates/about.html
 msgid "About"
 msgstr "Hakkında"
 
@@ -2458,7 +2508,8 @@ msgstr ""
 #: common/lib/xmodule/xmodule/course_module.py
 msgid ""
 "Specify whether students must complete an entrance exam before they can view"
-" your course content."
+" your course content. Note, you must enable Entrance Exams for this course "
+"setting to take effect."
 msgstr ""
 
 #: common/lib/xmodule/xmodule/course_module.py
@@ -2468,7 +2519,8 @@ msgstr ""
 #: common/lib/xmodule/xmodule/course_module.py
 msgid ""
 "Specify a minimum percentage score for an entrance exam before students can "
-"view your course content."
+"view your course content. Note, you must enable Entrance Exams for this "
+"course setting to take effect."
 msgstr ""
 
 #: common/lib/xmodule/xmodule/course_module.py
@@ -2521,8 +2573,6 @@ msgstr ""
 msgid "Text"
 msgstr ""
 
-#: common/lib/xmodule/xmodule/html_module.py
-#: common/lib/xmodule/xmodule/html_module.py
 #: common/lib/xmodule/xmodule/html_module.py
 #: common/lib/xmodule/xmodule/peer_grading_module.py
 msgid "Html contents to display for this module"
@@ -2725,6 +2775,12 @@ msgid "Edit Library List."
 msgstr ""
 
 #: common/lib/xmodule/xmodule/library_content_module.py
+msgid ""
+"This course does not support content libraries. Contact your system "
+"administrator for more information."
+msgstr ""
+
+#: common/lib/xmodule/xmodule/library_content_module.py
 msgid "A library has not yet been selected."
 msgstr ""
 
@@ -2781,7 +2837,8 @@ msgstr ""
 msgid ""
 "Enter the LTI ID for the external LTI provider.  This value must be the same"
 " LTI ID that you entered in the LTI Passports setting on the Advanced "
-"Settings page.<br />See "
+"Settings page.<br />See {docs_anchor_open}the edX LTI "
+"documentation{anchor_close} for more details on this setting."
 msgstr ""
 
 #: common/lib/xmodule/xmodule/lti_module.py
@@ -2792,6 +2849,8 @@ msgstr ""
 msgid ""
 "Enter the URL of the external tool that this component launches. This "
 "setting is only used when Hide External Tool is set to False.<br />See "
+"{docs_anchor_open}the edX LTI documentation{anchor_close} for more details "
+"on this setting."
 msgstr ""
 
 #: common/lib/xmodule/xmodule/lti_module.py
@@ -2802,6 +2861,8 @@ msgstr ""
 msgid ""
 "Add the key/value pair for any custom parameters, such as the page your "
 "e-book should open to or the background color for this component.<br />See "
+"{docs_anchor_open}the edX LTI documentation{anchor_close} for more details "
+"on this setting."
 msgstr ""
 
 #: common/lib/xmodule/xmodule/lti_module.py
@@ -2894,6 +2955,15 @@ msgid ""
 msgstr ""
 
 #: common/lib/xmodule/xmodule/lti_module.py
+msgid "Accept grades past deadline"
+msgstr ""
+
+#: common/lib/xmodule/xmodule/lti_module.py
+msgid ""
+"Select True to allow third party systems to post grades past the deadline."
+msgstr ""
+
+#: common/lib/xmodule/xmodule/lti_module.py
 msgid ""
 "Could not parse custom parameter: {custom_parameter}. Should be \"x=y\" "
 "string."
@@ -2962,7 +3032,9 @@ msgid "Is Entrance Exam"
 msgstr ""
 
 #: common/lib/xmodule/xmodule/seq_module.py
-msgid "Tag this course module as an Entrance Exam.  "
+msgid ""
+"Tag this course module as an Entrance Exam. Note, you must enable Entrance "
+"Exams for this course setting to take effect."
 msgstr ""
 
 #: common/lib/xmodule/xmodule/split_test_module.py
@@ -3082,7 +3154,7 @@ msgid "Wiki"
 msgstr "Wiki"
 
 #: common/lib/xmodule/xmodule/tabs.py cms/templates/textbooks.html
-#: cms/templates/textbooks.html cms/templates/widgets/header.html
+#: cms/templates/widgets/header.html
 msgid "Textbooks"
 msgstr "Ders Kitapları"
 
@@ -3209,6 +3281,18 @@ msgstr ""
 msgid "Top num_top_words words for word cloud."
 msgstr ""
 
+#: common/lib/xmodule/xmodule/modulestore/courseware_index.py
+msgid "Could not index item: {}"
+msgstr ""
+
+#: common/lib/xmodule/xmodule/modulestore/courseware_index.py
+msgid "General indexing error occurred"
+msgstr ""
+
+#: common/lib/xmodule/xmodule/modulestore/courseware_index.py
+msgid "Error(s) present during indexing"
+msgstr ""
+
 #: common/lib/xmodule/xmodule/modulestore/inheritance.py
 msgid "Enter the default date by which problems are due."
 msgstr ""
@@ -3248,6 +3332,10 @@ msgstr ""
 msgid ""
 "Enter the secret string for annotation storage. The textannotation, "
 "videoannotation, and imageannotation advanced modules require this string."
+msgstr ""
+
+#: common/lib/xmodule/xmodule/modulestore/inheritance.py
+msgid "Enter the ids for the content groups this problem belongs to."
 msgstr ""
 
 #: common/lib/xmodule/xmodule/modulestore/inheritance.py
@@ -3328,7 +3416,6 @@ msgid ""
 msgstr ""
 
 #: common/lib/xmodule/xmodule/modulestore/inheritance.py
-#: cms/templates/group_configurations.html
 #: cms/templates/group_configurations.html cms/templates/settings.html
 #: cms/templates/settings_advanced.html cms/templates/settings_graders.html
 #: cms/templates/widgets/header.html
@@ -3474,7 +3561,6 @@ msgstr "Eğitmen-Değerlendirme"
 #. Translators: "AI-Assessment" refers to the machine-graded mode of openended
 #. evaluation
 #: common/lib/xmodule/xmodule/open_ended_grading_classes/combined_open_ended_rubric.py
-#: common/lib/xmodule/xmodule/open_ended_grading_classes/combined_open_ended_rubric.py
 msgid "AI-Assessment"
 msgstr "YZ-Değerlendirme"
 
@@ -3527,7 +3613,6 @@ msgstr ""
 #. are sent to, either to be machine-graded, peer-graded, or instructor-
 #. graded.
 #: common/lib/xmodule/xmodule/open_ended_grading_classes/open_ended_module.py
-#: common/lib/xmodule/xmodule/open_ended_grading_classes/open_ended_module.py
 msgid "Error getting feedback from grader."
 msgstr "Notlandırıcıdan geri beslem alırken hata."
 
@@ -3564,7 +3649,6 @@ msgstr "İşlem görüyor"
 
 #. Translators: "Done" communicates to a student that their response
 #. has been fully graded
-#: common/lib/xmodule/xmodule/open_ended_grading_classes/openendedchild.py
 #: common/lib/xmodule/xmodule/open_ended_grading_classes/openendedchild.py
 msgid "Done"
 msgstr "Bitti"
@@ -3869,14 +3953,11 @@ msgstr "Arama"
 
 #: common/static/js/vendor/mathjax-MathJax-c9db6ac/docs/source/mjtheme/layout.html
 #: lms/templates/static_templates/copyright.html
-#: lms/templates/static_templates/copyright.html
 msgid "Copyright"
 msgstr "Telif Hakkı"
 
 #: lms/djangoapps/class_dashboard/dashboard_data.py
-#: lms/djangoapps/class_dashboard/dashboard_data.py
 #: lms/djangoapps/instructor/views/api.py
-#: lms/djangoapps/instructor/views/legacy.py
 #: lms/djangoapps/instructor/views/legacy.py
 #: lms/djangoapps/instructor/views/tools.py
 msgid "Username"
@@ -3938,6 +4019,20 @@ msgstr "Bir makale eklemek için dersin wikisini ziyaret et"
 msgid "Entrance Exam"
 msgstr ""
 
+#. Translators: This will look like '$50', where {currency_symbol} is a symbol
+#. such as '$' and {price} is a
+#. numerical amount in that currency. Adjust this display as needed for your
+#. language.
+#: lms/djangoapps/courseware/views.py
+msgid "{currency_symbol}{price}"
+msgstr ""
+
+#. Translators: This refers to the cost of the course. In this case, the
+#. course costs nothing so it is free.
+#: lms/djangoapps/courseware/views.py
+msgid "Free"
+msgstr ""
+
 #. Translators: The join of three or more institution names (e.g., Harvard,
 #. MIT, and Dartmouth).
 #: lms/djangoapps/courseware/views.py
@@ -3968,6 +4063,22 @@ msgstr "Kullanıcı {username} yok."
 
 #: lms/djangoapps/courseware/views.py
 msgid "User {username} has never accessed problem {location}"
+msgstr ""
+
+#: lms/djangoapps/courseware/views.py
+msgid "You must be signed in to {platform_name} to create a certificate."
+msgstr ""
+
+#: lms/djangoapps/courseware/views.py
+msgid "Course is not valid"
+msgstr ""
+
+#: lms/djangoapps/courseware/views.py lms/templates/courseware/progress.html
+msgid "Your certificate will be available when you pass the course."
+msgstr ""
+
+#: lms/djangoapps/courseware/views.py lms/templates/courseware/progress.html
+msgid "Creating certificate"
 msgstr ""
 
 #: lms/djangoapps/courseware/features/video.py
@@ -4022,7 +4133,6 @@ msgstr ""
 "Belirlenen dala geçiş başarısız oldu. Dal ismini lütfen kontrol ediniz."
 
 #: lms/djangoapps/dashboard/support.py
-#: lms/templates/shoppingcart/billing_details.html
 #: lms/templates/shoppingcart/billing_details.html
 msgid "Email Address"
 msgstr ""
@@ -4082,7 +4192,7 @@ msgstr "sabit şifre"
 msgid "All ok!"
 msgstr "Herşey tamam!"
 
-#: lms/djangoapps/dashboard/sysadmin.py lms/djangoapps/dashboard/sysadmin.py
+#: lms/djangoapps/dashboard/sysadmin.py
 msgid "Must provide username"
 msgstr "Kullanıcı adı vermelisiniz"
 
@@ -4147,8 +4257,7 @@ msgstr "Toplam kullanıcı sayısı"
 msgid "Courses loaded in the modulestore"
 msgstr "Modül Mağazasına Yüklenen Dersler"
 
-#: lms/djangoapps/dashboard/sysadmin.py lms/djangoapps/dashboard/sysadmin.py
-#: lms/templates/tracking_log.html
+#: lms/djangoapps/dashboard/sysadmin.py lms/templates/tracking_log.html
 #, fuzzy
 msgid "username"
 msgstr ""
@@ -4157,7 +4266,7 @@ msgstr ""
 "#-#-#-#-#  mako.po (edx-platform)  #-#-#-#-#\n"
 "kullanıcıadı"
 
-#: lms/djangoapps/dashboard/sysadmin.py lms/djangoapps/dashboard/sysadmin.py
+#: lms/djangoapps/dashboard/sysadmin.py
 msgid "email"
 msgstr "e-posta"
 
@@ -4226,7 +4335,7 @@ msgstr "Başarıyla dala geçildi:  {branch_name}"
 msgid "Loaded course {course_name}<br/>Errors:"
 msgstr ""
 
-#: lms/djangoapps/dashboard/sysadmin.py lms/djangoapps/dashboard/sysadmin.py
+#: lms/djangoapps/dashboard/sysadmin.py
 msgid "Course Name"
 msgstr "Ders Adı"
 
@@ -4260,7 +4369,7 @@ msgstr "Hata - {0}<br/><pre>{1}</pre> numaralı ders getirilemedi"
 msgid "Deleted"
 msgstr "Silindi"
 
-#: lms/djangoapps/dashboard/sysadmin.py lms/djangoapps/dashboard/sysadmin.py
+#: lms/djangoapps/dashboard/sysadmin.py
 msgid "course_id"
 msgstr "ders_no"
 
@@ -4296,22 +4405,10 @@ msgstr ""
 "Belirlenen git deposunu ve opsiyonel dalı modül mağazasına ve opsiyonel "
 "olarak belirlenmiş dizine aktarma."
 
-#: lms/djangoapps/django_comment_client/mustache_helpers.py
-msgid "Re-open thread"
-msgstr "İpliği Tekrar Açın"
-
-#: lms/djangoapps/django_comment_client/mustache_helpers.py
-msgid "Close thread"
-msgstr "İpliği Kapatın"
-
-#: lms/djangoapps/django_comment_client/base/views.py
 #: lms/djangoapps/django_comment_client/base/views.py
 msgid "Title can't be empty"
 msgstr "Başlık boş olamaz"
 
-#: lms/djangoapps/django_comment_client/base/views.py
-#: lms/djangoapps/django_comment_client/base/views.py
-#: lms/djangoapps/django_comment_client/base/views.py
 #: lms/djangoapps/django_comment_client/base/views.py
 msgid "Body can't be empty"
 msgstr "Gövde boş olamaz"
@@ -4320,7 +4417,6 @@ msgstr "Gövde boş olamaz"
 msgid "Topic doesn't exist"
 msgstr ""
 
-#: lms/djangoapps/django_comment_client/base/views.py
 #: lms/djangoapps/django_comment_client/base/views.py
 msgid "Comment level too deep"
 msgstr "Yorum Seviyesi Çok Derin"
@@ -4422,11 +4518,8 @@ msgstr ""
 #. form meant to hold the user's email address.
 #: lms/djangoapps/instructor/views/api.py
 #: lms/djangoapps/instructor/views/instructor_dashboard.py
-#: openedx/core/djangoapps/user_api/views.py
-#: openedx/core/djangoapps/user_api/views.py
 #: openedx/core/djangoapps/user_api/views.py lms/templates/dashboard.html
 #: lms/templates/courseware/legacy_instructor_dashboard.html
-#: lms/templates/instructor/instructor_dashboard_2/generate_registarion_codes_modal.html
 #: lms/templates/instructor/instructor_dashboard_2/generate_registarion_codes_modal.html
 msgid "Email"
 msgstr "E-posta"
@@ -4491,6 +4584,10 @@ msgid "The file must contain a 'username' column, an 'email' column, or both."
 msgstr ""
 
 #: lms/djangoapps/instructor/views/api.py
+msgid "Could not parse amount as a decimal"
+msgstr ""
+
+#: lms/djangoapps/instructor/views/api.py
 msgid "Unable to generate redeem codes because of course misconfiguration."
 msgstr ""
 
@@ -4505,6 +4602,34 @@ msgstr ""
 
 #: lms/djangoapps/instructor/views/api.py
 msgid "An error occurred while deleting the score."
+msgstr ""
+
+#: lms/djangoapps/instructor/views/api.py
+msgid "Course has no entrance exam section."
+msgstr ""
+
+#: lms/djangoapps/instructor/views/api.py
+msgid "all_students and unique_student_identifier are mutually exclusive."
+msgstr ""
+
+#: lms/djangoapps/instructor/views/api.py
+msgid "all_students and delete_module are mutually exclusive."
+msgstr ""
+
+#: lms/djangoapps/instructor/views/api.py
+msgid "Requires instructor access."
+msgstr ""
+
+#: lms/djangoapps/instructor/views/api.py
+msgid "Course has no valid entrance exam section."
+msgstr ""
+
+#: lms/djangoapps/instructor/views/api.py
+msgid "All Students"
+msgstr ""
+
+#: lms/djangoapps/instructor/views/api.py
+msgid "Cannot rescore with all_students and unique_student_identifier."
 msgstr ""
 
 #: lms/djangoapps/instructor/views/api.py
@@ -4543,17 +4668,13 @@ msgid "coupon id is None"
 msgstr ""
 
 #: lms/djangoapps/instructor/views/coupons.py
-#: lms/djangoapps/instructor/views/coupons.py
-#: lms/djangoapps/instructor/views/coupons.py
 msgid "coupon with the coupon id ({coupon_id}) DoesNotExist"
 msgstr ""
 
 #: lms/djangoapps/instructor/views/coupons.py
-#: lms/djangoapps/instructor/views/coupons.py
 msgid "coupon with the coupon id ({coupon_id}) is already inactive"
 msgstr ""
 
-#: lms/djangoapps/instructor/views/coupons.py
 #: lms/djangoapps/instructor/views/coupons.py
 msgid "coupon with the coupon id ({coupon_id}) updated successfully"
 msgstr ""
@@ -4584,7 +4705,6 @@ msgstr ""
 msgid "coupon with the coupon code ({code}) already exists for this course"
 msgstr ""
 
-#: lms/djangoapps/instructor/views/coupons.py
 #: lms/djangoapps/instructor/views/coupons.py
 msgid "coupon id not found"
 msgstr ""
@@ -4693,7 +4813,6 @@ msgid "Invalid assignment name '{name}'"
 msgstr "Geçersiz ödev ismi '{name}' "
 
 #: lms/djangoapps/instructor/views/legacy.py
-#: lms/djangoapps/instructor/views/legacy.py
 msgid "External email"
 msgstr "Dış e-posta"
 
@@ -4759,8 +4878,8 @@ msgstr "No"
 #: lms/djangoapps/instructor/views/legacy.py
 #: lms/djangoapps/instructor/views/tools.py cms/templates/register.html
 #: lms/templates/dashboard.html lms/templates/register-shib.html
-#: lms/templates/register.html lms/templates/register.html
-#: lms/templates/signup_modal.html lms/templates/sysadmin_dashboard.html
+#: lms/templates/register.html lms/templates/signup_modal.html
+#: lms/templates/sysadmin_dashboard.html
 #: lms/templates/verify_student/_modal_editname.html
 #: lms/templates/verify_student/face_upload.html
 #, fuzzy
@@ -4820,7 +4939,6 @@ msgid "No due date extension is set for that student and unit."
 msgstr ""
 
 #: lms/djangoapps/instructor/views/tools.py
-#: lms/djangoapps/instructor/views/tools.py
 msgid "Extended Due Date"
 msgstr "Ertelenmiş Son Gün"
 
@@ -4831,6 +4949,10 @@ msgstr "{0} için ek süre almış kullanıcılar"
 #: lms/djangoapps/instructor/views/tools.py
 msgid "Due date extensions for {0} {1} ({2})"
 msgstr "{0} {1} ({2}) için ek süreler"
+
+#: lms/djangoapps/instructor_task/api_helper.py
+msgid "Not all problems in entrance exam support re-scoring."
+msgstr ""
 
 #. Translators: This is a past-tense verb that is inserted into task progress
 #. messages as {action}.
@@ -4878,7 +5000,6 @@ msgstr ""
 msgid "cohorted"
 msgstr ""
 
-#: lms/djangoapps/instructor_task/views.py
 #: lms/djangoapps/instructor_task/views.py
 msgid "No status information available"
 msgstr "Durum bilgisi bulunmamaktadır."
@@ -5141,7 +5262,6 @@ msgid "View submissions that have been flagged by students as inappropriate."
 msgstr "Öğrenciler tarafında uygunsuz olarak işaretlenmiş yanıtları gör."
 
 #: lms/djangoapps/open_ended_grading/views.py
-#: lms/djangoapps/open_ended_grading/views.py
 msgid "New submissions to grade"
 msgstr "Notlandırılacak yeni yüklemeler var"
 
@@ -5181,6 +5301,44 @@ msgid "Trying to add a different currency into the cart"
 msgstr "Sepete farklı bir para birimi eklemeye çalışılıyor"
 
 #: lms/djangoapps/shoppingcart/models.py
+msgid "Internal reference code for this invoice."
+msgstr ""
+
+#: lms/djangoapps/shoppingcart/models.py
+msgid "Customer's reference code for this invoice."
+msgstr ""
+
+#: lms/djangoapps/shoppingcart/models.py
+msgid ""
+"The amount of the transaction.  Use positive amounts for payments and "
+"negative amounts for refunds."
+msgstr ""
+
+#: lms/djangoapps/shoppingcart/models.py
+msgid "Lower-case ISO currency codes"
+msgstr ""
+
+#: lms/djangoapps/shoppingcart/models.py
+msgid "Optional: provide additional information for this transaction"
+msgstr ""
+
+#: lms/djangoapps/shoppingcart/models.py
+msgid ""
+"The status of the payment or refund. 'started' means that payment is "
+"expected, but money has not yet been transferred. 'completed' means that the"
+" payment or refund was received. 'cancelled' means that payment or refund "
+"was expected, but was cancelled before money was transferred. "
+msgstr ""
+
+#: lms/djangoapps/shoppingcart/models.py
+msgid "The number of items sold."
+msgstr ""
+
+#: lms/djangoapps/shoppingcart/models.py
+msgid "The price per item sold, including discounts."
+msgstr ""
+
+#: lms/djangoapps/shoppingcart/models.py
 msgid "Registration for Course: {course_name}"
 msgstr ""
 
@@ -5196,6 +5354,10 @@ msgstr ""
 #: lms/djangoapps/shoppingcart/models.py
 msgid "[Refund] User-Requested Refund"
 msgstr "[İade] Kullanıcının Talep Ettiği İade"
+
+#: lms/djangoapps/shoppingcart/models.py
+msgid "Mode {mode} does not exist for {course_id}"
+msgstr ""
 
 #. Translators: In this particular case, mode_name refers to a
 #. particular mode (i.e. Honor Code Certificate, Verified Certificate, etc)
@@ -5227,6 +5389,10 @@ msgid ""
 msgstr ""
 
 #: lms/djangoapps/shoppingcart/models.py
+msgid "Could not find a course with the ID '{course_id}'"
+msgstr ""
+
+#: lms/djangoapps/shoppingcart/models.py
 msgid "Donation for {course}"
 msgstr ""
 
@@ -5238,8 +5404,7 @@ msgstr ""
 msgid "Page {page_number} of {page_count}"
 msgstr ""
 
-#: lms/djangoapps/shoppingcart/pdf.py lms/djangoapps/shoppingcart/pdf.py
-#: lms/templates/shoppingcart/receipt.html
+#: lms/djangoapps/shoppingcart/pdf.py lms/templates/shoppingcart/receipt.html
 msgid "Invoice"
 msgstr ""
 
@@ -5264,8 +5429,6 @@ msgstr ""
 #: lms/templates/instructor/instructor_dashboard_2/add_coupon_modal.html
 #: lms/templates/instructor/instructor_dashboard_2/e-commerce.html
 #: lms/templates/instructor/instructor_dashboard_2/edit_coupon_modal.html
-#: lms/templates/shoppingcart/verified_cert_receipt.html
-#: lms/templates/shoppingcart/verified_cert_receipt.html
 #: wiki/plugins/attachments/forms.py
 msgid "Description"
 msgstr "Tanımlama"
@@ -5293,7 +5456,6 @@ msgstr ""
 #: lms/templates/instructor/instructor_dashboard_2/course_info.html
 #: lms/templates/shoppingcart/billing_details.html
 #: lms/templates/shoppingcart/receipt.html
-#: lms/templates/shoppingcart/verified_cert_receipt.html
 msgid "Total"
 msgstr "Toplam"
 
@@ -5338,7 +5500,6 @@ msgid "Amount of Refund"
 msgstr "Geri Ödeme Miktarı"
 
 #: lms/djangoapps/shoppingcart/reports.py
-#: lms/djangoapps/shoppingcart/reports.py
 msgid "Service Fees (if any)"
 msgstr "Servis Ücretleri (eğer varsa)"
 
@@ -5368,14 +5529,10 @@ msgid "Comments"
 msgstr "Yorumlar"
 
 #: lms/djangoapps/shoppingcart/reports.py
-#: lms/djangoapps/shoppingcart/reports.py
 msgid "University"
 msgstr "Üniversite"
 
 #: lms/djangoapps/shoppingcart/reports.py
-#: lms/djangoapps/shoppingcart/reports.py cms/templates/widgets/header.html
-#: cms/templates/widgets/header.html
-#: lms/templates/shoppingcart/verified_cert_receipt.html
 msgid "Course"
 msgstr "Ders"
 
@@ -5468,7 +5625,7 @@ msgstr ""
 msgid "Course added to cart."
 msgstr "Ders sepete eklendi."
 
-#: lms/djangoapps/shoppingcart/views.py lms/djangoapps/shoppingcart/views.py
+#: lms/djangoapps/shoppingcart/views.py
 msgid "Discount does not exist against code '{code}'."
 msgstr ""
 
@@ -5505,7 +5662,6 @@ msgstr "Bu sayfayı görmek için yetkiniz yok."
 msgid "The payment processor did not return a required parameter: {0}"
 msgstr "Ödeme işlemcisi gerekli bir parametreyi döndürmedi: {0}"
 
-#: lms/djangoapps/shoppingcart/processors/CyberSource.py
 #: lms/djangoapps/shoppingcart/processors/CyberSource.py
 msgid "The payment processor returned a badly-typed value {0} for param {1}."
 msgstr ""
@@ -5662,7 +5818,6 @@ msgstr ""
 "Hesapta yetersiz bakiye. Olası çözüm: diğer bir ödeme türünü seçerek deneyin"
 
 #: lms/djangoapps/shoppingcart/processors/CyberSource.py
-#: lms/djangoapps/shoppingcart/processors/CyberSource.py
 msgid "Unknown reason"
 msgstr "Bilinmeyen neden"
 
@@ -5733,12 +5888,9 @@ msgstr ""
 
 #: lms/djangoapps/shoppingcart/processors/CyberSource.py
 msgid ""
-"\n"
-"            There is a problem with our CyberSource merchant configuration.  Please let us know at {0}\n"
-"            "
+"There is a problem with our CyberSource merchant configuration.  Please let "
+"us know at {0}"
 msgstr ""
-"\n"
-"Cybersource tüccar kurulumunda bir sorun var. Lütfen {0} de haberimiz olsun"
 
 #: lms/djangoapps/shoppingcart/processors/CyberSource.py
 msgid "The requested amount exceeds the originally authorized amount."
@@ -5956,9 +6108,8 @@ msgstr ""
 
 #: lms/djangoapps/shoppingcart/processors/CyberSource2.py
 msgid ""
-"\n"
-"            There is a problem with the information in your CyberSource account.  Please let us know at {0}\n"
-"            "
+"There is a problem with the information in your CyberSource account.  Please"
+" let us know at {0}"
 msgstr ""
 
 #: lms/djangoapps/shoppingcart/processors/CyberSource2.py
@@ -5998,6 +6149,10 @@ msgid "No email address provided."
 msgstr ""
 
 #: lms/djangoapps/verify_student/models.py
+msgid "Your {platform_name} verification has expired."
+msgstr ""
+
+#: lms/djangoapps/verify_student/models.py
 msgid "No photo ID was provided."
 msgstr "Fotoğraflı kimlik verilmedi."
 
@@ -6015,18 +6170,16 @@ msgid "The image of your face was not clear."
 msgstr "Yüzünüzün resmi anlaşılır değil."
 
 #: lms/djangoapps/verify_student/models.py
-msgid "Your face was not visible in your self-photo"
-msgstr "Kendinizin çektiği fotoğrafta yüzünüz görünür değil."
+msgid "Your face was not visible in your self-photo."
+msgstr ""
 
 #: lms/djangoapps/verify_student/models.py
 msgid "There was an error verifying your ID photos."
 msgstr "Fotoğraflı kimliğinizi kontrol ederken hata oldu."
 
-#: lms/templates/shoppingcart/verified_cert_receipt.html
-#: lms/templates/verify_student/photo_verification.html
-#: lms/templates/verify_student/show_requirements.html
+#: lms/djangoapps/verify_student/views.py
 msgid "Intro"
-msgstr "Giriş"
+msgstr ""
 
 #: lms/djangoapps/verify_student/views.py
 msgid "Make payment"
@@ -6038,9 +6191,6 @@ msgstr ""
 
 #: lms/templates/verify_student/midcourse_photo_reverification.html
 #: lms/templates/verify_student/photo_reverification.html
-#: lms/templates/verify_student/photo_reverification.html
-#: lms/templates/verify_student/photo_verification.html
-#: lms/templates/verify_student/photo_verification.html
 msgid "Take photo"
 msgstr "Fotoğraf çekiniz"
 
@@ -6098,8 +6248,8 @@ msgstr ""
 
 #: lms/templates/main_django.html cms/templates/base.html
 #: lms/templates/main.html
-msgid "Skip to this view's content"
-msgstr "Bu görüntünün içeriğine atla"
+msgid "Skip to main content"
+msgstr ""
 
 #: lms/templates/dashboard/_dashboard_refund.html
 #: lms/templates/dashboard/support.html
@@ -6146,7 +6296,6 @@ msgstr ""
 msgid "Refund Request Time:"
 msgstr ""
 
-#: lms/templates/registration/password_reset_complete.html
 #: lms/templates/registration/password_reset_complete.html
 msgid "Your Password Reset is Complete"
 msgstr "Parolanızın Sıfırlama İşlemi Tamam"
@@ -6354,7 +6503,6 @@ msgstr "Yazıyı sil"
 #: lms/templates/wiki/delete.html
 #: lms/templates/wiki/plugins/attachments/index.html
 #: cms/templates/component.html cms/templates/studio_xblock_wrapper.html
-#: cms/templates/studio_xblock_wrapper.html
 #: lms/templates/discussion/_underscore_templates.html
 msgid "Delete"
 msgstr "Sil"
@@ -6412,12 +6560,9 @@ msgstr "Önizleme"
 #. Translators: this is a control to allow users to exit out of this modal
 #. interface (a menu or piece of UI that takes the full focus of the screen)
 #: lms/templates/wiki/edit.html lms/templates/wiki/history.html
-#: lms/templates/wiki/history.html lms/templates/wiki/includes/cheatsheet.html
-#: lms/templates/dashboard.html lms/templates/dashboard.html
-#: lms/templates/dashboard.html lms/templates/dashboard.html
-#: lms/templates/dashboard.html lms/templates/forgot_password_modal.html
-#: lms/templates/help_modal.html lms/templates/help_modal.html
-#: lms/templates/help_modal.html lms/templates/signup_modal.html
+#: lms/templates/wiki/includes/cheatsheet.html lms/templates/dashboard.html
+#: lms/templates/forgot_password_modal.html lms/templates/help_modal.html
+#: lms/templates/signup_modal.html
 #: lms/templates/discussion/_underscore_templates.html
 #: lms/templates/instructor/instructor_dashboard_2/add_coupon_modal.html
 #: lms/templates/instructor/instructor_dashboard_2/edit_coupon_modal.html
@@ -6437,10 +6582,7 @@ msgstr "Wiki Önizleme"
 #. Translators: this text gives status on if the modal interface (a menu or
 #. piece of UI that takes the full focus of the screen) is open or not
 #: lms/templates/wiki/edit.html lms/templates/wiki/history.html
-#: lms/templates/wiki/history.html lms/templates/wiki/includes/cheatsheet.html
-#: lms/templates/dashboard.html lms/templates/dashboard.html
-#: lms/templates/dashboard.html lms/templates/dashboard.html
-#: lms/templates/dashboard.html
+#: lms/templates/wiki/includes/cheatsheet.html lms/templates/dashboard.html
 #: lms/templates/modal/_modal-settings-language.html
 msgid "window open"
 msgstr "pencere açık"
@@ -6481,7 +6623,7 @@ msgstr "Otomatik giriş:"
 msgid "Change"
 msgstr "Değiştir"
 
-#: lms/templates/wiki/history.html lms/templates/wiki/history.html
+#: lms/templates/wiki/history.html
 msgid "Merge selected with current..."
 msgstr "Seçili ögeyi şu anki öge ile birleştir..."
 
@@ -6493,11 +6635,11 @@ msgstr "Seçili sürüme geç."
 msgid "Wiki Revision Preview"
 msgstr "Wiki Revizyon Gözden Geçirme"
 
-#: lms/templates/wiki/history.html lms/templates/wiki/history.html
+#: lms/templates/wiki/history.html
 msgid "Back to history view"
 msgstr "Geçmişi görüntüleye geri dön."
 
-#: lms/templates/wiki/history.html lms/templates/wiki/history.html
+#: lms/templates/wiki/history.html
 msgid "Switch to this version"
 msgstr "Bu versiyona geçiş yap"
 
@@ -6522,7 +6664,7 @@ msgstr ""
 msgid "After this, it's important to do a manual review."
 msgstr "Bundan sonra, elle gözden geçirmek önemlidir."
 
-#: lms/templates/wiki/history.html lms/templates/wiki/history.html
+#: lms/templates/wiki/history.html
 msgid "Create new merged version"
 msgstr "Yeni birleştirilmiş sürüm yarat"
 
@@ -6765,29 +6907,19 @@ msgstr ""
 #. Translators: This example email address is used as a placeholder in
 #. a field on the password reset form meant to hold the user's email address.
 #: openedx/core/djangoapps/user_api/views.py
-#: openedx/core/djangoapps/user_api/views.py
-#: openedx/core/djangoapps/user_api/views.py
 msgid "username@domain.com"
 msgstr ""
 
-#: openedx/core/djangoapps/user_api/views.py
 #: openedx/core/djangoapps/user_api/views.py
 msgid "The email address you used to register with {platform_name}"
 msgstr ""
 
 #: cms/templates/login.html cms/templates/register.html
 #: lms/templates/login.html lms/templates/provider_login.html
-#: lms/templates/provider_login.html lms/templates/register.html
 #: lms/templates/register.html lms/templates/signup_modal.html
 #: lms/templates/sysadmin_dashboard.html
 msgid "Password"
 msgstr "Şifre"
-
-#: openedx/core/djangoapps/user_api/views.py
-msgid ""
-"It looks like {email_address} and {username} belong to an existing account. "
-"Try again with a different email address and username."
-msgstr ""
 
 #: openedx/core/djangoapps/user_api/views.py
 msgid ""
@@ -6853,8 +6985,6 @@ msgid "Please select your Country."
 msgstr ""
 
 #: lms/templates/dashboard/_dashboard_course_listing.html
-#: lms/templates/dashboard/_dashboard_course_listing.html
-#: lms/templates/static_templates/honor.html
 #: lms/templates/static_templates/honor.html
 msgid "Honor Code"
 msgstr "Onur Kodu"
@@ -6864,22 +6994,26 @@ msgid "Terms of Service and Honor Code"
 msgstr "Servis Koşulları ve Onur Kodu"
 
 #: openedx/core/djangoapps/user_api/views.py
-#: openedx/core/djangoapps/user_api/views.py
 msgid "I agree to the {platform_name} {terms_of_service}."
 msgstr ""
 
-#: openedx/core/djangoapps/user_api/views.py
 #: openedx/core/djangoapps/user_api/views.py
 msgid "You must agree to the {platform_name} {terms_of_service}."
 msgstr ""
 
 #: cms/templates/widgets/footer.html lms/templates/footer.html
 #: lms/templates/static_templates/tos.html
-#: lms/templates/static_templates/tos.html
 msgid "Terms of Service"
 msgstr "Hizmet Şartları"
 
-#: cms/djangoapps/contentstore/course_info_model.py
+#: openedx/core/djangoapps/user_api/accounts/views.py
+msgid "Field '{field_name}' cannot be edited."
+msgstr ""
+
+#: openedx/core/djangoapps/user_api/accounts/views.py
+msgid "Value '{field_value}' is not valid for field '{field_name}'."
+msgstr ""
+
 #: cms/djangoapps/contentstore/course_info_model.py
 msgid "Invalid course update id."
 msgstr "Geçersiz ders güncelleme numarası."
@@ -6989,6 +7123,11 @@ msgid "Blank"
 msgstr ""
 
 #: cms/djangoapps/contentstore/views/course.py
+#: cms/djangoapps/contentstore/views/tests/test_course_index.py
+msgid "Course has been successfully reindexed."
+msgstr ""
+
+#: cms/djangoapps/contentstore/views/course.py
 msgid "Unscheduled"
 msgstr ""
 
@@ -7004,7 +7143,6 @@ msgid ""
 "number. Please change either organization or course number to be unique."
 msgstr ""
 
-#: cms/djangoapps/contentstore/views/course.py
 #: cms/djangoapps/contentstore/views/course.py
 msgid ""
 "Please change either the organization or course number so that it is unique."
@@ -7037,7 +7175,11 @@ msgid "must have at least one group"
 msgstr ""
 
 #: cms/djangoapps/contentstore/views/course.py
-msgid "This Group Configuration is already in use and cannot be removed."
+msgid "This group configuration is in use and cannot be deleted."
+msgstr ""
+
+#: cms/djangoapps/contentstore/views/course.py
+msgid "This content group is in use and cannot be deleted."
 msgstr ""
 
 #: cms/djangoapps/contentstore/views/export_git.py
@@ -7046,6 +7188,10 @@ msgstr "Ders git havuzuna başarıyla aktarıldı"
 
 #: cms/djangoapps/contentstore/views/helpers.py
 msgid "Vertical"
+msgstr ""
+
+#: cms/djangoapps/contentstore/views/helpers.py
+msgid "Empty"
 msgstr ""
 
 #: cms/djangoapps/contentstore/views/import_export.py
@@ -7066,10 +7212,6 @@ msgstr ""
 
 #: cms/djangoapps/contentstore/views/item.py
 msgid "Invalid data ({details})"
-msgstr ""
-
-#: cms/djangoapps/contentstore/views/item.py
-msgid "Empty"
 msgstr ""
 
 #: cms/djangoapps/contentstore/views/item.py
@@ -7247,8 +7389,7 @@ msgstr "Sayfa bulunamadı"
 
 #: cms/templates/asset_index.html cms/templates/container.html
 #: cms/templates/course_outline.html cms/templates/group_configurations.html
-#: cms/templates/group_configurations.html cms/templates/library.html
-#: lms/templates/courseware/legacy_instructor_dashboard.html
+#: cms/templates/library.html
 #: lms/templates/courseware/legacy_instructor_dashboard.html
 #: lms/templates/edxnotes/edxnotes.html
 #: lms/templates/instructor/instructor_dashboard_2/metrics.html
@@ -7260,13 +7401,8 @@ msgstr ""
 msgid "close"
 msgstr "kapat"
 
-#: cms/templates/course-create-rerun.html
 #: cms/templates/course-create-rerun.html cms/templates/index.html
-#: cms/templates/index.html cms/templates/manage_users.html
-#: cms/templates/manage_users_lib.html
-#: lms/templates/discussion/_underscore_templates.html
-#: lms/templates/discussion/_underscore_templates.html
-#: lms/templates/discussion/_underscore_templates.html
+#: cms/templates/manage_users.html cms/templates/manage_users_lib.html
 #: lms/templates/discussion/_underscore_templates.html
 #: lms/templates/modal/accessible_confirm.html
 #: lms/templates/verify_student/face_upload.html
@@ -7286,7 +7422,7 @@ msgstr "İptal"
 #: cms/templates/group_configurations.html cms/templates/manage_users.html
 #: cms/templates/manage_users_lib.html cms/templates/settings.html
 #: cms/templates/settings_advanced.html cms/templates/settings_graders.html
-#: cms/templates/widgets/header.html cms/templates/widgets/header.html
+#: cms/templates/widgets/header.html
 #: lms/templates/wiki/includes/article_menu.html
 msgid "Settings"
 msgstr "Ayarlar"
@@ -7295,13 +7431,11 @@ msgstr "Ayarlar"
 msgid "Error:"
 msgstr "Hata:"
 
-#: cms/templates/index.html cms/templates/index.html cms/templates/index.html
 #: cms/templates/index.html
 #: lms/templates/instructor/instructor_dashboard_2/course_info.html
 msgid "Organization:"
 msgstr "Organizasyon:"
 
-#: cms/templates/index.html cms/templates/index.html cms/templates/index.html
 #: cms/templates/index.html
 #: lms/templates/instructor/instructor_dashboard_2/course_info.html
 msgid "Course Number:"
@@ -7316,10 +7450,8 @@ msgstr "Dersler"
 
 #: cms/templates/login.html cms/templates/register.html
 #: lms/templates/help_modal.html lms/templates/login.html
-#: lms/templates/provider_login.html lms/templates/provider_login.html
-#: lms/templates/register-shib.html lms/templates/register.html
+#: lms/templates/provider_login.html lms/templates/register-shib.html
 #: lms/templates/register.html lms/templates/signup_modal.html
-#: lms/templates/signup_modal.html
 msgid "E-mail"
 msgstr "E-posta"
 
@@ -7329,7 +7461,7 @@ msgstr "E-posta"
 #: cms/templates/login.html cms/templates/manage_users.html
 #: cms/templates/manage_users_lib.html cms/templates/register.html
 #: lms/templates/login.html lms/templates/register-shib.html
-#: lms/templates/register.html lms/templates/register.html
+#: lms/templates/register.html
 msgid "example: username@domain.com"
 msgstr "örnek: kullanıcıadı@domain.com"
 
@@ -7361,14 +7493,13 @@ msgstr "örnek: Zeliha Doe"
 
 #: cms/templates/register.html lms/templates/register-shib.html
 #: lms/templates/register.html lms/templates/signup_modal.html
-#: lms/templates/signup_modal.html
 msgid "Public Username"
 msgstr "Görüntü ismi"
 
 #. Translators: This is the placeholder text for a field that asks the user to
 #. pick a username
 #: cms/templates/register.html lms/templates/register-shib.html
-#: lms/templates/register.html lms/templates/register.html
+#: lms/templates/register.html
 msgid "example: JaneDoe"
 msgstr "örnek: Hakan"
 
@@ -7382,7 +7513,7 @@ msgid "Requirements"
 msgstr ""
 
 #: cms/templates/studio_xblock_wrapper.html lms/templates/help_modal.html
-#: lms/templates/help_modal.html lms/templates/module-error.html
+#: lms/templates/module-error.html
 msgid "Details"
 msgstr "Ayrıntılar"
 
@@ -7410,13 +7541,11 @@ msgstr ""
 
 #: cms/templates/widgets/footer.html lms/templates/footer-edx-new.html
 #: lms/templates/footer.html lms/templates/static_templates/privacy.html
-#: lms/templates/static_templates/privacy.html
 msgid "Privacy Policy"
 msgstr "Gizlilik İlkeleri"
 
-#: cms/templates/widgets/header.html cms/templates/widgets/header.html
-#: lms/templates/help_modal.html lms/templates/navigation-edx.html
-#: lms/templates/navigation.html lms/templates/static_templates/help.html
+#: cms/templates/widgets/header.html lms/templates/help_modal.html
+#: lms/templates/navigation-edx.html lms/templates/navigation.html
 #: lms/templates/static_templates/help.html wiki/plugins/help/wiki_plugin.py
 msgid "Help"
 msgstr "Yardım"
@@ -7437,7 +7566,6 @@ msgstr ""
 msgid "Now choose your course track:"
 msgstr ""
 
-#: common/templates/course_modes/choose.html
 #: common/templates/course_modes/choose.html
 msgid "Pursue a Verified Certificate"
 msgstr ""
@@ -7520,7 +7648,7 @@ msgstr "Yeni"
 msgid "Dashboard"
 msgstr "Ana panel"
 
-#: lms/templates/dashboard.html lms/templates/dashboard.html
+#: lms/templates/dashboard.html
 #: lms/templates/dashboard/_dashboard_info_language.html
 msgid "edit"
 msgstr "düzenle"
@@ -7564,7 +7692,7 @@ msgstr ""
 msgid "Order History"
 msgstr ""
 
-#: lms/templates/dashboard.html lms/templates/dashboard.html
+#: lms/templates/dashboard.html
 msgid "Reset Password"
 msgstr "Parola Sıfırla"
 
@@ -7572,7 +7700,7 @@ msgstr "Parola Sıfırla"
 msgid "Current Courses"
 msgstr ""
 
-#: lms/templates/dashboard.html lms/templates/dashboard.html
+#: lms/templates/dashboard.html
 msgid "Looks like you haven't enrolled in any courses yet."
 msgstr ""
 
@@ -7608,7 +7736,7 @@ msgstr ""
 "Email {email} adrese yollandı. Şifrenizi değiştirmek için email içindeki "
 "linke tıklayınız."
 
-#: lms/templates/dashboard.html lms/templates/dashboard.html
+#: lms/templates/dashboard.html
 msgid "Change Email"
 msgstr "Eposta Değiştir"
 
@@ -7660,15 +7788,6 @@ msgid "Change My Name"
 msgstr "Adımı Değiştir"
 
 #: lms/templates/dashboard.html
-#: lms/templates/dashboard/_dashboard_course_listing.html
-#: lms/templates/dashboard/_dashboard_course_listing.html
-#: lms/templates/dashboard/_dashboard_course_listing.html
-#: lms/templates/dashboard/_dashboard_course_listing.html
-#: lms/templates/dashboard/_dashboard_course_listing.html
-#: lms/templates/dashboard/_dashboard_course_listing.html
-#: lms/templates/dashboard/_dashboard_course_listing.html
-#: lms/templates/dashboard/_dashboard_course_listing.html
-#: lms/templates/dashboard/_dashboard_course_listing.html
 #: lms/templates/dashboard/_dashboard_course_listing.html
 #: lms/templates/instructor/instructor_dashboard_2/membership.html
 msgid "Unenroll"
@@ -7734,7 +7853,7 @@ msgstr "Öğrenciler reddedildi:"
 msgid "Debug: "
 msgstr "Debug:"
 
-#: lms/templates/extauth_failure.html lms/templates/extauth_failure.html
+#: lms/templates/extauth_failure.html
 msgid "External Authentication failed"
 msgstr "Harici Kimlik Denetleme başarısız oldu"
 
@@ -7771,7 +7890,7 @@ msgstr "Girildi"
 msgid "Puzzle Leaderboard"
 msgstr "Puzzle Lider listesi"
 
-#: lms/templates/footer-edx-new.html lms/templates/footer-edx-new.html
+#: lms/templates/footer-edx-new.html
 msgid "About edX"
 msgstr ""
 
@@ -7786,14 +7905,26 @@ msgid ""
 "online initiative created by founding partners {Harvard} and {MIT}."
 msgstr ""
 
-#. Translators: '&copy;' is an HTML character code for the copyright symbol.
-#. Please don't remove or change it.
+#. Translators: 'EdX', 'edX', and 'Open edX' are trademarks of 'edX Inc.'.
+#. Please do not translate any of these trademarks and company names.
 #: lms/templates/footer-edx-new.html lms/templates/footer.html
-msgid "&copy; {copyright_year} {platform_name}, some rights reserved"
+msgid ""
+"EdX, Open edX, and the edX and Open edX logos are registered trademarks or "
+"trademarks of {link_start}edX Inc.{link_end}"
 msgstr ""
 
+#. Translators: {date} will be an abbreviated date, indicating when the
+#. privacy
+#. policy was most recently revised.
 #: lms/templates/footer-edx-new.html
-msgid "(Revised 4/16/2014)"
+msgid "(Revised {date})"
+msgstr ""
+
+#. Translators: {date} will be an abbreviated date, indicating when the
+#. privacy
+#. policy was most recently revised.
+#: lms/templates/footer-edx-new.html
+msgid "10/22/2014"
 msgstr ""
 
 #: lms/templates/footer-edx-new.html lms/templates/footer.html
@@ -7802,12 +7933,10 @@ msgstr ""
 
 #: lms/templates/footer-edx-new.html lms/templates/footer.html
 #: lms/templates/static_templates/contact.html
-#: lms/templates/static_templates/contact.html
 msgid "Contact"
 msgstr "İletişim"
 
 #: lms/templates/footer-edx-new.html lms/templates/footer.html
-#: lms/templates/static_templates/faq.html
 #: lms/templates/static_templates/faq.html
 msgid "FAQ"
 msgstr "Sık Sorulanlar"
@@ -7830,31 +7959,31 @@ msgstr ""
 
 #. Translators: This is the website name of www.twitter.com. Please
 #. translate this the way that Twitter advertises in your language.
-#: lms/templates/footer-edx-new.html lms/templates/footer-edx-new.html
+#: lms/templates/footer-edx-new.html
 msgid "Twitter"
 msgstr ""
 
 #. Translators: This is the website name of www.facebook.com. Please
 #. translate this the way that Facebook advertises in your language.
-#: lms/templates/footer-edx-new.html lms/templates/footer-edx-new.html
+#: lms/templates/footer-edx-new.html
 msgid "Facebook"
 msgstr ""
 
 #. Translators: This is the website name of www.meetup.com. Please
 #. translate this the way that Meetup advertises in your language.
-#: lms/templates/footer-edx-new.html lms/templates/footer-edx-new.html
+#: lms/templates/footer-edx-new.html
 msgid "Meetup"
 msgstr ""
 
 #. Translators: This is the website name of www.linked.com. Please
 #. translate this the way that LinkedIn advertises in your language.
-#: lms/templates/footer-edx-new.html lms/templates/footer-edx-new.html
+#: lms/templates/footer-edx-new.html
 msgid "LinkedIn"
 msgstr ""
 
 #. Translators: This is the website name of plus.google.com. Please
 #. translate this the way that Google+ advertises in your language.
-#: lms/templates/footer-edx-new.html lms/templates/footer-edx-new.html
+#: lms/templates/footer-edx-new.html
 msgid "Google+"
 msgstr ""
 
@@ -7871,9 +8000,12 @@ msgid "Android app on Google Play"
 msgstr ""
 
 #: lms/templates/footer.html lms/templates/static_templates/jobs.html
-#: lms/templates/static_templates/jobs.html
 msgid "Jobs"
 msgstr "İşler"
+
+#: lms/templates/footer.html
+msgid "Legal"
+msgstr ""
 
 #: lms/templates/footer.html
 msgid ""
@@ -7887,7 +8019,6 @@ msgstr ""
 msgid "Powered by Open edX"
 msgstr ""
 
-#: lms/templates/forgot_password_modal.html
 #: lms/templates/forgot_password_modal.html
 msgid "Password Reset"
 msgstr "Şifre Sıfırlama"
@@ -7915,7 +8046,7 @@ msgstr "Parolamı Sıfırla"
 msgid "Email is incorrect."
 msgstr "E-posta hatalı"
 
-#: lms/templates/help_modal.html lms/templates/help_modal.html
+#: lms/templates/help_modal.html
 msgid "{platform_name} Help"
 msgstr "{platform_name} Yardım"
 
@@ -7988,8 +8119,6 @@ msgstr ""
 #: lms/templates/combinedopenended/openended/open_ended.html
 #: lms/templates/combinedopenended/selfassessment/self_assessment_prompt.html
 #: lms/templates/discussion/_underscore_templates.html
-#: lms/templates/discussion/_underscore_templates.html
-#: lms/templates/instructor/staff_grading.html
 #: lms/templates/instructor/staff_grading.html
 #: lms/templates/peer_grading/peer_grading_problem.html
 #: lms/templates/survey/survey.html
@@ -8131,7 +8260,7 @@ msgstr[0] ""
 msgid "Helpful Information"
 msgstr "Yararlı bilgiler"
 
-#: lms/templates/login-sidebar.html lms/templates/login-sidebar.html
+#: lms/templates/login-sidebar.html
 msgid "Login via OpenID"
 msgstr "OpenID aracılığıyla giriş yap"
 
@@ -8324,42 +8453,15 @@ msgstr ""
 msgid "Raw data:"
 msgstr "Ham veri:"
 
-#: lms/templates/name_changes.html
-msgid "Accepted"
-msgstr "Kabul Edildi"
-
-#: lms/templates/name_changes.html lms/templates/name_changes.html
-#: lms/templates/sysadmin_dashboard_gitlogs.html
-msgid "Error"
-msgstr "Hata"
-
-#: lms/templates/name_changes.html
-msgid "Rejected"
-msgstr "Reddedildi"
-
-#: lms/templates/name_changes.html
-msgid "Pending name changes"
-msgstr "Bekleyen isim değişiklikleri"
-
-#: lms/templates/name_changes.html lms/templates/modal/accessible_confirm.html
-msgid "Confirm"
-msgstr "Onayla"
-
-#: lms/templates/name_changes.html
-msgid "Reject"
-msgstr ""
-
-#: lms/templates/navigation-edx.html lms/templates/navigation-edx.html
-#: lms/templates/navigation.html
+#: lms/templates/navigation-edx.html lms/templates/navigation.html
 msgid "How it Works"
 msgstr "Nasıl Çalışır"
 
-#: lms/templates/navigation-edx.html lms/templates/navigation-edx.html
-#: lms/templates/navigation.html
+#: lms/templates/navigation-edx.html lms/templates/navigation.html
 msgid "Find Courses"
 msgstr "Dersleri Bul"
 
-#: lms/templates/navigation-edx.html lms/templates/navigation-edx.html
+#: lms/templates/navigation-edx.html
 msgid "Schools & Partners"
 msgstr ""
 
@@ -8379,13 +8481,11 @@ msgstr ""
 msgid "Shopping Cart"
 msgstr ""
 
-#: lms/templates/navigation-edx.html lms/templates/navigation-edx.html
-#: lms/templates/register.html
+#: lms/templates/navigation-edx.html lms/templates/register.html
 msgid "Register"
 msgstr "Kaydol"
 
-#: lms/templates/navigation-edx.html lms/templates/navigation-edx.html
-#: lms/templates/navigation.html lms/templates/navigation.html
+#: lms/templates/navigation-edx.html lms/templates/navigation.html
 msgid "Sign in"
 msgstr ""
 
@@ -8396,14 +8496,14 @@ msgid ""
 msgstr ""
 
 #: lms/templates/navigation.html
-msgid "Global Navigation"
-msgstr "Küresel Navigasyon"
+msgid "Global"
+msgstr ""
 
 #: lms/templates/navigation.html
 msgid "Schools"
 msgstr "Okullar"
 
-#: lms/templates/navigation.html lms/templates/navigation.html
+#: lms/templates/navigation.html
 msgid "Register Now"
 msgstr "Şimdi Kayıt Ol"
 
@@ -8468,7 +8568,6 @@ msgid "The following errors occurred while processing your registration:"
 msgstr "Kaydınızı işlerden aşağıdaki hatalar oldu:"
 
 #: lms/templates/register-shib.html lms/templates/register.html
-#: lms/templates/register.html
 msgid ""
 "Required fields are noted by <strong class=\"indicator\">bold text and an "
 "asterisk (*)</strong>."
@@ -8481,7 +8580,6 @@ msgid "Enter a public username:"
 msgstr "Genel kullanıcı adı girin:"
 
 #: lms/templates/register-shib.html lms/templates/register.html
-#: lms/templates/register.html
 msgid "Will be shown in any discussions or forums you participate in"
 msgstr "İçinde olduğunuz forumlarda ve tartışmalarda gözükecek olan"
 
@@ -8616,11 +8714,11 @@ msgstr ""
 msgid "Please complete the following fields to register for an account. "
 msgstr "Kayıt olmak için lütfen aşağıdaki gerekli alanları tamamlayın."
 
-#: lms/templates/register.html lms/templates/register.html
+#: lms/templates/register.html
 msgid "Needed for any certificates you may earn"
 msgstr "Kazanabileceğiniz herhangi bir sertifika için gerekli"
 
-#: lms/templates/register.html lms/templates/register.html
+#: lms/templates/register.html
 msgid "cannot be changed later"
 msgstr "daha sonra değiştirilemez"
 
@@ -8673,16 +8771,12 @@ msgstr ""
 "{platform_name}'dan gelen duyuru e-postalarının gelişi yeniden aktiflendi. "
 "Panele dönmek için {dashboard_link_start}buraya{link_end} tıklayın."
 
-#: lms/templates/seq_module.html lms/templates/seq_module.html
+#: lms/templates/seq_module.html
 #: lms/templates/discussion/mustache/_pagination.mustache
 msgid "Previous"
 msgstr "Önceki"
 
-#: lms/templates/seq_module.html lms/templates/seq_module.html
-msgid "Section Navigation"
-msgstr "Bölüm Navigasyonu"
-
-#: lms/templates/seq_module.html lms/templates/seq_module.html
+#: lms/templates/seq_module.html
 #: lms/templates/discussion/mustache/_pagination.mustache
 msgid "Next"
 msgstr "Sonraki"
@@ -8691,15 +8785,15 @@ msgstr "Sonraki"
 msgid "Sign Up for {platform_name}"
 msgstr ""
 
-#: lms/templates/signup_modal.html lms/templates/signup_modal.html
+#: lms/templates/signup_modal.html
 msgid "e.g. yourname@domain.com"
 msgstr "Ör. adınız@domain.com"
 
-#: lms/templates/signup_modal.html lms/templates/signup_modal.html
+#: lms/templates/signup_modal.html
 msgid "e.g. yourname (shown on forums)"
 msgstr "ör. isminiz (forumlarda gözükecek)"
 
-#: lms/templates/signup_modal.html lms/templates/signup_modal.html
+#: lms/templates/signup_modal.html
 msgid "e.g. Your Name (for certificates)"
 msgstr "ör. İsminiz (sertifikada gözükecek)"
 
@@ -8800,7 +8894,7 @@ msgstr ""
 msgid "Rescore Student Submission"
 msgstr "Öğrencilerin Cevaplarını Yeniden Notlandır"
 
-#: lms/templates/staff_problem_info.html lms/templates/staff_problem_info.html
+#: lms/templates/staff_problem_info.html
 msgid "Module Fields"
 msgstr "Modül Alanları"
 
@@ -8855,7 +8949,6 @@ msgstr "Görevlendirme ve Kayıt"
 
 #. Translators: refers to http://git-scm.com/docs/git-log
 #: lms/templates/sysadmin_dashboard.html
-#: lms/templates/sysadmin_dashboard_gitlogs.html
 #: lms/templates/sysadmin_dashboard_gitlogs.html
 msgid "Git Logs"
 msgstr "Git Logları"
@@ -8934,13 +9027,28 @@ msgstr "Siteden dersi sil"
 msgid "Platform Version"
 msgstr "Platform Sürümü"
 
+#: lms/templates/sysadmin_dashboard_gitlogs.html
+msgid "previous"
+msgstr ""
+
+#: lms/templates/sysadmin_dashboard_gitlogs.html
+msgid "Page {current_page} of {total_pages}"
+msgstr ""
+
+#: lms/templates/sysadmin_dashboard_gitlogs.html
+msgid "next"
+msgstr ""
+
 #. Translators: Git is a version-control system; see http://git-scm.com/about
 #: lms/templates/sysadmin_dashboard_gitlogs.html
 msgid "Recent git load activity for {course_id}"
 msgstr ""
 
 #: lms/templates/sysadmin_dashboard_gitlogs.html
-#: lms/templates/shoppingcart/verified_cert_receipt.html
+msgid "Error"
+msgstr "Hata"
+
+#: lms/templates/sysadmin_dashboard_gitlogs.html
 msgid "Date"
 msgstr "Tarih"
 
@@ -8948,6 +9056,11 @@ msgstr "Tarih"
 #: lms/templates/sysadmin_dashboard_gitlogs.html
 msgid "Git Action"
 msgstr "Git Aksiyonu"
+
+#. Translators: git is a version-control system; see http://git-scm.com/about
+#: lms/templates/sysadmin_dashboard_gitlogs.html
+msgid "No git import logs have been recorded."
+msgstr ""
 
 #. Translators: git is a version-control system; see http://git-scm.com/about
 #: lms/templates/sysadmin_dashboard_gitlogs.html
@@ -9101,7 +9214,7 @@ msgstr "Geriye altyazının başına git."
 msgid "Download video"
 msgstr "Video indir"
 
-#: lms/templates/video.html lms/templates/video.html
+#: lms/templates/video.html
 msgid "Download transcript"
 msgstr "Altyazı indir"
 
@@ -9117,7 +9230,6 @@ msgstr "Senin kelimelerin:"
 msgid "Total number of words:"
 msgstr "Toplam kelime sayısı:"
 
-#: lms/templates/calculator/toggle_calculator.html
 #: lms/templates/calculator/toggle_calculator.html
 msgid "Open Calculator"
 msgstr "Hesap Makinesini Aç"
@@ -9463,7 +9575,6 @@ msgid "due {date}"
 msgstr "teslim {date}"
 
 #: lms/templates/courseware/course_about.html
-#: lms/templates/courseware/course_about.html
 #: lms/templates/courseware/mktg_course_about.html
 msgid "An error occurred. Please try again later."
 msgstr "Bir hata oluştu. Lütfen daha sonra tekrar deneyin"
@@ -9505,14 +9616,12 @@ msgid "Enrollment is Closed"
 msgstr ""
 
 #: lms/templates/courseware/course_about.html
-msgid ""
-"Add {course.display_number_with_default} to Cart ({currency_symbol}{cost})"
+msgid "Add {course_name} to Cart ({price})"
 msgstr ""
-"Ekle {course.display_number_with_default} sepete  ({currency_symbol}{cost})"
 
 #: lms/templates/courseware/course_about.html
-msgid "Register for {course.display_number_with_default}"
-msgstr "Kayıt ol {course.display_number_with_default}"
+msgid "Register for {course_name}"
+msgstr ""
 
 #: lms/templates/courseware/course_about.html
 msgid "View About Page in studio"
@@ -9526,6 +9635,14 @@ msgstr "Önizlem"
 msgid "Share with friends and family!"
 msgstr "Bunu ailen ve arkadaşlarınla paylaş!"
 
+#: lms/templates/courseware/course_about.html
+msgid "Tweet that you've registered for this course"
+msgstr ""
+
+#: lms/templates/courseware/course_about.html
+msgid "Email someone to say you've registered for this course"
+msgstr ""
+
 #. Translators: This text will be automatically posted to the student's
 #. Twitter account. {url} should appear at the end of the text.
 #: lms/templates/courseware/course_about.html
@@ -9538,6 +9655,10 @@ msgstr ""
 
 #: lms/templates/courseware/course_about.html
 msgid "I just registered for {number} {title} through {platform} {url}"
+msgstr ""
+
+#: lms/templates/courseware/course_about.html
+msgid "Post a Facebook message to say you've registered for this course"
 msgstr ""
 
 #: lms/templates/courseware/course_about.html
@@ -9557,20 +9678,34 @@ msgid "Price"
 msgstr ""
 
 #: lms/templates/courseware/course_about.html
-msgid "{currency_symbol}{cost}"
-msgstr ""
-
-#: lms/templates/courseware/course_about.html
 msgid "Prerequisites"
 msgstr "Gereklilikler"
 
 #: lms/templates/courseware/course_about.html
-msgid "You must successfully complete {course} before you begin this course"
+#: lms/templates/dashboard/_dashboard_course_listing.html
+msgid ""
+"You must successfully complete {link_start}{prc_display}{link_end} before "
+"you begin this course."
 msgstr ""
 
 #: lms/templates/courseware/course_about.html
 msgid "Additional Resources"
 msgstr "Ek Kaynaklar"
+
+#: lms/templates/courseware/course_about.html
+#: lms/templates/courseware/mktg_course_about.html
+#: lms/templates/instructor/instructor_dashboard_2/membership.html
+msgid "Enroll"
+msgstr "Kaydol"
+
+#: lms/templates/courseware/course_about.html
+#: lms/templates/courseware/mktg_course_about.html
+msgid "enroll"
+msgstr ""
+
+#: lms/templates/courseware/course_navigation.html
+msgid "Course View"
+msgstr ""
 
 #: lms/templates/courseware/course_navigation.html
 msgid "View this course as:"
@@ -9582,6 +9717,10 @@ msgstr ""
 
 #: lms/templates/courseware/course_navigation.html
 msgid "set preview mode"
+msgstr ""
+
+#: lms/templates/courseware/course_navigation.html
+msgid "Course Material"
 msgstr ""
 
 #. Translators: 'needs attention' is an alternative string for the
@@ -9628,6 +9767,18 @@ msgid "Return to Exam"
 msgstr "Sınava Geri Dön."
 
 #: lms/templates/courseware/courseware.html
+msgid "Course Search"
+msgstr ""
+
+#: lms/templates/courseware/courseware.html
+msgid "search"
+msgstr ""
+
+#: lms/templates/courseware/courseware.html
+msgid "Clear search"
+msgstr ""
+
+#: lms/templates/courseware/courseware.html
 msgid "Course Navigation"
 msgstr "Ders Navigasyonu"
 
@@ -9636,7 +9787,7 @@ msgid "No content has been added to this course"
 msgstr ""
 
 #: lms/templates/courseware/courseware.html
-msgid "Course Utilities Navigation"
+msgid "Course Utilities"
 msgstr ""
 
 #: lms/templates/courseware/error-message.html
@@ -9672,11 +9823,11 @@ msgstr ""
 msgid "View Updates in Studio"
 msgstr ""
 
-#: lms/templates/courseware/info.html lms/templates/courseware/info.html
+#: lms/templates/courseware/info.html
 msgid "Course Updates &amp; News"
 msgstr "Ders Güncellemeleri &amp; Haberleri"
 
-#: lms/templates/courseware/info.html lms/templates/courseware/info.html
+#: lms/templates/courseware/info.html
 msgid "Handout Navigation"
 msgstr "Bildiri Navigasyonu"
 
@@ -9684,7 +9835,6 @@ msgstr "Bildiri Navigasyonu"
 msgid "Course Handouts"
 msgstr "Ders Notları"
 
-#: lms/templates/courseware/legacy_instructor_dashboard.html
 #: lms/templates/courseware/legacy_instructor_dashboard.html
 msgid "Legacy Instructor Dashboard"
 msgstr ""
@@ -9739,7 +9889,6 @@ msgid "Grade Downloads"
 msgstr "Not İndirmeler"
 
 #: lms/templates/courseware/legacy_instructor_dashboard.html
-#: lms/templates/courseware/legacy_instructor_dashboard.html
 msgid ""
 "Note: some of these buttons are known to time out for larger courses. We "
 "have disabled those features for courses with more than {max_enrollment} "
@@ -9772,7 +9921,6 @@ msgstr ""
 "kaydedilmiş olanlarla eşleşmesi gerekiyor!"
 
 #: lms/templates/courseware/legacy_instructor_dashboard.html
-#: lms/templates/courseware/legacy_instructor_dashboard.html
 msgid "Gradebook name:"
 msgstr "Karne adı:"
 
@@ -9785,7 +9933,6 @@ msgstr "Ödev ismi:"
 msgid "Course-specific grade adjustment"
 msgstr "Derse özel not düzeltme"
 
-#: lms/templates/courseware/legacy_instructor_dashboard.html
 #: lms/templates/courseware/legacy_instructor_dashboard.html
 msgid ""
 "To perform these actions, visit the Student Admin section of the Instructor "
@@ -9820,7 +9967,6 @@ msgstr "Kayıt Verisi"
 msgid "Pull enrollment from remote gradebook"
 msgstr "Kayıt bilgilerini uzaktaki not defterinden çek"
 
-#: lms/templates/courseware/legacy_instructor_dashboard.html
 #: lms/templates/courseware/legacy_instructor_dashboard.html
 msgid "Section:"
 msgstr "Altbölüm:"
@@ -9864,7 +10010,6 @@ msgid "Day"
 msgstr "Gün"
 
 #: lms/templates/courseware/legacy_instructor_dashboard.html
-#: lms/templates/shoppingcart/receipt.html
 #: lms/templates/shoppingcart/receipt.html
 msgid "Students"
 msgstr "Öğrenciler"
@@ -9959,7 +10104,6 @@ msgid "Task Progress"
 msgstr "Görev İlerlemesi"
 
 #: lms/templates/courseware/legacy_instructor_dashboard.html
-#: lms/templates/courseware/legacy_instructor_dashboard.html
 msgid "unknown"
 msgstr "bilinmeyen"
 
@@ -10045,7 +10189,17 @@ msgid "Course Progress for Student '{username}' ({email})"
 msgstr "Öğrenci için Ders Gidişatı {username}' ({email})"
 
 #: lms/templates/courseware/progress.html
-msgid "Download your certificate"
+msgid ""
+"You can download your certificate as a PDF. You can then print your "
+"certificate or share it with others."
+msgstr ""
+
+#: lms/templates/courseware/progress.html
+msgid "Download Your Certificate"
+msgstr ""
+
+#: lms/templates/courseware/progress.html
+msgid "Create Your Certificate"
 msgstr ""
 
 #: lms/templates/courseware/progress.html
@@ -10128,24 +10282,16 @@ msgid "Your {cert_name_short} is Generating"
 msgstr "{cert_name_short}'nız Oluşturuluyor"
 
 #: lms/templates/dashboard/_dashboard_certificate_information.html
-#: lms/templates/dashboard/_dashboard_certificate_information.html
 msgid "This link will open/download a PDF document"
 msgstr "Bu link PDF formatında açılacak/indirilecek"
 
 #: lms/templates/dashboard/_dashboard_certificate_information.html
+msgid "Download {cert_name_short} (PDF)"
+msgstr ""
+
 #: lms/templates/dashboard/_dashboard_certificate_information.html
 msgid "Download Your {cert_name_short} (PDF)"
 msgstr "İndir {cert_name_short} (PDF)"
-
-#: lms/templates/dashboard/_dashboard_certificate_information.html
-msgid ""
-"Since we did not have a valid set of verification photos from you when your "
-"{cert_name_long} was generated, we could not grant you a verified "
-"{cert_name_short}. An honor code {cert_name_short} has been granted instead."
-msgstr ""
-" {cert_name_long}'nız oluşturulurken, sizin denetlenmiş fotoğraflarınız "
-"elimize geçmediğinden, kimlik denetimli {cert_name_short} veremiyoruz. Bunun"
-" yerine  onur kodu {cert_name_short} verilmiştir."
 
 #: lms/templates/dashboard/_dashboard_certificate_information.html
 msgid ""
@@ -10163,8 +10309,28 @@ msgstr "Kimlik Onaylı {cert_name_short} (PDF)'ınızı İndirin"
 msgid "Complete our course feedback survey"
 msgstr "Ders geri bildirim anketini tamamla"
 
+#: lms/templates/dashboard/_dashboard_certificate_information.html
+msgid "Add Certificate to LinkedIn Profile"
+msgstr ""
+
+#: lms/templates/dashboard/_dashboard_certificate_information.html
+msgid "Share on LinkedIn"
+msgstr ""
+
+#: lms/templates/dashboard/_dashboard_certificate_information.html
+msgid ""
+"Since we did not have a valid set of verification photos from you when your "
+"{cert_name_long} was generated, we could not grant you a verified "
+"{cert_name_short}. An honor code {cert_name_short} has been granted instead."
+msgstr ""
+" {cert_name_long}'nız oluşturulurken, sizin denetlenmiş fotoğraflarınız "
+"elimize geçmediğinden, kimlik denetimli {cert_name_short} veremiyoruz. Bunun"
+" yerine  onur kodu {cert_name_short} verilmiştir."
+
 #: lms/templates/dashboard/_dashboard_course_listing.html
-#: lms/templates/dashboard/_dashboard_course_listing.html
+msgid "{course_number} {course_name} Home Page"
+msgstr ""
+
 #: lms/templates/dashboard/_dashboard_course_listing.html
 msgid "{course_number} {course_name} Cover Image"
 msgstr "{course_number} {course_name} Kapak resmi"
@@ -10173,12 +10339,6 @@ msgstr "{course_number} {course_name} Kapak resmi"
 msgid "Your verification is pending"
 msgstr ""
 
-#: lms/templates/dashboard/_dashboard_course_listing.html
-#: lms/templates/dashboard/_dashboard_course_listing.html
-#: lms/templates/dashboard/_dashboard_course_listing.html
-#: lms/templates/dashboard/_dashboard_course_listing.html
-#: lms/templates/dashboard/_dashboard_course_listing.html
-#: lms/templates/dashboard/_dashboard_course_listing.html
 #: lms/templates/dashboard/_dashboard_course_listing.html
 msgid "Enrolled as: "
 msgstr "Kaydolunan isim:"
@@ -10196,23 +10356,18 @@ msgid "Verified: Pending Verification"
 msgstr ""
 
 #: lms/templates/dashboard/_dashboard_course_listing.html
-#: lms/templates/dashboard/_dashboard_course_listing.html
 msgid "You're enrolled as a verified student"
 msgstr ""
 
-#: lms/templates/dashboard/_dashboard_course_listing.html
-#: lms/templates/dashboard/_dashboard_course_listing.html
 #: lms/templates/dashboard/_dashboard_course_listing.html
 msgid "ID Verified Ribbon/Badge"
 msgstr ""
 
 #: lms/templates/dashboard/_dashboard_course_listing.html
-#: lms/templates/dashboard/_dashboard_course_listing.html
 #: lms/templates/instructor/instructor_dashboard_2/course_info.html
 msgid "Verified"
 msgstr ""
 
-#: lms/templates/dashboard/_dashboard_course_listing.html
 #: lms/templates/dashboard/_dashboard_course_listing.html
 msgid "You're enrolled as an honor code student"
 msgstr ""
@@ -10271,7 +10426,6 @@ msgid "Verify Now"
 msgstr ""
 
 #: lms/templates/dashboard/_dashboard_course_listing.html
-#: lms/templates/dashboard/_dashboard_course_listing.html
 msgid "You have already verified your ID!"
 msgstr ""
 
@@ -10281,6 +10435,19 @@ msgstr ""
 
 #: lms/templates/dashboard/_dashboard_course_listing.html
 msgid "Your verification status is good until {date}."
+msgstr ""
+
+#: lms/templates/dashboard/_dashboard_course_listing.html
+msgid "Your verification will expire soon!"
+msgstr ""
+
+#. Translators: start_link and end_link will be replaced with HTML tags;
+#. please do not translate these.
+#: lms/templates/dashboard/_dashboard_course_listing.html
+msgid ""
+"Your current verification will expire before the verification deadline for "
+"this course. {start_link}Re-verify your identity now{end_link} using a "
+"webcam and a government-issued ID."
 msgstr ""
 
 #: lms/templates/dashboard/_dashboard_course_listing.html
@@ -10316,31 +10483,22 @@ msgid ""
 msgstr ""
 
 #: lms/templates/dashboard/_dashboard_course_listing.html
-#: lms/templates/dashboard/_dashboard_course_listing.html
 msgid "View Archived Course"
 msgstr "Arşivlenmiş Kursları Görüntüle"
 
-#: lms/templates/dashboard/_dashboard_course_listing.html
 #: lms/templates/dashboard/_dashboard_course_listing.html
 #: lms/templates/shoppingcart/registration_code_receipt.html
 msgid "View Course"
 msgstr "Kursa Gözat"
 
 #: lms/templates/dashboard/_dashboard_course_listing.html
-#: lms/templates/dashboard/_dashboard_course_listing.html
-#: lms/templates/dashboard/_dashboard_course_listing.html
-#: lms/templates/dashboard/_dashboard_course_listing.html
 msgid "Are you sure you want to unenroll from the purchased course"
 msgstr ""
 
 #: lms/templates/dashboard/_dashboard_course_listing.html
-#: lms/templates/dashboard/_dashboard_course_listing.html
 msgid "Are you sure you want to unenroll from"
 msgstr ""
 
-#: lms/templates/dashboard/_dashboard_course_listing.html
-#: lms/templates/dashboard/_dashboard_course_listing.html
-#: lms/templates/dashboard/_dashboard_course_listing.html
 #: lms/templates/dashboard/_dashboard_course_listing.html
 msgid ""
 "Are you sure you want to unenroll from the verified {cert_name_long} track "
@@ -10348,17 +10506,9 @@ msgid ""
 msgstr ""
 
 #: lms/templates/dashboard/_dashboard_course_listing.html
-#: lms/templates/dashboard/_dashboard_course_listing.html
 msgid "Email Settings"
 msgstr "E-posta Ayarları"
 
-#: lms/templates/dashboard/_dashboard_course_listing.html
-msgid ""
-"You must successfully complete {link_start}{prc_display}{link_end} before "
-"you begin this course."
-msgstr ""
-
-#: lms/templates/dashboard/_dashboard_prompt_midcourse_reverify.html
 #: lms/templates/dashboard/_dashboard_prompt_midcourse_reverify.html
 #: lms/templates/verify_student/prompt_midcourse_reverify.html
 msgid "You need to re-verify to continue"
@@ -10374,7 +10524,6 @@ msgstr ""
 msgid "{course_name}: Re-verify by {date}"
 msgstr "{course_name}: {date} e kadar yeniden onaylayın"
 
-#: lms/templates/dashboard/_dashboard_prompt_midcourse_reverify.html
 #: lms/templates/dashboard/_dashboard_prompt_midcourse_reverify.html
 msgid "Notification Actions"
 msgstr "Uyarı İşlemleri"
@@ -10423,8 +10572,6 @@ msgid "Approved:"
 msgstr "Kabul edildi:"
 
 #: lms/templates/dashboard/_dashboard_status_verification.html
-#: lms/templates/dashboard/_dashboard_status_verification.html
-#: lms/templates/dashboard/_dashboard_status_verification.html
 msgid "ID-Verification Status"
 msgstr "Kimlik Doğrulama Durumu"
 
@@ -10443,16 +10590,18 @@ msgstr ""
 "Onaylama fotoğraflarınız gönderildi ve kısa bir süre içinde incelenecektir."
 
 #: lms/templates/dashboard/_dashboard_status_verification.html
-msgid "Re-verify Yourself"
-msgstr "Kendinizi Yeniden Doğrulayın"
+msgid "{platform_name} Verification Status"
+msgstr ""
+
+#: lms/templates/dashboard/_dashboard_status_verification.html
+msgid "Resubmit Verification"
+msgstr ""
 
 #: lms/templates/dashboard/_dashboard_status_verification.html
 msgid ""
-"If you fail to pass a verification attempt before your course ends, you will"
-" not receive a verified certificate."
+"To receive a verified certificate, you have to submit a new photo of "
+"yourself and your government-issued photo ID before the course ends."
 msgstr ""
-"Dersiniz bitene kadar onaylama girişiminizden geçemezseniz, kimlik onaylı "
-"sertifika alamayacaksınız."
 
 #: lms/templates/dashboard/_dashboard_third_party_error.html
 msgid "Could Not Link Accounts"
@@ -10621,9 +10770,7 @@ msgstr "İleti Düzenleniyor"
 msgid "Edit post title"
 msgstr "İleti başlığını düzeltme"
 
-#: lms/templates/discussion/_underscore_templates.html
 #: lms/templates/discussion/_underscore_templates.html wiki/forms.py
-#: wiki/forms.py wiki/forms.py
 msgid "Title"
 msgstr "Başlık"
 
@@ -10635,7 +10782,6 @@ msgstr "İleti Güncelle"
 msgid "Show Comments (%(num_comments)s)"
 msgstr ""
 
-#: lms/templates/discussion/_underscore_templates.html
 #: lms/templates/discussion/_underscore_templates.html
 msgid "Add a comment"
 msgstr "Bir yorum ekleyin"
@@ -10656,7 +10802,6 @@ msgstr ""
 msgid "endorsed %(time_ago)s"
 msgstr ""
 
-#: lms/templates/discussion/_underscore_templates.html
 #: lms/templates/discussion/_underscore_templates.html
 msgid "Reported"
 msgstr ""
@@ -10844,7 +10989,6 @@ msgid "Topic Area:"
 msgstr ""
 
 #: lms/templates/discussion/_underscore_templates.html
-#: lms/templates/discussion/_underscore_templates.html
 msgid "Filter topics"
 msgstr ""
 
@@ -10932,6 +11076,14 @@ msgstr[0] "%s yorum"
 msgid "Discussion - {course_number}"
 msgstr "Tartışma - {course_number}"
 
+#: lms/templates/discussion/index.html
+msgid "Discussion thread list"
+msgstr ""
+
+#: lms/templates/discussion/index.html
+msgid "New topic form"
+msgstr ""
+
 #: lms/templates/discussion/maintenance.html
 msgid "We're sorry"
 msgstr "Üzgünüz"
@@ -10946,7 +11098,6 @@ msgstr "Forumda bakım yapılıyor. En kısa zamanda çalışır hale getireceğ
 msgid "User Profile"
 msgstr "Kullanıcı Profili"
 
-#: lms/templates/discussion/mustache/_pagination.mustache
 #: lms/templates/discussion/mustache/_pagination.mustache
 msgid "…"
 msgstr "..."
@@ -11422,59 +11573,47 @@ msgid ""
 "template below."
 msgstr ""
 
+#. Translators: This is the signature of an email.  "\n" is a newline
+#. character
+#. and should be placed between the closing word and the signature.
 #: lms/templates/emails/registration_codes_sale_email.txt
-msgid "Thanks,The {platform_name} Team"
+msgid ""
+"Thanks,\n"
+"The {platform_name} Team"
 msgstr ""
 
+#. Translators: please translate the text inside [[ ]]. This is meant as a
+#. template for course teams to use.
 #: lms/templates/emails/registration_codes_sale_email.txt
 msgid "Dear [[Name]]:"
 msgstr ""
 
+#. Translators: please translate the text inside [[ ]]. This is meant as a
+#. template for course teams to use.
 #: lms/templates/emails/registration_codes_sale_email.txt
 msgid ""
-"We have provided an enrollment for you in the course {course_name} from "
-"{platform_name}. Please follow the instructions below to claim your access."
+"We have provided a course enrollment code for you in {course_name}. To "
+"enroll in the course, click the following link:"
 msgstr ""
 
 #: lms/templates/emails/registration_codes_sale_email.txt
-msgid "Your redeem code is: [[Enter Redeem Code here from the attached CSV]]"
-msgstr ""
-
-#: lms/templates/emails/registration_codes_sale_email.txt
-msgid "(1) Register for an account at {site_name}."
-msgstr ""
-
-#: lms/templates/emails/registration_codes_sale_email.txt
-msgid "(2) Once registered, navigate to {course_url}"
-msgstr ""
-
-#: lms/templates/emails/registration_codes_sale_email.txt
-msgid "(3) Click 'Add {course_number} to Cart'"
+msgid "HTML link from the attached CSV file"
 msgstr ""
 
 #: lms/templates/emails/registration_codes_sale_email.txt
 msgid ""
-"(4) On the shopping cart page, enter your redeem code and click 'Apply "
-"Code'. This will make payment equal to $0."
+"After you enroll, you can see the course on your student dashboard. You can "
+"see course materials after the course start date."
 msgstr ""
 
-#: lms/templates/emails/registration_codes_sale_email.txt
-msgid "(5) Click 'Register'"
-msgstr ""
-
-#: lms/templates/emails/registration_codes_sale_email.txt
-msgid ""
-"(6) You should be able to see your course on your student dashboard at "
-"{dashboard_url}"
-msgstr ""
-
+#. Translators: please translate the text inside [[ ]]. This is meant as a
+#. template for course teams to use.
+#. This is the signature of an email.  "\n" is a newline character
+#. and should be placed between the closing word and the signature.
 #: lms/templates/emails/registration_codes_sale_email.txt
 msgid ""
-"(7) Course materials will not be available until the course start date."
-msgstr ""
-
-#: lms/templates/emails/registration_codes_sale_email.txt
-msgid "Sincerely,[[Your Signature]]"
+"Sincerely,\n"
+"[[Your Signature]]"
 msgstr ""
 
 #: lms/templates/emails/registration_codes_sale_invoice_attachment.txt
@@ -11586,6 +11725,24 @@ msgstr ""
 msgid "You have been un-enrolled from {course_name}"
 msgstr ""
 
+#: lms/templates/embargo/default_courseware.html
+#: lms/templates/embargo/default_enrollment.html
+#: lms/templates/static_templates/embargo.html
+msgid "This Course Unavailable In Your Country"
+msgstr "Bu Ders Ülkenizde Sunulmamaktadır"
+
+#: lms/templates/embargo/default_courseware.html
+msgid ""
+"Our system indicates that you are trying to access this {platform_name} "
+"course from a country or region in which it is not currently available."
+msgstr ""
+
+#: lms/templates/embargo/default_enrollment.html
+msgid ""
+"Our system indicates that you are trying to enroll in this {platform_name} "
+"course from a country or region in which it is not currently available."
+msgstr ""
+
 #: lms/templates/enrollment/course_enrollment_message.html
 msgid "Enrollment Successful"
 msgstr ""
@@ -11676,8 +11833,6 @@ msgid "Skip"
 msgstr "Atla"
 
 #: lms/templates/instructor/instructor_dashboard_2/add_coupon_modal.html
-#: lms/templates/instructor/instructor_dashboard_2/add_coupon_modal.html
-#: lms/templates/instructor/instructor_dashboard_2/add_coupon_modal.html
 #: lms/templates/instructor/instructor_dashboard_2/e-commerce.html
 msgid "Add Coupon"
 msgstr ""
@@ -11737,11 +11892,9 @@ msgid "Has the course started?"
 msgstr "Ders başladı mı?"
 
 #: lms/templates/instructor/instructor_dashboard_2/course_info.html
-#: lms/templates/instructor/instructor_dashboard_2/course_info.html
 msgid "Yes"
 msgstr "Evet"
 
-#: lms/templates/instructor/instructor_dashboard_2/course_info.html
 #: lms/templates/instructor/instructor_dashboard_2/course_info.html
 msgid "No"
 msgstr "Hayır"
@@ -11753,6 +11906,13 @@ msgstr "Ders sonlandı mı?"
 #: lms/templates/instructor/instructor_dashboard_2/course_info.html
 msgid "Grade Cutoffs:"
 msgstr "Not Baremleri:"
+
+#. Translators: git is a version-control system; see http://git-scm.com/about
+#: lms/templates/instructor/instructor_dashboard_2/course_info.html
+msgid ""
+"View detailed Git import logs for this course {link_start}by clicking "
+"here{link_end}."
+msgstr ""
 
 #: lms/templates/instructor/instructor_dashboard_2/course_info.html
 #: lms/templates/instructor/instructor_dashboard_2/data_download.html
@@ -11868,37 +12028,38 @@ msgid "Registration Codes"
 msgstr ""
 
 #: lms/templates/instructor/instructor_dashboard_2/e-commerce.html
-msgid "Click to generate Registration Codes"
+msgid ""
+"Create one or more pre-paid course enrollment codes. Students can use these "
+"codes to enroll in the course."
 msgstr ""
 
 #: lms/templates/instructor/instructor_dashboard_2/e-commerce.html
 #: lms/templates/instructor/instructor_dashboard_2/generate_registarion_codes_modal.html
-#: lms/templates/instructor/instructor_dashboard_2/generate_registarion_codes_modal.html
-msgid "Generate Registration Codes"
+msgid "Create Enrollment Codes"
 msgstr ""
 
 #: lms/templates/instructor/instructor_dashboard_2/e-commerce.html
-msgid "Click to generate a CSV file of all Course Registrations Codes:"
+msgid "Download a .csv file of all enrollment codes for this course"
 msgstr ""
 
 #: lms/templates/instructor/instructor_dashboard_2/e-commerce.html
-msgid "Download Registration Codes"
+msgid "Download All Enrollment Codes"
 msgstr ""
 
 #: lms/templates/instructor/instructor_dashboard_2/e-commerce.html
-msgid "Click to generate a CSV file of all Active Course Registrations Codes:"
+msgid "Download a .csv file of all unused enrollment codes for this course"
 msgstr ""
 
 #: lms/templates/instructor/instructor_dashboard_2/e-commerce.html
-msgid "Active Registration Codes"
+msgid "Download Unused Enrollment Codes"
 msgstr ""
 
 #: lms/templates/instructor/instructor_dashboard_2/e-commerce.html
-msgid "Click to generate a CSV file of all Spent Course Registrations Codes:"
+msgid "Download a .csv file of all used enrollment codes for this course"
 msgstr ""
 
 #: lms/templates/instructor/instructor_dashboard_2/e-commerce.html
-msgid "Spent Registration Codes"
+msgid "Download Used Enrollment Codes"
 msgstr ""
 
 #: lms/templates/instructor/instructor_dashboard_2/e-commerce.html
@@ -11920,35 +12081,37 @@ msgid "Sales"
 msgstr ""
 
 #: lms/templates/instructor/instructor_dashboard_2/e-commerce.html
-msgid "Total CC Amount: "
+msgid "Total Credit Card Purchases: "
 msgstr ""
 
 #: lms/templates/instructor/instructor_dashboard_2/e-commerce.html
-msgid "Click to generate a CSV file for all sales records in this course"
+msgid ""
+"Download a .csv file for all credit card purchases or for all invoices, "
+"regardless of status"
 msgstr ""
 
 #: lms/templates/instructor/instructor_dashboard_2/e-commerce.html
-msgid "Download All Invoice Sales"
+msgid "Download All Invoices"
 msgstr ""
 
 #: lms/templates/instructor/instructor_dashboard_2/e-commerce.html
-msgid "Download All CC Sales"
+msgid "Download All Credit Card Purchases"
 msgstr ""
 
 #: lms/templates/instructor/instructor_dashboard_2/e-commerce.html
-msgid "Enter the invoice number to invalidate or re-validate sale"
+msgid "To cancel or resubmit an invoice, enter the invoice number below."
 msgstr ""
 
 #: lms/templates/instructor/instructor_dashboard_2/e-commerce.html
-msgid "Enter Invoice Number"
+msgid "Invoice Number"
 msgstr ""
 
 #: lms/templates/instructor/instructor_dashboard_2/e-commerce.html
-msgid "Invalidate Sale"
+msgid "Cancel Invoice"
 msgstr ""
 
 #: lms/templates/instructor/instructor_dashboard_2/e-commerce.html
-msgid "Revalidate Sale"
+msgid "Resubmit Invoice"
 msgstr ""
 
 #: lms/templates/instructor/instructor_dashboard_2/e-commerce.html
@@ -12000,6 +12163,62 @@ msgid "Never Expires"
 msgstr ""
 
 #: lms/templates/instructor/instructor_dashboard_2/e-commerce.html
+msgid "Please enter the company name"
+msgstr ""
+
+#: lms/templates/instructor/instructor_dashboard_2/e-commerce.html
+msgid "Please enter the non-numeric value for company name"
+msgstr ""
+
+#: lms/templates/instructor/instructor_dashboard_2/e-commerce.html
+msgid "Please enter the company contact name"
+msgstr ""
+
+#: lms/templates/instructor/instructor_dashboard_2/e-commerce.html
+msgid "Please enter the non-numeric value for company contact name"
+msgstr ""
+
+#: lms/templates/instructor/instructor_dashboard_2/e-commerce.html
+msgid "Please enter the company contact email"
+msgstr ""
+
+#: lms/templates/instructor/instructor_dashboard_2/e-commerce.html
+msgid "Please enter the valid email address"
+msgstr ""
+
+#: lms/templates/instructor/instructor_dashboard_2/e-commerce.html
+msgid "Please enter the recipient name"
+msgstr ""
+
+#: lms/templates/instructor/instructor_dashboard_2/e-commerce.html
+msgid "Please enter the non-numeric value for recipient name"
+msgstr ""
+
+#: lms/templates/instructor/instructor_dashboard_2/e-commerce.html
+msgid "Please enter the recipient email"
+msgstr ""
+
+#: lms/templates/instructor/instructor_dashboard_2/e-commerce.html
+msgid "Please enter the billing address"
+msgstr ""
+
+#: lms/templates/instructor/instructor_dashboard_2/e-commerce.html
+msgid "Please enter the unit price"
+msgstr ""
+
+#: lms/templates/instructor/instructor_dashboard_2/e-commerce.html
+msgid "Please enter the numeric value for unit price"
+msgstr ""
+
+#: lms/templates/instructor/instructor_dashboard_2/e-commerce.html
+msgid "Please enter the number of enrollment codes"
+msgstr ""
+
+#: lms/templates/instructor/instructor_dashboard_2/e-commerce.html
+msgid "Please enter the numeric value for number of enrollment codes"
+msgstr ""
+
+#: lms/templates/instructor/instructor_dashboard_2/e-commerce.html
 msgid "Please enter the course price"
 msgstr ""
 
@@ -12027,7 +12246,6 @@ msgstr ""
 msgid "Edit Coupon"
 msgstr ""
 
-#: lms/templates/instructor/instructor_dashboard_2/edit_coupon_modal.html
 #: lms/templates/instructor/instructor_dashboard_2/edit_coupon_modal.html
 msgid "Update Coupon"
 msgstr ""
@@ -12060,9 +12278,6 @@ msgstr ""
 "öğrenci için teslim tarihini öne çekemeyeceğinizi bilmelisiniz."
 
 #: lms/templates/instructor/instructor_dashboard_2/extensions.html
-#: lms/templates/instructor/instructor_dashboard_2/extensions.html
-#: lms/templates/instructor/instructor_dashboard_2/extensions.html
-#: lms/templates/instructor/instructor_dashboard_2/student_admin.html
 #: lms/templates/instructor/instructor_dashboard_2/student_admin.html
 msgid ""
 "Specify the {platform_name} email address or username of a student here:"
@@ -12071,15 +12286,10 @@ msgstr ""
 "belirleyin:"
 
 #: lms/templates/instructor/instructor_dashboard_2/extensions.html
-#: lms/templates/instructor/instructor_dashboard_2/extensions.html
-#: lms/templates/instructor/instructor_dashboard_2/extensions.html
-#: lms/templates/instructor/instructor_dashboard_2/student_admin.html
 #: lms/templates/instructor/instructor_dashboard_2/student_admin.html
 msgid "Student Email or Username"
 msgstr "Öğrenci E-postası ve Kullanıcı Adı"
 
-#: lms/templates/instructor/instructor_dashboard_2/extensions.html
-#: lms/templates/instructor/instructor_dashboard_2/extensions.html
 #: lms/templates/instructor/instructor_dashboard_2/extensions.html
 msgid "Choose the graded unit:"
 msgstr "Notlandırılmış birimi seçiniz:"
@@ -12151,16 +12361,15 @@ msgid "Generate Registration Code Modal"
 msgstr ""
 
 #: lms/templates/instructor/instructor_dashboard_2/generate_registarion_codes_modal.html
-msgid "Please enter the details below"
+msgid "* Required Information"
 msgstr ""
 
-#: lms/templates/instructor/instructor_dashboard_2/generate_registarion_codes_modal.html
 #: lms/templates/instructor/instructor_dashboard_2/generate_registarion_codes_modal.html
 msgid "Organization Name"
 msgstr ""
 
 #: lms/templates/instructor/instructor_dashboard_2/generate_registarion_codes_modal.html
-msgid "What is the company the seats were sold to?"
+msgid "The organization that purchased enrollments in the course"
 msgstr ""
 
 #: lms/templates/instructor/instructor_dashboard_2/generate_registarion_codes_modal.html
@@ -12169,7 +12378,11 @@ msgid "Organization Contact"
 msgstr ""
 
 #: lms/templates/instructor/instructor_dashboard_2/generate_registarion_codes_modal.html
-msgid "Who is the key contact at the company the sale was made to? "
+msgid "Organization Contact Name"
+msgstr ""
+
+#: lms/templates/instructor/instructor_dashboard_2/generate_registarion_codes_modal.html
+msgid "The primary contact at the organization"
 msgstr ""
 
 #: lms/templates/instructor/instructor_dashboard_2/generate_registarion_codes_modal.html
@@ -12177,7 +12390,7 @@ msgid "Invoice Recipient"
 msgstr ""
 
 #: lms/templates/instructor/instructor_dashboard_2/generate_registarion_codes_modal.html
-msgid "Who at the company should the invoice be sent to?"
+msgid "The contact who should receive the invoice"
 msgstr ""
 
 #: lms/templates/instructor/instructor_dashboard_2/generate_registarion_codes_modal.html
@@ -12205,35 +12418,35 @@ msgid "Zip"
 msgstr ""
 
 #: lms/templates/instructor/instructor_dashboard_2/generate_registarion_codes_modal.html
-msgid "Price of Sale"
+msgid "Unit Price"
 msgstr ""
 
 #: lms/templates/instructor/instructor_dashboard_2/generate_registarion_codes_modal.html
-msgid "What was the total sale price for all seats sold?"
+msgid "The price per enrollment purchased"
 msgstr ""
 
 #: lms/templates/instructor/instructor_dashboard_2/generate_registarion_codes_modal.html
-msgid "Number of registrations"
+msgid "Number of Enrollment Codes"
 msgstr ""
 
 #: lms/templates/instructor/instructor_dashboard_2/generate_registarion_codes_modal.html
-msgid "Number of codes to generate for the Invoice"
+msgid "The total number of enrollment codes to create"
 msgstr ""
 
 #: lms/templates/instructor/instructor_dashboard_2/generate_registarion_codes_modal.html
-msgid "(Optional) Sale Label"
+msgid "Course Team Internal Reference"
 msgstr ""
 
 #: lms/templates/instructor/instructor_dashboard_2/generate_registarion_codes_modal.html
-msgid "Internal tag to associate with the sale"
+msgid "Internal reference information for the sale"
 msgstr ""
 
 #: lms/templates/instructor/instructor_dashboard_2/generate_registarion_codes_modal.html
-msgid "(Optional) Customer Reference Number"
+msgid "Customer Reference"
 msgstr ""
 
 #: lms/templates/instructor/instructor_dashboard_2/generate_registarion_codes_modal.html
-msgid "Any reference specific to the purchasing company, e.g. PO #"
+msgid "Customer's purchase order or other reference information"
 msgstr ""
 
 #: lms/templates/instructor/instructor_dashboard_2/generate_registarion_codes_modal.html
@@ -12269,7 +12482,6 @@ msgid "Gender Distribution"
 msgstr "Cinsiyet Dağılımı"
 
 #: lms/templates/instructor/instructor_dashboard_2/instructor_dashboard_2.html
-#: lms/templates/instructor/instructor_dashboard_2/instructor_dashboard_2.html
 msgid "Instructor Dashboard"
 msgstr "Eğitmen Anapaneli"
 
@@ -12282,7 +12494,6 @@ msgid "Batch Enrollment"
 msgstr "Yığın Kaydı"
 
 #: lms/templates/instructor/instructor_dashboard_2/membership.html
-#: lms/templates/instructor/instructor_dashboard_2/membership.html
 msgid ""
 "Enter email addresses and/or usernames separated by new lines or commas."
 msgstr ""
@@ -12294,11 +12505,9 @@ msgid ""
 msgstr ""
 
 #: lms/templates/instructor/instructor_dashboard_2/membership.html
-#: lms/templates/instructor/instructor_dashboard_2/membership.html
 msgid "Email Addresses/Usernames"
 msgstr ""
 
-#: lms/templates/instructor/instructor_dashboard_2/membership.html
 #: lms/templates/instructor/instructor_dashboard_2/membership.html
 msgid "Auto Enroll"
 msgstr "Otomatik Kayıt"
@@ -12321,20 +12530,14 @@ msgid "Checking this box has no effect if 'Unenroll' is selected."
 msgstr ""
 
 #: lms/templates/instructor/instructor_dashboard_2/membership.html
-#: lms/templates/instructor/instructor_dashboard_2/membership.html
 msgid "Notify users by email"
 msgstr "Kullanıcıları eposta ile bildirim yap"
 
-#: lms/templates/instructor/instructor_dashboard_2/membership.html
 #: lms/templates/instructor/instructor_dashboard_2/membership.html
 msgid ""
 "If this option is <em>checked</em>, users will receive an email "
 "notification."
 msgstr ""
-
-#: lms/templates/instructor/instructor_dashboard_2/membership.html
-msgid "Enroll"
-msgstr "Kaydol"
 
 #: lms/templates/instructor/instructor_dashboard_2/membership.html
 msgid "Register/Enroll Students"
@@ -12546,7 +12749,6 @@ msgid ""
 msgstr ""
 
 #: lms/templates/instructor/instructor_dashboard_2/metrics.html
-#: lms/templates/instructor/instructor_dashboard_2/metrics.html
 msgid "You can also download this data as a CSV file."
 msgstr ""
 
@@ -12581,11 +12783,9 @@ msgid "Download Student Grades as a CSV"
 msgstr ""
 
 #: lms/templates/instructor/instructor_dashboard_2/metrics.html
-#: lms/templates/instructor/instructor_dashboard_2/metrics.html
 msgid "This is a partial list, to view all students download as a csv."
 msgstr ""
 
-#: lms/templates/instructor/instructor_dashboard_2/send_email.html
 #: lms/templates/instructor/instructor_dashboard_2/send_email.html
 msgid "Send Email"
 msgstr "E-posta Gönder"
@@ -12599,11 +12799,9 @@ msgid "Myself"
 msgstr "Kendim"
 
 #: lms/templates/instructor/instructor_dashboard_2/send_email.html
-#: lms/templates/instructor/instructor_dashboard_2/send_email.html
 msgid "Staff and instructors"
 msgstr "Personel ve eğitmenler"
 
-#: lms/templates/instructor/instructor_dashboard_2/send_email.html
 #: lms/templates/instructor/instructor_dashboard_2/send_email.html
 msgid "All (students, staff and instructors)"
 msgstr "Bütün (öğrenciler, personel ve eğitmenler)"
@@ -12697,7 +12895,6 @@ msgid "Show Email Task History"
 msgstr "E-posta Görev Geçmişini Göster"
 
 #: lms/templates/instructor/instructor_dashboard_2/set_course_mode_price_modal.html
-#: lms/templates/instructor/instructor_dashboard_2/set_course_mode_price_modal.html
 msgid "Set Course Mode Price"
 msgstr ""
 
@@ -12737,17 +12934,14 @@ msgid "Student-specific grade adjustment"
 msgstr "Öğrenciye özel not düzeltme"
 
 #: lms/templates/instructor/instructor_dashboard_2/student_admin.html
-#: lms/templates/instructor/instructor_dashboard_2/student_admin.html
 msgid "Specify a problem in the course here with its complete location:"
 msgstr ""
 
-#: lms/templates/instructor/instructor_dashboard_2/student_admin.html
 #: lms/templates/instructor/instructor_dashboard_2/student_admin.html
 msgid "Problem location"
 msgstr ""
 
 #. Translators: A location (string of text) follows this sentence.
-#: lms/templates/instructor/instructor_dashboard_2/student_admin.html
 #: lms/templates/instructor/instructor_dashboard_2/student_admin.html
 msgid ""
 "You must provide the complete location of the problem. In the Staff Debug "
@@ -12783,6 +12977,42 @@ msgstr ""
 #: lms/templates/instructor/instructor_dashboard_2/student_admin.html
 msgid "Show Background Task History for Student"
 msgstr "Öğrenci için Arka Plan Görev Geçmişini Göster"
+
+#: lms/templates/instructor/instructor_dashboard_2/student_admin.html
+msgid "Entrance Exam Adjustment"
+msgstr ""
+
+#: lms/templates/instructor/instructor_dashboard_2/student_admin.html
+msgid "Student's {platform_name} email address or username:"
+msgstr ""
+
+#: lms/templates/instructor/instructor_dashboard_2/student_admin.html
+msgid ""
+"Select an action for the student's entrance exam. This action will affect "
+"every problem in the student's exam."
+msgstr ""
+
+#: lms/templates/instructor/instructor_dashboard_2/student_admin.html
+msgid "Reset Number of Student Attempts"
+msgstr ""
+
+#: lms/templates/instructor/instructor_dashboard_2/student_admin.html
+msgid "Rescore All Problems"
+msgstr ""
+
+#: lms/templates/instructor/instructor_dashboard_2/student_admin.html
+msgid ""
+"You can also delete all of the student's answers and scores for the entire "
+"entrance exam."
+msgstr ""
+
+#: lms/templates/instructor/instructor_dashboard_2/student_admin.html
+msgid "Delete Student's Answers and Scores"
+msgstr ""
+
+#: lms/templates/instructor/instructor_dashboard_2/student_admin.html
+msgid "Show Student's Exam Adjustment History"
+msgstr ""
 
 #: lms/templates/instructor/instructor_dashboard_2/student_admin.html
 msgid "Then select an action"
@@ -12833,6 +13063,10 @@ msgid ""
 msgstr ""
 "Tercih ettiğiniz dili göremediniz mi? {link_start}Gönüllü çevirmen "
 "olunuz!{link_end}"
+
+#: lms/templates/modal/accessible_confirm.html
+msgid "Confirm"
+msgstr "Onayla"
 
 #. Translators: this text gives status on if the modal interface (a menu or
 #. piece of UI that takes the full focus of the screen) is open or not
@@ -13126,7 +13360,6 @@ msgstr ""
 #: lms/templates/shoppingcart/billing_details.html
 #: lms/templates/shoppingcart/receipt.html
 #: lms/templates/shoppingcart/shopping_cart.html
-#: lms/templates/shoppingcart/shopping_cart.html
 msgid "Billing Details"
 msgstr ""
 
@@ -13148,7 +13381,6 @@ msgstr ""
 msgid "Purchase order number (if any)"
 msgstr ""
 
-#: lms/templates/shoppingcart/billing_details.html
 #: lms/templates/shoppingcart/billing_details.html
 msgid "email@example.com"
 msgstr ""
@@ -13335,15 +13567,10 @@ msgid " {course_name} "
 msgstr ""
 
 #: lms/templates/shoppingcart/receipt.html
-#: lms/templates/shoppingcart/receipt.html
-#: lms/templates/shoppingcart/receipt.html
-#: lms/templates/shoppingcart/receipt.html
-#: lms/templates/shoppingcart/shopping_cart.html
 #: lms/templates/shoppingcart/shopping_cart.html
 msgid "Price per student:"
 msgstr ""
 
-#: lms/templates/shoppingcart/receipt.html
 #: lms/templates/shoppingcart/receipt.html
 #: lms/templates/shoppingcart/shopping_cart.html
 msgid "Discount Applied:"
@@ -13352,7 +13579,6 @@ msgstr ""
 #. Translators: Please keep the "<del>" and "</del>" tags around your
 #. translation of the word "this" in your translation.
 #: lms/templates/shoppingcart/receipt.html
-#: lms/templates/shoppingcart/verified_cert_receipt.html
 msgid "Note: items with strikethough like <del>this</del> have been refunded."
 msgstr ""
 
@@ -13404,16 +13630,16 @@ msgstr ""
 
 #: lms/templates/shoppingcart/registration_code_receipt.html
 msgid ""
-"You're already registered for this course. Visit your <a "
+"You're already enrolled for this course. Visit your <a "
 "href={dashboard_url}>dashboard</a> to see the course."
 msgstr ""
 
 #: lms/templates/shoppingcart/registration_code_receipt.html
-msgid "The course you are registering for is full."
+msgid "The course you are enrolling for is full."
 msgstr ""
 
 #: lms/templates/shoppingcart/registration_code_receipt.html
-msgid "The course you are registering for is closed."
+msgid "The course you are enrolling for is closed."
 msgstr ""
 
 #: lms/templates/shoppingcart/registration_code_receipt.html
@@ -13447,11 +13673,10 @@ msgstr ""
 
 #: lms/templates/shoppingcart/registration_code_redemption.html
 msgid ""
-"You're already registered for this course. Visit your "
+"You're already enrolled for this course. Visit your "
 "{link_start}dashboard{link_end} to see the course."
 msgstr ""
 
-#: lms/templates/shoppingcart/shopping_cart.html
 #: lms/templates/shoppingcart/shopping_cart.html
 msgid ""
 "{course_names} has been removed because the enrollment period has closed."
@@ -13478,18 +13703,15 @@ msgid "TOTAL:"
 msgstr ""
 
 #: lms/templates/shoppingcart/shopping_cart.html
-#: lms/templates/shoppingcart/shopping_cart.html
 msgid ""
 "After this purchase is complete, a receipt is generated with relative "
 "billing details and registration codes for students."
 msgstr ""
 
 #: lms/templates/shoppingcart/shopping_cart.html
-#: lms/templates/shoppingcart/shopping_cart.html
 msgid "After this purchase is complete,"
 msgstr ""
 
-#: lms/templates/shoppingcart/shopping_cart.html
 #: lms/templates/shoppingcart/shopping_cart.html
 msgid "will be enrolled in this course."
 msgstr ""
@@ -13503,12 +13725,8 @@ msgid "{platform_name} -  Shopping Cart"
 msgstr ""
 
 #: lms/templates/shoppingcart/shopping_cart_flow.html
-#: lms/templates/shoppingcart/verified_cert_receipt.html
 #: lms/templates/verify_student/photo_reverification.html
-#: lms/templates/verify_student/photo_verification.html
 #: lms/templates/verify_student/reverification_confirmation.html
-#: lms/templates/verify_student/show_requirements.html
-#: lms/templates/verify_student/verified.html
 msgid "Review"
 msgstr "Gözden Geçir"
 
@@ -13517,148 +13735,10 @@ msgid "Payment"
 msgstr ""
 
 #: lms/templates/shoppingcart/shopping_cart_flow.html
-#: lms/templates/shoppingcart/verified_cert_receipt.html
 #: lms/templates/verify_student/photo_reverification.html
-#: lms/templates/verify_student/photo_verification.html
 #: lms/templates/verify_student/reverification_confirmation.html
-#: lms/templates/verify_student/show_requirements.html
-#: lms/templates/verify_student/verified.html
 msgid "Confirmation"
 msgstr "Onaylama"
-
-#: lms/templates/shoppingcart/verified_cert_receipt.html
-msgid "Receipt (Order"
-msgstr "Fatura (Sipariş"
-
-#: lms/templates/shoppingcart/verified_cert_receipt.html
-msgid "You are now registered for: "
-msgstr "Şimdi şuna kaydoldunuz:"
-
-#: lms/templates/shoppingcart/verified_cert_receipt.html
-msgid "Registered as: "
-msgstr "Olarak kayıtlı:"
-
-#: lms/templates/shoppingcart/verified_cert_receipt.html
-msgid "ID Verified"
-msgstr "Kimlik Onaylandı"
-
-#: lms/templates/shoppingcart/verified_cert_receipt.html
-#: lms/templates/verify_student/photo_reverification.html
-#: lms/templates/verify_student/photo_verification.html
-#: lms/templates/verify_student/reverification_confirmation.html
-#: lms/templates/verify_student/show_requirements.html
-#: lms/templates/verify_student/verified.html
-msgid "Your Progress"
-msgstr "İlerlemeniz"
-
-#: lms/templates/shoppingcart/verified_cert_receipt.html
-#: lms/templates/shoppingcart/verified_cert_receipt.html
-#: lms/templates/verify_student/photo_reverification.html
-#: lms/templates/verify_student/photo_verification.html
-#: lms/templates/verify_student/reverification_confirmation.html
-#: lms/templates/verify_student/show_requirements.html
-#: lms/templates/verify_student/verified.html
-msgid "Current Step: "
-msgstr "Güncel Basamak:"
-
-#: lms/templates/shoppingcart/verified_cert_receipt.html
-#: lms/templates/verify_student/photo_verification.html
-#: lms/templates/verify_student/show_requirements.html
-msgid "Take Photo"
-msgstr "Foto Çek"
-
-#: lms/templates/shoppingcart/verified_cert_receipt.html
-#: lms/templates/verify_student/photo_verification.html
-#: lms/templates/verify_student/show_requirements.html
-msgid "Take ID Photo"
-msgstr "Kimlik Fotosu Çek"
-
-#: lms/templates/shoppingcart/verified_cert_receipt.html
-#: lms/templates/verify_student/photo_verification.html
-#: lms/templates/verify_student/show_requirements.html
-#: lms/templates/verify_student/verified.html
-msgid "Make Payment"
-msgstr "Ödeme Yapma"
-
-#: lms/templates/shoppingcart/verified_cert_receipt.html
-msgid "Congratulations! You are now verified on "
-msgstr "Tebrikler! Şimdi teyit edildiniz"
-
-#: lms/templates/shoppingcart/verified_cert_receipt.html
-msgid ""
-"You are now registered as a verified student! Your registration details are "
-"below."
-msgstr ""
-"Şimdi yeyit edilmiş öğrenci olarak kaydedildiniz! Kayıt bilgileriniz "
-"aşağıdadır."
-
-#: lms/templates/shoppingcart/verified_cert_receipt.html
-msgid "You are registered for:"
-msgstr "Bunun için kaydoldunuz:"
-
-#: lms/templates/shoppingcart/verified_cert_receipt.html
-msgid "A list of courses you have just registered for as a verified student"
-msgstr "Onaylanmış bir öğrenci olarak şimdi aldığınız derslerin listesi"
-
-#: lms/templates/shoppingcart/verified_cert_receipt.html
-msgid "Options"
-msgstr "Opsiyonlar"
-
-#: lms/templates/shoppingcart/verified_cert_receipt.html
-msgid "Starts: {start_date}"
-msgstr "Başlıyor: {start_date}"
-
-#: lms/templates/shoppingcart/verified_cert_receipt.html
-msgid "Go to Course"
-msgstr "Derse Git"
-
-#: lms/templates/shoppingcart/verified_cert_receipt.html
-msgid "Go to your Dashboard"
-msgstr "Panelinize Gidin"
-
-#: lms/templates/shoppingcart/verified_cert_receipt.html
-msgid "Verified Status"
-msgstr "Onaylanmış Durum"
-
-#: lms/templates/shoppingcart/verified_cert_receipt.html
-msgid ""
-"We have received your identification details to verify your identity. If "
-"there is a problem with any of the items, we will contact you to resubmit. "
-"You can now register for any of the verified certificate courses this "
-"semester without having to re-verify."
-msgstr ""
-"Kimliğinizi onaylamak için kimlik ayrıntılarınız aldık. Bu maddeler "
-"konusunda bir sorun varsa, sizinle bu bilgilerin yeniden girilmesi için "
-"bağlantıya geçeceğiz. Bu dönem açılan derslerden bazılarını yeniden onaylama"
-" olmaksızın şimdi alabilirsiniz."
-
-#: lms/templates/shoppingcart/verified_cert_receipt.html
-msgid ""
-"The professor will ask you to periodically submit a new photo to verify your"
-" work during the course (usually at exam times)."
-msgstr ""
-"Profesör periyodik olarak çalıştığınızı kontrol etmek için yeni bir fotoğraf"
-" vermenizi (özellikle sınav zamanlarında) isteyecektir. "
-
-#: lms/templates/shoppingcart/verified_cert_receipt.html
-msgid "Payment Details"
-msgstr "Ödeme Ayrıntıları"
-
-#: lms/templates/shoppingcart/verified_cert_receipt.html
-msgid ""
-"Please print this page for your records; it serves as your receipt. You will"
-" also receive an email with the same information."
-msgstr ""
-"Lütfen kayıtlarınız için bu sayfanın çıktısını fatura olarak alın. Aynı "
-"bilgileri içeren bir de e-posta alacaksınız."
-
-#: lms/templates/shoppingcart/verified_cert_receipt.html
-msgid "Order No."
-msgstr "Sipariş No."
-
-#: lms/templates/shoppingcart/verified_cert_receipt.html
-msgid "Billed To"
-msgstr "Faturalandı"
 
 #: lms/templates/static_templates/404.html
 msgid ""
@@ -13692,37 +13772,26 @@ msgstr ""
 " bırakılmıştır."
 
 #: lms/templates/static_templates/blog.html
-#: lms/templates/static_templates/blog.html
 msgid "Blog"
 msgstr ""
 
-#: lms/templates/static_templates/donate.html
 #: lms/templates/static_templates/donate.html
 msgid "Donate"
 msgstr ""
 
 #: lms/templates/static_templates/embargo.html
-msgid "This Course Unavailable In Your Country"
-msgstr "Bu Ders Ülkenizde Sunulmamaktadır"
-
-#: lms/templates/static_templates/embargo.html
 msgid ""
 "Our system indicates that you are trying to access this {platform_name} "
-"course from a country currently subject to U.S. economic and trade "
-"sanctions. Unfortunately, at this time {platform_name} must comply with "
-"export controls, and we cannot allow you to access this particular course. "
-"Feel free to browse our catalogue to find other courses you may be "
-"interested in taking."
+"course from a country or region currently subject to U.S. economic and trade"
+" sanctions. Unfortunately, at this time {platform_name} must comply with "
+"export controls, and we cannot allow you to access this course."
 msgstr ""
 
-#: lms/templates/static_templates/media-kit.html
 #: lms/templates/static_templates/media-kit.html
 msgid "Media Kit"
 msgstr "Medya kiti"
 
 #: lms/templates/static_templates/news.html
-#: lms/templates/static_templates/news.html
-#: lms/templates/static_templates/press.html
 #: lms/templates/static_templates/press.html
 msgid "In the Press"
 msgstr "Basında"
@@ -13750,39 +13819,6 @@ msgstr ""
 
 #: lms/templates/static_templates/server-overloaded.html
 msgid "Currently the {platform_name} servers are overloaded"
-msgstr ""
-
-#: lms/templates/student_account/email_change_failed.html
-msgid "Email change failed."
-msgstr ""
-
-#: lms/templates/student_account/email_change_failed.html
-msgid "Something went wrong. Please contact {support} for help."
-msgstr ""
-
-#: lms/templates/student_account/email_change_failed.html
-msgid ""
-"The email address you wanted to use is already used by another "
-"{platform_name} account."
-msgstr ""
-
-#: lms/templates/student_account/email_change_failed.html
-msgid ""
-"You can try again from the {link_start}account settings{link_end} page."
-msgstr ""
-
-#: lms/templates/student_account/email_change_successful.html
-msgid "Email change successful!"
-msgstr ""
-
-#: lms/templates/student_account/email_change_successful.html
-msgid ""
-"You should see your new email address listed on the {link_start}account "
-"settings{link_end} page."
-msgstr ""
-
-#: lms/templates/student_account/index.html
-msgid "Student Account"
 msgstr ""
 
 #: lms/templates/student_account/login_and_register.html
@@ -13858,18 +13894,16 @@ msgid "Change my name"
 msgstr "Adımı değiştir"
 
 #: lms/templates/verify_student/_reverification_support.html
-msgid "Why Do I Need to Re-Verify?"
-msgstr "Yeniden Doğrulanmaya Neden İhtiyaç duyuyorum?"
+msgid "Why Do I Need to Re-Verify My Identity?"
+msgstr ""
 
 #: lms/templates/verify_student/_reverification_support.html
 msgid ""
-"At key points in a course, the professor will ask you to re-verify your "
-"identity. We will send the new photo to be matched up with the photo of the "
-"original ID you submitted when you signed up for the course."
+"You may need to re-verify your identity if an error occurs with your "
+"verification or if your verification has expired. All verifications expire "
+"after one year.  The re-verification process is the same as the original "
+"verification process. You need a webcam and a government-issued photo ID."
 msgstr ""
-"Dersteki çeşitli aşamalarda, profesör kimliğinizi onaylamanızı isteyecektir."
-" Derse kayıt yaptırdığınız zaman, verdiğiniz kimlik üzerindeki fotoğrafla "
-"eşleşmesi için yeni fotoğrafınızı göndereceğiz. "
 
 #: lms/templates/verify_student/_reverification_support.html
 msgid "Having Technical Trouble?"
@@ -13955,7 +13989,6 @@ msgstr "Yeniden Doğrulamak"
 
 #: lms/templates/verify_student/midcourse_photo_reverification.html
 #: lms/templates/verify_student/photo_reverification.html
-#: lms/templates/verify_student/photo_verification.html
 msgid "No Webcam Detected"
 msgstr "Webcam Bulunamadı"
 
@@ -13970,13 +14003,11 @@ msgstr ""
 
 #: lms/templates/verify_student/midcourse_photo_reverification.html
 #: lms/templates/verify_student/photo_reverification.html
-#: lms/templates/verify_student/photo_verification.html
 msgid "No Flash Detected"
 msgstr "Flash Bulunamadı"
 
 #: lms/templates/verify_student/midcourse_photo_reverification.html
 #: lms/templates/verify_student/photo_reverification.html
-#: lms/templates/verify_student/photo_verification.html
 msgid ""
 "You don't seem to have Flash installed. {a_start} Get Flash {a_end} to "
 "continue your registration."
@@ -14010,9 +14041,6 @@ msgstr ""
 
 #: lms/templates/verify_student/midcourse_photo_reverification.html
 #: lms/templates/verify_student/photo_reverification.html
-#: lms/templates/verify_student/photo_reverification.html
-#: lms/templates/verify_student/photo_verification.html
-#: lms/templates/verify_student/photo_verification.html
 msgid ""
 "Don't see your picture? Make sure to allow your browser to use your camera "
 "when it asks for permission."
@@ -14022,93 +14050,66 @@ msgstr ""
 
 #: lms/templates/verify_student/midcourse_photo_reverification.html
 #: lms/templates/verify_student/photo_reverification.html
-#: lms/templates/verify_student/photo_reverification.html
-#: lms/templates/verify_student/photo_verification.html
-#: lms/templates/verify_student/photo_verification.html
 msgid "Retake"
 msgstr "Yeniden Al"
 
 #: lms/templates/verify_student/midcourse_photo_reverification.html
 #: lms/templates/verify_student/photo_reverification.html
-#: lms/templates/verify_student/photo_reverification.html
-#: lms/templates/verify_student/photo_verification.html
-#: lms/templates/verify_student/photo_verification.html
 msgid "Looks good"
 msgstr "İyi görünüyor"
 
 #: lms/templates/verify_student/midcourse_photo_reverification.html
 #: lms/templates/verify_student/photo_reverification.html
-#: lms/templates/verify_student/photo_reverification.html
-#: lms/templates/verify_student/photo_verification.html
-#: lms/templates/verify_student/photo_verification.html
 msgid "Tips on taking a successful photo"
 msgstr "Başarılı bir fotoğraf çekebilmek için ipüçları"
 
 #: lms/templates/verify_student/midcourse_photo_reverification.html
 #: lms/templates/verify_student/photo_reverification.html
-#: lms/templates/verify_student/photo_verification.html
 msgid "Make sure your face is well-lit"
 msgstr "Yüzünüzün iyi aydınlatıldığına emin olunuz"
 
 #: lms/templates/verify_student/midcourse_photo_reverification.html
 #: lms/templates/verify_student/photo_reverification.html
-#: lms/templates/verify_student/photo_verification.html
 msgid "Be sure your entire face is inside the frame"
 msgstr "Bütün yüzün çerçeve içinde olmasına emin olun"
 
 #: lms/templates/verify_student/midcourse_photo_reverification.html
 #: lms/templates/verify_student/photo_reverification.html
-#: lms/templates/verify_student/photo_verification.html
 msgid "Can we match the photo you took with the one on your ID?"
 msgstr "Kimliğiniz üzerindeki fotoğrafla çektiğinizini eşleştirebilir miyiz?"
 
 #: lms/templates/verify_student/midcourse_photo_reverification.html
 #: lms/templates/verify_student/photo_reverification.html
-#: lms/templates/verify_student/photo_reverification.html
-#: lms/templates/verify_student/photo_verification.html
-#: lms/templates/verify_student/photo_verification.html
 msgid "Once in position, use the camera button"
 msgstr "Pozisyona girdiğinizde, kamera butonunu kullanın"
 
 #: lms/templates/verify_student/midcourse_photo_reverification.html
 #: lms/templates/verify_student/photo_reverification.html
-#: lms/templates/verify_student/photo_verification.html
 msgid "to capture your picture"
 msgstr "resminizi çekebilmek için"
 
 #: lms/templates/verify_student/midcourse_photo_reverification.html
 #: lms/templates/verify_student/photo_reverification.html
-#: lms/templates/verify_student/photo_reverification.html
-#: lms/templates/verify_student/photo_verification.html
-#: lms/templates/verify_student/photo_verification.html
 msgid "Use the checkmark button"
 msgstr "Onay imi butonunu kullanın "
 
 #: lms/templates/verify_student/midcourse_photo_reverification.html
 #: lms/templates/verify_student/photo_reverification.html
-#: lms/templates/verify_student/photo_reverification.html
-#: lms/templates/verify_student/photo_verification.html
-#: lms/templates/verify_student/photo_verification.html
 msgid "once you are happy with the photo"
 msgstr "fotoğrafınızdan memnun olduğunuzda"
 
 #: lms/templates/verify_student/midcourse_photo_reverification.html
 #: lms/templates/verify_student/photo_reverification.html
-#: lms/templates/verify_student/photo_reverification.html
-#: lms/templates/verify_student/photo_verification.html
-#: lms/templates/verify_student/photo_verification.html
 msgid "Common Questions"
 msgstr "Sıkça Sorulan Sorular"
 
 #: lms/templates/verify_student/midcourse_photo_reverification.html
 #: lms/templates/verify_student/photo_reverification.html
-#: lms/templates/verify_student/photo_verification.html
 msgid "Why do you need my photo?"
 msgstr "Neden fotoğrafıma gerek duyuyorsunuz?"
 
 #: lms/templates/verify_student/midcourse_photo_reverification.html
 #: lms/templates/verify_student/photo_reverification.html
-#: lms/templates/verify_student/photo_verification.html
 msgid ""
 "As part of the verification process, we need your photo to confirm that you "
 "are you."
@@ -14118,15 +14119,11 @@ msgstr ""
 
 #: lms/templates/verify_student/midcourse_photo_reverification.html
 #: lms/templates/verify_student/photo_reverification.html
-#: lms/templates/verify_student/photo_reverification.html
-#: lms/templates/verify_student/photo_verification.html
-#: lms/templates/verify_student/photo_verification.html
 msgid "What do you do with this picture?"
 msgstr "Bu resimle ne yapacaksınız?"
 
 #: lms/templates/verify_student/midcourse_photo_reverification.html
 #: lms/templates/verify_student/photo_reverification.html
-#: lms/templates/verify_student/photo_verification.html
 msgid "We only use it to verify your identity.  It is not displayed anywhere."
 msgstr ""
 "Bunu sadece kimliğinizi denetlemek için kullanacağız. Diğer hiç bir yerde "
@@ -14134,7 +14131,6 @@ msgstr ""
 
 #: lms/templates/verify_student/midcourse_photo_reverification.html
 #: lms/templates/verify_student/photo_reverification.html
-#: lms/templates/verify_student/photo_verification.html
 msgid "Check Your Name"
 msgstr "İsminizi Kontrol Ediniz"
 
@@ -14147,7 +14143,6 @@ msgstr ""
 
 #: lms/templates/verify_student/midcourse_photo_reverification.html
 #: lms/templates/verify_student/photo_reverification.html
-#: lms/templates/verify_student/photo_verification.html
 msgid "Edit your name"
 msgstr "İsminizi Düzeltiniz"
 
@@ -14207,7 +14202,6 @@ msgstr "Diğer yeniden doğrulamalarınızı tamamlayın"
 
 #: lms/templates/verify_student/midcourse_reverification_confirmation.html
 #: lms/templates/verify_student/midcourse_reverify_dash.html
-#: lms/templates/verify_student/midcourse_reverify_dash.html
 msgid "Return to where you left off"
 msgstr "Nerede kaldıysanız oraya dönün"
 
@@ -14224,14 +14218,9 @@ msgid "You currently need to re-verify for the following courses:"
 msgstr "Aşağıdaki dersler için kimliğinizi şimdi tekrar onaylamanız gerekli:"
 
 #: lms/templates/verify_student/midcourse_reverify_dash.html
-#: lms/templates/verify_student/midcourse_reverify_dash.html
-#: lms/templates/verify_student/midcourse_reverify_dash.html
-#: lms/templates/verify_student/midcourse_reverify_dash.html
-#: lms/templates/verify_student/midcourse_reverify_dash.html
 msgid "Re-verify by {date}"
 msgstr "{date}'e kadar tekrar onaylayın"
 
-#: lms/templates/verify_student/midcourse_reverify_dash.html
 #: lms/templates/verify_student/midcourse_reverify_dash.html
 msgid "Re-verify for {course_number}"
 msgstr ""
@@ -14309,6 +14298,16 @@ msgstr ""
 "denetimini düzeltemeyeceksiniz</strong>. Gözden geçirme sırasında bir hata "
 "olduğunu düşünüyorsanız, {email} adresinden bizimle iletişime geçiniz"
 
+#: lms/templates/verify_student/missed_verification_deadline.html
+msgid "Verification Deadline Has Passed"
+msgstr ""
+
+#: lms/templates/verify_student/missed_verification_deadline.html
+msgid ""
+"The verification deadline for {course_name} was {date}.  Verification is no "
+"longer available."
+msgstr ""
+
 #: lms/templates/verify_student/pay_and_verify.html
 msgid "Upgrade Your Enrollment For {course_name}."
 msgstr ""
@@ -14330,17 +14329,28 @@ msgid "Re-Verification"
 msgstr "Yeniden Doğrulama"
 
 #: lms/templates/verify_student/photo_reverification.html
-msgid "Please Resubmit Your Verification Information"
-msgstr "Lütfen Doğrulama Bilgilerinizi Yeniden Giriniz"
+msgid "Verify Your Identity"
+msgstr ""
 
+#. Translators: {start_bold} and {end_bold} will be replaced with HTML tags.
+#. Please do not translate these variables.
 #: lms/templates/verify_student/photo_reverification.html
 msgid ""
-"There was an error with your previous verification. In order proceed in the "
-"verified certificate of achievement track of your current courses, please "
-"complete the following steps."
+"To verify your identity and continue as a verified student in this course, "
+"complete the following steps {start_bold}before the course verification "
+"deadline{end_bold}. If you do not verify your identity, you can still "
+"receive an honor code certificate for the course."
 msgstr ""
-"Önceki onay işleminizle ilgili bir hata oluştu. Aldığınız dersler için "
-"kimlik denetimli sertifika almak için, aşağıdaki aşamaları tamamlayınız."
+
+#: lms/templates/verify_student/photo_reverification.html
+#: lms/templates/verify_student/reverification_confirmation.html
+msgid "Your Progress"
+msgstr "İlerlemeniz"
+
+#: lms/templates/verify_student/photo_reverification.html
+#: lms/templates/verify_student/reverification_confirmation.html
+msgid "Current Step: "
+msgstr "Güncel Basamak:"
 
 #: lms/templates/verify_student/photo_reverification.html
 #: lms/templates/verify_student/reverification_confirmation.html
@@ -14353,7 +14363,6 @@ msgid "Re-Take ID Photo"
 msgstr "Kimlik Fotoğrafını Tekrar Çekin"
 
 #: lms/templates/verify_student/photo_reverification.html
-#: lms/templates/verify_student/photo_verification.html
 msgid ""
 "Use your webcam to take a picture of your face so we can match it with the "
 "picture on your ID."
@@ -14362,7 +14371,6 @@ msgstr ""
 " yüzünüzün fotoğrafını çekiniz. "
 
 #: lms/templates/verify_student/photo_reverification.html
-#: lms/templates/verify_student/photo_verification.html
 msgid "Once you verify your photo looks good, you can move on to step 2."
 msgstr "Fotoğrafınız iyi görünüyorsa, 2inci aşamaya geçiniz."
 
@@ -14371,12 +14379,10 @@ msgid "Go to Step 2: Re-Take ID Photo"
 msgstr "Aşama 2'ye Gidiniz: Kimlik Fotoğrafınızı Yeniden Çekiniz"
 
 #: lms/templates/verify_student/photo_reverification.html
-#: lms/templates/verify_student/photo_verification.html
 msgid "Show Us Your ID"
 msgstr "Kimliğinizi Bize Gösterin"
 
 #: lms/templates/verify_student/photo_reverification.html
-#: lms/templates/verify_student/photo_verification.html
 msgid ""
 "Use your webcam to take a picture of your ID so we can match it with your "
 "photo and the name on your account."
@@ -14385,12 +14391,10 @@ msgstr ""
 "hesabınızdaki fotoğrafınızı ve isminizi eşleştirebiliriz."
 
 #: lms/templates/verify_student/photo_reverification.html
-#: lms/templates/verify_student/photo_verification.html
 msgid "Make sure your ID is well-lit"
 msgstr "Kimlik kartınızın iyi aydınlatıldığına emin olun"
 
 #: lms/templates/verify_student/photo_reverification.html
-#: lms/templates/verify_student/photo_verification.html
 msgid ""
 "Acceptable IDs include drivers licenses, passports, or other goverment-"
 "issued IDs that include your name and photo"
@@ -14399,34 +14403,28 @@ msgstr ""
 "kabul edilen kimlikler arasındadır"
 
 #: lms/templates/verify_student/photo_reverification.html
-#: lms/templates/verify_student/photo_verification.html
 msgid "Check that there isn't any glare"
 msgstr "Parlama olup olmadığını kontrol ediniz"
 
 #: lms/templates/verify_student/photo_reverification.html
-#: lms/templates/verify_student/photo_verification.html
 msgid "Ensure that you can see your photo and read your name"
 msgstr "Fotoğrafınızı gördüğünüze ve isminizi okuduğunuza emin olunuz"
 
 #: lms/templates/verify_student/photo_reverification.html
-#: lms/templates/verify_student/photo_verification.html
 msgid ""
 "Try to keep your fingers at the edge to avoid covering important information"
 msgstr ""
 "Önemli bilgilerin kapanmaması için parmaklarınızı kenarda tutmayı deneyin."
 
 #: lms/templates/verify_student/photo_reverification.html
-#: lms/templates/verify_student/photo_verification.html
 msgid "to capture your ID"
 msgstr "Kimliğinizin kopyasını almak için"
 
 #: lms/templates/verify_student/photo_reverification.html
-#: lms/templates/verify_student/photo_verification.html
 msgid "Why do you need a photo of my ID?"
 msgstr "Kimliğimin fotokopisine neden gerek duyuluyor?"
 
 #: lms/templates/verify_student/photo_reverification.html
-#: lms/templates/verify_student/photo_verification.html
 msgid ""
 "We need to match your ID with your photo and name to confirm that you are "
 "you."
@@ -14435,7 +14433,6 @@ msgstr ""
 "olmalıyız."
 
 #: lms/templates/verify_student/photo_reverification.html
-#: lms/templates/verify_student/photo_verification.html
 msgid ""
 "We encrypt it and send it to our secure authorization service for review. We"
 " use the highest levels of security and do not save the photo or information"
@@ -14446,22 +14443,18 @@ msgstr ""
 " yerde fotoğraf veya bilgi kaydetmedik."
 
 #: lms/templates/verify_student/photo_reverification.html
-#: lms/templates/verify_student/photo_verification.html
 msgid "Once you verify your ID photo looks good, you can move on to step 3."
 msgstr "Kimlik fotoğrafınız iyi görünüyorsa, 3üncü aşamaya geçebilirsiniz."
 
 #: lms/templates/verify_student/photo_reverification.html
-#: lms/templates/verify_student/photo_verification.html
 msgid "Go to Step 3: Review Your Info"
 msgstr "Basamak 3'e Gidiniz: Bilgilerinizi Gözden Geçirin"
 
 #: lms/templates/verify_student/photo_reverification.html
-#: lms/templates/verify_student/photo_verification.html
 msgid "Verify Your Submission"
 msgstr "Yanıtınızı Gözden Geçirin"
 
 #: lms/templates/verify_student/photo_reverification.html
-#: lms/templates/verify_student/photo_verification.html
 msgid ""
 "Make sure we can verify your identity with the photos and information below."
 msgstr ""
@@ -14473,7 +14466,6 @@ msgid "Review the Photos You've Re-Taken"
 msgstr "Yeniden Çektiğiniz fotoğrafa Yeniden Göz Atınız"
 
 #: lms/templates/verify_student/photo_reverification.html
-#: lms/templates/verify_student/photo_verification.html
 msgid ""
 "Please review the photos and verify that they meet the requirements listed "
 "below."
@@ -14482,53 +14474,40 @@ msgstr ""
 "karşılamadığına emin olun."
 
 #: lms/templates/verify_student/photo_reverification.html
-#: lms/templates/verify_student/photo_reverification.html
-#: lms/templates/verify_student/photo_verification.html
-#: lms/templates/verify_student/photo_verification.html
 msgid "The photo above needs to meet the following requirements:"
 msgstr "Yukarıdaki fotoğraf aşağıdaki niteliklere sahip olmalıdır:"
 
 #: lms/templates/verify_student/photo_reverification.html
-#: lms/templates/verify_student/photo_verification.html
 msgid "Be well lit"
 msgstr "İyi aydınatılsın"
 
 #: lms/templates/verify_student/photo_reverification.html
-#: lms/templates/verify_student/photo_verification.html
 msgid "Show your whole face"
 msgstr "Yüzünüzün tamamını gösteriniz"
 
 #: lms/templates/verify_student/photo_reverification.html
-#: lms/templates/verify_student/photo_reverification.html
-#: lms/templates/verify_student/photo_verification.html
-#: lms/templates/verify_student/photo_verification.html
 msgid "The photo on your ID must match the photo of your face"
 msgstr "Kimliğinizdeki foto yüzünüzle eşleşmeli"
 
 #: lms/templates/verify_student/photo_reverification.html
-#: lms/templates/verify_student/photo_verification.html
 msgid "Be readable (not too far away, no glare)"
 msgstr "Okunabilir olsun (çok uzak olmasın, parlamasın)"
 
 #: lms/templates/verify_student/photo_reverification.html
-#: lms/templates/verify_student/photo_verification.html
 msgid "The name on your ID must match the name on your account below"
 msgstr ""
 "Kimlik kartınızın üzerindeki isimle aşağıda hesabınızda görülen ismin "
 "birbiriyle eşleşmesi gerekli"
 
 #: lms/templates/verify_student/photo_reverification.html
-#: lms/templates/verify_student/photo_verification.html
 msgid "Photos don't meet the requirements?"
 msgstr "Fotoğraflar gereksinimleri karşılıyor mu?"
 
 #: lms/templates/verify_student/photo_reverification.html
-#: lms/templates/verify_student/photo_verification.html
 msgid "Retake Your Photos"
 msgstr "Fotolarınızı Tekrar Çekiniz"
 
 #: lms/templates/verify_student/photo_reverification.html
-#: lms/templates/verify_student/photo_verification.html
 msgid ""
 "Make sure your full name on your {platform_name} account ({full_name}) "
 "matches your ID. We will also use this as the name on your certificate."
@@ -14543,110 +14522,8 @@ msgstr ""
 "doğrulamak  için devam edebilirsiniz."
 
 #: lms/templates/verify_student/photo_reverification.html
-#: lms/templates/verify_student/photo_verification.html
 msgid "Yes! My details all match."
 msgstr "Ever! Bütün ayrıntılar uyuşuyor"
-
-#: lms/templates/verify_student/photo_verification.html
-msgid "Upgrade Your Registration for {} | Verification"
-msgstr "{} için Kaydınızı Yükseltin | Onaylama"
-
-#: lms/templates/verify_student/photo_verification.html
-#: lms/templates/verify_student/verified.html
-msgid "Register for {} | Verification"
-msgstr "{} için Kaydol | Onaylama"
-
-#: lms/templates/verify_student/photo_verification.html
-msgid ""
-"You don't seem to have a webcam connected. Double-check that your webcam is "
-"connected and working to continue registering, or select to {a_start} audit "
-"the course for free {a_end} without verifying."
-msgstr ""
-"Webcaminizin bağlı olmadığı görülüyor. Webcam'inizin bağlı olduğunu tekrar "
-"kontrol edin ve kayıt sürecine devam edin, veya onaylama olmadan {a_start} "
-"dersi ücretsiz izleyin {a_end} opsiyonunu seçiniz."
-
-#: lms/templates/verify_student/photo_verification.html
-#: lms/templates/verify_student/photo_verification.html
-msgid "Error processing your order"
-msgstr "Siparişinizi işlerken hata oldu"
-
-#: lms/templates/verify_student/photo_verification.html
-msgid ""
-"Oops! Something went wrong. Please confirm your details again and click the "
-"button to move on to payment. If you are still having trouble, please try "
-"again later."
-msgstr ""
-"Ups! Bir şeyler kötü gitti. Lütfen ayrıntılarınızı kontrol edin ve ödemeye "
-"geçmek için butona basınız. Hala sorunla karşılaşıyorsanız, lütfen bir süre "
-"sonra tekrar deneyin."
-
-#: lms/templates/verify_student/photo_verification.html
-msgid ""
-"We're sorry, there has been an error on this page. Please refresh the page "
-"and retake your photos. If you are still having trouble, please contact us "
-"at {email_address}"
-msgstr ""
-
-#: lms/templates/verify_student/photo_verification.html
-msgid "Take Your Photo"
-msgstr "Fotoğrafınızı Çekiniz"
-
-#: lms/templates/verify_student/photo_verification.html
-msgid "What if my camera isn't working?"
-msgstr "Eğer kameram çalışmıyorsa?"
-
-#: lms/templates/verify_student/photo_verification.html
-msgid "You can always continue to audit the course without verifying."
-msgstr "Onaylama gerekmeksizin dersi izlemeye devam edebilirsiniz."
-
-#: lms/templates/verify_student/photo_verification.html
-msgid ""
-"You can always {a_start} audit the course for free {a_end} without "
-"verifying."
-msgstr ""
-"Onaylama olmaksızın,  her zaman {a_start} ücretsiz dersi izleyebilirsiniz "
-"{a_end}."
-
-#: lms/templates/verify_student/photo_verification.html
-msgid "Go to Step 2: Take ID Photo"
-msgstr "Aşama 2'ye gidin: Kimlik Fotoğrafı Çekin"
-
-#: lms/templates/verify_student/photo_verification.html
-msgid "Review the Photos You've Taken"
-msgstr "Çektiğiniz Fotoğraflara Göz Atın"
-
-#: lms/templates/verify_student/photo_verification.html
-msgid "Check Your Contribution Level"
-msgstr "Katkı Miktarınızı Kontrol Ediniz"
-
-#. Translators: The last part of this string will appear such as: "(min. 50
-#. USD)"
-#: lms/templates/verify_student/photo_verification.html
-msgid ""
-"Please confirm your contribution for this course (min. {min_price} "
-"{currency}):"
-msgstr ""
-
-#: lms/templates/verify_student/photo_verification.html
-msgid "Your Course Total"
-msgstr ""
-
-#: lms/templates/verify_student/photo_verification.html
-msgid "To complete your registration, you will need to pay:"
-msgstr ""
-
-#: lms/templates/verify_student/photo_verification.html
-msgid "Before proceeding, please confirm that your details match"
-msgstr ""
-
-#: lms/templates/verify_student/photo_verification.html
-msgid ""
-"Once you verify your details match the requirements, you can move on to step"
-" 4, payment on our secure server."
-msgstr ""
-"Gerekliliklerle ayrıntıların eşleştiğine emin olunca, üvenli sunucumuzda "
-"ödeme 4üncü aşamaya gidebilirsiniz."
 
 #: lms/templates/verify_student/prompt_midcourse_reverify.html
 msgid ""
@@ -14673,7 +14550,6 @@ msgid "Return to Your Dashboard"
 msgstr "Panelinize Geri Dönün"
 
 #: lms/templates/verify_student/reverification_window_expired.html
-#: lms/templates/verify_student/reverification_window_expired.html
 msgid "Re-Verification Failed"
 msgstr "Yeniden Onaylama Başarısız"
 
@@ -14690,156 +14566,6 @@ msgid "Please contact support if you believe this message to be in error."
 msgstr ""
 "Bu mesajın bir hata olduğunu düşünüyorsanız destek bölümüyle temasa geçiniz."
 
-#: lms/templates/verify_student/show_requirements.html
-msgid "Upgrade Your Registration for {}"
-msgstr "{} için Kaydınızı Yükseltin"
-
-#: lms/templates/verify_student/show_requirements.html
-msgid "Register for {}"
-msgstr "{} in Kaydolun"
-
-#: lms/templates/verify_student/show_requirements.html
-msgid "You need to activate your {platform_name} account before proceeding"
-msgstr ""
-
-#: lms/templates/verify_student/show_requirements.html
-msgid ""
-"Please check your email for further instructions on activating your new "
-"account."
-msgstr ""
-"Yeni hesabınızı aktiflemek için gerekli işlemler için epostanızı kontrol "
-"ediniz."
-
-#: lms/templates/verify_student/show_requirements.html
-msgid "What You Will Need to Upgrade"
-msgstr "Neden Yükseltmeye İhtiyaç Duyacaksınız"
-
-#: lms/templates/verify_student/show_requirements.html
-msgid ""
-"There are three things you will need to upgrade to being an ID verified "
-"student:"
-msgstr ""
-"Kimliği denetlenmiş öğrenci durumuna yükseltme için yapmanız gereken üç şey "
-"var:"
-
-#: lms/templates/verify_student/show_requirements.html
-msgid "What You Will Need to Register"
-msgstr "Kayıt Olmak İçin Gerekenler"
-
-#: lms/templates/verify_student/show_requirements.html
-msgid ""
-"There are three things you will need to register as an ID verified student:"
-msgstr ""
-"Kimliği onaylanmış öğrenci olarak kaydolmak için gerekli üç şey "
-"bulunmaktadır:"
-
-#: lms/templates/verify_student/show_requirements.html
-msgid "Activate Your Account"
-msgstr "Hesabınızı Aktifleştirin"
-
-#: lms/templates/verify_student/show_requirements.html
-msgid "Check your email"
-msgstr "E-postanızı kontrol ediniz"
-
-#: lms/templates/verify_student/show_requirements.html
-msgid ""
-"You need to activate your {platform_name} account before you can register "
-"for courses. Check your inbox for an activation email."
-msgstr ""
-
-#: lms/templates/verify_student/show_requirements.html
-msgid "Identification"
-msgstr "Kimlik"
-
-#: lms/templates/verify_student/show_requirements.html
-msgid "A photo identification document"
-msgstr "Fotoğraflı kimlik dokümanı"
-
-#: lms/templates/verify_student/show_requirements.html
-msgid ""
-"A driver's license, passport, or other government or school-issued ID with "
-"your name and picture on it."
-msgstr ""
-
-#: lms/templates/verify_student/show_requirements.html
-msgid "Webcam"
-msgstr "Web Kamera"
-
-#: lms/templates/verify_student/show_requirements.html
-msgid "A webcam and a modern browser"
-msgstr "Web Kamera ve modern bir İnternet izleyici"
-
-#. Translators: This phrase will look like this: "Internet Explorer 9 or
-#. later"
-#: lms/templates/verify_student/show_requirements.html
-msgid "{internet_explorer_version} or later"
-msgstr ""
-
-#: lms/templates/verify_student/show_requirements.html
-msgid ""
-"Please make sure your browser is updated to the most recent version "
-"possible."
-msgstr ""
-
-#: lms/templates/verify_student/show_requirements.html
-msgid "Credit or Debit Card"
-msgstr "Kredi veya Banka Kartı"
-
-#: lms/templates/verify_student/show_requirements.html
-msgid "A major credit or debit card"
-msgstr "Bilinen bir kredi veya banka kartı"
-
-#: lms/templates/verify_student/show_requirements.html
-msgid ""
-"Visa, MasterCard, American Express, Discover, Diners Club, or JCB with the "
-"Discover logo."
-msgstr ""
-
-#: lms/templates/verify_student/show_requirements.html
-msgid ""
-"Missing something? You can always continue to audit this course instead."
-msgstr "Bir şeyler eksik mi? Bunun yerine dersi izlemeye devam edebilirsiniz."
-
-#: lms/templates/verify_student/show_requirements.html
-msgid ""
-"Missing something? You can always {a_start}audit this course instead{a_end}"
-msgstr ""
-"Bir şeyler eksik mi? Bunun yerine {a_start}dersi izlemeye{a_end} devam "
-"edebilirsiniz"
-
-#: lms/templates/verify_student/show_requirements.html
-msgid "Go to Step 1: Take my Photo"
-msgstr "Basamak 1'e Gidiniz: Fotoğrafımı Çek"
-
-#: lms/templates/verify_student/verified.html
-msgid "ID Verification"
-msgstr "Kimlik Onaylama"
-
-#: lms/templates/verify_student/verified.html
-msgid "You've Been Verified Previously"
-msgstr "Daha önce Kimliğiniz Onaylanmıştı"
-
-#: lms/templates/verify_student/verified.html
-msgid ""
-"We've already verified your identity (through the photos of you and your ID "
-"you provided earlier). You can proceed to make your secure payment and "
-"complete registration."
-msgstr ""
-"Kimliğinizi onayladık (fotoğrafınız ve daha önce gönderdiğiniz "
-"kimliğinizle). Şimdi güvenli ödeme yapma ve kaydınızı tamamlamak için devam "
-"edebilirsiniz."
-
-#: lms/templates/verify_student/verified.html
-msgid "Your Course Total is $ "
-msgstr ""
-
-#: lms/templates/verify_student/verified.html
-msgid "You have decided to pay $ "
-msgstr "Şu kadar ücret ödemeyi kabul ettiniz $"
-
-#: lms/templates/wiki/includes/article_menu.html
-#: lms/templates/wiki/includes/article_menu.html
-#: lms/templates/wiki/includes/article_menu.html
 #: lms/templates/wiki/includes/article_menu.html
 msgid "{span_start}(active){span_end}"
 msgstr "{span_start}(aktif){span_end}"
@@ -14942,8 +14668,7 @@ msgstr ""
 msgid "Contact {platform_name} Support"
 msgstr ""
 
-#: cms/templates/asset_index.html cms/templates/asset_index.html
-#: cms/templates/widgets/header.html
+#: cms/templates/asset_index.html cms/templates/widgets/header.html
 msgid "Files &amp; Uploads"
 msgstr "Dosyalar &amp; Yüklemeler"
 
@@ -14963,8 +14688,7 @@ msgstr "İçerik"
 msgid "Page Actions"
 msgstr "Sayfa İşlemleri"
 
-#: cms/templates/asset_index.html cms/templates/asset_index.html
-#: cms/templates/videos_index.html
+#: cms/templates/asset_index.html cms/templates/videos_index.html
 msgid "Upload New File"
 msgstr "Yeni dDsya Yükle"
 
@@ -15034,7 +14758,7 @@ msgstr "Dosyanız silindi."
 msgid "close alert"
 msgstr "uyarıyı kapat"
 
-#: cms/templates/checklists.html cms/templates/checklists.html
+#: cms/templates/checklists.html
 msgid "Course Checklists"
 msgstr "Ders Kontrol Listesi"
 
@@ -15074,7 +14798,6 @@ msgid "{studio_name} checklists"
 msgstr ""
 
 #: cms/templates/component.html cms/templates/studio_xblock_wrapper.html
-#: cms/templates/studio_xblock_wrapper.html
 msgid "Duplicate"
 msgstr "Kopyasını Çıkar"
 
@@ -15087,7 +14810,7 @@ msgid "Delete this component"
 msgstr "Bu bileşeni silin"
 
 #: cms/templates/component.html cms/templates/edit-tabs.html
-#: cms/templates/edit-tabs.html cms/templates/studio_xblock_wrapper.html
+#: cms/templates/studio_xblock_wrapper.html
 msgid "Drag to reorder"
 msgstr ""
 
@@ -15210,7 +14933,7 @@ msgid ""
 msgstr ""
 
 #: cms/templates/course-create-rerun.html cms/templates/index.html
-#: cms/templates/index.html cms/templates/settings.html
+#: cms/templates/settings.html
 msgid "Organization"
 msgstr "Kuruluş"
 
@@ -15220,7 +14943,6 @@ msgstr "Kuruluş"
 #. Translators: "e.g. UniversityX or OrganizationX" is a placeholder displayed
 #. when user put no data into this field.
 #: cms/templates/course-create-rerun.html cms/templates/index.html
-#: cms/templates/index.html
 msgid "e.g. UniversityX or OrganizationX"
 msgstr "örn. ÜniversiteX veya KuruluşX"
 
@@ -15230,8 +14952,6 @@ msgid ""
 "the same as the original organization name.)"
 msgstr ""
 
-#: cms/templates/course-create-rerun.html
-#: cms/templates/course-create-rerun.html
 #: cms/templates/course-create-rerun.html
 msgid "Note: No spaces or special characters are allowed."
 msgstr ""
@@ -15306,7 +15026,7 @@ msgstr ""
 msgid "Learn more about Course Re-runs"
 msgstr ""
 
-#: cms/templates/course_info.html cms/templates/course_info.html
+#: cms/templates/course_info.html
 msgid "Course Updates"
 msgstr "Ders Güncellemeleri"
 
@@ -15325,7 +15045,6 @@ msgstr ""
 " ve öğrencilerin sorularına yanıt vermek için kullanın. Güncellemeleri HTML "
 "içinde değiştirebilir yenilerini ekleyebilirsiniz."
 
-#: cms/templates/course_outline.html cms/templates/course_outline.html
 #: cms/templates/course_outline.html cms/templates/settings.html
 msgid "Course Outline"
 msgstr "Ders Taslağı"
@@ -15352,6 +15071,14 @@ msgid "New Section"
 msgstr "Yeni Bölüm"
 
 #: cms/templates/course_outline.html
+msgid "Reindex current course"
+msgstr ""
+
+#: cms/templates/course_outline.html
+msgid "Reindex"
+msgstr ""
+
+#: cms/templates/course_outline.html
 msgid "Collapse All Sections"
 msgstr "Bütün bölümleri daralt"
 
@@ -15372,7 +15099,7 @@ msgstr "Canlı Görüntüle"
 msgid "Course Start Date:"
 msgstr ""
 
-#: cms/templates/course_outline.html cms/templates/course_outline.html
+#: cms/templates/course_outline.html
 msgid "Edit Start Date"
 msgstr ""
 
@@ -15431,8 +15158,8 @@ msgstr ""
 
 #. Translators: Pages refer to the tabs that appear in the top navigation of
 #. each course.
-#: cms/templates/edit-tabs.html cms/templates/edit-tabs.html
-#: cms/templates/export.html cms/templates/widgets/header.html
+#: cms/templates/edit-tabs.html cms/templates/export.html
+#: cms/templates/widgets/header.html
 msgid "Pages"
 msgstr "Sayfalar"
 
@@ -15454,11 +15181,11 @@ msgstr ""
 msgid "Show this page"
 msgstr "Bu sayfayı göster"
 
-#: cms/templates/edit-tabs.html cms/templates/edit-tabs.html
+#: cms/templates/edit-tabs.html
 msgid "Show/hide page"
 msgstr "Sayfayı göster/gizle"
 
-#: cms/templates/edit-tabs.html cms/templates/edit-tabs.html
+#: cms/templates/edit-tabs.html
 msgid "This page cannot be reordered"
 msgstr "Bu sayfa yeniden sıralanamaz"
 
@@ -15533,7 +15260,6 @@ msgstr ""
 "ve özel yapım sayfalar izlemektedir."
 
 #: cms/templates/edit-tabs.html cms/templates/howitworks.html
-#: cms/templates/howitworks.html cms/templates/howitworks.html
 msgid "close modal"
 msgstr "kipi kapat"
 
@@ -15576,7 +15302,7 @@ msgstr ""
 msgid "Back to dashboard"
 msgstr "Kontrol paneline geri dön"
 
-#: cms/templates/export.html cms/templates/export.html
+#: cms/templates/export.html
 msgid "Course Export"
 msgstr "Kursu Dışa Aktar"
 
@@ -15707,8 +15433,7 @@ msgstr ""
 msgid "Export Course to Git"
 msgstr "Dersi Git'e Aktar"
 
-#: cms/templates/export_git.html cms/templates/export_git.html
-#: cms/templates/widgets/header.html
+#: cms/templates/export_git.html cms/templates/widgets/header.html
 msgid "Export to Git"
 msgstr "Git'e Aktar"
 
@@ -15757,12 +15482,10 @@ msgid "Course git url:"
 msgstr "Dersin git url'si:"
 
 #: cms/templates/group_configurations.html
-#: cms/templates/group_configurations.html
 #: cms/templates/visibility_editor.html
 msgid "Content Groups"
 msgstr ""
 
-#: cms/templates/group_configurations.html
 #: cms/templates/group_configurations.html
 msgid "Experiment Group Configurations"
 msgstr ""
@@ -15785,10 +15508,15 @@ msgstr ""
 msgid ""
 "Click {em_start}New content group{em_end} to add a new content group. To "
 "edit the name of a content group, hover over its box and click "
-"{em_start}Edit{em_end}. Content groups cannot be deleted."
+"{em_start}Edit{em_end}."
 msgstr ""
 
 #: cms/templates/group_configurations.html
+msgid ""
+"You can delete a content group only if it is not in use by a unit. To delete"
+" a content group, hover over its box and click the delete icon."
+msgstr ""
+
 #: cms/templates/group_configurations.html
 msgid "Learn More"
 msgstr ""
@@ -15837,8 +15565,8 @@ msgid "Course Team"
 msgstr "Ders Takımı"
 
 #: cms/templates/group_configurations.html cms/templates/settings.html
-#: cms/templates/settings_advanced.html cms/templates/settings_advanced.html
-#: cms/templates/settings_graders.html cms/templates/widgets/header.html
+#: cms/templates/settings_advanced.html cms/templates/settings_graders.html
+#: cms/templates/widgets/header.html
 msgid "Advanced Settings"
 msgstr "Gelişmiş Ayarlar"
 
@@ -15860,7 +15588,7 @@ msgstr ""
 msgid "{studio_name}'s Many Features"
 msgstr ""
 
-#: cms/templates/howitworks.html cms/templates/howitworks.html
+#: cms/templates/howitworks.html
 msgid "{studio_name} Helps You Keep Your Courses Organized"
 msgstr ""
 
@@ -15907,7 +15635,6 @@ msgstr ""
 "Öğrencilerinize <strong>bölümleri</strong> eklemeli olarak oluşturun ve "
 "sunun. Bütün bölümleri bir anda vermek zorunda değilsiniz."
 
-#: cms/templates/howitworks.html cms/templates/howitworks.html
 #: cms/templates/howitworks.html
 msgid "Learning is More than Just Lectures"
 msgstr "Öğrenmek Sadece Derslerden İbaret Değildir."
@@ -15951,7 +15678,7 @@ msgid ""
 " of problems to challenge your learners."
 msgstr ""
 
-#: cms/templates/howitworks.html cms/templates/howitworks.html
+#: cms/templates/howitworks.html
 msgid ""
 "{studio_name} Gives You Simple, Fast, and Incremental Publishing. With "
 "Friends."
@@ -16060,7 +15787,7 @@ msgstr ""
 "Öğrenciler bu bileşene ulaşamayacaklar. Hatayı düzeltmek için bileşeninizi "
 "yeniden düzenleyiniz."
 
-#: cms/templates/import.html cms/templates/import.html
+#: cms/templates/import.html
 msgid "Course Import"
 msgstr "Kursu İçe Aktarma"
 
@@ -16214,8 +15941,7 @@ msgstr ""
 "bileşenlerine bağlı veriyi kaybedebilirsiniz. Bu veriler arasında "
 "öğrencilerin problem notları bulunmaktadır. "
 
-#: cms/templates/index.html cms/templates/index.html
-#: cms/templates/widgets/header.html
+#: cms/templates/index.html cms/templates/widgets/header.html
 msgid "{studio_name} Home"
 msgstr ""
 
@@ -16231,7 +15957,7 @@ msgstr ""
 msgid "Email staff to create course"
 msgstr "Personele dersiyaratmaları için e-posta at"
 
-#: cms/templates/index.html cms/templates/index.html
+#: cms/templates/index.html
 msgid "Please correct the highlighted fields below."
 msgstr "Lütfen aşağıda gösterilen alanları düzeltin."
 
@@ -16274,7 +16000,7 @@ msgid ""
 "The unique number that identifies your course within your organization."
 msgstr "Kuruluşunuz içinde dersinizi ifade eden özgün numaradır."
 
-#: cms/templates/index.html cms/templates/index.html
+#: cms/templates/index.html
 msgid ""
 "Note: This is part of your course URL, so no spaces or special characters "
 "are allowed and it cannot be changed."
@@ -16286,7 +16012,7 @@ msgstr ""
 msgid "The term in which your course will run."
 msgstr "Dersinizin yürütüleceği dönem."
 
-#: cms/templates/index.html cms/templates/index.html
+#: cms/templates/index.html
 msgid "Create"
 msgstr "Oluştur"
 
@@ -16317,7 +16043,7 @@ msgstr ""
 msgid "The public organization name for your library."
 msgstr ""
 
-#: cms/templates/index.html cms/templates/index.html
+#: cms/templates/index.html
 msgid "This cannot be changed."
 msgstr ""
 
@@ -16347,7 +16073,7 @@ msgstr ""
 msgid "Courses Being Processed"
 msgstr ""
 
-#: cms/templates/index.html cms/templates/index.html cms/templates/index.html
+#: cms/templates/index.html
 msgid "Course Run:"
 msgstr "Süren Ders:"
 
@@ -16387,12 +16113,11 @@ msgstr ""
 
 #: cms/templates/index.html
 msgid ""
-"You will need to be added to the course in {studio_name} by the course "
-"creator. Please get in touch with the course creator or administrator for "
-"the specific course you are helping to author."
+"The course creator must give you access to the course. Contact the course "
+"creator or administrator for the course you are helping to author."
 msgstr ""
 
-#: cms/templates/index.html cms/templates/index.html
+#: cms/templates/index.html
 msgid "Create Your First Course"
 msgstr "İlk Dersinizi Yaratın"
 
@@ -16413,7 +16138,7 @@ msgid ""
 "during the work week."
 msgstr ""
 
-#: cms/templates/index.html cms/templates/index.html cms/templates/index.html
+#: cms/templates/index.html
 msgid "Your Course Creator Request Status:"
 msgstr "Ders Yaratıcısının İstek Durumu:"
 
@@ -16421,7 +16146,7 @@ msgstr "Ders Yaratıcısının İstek Durumu:"
 msgid "Request the Ability to Create Courses"
 msgstr "Ders Oluşturma Yetkisi Almayı Talep Et"
 
-#: cms/templates/index.html cms/templates/index.html
+#: cms/templates/index.html
 msgid "Your Course Creator Request Status"
 msgstr "Ders Yaratıcısının Talep Durumu"
 
@@ -16433,7 +16158,7 @@ msgid ""
 "team is has completed evaluating your request."
 msgstr ""
 
-#: cms/templates/index.html cms/templates/index.html
+#: cms/templates/index.html
 msgid "Your Course Creator request is:"
 msgstr "Ders yaratıcısının isteği:"
 
@@ -16466,7 +16191,23 @@ msgid "(Read-only)"
 msgstr ""
 
 #: cms/templates/index.html
-msgid "You don't have any content libraries yet."
+msgid "Were you expecting to see a particular library here?"
+msgstr ""
+
+#: cms/templates/index.html
+msgid ""
+"The library creator must give you access to the library. Contact the library"
+" creator or administrator for the library you are helping to author."
+msgstr ""
+
+#: cms/templates/index.html
+msgid "Create Your First Library"
+msgstr ""
+
+#: cms/templates/index.html
+msgid ""
+"Libraries hold a pool of components that can be re-used across multiple "
+"courses. Create your first library with the click of a button!"
 msgstr ""
 
 #: cms/templates/index.html
@@ -16477,7 +16218,7 @@ msgstr ""
 msgid ""
 "Click Help in the upper-right corner to get more information about the "
 "{studio_name} page you are viewing. You can also use the links at the bottom"
-" of the page to access our continously updated documentation and other "
+" of the page to access our continually updated documentation and other "
 "{studio_name} resources."
 msgstr ""
 
@@ -16485,7 +16226,7 @@ msgstr ""
 msgid "Getting Started with {studio_name}"
 msgstr ""
 
-#: cms/templates/index.html cms/templates/index.html
+#: cms/templates/index.html
 msgid "Use our feedback tool, Tender, to request help"
 msgstr ""
 
@@ -16493,7 +16234,7 @@ msgstr ""
 msgid "Request help with {studio_name}"
 msgstr ""
 
-#: cms/templates/index.html cms/templates/index.html cms/templates/index.html
+#: cms/templates/index.html
 msgid "Can I create courses in {studio_name}?"
 msgstr ""
 
@@ -16559,7 +16300,7 @@ msgstr ""
 msgid "Add Component"
 msgstr ""
 
-#: cms/templates/library.html cms/templates/library.html
+#: cms/templates/library.html
 msgid "Library ID"
 msgstr ""
 
@@ -16613,7 +16354,7 @@ msgstr ""
 msgid "Sign In"
 msgstr "Giriş"
 
-#: cms/templates/login.html cms/templates/login.html
+#: cms/templates/login.html
 msgid "Sign In to {studio_name}"
 msgstr ""
 
@@ -16671,13 +16412,11 @@ msgstr ""
 msgid "Add User"
 msgstr "Kullanıcı Ekle"
 
-#: cms/templates/manage_users.html cms/templates/manage_users.html
-#: cms/templates/manage_users_lib.html
+#: cms/templates/manage_users.html cms/templates/manage_users_lib.html
 msgid "Current Role:"
 msgstr "Mevcut Rol:"
 
-#: cms/templates/manage_users.html cms/templates/manage_users.html
-#: cms/templates/manage_users_lib.html
+#: cms/templates/manage_users.html cms/templates/manage_users_lib.html
 msgid "You!"
 msgstr "Sen!"
 
@@ -16931,7 +16670,6 @@ msgstr "Temel Bilgiler"
 msgid "The nuts and bolts of your course"
 msgstr "Dersinizin ayrıntıları"
 
-#: cms/templates/settings.html cms/templates/settings.html
 #: cms/templates/settings.html
 msgid "This field is disabled: this information cannot be changed."
 msgstr "Bölüm kapalı: bu bilgi değiştirilemez."
@@ -16971,15 +16709,7 @@ msgstr ""
 msgid ""
 "Your course summary page will not be viewable until your course has been "
 "announced. To provide content for the page and preview it, follow the "
-"instructions provided by your {manager}."
-msgstr ""
-
-#: cms/templates/settings.html cms/templates/settings.html
-msgid "Program Manager"
-msgstr ""
-
-#: cms/templates/settings.html cms/templates/settings.html
-msgid "PM"
+"instructions provided by your Program Manager."
 msgstr ""
 
 #: cms/templates/settings.html
@@ -16998,8 +16728,7 @@ msgstr "Dersin başlayacağı ilk gün"
 msgid "Course Start Time"
 msgstr "Ders Başlangıç Saati"
 
-#: cms/templates/settings.html cms/templates/settings.html
-#: cms/templates/settings.html cms/templates/settings.html
+#: cms/templates/settings.html
 msgid "(UTC)"
 msgstr ""
 
@@ -17048,7 +16777,7 @@ msgid ""
 "These dates impact <strong>when your courseware can be viewed</strong>, but "
 "they are <strong>not the dates shown on your course summary page</strong>. "
 "To provide the course start and registration dates as shown on your course "
-"summary page, follow the instructions provided by your {manager}."
+"summary page, follow the instructions provided by your Program Manager."
 msgstr ""
 
 #: cms/templates/settings.html
@@ -17086,7 +16815,6 @@ msgstr ""
 "%s da kullanılan başlangıç, ön gereklilikler, sıklıklar sorulan sorular "
 "(HTML olarak formatlanmış)"
 
-#: cms/templates/settings.html cms/templates/settings.html
 #: cms/templates/settings.html
 msgid "Course Image"
 msgstr "Ders imgesi"
@@ -17341,7 +17069,6 @@ msgstr ""
 "belirleyebilirsiniz."
 
 #: cms/templates/studio_xblock_wrapper.html
-#: cms/templates/studio_xblock_wrapper.html
 msgid "Expand or Collapse"
 msgstr "Genişlet veya Daralt"
 
@@ -17398,8 +17125,7 @@ msgstr ""
 msgid "Learn more about textbooks"
 msgstr ""
 
-#: cms/templates/videos_index.html cms/templates/videos_index.html
-#: cms/templates/widgets/header.html
+#: cms/templates/videos_index.html cms/templates/widgets/header.html
 msgid "Video Uploads"
 msgstr ""
 
@@ -17567,9 +17293,13 @@ msgstr ""
 "Hesabınızı aktifleştirmek için gerekli komutlarla birlikte {email} adresine "
 "aktivasyon linklerini içeren bir mesaj gönderildi."
 
+#. Translators: 'EdX', 'edX', 'Studio', and 'Open edX' are trademarks of 'edX
+#. Inc.'. Please do not translate any of these trademarks and company names.
 #: cms/templates/widgets/footer.html
-msgid "All rights reserved."
-msgstr "Tüm hakları saklıdır"
+msgid ""
+"EdX, Open edX, Studio, and the edX and Open edX logos are registered "
+"trademarks or trademarks of {link_start}edX Inc.{link_end}"
+msgstr ""
 
 #: cms/templates/widgets/footer.html cms/templates/widgets/sock.html
 msgid "Contact Us"
@@ -17579,7 +17309,7 @@ msgstr "Bizimle İletişime Geçin"
 msgid "Current Course:"
 msgstr "Mevcut Ders:"
 
-#: cms/templates/widgets/header.html cms/templates/widgets/header.html
+#: cms/templates/widgets/header.html
 msgid "Navigation for {course_name}"
 msgstr ""
 
@@ -17619,7 +17349,7 @@ msgstr ""
 msgid "Help &amp; Account Navigation"
 msgstr "Yardım &amp; Hesap Navigasyonu"
 
-#: cms/templates/widgets/header.html cms/templates/widgets/header.html
+#: cms/templates/widgets/header.html
 msgid "Contextual Online Help"
 msgstr ""
 
@@ -17640,11 +17370,9 @@ msgid "Launch Latex Source Compiler"
 msgstr "Latex Kaynak Derleyicisini Başlat"
 
 #: cms/templates/widgets/problem-edit.html
-#: cms/templates/widgets/problem-edit.html
 msgid "Heading 1"
 msgstr "Başlık 1"
 
-#: cms/templates/widgets/problem-edit.html
 #: cms/templates/widgets/problem-edit.html
 msgid "Explanation"
 msgstr "Açıklama"
@@ -17669,7 +17397,7 @@ msgstr ""
 msgid "Hide {studio_name} Help"
 msgstr ""
 
-#: cms/templates/widgets/sock.html cms/templates/widgets/sock.html
+#: cms/templates/widgets/sock.html
 msgid "{studio_name} Documentation"
 msgstr ""
 
@@ -17685,7 +17413,7 @@ msgstr ""
 msgid "Building and Running an {platform_name} Course PDF"
 msgstr ""
 
-#: cms/templates/widgets/sock.html cms/templates/widgets/sock.html
+#: cms/templates/widgets/sock.html
 msgid "{studio_name} Author Support"
 msgstr ""
 
@@ -17734,11 +17462,11 @@ msgstr ""
 "Bu sadece makalenizin ilk içeriğidir. Oluşturduktan sonra, eklentiler, meta "
 "veri, ilgili makaleler gibi daha karmaiık özellikleri kullanabilirsiniz."
 
-#: wiki/forms.py wiki/forms.py
+#: wiki/forms.py
 msgid "Contents"
 msgstr "İçerikler"
 
-#: wiki/forms.py wiki/forms.py
+#: wiki/forms.py
 msgid "Summary"
 msgstr "Not özeti"
 
@@ -18118,11 +17846,11 @@ msgstr "ek revizyonları"
 msgid "%s was successfully added."
 msgstr "%s başarıyla eklendi."
 
-#: wiki/plugins/attachments/views.py wiki/plugins/attachments/views.py
+#: wiki/plugins/attachments/views.py
 msgid "Your file could not be saved: %s"
 msgstr "Dosyanız kaydedilemedi: %s"
 
-#: wiki/plugins/attachments/views.py wiki/plugins/attachments/views.py
+#: wiki/plugins/attachments/views.py
 msgid ""
 "Your file could not be saved, probably because of a permission error on the "
 "web server."

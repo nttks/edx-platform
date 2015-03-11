@@ -25,7 +25,7 @@ from student.tests.factories import UserFactory
 from xmodule.capa_module import CapaDescriptor
 from xmodule.modulestore import ModuleStoreEnum
 from xmodule.modulestore.django import modulestore
-from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
+from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase, TEST_DATA_SPLIT_MODULESTORE
 from xmodule.modulestore.tests.factories import ItemFactory, LibraryFactory, check_mongo_calls
 from xmodule.x_module import STUDIO_VIEW, STUDENT_VIEW
 from xblock.exceptions import NoSuchHandlerError
@@ -558,13 +558,13 @@ class TestDuplicateItem(ItemTest):
         return self.response_usage_key(resp)
 
 
-class TestEditItem(ItemTest):
+class TestEditItemSetup(ItemTest):
     """
-    Test xblock update.
+    Setup for xblock update tests.
     """
     def setUp(self):
         """ Creates the test course structure and a couple problems to 'edit'. """
-        super(TestEditItem, self).setUp()
+        super(TestEditItemSetup, self).setUp()
         # create a chapter
         display_name = 'chapter created'
         resp = self.create_xblock(display_name=display_name, category='chapter')
@@ -587,6 +587,11 @@ class TestEditItem(ItemTest):
 
         self.course_update_url = reverse_usage_url("xblock_handler", self.usage_key)
 
+
+class TestEditItem(TestEditItemSetup):
+    """
+    Test xblock update.
+    """
     def test_delete_field(self):
         """
         Sending null in for a field 'deletes' it
@@ -1004,6 +1009,26 @@ class TestEditItem(ItemTest):
         self.assertIn("Incorrect RelativeTime value", parsed["error"])  # See xmodule/fields.py
 
 
+class TestEditItemSplitMongo(TestEditItemSetup):
+    """
+    Tests for EditItem running on top of the SplitMongoModuleStore.
+    """
+    MODULESTORE = TEST_DATA_SPLIT_MODULESTORE
+
+    def test_editing_view_wrappers(self):
+        """
+        Verify that the editing view only generates a single wrapper, no matter how many times it's loaded
+
+        Exposes: PLAT-417
+        """
+        view_url = reverse_usage_url("xblock_view_handler", self.problem_usage_key, {"view_name": STUDIO_VIEW})
+
+        for __ in xrange(3):
+            resp = self.client.get(view_url, HTTP_ACCEPT='application/json')
+            self.assertEqual(resp.status_code, 200)
+            self.assertEqual(resp.content.count('xblock-{}'.format(STUDIO_VIEW)), 1)
+
+
 class TestEditSplitModule(ItemTest):
     """
     Tests around editing instances of the split_test module.
@@ -1188,6 +1213,8 @@ class TestEditSplitModule(ItemTest):
 @ddt.ddt
 class TestComponentHandler(TestCase):
     def setUp(self):
+        super(TestComponentHandler, self).setUp()
+
         self.request_factory = RequestFactory()
 
         patcher = patch('contentstore.views.component.modulestore')
@@ -1377,6 +1404,20 @@ class TestXBlockInfo(ItemTest):
         resp = self.client.get(outline_url, HTTP_ACCEPT='application/json')
         json_response = json.loads(resp.content)
         self.validate_course_xblock_info(json_response, course_outline=True)
+
+    def test_chapter_entrance_exam_xblock_info(self):
+        chapter = ItemFactory.create(
+            parent_location=self.course.location, category='chapter', display_name="Entrance Exam",
+            user_id=self.user.id, is_entrance_exam=True
+        )
+        chapter = modulestore().get_item(chapter.location)
+        xblock_info = create_xblock_info(
+            chapter,
+            include_child_info=True,
+            include_children_predicate=ALWAYS,
+        )
+        self.assertEqual(xblock_info['override_type'], {'is_entrance_exam': True})
+        self.assertEqual(xblock_info['display_name'], 'Entrance Exam')
 
     def test_chapter_xblock_info(self):
         chapter = modulestore().get_item(self.chapter.location)

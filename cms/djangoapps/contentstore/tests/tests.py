@@ -88,6 +88,8 @@ class AuthTestCase(ContentStoreTestCase):
     """Check that various permissions-related things work"""
 
     def setUp(self):
+        super(AuthTestCase, self).setUp(create_user=False)
+
         self.email = 'a@b.com'
         self.pw = 'xyz'
         self.username = 'testuser'
@@ -316,6 +318,10 @@ class ForumTestCase(CourseTestCase):
         ]
         self.course.discussion_blackouts = [(t.isoformat(), t2.isoformat()) for t, t2 in times2]
         self.assertFalse(self.course.forum_posts_allowed)
+
+        # test if user gives empty blackout date it should return true for forum_posts_allowed
+        self.course.discussion_blackouts = [[]]
+        self.assertTrue(self.course.forum_posts_allowed)
 
 
 @ddt

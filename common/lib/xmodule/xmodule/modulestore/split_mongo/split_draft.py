@@ -5,6 +5,7 @@ Module for the dual-branch fall-back Draft->Published Versioning ModuleStore
 from xmodule.modulestore.split_mongo.split import SplitMongoModuleStore, EXCLUDE_ALL
 from xmodule.exceptions import InvalidVersionError
 from xmodule.modulestore import ModuleStoreEnum
+from xmodule.modulestore.courseware_index import CoursewareSearchIndexer
 from xmodule.modulestore.exceptions import InsufficientSpecificationError, ItemNotFoundError
 from xmodule.modulestore.draft_and_published import (
     ModuleStoreDraftAndPublished, DIRECT_ONLY_CATEGORIES, UnsupportedRevisionError
@@ -117,7 +118,10 @@ class DraftVersioningModuleStore(SplitMongoModuleStore, ModuleStoreDraftAndPubli
     def update_item(self, descriptor, user_id, allow_not_found=False, force=False, **kwargs):
         old_descriptor_locn = descriptor.location
         descriptor.location = self._map_revision_to_branch(old_descriptor_locn)
-        with self.bulk_operations(descriptor.location.course_key):
+        emit_signals = descriptor.location.branch == ModuleStoreEnum.BranchName.published \
+            or descriptor.location.block_type in DIRECT_ONLY_CATEGORIES
+
+        with self.bulk_operations(descriptor.location.course_key, emit_signals=emit_signals):
             item = super(DraftVersioningModuleStore, self).update_item(
                 descriptor,
                 user_id,
@@ -138,7 +142,9 @@ class DraftVersioningModuleStore(SplitMongoModuleStore, ModuleStoreDraftAndPubli
         See :py:meth `ModuleStoreDraftAndPublished.create_item`
         """
         course_key = self._map_revision_to_branch(course_key)
-        with self.bulk_operations(course_key):
+        emit_signals = course_key.branch == ModuleStoreEnum.BranchName.published \
+            or block_type in DIRECT_ONLY_CATEGORIES
+        with self.bulk_operations(course_key, emit_signals=emit_signals):
             item = super(DraftVersioningModuleStore, self).create_item(
                 user_id, course_key, block_type, block_id=block_id,
                 definition_locator=definition_locator, fields=fields,
@@ -202,6 +208,10 @@ class DraftVersioningModuleStore(SplitMongoModuleStore, ModuleStoreDraftAndPubli
                 # publish parent w/o child if deleted element is direct only (not based on type of parent)
                 if branch == ModuleStoreEnum.BranchName.draft and branched_location.block_type in DIRECT_ONLY_CATEGORIES:
                     self.publish(parent_loc.version_agnostic(), user_id, blacklist=EXCLUDE_ALL, **kwargs)
+
+        # Remove this location from the courseware search index so that searches
+        # will refrain from showing it as a result
+        CoursewareSearchIndexer.add_to_search_index(self, location, delete=True)
 
     def _map_revision_to_branch(self, key, revision=None):
         """
@@ -319,9 +329,9 @@ class DraftVersioningModuleStore(SplitMongoModuleStore, ModuleStoreDraftAndPubli
                 return True
 
             # check the children in the draft
-            if 'children' in draft_block.setdefault('fields', {}):
+            if 'children' in draft_block.fields:
                 return any(
-                    [has_changes_subtree(child_block_id) for child_block_id in draft_block['fields']['children']]
+                    [has_changes_subtree(child_block_id) for child_block_id in draft_block.fields['children']]
                 )
 
             return False
@@ -345,6 +355,10 @@ class DraftVersioningModuleStore(SplitMongoModuleStore, ModuleStoreDraftAndPubli
             [location],
             blacklist=blacklist
         )
+
+        # Now it's been published, add the object to the courseware search index so that it appears in search results
+        CoursewareSearchIndexer.add_to_search_index(self, location)
+
         return self.get_item(location.for_branch(ModuleStoreEnum.BranchName.published), **kwargs)
 
     def unpublish(self, location, user_id, **kwargs):
@@ -401,7 +415,7 @@ class DraftVersioningModuleStore(SplitMongoModuleStore, ModuleStoreDraftAndPubli
                     self._get_block_from_structure(published_course_structure, root_block_id)
                 )
                 block = self._get_block_from_structure(new_structure, root_block_id)
-                for child_block_id in block.setdefault('fields', {}).get('children', []):
+                for child_block_id in block.fields.get('children', []):
                     copy_from_published(child_block_id)
 
             copy_from_published(BlockKey.from_usage_key(location))
@@ -463,7 +477,8 @@ class DraftVersioningModuleStore(SplitMongoModuleStore, ModuleStoreDraftAndPubli
         """
         Return the version of the given database representation of a block.
         """
-        return block['edit_info'].get('source_version', block['edit_info']['update_version'])
+        source_version = block.edit_info.source_version
+        return source_version if source_version is not None else block.edit_info.update_version
 
     def import_xblock(self, user_id, course_key, block_type, block_id, fields=None, runtime=None, **kwargs):
         """
@@ -496,8 +511,8 @@ class DraftVersioningModuleStore(SplitMongoModuleStore, ModuleStoreDraftAndPubli
         """
         published_block = self._get_head(xblock, ModuleStoreEnum.BranchName.published)
         if published_block is not None:
-            setattr(xblock, '_published_by', published_block['edit_info']['edited_by'])
-            setattr(xblock, '_published_on', published_block['edit_info']['edited_on'])
+            setattr(xblock, '_published_by', published_block.edit_info.edited_by)
+            setattr(xblock, '_published_on', published_block.edit_info.edited_on)
 
     @contract(asset_key='AssetKey')
     def find_asset_metadata(self, asset_key, **kwargs):

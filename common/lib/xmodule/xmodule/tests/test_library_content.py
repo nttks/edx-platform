@@ -6,15 +6,11 @@ Higher-level tests are in `cms/djangoapps/contentstore/tests/test_libraries.py`.
 """
 from bson.objectid import ObjectId
 from mock import Mock, patch
-from opaque_keys.edx.locator import LibraryLocator
-from unittest import TestCase
 
 from xblock.fragment import Fragment
 from xblock.runtime import Runtime as VanillaRuntime
 
-from xmodule.library_content_module import (
-    LibraryVersionReference, LibraryList, ANY_CAPA_TYPE_VALUE, LibraryContentDescriptor
-)
+from xmodule.library_content_module import ANY_CAPA_TYPE_VALUE, LibraryContentDescriptor
 from xmodule.library_tools import LibraryToolsService
 from xmodule.modulestore.tests.factories import LibraryFactory, CourseFactory
 from xmodule.modulestore.tests.utils import MixedSplitTestCase
@@ -46,7 +42,7 @@ class LibraryContentTest(MixedSplitTestCase):
             "library_content",
             self.vertical,
             max_count=1,
-            source_libraries=[LibraryVersionReference(self.library.location.library_key)]
+            source_library_id=unicode(self.library.location.library_key)
         )
 
     def _bind_course_module(self, module):
@@ -54,14 +50,14 @@ class LibraryContentTest(MixedSplitTestCase):
         Bind a module (part of self.course) so we can access student-specific data.
         """
         module_system = get_test_system(course_id=self.course.location.course_key)
-        module_system.descriptor_runtime = module.runtime
+        module_system.descriptor_runtime = module.runtime._descriptor_system  # pylint: disable=protected-access
         module_system._services['library_tools'] = self.tools  # pylint: disable=protected-access
 
         def get_module(descriptor):
             """Mocks module_system get_module function"""
             sub_module_system = get_test_system(course_id=self.course.location.course_key)
             sub_module_system.get_module = get_module
-            sub_module_system.descriptor_runtime = descriptor.runtime
+            sub_module_system.descriptor_runtime = descriptor._runtime  # pylint: disable=protected-access
             descriptor.bind_for_student(sub_module_system, descriptor._field_data)  # pylint: disable=protected-access
             return descriptor
 
@@ -128,25 +124,25 @@ class TestLibraryContentModule(LibraryContentTest):
     def test_validation_of_course_libraries(self):
         """
         Test that the validation method of LibraryContent blocks can validate
-        the source_libraries setting.
+        the source_library setting.
         """
-        # When source_libraries is blank, the validation summary should say this block needs to be configured:
-        self.lc_block.source_libraries = []
+        # When source_library_id is blank, the validation summary should say this block needs to be configured:
+        self.lc_block.source_library_id = ""
         result = self.lc_block.validate()
         self.assertFalse(result)  # Validation fails due to at least one warning/message
         self.assertTrue(result.summary)
         self.assertEqual(StudioValidationMessage.NOT_CONFIGURED, result.summary.type)
 
-        # When source_libraries references a non-existent library, we should get an error:
-        self.lc_block.source_libraries = [LibraryVersionReference("library-v1:BAD+WOLF")]
+        # When source_library_id references a non-existent library, we should get an error:
+        self.lc_block.source_library_id = "library-v1:BAD+WOLF"
         result = self.lc_block.validate()
         self.assertFalse(result)  # Validation fails due to at least one warning/message
         self.assertTrue(result.summary)
         self.assertEqual(StudioValidationMessage.ERROR, result.summary.type)
         self.assertIn("invalid", result.summary.text)
 
-        # When source_libraries is set but the block needs to be updated, the summary should say so:
-        self.lc_block.source_libraries = [LibraryVersionReference(self.library.location.library_key)]
+        # When source_library_id is set but the block needs to be updated, the summary should say so:
+        self.lc_block.source_library_id = unicode(self.library.location.library_key)
         result = self.lc_block.validate()
         self.assertFalse(result)  # Validation fails due to at least one warning/message
         self.assertTrue(result.summary)
@@ -266,47 +262,6 @@ class TestLibraryContentRender(LibraryContentTest):
         rendered = self.lc_block.render(AUTHOR_VIEW, {})
         self.assertEqual("", rendered.content)  # content should be empty
         self.assertEqual("LibraryContentAuthorView", rendered.js_init_fn)  # but some js initialization should happen
-
-
-class TestLibraryList(TestCase):
-    """ Tests for LibraryList XBlock Field """
-    def test_from_json_runtime_style(self):
-        """
-        Test that LibraryList can parse raw libraries list as passed by runtime
-        """
-        lib_list = LibraryList()
-        lib1_key, lib1_version = u'library-v1:Org1+Lib1', '5436ffec56c02c13806a4c1b'
-        lib2_key, lib2_version = u'library-v1:Org2+Lib2', '112dbaf312c0daa019ce9992'
-        raw = [[lib1_key, lib1_version], [lib2_key, lib2_version]]
-        parsed = lib_list.from_json(raw)
-        self.assertEqual(len(parsed), 2)
-        self.assertEquals(parsed[0].library_id, LibraryLocator.from_string(lib1_key))
-        self.assertEquals(parsed[0].version, ObjectId(lib1_version))
-        self.assertEquals(parsed[1].library_id, LibraryLocator.from_string(lib2_key))
-        self.assertEquals(parsed[1].version, ObjectId(lib2_version))
-
-    def test_from_json_studio_editor_style(self):
-        """
-        Test that LibraryList can parse raw libraries list as passed by studio editor
-        """
-        lib_list = LibraryList()
-        lib1_key, lib1_version = u'library-v1:Org1+Lib1', '5436ffec56c02c13806a4c1b'
-        lib2_key, lib2_version = u'library-v1:Org2+Lib2', '112dbaf312c0daa019ce9992'
-        raw = [lib1_key + ',' + lib1_version, lib2_key + ',' + lib2_version]
-        parsed = lib_list.from_json(raw)
-        self.assertEqual(len(parsed), 2)
-        self.assertEquals(parsed[0].library_id, LibraryLocator.from_string(lib1_key))
-        self.assertEquals(parsed[0].version, ObjectId(lib1_version))
-        self.assertEquals(parsed[1].library_id, LibraryLocator.from_string(lib2_key))
-        self.assertEquals(parsed[1].version, ObjectId(lib2_version))
-
-    def test_from_json_invalid_value(self):
-        """
-        Test that LibraryList raises Value error if invalid library key is given
-        """
-        lib_list = LibraryList()
-        with self.assertRaises(ValueError):
-            lib_list.from_json(["Not-a-library-key,whatever"])
 
 
 class TestLibraryContentAnalytics(LibraryContentTest):
@@ -457,6 +412,7 @@ class TestLibraryContentAnalytics(LibraryContentTest):
         # except for one of the two already assigned to the student:
         keep_block_key = initial_blocks_assigned[0].location
         keep_block_lib_usage_key, keep_block_lib_version = self.store.get_block_original_usage(keep_block_key)
+        self.assertIsNotNone(keep_block_lib_usage_key)
         deleted_block_key = initial_blocks_assigned[1].location
         self.library.children = [keep_block_lib_usage_key]
         self.store.update_item(self.library, self.user_id)

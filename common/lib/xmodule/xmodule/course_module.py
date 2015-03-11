@@ -183,6 +183,15 @@ class CourseFields(object):
                  default=DEFAULT_START_DATE,
                  scope=Scope.settings)
     end = Date(help="Date that this class ends", scope=Scope.settings)
+    cosmetic_display_price = Integer(
+        display_name=_("Cosmetic Course Display Price"),
+        help=_(
+            "The cost displayed to students for enrolling in the course. If a paid course registration price is "
+            "set by an administrator in the database, that price will be displayed instead of this one."
+        ),
+        default=0,
+        scope=Scope.settings,
+    )
     advertised_start = String(
         display_name=_("Course Advertised Start Date"),
         help=_(
@@ -597,8 +606,8 @@ class CourseFields(object):
     due_date_display_format = String(
         display_name=_("Due Date Display Format"),
         help=_(
-            "Enter the format due dates are displayed in. Due dates must be in MM-DD-YYYY, DD-MM-YYYY, YYYY-MM-DD, "
-            "or YYYY-DD-MM format."
+            "Enter the format for due dates. The default is Mon DD, YYYY. Enter \"%m-%d-%Y\" for MM-DD-YYYY, "
+            "\"%d-%m-%Y\" for DD-MM-YYYY, \"%Y-%m-%d\" for YYYY-MM-DD, or \"%Y-%d-%m\" for YYYY-DD-MM."
         ),
         scope=Scope.settings, default=None
     )
@@ -621,10 +630,12 @@ class CourseFields(object):
     certificates_display_behavior = String(
         display_name=_("Certificates Display Behavior"),
         help=_(
-            "Has three possible states: 'end', 'early_with_info', 'early_no_info'. 'end' is the default behavior, "
-            "where certificates will only appear after a course has ended. 'early_with_info' will display all "
-            "certificate information before a course has ended. 'early_no_info' will hide all certificate "
-            "information unless a student has earned a certificate."
+            "Enter end, early_with_info, or early_no_info. After certificate generation, students who passed see a "
+            "link to their certificates on the dashboard and students who did not pass see information about the "
+            "grading configuration. The default is end, which displays this certificate information to all students "
+            "after the course end date. To display this certificate information to all students as soon as "
+            "certificates are generated, enter early_with_info. To display only the links to passing students as "
+            "soon as certificates are generated, enter early_no_info."
         ),
         scope=Scope.settings,
         default="end"
@@ -781,7 +792,7 @@ class CourseFields(object):
     entrance_exam_enabled = Boolean(
         display_name=_("Entrance Exam Enabled"),
         help=_(
-            "Specify whether students must complete an entrance exam before they can view your course content."
+            "Specify whether students must complete an entrance exam before they can view your course content. "
             "Note, you must enable Entrance Exams for this course setting to take effect."
         ),
         default=False,
@@ -791,7 +802,7 @@ class CourseFields(object):
     entrance_exam_minimum_score_pct = Float(
         display_name=_("Entrance Exam Minimum Score (%)"),
         help=_(
-            "Specify a minimum percentage score for an entrance exam before students can view your course content."
+            "Specify a minimum percentage score for an entrance exam before students can view your course content. "
             "Note, you must enable Entrance Exams for this course setting to take effect."
         ),
         default=65,
@@ -1285,13 +1296,13 @@ class CourseDescriptor(CourseFields, SequenceDescriptor):
             blackout_periods = [(date_proxy.from_json(start),
                                  date_proxy.from_json(end))
                                 for start, end
-                                in self.discussion_blackouts]
+                                in filter(None, self.discussion_blackouts)]
             now = datetime.now(UTC())
             for start, end in blackout_periods:
                 if start <= now <= end:
                     return False
         except:
-            log.exception("Error parsing discussion_blackouts for course {0}".format(self.id))
+            log.exception("Error parsing discussion_blackouts %s for course %s", self.discussion_blackouts, self.id)
 
         return True
 

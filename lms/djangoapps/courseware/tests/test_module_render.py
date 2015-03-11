@@ -14,8 +14,9 @@ from django.test.client import RequestFactory
 from django.test.utils import override_settings
 from django.contrib.auth.models import AnonymousUser
 from mock import MagicMock, patch, Mock
-from opaque_keys.edx.keys import UsageKey
+from opaque_keys.edx.keys import UsageKey, CourseKey
 from opaque_keys.edx.locations import SlashSeparatedCourseKey
+from courseware.module_render import hash_resource
 from xblock.field_data import FieldData
 from xblock.runtime import Runtime
 from xblock.fields import ScopeIds
@@ -41,7 +42,7 @@ from xmodule.modulestore import ModuleStoreEnum
 from xmodule.modulestore.django import modulestore
 from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
 from xmodule.modulestore.tests.factories import ItemFactory, CourseFactory, check_mongo_calls
-from xmodule.x_module import XModuleDescriptor, XModule, STUDENT_VIEW
+from xmodule.x_module import XModuleDescriptor, XModule, STUDENT_VIEW, CombinedSystem
 
 TEST_DATA_DIR = settings.COMMON_TEST_DATA_ROOT
 
@@ -72,7 +73,6 @@ class EmptyXModuleDescriptor(XModuleDescriptor):  # pylint: disable=abstract-met
 
 
 @ddt.ddt
-@override_settings(MODULESTORE=TEST_DATA_MOCK_MODULESTORE)
 class ModuleRenderTestCase(ModuleStoreTestCase, LoginEnrollmentTestCase):
     """
     Tests of courseware.module_render
@@ -247,8 +247,15 @@ class ModuleRenderTestCase(ModuleStoreTestCase, LoginEnrollmentTestCase):
         render.get_module_for_descriptor(self.mock_user, request, descriptor, field_data_cache, self.toy_course.id)
         render.get_module_for_descriptor(self.mock_user, request, descriptor, field_data_cache, self.toy_course.id)
 
+    def test_hash_resource(self):
+        """
+        Ensure that the resource hasher works and does not fail on unicode,
+        decoded or otherwise.
+        """
+        resources = ['ASCII text', u'❄ I am a special snowflake.', "❄ So am I, but I didn't tell you."]
+        self.assertEqual(hash_resource(resources), 'a76e27c8e80ca3efd7ce743093aa59e0')
 
-@override_settings(MODULESTORE=TEST_DATA_MOCK_MODULESTORE)
+
 class TestHandleXBlockCallback(ModuleStoreTestCase, LoginEnrollmentTestCase):
     """
     Test the handle_xblock_callback function
@@ -319,7 +326,7 @@ class TestHandleXBlockCallback(ModuleStoreTestCase, LoginEnrollmentTestCase):
                 'success': False,
                 'msg': 'Submission aborted! Maximum %d files may be submitted at once' %
                        settings.MAX_FILEUPLOADS_PER_INPUT
-            })
+            }, indent=2)
         )
 
     def test_too_large_file(self):
@@ -340,7 +347,7 @@ class TestHandleXBlockCallback(ModuleStoreTestCase, LoginEnrollmentTestCase):
                 'success': False,
                 'msg': 'Submission aborted! Your file "%s" is too large (max size: %d MB)' %
                        (inputfile.name, settings.STUDENT_FILEUPLOAD_MAX_SIZE / (1000 ** 2))
-            })
+            }, indent=2)
         )
 
     def test_xmodule_dispatch(self):
@@ -403,9 +410,31 @@ class TestHandleXBlockCallback(ModuleStoreTestCase, LoginEnrollmentTestCase):
                 'bad_dispatch',
             )
 
+    @patch.dict('django.conf.settings.FEATURES', {'ENABLE_XBLOCK_VIEW_ENDPOINT': True})
+    def test_xblock_view_handler(self):
+        args = [
+            'edX/toy/2012_Fall',
+            quote_slashes('i4x://edX/toy/videosequence/Toy_Videos'),
+            'student_view'
+        ]
+        xblock_view_url = reverse(
+            'xblock_view',
+            args=args
+        )
+
+        request = self.request_factory.get(xblock_view_url)
+        request.user = self.mock_user
+        response = render.xblock_view(request, *args)
+        self.assertEquals(200, response.status_code)
+
+        expected = ['csrf_token', 'html', 'resources']
+        content = json.loads(response.content)
+        for section in expected:
+            self.assertIn(section, content)
+        self.assertIn('<div class="xblock xblock-student_view xmodule_display', content['html'])
+
 
 @ddt.ddt
-@override_settings(MODULESTORE=TEST_DATA_MOCK_MODULESTORE)
 class TestTOC(ModuleStoreTestCase):
     """Check the Table of Contents for a course"""
     def setup_modulestore(self, default_ms, num_finds, num_sends):
@@ -501,13 +530,13 @@ class TestTOC(ModuleStoreTestCase):
                 self.assertIn(toc_section, actual)
 
 
-@override_settings(MODULESTORE=TEST_DATA_MOCK_MODULESTORE)
 class TestHtmlModifiers(ModuleStoreTestCase):
     """
     Tests to verify that standard modifications to the output of XModule/XBlock
     student_view are taking place
     """
     def setUp(self):
+        super(TestHtmlModifiers, self).setUp()
         self.user = UserFactory.create()
         self.request = RequestFactory().get('/')
         self.request.user = self.user
@@ -639,6 +668,7 @@ class ViewInStudioTest(ModuleStoreTestCase):
 
     def setUp(self):
         """ Set up the user and request that will be used. """
+        super(ViewInStudioTest, self).setUp()
         self.staff_user = GlobalStaffFactory.create()
         self.request = RequestFactory().get('/')
         self.request.user = self.staff_user
@@ -695,12 +725,8 @@ class ViewInStudioTest(ModuleStoreTestCase):
         self.module = self._get_module(course_key, descriptor, location)
 
 
-@override_settings(MODULESTORE=TEST_DATA_MOCK_MODULESTORE)
 class MongoViewInStudioTest(ViewInStudioTest):
     """Test the 'View in Studio' link visibility in a mongo backed course."""
-
-    def setUp(self):
-        super(MongoViewInStudioTest, self).setUp()
 
     def test_view_in_studio_link_studio_course(self):
         """Regular Studio courses should see 'View in Studio' links."""
@@ -727,12 +753,10 @@ class MongoViewInStudioTest(ViewInStudioTest):
         self.assertNotIn('View Unit in Studio', result_fragment.content)
 
 
-@override_settings(MODULESTORE=TEST_DATA_MIXED_TOY_MODULESTORE)
 class MixedViewInStudioTest(ViewInStudioTest):
     """Test the 'View in Studio' link visibility in a mixed mongo backed course."""
 
-    def setUp(self):
-        super(MixedViewInStudioTest, self).setUp()
+    MODULESTORE = TEST_DATA_MIXED_TOY_MODULESTORE
 
     def test_view_in_studio_link_mongo_backed(self):
         """Mixed mongo courses that are mongo backed should see 'View in Studio' links."""
@@ -753,12 +777,9 @@ class MixedViewInStudioTest(ViewInStudioTest):
         self.assertNotIn('View Unit in Studio', result_fragment.content)
 
 
-@override_settings(MODULESTORE=TEST_DATA_XML_MODULESTORE)
 class XmlViewInStudioTest(ViewInStudioTest):
     """Test the 'View in Studio' link visibility in an xml backed course."""
-
-    def setUp(self):
-        super(XmlViewInStudioTest, self).setUp()
+    MODULESTORE = TEST_DATA_XML_MODULESTORE
 
     def test_view_in_studio_link_xml_backed(self):
         """Course in XML only modulestore should not see 'View in Studio' links."""
@@ -767,13 +788,13 @@ class XmlViewInStudioTest(ViewInStudioTest):
         self.assertNotIn('View Unit in Studio', result_fragment.content)
 
 
-@override_settings(MODULESTORE=TEST_DATA_MOCK_MODULESTORE)
 @patch.dict('django.conf.settings.FEATURES', {'DISPLAY_DEBUG_INFO_TO_STAFF': True, 'DISPLAY_HISTOGRAMS_TO_STAFF': True})
 @patch('courseware.module_render.has_access', Mock(return_value=True))
 class TestStaffDebugInfo(ModuleStoreTestCase):
     """Tests to verify that Staff Debug Info panel and histograms are displayed to staff."""
 
     def setUp(self):
+        super(TestStaffDebugInfo, self).setUp()
         self.user = UserFactory.create()
         self.request = RequestFactory().get('/')
         self.request.user = self.user
@@ -888,13 +909,13 @@ PER_STUDENT_ANONYMIZED_DESCRIPTORS = set(
 
 
 @ddt.ddt
-@override_settings(MODULESTORE=TEST_DATA_MOCK_MODULESTORE)
 class TestAnonymousStudentId(ModuleStoreTestCase, LoginEnrollmentTestCase):
     """
     Test that anonymous_student_id is set correctly across a variety of XBlock types
     """
 
     def setUp(self):
+        super(TestAnonymousStudentId, self).setUp(create_user=False)
         self.user = UserFactory()
 
     @patch('courseware.module_render.has_access', Mock(return_value=True))
@@ -905,13 +926,16 @@ class TestAnonymousStudentId(ModuleStoreTestCase, LoginEnrollmentTestCase):
             _field_data=Mock(spec=FieldData),
             location=location,
             static_asset_path=None,
-            runtime=Mock(
+            _runtime=Mock(
                 spec=Runtime,
                 resources_fs=None,
-                mixologist=Mock(_mixins=())
+                mixologist=Mock(_mixins=(), name='mixologist'),
+                name='runtime',
             ),
             scope_ids=Mock(spec=ScopeIds),
+            name='descriptor'
         )
+        descriptor.runtime = CombinedSystem(descriptor._runtime, None)  # pylint: disable=protected-access
         # Use the xblock_class's bind_for_student method
         descriptor.bind_for_student = partial(xblock_class.bind_for_student, descriptor)
 
@@ -921,10 +945,10 @@ class TestAnonymousStudentId(ModuleStoreTestCase, LoginEnrollmentTestCase):
         return render.get_module_for_descriptor_internal(
             user=self.user,
             descriptor=descriptor,
-            field_data_cache=Mock(spec=FieldDataCache),
+            field_data_cache=Mock(spec=FieldDataCache, name='field_data_cache'),
             course_id=course_id,
-            track_function=Mock(),  # Track Function
-            xqueue_callback_url_prefix=Mock(),  # XQueue Callback Url Prefix
+            track_function=Mock(name='track_function'),  # Track Function
+            xqueue_callback_url_prefix=Mock(name='xqueue_callback_url_prefix'),  # XQueue Callback Url Prefix
             request_token='request_token',
         ).xmodule_runtime.anonymous_student_id
 
@@ -935,7 +959,7 @@ class TestAnonymousStudentId(ModuleStoreTestCase, LoginEnrollmentTestCase):
                 # This value is set by observation, so that later changes to the student
                 # id computation don't break old data
                 '5afe5d9bb03796557ee2614f5c9611fb',
-                self._get_anonymous_id(SlashSeparatedCourseKey.from_deprecated_string(course_id), descriptor_class)
+                self._get_anonymous_id(CourseKey.from_string(course_id), descriptor_class)
             )
 
     @ddt.data(*PER_COURSE_ANONYMIZED_DESCRIPTORS)
@@ -955,7 +979,6 @@ class TestAnonymousStudentId(ModuleStoreTestCase, LoginEnrollmentTestCase):
         )
 
 
-@override_settings(MODULESTORE=TEST_DATA_MOCK_MODULESTORE)
 @patch('track.views.tracker')
 class TestModuleTrackingContext(ModuleStoreTestCase):
     """
@@ -963,6 +986,8 @@ class TestModuleTrackingContext(ModuleStoreTestCase):
     """
 
     def setUp(self):
+        super(TestModuleTrackingContext, self).setUp()
+
         self.user = UserFactory.create()
         self.request = RequestFactory().get('/')
         self.request.user = self.user
@@ -1147,7 +1172,6 @@ class TestRebindModule(TestSubmittingProblems):
 
 
 @ddt.ddt
-@override_settings(MODULESTORE=TEST_DATA_MOCK_MODULESTORE)
 class TestEventPublishing(ModuleStoreTestCase, LoginEnrollmentTestCase):
     """
     Tests of event publishing for both XModules and XBlocks.

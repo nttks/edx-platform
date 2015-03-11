@@ -71,6 +71,9 @@ BLOCK_TYPES_WITH_CHILDREN = list(set(
 # Allow us to call _from_deprecated_(son|string) throughout the file
 # pylint: disable=protected-access
 
+# at module level, cache one instance of OSFS per filesystem root.
+_OSFS_INSTANCE = {}
+
 
 class MongoRevisionKey(object):
     """
@@ -275,7 +278,9 @@ class CachingDescriptorSystem(MakoDescriptorSystem, EditInfoRuntimeMixin):
                     raw_metadata = json_data.get('metadata', {})
                     # published_on was previously stored as a list of time components instead of a datetime
                     if raw_metadata.get('published_date'):
-                        module._edit_info['published_date'] = datetime(*raw_metadata.get('published_date')[0:6]).replace(tzinfo=UTC)
+                        module._edit_info['published_date'] = datetime(
+                            *raw_metadata.get('published_date')[0:6]
+                        ).replace(tzinfo=UTC)
                     module._edit_info['published_by'] = raw_metadata.get('published_by')
 
                 # decache any computed pending field settings
@@ -443,13 +448,17 @@ class MongoBulkOpsMixin(BulkOperationsMixin):
         # ensure it starts clean
         bulk_ops_record.dirty = False
 
-    def _end_outermost_bulk_operation(self, bulk_ops_record, course_id):
+    def _end_outermost_bulk_operation(self, bulk_ops_record, course_id, emit_signals=True):
         """
         Restart updating the meta-data inheritance cache for the given course.
         Refresh the meta-data inheritance cache now since it was temporarily disabled.
         """
         if bulk_ops_record.dirty:
             self.refresh_cached_metadata_inheritance_tree(course_id)
+
+            if emit_signals and self.signal_handler:
+                self.signal_handler.send("course_published", course_key=course_id)
+
             bulk_ops_record.dirty = False  # brand spanking clean now
 
     def _is_in_bulk_operation(self, course_id, ignore_case=False):
@@ -499,6 +508,7 @@ class MongoModuleStore(ModuleStoreDraftAndPublished, ModuleStoreWriteBase, Mongo
                  i18n_service=None,
                  fs_service=None,
                  user_service=None,
+                 signal_handler=None,
                  retry_wait_time=0.1,
                  **kwargs):
         """
@@ -555,6 +565,7 @@ class MongoModuleStore(ModuleStoreDraftAndPublished, ModuleStoreWriteBase, Mongo
         self.user_service = user_service
 
         self._course_run_cache = {}
+        self.signal_handler = signal_handler
 
     def close_connections(self):
         """
@@ -836,10 +847,7 @@ class MongoModuleStore(ModuleStoreDraftAndPublished, ModuleStoreWriteBase, Mongo
         location = Location._from_deprecated_son(item['location'], course_key.run)
         data_dir = getattr(item, 'data_dir', location.course)
         root = self.fs_root / data_dir
-
-        root.makedirs_p()  # create directory if it doesn't exist
-
-        resource_fs = OSFS(root)
+        resource_fs = _OSFS_INSTANCE.setdefault(root, OSFS(root, create=True))
 
         cached_metadata = {}
         if apply_cached_metadata:
@@ -1115,14 +1123,15 @@ class MongoModuleStore(ModuleStoreDraftAndPublished, ModuleStoreWriteBase, Mongo
         if courses.count() > 0:
             raise DuplicateCourseError(course_id, courses[0]['_id'])
 
-        xblock = self.create_item(user_id, course_id, 'course', course_id.run, fields=fields, **kwargs)
+        with self.bulk_operations(course_id):
+            xblock = self.create_item(user_id, course_id, 'course', course_id.run, fields=fields, **kwargs)
 
-        # create any other necessary things as a side effect
-        super(MongoModuleStore, self).create_course(
-            org, course, run, user_id, runtime=xblock.runtime, **kwargs
-        )
+            # create any other necessary things as a side effect
+            super(MongoModuleStore, self).create_course(
+                org, course, run, user_id, runtime=xblock.runtime, **kwargs
+            )
 
-        return xblock
+            return xblock
 
     def create_xblock(
         self, runtime, course_key, block_type, block_id=None, fields=None,
@@ -1303,6 +1312,8 @@ class MongoModuleStore(ModuleStoreDraftAndPublished, ModuleStoreWriteBase, Mongo
         is_publish_root: when publishing, this indicates whether xblock is the root of the publish and should
           therefore propagate subtree edit info up the tree
         """
+        course_key = xblock.location.course_key
+
         try:
             definition_data = self._serialize_scope(xblock, Scope.content)
             now = datetime.now(UTC)
@@ -1354,8 +1365,8 @@ class MongoModuleStore(ModuleStoreDraftAndPublished, ModuleStoreWriteBase, Mongo
         except ItemNotFoundError:
             if not allow_not_found:
                 raise
-            elif not self.has_course(xblock.location.course_key):
-                raise ItemNotFoundError(xblock.location.course_key)
+            elif not self.has_course(course_key):
+                raise ItemNotFoundError(course_key)
 
         return xblock
 
@@ -1804,3 +1815,25 @@ class MongoModuleStore(ModuleStoreDraftAndPublished, ModuleStoreWriteBase, Mongo
 
         # To allow prioritizing draft vs published material
         self.collection.create_index('_id.revision')
+
+    # Some overrides that still need to be implemented by subclasses
+    def convert_to_draft(self, location, user_id):
+        raise NotImplementedError()
+
+    def delete_item(self, location, user_id, **kwargs):
+        raise NotImplementedError()
+
+    def has_changes(self, xblock):
+        raise NotImplementedError()
+
+    def has_published_version(self, xblock):
+        raise NotImplementedError()
+
+    def publish(self, location, user_id):
+        raise NotImplementedError()
+
+    def revert_to_published(self, location, user_id):
+        raise NotImplementedError()
+
+    def unpublish(self, location, user_id):
+        raise NotImplementedError()

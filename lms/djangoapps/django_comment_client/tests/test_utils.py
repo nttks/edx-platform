@@ -5,11 +5,9 @@ from pytz import UTC
 
 from django.core.urlresolvers import reverse
 from django.test import TestCase
-from django.test.utils import override_settings
 from edxmako import add_lookup
 import mock
 
-from xmodule.modulestore.tests.django_utils import TEST_DATA_MOCK_MODULESTORE
 from django_comment_client.tests.factories import RoleFactory
 from django_comment_client.tests.unicode import UnicodeTestMixin
 import django_comment_client.utils as utils
@@ -42,13 +40,14 @@ class DictionaryTestCase(TestCase):
         self.assertEqual(utils.merge_dict(d1, d2), expected)
 
 
-@override_settings(MODULESTORE=TEST_DATA_MOCK_MODULESTORE)
 class AccessUtilsTestCase(ModuleStoreTestCase):
     """
     Base testcase class for access and roles for the
     comment client service integration
     """
     def setUp(self):
+        super(AccessUtilsTestCase, self).setUp(create_user=False)
+
         self.course = CourseFactory.create()
         self.course_id = self.course.id
         self.student_role = RoleFactory(name='Student', course_id=self.course_id)
@@ -83,13 +82,14 @@ class AccessUtilsTestCase(ModuleStoreTestCase):
         self.assertFalse(ret)
 
 
-@override_settings(MODULESTORE=TEST_DATA_MOCK_MODULESTORE)
 class CoursewareContextTestCase(ModuleStoreTestCase):
     """
     Base testcase class for courseware context for the
     comment client service integration
     """
     def setUp(self):
+        super(CoursewareContextTestCase, self).setUp()
+
         self.course = CourseFactory.create(org="TestX", number="101", display_name="Test Course")
         self.discussion1 = ItemFactory.create(
             parent_location=self.course.location,
@@ -144,13 +144,14 @@ class CoursewareContextTestCase(ModuleStoreTestCase):
         assertThreadCorrect(threads[1], self.discussion2, "Subsection / Discussion 2")
 
 
-@override_settings(MODULESTORE=TEST_DATA_MOCK_MODULESTORE)
 class CategoryMapTestCase(ModuleStoreTestCase):
     """
     Base testcase class for discussion categories for the
     comment client service integration
     """
     def setUp(self):
+        super(CategoryMapTestCase, self).setUp()
+
         self.course = CourseFactory.create(
             org="TestX", number="101", display_name="Test Course",
             # This test needs to use a course that has already started --
@@ -176,6 +177,9 @@ class CategoryMapTestCase(ModuleStoreTestCase):
         )
 
     def assertCategoryMapEquals(self, expected):
+        """
+        Compare a manually-constructed category map to the actual result from `utils.get_discussion_category_map`
+        """
         self.assertEqual(
             utils.get_discussion_category_map(self.course),
             expected
@@ -194,7 +198,7 @@ class CategoryMapTestCase(ModuleStoreTestCase):
             "Topic C": {"id": "Topic_C"}
         }
 
-        def check_cohorted_topics(expected_ids):
+        def check_cohorted_topics(expected_ids):  # pylint: disable=missing-docstring
             self.assertCategoryMapEquals(
                 {
                     "entries": {
@@ -349,6 +353,27 @@ class CategoryMapTestCase(ModuleStoreTestCase):
         # explicitly enabled cohorting
         self.course.cohort_config = {"cohorted": True}
         check_cohorted(True)
+
+    def test_tree_with_duplicate_targets(self):
+        self.create_discussion("Chapter 1", "Discussion A")
+        self.create_discussion("Chapter 1", "Discussion B")
+        self.create_discussion("Chapter 1", "Discussion A")  # duplicate
+        self.create_discussion("Chapter 1", "Discussion A")  # another duplicate
+        self.create_discussion("Chapter 2 / Section 1 / Subsection 1", "Discussion")
+        self.create_discussion("Chapter 2 / Section 1 / Subsection 1", "Discussion")  # duplicate
+
+        category_map = utils.get_discussion_category_map(self.course)
+
+        chapter1 = category_map["subcategories"]["Chapter 1"]
+        chapter1_discussions = set(["Discussion A", "Discussion B", "Discussion A (1)", "Discussion A (2)"])
+        self.assertEqual(set(chapter1["children"]), chapter1_discussions)
+        self.assertEqual(set(chapter1["entries"].keys()), chapter1_discussions)
+
+        chapter2 = category_map["subcategories"]["Chapter 2"]
+        subsection1 = chapter2["subcategories"]["Section 1"]["subcategories"]["Subsection 1"]
+        subsection1_discussions = set(["Discussion", "Discussion (1)"])
+        self.assertEqual(set(subsection1["children"]), subsection1_discussions)
+        self.assertEqual(set(subsection1["entries"].keys()), subsection1_discussions)
 
     def test_start_date_filter(self):
         now = datetime.now()

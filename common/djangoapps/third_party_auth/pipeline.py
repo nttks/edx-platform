@@ -61,6 +61,7 @@ import random
 import string  # pylint: disable-msg=deprecated-module
 from collections import OrderedDict
 import urllib
+from ipware.ip import get_ip
 import analytics
 from eventtracking import tracker
 
@@ -73,6 +74,7 @@ from social.exceptions import AuthException
 from social.pipeline import partial
 
 import student
+from embargo import api as embargo_api
 from shoppingcart.models import Order, PaidCourseRegistration  # pylint: disable=import-error
 from shoppingcart.exceptions import (  # pylint: disable=import-error
     CourseDoesNotExistException,
@@ -101,8 +103,6 @@ from . import provider
 # `AUTH_ENROLL_COURSE_ID_KEY` provides the course ID that a student
 # is trying to enroll in, used to generate analytics events
 # and auto-enroll students.
-from openedx.core.djangoapps.user_api.api import profile
-
 AUTH_ENTRY_KEY = 'auth_entry'
 AUTH_REDIRECT_KEY = 'next'
 AUTH_ENROLL_COURSE_ID_KEY = 'enroll_course_id'
@@ -110,13 +110,12 @@ AUTH_EMAIL_OPT_IN_KEY = 'email_opt_in'
 
 AUTH_ENTRY_DASHBOARD = 'dashboard'
 AUTH_ENTRY_LOGIN = 'login'
-AUTH_ENTRY_PROFILE = 'profile'
 AUTH_ENTRY_REGISTER = 'register'
 
-# pylint: disable=fixme
-# TODO (ECOM-369): Replace `AUTH_ENTRY_LOGIN` and `AUTH_ENTRY_REGISTER`
-# with these values once the A/B test completes, then delete
-# these constants.
+# This is left-over from an A/B test
+# of the new combined login/registration page (ECOM-369)
+# We need to keep both the old and new entry points
+# until every session from before the test ended has expired.
 AUTH_ENTRY_LOGIN_2 = 'account_login'
 AUTH_ENTRY_REGISTER_2 = 'account_register'
 
@@ -134,29 +133,24 @@ AUTH_DISPATCH_URLS = {
     AUTH_ENTRY_LOGIN: '/login',
     AUTH_ENTRY_REGISTER: '/register',
 
-    # TODO (ECOM-369): Replace the dispatch URLs
-    # for `AUTH_ENTRY_LOGIN` and `AUTH_ENTRY_REGISTER`
-    # with these values, but DO NOT DELETE THESE KEYS.
+    # This is left-over from an A/B test
+    # of the new combined login/registration page (ECOM-369)
+    # We need to keep both the old and new entry points
+    # until every session from before the test ended has expired.
     AUTH_ENTRY_LOGIN_2: '/account/login/',
     AUTH_ENTRY_REGISTER_2: '/account/register/',
 
-    # If linking/unlinking an account from the new student profile
-    # page, redirect to the profile page.  Only used if
-    # `FEATURES['ENABLE_NEW_DASHBOARD']` is true.
-    AUTH_ENTRY_PROFILE: '/profile/',
 }
 
 _AUTH_ENTRY_CHOICES = frozenset([
     AUTH_ENTRY_DASHBOARD,
     AUTH_ENTRY_LOGIN,
-    AUTH_ENTRY_PROFILE,
     AUTH_ENTRY_REGISTER,
 
-    # TODO (ECOM-369): For the A/B test of the combined
-    # login/registration, we needed to introduce two
-    # additional end-points.  Once the test completes,
-    # delete these constants from the choices list.
-    # pylint: disable=fixme
+    # This is left-over from an A/B test
+    # of the new combined login/registration page (ECOM-369)
+    # We need to keep both the old and new entry points
+    # until every session from before the test ended has expired.
     AUTH_ENTRY_LOGIN_2,
     AUTH_ENTRY_REGISTER_2,
 
@@ -447,31 +441,14 @@ def parse_query_params(strategy, response, *args, **kwargs):
         # Whether the auth pipeline entered from /dashboard.
         'is_dashboard': auth_entry == AUTH_ENTRY_DASHBOARD,
         # Whether the auth pipeline entered from /login.
-        'is_login': auth_entry == AUTH_ENTRY_LOGIN,
+        'is_login': auth_entry in [AUTH_ENTRY_LOGIN, AUTH_ENTRY_LOGIN_2],
         # Whether the auth pipeline entered from /register.
-        'is_register': auth_entry == AUTH_ENTRY_REGISTER,
-        # Whether the auth pipeline entered from /profile.
-        'is_profile': auth_entry == AUTH_ENTRY_PROFILE,
+        'is_register': auth_entry in [AUTH_ENTRY_REGISTER, AUTH_ENTRY_REGISTER_2],
         # Whether the auth pipeline entered from an API
         'is_api': auth_entry == AUTH_ENTRY_API,
-
-        # TODO (ECOM-369): Delete these once the A/B test
-        # for the combined login/registration form completes.
-        # pylint: disable=fixme
-        'is_login_2': auth_entry == AUTH_ENTRY_LOGIN_2,
-        'is_register_2': auth_entry == AUTH_ENTRY_REGISTER_2,
     }
 
 
-# TODO (ECOM-369): Once the A/B test of the combined login/registration
-# form completes, we will be able to remove the extra login/registration
-# end-points.  HOWEVER, users who used the new forms during the A/B
-# test may still have values for "is_login_2" and "is_register_2"
-# in their sessions.  For this reason, we need to continue accepting
-# these kwargs in `redirect_to_supplementary_form`, but
-# these should redirect to the same location as "is_login" and "is_register"
-# (whichever login/registration end-points win in the test).
-# pylint: disable=fixme
 @partial.partial
 def ensure_user_information(
     strategy,
@@ -507,43 +484,30 @@ def ensure_user_information(
     # invariants have been violated and future misbehavior is likely.
     user_inactive = user and not user.is_active
     user_unset = user is None
-    dispatch_to_login = is_login and (user_unset or user_inactive)
+
+    dispatch_to_login = (
+        ((is_login or is_login_2) and (user_unset or user_inactive))
+        or
+        ((is_register or is_register_2) and user_inactive)
+    )
+    dispatch_to_register = (is_register or is_register_2) and user_unset
     reject_api_request = is_api and (user_unset or user_inactive)
+
     if reject_api_request:
         # Content doesn't matter; we just want to exit the pipeline
         return HttpResponseBadRequest()
 
-    # TODO (ECOM-369): Consolidate this with `dispatch_to_login`
-    # once the A/B test completes. # pylint: disable=fixme
-    dispatch_to_login_2 = is_login_2 and (user_unset or user_inactive)
-
     if is_dashboard or is_profile:
         return
 
+    # If the user has a linked account, but has not yet activated
+    # we should send them to the login page. The login page
+    # will tell them that they need to activate their account.
     if dispatch_to_login:
         return redirect(_create_redirect_url(AUTH_DISPATCH_URLS[AUTH_ENTRY_LOGIN], strategy))
 
-    # TODO (ECOM-369): Consolidate this with `dispatch_to_login`
-    # once the A/B test completes. # pylint: disable=fixme
-    if dispatch_to_login_2:
-        return redirect(_create_redirect_url(AUTH_DISPATCH_URLS[AUTH_ENTRY_LOGIN_2], strategy))
-
-    if is_register and user_unset:
+    if dispatch_to_register:
         return redirect(_create_redirect_url(AUTH_DISPATCH_URLS[AUTH_ENTRY_REGISTER], strategy))
-
-    # TODO (ECOM-369): Consolidate this with `is_register`
-    # once the A/B test completes. # pylint: disable=fixme
-    if is_register_2 and user_unset:
-        return redirect(_create_redirect_url(AUTH_DISPATCH_URLS[AUTH_ENTRY_REGISTER_2], strategy))
-
-    # If the user has a linked account, but has not yet activated
-    # we should send them to the login page.  The login page
-    # will tell them that they need to activate their account.
-    if is_register and user_inactive:
-        return redirect(_create_redirect_url(AUTH_DISPATCH_URLS[AUTH_ENTRY_LOGIN], strategy))
-
-    if is_register_2 and user_inactive:
-        return redirect(_create_redirect_url(AUTH_DISPATCH_URLS[AUTH_ENTRY_LOGIN_2], strategy))
 
 
 def _create_redirect_url(url, strategy):
@@ -662,7 +626,7 @@ def login_analytics(strategy, *args, **kwargs):
 
 
 @partial.partial
-def change_enrollment(strategy, user=None, *args, **kwargs):
+def change_enrollment(strategy, user=None, is_dashboard=False, *args, **kwargs):
     """Enroll a user in a course.
 
     If a user entered the authentication flow when trying to enroll
@@ -681,17 +645,57 @@ def change_enrollment(strategy, user=None, *args, **kwargs):
     upon completion of the authentication pipeline
     (configured using the ?next parameter to the third party auth login url).
 
+    Keyword Arguments:
+        user (User): The user being authenticated.
+        is_dashboard (boolean): Whether the user entered the authentication
+            pipeline from the "link account" button on the student dashboard.
+
     """
+    # We skip enrollment if the user entered the flow from the "link account"
+    # button on the student dashboard.  At this point, either:
+    #
+    # 1) The user already had a linked account when they started the enrollment flow,
+    # in which case they would have been enrolled during the normal authentication process.
+    #
+    # 2) The user did NOT have a linked account, in which case they would have
+    # needed to go through the login/register page.  Since we preserve the querystring
+    # args when sending users to this page, successfully authenticating through this page
+    # would also enroll the student in the course.
     enroll_course_id = strategy.session_get('enroll_course_id')
-    if enroll_course_id:
+    if enroll_course_id and not is_dashboard:
         course_id = CourseKey.from_string(enroll_course_id)
         modes = CourseMode.modes_for_course_dict(course_id)
+
         # If the email opt in parameter is found, set the preference.
         email_opt_in = strategy.session_get(AUTH_EMAIL_OPT_IN_KEY)
         if email_opt_in:
+            # TODO: remove circular dependency on openedx from common
+            from openedx.core.djangoapps.user_api.api import profile
             opt_in = email_opt_in.lower() == 'true'
             profile.update_email_opt_in(user.username, course_id.org, opt_in)
-        if CourseMode.can_auto_enroll(course_id, modes_dict=modes):
+
+        # Check whether we're blocked from enrolling by a
+        # country access rule.
+        # Note: We skip checking the user's profile setting
+        # for country here because the "redirect URL" pointing
+        # to the blocked message page is set when the user
+        # *enters* the pipeline, at which point they're
+        # not authenticated.  If they end up being blocked
+        # from the courseware, it's better to let them
+        # enroll and then show the message when they
+        # enter the course than to skip enrollment
+        # altogether.
+        is_blocked = not embargo_api.check_course_access(
+            course_id, ip_address=get_ip(strategy.request),
+            url=strategy.request.path
+        )
+        if is_blocked:
+            # If we're blocked, skip enrollment.
+            # A redirect URL should have been set so the user
+            # ends up on the embargo page when enrollment completes.
+            pass
+
+        elif CourseMode.can_auto_enroll(course_id, modes_dict=modes):
             try:
                 CourseEnrollment.enroll(user, course_id, check_access=True)
             except CourseEnrollmentException:

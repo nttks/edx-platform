@@ -5,12 +5,11 @@ End-to-end tests related to the cohort management on the LMS Instructor Dashboar
 
 from datetime import datetime
 
-from pymongo import MongoClient
-
 from pytz import UTC, utc
 from bok_choy.promise import EmptyPromise
+from nose.plugins.attrib import attr
 from .helpers import CohortTestMixin
-from ..helpers import UniqueCourseTest, create_user_partition_json
+from ..helpers import UniqueCourseTest, EventsTestMixin, create_user_partition_json
 from xmodule.partitions.partitions import Group
 from ...fixtures.course import CourseFixture
 from ...pages.lms.auto_auth import AutoAuthPage
@@ -21,7 +20,8 @@ from ...pages.studio.settings_group_configurations import GroupConfigurationsPag
 import uuid
 
 
-class CohortConfigurationTest(UniqueCourseTest, CohortTestMixin):
+@attr('shard_3')
+class CohortConfigurationTest(EventsTestMixin, UniqueCourseTest, CohortTestMixin):
     """
     Tests for cohort management on the LMS Instructor Dashboard
     """
@@ -31,8 +31,6 @@ class CohortConfigurationTest(UniqueCourseTest, CohortTestMixin):
         Set up a cohorted course
         """
         super(CohortConfigurationTest, self).setUp()
-
-        self.event_collection = MongoClient()["test"]["events"]
 
         # create course with cohorts
         self.manual_cohort_name = "ManualCohort1"
@@ -49,9 +47,9 @@ class CohortConfigurationTest(UniqueCourseTest, CohortTestMixin):
         ).visit().get_user_id()
         self.add_user_to_cohort(self.course_fixture, self.student_name, self.manual_cohort_id)
 
-        # create a user with unicode characters in their username
-        self.unicode_student_id = AutoAuthPage(
-            self.browser, username="Ωπ", email="unicode_student_user@example.com",
+        # create a second student user
+        self.other_student_id = AutoAuthPage(
+            self.browser, username="other_student_user", email="other_student_user@example.com",
             course_id=self.course_id, staff=False
         ).visit().get_user_id()
 
@@ -387,12 +385,12 @@ class CohortConfigurationTest(UniqueCourseTest, CohortTestMixin):
             }).count(),
             1
         )
-        # unicode_student_user (previously unassigned) is added to manual cohort
+        # other_student_user (previously unassigned) is added to manual cohort
         self.assertEqual(
             self.event_collection.find({
                 "name": "edx.cohort.user_added",
                 "time": {"$gt": start_time},
-                "event.user_id": {"$in": [int(self.unicode_student_id)]},
+                "event.user_id": {"$in": [int(self.other_student_id)]},
                 "event.cohort_name": self.manual_cohort_name,
             }).count(),
             1
@@ -464,6 +462,7 @@ class CohortConfigurationTest(UniqueCourseTest, CohortTestMixin):
         self.assertEquals(expected_message, messages[0])
 
 
+@attr('shard_3')
 class CohortContentGroupAssociationTest(UniqueCourseTest, CohortTestMixin):
     """
     Tests for linking between content groups and cohort in the instructor dashboard.

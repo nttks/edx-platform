@@ -1,6 +1,8 @@
 ;(function (define, undefined) {
 'use strict';
-define(['jquery', 'underscore', 'annotator'], function ($, _, Annotator) {
+define([
+    'jquery', 'underscore', 'annotator_1.2.9', 'js/edxnotes/utils/utils'
+], function ($, _, Annotator, Utils) {
     var _t = Annotator._t;
 
     /**
@@ -15,7 +17,7 @@ define(['jquery', 'underscore', 'annotator'], function ($, _, Annotator) {
     if (!$.fn.addBack) {
         $.fn.addBack = function (selector) {
             return this.add(
-              selector === null ? this.prevObject : this.prevObject.filter(selector)
+                selector === null ? this.prevObject : this.prevObject.filter(selector)
             );
         };
     }
@@ -36,11 +38,11 @@ define(['jquery', 'underscore', 'annotator'], function ($, _, Annotator) {
      **/
     Annotator.Plugin.Auth.prototype.haveValidToken = function() {
         return (
-          this._unsafeToken &&
-          this._unsafeToken.sub &&
-          this._unsafeToken.exp &&
-          this._unsafeToken.iat &&
-          this.timeToExpiry() > 0
+            this._unsafeToken &&
+            this._unsafeToken.sub &&
+            this._unsafeToken.exp &&
+            this._unsafeToken.iat &&
+            this.timeToExpiry() > 0
         );
     };
 
@@ -57,13 +59,17 @@ define(['jquery', 'underscore', 'annotator'], function ($, _, Annotator) {
     };
 
     /**
-     * Modifies Annotator.highlightRange to add a "tabindex=0" attribute
-     * to the <span class="annotator-hl"> markup that encloses the note.
-     * These are then focusable via the TAB key.
+     * Modifies Annotator.highlightRange to add "tabindex=0" and role="link"
+     * attributes to the <span class="annotator-hl"> markup that encloses the
+     * note. These are then focusable via the TAB key and are accessible to
+     * screen readers.
      **/
     Annotator.prototype.highlightRange = _.compose(
         function (results) {
-            $('.annotator-hl', this.wrapper).attr('tabindex', 0);
+            $('.annotator-hl', this.wrapper).attr({
+                'tabindex': 0,
+                'role': 'link'
+            });
             return results;
         },
         Annotator.prototype.highlightRange
@@ -91,41 +97,128 @@ define(['jquery', 'underscore', 'annotator'], function ($, _, Annotator) {
             }
             // Unbind onNoteClick from click
             this.viewer.element.off('click', this.onNoteClick);
+            this.wrapper.off('click', '.annotator-hl');
         }
     );
 
     /**
-     * Modifies Annotator.Viewer.html.item template to add an i18n for the
-     * buttons.
+     * Modifies Annotator.Viewer.html template to make viewer div focusable.
+     * Also adds a close button and necessary i18n attributes to all buttons.
+    **/
+        Annotator.Viewer.prototype.html = {
+        element: [
+            '<div class="annotator-outer annotator-viewer">',
+                '<ul class="annotator-widget annotator-listing" tabindex="-1"></ul>',
+            '</div>'
+        ].join(''),
+        item: [
+            '<li class="annotator-annotation annotator-item">',
+                '<span class="annotator-controls">',
+                    '<a href="#" title="', _t('View as webpage'), '" class="annotator-link">',
+                        _t('View as webpage'),
+                    '</a>',
+                    '<button class="annotator-edit">',
+                        _t('Edit'),
+                        '<span class="sr">', _t('Note'), '</span>',
+                    '</button>',
+                    '<button class="annotator-delete">',
+                        _t('Delete'),
+                        '<span class="sr">', _t('Note'), '</span>',
+                    '</button>',
+                    '<button class="annotator-close">',
+                        _t('Close'),
+                        '<span class="sr">', _t('Note'), '</span>',
+                    '</button>',
+                '</span>',
+            '</li>'
+        ].join('')
+    };
+
+    /**
+     * Overrides Annotator._setupViewer to add a "click" event on viewer and to
+     * improve line breaks.
      **/
-    Annotator.Viewer.prototype.html.item = [
-        '<li class="annotator-annotation annotator-item">',
-            '<span class="annotator-controls">',
-                '<a href="#" title="', _t('View as webpage'), '" class="annotator-link">',
-                    _t('View as webpage'),
-                '</a>',
-                '<button title="', _t('Edit'), '" class="annotator-edit">',
-                    _t('Edit'),
-                '</button>',
-                '<button title="', _t('Delete'), '" class="annotator-delete">',
-                    _t('Delete'),
-                '</button>',
-            '</span>',
-        '</li>'
+    Annotator.prototype._setupViewer = function () {
+        var self = this;
+        this.viewer = new Annotator.Viewer({readOnly: this.options.readOnly});
+        this.viewer.element.on('click', _.bind(this.onNoteClick, this));
+        this.viewer.hide()
+            .on("edit", this.onEditAnnotation)
+            .on("delete", this.onDeleteAnnotation)
+            .addField({
+                load: function (field, annotation) {
+                    if (annotation.text) {
+                        $(field).html(Utils.nl2br(Annotator.Util.escape(annotation.text)));
+                    } else {
+                        $(field).html('<i>' + _t('No Comment') + '</i>');
+                    }
+                    return self.publish('annotationViewerTextField', [field, annotation]);
+                }
+            })
+            .element.appendTo(this.wrapper).bind({
+                "mouseover": this.clearViewerHideTimer,
+                "mouseout":  this.startViewerHideTimer
+            });
+        return this;
+    };
+
+    Annotator.Editor.prototype.isShown = Annotator.Viewer.prototype.isShown;
+
+    /**
+     * Modifies Annotator.Editor.html template to add tabindex = -1 to
+     * form.annotator-widget and reverse order of Save and Cancel buttons.
+     **/
+    Annotator.Editor.prototype.html = [
+        '<div class="annotator-outer annotator-editor">',
+            '<form class="annotator-widget" tabindex="-1">',
+                '<ul class="annotator-listing"></ul>',
+                '<div class="annotator-controls">',
+                    '<button class="annotator-save">',
+                        _t('Save'),
+                        '<span class="sr">', _t('Note'), '</span>',
+                    '</button>',
+                    '<button class="annotator-cancel">',
+                        _t('Cancel'),
+                        '<span class="sr">', _t('Note'), '</span>',
+                    '</button>',
+                '</div>',
+            '</form>',
+        '</div>'
     ].join('');
 
     /**
-     * Modifies Annotator._setupViewer to add a "click" event on viewer.
+     * Modifies Annotator._setupEditor to add a label for textarea#annotator-field-0.
      **/
-    Annotator.prototype._setupViewer = _.compose(
+    Annotator.prototype._setupEditor = _.compose(
         function () {
-            this.viewer.element.on('click', _.bind(this.onNoteClick, this));
+            $('<label class="sr" for="annotator-field-0">Edit note</label>').insertBefore(
+                $('#annotator-field-0', this.wrapper)
+            );
             return this;
         },
-        Annotator.prototype._setupViewer
+        Annotator.prototype._setupEditor
     );
 
-    Annotator.Editor.prototype.isShown = Annotator.Viewer.prototype.isShown;
+    /**
+     * Modifies Annotator.Editor.show, in the case of a keydown event, to remove
+     * focus from Save button and put it on form.annotator-widget instead.
+     **/
+    Annotator.Editor.prototype.show = _.compose(
+        function (event) {
+            if (event.type === 'keydown') {
+                this.element.find('.annotator-save').removeClass(this.classes.focus);
+                this.element.find('form.annotator-widget').focus();
+            }
+        },
+        Annotator.Editor.prototype.show
+    );
+
+    /**
+     * Removes the textarea keydown event handler as it triggers 'processKeypress'
+     * which hides the viewer on ESC and saves on ENTER. We will define different
+     * behaviors for these in /plugins/accessibility.js
+     **/
+    delete Annotator.Editor.prototype.events["textarea keydown"];
 
     /**
      * Modifies Annotator.onHighlightMouseover to avoid showing the viewer if the
@@ -143,32 +236,41 @@ define(['jquery', 'underscore', 'annotator'], function ($, _, Annotator) {
         Annotator.prototype._setupViewer
     );
 
-    $.extend(true, Annotator.prototype, {
-        events: {
-            '.annotator-hl click': 'onHighlightClick',
-            '.annotator-viewer click': 'onNoteClick'
+    /**
+     * Modifies Annotator._setupWrapper to add a "click" event on '.annotator-hl'.
+     **/
+    Annotator.prototype._setupWrapper = _.compose(
+        function () {
+            this.element.on('click', '.annotator-hl', _.bind(this.onHighlightClick, this));
+            return this;
         },
+        Annotator.prototype._setupWrapper
+    );
 
+    $.extend(true, Annotator.prototype, {
         isFrozen: false,
         uid: _.uniqueId(),
 
         onHighlightClick: function (event) {
-            Annotator.Util.preventEventDefault(event);
-
-            if (!this.isFrozen) {
-                event.stopPropagation();
+            event.stopPropagation();
+            if (!this.editor.isShown()) {
+                this.unfreezeAll();
                 this.onHighlightMouseover.call(this, event);
+                Annotator.frozenSrc = this;
+                this.freezeAll();
             }
-            Annotator.frozenSrc = this;
-            this.freezeAll();
         },
 
         onNoteClick: function (event) {
+            var target = $(event.target);
             event.stopPropagation();
             Annotator.Util.preventEventDefault(event);
-            if (!$(event.target).is('.annotator-delete')) {
+
+            if (!(target.is('.annotator-delete') || target.is('.annotator-close'))) {
                 Annotator.frozenSrc = this;
                 this.freezeAll();
+            } else if (target.is('.annotator-close')) {
+                this.viewer.hide();
             }
         },
 
@@ -181,6 +283,7 @@ define(['jquery', 'underscore', 'annotator'], function ($, _, Annotator) {
                 $(document).on('click.edxnotes:freeze' + this.uid, _.bind(this.unfreeze, this));
                 this.isFrozen = true;
             }
+            return this;
         },
 
         unfreeze: function () {
@@ -192,23 +295,27 @@ define(['jquery', 'underscore', 'annotator'], function ($, _, Annotator) {
                     'mouseout':  this.startViewerHideTimer
                 });
                 this.viewer.hide();
-                $(document).off('click.edxnotes:freeze'+this.uid);
+                $(document).off('click.edxnotes:freeze' + this.uid);
                 this.isFrozen = false;
                 Annotator.frozenSrc = null;
             }
+            return this;
         },
 
         freezeAll: function () {
             _.invoke(Annotator._instances, 'freeze');
+            return this;
         },
 
         unfreezeAll: function () {
             _.invoke(Annotator._instances, 'unfreeze');
+            return this;
         },
 
         showFrozenViewer: function (annotations, location) {
             this.showViewer(annotations, location);
             this.freezeAll();
+            return this;
         }
     });
 });

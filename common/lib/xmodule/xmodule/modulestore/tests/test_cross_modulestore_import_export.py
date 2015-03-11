@@ -76,12 +76,66 @@ class MemoryCache(object):
         self._data[key] = value
 
 
-class MongoModulestoreBuilder(object):
+class MongoContentstoreBuilder(object):
+    """
+    A builder class for a MongoContentStore.
+    """
+    @contextmanager
+    def build(self):
+        """
+        A contextmanager that returns a MongoContentStore, and deletes its contents
+        when the context closes.
+        """
+        contentstore = MongoContentStore(
+            db='contentstore{}'.format(random.randint(0, 10000)),
+            collection='content',
+            **COMMON_DOCSTORE_CONFIG
+        )
+        contentstore.ensure_indexes()
+
+        try:
+            yield contentstore
+        finally:
+            # Delete the created database
+            contentstore._drop_database()  # pylint: disable=protected-access
+
+    def __repr__(self):
+        return 'MongoContentstoreBuilder()'
+
+
+class StoreBuilderBase(object):
+    """
+    Base class for all modulestore builders.
+    """
+    @contextmanager
+    def build(self, **kwargs):
+        """
+        Build the modulstore, optionally building the contentstore as well.
+        """
+        contentstore = kwargs.pop('contentstore', None)
+        if not contentstore:
+            with self.build_without_contentstore() as (contentstore, modulestore):
+                yield contentstore, modulestore
+        else:
+            with self.build_with_contentstore(contentstore) as modulestore:
+                yield modulestore
+
+    @contextmanager
+    def build_without_contentstore(self):
+        """
+        Build both the contentstore and the modulestore.
+        """
+        with MongoContentstoreBuilder().build() as contentstore:
+            with self.build_with_contentstore(contentstore) as modulestore:
+                yield contentstore, modulestore
+
+
+class MongoModulestoreBuilder(StoreBuilderBase):
     """
     A builder class for a DraftModuleStore.
     """
     @contextmanager
-    def build(self, contentstore):
+    def build_with_contentstore(self, contentstore):
         """
         A contextmanager that returns an isolated mongo modulestore, and then deletes
         all of its data at the end of the context.
@@ -101,7 +155,7 @@ class MongoModulestoreBuilder(object):
         fs_root = mkdtemp()
 
         # pylint: disable=attribute-defined-outside-init
-        self.modulestore = DraftModuleStore(
+        modulestore = DraftModuleStore(
             contentstore,
             doc_store_config,
             fs_root,
@@ -110,13 +164,13 @@ class MongoModulestoreBuilder(object):
             metadata_inheritance_cache_subsystem=MemoryCache(),
             xblock_mixins=XBLOCK_MIXINS,
         )
-        self.modulestore.ensure_indexes()
+        modulestore.ensure_indexes()
 
         try:
-            yield self.modulestore
+            yield modulestore
         finally:
             # Delete the created database
-            self.modulestore._drop_database()  # pylint: disable=protected-access
+            modulestore._drop_database()  # pylint: disable=protected-access
 
             # Delete the created directory on the filesystem
             rmtree(fs_root, ignore_errors=True)
@@ -124,19 +178,13 @@ class MongoModulestoreBuilder(object):
     def __repr__(self):
         return 'MongoModulestoreBuilder()'
 
-    def asset_collection(self):
-        """
-        Returns the collection storing the asset metadata.
-        """
-        return self.modulestore.asset_collection
 
-
-class VersioningModulestoreBuilder(object):
+class VersioningModulestoreBuilder(StoreBuilderBase):
     """
     A builder class for a VersioningModuleStore.
     """
     @contextmanager
-    def build(self, contentstore):
+    def build_with_contentstore(self, contentstore):
         """
         A contextmanager that returns an isolated versioning modulestore, and then deletes
         all of its data at the end of the context.
@@ -176,13 +224,13 @@ class VersioningModulestoreBuilder(object):
         return 'SplitModulestoreBuilder()'
 
 
-class XmlModulestoreBuilder(object):
+class XmlModulestoreBuilder(StoreBuilderBase):
     """
     A builder class for a XMLModuleStore.
     """
     # pylint: disable=unused-argument
     @contextmanager
-    def build(self, contentstore=None, course_ids=None):
+    def build_with_contentstore(self, contentstore=None, course_ids=None):
         """
         A contextmanager that returns an isolated xml modulestore
 
@@ -200,7 +248,7 @@ class XmlModulestoreBuilder(object):
         yield modulestore
 
 
-class MixedModulestoreBuilder(object):
+class MixedModulestoreBuilder(StoreBuilderBase):
     """
     A builder class for a MixedModuleStore.
     """
@@ -213,10 +261,10 @@ class MixedModulestoreBuilder(object):
         """
         self.store_builders = store_builders
         self.mappings = mappings or {}
-        self.modulestore = None
+        self.mixed_modulestore = None
 
     @contextmanager
-    def build(self, contentstore):
+    def build_with_contentstore(self, contentstore):
         """
         A contextmanager that returns a mixed modulestore built on top of modulestores
         generated by other builder classes.
@@ -227,7 +275,7 @@ class MixedModulestoreBuilder(object):
         """
         names, generators = zip(*self.store_builders)
 
-        with nested(*(gen.build(contentstore) for gen in generators)) as modulestores:
+        with nested(*(gen.build_with_contentstore(contentstore) for gen in generators)) as modulestores:
             # Make the modulestore creation function just return the already-created modulestores
             store_iterator = iter(modulestores)
             create_modulestore_instance = lambda *args, **kwargs: store_iterator.next()
@@ -235,7 +283,7 @@ class MixedModulestoreBuilder(object):
             # Generate a fake list of stores to give the already generated stores appropriate names
             stores = [{'NAME': name, 'ENGINE': 'This space deliberately left blank'} for name in names]
 
-            self.modulestore = MixedModuleStore(
+            self.mixed_modulestore = MixedModuleStore(
                 contentstore,
                 self.mappings,
                 stores,
@@ -243,7 +291,7 @@ class MixedModulestoreBuilder(object):
                 xblock_mixins=XBLOCK_MIXINS,
             )
 
-            yield self.modulestore
+            yield self.mixed_modulestore
 
     def __repr__(self):
         return 'MixedModulestoreBuilder({!r}, {!r})'.format(self.store_builders, self.mappings)
@@ -252,7 +300,7 @@ class MixedModulestoreBuilder(object):
         """
         Returns the collection storing the asset metadata.
         """
-        all_stores = self.modulestore.modulestores
+        all_stores = self.mixed_modulestore.modulestores
         if len(all_stores) > 1:
             return None
 
@@ -266,32 +314,6 @@ class MixedModulestoreBuilder(object):
             # Split stores all asset metadata in the structure collection.
             return store.db_connection.structures
 
-
-class MongoContentstoreBuilder(object):
-    """
-    A builder class for a MongoContentStore.
-    """
-    @contextmanager
-    def build(self):
-        """
-        A contextmanager that returns a MongoContentStore, and deletes its contents
-        when the context closes.
-        """
-        contentstore = MongoContentStore(
-            db='contentstore{}'.format(random.randint(0, 10000)),
-            collection='content',
-            **COMMON_DOCSTORE_CONFIG
-        )
-        contentstore.ensure_indexes()
-
-        try:
-            yield contentstore
-        finally:
-            # Delete the created database
-            contentstore._drop_database()
-
-    def __repr__(self):
-        return 'MongoContentstoreBuilder()'
 
 MIXED_MODULESTORE_BOTH_SETUP = MixedModulestoreBuilder([
     ('draft', MongoModulestoreBuilder()),
@@ -351,11 +373,11 @@ class CrossStoreXMLRoundtrip(CourseComparisonTest, PartitionTestCase):
         # Construct the contentstore for storing the first import
         with source_content_builder.build() as source_content:
             # Construct the modulestore for storing the first import (using the previously created contentstore)
-            with source_builder.build(source_content) as source_store:
+            with source_builder.build(contentstore=source_content) as source_store:
                 # Construct the contentstore for storing the second import
                 with dest_content_builder.build() as dest_content:
                     # Construct the modulestore for storing the second import (using the second contentstore)
-                    with dest_builder.build(dest_content) as dest_store:
+                    with dest_builder.build(contentstore=dest_content) as dest_store:
                         source_course_key = source_store.make_course_key('a', 'course', 'course')
                         dest_course_key = dest_store.make_course_key('a', 'course', 'course')
 

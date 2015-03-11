@@ -70,8 +70,29 @@ class UserDetail(generics.RetrieveAPIView):
 @mobile_view(is_user=True)
 class UserCourseStatus(views.APIView):
     """
-    Endpoints for getting and setting meta data
-    about a user's status within a given course.
+    **Use Case**
+
+        Get or update the ID of the module that the specified user last visited in the specified course.
+
+    **Example request**:
+
+        GET /api/mobile/v0.5/users/{username}/course_status_info/{course_id}
+
+        PATCH /api/mobile/v0.5/users/{username}/course_status_info/{course_id}
+
+            body:
+                last_visited_module_id={module_id}
+                modification_date={date}
+
+            The modification_date is optional. If it is present, the update will only take effect
+            if the modification_date is later than the modification_date saved on the server.
+
+    **Response Values**
+
+        * last_visited_module_id: The ID of the last module visited by the user in the course.
+
+        * last_visited_module_path: The ID of the modules in the path from the
+          last visited module to the course module.
     """
 
     http_method_names = ["get", "patch"]
@@ -86,15 +107,14 @@ class UserCourseStatus(views.APIView):
             course.id, request.user, course, depth=2)
 
         course_module = get_module_for_descriptor(request.user, request, course, field_data_cache, course.id)
-        current = course_module
 
-        path = []
-        child = current
-        while child:
-            path.append(child)
-            child = get_current_child(current)
-            if child:
-                current = child
+        path = [course_module]
+        chapter = get_current_child(course_module, min_depth=2)
+        if chapter is not None:
+            path.append(chapter)
+            section = get_current_child(chapter, min_depth=1)
+            if section is not None:
+                path.append(section)
 
         path.reverse()
         return path
@@ -139,48 +159,18 @@ class UserCourseStatus(views.APIView):
         save_positions_recursively_up(request.user, request, field_data_cache, module)
         return self._get_course_info(request, course)
 
-    @mobile_course_access()
+    @mobile_course_access(depth=2)
     def get(self, request, course, *args, **kwargs):  # pylint: disable=unused-argument
         """
-        **Use Case**
-
-            Get meta data about user's status within a specific course
-
-        **Example request**:
-
-            GET /api/mobile/v0.5/users/{username}/course_status_info/{course_id}
-
-        **Response Values**
-
-            * last_visited_module_id: The id of the last module visited by the user in the given course
-
-            * last_visited_module_path: The ids of the modules in the path from the last visited module
-              to the course module
+        Get the ID of the module that the specified user last visited in the specified course.
         """
 
         return self._get_course_info(request, course)
 
-    @mobile_course_access()
+    @mobile_course_access(depth=2)
     def patch(self, request, course, *args, **kwargs):  # pylint: disable=unused-argument
         """
-        **Use Case**
-
-            Update meta data about user's status within a specific course
-
-        **Example request**:
-
-            PATCH /api/mobile/v0.5/users/{username}/course_status_info/{course_id}
-            body:
-                last_visited_module_id={module_id}
-                modification_date={date}
-
-            modification_date is optional. If it is present, the update will only take effect
-            if modification_date is later than the modification_date saved on the server
-
-        **Response Values**
-
-            The same as doing a GET on this path
-
+        Update the ID of the module that the specified user last visited in the specified course.
         """
         module_id = request.DATA.get("last_visited_module_id")
         modification_date_string = request.DATA.get("modification_date")

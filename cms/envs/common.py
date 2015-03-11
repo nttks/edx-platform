@@ -35,7 +35,7 @@ import sys
 import lms.envs.common
 # Although this module itself may not use these imported variables, other dependent modules may.
 from lms.envs.common import (
-    USE_TZ, TECH_SUPPORT_EMAIL, PLATFORM_NAME, BUGS_EMAIL, DOC_STORE_CONFIG, ALL_LANGUAGES, WIKI_ENABLED, MODULESTORE,
+    USE_TZ, TECH_SUPPORT_EMAIL, PLATFORM_NAME, BUGS_EMAIL, DOC_STORE_CONFIG, DATA_DIR, ALL_LANGUAGES, WIKI_ENABLED,
     update_module_store_settings, ASSET_IGNORE_REGEX, COPYRIGHT_YEAR
 )
 from path import path
@@ -94,11 +94,9 @@ FEATURES = {
     # Hide any Personally Identifiable Information from application logs
     'SQUELCH_PII_IN_LOGS': False,
 
-    # Toggles the embargo functionality, which enable embargoing for particular courses
+    # Toggles the embargo functionality, which blocks users
+    # based on their location.
     'EMBARGO': False,
-
-    # Toggles the embargo site functionality, which enable embargoing for the whole site
-    'SITE_EMBARGOED': False,
 
     # Turn on/off Microsites feature
     'USE_MICROSITES': False,
@@ -111,9 +109,6 @@ FEATURES = {
 
     # Turn off Advanced Security by default
     'ADVANCED_SECURITY': False,
-
-    # Modulestore to use for new courses
-    'DEFAULT_STORE_FOR_NEW_COURSE': None,
 
     # Turn off Video Upload Pipeline through Studio, by default
     'ENABLE_VIDEO_UPLOAD_PIPELINE': False,
@@ -130,9 +125,7 @@ FEATURES = {
     'ENABLE_EDXNOTES': False,
 
     # Enable support for content libraries. Note that content libraries are
-    # only supported in courses using split mongo. Change the setting
-    # DEFAULT_STORE_FOR_NEW_COURSE to be 'split' to have future courses
-    # and libraries created with split.
+    # only supported in courses using split mongo.
     'ENABLE_CONTENT_LIBRARIES': False,
 
     # Milestones application flag
@@ -146,6 +139,12 @@ FEATURES = {
 
     # Toggle course entrance exams feature
     'ENTRANCE_EXAMS': False,
+
+    # Enable the courseware search functionality
+    'ENABLE_COURSEWARE_INDEX': False,
+
+    # Enable course reruns, which will always use the split modulestore
+    'ALLOW_COURSE_RERUNS': True,
 }
 
 ENABLE_JASMINE = False
@@ -311,6 +310,37 @@ XBLOCK_SELECT_FUNCTION = prefer_xmodules
 
 ############################ Modulestore Configuration ################################
 MODULESTORE_BRANCH = 'draft-preferred'
+
+MODULESTORE = {
+    'default': {
+        'ENGINE': 'xmodule.modulestore.mixed.MixedModuleStore',
+        'OPTIONS': {
+            'mappings': {},
+            'stores': [
+                {
+                    'NAME': 'split',
+                    'ENGINE': 'xmodule.modulestore.split_mongo.split_draft.DraftVersioningModuleStore',
+                    'DOC_STORE_CONFIG': DOC_STORE_CONFIG,
+                    'OPTIONS': {
+                        'default_class': 'xmodule.hidden_module.HiddenDescriptor',
+                        'fs_root': DATA_DIR,
+                        'render_template': 'edxmako.shortcuts.render_to_string',
+                    }
+                },
+                {
+                    'NAME': 'draft',
+                    'ENGINE': 'xmodule.modulestore.mongo.DraftMongoModuleStore',
+                    'DOC_STORE_CONFIG': DOC_STORE_CONFIG,
+                    'OPTIONS': {
+                        'default_class': 'xmodule.hidden_module.HiddenDescriptor',
+                        'fs_root': DATA_DIR,
+                        'render_template': 'edxmako.shortcuts.render_to_string',
+                    }
+                }
+            ]
+        }
+    }
+}
 
 ############################ DJANGO_BUILTINS ################################
 # Change DEBUG/TEMPLATE_DEBUG in your environment settings files, not here
@@ -694,6 +724,8 @@ INSTALLED_APPS = (
 
     # Additional problem types
     'edx_jsme',    # Molecular Structure
+
+    'openedx.core.djangoapps.content.course_structures',
 )
 
 
@@ -757,6 +789,7 @@ MAX_FAILED_LOGIN_ATTEMPTS_LOCKOUT_PERIOD_SECS = 15 * 60
 
 OPTIONAL_APPS = (
     'mentoring',
+    'edx_sga',
 
     # edx-ora2
     'submissions',
@@ -819,6 +852,7 @@ ADVANCED_COMPONENT_TYPES = [
     'graphical_slider_tool',
     'lti',
     'library_content',
+    'edx_sga',
     # XBlocks from pmitros repos are prototypes. They should not be used
     # except for edX Learning Sciences experiments on edge.edx.org without
     # further work to make them robust, maintainable, finalize data formats,
@@ -836,6 +870,11 @@ ADVANCED_COMPONENT_TYPES = [
     'schoolyourself_review',
     'schoolyourself_lesson',
     'pollxblock',
+
+    # Google Drive embedded components. These XBlocks allow one to
+    # embed public google drive documents and calendars within edX units
+    'google-document',
+    'google-calendar',
 ]
 
 # Adding components in this list will disable the creation of new problem for those
@@ -872,4 +911,12 @@ FILES_AND_UPLOAD_TYPE_FILTERS = {
         'application/vnd.ms-excel',
         'application/vnd.ms-powerpoint',
     ],
+}
+
+# Default to no Search Engine
+SEARCH_ENGINE = None
+ELASTIC_FIELD_MAPPINGS = {
+    "start_date": {
+        "type": "date"
+    }
 }

@@ -43,9 +43,9 @@ class CoursesTest(ModuleStoreTestCase):
             org='org', number='num', display_name='name'
         )
 
-        cms_url = u"//{}/course/org/num/name".format(CMS_BASE_TEST)
+        cms_url = u"//{}/course/{}".format(CMS_BASE_TEST, unicode(self.course.id))
         self.assertEqual(cms_url, get_cms_course_link(self.course))
-        cms_url = u"//{}/course/i4x://org/num/course/name".format(CMS_BASE_TEST)
+        cms_url = u"//{}/course/{}".format(CMS_BASE_TEST, unicode(self.course.location))
         self.assertEqual(cms_url, get_cms_block_link(self.course, 'course'))
 
 
@@ -148,7 +148,6 @@ class XmlCourseImageTestCase(XModuleXmlImportTest):
         self.assertEquals(course_image_url(course), u'/static/xml_test_course/before after.jpg')
 
 
-@override_settings(MODULESTORE=TEST_DATA_MOCK_MODULESTORE)
 class CoursesRenderTest(ModuleStoreTestCase):
     """Test methods related to rendering courses content."""
 
@@ -196,9 +195,10 @@ class CoursesRenderTest(ModuleStoreTestCase):
             self.assertIn("this module is temporarily unavailable", course_about)
 
 
-@override_settings(MODULESTORE=TEST_DATA_MIXED_TOY_MODULESTORE)
 class XmlCoursesRenderTest(ModuleStoreTestCase):
     """Test methods related to rendering courses content for an XML course."""
+    MODULESTORE = TEST_DATA_MIXED_TOY_MODULESTORE
+
     toy_course_key = SlashSeparatedCourseKey('edX', 'toy', '2012_Fall')
 
     def test_get_course_info_section_render(self):

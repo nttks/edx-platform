@@ -23,6 +23,7 @@ from xmodule.modulestore.tests.factories import CourseFactory, ItemFactory
 from util.milestones_helpers import (
     set_prerequisite_courses,
     seed_milestone_relationship_types,
+    get_prerequisite_courses_display,
 )
 
 from .helpers import LoginEnrollmentTestCase
@@ -32,12 +33,12 @@ REG_STR = "<form id=\"class_enroll_form\" method=\"post\" data-remote=\"true\" a
 SHIB_ERROR_STR = "The currently logged-in user account does not have permission to enroll in this course."
 
 
-@override_settings(MODULESTORE=TEST_DATA_MOCK_MODULESTORE)
 class AboutTestCase(LoginEnrollmentTestCase, ModuleStoreTestCase):
     """
     Tests about xblock.
     """
     def setUp(self):
+        super(AboutTestCase, self).setUp()
         self.course = CourseFactory.create()
         self.about = ItemFactory.create(
             category="about", parent_location=self.course.location,
@@ -132,9 +133,10 @@ class AboutTestCase(LoginEnrollmentTestCase, ModuleStoreTestCase):
         url = reverse('about_course', args=[unicode(course.id)])
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
-        self.assertIn("<span class=\"important-dates-item-text pre-requisite\">{} {}</span>"
-                      .format(pre_requisite_course.display_org_with_default,
-                              pre_requisite_course.display_number_with_default),
+        pre_requisite_courses = get_prerequisite_courses_display(course)
+        pre_requisite_course_about_url = reverse('about_course', args=[unicode(pre_requisite_courses[0]['key'])])
+        self.assertIn("<span class=\"important-dates-item-text pre-requisite\"><a href=\"{}\">{}</a></span>"
+                      .format(pre_requisite_course_about_url, pre_requisite_courses[0]['display']),
                       resp.content.strip('\n'))
 
     @patch.dict(settings.FEATURES, {'ENABLE_PREREQUISITE_COURSES': True, 'MILESTONES_APP': True})
@@ -168,9 +170,10 @@ class AboutTestCase(LoginEnrollmentTestCase, ModuleStoreTestCase):
         url = reverse('about_course', args=[unicode(course.id)])
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
-        self.assertIn("<span class=\"important-dates-item-text pre-requisite\">{} {}</span>"
-                      .format(pre_requisite_course.display_org_with_default,
-                              pre_requisite_course.display_number_with_default),
+        pre_requisite_courses = get_prerequisite_courses_display(course)
+        pre_requisite_course_about_url = reverse('about_course', args=[unicode(pre_requisite_courses[0]['key'])])
+        self.assertIn("<span class=\"important-dates-item-text pre-requisite\"><a href=\"{}\">{}</a></span>"
+                      .format(pre_requisite_course_about_url, pre_requisite_courses[0]['display']),
                       resp.content.strip('\n'))
 
         url = reverse('about_course', args=[unicode(pre_requisite_course.id)])
@@ -178,11 +181,12 @@ class AboutTestCase(LoginEnrollmentTestCase, ModuleStoreTestCase):
         self.assertEqual(resp.status_code, 200)
 
 
-@override_settings(MODULESTORE=TEST_DATA_MIXED_CLOSED_MODULESTORE)
 class AboutTestCaseXML(LoginEnrollmentTestCase, ModuleStoreTestCase):
     """
     Tests for the course about page
     """
+    MODULESTORE = TEST_DATA_MIXED_CLOSED_MODULESTORE
+
     # The following XML test course (which lives at common/test/data/2014)
     # is closed; we're testing that an about page still appears when
     # the course is already closed
@@ -208,7 +212,6 @@ class AboutTestCaseXML(LoginEnrollmentTestCase, ModuleStoreTestCase):
         self.assertIn(self.xml_data, resp.content)
 
 
-@override_settings(MODULESTORE=TEST_DATA_MOCK_MODULESTORE)
 class AboutWithCappedEnrollmentsTestCase(LoginEnrollmentTestCase, ModuleStoreTestCase):
     """
     This test case will check the About page when a course has a capped enrollment
@@ -217,6 +220,7 @@ class AboutWithCappedEnrollmentsTestCase(LoginEnrollmentTestCase, ModuleStoreTes
         """
         Set up the tests
         """
+        super(AboutWithCappedEnrollmentsTestCase, self).setUp()
         self.course = CourseFactory.create(metadata={"max_student_enrollments_allowed": 1})
 
         self.about = ItemFactory.create(
@@ -258,12 +262,12 @@ class AboutWithCappedEnrollmentsTestCase(LoginEnrollmentTestCase, ModuleStoreTes
         self.assertNotIn(REG_STR, resp.content)
 
 
-@override_settings(MODULESTORE=TEST_DATA_MOCK_MODULESTORE)
 class AboutWithInvitationOnly(ModuleStoreTestCase):
     """
     This test case will check the About page when a course is invitation only.
     """
     def setUp(self):
+        super(AboutWithInvitationOnly, self).setUp()
 
         self.course = CourseFactory.create(metadata={"invitation_only": True})
 
@@ -305,12 +309,12 @@ class AboutWithInvitationOnly(ModuleStoreTestCase):
 
 
 @patch.dict(settings.FEATURES, {'RESTRICT_ENROLL_BY_REG_METHOD': True})
-@override_settings(MODULESTORE=TEST_DATA_MOCK_MODULESTORE)
 class AboutTestCaseShibCourse(LoginEnrollmentTestCase, ModuleStoreTestCase):
     """
     Test cases covering about page behavior for courses that use shib enrollment domain ("shib courses")
     """
     def setUp(self):
+        super(AboutTestCaseShibCourse, self).setUp()
         self.course = CourseFactory.create(enrollment_domain="shib:https://idp.stanford.edu/")
 
         self.about = ItemFactory.create(
@@ -344,7 +348,6 @@ class AboutTestCaseShibCourse(LoginEnrollmentTestCase, ModuleStoreTestCase):
         self.assertIn(REG_STR, resp.content)
 
 
-@override_settings(MODULESTORE=TEST_DATA_MOCK_MODULESTORE)
 class AboutWithClosedEnrollment(ModuleStoreTestCase):
     """
     This test case will check the About page for a course that has enrollment start/end
@@ -388,7 +391,6 @@ class AboutWithClosedEnrollment(ModuleStoreTestCase):
         self.assertNotIn('<span class="important-dates-item-text">$10</span>', resp.content)
 
 
-@override_settings(MODULESTORE=TEST_DATA_MOCK_MODULESTORE)
 @patch.dict(settings.FEATURES, {'ENABLE_SHOPPING_CART': True})
 @patch.dict(settings.FEATURES, {'ENABLE_PAID_COURSE_REGISTRATION': True})
 class AboutPurchaseCourseTestCase(LoginEnrollmentTestCase, ModuleStoreTestCase):
@@ -542,3 +544,17 @@ class AboutPurchaseCourseTestCase(LoginEnrollmentTestCase, ModuleStoreTestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertIn("Course is full", resp.content)
         self.assertNotIn("Add buyme to Cart ($10)", resp.content)
+
+    def test_free_course_display(self):
+        """
+        Make sure other courses that don't have shopping cart enabled don't display the add-to-cart button
+        and don't display the course_price field if Cosmetic Price is disabled.
+        """
+        course = CourseFactory.create(org='MITx', number='free', display_name='Course For Free')
+        self.setup_user()
+        url = reverse('about_course', args=[course.id.to_deprecated_string()])
+
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+        self.assertNotIn("Add free to Cart (Free)", resp.content)
+        self.assertNotIn('<p class="important-dates-item-title">Price</p>', resp.content)

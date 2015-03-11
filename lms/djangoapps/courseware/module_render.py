@@ -1,3 +1,8 @@
+"""
+Module rendering
+"""
+
+import hashlib
 import json
 import logging
 import mimetypes
@@ -5,6 +10,7 @@ import mimetypes
 import static_replace
 import xblock.reference.plugins
 
+from collections import OrderedDict
 from functools import partial
 from requests.auth import HTTPBasicAuth
 import dogstats_wrapper as dog_stats_api
@@ -13,6 +19,8 @@ from opaque_keys import InvalidKeyError
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.cache import cache
+from django.core.context_processors import csrf
+from django.core.exceptions import PermissionDenied
 from django.core.urlresolvers import reverse
 from django.http import Http404, HttpResponse
 from django.utils.translation import ugettext as _
@@ -26,15 +34,14 @@ from courseware.models import StudentModule
 from lms.djangoapps.lms_xblock.field_data import LmsFieldData
 from lms.djangoapps.lms_xblock.runtime import LmsModuleSystem, unquote_slashes, quote_slashes
 from lms.djangoapps.lms_xblock.models import XBlockAsidesConfig
-from .module_utils import yield_dynamic_descriptor_descendents
 from edxmako.shortcuts import render_to_string
 from eventtracking import tracker
 from psychometrics.psychoanalyze import make_psychometrics_data_update_handler
-from student.models import anonymous_id_for_user, user_by_anonymous_id
+from student.models import anonymous_id_for_user, user_by_anonymous_id, EntranceExamConfiguration
 from xblock.core import XBlock
 from xblock.fields import Scope
 from xblock.runtime import KvsFieldData, KeyValueStore
-from xblock.exceptions import NoSuchHandlerError
+from xblock.exceptions import NoSuchHandlerError, NoSuchViewError
 from xblock.django.request import django_to_webob_request, webob_to_django_response
 from xmodule.error_module import ErrorDescriptor, NonStaffErrorDescriptor
 from xmodule.exceptions import NotFoundError, ProcessingError
@@ -60,7 +67,8 @@ from util.sandboxing import can_execute_unsafe_code, get_python_lib_zip
 if settings.FEATURES.get('MILESTONES_APP', False):
     from milestones import api as milestones_api
     from milestones.exceptions import InvalidMilestoneRelationshipTypeException
-    from util.milestones_helpers import serialize_user
+    from util.milestones_helpers import serialize_user, calculate_entrance_exam_score
+    from util.module_utils import yield_dynamic_descriptor_descendents
 
 log = logging.getLogger(__name__)
 
@@ -122,6 +130,15 @@ def _get_required_content(course, user):
             if milestone_path.get('content') and len(milestone_path['content']):
                 for content in milestone_path['content']:
                     required_content.append(content)
+
+    can_skip_entrance_exam = EntranceExamConfiguration.user_can_skip_entrance_exam(user, course.id)
+    # check if required_content has any entrance exam and user is allowed to skip it
+    # then remove it from required content
+    if required_content and getattr(course, 'entrance_exam_enabled', False) and can_skip_entrance_exam:
+        descriptors = [modulestore().get_item(UsageKey.from_string(content)) for content in required_content]
+        entrance_exam_contents = [unicode(descriptor.location)
+                                  for descriptor in descriptors if descriptor.is_entrance_exam]
+        required_content = list(set(required_content) - set(entrance_exam_contents))
     return required_content
 
 
@@ -383,7 +400,21 @@ def get_module_system_for_user(user, field_data_cache,
             request_token=request_token,
         )
 
-    def _fulfill_content_milestones(course_key, content_key, user_id):  # pylint: disable=unused-argument
+    def _calculate_entrance_exam_score(user, course_descriptor):
+        """
+        Internal helper to calculate a user's score for a course's entrance exam
+        """
+        exam_key = UsageKey.from_string(course_descriptor.entrance_exam_id)
+        exam_descriptor = modulestore().get_item(exam_key)
+        exam_module_generators = yield_dynamic_descriptor_descendents(
+            exam_descriptor,
+            inner_get_module
+        )
+        exam_modules = [module for module in exam_module_generators]
+        exam_score = calculate_entrance_exam_score(user, course_descriptor, exam_modules)
+        return exam_score
+
+    def _fulfill_content_milestones(user, course_key, content_key):
         """
         Internal helper to handle milestone fulfillments for the specified content module
         """
@@ -396,30 +427,9 @@ def get_module_system_for_user(user, field_data_cache,
             entrance_exam_enabled = getattr(course, 'entrance_exam_enabled', False)
             in_entrance_exam = getattr(content, 'in_entrance_exam', False)
             if entrance_exam_enabled and in_entrance_exam:
-                exam_key = UsageKey.from_string(course.entrance_exam_id)
-                exam_descriptor = modulestore().get_item(exam_key)
-                exam_modules = yield_dynamic_descriptor_descendents(
-                    exam_descriptor,
-                    inner_get_module
-                )
-                ignore_categories = ['course', 'chapter', 'sequential', 'vertical']
-                module_pcts = []
-                exam_pct = 0
-                for module in exam_modules:
-                    if module.graded and module.category not in ignore_categories:
-                        module_pct = 0
-                        try:
-                            student_module = StudentModule.objects.get(
-                                module_state_key=module.scope_ids.usage_id,
-                                student_id=user_id
-                            )
-                            if student_module.max_grade:
-                                module_pct = student_module.grade / student_module.max_grade
-                        except StudentModule.DoesNotExist:
-                            pass
-                        module_pcts.append(module_pct)
-                exam_pct = sum(module_pcts) / float(len(module_pcts))
+                exam_pct = _calculate_entrance_exam_score(user, course)
                 if exam_pct >= course.entrance_exam_minimum_score_pct:
+                    exam_key = UsageKey.from_string(course.entrance_exam_id)
                     relationship_types = milestones_api.get_milestone_relationship_types()
                     content_milestones = milestones_api.get_course_content_milestones(
                         course_key,
@@ -427,7 +437,7 @@ def get_module_system_for_user(user, field_data_cache,
                         relationship=relationship_types['FULFILLS']
                     )
                     # Add each milestone to the user's set...
-                    user = {'id': user_id}
+                    user = {'id': user.id}
                     for milestone in content_milestones:
                         milestones_api.add_user_milestone(user, milestone)
 
@@ -471,9 +481,9 @@ def get_module_system_for_user(user, field_data_cache,
         # thanks to the updated grading information that was just submitted
         if settings.FEATURES.get('MILESTONES_APP', False):
             _fulfill_content_milestones(
+                user,
                 course_id,
                 descriptor.location,
-                user_id
             )
 
     def publish(block, event_type, event):
@@ -599,6 +609,8 @@ def get_module_system_for_user(user, field_data_cache,
 
     field_data = LmsFieldData(descriptor._field_data, student_data)  # pylint: disable=protected-access
 
+    user_is_staff = has_access(user, u'staff', descriptor.location, course_id)
+
     system = LmsModuleSystem(
         track_function=track_function,
         render_template=render_to_string,
@@ -645,10 +657,10 @@ def get_module_system_for_user(user, field_data_cache,
             'i18n': ModuleI18nService(),
             'fs': xblock.reference.plugins.FSService(),
             'field-data': field_data,
-            'user': DjangoXBlockUserService(user),
+            'user': DjangoXBlockUserService(user, user_is_staff=user_is_staff),
         },
         get_user_role=lambda: get_user_role(user, course_id),
-        descriptor_runtime=descriptor.runtime,
+        descriptor_runtime=descriptor._runtime,  # pylint: disable=protected-access
         rebind_noauth_module_to_user=rebind_noauth_module_to_user,
         user_location=user_location,
         request_token=request_token,
@@ -669,7 +681,7 @@ def get_module_system_for_user(user, field_data_cache,
             make_psychometrics_data_update_handler(course_id, user, descriptor.location)
         )
 
-    system.set(u'user_is_staff', has_access(user, u'staff', descriptor.location, course_id))
+    system.set(u'user_is_staff', user_is_staff)
     system.set(u'user_is_admin', has_access(user, u'staff', 'global'))
 
     # make an ErrorDescriptor -- assuming that the descriptor's system is ok
@@ -787,7 +799,7 @@ def handle_xblock_callback_noauth(request, course_id, usage_id, handler, suffix=
     """
     request.user.known = False
 
-    return _invoke_xblock_handler(request, course_id, usage_id, handler, suffix, request.user)
+    return _invoke_xblock_handler(request, course_id, usage_id, handler, suffix)
 
 
 def handle_xblock_callback(request, course_id, usage_id, handler, suffix=None):
@@ -808,7 +820,7 @@ def handle_xblock_callback(request, course_id, usage_id, handler, suffix=None):
     if not request.user.is_authenticated():
         return HttpResponse('Unauthenticated', status=403)
 
-    return _invoke_xblock_handler(request, course_id, usage_id, handler, suffix, request.user)
+    return _invoke_xblock_handler(request, course_id, usage_id, handler, suffix)
 
 
 def xblock_resource(request, block_type, uri):  # pylint: disable=unused-argument
@@ -821,37 +833,26 @@ def xblock_resource(request, block_type, uri):  # pylint: disable=unused-argumen
     except IOError:
         log.info('Failed to load xblock resource', exc_info=True)
         raise Http404
-    except Exception:  # pylint: disable-msg=broad-except
+    except Exception:  # pylint: disable=broad-except
         log.error('Failed to load xblock resource', exc_info=True)
         raise Http404
     mimetype, _ = mimetypes.guess_type(uri)
     return HttpResponse(content, mimetype=mimetype)
 
 
-def _invoke_xblock_handler(request, course_id, usage_id, handler, suffix, user):
+def _get_module_by_usage_id(request, course_id, usage_id):
     """
-    Invoke an XBlock handler, either authenticated or not.
+    Gets a module instance based on its `usage_id` in a course, for a given request/user
 
-    Arguments:
-        request (HttpRequest): the current request
-        course_id (str): A string of the form org/course/run
-        usage_id (str): A string of the form i4x://org/course/category/name@revision
-        handler (str): The name of the handler to invoke
-        suffix (str): The suffix to pass to the handler when invoked
-        user (User): The currently logged in user
-
+    Returns (instance, tracking_context)
     """
+    user = request.user
+
     try:
         course_id = SlashSeparatedCourseKey.from_deprecated_string(course_id)
         usage_key = course_id.make_usage_key_from_deprecated_string(unquote_slashes(usage_id))
     except InvalidKeyError:
         raise Http404("Invalid location")
-
-    # Check submitted files
-    files = request.FILES or {}
-    error_msg = _check_files_limits(files)
-    if error_msg:
-        return HttpResponse(json.dumps({'success': False, 'msg': error_msg}))
 
     try:
         descriptor = modulestore().get_item(usage_key)
@@ -865,13 +866,13 @@ def _invoke_xblock_handler(request, course_id, usage_id, handler, suffix, user):
         )
         raise Http404
 
-    tracking_context_name = 'module_callback_handler'
     tracking_context = {
         'module': {
             'display_name': descriptor.display_name_with_default,
             'usage_key': unicode(descriptor.location),
         }
     }
+
     # For blocks that are inherited from a content library, we add some additional metadata:
     if descriptor_orig_usage_key is not None:
         tracking_context['module']['original_usage_key'] = unicode(descriptor_orig_usage_key)
@@ -890,6 +891,30 @@ def _invoke_xblock_handler(request, course_id, usage_id, handler, suffix, user):
         log.debug("No module %s for user %s -- access denied?", usage_key, user)
         raise Http404
 
+    return (instance, tracking_context)
+
+
+def _invoke_xblock_handler(request, course_id, usage_id, handler, suffix):
+    """
+    Invoke an XBlock handler, either authenticated or not.
+
+    Arguments:
+        request (HttpRequest): the current request
+        course_id (str): A string of the form org/course/run
+        usage_id (str): A string of the form i4x://org/course/category/name@revision
+        handler (str): The name of the handler to invoke
+        suffix (str): The suffix to pass to the handler when invoked
+    """
+
+    # Check submitted files
+    files = request.FILES or {}
+    error_msg = _check_files_limits(files)
+    if error_msg:
+        return JsonResponse(object={'success': False, 'msg': error_msg}, status=413)
+
+    instance, tracking_context = _get_module_by_usage_id(request, course_id, usage_id)
+
+    tracking_context_name = 'module_callback_handler'
     req = django_to_webob_request(request)
     try:
         with tracker.get_tracker().context(tracking_context_name, tracking_context):
@@ -916,6 +941,52 @@ def _invoke_xblock_handler(request, course_id, usage_id, handler, suffix, user):
         raise
 
     return webob_to_django_response(resp)
+
+
+def hash_resource(resource):
+    """
+    Hash a :class:`xblock.fragment.FragmentResource
+    """
+    md5 = hashlib.md5()
+    for data in resource:
+        md5.update(repr(data))
+    return md5.hexdigest()
+
+
+def xblock_view(request, course_id, usage_id, view_name):
+    """
+    Returns the rendered view of a given XBlock, with related resources
+
+    Returns a json object containing two keys:
+        html: The rendered html of the view
+        resources: A list of tuples where the first element is the resource hash, and
+            the second is the resource description
+    """
+    if not settings.FEATURES.get('ENABLE_XBLOCK_VIEW_ENDPOINT', False):
+        log.warn("Attempt to use deactivated XBlock view endpoint -"
+                 " see FEATURES['ENABLE_XBLOCK_VIEW_ENDPOINT']")
+        raise Http404
+
+    if not request.user.is_authenticated():
+        raise PermissionDenied
+
+    instance, _ = _get_module_by_usage_id(request, course_id, usage_id)
+
+    try:
+        fragment = instance.render(view_name, context=request.GET)
+    except NoSuchViewError:
+        log.exception("Attempt to render missing view on %s: %s", instance, view_name)
+        raise Http404
+
+    hashed_resources = OrderedDict()
+    for resource in fragment.resources:
+        hashed_resources[hash_resource(resource)] = resource
+
+    return JsonResponse({
+        'html': fragment.content,
+        'resources': hashed_resources.items(),
+        'csrf_token': unicode(csrf(request)['csrf_token']),
+    })
 
 
 def get_score_bucket(grade, max_grade):

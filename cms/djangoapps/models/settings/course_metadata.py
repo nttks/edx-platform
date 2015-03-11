@@ -15,8 +15,8 @@ class CourseMetadata(object):
     editable metadata.
     '''
     # The list of fields that wouldn't be shown in Advanced Settings.
-    # Should not be used directly. Instead the filtered_list method should be used if the field needs to be filtered
-    # depending on the feature flag.
+    # Should not be used directly. Instead the filtered_list method should
+    # be used if the field needs to be filtered depending on the feature flag.
     FILTERED_LIST = [
         'xml_attributes',
         'start',
@@ -40,6 +40,8 @@ class CourseMetadata(object):
         'entrance_exam_enabled',
         'entrance_exam_minimum_score_pct',
         'entrance_exam_id',
+        'is_entrance_exam',
+        'in_entrance_exam',
     ]
 
     @classmethod
@@ -115,8 +117,8 @@ class CourseMetadata(object):
                 if hasattr(descriptor, key) and getattr(descriptor, key) != val:
                     key_values[key] = descriptor.fields[key].from_json(val)
             except (TypeError, ValueError) as err:
-                raise ValueError(_("Incorrect format for field '{name}'. {detailed_message}".format(
-                    name=model['display_name'], detailed_message=err.message)))
+                raise ValueError(_("Incorrect format for field '{name}'. {detailed_message}").format(
+                    name=model['display_name'], detailed_message=err.message))
 
         return cls.update_from_dict(key_values, descriptor, user)
 

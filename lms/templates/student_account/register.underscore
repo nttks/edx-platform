@@ -3,7 +3,7 @@
     <ul class="message-copy"></ul>
 </div>
 
-<form id="register" autocomplete="off">
+<form id="register" class="register-form" autocomplete="off" tabindex="-1">
     <% if (context.currentProvider) { %>
         <div class="status" aria-hidden="false">
             <p class="message-copy">
@@ -11,7 +11,7 @@
                 <%- _.sprintf( gettext("We just need a little more information before you start learning with %(platformName)s."), context ) %>
             </p>
         </div>
-    <% } else {  %>
+    <% } else if ( context.providers.length > 0 ) {  %>
         <div class="login-providers">
             <div class="section-title lines">
                 <h2>
@@ -28,13 +28,18 @@
             <%  }
             }); %>
         </div>
+        <div class="section-title lines">
+            <h2>
+                <span class="text"><%- gettext("or create a new one here") %></span>
+            </h2>
+        </div>
+    <% } else { %>
+        <div class="section-title lines">
+            <h2>
+                <span class="text"><%- gettext("Create a new account") %></span>
+            </h2>
+        </div>
     <% } %>
-
-    <div class="section-title lines">
-        <h2>
-            <span class="text"><%- gettext("or create a new one here") %></span>
-        </h2>
-    </div>
 
     <%= context.fields %>
 

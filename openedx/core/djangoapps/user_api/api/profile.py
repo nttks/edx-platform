@@ -14,7 +14,9 @@ from pytz import UTC
 import analytics
 
 from eventtracking import tracker
-from ..models import User, UserProfile, UserPreference, UserOrgTag
+from ..accounts import NAME_MIN_LENGTH
+from ..accounts.views import AccountView
+from ..models import User, UserPreference, UserOrgTag
 from ..helpers import intercept_errors
 
 log = logging.getLogger(__name__)
@@ -30,94 +32,13 @@ class ProfileUserNotFound(ProfileRequestError):
     pass
 
 
-class ProfileInvalidField(ProfileRequestError):
-    """ The proposed value for a field is not in a valid format. """
-
-    def __init__(self, field, value):
-        super(ProfileInvalidField, self).__init__()
-        self.field = field
-        self.value = value
-
-    def __str__(self):
-        return u"Invalid value '{value}' for profile field '{field}'".format(
-            value=self.value,
-            field=self.field
-        )
-
-
 class ProfileInternalError(Exception):
     """ An error occurred in an API call. """
     pass
 
 
 FULL_NAME_MAX_LENGTH = 255
-FULL_NAME_MIN_LENGTH = 2
-
-
-@intercept_errors(ProfileInternalError, ignore_errors=[ProfileRequestError])
-def profile_info(username):
-    """Retrieve a user's profile information.
-
-    Searches either by username or email.
-
-    At least one of the keyword args must be provided.
-
-    Arguments:
-        username (unicode): The username of the account to retrieve.
-
-    Returns:
-        dict: If profile information was found.
-        None: If the provided username did not match any profiles.
-
-    """
-    try:
-        profile = UserProfile.objects.get(user__username=username)
-    except UserProfile.DoesNotExist:
-        return None
-
-    profile_dict = {
-        "username": profile.user.username,
-        "email": profile.user.email,
-        "full_name": profile.name,
-        "level_of_education": profile.level_of_education,
-        "mailing_address": profile.mailing_address,
-        "year_of_birth": profile.year_of_birth,
-        "goals": profile.goals,
-        "city": profile.city,
-        "country": unicode(profile.country),
-    }
-
-    return profile_dict
-
-
-@intercept_errors(ProfileInternalError, ignore_errors=[ProfileRequestError])
-def update_profile(username, full_name=None):
-    """Update a user's profile.
-
-    Arguments:
-        username (unicode): The username associated with the account.
-
-    Keyword Arguments:
-        full_name (unicode): If provided, set the user's full name to this value.
-
-    Returns:
-        None
-
-    Raises:
-        ProfileRequestError: If there is no profile matching the provided username.
-
-    """
-    try:
-        profile = UserProfile.objects.get(user__username=username)
-    except UserProfile.DoesNotExist:
-        raise ProfileUserNotFound
-
-    if full_name is not None:
-        name_length = len(full_name)
-        if name_length > FULL_NAME_MAX_LENGTH or name_length < FULL_NAME_MIN_LENGTH:
-            raise ProfileInvalidField("full_name", full_name)
-        else:
-            profile.update_name(full_name)
+FULL_NAME_MIN_LENGTH = NAME_MIN_LENGTH
 
 
 @intercept_errors(ProfileInternalError, ignore_errors=[ProfileRequestError])
@@ -185,22 +106,19 @@ def update_email_opt_in(username, org, optin):
         None
 
     Raises:
-        ProfileUserNotFound: Raised when the username specified is not associated with a user.
+        AccountUserNotFound: Raised when the username specified is not associated with a user.
 
     """
-    try:
-        user = User.objects.get(username=username)
-    except User.DoesNotExist:
-        raise ProfileUserNotFound
-
-    profile = UserProfile.objects.get(user=user)
+    account_settings = AccountView.get_serialized_account(username)
+    year_of_birth = account_settings['year_of_birth']
     of_age = (
-        profile.year_of_birth is None or  # If year of birth is not set, we assume user is of age.
-        datetime.datetime.now(UTC).year - profile.year_of_birth >  # pylint: disable=maybe-no-member
+        year_of_birth is None or  # If year of birth is not set, we assume user is of age.
+        datetime.datetime.now(UTC).year - year_of_birth >  # pylint: disable=maybe-no-member
         getattr(settings, 'EMAIL_OPTIN_MINIMUM_AGE', 13)
     )
 
     try:
+        user = User.objects.get(username=username)
         preference, _ = UserOrgTag.objects.get_or_create(
             user=user, org=org, key='email-optin'
         )

@@ -12,7 +12,7 @@ from django.utils.translation import ugettext as _, ugettext_noop
 from django.views.decorators.http import require_GET, require_http_methods
 import rfc6266
 
-from edxval.api import create_video, get_videos_for_ids
+from edxval.api import create_video, get_videos_for_ids, SortDirection, VideoSortField
 from opaque_keys.edx.keys import CourseKey
 
 from contentstore.models import VideoUploadConfig
@@ -48,10 +48,10 @@ class StatusDisplayStrings(object):
     # Translators: This is the status for a video that the servers have successfully processed
     _COMPLETE = ugettext_noop("Complete")
     # Translators: This is the status for a video that the servers have failed to process
-    _FAILED = ugettext_noop("Failed"),
+    _FAILED = ugettext_noop("Failed")
     # Translators: This is the status for a video for which an invalid
     # processing token was provided in the course settings
-    _INVALID_TOKEN = ugettext_noop("Invalid Token"),
+    _INVALID_TOKEN = ugettext_noop("Invalid Token")
     # Translators: This is the status for a video that is in an unknown state
     _UNKNOWN = ugettext_noop("Unknown")
 
@@ -153,7 +153,7 @@ def video_encodings_download(request, course_key_string):
                 (duration_col, duration_val),
                 (added_col, video["created"].isoformat()),
                 (video_id_col, video["edx_video_id"]),
-                (status_col, StatusDisplayStrings.get(video["status"])),
+                (status_col, video["status"]),
             ] +
             [
                 (get_profile_header(encoded_video["profile"]), encoded_video["url"])
@@ -177,7 +177,11 @@ def video_encodings_download(request, course_key_string):
     )
     writer = csv.DictWriter(
         response,
-        [name_col, duration_col, added_col, video_id_col, status_col] + profile_cols,
+        [
+            col_name.encode("utf-8")
+            for col_name
+            in [name_col, duration_col, added_col, video_id_col, status_col] + profile_cols
+        ],
         dialect=csv.excel
     )
     writer.writeheader()
@@ -218,7 +222,7 @@ def _get_videos(course):
         for v in modulestore().get_all_asset_metadata(course.id, VIDEO_ASSET_TYPE)
     ]
 
-    videos = list(get_videos_for_ids(edx_videos_ids))
+    videos = list(get_videos_for_ids(edx_videos_ids, VideoSortField.created, SortDirection.desc))
 
     # convert VAL's status to studio's Video Upload feature status.
     for video in videos:

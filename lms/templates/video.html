@@ -121,8 +121,8 @@
                   % else:
                   <li class="a11y-menu-item">
                   % endif
-		      ## This is necessary so we don't scrape 'display_name' as a string.
-		      <% dname = item['display_name'] %>
+                  ## This is necessary so we don't scrape 'display_name' as a string.
+                  <% dname = item['display_name'] %>
                       <a class="a11y-menu-item-link" href="#${item['value']}" title="${_(dname)}" data-value="${item['value']}">
                         ${_(dname)}
                       </a>
@@ -141,5 +141,37 @@
             ${('<a href="%s" target="_blank">' + _('Download Handout') + '</a>') % handout}
         </li>
     % endif
+
+    % if branding_info:
+      <li id="branding" class="branding">
+        <span class="host-tag">${branding_info['logo_tag']}</span>
+        <a href="${branding_info['url']}" target="_blank" title="${branding_info['logo_tag']}"><img class="brand-logo" src="${branding_info['logo_src']}" alt="${branding_info['logo_tag']}" /></a>
+      </li>
+    % endif
   </ul>
 </div>
+% if cdn_eval:
+<script>
+  function sendMetricToGraphite(metricName, value) {
+    var url = "${cdn_eval_endpoint}";
+    var request = new XMLHttpRequest();
+    request.open("POST", url, true);  // send asynchronously
+    request.send(metricName + " " + value);
+  };
+  var cdnStartTime, beaconSent = false;
+  function initializeCDNExperiment() {
+    cdnStartTime = Date.now();
+    $("#video_${id}").bind("html5:canplaythrough", null, function() {
+      if (!beaconSent) {
+        timeElapsed = Date.now() - cdnStartTime;
+        sendMetricToGraphite("loadtime_${cdn_exp_group}", timeElapsed);
+      }
+      beaconSent = true;
+    });
+  }
+  $("#video_${id}").bind("initialize", null, initializeCDNExperiment);
+  if ($("#video_${id}").hasClass("is-initialized")) {
+    initializeCDNExperiment();
+  }
+</script>
+% endif;

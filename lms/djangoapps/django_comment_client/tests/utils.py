@@ -1,8 +1,6 @@
-from django.test.utils import override_settings
 from mock import patch
 
 from openedx.core.djangoapps.course_groups.models import CourseUserGroup
-from xmodule.modulestore.tests.django_utils import TEST_DATA_MOCK_MODULESTORE
 from django_comment_common.models import Role
 from django_comment_common.utils import seed_permissions_roles
 from student.tests.factories import CourseEnrollmentFactory, UserFactory
@@ -10,7 +8,6 @@ from xmodule.modulestore.tests.factories import CourseFactory
 from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
 
 
-@override_settings(MODULESTORE=TEST_DATA_MOCK_MODULESTORE)
 class CohortedContentTestCase(ModuleStoreTestCase):
     """
     Sets up a course with a student, a moderator and their cohorts.

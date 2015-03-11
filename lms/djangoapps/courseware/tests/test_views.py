@@ -11,13 +11,16 @@ import ddt
 from django.conf import settings
 from django.contrib.auth.models import User, AnonymousUser
 from django.core.urlresolvers import reverse
-from django.http import Http404
+from django.http import Http404, HttpResponseBadRequest
 from django.test import TestCase
 from django.test.client import RequestFactory
 from django.test.utils import override_settings
+from certificates import api as certs_api
+from certificates.models import CertificateStatuses, CertificateGenerationConfiguration
+from certificates.tests.factories import GeneratedCertificateFactory
 from edxmako.middleware import MakoMiddleware
 from edxmako.tests import mako_middleware_process_request
-from mock import MagicMock, patch, create_autospec
+from mock import MagicMock, patch, create_autospec, Mock
 from opaque_keys.edx.locations import Location, SlashSeparatedCourseKey
 
 import courseware.views as views
@@ -35,13 +38,14 @@ from util.tests.test_date_utils import fake_ugettext, fake_pgettext
 from util.views import ensure_valid_course_key
 
 
-@override_settings(MODULESTORE=TEST_DATA_MIXED_TOY_MODULESTORE)
-class TestJumpTo(TestCase):
+class TestJumpTo(ModuleStoreTestCase):
     """
     Check the jumpto link for a course.
     """
+    MODULESTORE = TEST_DATA_MIXED_TOY_MODULESTORE
 
     def setUp(self):
+        super(TestJumpTo, self).setUp()
         # Use toy course from XML
         self.course_key = SlashSeparatedCourseKey('edX', 'toy', '2012_Fall')
 
@@ -76,12 +80,12 @@ class TestJumpTo(TestCase):
 
 
 @ddt.ddt
-@override_settings(MODULESTORE=TEST_DATA_MOCK_MODULESTORE)
-class ViewsTestCase(TestCase):
+class ViewsTestCase(ModuleStoreTestCase):
     """
     Tests for views.py methods.
     """
     def setUp(self):
+        super(ViewsTestCase, self).setUp()
         self.course = CourseFactory.create()
         self.chapter = ItemFactory.create(category='chapter', parent_location=self.course.location)  # pylint: disable=no-member
         self.section = ItemFactory.create(category='sequential', parent_location=self.chapter.location, due=datetime(2013, 9, 18, 11, 30, 00))
@@ -198,6 +202,24 @@ class ViewsTestCase(TestCase):
         mock_course = MagicMock()
         mock_course.id = self.course_key
         self.assertTrue(views.registered_for_course(mock_course, self.user))
+
+    @override_settings(PAID_COURSE_REGISTRATION_CURRENCY=["USD", "$"])
+    def test_get_cosmetic_display_price(self):
+        """
+        Check that get_cosmetic_display_price() returns the correct price given its inputs.
+        """
+        registration_price = 99
+        self.course.cosmetic_display_price = 10
+        # Since registration_price is set, it overrides the cosmetic_display_price and should be returned
+        self.assertEqual(views.get_cosmetic_display_price(self.course, registration_price), "$99")
+
+        registration_price = 0
+        # Since registration_price is not set, cosmetic_display_price should be returned
+        self.assertEqual(views.get_cosmetic_display_price(self.course, registration_price), "$10")
+
+        self.course.cosmetic_display_price = 0
+        # Since both prices are not set, there is no price, thus "Free"
+        self.assertEqual(views.get_cosmetic_display_price(self.course, registration_price), "Free")
 
     def test_jump_to_invalid(self):
         # TODO add a test for invalid location
@@ -351,13 +373,17 @@ class ViewsTestCase(TestCase):
         # in the label escaped as expected.
         self._email_opt_in_checkbox(response, cgi.escape(self.org_html))
 
-    @patch.dict(settings.FEATURES, {'IS_EDX_DOMAIN': True})
+    @patch.dict(settings.FEATURES, {
+        'IS_EDX_DOMAIN': True,
+        'ENABLE_MKTG_EMAIL_OPT_IN': True
+    })
     def test_mktg_about_language_edx_domain(self):
         # Since we're in an edx-controlled domain, and our marketing site
         # supports only English, override the language setting
         # and use English.
-        response = self._load_mktg_about(language='eo')
+        response = self._load_mktg_about(language='eo', org=self.org_html)
         self.assertContains(response, "Enroll in")
+        self.assertContains(response, "and learn about its other programs")
 
     @patch.dict(settings.FEATURES, {'IS_EDX_DOMAIN': False})
     def test_mktg_about_language_openedx(self):
@@ -447,7 +473,7 @@ class ViewsTestCase(TestCase):
 
 
 # setting TIME_ZONE_DISPLAYED_FOR_DEADLINES explicitly
-@override_settings(MODULESTORE=TEST_DATA_MOCK_MODULESTORE, TIME_ZONE_DISPLAYED_FOR_DEADLINES="UTC")
+@override_settings(TIME_ZONE_DISPLAYED_FOR_DEADLINES="UTC")
 class BaseDueDateTests(ModuleStoreTestCase):
     """
     Base class that verifies that due dates are rendered correctly on a page
@@ -475,6 +501,7 @@ class BaseDueDateTests(ModuleStoreTestCase):
         return course
 
     def setUp(self):
+        super(BaseDueDateTests, self).setUp()
         self.request_factory = RequestFactory()
         self.user = UserFactory.create()
         self.request = self.request_factory.get("foo")
@@ -562,7 +589,6 @@ class TestAccordionDueDate(BaseDueDateTests):
         )
 
 
-@override_settings(MODULESTORE=TEST_DATA_MOCK_MODULESTORE)
 class StartDateTests(ModuleStoreTestCase):
     """
     Test that start dates are properly localized and displayed on the student
@@ -570,6 +596,7 @@ class StartDateTests(ModuleStoreTestCase):
     """
 
     def setUp(self):
+        super(StartDateTests, self).setUp()
         self.request_factory = RequestFactory()
         self.user = UserFactory.create()
         self.request = self.request_factory.get("foo")
@@ -617,13 +644,13 @@ class StartDateTests(ModuleStoreTestCase):
         self.assertIn("2015-JULY-17", text)
 
 
-@override_settings(MODULESTORE=TEST_DATA_MOCK_MODULESTORE)
 class ProgressPageTests(ModuleStoreTestCase):
     """
     Tests that verify that the progress page works correctly.
     """
 
     def setUp(self):
+        super(ProgressPageTests, self).setUp()
         self.request_factory = RequestFactory()
         self.user = UserFactory.create()
         self.request = self.request_factory.get("foo")
@@ -651,6 +678,20 @@ class ProgressPageTests(ModuleStoreTestCase):
         resp = views.progress(self.request, course_id=self.course.id.to_deprecated_string())
         self.assertEqual(resp.status_code, 200)
 
+    def test_generate_cert_config(self):
+        resp = views.progress(self.request, course_id=unicode(self.course.id))
+        self.assertNotContains(resp, 'Create Your Certificate')
+
+        # Enable the feature, but do not enable it for this course
+        CertificateGenerationConfiguration(enabled=True).save()
+        resp = views.progress(self.request, course_id=unicode(self.course.id))
+        self.assertNotContains(resp, 'Create Your Certificate')
+
+        # Enable certificate generation for this course
+        certs_api.set_cert_generation_enabled(self.course.id, True)
+        resp = views.progress(self.request, course_id=unicode(self.course.id))
+        self.assertContains(resp, 'Create Your Certificate')
+
 
 class VerifyCourseKeyDecoratorTests(TestCase):
     """
@@ -658,6 +699,8 @@ class VerifyCourseKeyDecoratorTests(TestCase):
     """
 
     def setUp(self):
+        super(VerifyCourseKeyDecoratorTests, self).setUp()
+
         self.request = RequestFactory().get("foo")
         self.valid_course_id = "edX/test/1"
         self.invalid_course_id = "edX/"
@@ -673,3 +716,146 @@ class VerifyCourseKeyDecoratorTests(TestCase):
         view_function = ensure_valid_course_key(mocked_view)
         self.assertRaises(Http404, view_function, self.request, course_id=self.invalid_course_id)
         self.assertFalse(mocked_view.called)
+
+
+class IsCoursePassedTests(ModuleStoreTestCase):
+    """
+    Tests for the is_course_passed helper function
+    """
+
+    def setUp(self):
+        super(IsCoursePassedTests, self).setUp()
+
+        self.student = UserFactory()
+        self.course = CourseFactory.create(
+            org='edx',
+            number='verified',
+            display_name='Verified Course',
+            grade_cutoffs={'cutoff': 0.75, 'Pass': 0.5}
+        )
+        self.request = RequestFactory()
+
+    def test_user_fails_if_not_clear_exam(self):
+        # If user has not grade then false will return
+        self.assertFalse(views.is_course_passed(self.course, None, self.student, self.request))
+
+    @patch('courseware.grades.grade', Mock(return_value={'percent': 0.9}))
+    def test_user_pass_if_percent_appears_above_passing_point(self):
+        # Mocking the grades.grade
+        # If user has above passing marks then True will return
+        self.assertTrue(views.is_course_passed(self.course, None, self.student, self.request))
+
+    @patch('courseware.grades.grade', Mock(return_value={'percent': 0.2}))
+    def test_user_fail_if_percent_appears_below_passing_point(self):
+        # Mocking the grades.grade
+        # If user has below passing marks then False will return
+        self.assertFalse(views.is_course_passed(self.course, None, self.student, self.request))
+
+
+class GenerateUserCertTests(ModuleStoreTestCase):
+    """
+    Tests for the view function Generated User Certs
+    """
+
+    def setUp(self):
+        super(GenerateUserCertTests, self).setUp()
+
+        self.student = UserFactory(username='dummy', password='123456', email='test@mit.edu')
+        self.course = CourseFactory.create(
+            org='edx',
+            number='verified',
+            display_name='Verified Course',
+            grade_cutoffs={'cutoff': 0.75, 'Pass': 0.5}
+        )
+        self.enrollment = CourseEnrollment.enroll(self.student, self.course.id, mode='honor')
+        self.request = RequestFactory()
+        self.client.login(username=self.student, password='123456')
+        self.url = reverse('generate_user_cert', kwargs={'course_id': unicode(self.course.id)})
+
+    def test_user_with_out_passing_grades(self):
+        # If user has no grading then json will return failed message and badrequest code
+        resp = self.client.post(self.url)
+        self.assertEqual(resp.status_code, HttpResponseBadRequest.status_code)
+        self.assertIn("Your certificate will be available when you pass the course.", resp.content)
+
+    @patch('courseware.grades.grade', Mock(return_value={'grade': 'Pass', 'percent': 0.75}))
+    @override_settings(CERT_QUEUE='certificates', SEGMENT_IO_LMS_KEY="foobar", FEATURES={'SEGMENT_IO_LMS': True})
+    def test_user_with_passing_grade(self):
+        # If user has above passing grading then json will return cert generating message and
+        # status valid code
+        # mocking xqueue and analytics
+
+        analytics_patcher = patch('courseware.views.analytics')
+        mock_tracker = analytics_patcher.start()
+        self.addCleanup(analytics_patcher.stop)
+
+        with patch('capa.xqueue_interface.XQueueInterface.send_to_queue') as mock_send_to_queue:
+            mock_send_to_queue.return_value = (0, "Successfully queued")
+            resp = self.client.post(self.url)
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn("Creating certificate", resp.content)
+
+            #Verify Google Analytics event fired after generating certificate
+            mock_tracker.track.assert_called_once_with(  # pylint: disable=no-member
+                self.student.id,  # pylint: disable=no-member
+                'edx.bi.user.certificate.generate',
+                {
+                    'category': 'certificates',
+                    'label': unicode(self.course.id)
+                },
+
+                context={
+                    'Google Analytics':
+                    {'clientId': None}
+                }
+            )
+            mock_tracker.reset_mock()
+
+    @patch('courseware.grades.grade', Mock(return_value={'grade': 'Pass', 'percent': 0.75}))
+    def test_user_with_passing_existing_generating_cert(self):
+        # If user has passing grade but also has existing generating cert
+        # then json will return cert generating message with bad request code
+        GeneratedCertificateFactory.create(
+            user=self.student,
+            course_id=self.course.id,
+            status=CertificateStatuses.generating,
+            mode='verified'
+        )
+        resp = self.client.post(self.url)
+        self.assertEqual(resp.status_code, HttpResponseBadRequest.status_code)
+        self.assertIn("Creating certificate", resp.content)
+
+    @patch('courseware.grades.grade', Mock(return_value={'grade': 'Pass', 'percent': 0.75}))
+    def test_user_with_passing_existing_downloadable_cert(self):
+        # If user has passing grade but also has existing downloadable cert
+        # then json will return cert generating message with bad request code
+        GeneratedCertificateFactory.create(
+            user=self.student,
+            course_id=self.course.id,
+            status=CertificateStatuses.downloadable,
+            mode='verified'
+        )
+        resp = self.client.post(self.url)
+        self.assertEqual(resp.status_code, HttpResponseBadRequest.status_code)
+        self.assertIn("Creating certificate", resp.content)
+
+    def test_user_with_non_existing_course(self):
+        # If try to access a course with valid key pattern then it will return
+        # bad request code with course is not valid message
+        resp = self.client.post('/courses/def/abc/in_valid/generate_user_cert')
+        self.assertEqual(resp.status_code, HttpResponseBadRequest.status_code)
+        self.assertIn("Course is not valid", resp.content)
+
+    def test_user_with_invalid_course_id(self):
+        # If try to access a course with invalid key pattern then 404 will return
+        resp = self.client.post('/courses/def/generate_user_cert')
+        self.assertEqual(resp.status_code, 404)
+
+    def test_user_without_login_return_error(self):
+        # If user try to access without login should see a bad request status code with message
+        self.client.logout()
+        resp = self.client.post(self.url)
+        self.assertEqual(resp.status_code, HttpResponseBadRequest.status_code)
+        self.assertIn("You must be signed in to {platform_name} to create a certificate.".format(
+            platform_name=settings.PLATFORM_NAME
+        ), resp.content)

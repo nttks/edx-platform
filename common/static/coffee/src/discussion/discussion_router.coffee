@@ -90,5 +90,5 @@ if Backbone?
       @newPost.fadeOut(
         duration: 200
         complete: =>
-          $('.forum-content').fadeIn(200)
+          $('.forum-content').fadeIn(200).find('.thread-wrapper').focus()
       )

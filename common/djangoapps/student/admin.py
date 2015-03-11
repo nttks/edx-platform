@@ -5,7 +5,9 @@ from django import forms
 from config_models.admin import ConfigurationModelAdmin
 
 from student.models import UserProfile, UserTestGroup, CourseEnrollmentAllowed, DashboardConfiguration
-from student.models import CourseEnrollment, Registration, PendingNameChange, CourseAccessRole
+from student.models import (
+    CourseEnrollment, Registration, PendingNameChange, CourseAccessRole, LinkedInAddToProfileConfiguration
+)
 from ratelimitbackend import admin
 from student.roles import REGISTERED_ACCESS_ROLES
 
@@ -27,6 +29,17 @@ class CourseAccessRoleAdmin(admin.ModelAdmin):
         'id', 'user', 'org', 'course_id', 'role'
     )
 
+
+class LinkedInAddToProfileConfigurationAdmin(admin.ModelAdmin):
+    """Admin interface for the LinkedIn Add to Profile configuration. """
+
+    class Meta:
+        model = LinkedInAddToProfileConfiguration
+
+    # Exclude deprecated fields
+    exclude = ('dashboard_tracking_code',)
+
+
 admin.site.register(UserProfile)
 
 admin.site.register(UserTestGroup)
@@ -42,3 +55,5 @@ admin.site.register(PendingNameChange)
 admin.site.register(CourseAccessRole, CourseAccessRoleAdmin)
 
 admin.site.register(DashboardConfiguration, ConfigurationModelAdmin)
+
+admin.site.register(LinkedInAddToProfileConfiguration, LinkedInAddToProfileConfigurationAdmin)

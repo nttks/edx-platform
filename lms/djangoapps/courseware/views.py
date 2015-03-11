@@ -20,9 +20,10 @@ from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User, AnonymousUser
 from django.contrib.auth.decorators import login_required
 from django.utils.timezone import UTC
-from django.views.decorators.http import require_GET
-from django.http import Http404, HttpResponse
+from django.views.decorators.http import require_GET, require_POST
+from django.http import Http404, HttpResponse, HttpResponseBadRequest
 from django.shortcuts import redirect
+from certificates import api as certs_api
 from edxmako.shortcuts import render_to_response, render_to_string, marketing_link
 from django_future.csrf import ensure_csrf_cookie
 from django.views.decorators.cache import cache_control
@@ -60,6 +61,7 @@ from util.milestones_helpers import get_prerequisite_courses_display
 
 from microsite_configuration import microsite
 from opaque_keys.edx.locations import SlashSeparatedCourseKey
+from opaque_keys.edx.keys import CourseKey
 from instructor.enrollment import uses_shib
 
 from util.db import commit_on_success_with_read_committed
@@ -68,6 +70,8 @@ import survey.utils
 import survey.views
 
 from util.views import ensure_valid_course_key
+from eventtracking import tracker
+import analytics
 
 log = logging.getLogger("edx.courseware")
 
@@ -584,7 +588,7 @@ def jump_to_id(request, course_id, module_id):
 
 
 @ensure_csrf_cookie
-def jump_to(request, course_id, location):
+def jump_to(_request, course_id, location):
     """
     Show the page that contains a specific location.
 
@@ -739,6 +743,25 @@ def registered_for_course(course, user):
         return False
 
 
+def get_cosmetic_display_price(course, registration_price):
+    """
+    Return Course Price as a string preceded by correct currency, or 'Free'
+    """
+    currency_symbol = settings.PAID_COURSE_REGISTRATION_CURRENCY[1]
+
+    price = course.cosmetic_display_price
+    if registration_price > 0:
+        price = registration_price
+
+    if price:
+        # Translators: This will look like '$50', where {currency_symbol} is a symbol such as '$' and {price} is a
+        # numerical amount in that currency. Adjust this display as needed for your language.
+        return _("{currency_symbol}{price}").format(currency_symbol=currency_symbol, price=price)
+    else:
+        # Translators: This refers to the cost of the course. In this case, the course costs nothing so it is free.
+        return _('Free')
+
+
 @ensure_csrf_cookie
 @cache_if_anonymous()
 def course_about(request, course_id):
@@ -795,6 +818,9 @@ def course_about(request, course_id):
             reg_then_add_to_cart_link = "{reg_url}?course_id={course_id}&enrollment_action=add_to_cart".format(
                 reg_url=reverse('register_user'), course_id=course.id.to_deprecated_string())
 
+        course_price = get_cosmetic_display_price(course, registration_price)
+        can_add_course_to_cart = _is_shopping_cart_enabled and registration_price
+
         # Used to provide context to message to student if enrollment not allowed
         can_enroll = has_access(request.user, 'enroll', course)
         invitation_only = course.invitation_only
@@ -817,8 +843,8 @@ def course_about(request, course_id):
             'studio_url': studio_url,
             'registered': registered,
             'course_target': course_target,
-            'registration_price': registration_price,
-            'currency_symbol': settings.PAID_COURSE_REGISTRATION_CURRENCY[1],
+            'is_cosmetic_price_enabled': settings.FEATURES.get('ENABLE_COSMETIC_DISPLAY_PRICE'),
+            'course_price': course_price,
             'in_cart': in_cart,
             'reg_then_add_to_cart_link': reg_then_add_to_cart_link,
             'show_courseware_link': show_courseware_link,
@@ -830,7 +856,7 @@ def course_about(request, course_id):
             # We do not want to display the internal courseware header, which is used when the course is found in the
             # context. This value is therefor explicitly set to render the appropriate header.
             'disable_courseware_header': True,
-            'is_shopping_cart_enabled': _is_shopping_cart_enabled,
+            'can_add_course_to_cart': can_add_course_to_cart,
             'cart_link': reverse('shoppingcart.views.show_cart'),
             'pre_requisite_courses': pre_requisite_courses
         })
@@ -877,6 +903,15 @@ def mktg_course_about(request, course_id):
         'course_modes': course_modes,
     }
 
+    # The edx.org marketing site currently displays only in English.
+    # To avoid displaying a different language in the register / access button,
+    # we force the language to English.
+    # However, OpenEdX installations with a different marketing front-end
+    # may want to respect the language specified by the user or the site settings.
+    force_english = settings.FEATURES.get('IS_EDX_DOMAIN', False)
+    if force_english:
+        translation.activate('en-us')
+
     if settings.FEATURES.get('ENABLE_MKTG_EMAIL_OPT_IN'):
         # Drupal will pass organization names using a GET parameter, as follows:
         #     ?org=Harvard
@@ -909,15 +944,6 @@ def mktg_course_about(request, course_id):
                 "I would like to receive email from {institution_series} and learn about their other programs.",
                 len(org_list)
             ).format(institution_series=org_name_string)
-
-    # The edx.org marketing site currently displays only in English.
-    # To avoid displaying a different language in the register / access button,
-    # we force the language to English.
-    # However, OpenEdX installations with a different marketing front-end
-    # may want to respect the language specified by the user or the site settings.
-    force_english = settings.FEATURES.get('IS_EDX_DOMAIN', False)
-    if force_english:
-        translation.activate('en-us')
 
     try:
         return render_to_response('courseware/mktg_course_about.html', context)
@@ -985,6 +1011,9 @@ def _progress(request, course_key, student_id):
         #This means the student didn't have access to the course (which the instructor requested)
         raise Http404
 
+    # checking certificate generation configuration
+    show_generate_cert_btn = certs_api.cert_generation_enabled(course_key)
+
     context = {
         'course': course,
         'courseware_summary': courseware_summary,
@@ -992,8 +1021,13 @@ def _progress(request, course_key, student_id):
         'grade_summary': grade_summary,
         'staff_access': staff_access,
         'student': student,
-        'reverifications': fetch_reverify_banner_info(request, course_key)
+        'reverifications': fetch_reverify_banner_info(request, course_key),
+        'passed': is_course_passed(course, grade_summary),
+        'show_generate_cert_btn': show_generate_cert_btn
     }
+
+    if show_generate_cert_btn:
+        context.update(certs_api.certificate_downloadable_status(student, course_key))
 
     with grades.manual_transaction():
         response = render_to_response('courseware/progress.html', context)
@@ -1209,3 +1243,102 @@ def course_survey(request, course_id):
         redirect_url=redirect_url,
         is_required=course.course_survey_required,
     )
+
+
+def is_course_passed(course, grade_summary=None, student=None, request=None):
+    """
+    check user's course passing status. return True if passed
+
+    Arguments:
+        course : course object
+        grade_summary (dict) : contains student grade details.
+        student : user object
+        request (HttpRequest)
+
+    Returns:
+        returns bool value
+    """
+    nonzero_cutoffs = [cutoff for cutoff in course.grade_cutoffs.values() if cutoff > 0]
+    success_cutoff = min(nonzero_cutoffs) if nonzero_cutoffs else None
+
+    if grade_summary is None:
+        grade_summary = grades.grade(student, request, course)
+
+    return success_cutoff and grade_summary['percent'] > success_cutoff
+
+
+@ensure_csrf_cookie
+@require_POST
+def generate_user_cert(request, course_id):
+    """
+    It will check all validation and on clearance will add the new-certificate request into the xqueue.
+
+     Args:
+        request (django request object):  the HTTP request object that triggered this view function
+        course_id (unicode):  id associated with the course
+
+    Returns:
+        returns json response
+    """
+
+    if not request.user.is_authenticated():
+        log.info(u"Anon user trying to generate certificate for %s", course_id)
+        return HttpResponseBadRequest(
+            _('You must be signed in to {platform_name} to create a certificate.').format(
+                platform_name=settings.PLATFORM_NAME
+            )
+        )
+
+    student = request.user
+
+    course_key = CourseKey.from_string(course_id)
+
+    course = modulestore().get_course(course_key, depth=2)
+    if not course:
+        return HttpResponseBadRequest(_("Course is not valid"))
+
+    if not is_course_passed(course, None, student, request):
+        return HttpResponseBadRequest(_("Your certificate will be available when you pass the course."))
+
+    certificate_status = certs_api.certificate_downloadable_status(student, course.id)
+
+    if not certificate_status["is_downloadable"] and not certificate_status["is_generating"]:
+        certs_api.generate_user_certificates(student, course.id)
+        _track_successful_certificate_generation(student.id, course.id)
+        return HttpResponse(_("Creating certificate"))
+
+    # if certificate_status is not is_downloadable and is_generating or
+    # if any error appears during certificate generation return the message cert is generating.
+    # with badrequest
+    # at backend debug the issue and re-submit the task.
+
+    return HttpResponseBadRequest(_("Creating certificate"))
+
+
+def _track_successful_certificate_generation(user_id, course_id):  # pylint: disable=invalid-name
+    """Track an successfully certificate generation event.
+
+    Arguments:
+        user_id (str): The ID of the user generting the certificate.
+        course_id (unicode):  id associated with the course
+    Returns:
+        None
+
+    """
+    if settings.FEATURES.get('SEGMENT_IO_LMS') and hasattr(settings, 'SEGMENT_IO_LMS_KEY'):
+        event_name = 'edx.bi.user.certificate.generate'  # pylint: disable=no-member
+        tracking_context = tracker.get_tracker().resolve_context()  # pylint: disable=no-member
+
+        analytics.track(
+            user_id,
+            event_name,
+            {
+                'category': 'certificates',
+                'label': unicode(course_id)
+            },
+            context={
+                'Google Analytics': {
+                    'clientId': tracking_context.get('client_id')
+                }
+            }
+        )

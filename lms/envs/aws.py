@@ -152,6 +152,7 @@ HTTPS = ENV_TOKENS.get('HTTPS', HTTPS)
 SESSION_ENGINE = ENV_TOKENS.get('SESSION_ENGINE', SESSION_ENGINE)
 SESSION_COOKIE_DOMAIN = ENV_TOKENS.get('SESSION_COOKIE_DOMAIN')
 SESSION_EXPIRY = ENV_TOKENS.get('SESSION_EXPIRY', 604800)
+SESSION_COOKIE_HTTPONLY = ENV_TOKENS.get('SESSION_COOKIE_HTTPONLY', True)
 REGISTRATION_EXTRA_FIELDS = ENV_TOKENS.get('REGISTRATION_EXTRA_FIELDS', REGISTRATION_EXTRA_FIELDS)
 SESSION_COOKIE_SECURE = ENV_TOKENS.get('SESSION_COOKIE_SECURE', SESSION_COOKIE_SECURE)
 
@@ -303,6 +304,18 @@ if FEATURES.get('AUTH_USE_CAS'):
 # Video Caching. Pairing country codes with CDN URLs.
 # Example: {'CN': 'http://api.xuetangx.com/edx/video?s3_url='}
 VIDEO_CDN_URL = ENV_TOKENS.get('VIDEO_CDN_URL', {})
+
+############# CORS headers for cross-domain requests #################
+
+if FEATURES.get('ENABLE_CORS_HEADERS'):
+    INSTALLED_APPS += ('corsheaders', 'cors_csrf')
+    MIDDLEWARE_CLASSES = (
+        'corsheaders.middleware.CorsMiddleware',
+        'cors_csrf.middleware.CorsCSRFMiddleware',
+    ) + MIDDLEWARE_CLASSES
+    CORS_ALLOW_CREDENTIALS = True
+    CORS_ORIGIN_WHITELIST = ENV_TOKENS.get('CORS_ORIGIN_WHITELIST', ())
+    CORS_ORIGIN_ALLOW_ALL = ENV_TOKENS.get('CORS_ORIGIN_ALLOW_ALL', False)
 
 ############################## SECURE AUTH ITEMS ###############
 # Secret things: passwords, access keys, etc.
@@ -532,3 +545,14 @@ for name, val in task_schedule.items():
 
 ##### YOUTUBE #####
 YOUTUBE.update(ENV_TOKENS.get("YOUTUBE", {}))
+
+if FEATURES.get('ENABLE_COURSEWARE_SEARCH'):
+    # Use ElasticSearch as the search engine herein
+    SEARCH_ENGINE = "search.elastic.ElasticSearchEngine"
+
+# Facebook app
+FACEBOOK_API_VERSION = AUTH_TOKENS.get("FACEBOOK_API_VERSION")
+FACEBOOK_APP_SECRET = AUTH_TOKENS.get("FACEBOOK_APP_SECRET")
+FACEBOOK_APP_ID = AUTH_TOKENS.get("FACEBOOK_APP_ID")
+
+XBLOCK_SETTINGS = ENV_TOKENS.get('XBLOCK_SETTINGS', {})
