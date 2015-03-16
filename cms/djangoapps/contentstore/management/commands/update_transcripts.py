@@ -13,6 +13,7 @@ from prettytable import PrettyTable
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 
+from cache_toolbox.core import del_cached_content
 from xmodule.contentstore.content import StaticContent
 from xmodule.contentstore.django import contentstore
 from xmodule.exceptions import NotFoundError
@@ -93,7 +94,7 @@ class Command(BaseCommand):
             raise CommandError("Could not establish a connection to S3 for transcripts backup. Check your credentials.")
 
         # Result
-        output = PrettyTable(['Course ID', 'YouTube ID', 'Video Display Name', 'Status', 'Note'])
+        output = PrettyTable(['Course ID', 'YouTube ID', 'Language', 'Video Display Name', 'Status', 'Note'])
         output.align = 'l'
 
         # Find courses
@@ -112,7 +113,7 @@ class Command(BaseCommand):
             # Note: Use only active courses
             if course_item.has_ended():
                 log.info("Skip processing course(%s) because the course has already ended." % course_item.id)
-                output.add_row([course_item.id, "", "", "Skipped", "This course has already ended"])
+                output.add_row([course_item.id, "", "", "", "Skipped", "This course has already ended"])
                 continue
             # Find video items
             video_items = modulestore().get_items(course_item.id, qualifiers={'category': 'video'})
@@ -120,43 +121,64 @@ class Command(BaseCommand):
             for video_item in video_items:
                 youtube_id = video_item.youtube_id_1_0
                 print "youtube_id=%s" % youtube_id
+                advanced_langs = video_item.transcripts.keys()
+                # Note: Basic language is normally 'en' because 'Basic tab' allows only English subtitle by default,
+                #       but it is now used as follows:
+                #       1) Japanese subtitle in 'Basic tab' (in most cases)
+                #       2) English subtitle in 'Basic tab' and Japanese subtitle in 'Advanced tab' (in exceptional cases)
+                basic_lang = 'en' if 'ja' in advanced_langs else 'ja'
+                print "basic_lang=%s" % basic_lang
+                print "advanced_langs=%s" % advanced_langs
 
-                # Get transcript from YouTube
+                youtube_transcripts = []
+                # Get basic transcript from YouTube
                 try:
-                    youtube_transcript = YoutubeTranscript(course_item.id, youtube_id)
+                    youtube_transcript = BasicYoutubeTranscript(course_item.id, youtube_id, basic_lang)
+                    youtube_transcripts.append(youtube_transcript)
                 except Exception as e:
                     log.warn(str(e))
-                    output.add_row([course_item.id, youtube_id, video_item.display_name, "Failed", "Can't receive transcripts from YouTube"])
+                    output.add_row([course_item.id, youtube_id, basic_lang, video_item.display_name, "Failed", "Can't receive transcripts from YouTube"])
                     continue
-                # Get transcript from local assets
-                filename = youtube_transcript.filename
-                current_transcript_data = get_data_from_local(course_item.id, filename)
+                # Get advanced transcripts from YouTube
+                for advanced_lang in advanced_langs:
+                    try:
+                        youtube_transcript = AdvancedYoutubeTranscript(course_item.id, youtube_id, advanced_lang)
+                        youtube_transcripts.append(youtube_transcript)
+                    except Exception as e:
+                        log.warn(str(e))
+                        output.add_row([course_item.id, youtube_id, advanced_lang, video_item.display_name, "Failed", "Can't receive transcripts from YouTube"])
+                        continue
 
-                # Note: Update local assets only when anything changed on YouTube
-                if current_transcript_data is None or youtube_transcript.subs != json.loads(current_transcript_data):
-                    # Upload YouTube transcript to local assets
-                    youtube_transcript.upload_to_local()
-                    # Store current transcript to S3 for backup
-                    if current_transcript_data is not None:
-                        backup_filename = subs_backup_filename(filename, start_time)
-                        print "backup_filename=%s" % backup_filename
-                        try:
-                            store.save(course_item.id, current_transcript_data, backup_filename)
-                        except Exception as e:
-                            log.warn(
-                                "Transcript for video(%s) was uploaded to the course(%s) successfully, but failed to store the backup file to S3."
-                                % (youtube_id, course_item.id))
-                            output.add_row([course_item.id, youtube_id, video_item.display_name, "Success", "WARN: Failed to store backup file to S3"])
-                            continue
-                    log.info(
-                        "Transcript for video(%s) was uploaded to the course(%s) successfully!!"
-                        % (youtube_id, course_item.id))
-                    output.add_row([course_item.id, youtube_id, video_item.display_name, "Success", ""])
-                else:
-                    log.info(
-                        "Skip uploading transcript for video(%s) because there is no difference between local assets and YouTube."
-                        % youtube_id)
-                    output.add_row([course_item.id, youtube_id, video_item.display_name, "Skipped", "No changes on YouTube"])
+                for youtube_transcript in youtube_transcripts:
+                    # Get transcript from local assets
+                    filename = youtube_transcript.filename
+                    current_transcript_data = get_data_from_local(course_item.id, filename)
+
+                    # Note: Update local assets only when anything changed on YouTube
+                    if current_transcript_data is None or youtube_transcript.subs != json.loads(current_transcript_data):
+                        # Upload YouTube transcript to local assets
+                        youtube_transcript.upload_to_local()
+                        # Store current transcript to S3 for backup
+                        if current_transcript_data is not None:
+                            backup_filename = subs_backup_filename(filename, start_time)
+                            print "backup_filename=%s" % backup_filename
+                            try:
+                                store.save(course_item.id, current_transcript_data, backup_filename)
+                            except Exception as e:
+                                log.warn(
+                                    "Transcript for video(%s) was uploaded to the course(%s) successfully, but failed to store the backup file to S3."
+                                    % (youtube_id, course_item.id))
+                                output.add_row([course_item.id, youtube_id, youtube_transcript.lang, video_item.display_name, "Success", "WARN: Failed to store backup file to S3"])
+                                continue
+                        log.info(
+                            "Transcript for video(%s) was uploaded to the course(%s) successfully!!"
+                            % (youtube_id, course_item.id))
+                        output.add_row([course_item.id, youtube_id, youtube_transcript.lang, video_item.display_name, "Success", ""])
+                    else:
+                        log.info(
+                            "Skip uploading transcript for video(%s) because there is no difference between local assets and YouTube."
+                            % youtube_id)
+                        output.add_row([course_item.id, youtube_id, youtube_transcript.lang, video_item.display_name, "Skipped", "No changes on YouTube"])
 
         end_time = time.localtime()
         log.info("Command update_transcripts ended at %s." % time.strftime('%Y-%m-%d %H:%M:%S', end_time))
@@ -166,32 +188,27 @@ class Command(BaseCommand):
             % (time.strftime('%Y-%m-%d %H:%M:%S', start_time), time.strftime('%Y-%m-%d %H:%M:%S', end_time), output.get_string()))
 
 
-class YoutubeTranscript(object):
+class BasicYoutubeTranscript(object):
     """
-    Transcript for YouTube
+    Basic transcript for YouTube
     """
-    def __init__(self, course_key, youtube_id):
+    def __init__(self, course_key, youtube_id, lang):
         self.course_key = course_key
         self.youtube_id = youtube_id
-        self.lang = None
 
         # Download transcripts from YouTube
         # Note: cribbed from common/lib/xmodule/xmodule/video_module/transcripts_utils.py download_youtube_subs()
         self.settings = copy.deepcopy(settings)
-        for lang in ['ja', 'en']:
-            self.settings.YOUTUBE['TEXT_API']['params']['lang'] = lang
-            try:
-                self.subs = transcripts_utils.get_transcripts_from_youtube(self.youtube_id, self.settings, ModuleI18nService())
-                self.lang = lang
-                break
-            except GetTranscriptsFromYouTubeException:
-                continue
-        else:
+        self.settings.YOUTUBE['TEXT_API']['params']['lang'] = lang
+        try:
+            self.subs = transcripts_utils.get_transcripts_from_youtube(self.youtube_id, self.settings, ModuleI18nService())
+            self.lang = lang
+        except GetTranscriptsFromYouTubeException:
             raise Exception("Can't receive transcripts from Youtube for %s." % self.youtube_id)
 
     @property
     def filename(self):
-        return subs_filename(self.youtube_id, self.lang)
+        return u'subs_{0}.srt.sjson'.format(self.youtube_id)
 
     # Note: cribbed from cms/djangoapps/contentstore/views/assets.py _upload_asset()
     def upload_to_local(self):
@@ -201,19 +218,17 @@ class YoutubeTranscript(object):
         filedata = json.dumps(self.subs, indent=2)
         content = StaticContent(content_loc, self.filename, mime_type, filedata)
         contentstore().save(content)
+        del_cached_content(content_loc)
 
 
-# Note: modified from common/lib/xmodule/xmodule/video_module/transcripts_utils.py subs_filename()
-def subs_filename(subs_id, lang='en'):
+class AdvancedYoutubeTranscript(BasicYoutubeTranscript):
     """
-    Generate proper filename for storage.
+    Advanced transcript for YouTube
     """
-    # TODO
-    #if lang == 'en':
-    #    return u'subs_{0}.srt.sjson'.format(subs_id)
-    #else:
-    #    return u'{0}_subs_{1}.srt.sjson'.format(lang, subs_id)
-    return u'subs_{0}.srt.sjson'.format(subs_id)
+    @property
+    def filename(self):
+        # Note: modified from common/lib/xmodule/xmodule/video_module/transcripts_utils.py subs_filename()
+        return u'{0}_subs_{1}.srt.sjson'.format(self.lang, self.youtube_id)
 
 
 def subs_backup_filename(filename, t):
