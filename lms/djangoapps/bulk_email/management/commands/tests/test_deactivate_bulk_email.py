@@ -8,10 +8,10 @@ from bulk_email.management.commands import deactivate_bulk_email
 from bulk_email.management.commands.tests.factories import OptoutFactory
 from student.tests.factories import CourseEnrollmentFactory, UserFactory
 from xmodule.modulestore.tests.factories import CourseFactory
-from courseware.tests.modulestore_config import TEST_DATA_MIXED_MODULESTORE
+from xmodule.modulestore.tests.django_utils import TEST_DATA_MOCK_MODULESTORE
 
 
-@override_settings(MODULESTORE=TEST_DATA_MIXED_MODULESTORE)
+@override_settings(MODULESTORE=TEST_DATA_MOCK_MODULESTORE)
 class BulkEmailCommandTestCase(TestCase):
 
     def setUp(self):

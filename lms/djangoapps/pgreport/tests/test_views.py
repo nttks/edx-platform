@@ -8,7 +8,7 @@ from pgreport.views import (
 )
 from pgreport.models import ProgressModules, ProgressModulesHistory
 from django.test.utils import override_settings
-from courseware.tests.modulestore_config import TEST_DATA_MIXED_MODULESTORE
+from xmodule.modulestore.tests.django_utils import TEST_DATA_MOCK_MODULESTORE
 from opaque_keys.edx.locator import CourseLocator
 from xmodule.modulestore.tests.factories import CourseFactory, ItemFactory
 from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
@@ -30,7 +30,7 @@ import gzip
 import unittest
 
 
-@override_settings(MODULESTORE=TEST_DATA_MIXED_MODULESTORE)
+@override_settings(MODULESTORE=TEST_DATA_MOCK_MODULESTORE)
 class ProgressReportTestCase(ModuleStoreTestCase):
     """ Test Progress Report """
     COURSE_NAME = "test_pgreport"

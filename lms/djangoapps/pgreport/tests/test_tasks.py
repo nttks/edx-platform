@@ -5,7 +5,7 @@ from django.test import TestCase
 from mock import Mock, MagicMock, patch, ANY, call
 from contextlib import nested
 from django.test.utils import override_settings
-from courseware.tests.modulestore_config import TEST_DATA_MIXED_MODULESTORE
+from xmodule.modulestore.tests.django_utils import TEST_DATA_MOCK_MODULESTORE
 from opaque_keys import InvalidKeyError
 from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
 from xmodule.modulestore.tests.factories import CourseFactory
@@ -94,7 +94,7 @@ class BaseProgressReportTaskTestCase(TestCase):
         base.on_failure("exc", "task_id", "args", "kwargs", "einfo")
         del_mock.assert_called_once_with("args")
 
-@override_settings(MODULESTORE=TEST_DATA_MIXED_MODULESTORE)
+@override_settings(MODULESTORE=TEST_DATA_MOCK_MODULESTORE)
 class ProgressReportTaskTestCase(ModuleStoreTestCase):
     """Test ProgressReportTask class"""
     COURSE_NAME = "test_task"

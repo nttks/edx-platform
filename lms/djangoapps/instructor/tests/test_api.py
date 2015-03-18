@@ -4076,7 +4076,7 @@ class TestInstructorAPISurveyDownload(ModuleStoreTestCase, LoginEnrollmentTestCa
 
 
 #class TestInstructorAPIProgressModules(ModuleStoreTestCase, LoginEnrollmentTestCase):
-@override_settings(MODULESTORE=TEST_DATA_MIXED_MODULESTORE)
+@override_settings(MODULESTORE=TEST_DATA_MOCK_MODULESTORE)
 class TestInstructorAPIProgressModules(ModuleStoreTestCase):
     """
     Test instructor progress modules endpoint.
