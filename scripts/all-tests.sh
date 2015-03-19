@@ -61,7 +61,7 @@ git clean -qxfd
 source scripts/jenkins-common.sh
 
 # Violations thresholds for failing the build
-PYLINT_THRESHOLD=6000
+PYLINT_THRESHOLD=5800
 
 # If the environment variable 'SHARD' is not set, default to 'all'.
 # This could happen if you are trying to use this script from
@@ -73,8 +73,11 @@ SHARD=${SHARD:="all"}
 case "$TEST_SUITE" in
 
     "quality")
+        echo "Finding fixme's and storing report..."
         paver find_fixme > fixme.log || { cat fixme.log; EXIT=1; }
+        echo "Finding pep8 violations and storing report..."
         paver run_pep8 > pep8.log || { cat pep8.log; EXIT=1; }
+        echo "Finding pylint violations and storing in report..."
         paver run_pylint -l $PYLINT_THRESHOLD > pylint.log || { cat pylint.log; EXIT=1; }
         # Run quality task. Pass in the 'fail-under' percentage to diff-quality
         paver run_quality -p 100

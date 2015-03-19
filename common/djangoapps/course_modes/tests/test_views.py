@@ -5,11 +5,14 @@ from mock import patch
 from django.conf import settings
 from django.test.utils import override_settings
 from django.core.urlresolvers import reverse
+from pytz import timezone
+from datetime import datetime
 
 from xmodule.modulestore.tests.django_utils import (
     ModuleStoreTestCase, mixed_store_config
 )
 
+from util.date_utils import get_time_display
 from util.testing import UrlResetMixin
 from embargo.test_utils import restrict_course
 from xmodule.modulestore.tests.factories import CourseFactory
@@ -65,6 +68,25 @@ class CourseModeViewTest(UrlResetMixin, ModuleStoreTestCase):
         else:
             self.assertEquals(response.status_code, 200)
 
+    def test_no_id_redirect(self):
+        # Create the course modes
+        CourseModeFactory(mode_slug=CourseMode.NO_ID_PROFESSIONAL_MODE, course_id=self.course.id, min_price=100)
+
+        # Enroll the user in the test course
+        CourseEnrollmentFactory(
+            is_active=False,
+            mode=CourseMode.NO_ID_PROFESSIONAL_MODE,
+            course_id=self.course.id,
+            user=self.user
+        )
+
+        # Configure whether we're upgrading or not
+        url = reverse('course_modes_choose', args=[unicode(self.course.id)])
+        response = self.client.get(url)
+        # Check whether we were correctly redirected
+        start_flow_url = reverse('verify_student_start_flow', args=[unicode(self.course.id)])
+        self.assertRedirects(response, start_flow_url)
+
     def test_no_enrollment(self):
         # Create the course modes
         for mode in ('audit', 'honor', 'verified'):
@@ -112,9 +134,10 @@ class CourseModeViewTest(UrlResetMixin, ModuleStoreTestCase):
         # TODO: Fix it so that response.templates works w/ mako templates, and then assert
         # that the right template rendered
 
-    def test_professional_enrollment(self):
+    @ddt.data('professional', 'no-id-professional')
+    def test_professional_enrollment(self, mode):
         # The only course mode is professional ed
-        CourseModeFactory(mode_slug='professional', course_id=self.course.id)
+        CourseModeFactory(mode_slug=mode, course_id=self.course.id, min_price=1)
 
         # Go to the "choose your track" page
         choose_track_url = reverse('course_modes_choose', args=[unicode(self.course.id)])
@@ -129,7 +152,7 @@ class CourseModeViewTest(UrlResetMixin, ModuleStoreTestCase):
         CourseEnrollmentFactory(
             user=self.user,
             is_active=True,
-            mode="professional",
+            mode=mode,
             course_id=unicode(self.course.id),
         )
 
@@ -153,7 +176,8 @@ class CourseModeViewTest(UrlResetMixin, ModuleStoreTestCase):
     def test_choose_mode_redirect(self, course_mode, expected_redirect):
         # Create the course modes
         for mode in ('audit', 'honor', 'verified'):
-            CourseModeFactory(mode_slug=mode, course_id=self.course.id)
+            min_price = 0 if course_mode in ["honor", "audit"] else 1
+            CourseModeFactory(mode_slug=mode, course_id=self.course.id, min_price=min_price)
 
         # Choose the mode (POST request)
         choose_track_url = reverse('course_modes_choose', args=[unicode(self.course.id)])
@@ -314,3 +338,45 @@ class TrackSelectionEmbargoTest(UrlResetMixin, ModuleStoreTestCase):
     def test_embargo_allow(self):
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
+
+
+class AdminCourseModePageTest(ModuleStoreTestCase):
+    """Test the django admin course mode form saving data in db without any conversion
+     properly converts the tzinfo from default zone to utc
+    """
+
+    def test_save_valid_data(self):
+        user = UserFactory.create(is_staff=True, is_superuser=True)
+        user.save()
+        course = CourseFactory.create()
+        expiration = datetime(2015, 10, 20, 1, 10, 23, tzinfo=timezone(settings.TIME_ZONE))
+
+        data = {
+            'course_id': unicode(course.id),
+            'mode_slug': 'professional',
+            'mode_display_name': 'professional',
+            'min_price': 10,
+            'currency': 'usd',
+            'expiration_datetime_0': expiration.date(),  # due to django admin datetime widget passing as seperate vals
+            'expiration_datetime_1': expiration.time(),
+
+        }
+
+        self.client.login(username=user.username, password='test')
+
+        # creating new course mode from django admin page
+        response = self.client.post(reverse('admin:course_modes_coursemode_add'), data=data)
+        self.assertRedirects(response, reverse('admin:course_modes_coursemode_changelist'))
+
+        # verifying that datetime is appearing on list page
+        response = self.client.get(reverse('admin:course_modes_coursemode_changelist'))
+        self.assertContains(response, get_time_display(expiration, '%B %d, %Y, %H:%M  %p'))
+
+        # verifiying the on edit page datetime value appearing without any modifications
+        resp = self.client.get(reverse('admin:course_modes_coursemode_change', args=(1,)))
+        self.assertContains(resp, expiration.date())
+        self.assertContains(resp, expiration.time())
+
+        # checking the values in db. comparing values without tzinfo
+        course_mode = CourseMode.objects.get(pk=1)
+        self.assertEqual(course_mode.expiration_datetime.replace(tzinfo=None), expiration.replace(tzinfo=None))

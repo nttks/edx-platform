@@ -126,16 +126,13 @@ FEATURES = {
 
     # Enable support for content libraries. Note that content libraries are
     # only supported in courses using split mongo.
-    'ENABLE_CONTENT_LIBRARIES': False,
+    'ENABLE_CONTENT_LIBRARIES': True,
 
     # Milestones application flag
     'MILESTONES_APP': False,
 
     # Prerequisite courses feature flag
     'ENABLE_PREREQUISITE_COURSES': False,
-
-    # Toggle course milestones app/feature
-    'MILESTONES_APP': False,
 
     # Toggle course entrance exams feature
     'ENTRANCE_EXAMS': False,
@@ -215,6 +212,13 @@ LMS_BASE = None
 from lms.envs.common import (
     COURSE_KEY_PATTERN, COURSE_ID_PATTERN, USAGE_KEY_PATTERN, ASSET_KEY_PATTERN
 )
+
+
+######################### CSRF #########################################
+
+# Forwards-compatibility with Django 1.7
+CSRF_COOKIE_AGE = 60 * 60 * 24 * 7 * 52
+
 
 #################### CAPA External Code Evaluation #############################
 XQUEUE_INTERFACE = {
@@ -574,8 +578,13 @@ REQUIRE_EXCLUDE = ("build.txt",)
 REQUIRE_ENVIRONMENT = "node"
 
 # If you want to enable Tender integration (http://tenderapp.com/),
-# put in the domain where Tender hosts tender_widget.js. For example,
-# TENDER_DOMAIN = "example.tenderapp.com"
+# put in the subdomain where Tender hosts tender_widget.js. For example,
+# if you want to use the URL https://example.tenderapp.com/tender_widget.js,
+# you should use "example".
+TENDER_SUBDOMAIN = None
+# If you want to have a vanity domain that points to Tender, put that here.
+# For example, "help.myapp.com". Otherwise, should should be your full
+# tenderapp domain name: for example, "example.tenderapp.com".
 TENDER_DOMAIN = None
 
 ################################# CELERY ######################################
