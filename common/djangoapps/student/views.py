@@ -1868,6 +1868,10 @@ def password_reset_confirm_wrapper(
 
     if request.method == 'POST':
         password = request.POST['new_password1']
+        # Make sure that password and username fields do not match
+        if user.username == password:
+            err_msg = _("Username and password fields cannot match")
+
         if settings.FEATURES.get('ENFORCE_PASSWORD_POLICY', False):
             try:
                 validate_password_length(password)

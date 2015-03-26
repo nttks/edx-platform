@@ -218,3 +218,18 @@ class ResetPasswordTests(TestCase):
         self.assertEquals(confirm_kwargs['token'], self.token)
         self.user = User.objects.get(pk=self.user.pk)
         self.assertTrue(self.user.is_active)
+
+    @unittest.skipUnless(settings.ROOT_URLCONF == 'lms.urls', 'Test only valid in lms')
+    def test_reset_password_with_username_password_match(self):
+        """
+        Tests that password and username fields do not match on password reset
+        """
+        resp = self.client.post('/password_reset_confirm/{0}-{1}/'.format(self.uidb36, self.token), {
+            'new_password1': self.user.username,
+            'new_password2': self.user.username,
+        }, follow=True)
+        err_msg = 'Username and password fields cannot match'
+        self.assertIn(
+            err_msg,
+            resp.content
+        )

@@ -85,7 +85,7 @@ def validate_password_dictionary(value):
     password_max_edit_distance = getattr(settings, "PASSWORD_DICTIONARY_EDIT_DISTANCE_THRESHOLD", None)
     password_dictionary = getattr(settings, "PASSWORD_DICTIONARY", None)
 
-    if password_max_edit_distance and password_dictionary:
+    if password_max_edit_distance is not None and password_dictionary:
         for word in password_dictionary:
             distance = nltk.metrics.distance.edit_distance(value, word)
             if distance <= password_max_edit_distance:

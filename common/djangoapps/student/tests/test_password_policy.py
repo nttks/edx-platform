@@ -268,6 +268,32 @@ class TestPasswordPolicy(TestCase):
         obj = json.loads(response.content)
         self.assertTrue(obj['success'])
 
+    @override_settings(PASSWORD_DICTIONARY=['foo', 'bar'])
+    @override_settings(PASSWORD_DICTIONARY_EDIT_DISTANCE_THRESHOLD=0)
+    def test_dictionary_similarity_when_edit_distance_threshold_is_zero(self):
+        self.url_params['password'] = 'foo'
+        response = self.client.post(self.url, self.url_params)
+        self.assertEqual(response.status_code, 400)
+        obj = json.loads(response.content)
+        self.assertEqual(
+            obj['value'],
+            "Password: Too similar to a restricted dictionary word.",
+        )
+
+        self.url_params['password'] = 'fo0'
+        response = self.client.post(self.url, self.url_params)
+        self.assertEqual(response.status_code, 200)
+        obj = json.loads(response.content)
+        self.assertTrue(obj['success'])
+
+    @override_settings(PASSWORD_DICTIONARY=['foo', 'bar'])
+    def test_dictionary_similarity_when_edit_distance_threshold_is_none(self):
+        self.url_params['password'] = 'foo'
+        response = self.client.post(self.url, self.url_params)
+        self.assertEqual(response.status_code, 200)
+        obj = json.loads(response.content)
+        self.assertTrue(obj['success'])
+
 
 class TestUsernamePasswordNonmatch(TestCase):
     """
