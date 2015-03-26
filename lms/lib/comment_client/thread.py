@@ -81,7 +81,7 @@ class Thread(models.Model):
             )
             log.info(
                 u'forum_text_search query="{search_query}" corrected_text="{corrected_text}" course_id={course_id} group_id={group_id} page={requested_page} total_results={total_results}'.format(
-                    search_query=search_query.encode('utf-8'),
+                    search_query=search_query,
                     corrected_text=corrected_text,
                     course_id=course_id,
                     group_id=group_id,
