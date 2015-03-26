@@ -1649,7 +1649,7 @@ msgstr "ご登録いただき、ありがとうございます！"
 msgid ""
 "Your account is not active yet. An activation link has been sent to "
 "{email}, along with instructions for activating your account."
-msgstr "あなたのアカウントはアクティベーションされていません。アクティベーション用のリンクは{email}宛に送信されており、そちらにアクティベーションについての説明が記載されています。"
+msgstr "会員登録の手続きはまだ完了していません。【会員登録手続き用のURL】は {email} 宛に送信されておりますので、そのメールに記載された【会員登録手続き用のURL】にアクセスして、会員登録を完了してください。"
 
 #: lms/templates/shoppingcart/list.html
 msgid "Your Shopping Cart"
