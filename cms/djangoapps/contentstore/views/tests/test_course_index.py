@@ -383,6 +383,8 @@ class TestCourseReIndex(CourseTestCase):
         with open(self.TEST_INDEX_FILENAME, "w+") as index_file:
             json.dump({}, index_file)
 
+        self.addCleanup(os.remove, self.TEST_INDEX_FILENAME)
+
     def test_reindex_course(self):
         """
         Verify that course gets reindexed.
@@ -569,15 +571,13 @@ class TestCourseReIndex(CourseTestCase):
         self.assertEqual(response['results'], [])
 
         # Start manual reindex
-        errors = CoursewareSearchIndexer.do_course_reindex(modulestore(), self.course.id)
-        self.assertEqual(errors, None)
+        CoursewareSearchIndexer.do_course_reindex(modulestore(), self.course.id)
 
         self.html.display_name = "My expanded HTML"
         modulestore().update_item(self.html, ModuleStoreEnum.UserID.test)
 
         # Start manual reindex
-        errors = CoursewareSearchIndexer.do_course_reindex(modulestore(), self.course.id)
-        self.assertEqual(errors, None)
+        CoursewareSearchIndexer.do_course_reindex(modulestore(), self.course.id)
 
         # Check results indexed now
         response = perform_search(
@@ -666,6 +666,3 @@ class TestCourseReIndex(CourseTestCase):
         # Start manual reindex and check error in response
         with self.assertRaises(SearchIndexingError):
             CoursewareSearchIndexer.do_course_reindex(modulestore(), self.course.id)
-
-    def tearDown(self):
-        os.remove(self.TEST_INDEX_FILENAME)

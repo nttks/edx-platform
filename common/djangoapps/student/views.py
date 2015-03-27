@@ -3,10 +3,10 @@ Student Views
 """
 import datetime
 import logging
-import re
 import uuid
 import time
 import json
+import warnings
 from collections import defaultdict
 from pytz import UTC
 from ipware.ip import get_ip
@@ -47,9 +47,9 @@ from requests import HTTPError
 
 from social.apps.django_app import utils as social_utils
 from social.backends import oauth as social_oauth
+from social.exceptions import AuthException, AuthAlreadyAssociated
 
 from edxmako.shortcuts import render_to_response, render_to_string, marketing_link
-from mako.exceptions import TopLevelLookupException
 
 from course_modes.models import CourseMode
 from shoppingcart.api import order_history
@@ -89,7 +89,6 @@ from external_auth.login_and_register import (
 from bulk_email.models import Optout, CourseAuthorization
 import shoppingcart
 from lang_pref import LANGUAGE_KEY
-from notification_prefs.views import enable_notifications
 
 import track.views
 
@@ -121,6 +120,12 @@ from embargo import api as embargo_api
 
 import analytics
 from eventtracking import tracker
+
+# Note that this lives in LMS, so this dependency should be refactored.
+from notification_prefs.views import enable_notifications
+
+# Note that this lives in openedx, so this dependency should be refactored.
+from openedx.core.djangoapps.user_api.preferences import api as preferences_api
 
 
 log = logging.getLogger("edx.student")
@@ -642,20 +647,17 @@ def dashboard(request):
         # Re-alphabetize language options
         language_options.sort()
 
-    # TODO: remove circular dependency on openedx from common
-    from openedx.core.djangoapps.user_api.models import UserPreference
-
-    # try to get the prefered language for the user
-    cur_pref_lang_code = UserPreference.get_preference(request.user, LANGUAGE_KEY)
+    # try to get the preferred language for the user
+    preferred_language_code = preferences_api.get_user_preference(request.user, LANGUAGE_KEY)
     # try and get the current language of the user
-    cur_lang_code = get_language()
-    if cur_pref_lang_code and cur_pref_lang_code in settings.LANGUAGE_DICT:
+    current_language_code = get_language()
+    if preferred_language_code and preferred_language_code in settings.LANGUAGE_DICT:
         # if the user has a preference, get the name from the code
-        current_language = settings.LANGUAGE_DICT[cur_pref_lang_code]
-    elif cur_lang_code in settings.LANGUAGE_DICT:
+        current_language = settings.LANGUAGE_DICT[preferred_language_code]
+    elif current_language_code in settings.LANGUAGE_DICT:
         # if the user's browser is showing a particular language,
         # use that as the current language
-        current_language = settings.LANGUAGE_DICT[cur_lang_code]
+        current_language = settings.LANGUAGE_DICT[current_language_code]
     else:
         # otherwise, use the default language
         current_language = settings.LANGUAGE_DICT[settings.LANGUAGE_CODE]
@@ -691,7 +693,7 @@ def dashboard(request):
         'billing_email': settings.PAYMENT_SUPPORT_EMAIL,
         'language_options': language_options,
         'current_language': current_language,
-        'current_language_code': cur_lang_code,
+        'current_language_code': current_language_code,
         'user': user,
         'duplicate_provider': None,
         'logout_url': reverse(logout_user),
@@ -811,13 +813,10 @@ def try_change_enrollment(request):
 def _update_email_opt_in(request, org):
     """Helper function used to hit the profile API if email opt-in is enabled."""
 
-    # TODO: remove circular dependency on openedx from common
-    from openedx.core.djangoapps.user_api.api import profile as profile_api
-
     email_opt_in = request.POST.get('email_opt_in')
     if email_opt_in is not None:
         email_opt_in_boolean = email_opt_in == 'true'
-        profile_api.update_email_opt_in(request.user, org, email_opt_in_boolean)
+        preferences_api.update_email_opt_in(request.user, org, email_opt_in_boolean)
 
 
 @require_POST
@@ -1182,11 +1181,13 @@ def login_oauth_token(request, backend):
     retrieve information from a third party and matching that information to an
     existing user.
     """
+    warnings.warn("Please use AccessTokenExchangeView instead.", DeprecationWarning)
+
     backend = request.social_strategy.backend
     if isinstance(backend, social_oauth.BaseOAuth1) or isinstance(backend, social_oauth.BaseOAuth2):
         if "access_token" in request.POST:
             # Tell third party auth pipeline that this is an API call
-            request.session[pipeline.AUTH_ENTRY_KEY] = pipeline.AUTH_ENTRY_API
+            request.session[pipeline.AUTH_ENTRY_KEY] = pipeline.AUTH_ENTRY_LOGIN_API
             user = None
             try:
                 user = backend.do_auth(request.POST["access_token"])
@@ -1412,11 +1413,6 @@ def _do_create_account(form):
         log.exception("UserProfile creation failed for user {id}.".format(id=user.id))
         raise
 
-    # TODO: remove circular dependency on openedx from common
-    from openedx.core.djangoapps.user_api.models import UserPreference
-
-    UserPreference.set_preference(user, LANGUAGE_KEY, get_language())
-
     return (user, profile, registration)
 
 
@@ -1444,7 +1440,14 @@ def create_account_with_params(request, params):
         getattr(settings, 'REGISTRATION_EXTRA_FIELDS', {})
     )
 
-    if third_party_auth.is_enabled() and pipeline.running(request):
+    # Boolean of whether a 3rd party auth provider and credentials were provided in
+    # the API so the newly created account can link with the 3rd party account.
+    #
+    # Note: this is orthogonal to the 3rd party authentication pipeline that occurs
+    # when the account is created via the browser and redirect URLs.
+    should_link_with_social_auth = third_party_auth.is_enabled() and 'provider' in params
+
+    if should_link_with_social_auth or (third_party_auth.is_enabled() and pipeline.running(request)):
         params["password"] = pipeline.make_random_password()
 
     # if doing signup for an external authorization, then get email, password, name from the eamap
@@ -1485,13 +1488,42 @@ def create_account_with_params(request, params):
         extended_profile_fields=extended_profile_fields,
         enforce_username_neq_password=True,
         enforce_password_policy=enforce_password_policy,
-        tos_required=tos_required
+        tos_required=tos_required,
     )
 
+    # Perform operations within a transaction that are critical to account creation
     with transaction.commit_on_success():
-        ret = _do_create_account(form)
+        # first, create the account
+        (user, profile, registration) = _do_create_account(form)
 
-    (user, profile, registration) = ret
+        # next, link the account with social auth, if provided
+        if should_link_with_social_auth:
+            request.social_strategy = social_utils.load_strategy(backend=params['provider'], request=request)
+            social_access_token = params.get('access_token')
+            if not social_access_token:
+                raise ValidationError({
+                    'access_token': [
+                        _("An access_token is required when passing value ({}) for provider.").format(
+                            params['provider']
+                        )
+                    ]
+                })
+            request.session[pipeline.AUTH_ENTRY_KEY] = pipeline.AUTH_ENTRY_REGISTER_API
+            pipeline_user = None
+            error_message = ""
+            try:
+                pipeline_user = request.social_strategy.backend.do_auth(social_access_token, user=user)
+            except AuthAlreadyAssociated:
+                error_message = _("The provided access_token is already associated with another user.")
+            except (HTTPError, AuthException):
+                error_message = _("The provided access_token is not valid.")
+            if not pipeline_user or not isinstance(pipeline_user, User):
+                # Ensure user does not re-enter the pipeline
+                request.social_strategy.clean_partial_pipeline()
+                raise ValidationError({'access_token': [error_message]})
+
+    # Perform operations that are non-critical parts of account creation
+    preferences_api.set_user_preference(user, LANGUAGE_KEY, get_language())
 
     if settings.FEATURES.get('ENABLE_DISCUSSION_EMAIL_DIGEST'):
         try:
@@ -1625,6 +1657,8 @@ def create_account(request, post_override=None):
     JSON call to create new edX account.
     Used by form in signup_modal.html, which is included into navigation.html
     """
+    warnings.warn("Please use RegistrationView instead.", DeprecationWarning)
+
     try:
         create_account_with_params(request, post_override or request.POST)
     except AccountValidationError as exc:
@@ -1871,6 +1905,7 @@ def password_reset_confirm_wrapper(
             'form': None,
             'title': _('Password reset unsuccessful'),
             'err_msg': err_msg,
+            'platform_name': settings.PLATFORM_NAME,
         }
         return TemplateResponse(request, 'registration/password_reset_confirm.html', context)
     else:

@@ -35,7 +35,7 @@ from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext as _
 
 from bulk_email.models import (
-    CourseEmail, Optout, CourseEmailTemplate,
+    CourseEmail, Optout,
     SEND_TO_MYSELF, SEND_TO_ALL, TO_OPTIONS,
     SEND_TO_STAFF,
 )

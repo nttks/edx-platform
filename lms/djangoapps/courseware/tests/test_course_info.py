@@ -1,16 +1,15 @@
 """
 Test the course_info xblock
 """
-from django.core.urlresolvers import reverse
-from django.test.utils import override_settings
 import mock
+
+from django.core.urlresolvers import reverse
 from opaque_keys.edx.locations import SlashSeparatedCourseKey
 
 from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
-from xmodule.modulestore.tests.django_utils import (
-    TEST_DATA_MOCK_MODULESTORE, TEST_DATA_MIXED_CLOSED_MODULESTORE
-)
+from xmodule.modulestore.tests.django_utils import TEST_DATA_MIXED_CLOSED_MODULESTORE
 from xmodule.modulestore.tests.factories import CourseFactory, ItemFactory
+from student.models import CourseEnrollment
 
 from .helpers import LoginEnrollmentTestCase
 
@@ -46,6 +45,20 @@ class CourseInfoTestCase(LoginEnrollmentTestCase, ModuleStoreTestCase):
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
         self.assertNotIn("OOGIE BLOOGIE", resp.content)
+
+    def test_logged_in_not_enrolled(self):
+        self.setup_user()
+        url = reverse('info', args=[self.course.id.to_deprecated_string()])
+        self.client.get(url)
+
+        # Check whether the user has been enrolled in the course.
+        # There was a bug in which users would be automatically enrolled
+        # with is_active=False (same as if they enrolled and immediately unenrolled).
+        # This verifies that the user doesn't have *any* enrollment record.
+        enrollment_exists = CourseEnrollment.objects.filter(
+            user=self.user, course_id=self.course.id
+        ).exists()
+        self.assertFalse(enrollment_exists)
 
 
 class CourseInfoTestCaseXML(LoginEnrollmentTestCase, ModuleStoreTestCase):

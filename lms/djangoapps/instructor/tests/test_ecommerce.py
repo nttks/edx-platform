@@ -4,16 +4,15 @@ Unit tests for Ecommerce feature flag in new instructor dashboard.
 
 import unittest
 
-from django.core.urlresolvers import reverse
 import datetime
+
 import pytz
-from django.test.utils import override_settings
-from mock import patch
+
+from django.core.urlresolvers import reverse
 
 from course_modes.models import CourseMode
-from xmodule.modulestore.tests.django_utils import TEST_DATA_MOCK_MODULESTORE
 from student.roles import CourseFinanceAdminRole
-from shoppingcart.models import Coupon, PaidCourseRegistration, CourseRegistrationCode
+from shoppingcart.models import Coupon, CourseRegistrationCode
 from student.tests.factories import AdminFactory
 from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
 from xmodule.modulestore.tests.factories import CourseFactory
@@ -39,12 +38,6 @@ class TestECommerceDashboardViews(ModuleStoreTestCase):
         self.url = reverse('instructor_dashboard', kwargs={'course_id': self.course.id.to_deprecated_string()})
         self.e_commerce_link = '<a href="" data-section="e-commerce">E-Commerce</a>'
         CourseFinanceAdminRole(self.course.id).add_users(self.instructor)
-
-    def tearDown(self):
-        """
-        Undo all patches.
-        """
-        patch.stopall()
 
     @unittest.skip("This test is not yet modified.")
     def test_pass_e_commerce_tab_in_instructor_dashboard(self):

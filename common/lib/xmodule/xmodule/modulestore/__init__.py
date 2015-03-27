@@ -327,6 +327,8 @@ class EditInfo(object):
         # User ID which changed this XBlock last.
         self.edited_by = edit_info.get('edited_by', None)
 
+        # If this block has been copied from a library using copy_from_template,
+        # these fields point to the original block in the library, for analytics.
         self.original_usage = edit_info.get('original_usage', None)
         self.original_usage_version = edit_info.get('original_usage_version', None)
 
@@ -693,7 +695,7 @@ class ModuleStoreRead(ModuleStoreAssetBase):
         pass
 
     @abstractmethod
-    def get_item(self, usage_key, depth=0, **kwargs):
+    def get_item(self, usage_key, depth=0, using_descriptor_system=None, **kwargs):
         """
         Returns an XModuleDescriptor instance for the item at location.
 
@@ -827,7 +829,9 @@ class ModuleStoreRead(ModuleStoreAssetBase):
     def get_courses(self, **kwargs):
         '''
         Returns a list containing the top level XModuleDescriptors of the courses
-        in this modulestore.
+        in this modulestore. This method can take an optional argument 'org' which
+        will efficiently apply a filter so that only the courses of the specified
+        ORG in the CourseKey will be fetched.
         '''
         pass
 

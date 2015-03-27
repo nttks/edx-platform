@@ -182,6 +182,9 @@ setup_instructor_dashboard_sections = (idash_content) ->
   ,
     constructor: window.InstructorDashboard.sections.ProgressReport
     $element: idash_content.find ".#{CSS_IDASH_SECTION}#progress_report"
+  ,
+    constructor: window.InstructorDashboard.sections.CohortManagement
+    $element: idash_content.find ".#{CSS_IDASH_SECTION}#cohort_management"
   ]
 
   sections_to_initialize.map ({constructor, $element}) ->

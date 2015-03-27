@@ -9,9 +9,7 @@ from django.core import mail
 from django.core.management import call_command
 from django.core.urlresolvers import reverse
 from django.conf import settings
-from django.test.utils import override_settings
 
-from xmodule.modulestore.tests.django_utils import TEST_DATA_MOCK_MODULESTORE
 from student.tests.factories import UserFactory, AdminFactory, CourseEnrollmentFactory
 from student.models import CourseEnrollment
 from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
@@ -20,7 +18,6 @@ from xmodule.modulestore.tests.factories import CourseFactory
 
 @patch('bulk_email.models.html_to_text', Mock(return_value='Mocking CourseEmail.text_message'))
 class TestOptoutCourseEmails(ModuleStoreTestCase):
-
     """
     Test that optouts are referenced in sending course email.
     """
@@ -43,12 +40,6 @@ class TestOptoutCourseEmails(ModuleStoreTestCase):
             'course_id': self.course.id.to_deprecated_string(),
             'success': True,
         }
-
-    def tearDown(self):
-        """
-        Undo all patches.
-        """
-        patch.stopall()
 
     def navigate_to_email_view(self):
         """Navigate to the instructor dash's email view"""

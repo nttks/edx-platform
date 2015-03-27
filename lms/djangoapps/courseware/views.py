@@ -28,7 +28,6 @@ from edxmako.shortcuts import render_to_response, render_to_string, marketing_li
 from django_future.csrf import ensure_csrf_cookie
 from django.views.decorators.cache import cache_control
 from django.db import transaction
-from functools import wraps
 from markupsafe import escape
 
 from courseware import grades
@@ -51,7 +50,7 @@ from util.cache import cache, cache_if_anonymous
 from xblock.fragment import Fragment
 from xmodule.modulestore.django import modulestore
 from xmodule.modulestore.exceptions import ItemNotFoundError, NoPathToItem
-from xmodule.modulestore.search import path_to_location
+from xmodule.modulestore.search import path_to_location, navigation_index
 from xmodule.tabs import CourseTabList, StaffGradingTab, PeerGradingTab, OpenEndedGradingTab
 from xmodule.x_module import STUDENT_VIEW
 import shoppingcart
@@ -62,7 +61,7 @@ from util.milestones_helpers import get_prerequisite_courses_display
 
 from microsite_configuration import microsite
 from opaque_keys.edx.locations import SlashSeparatedCourseKey
-from opaque_keys.edx.keys import CourseKey
+from opaque_keys.edx.keys import CourseKey, UsageKey
 from instructor.enrollment import uses_shib
 
 from util.db import commit_on_success_with_read_committed
@@ -315,7 +314,7 @@ def index(request, course_id, chapter=None, section=None,
      - HTTPresponse
     """
 
-    course_key = SlashSeparatedCourseKey.from_deprecated_string(course_id)
+    course_key = CourseKey.from_string(course_id)
 
     user = User.objects.prefetch_related("groups").get(id=request.user.id)
 
@@ -490,8 +489,8 @@ def _index_bulk_op(request, course_key, chapter, section, position):
 
             # Load all descendants of the section, because we're going to display its
             # html, which in general will need all of its children
-            section_field_data_cache = FieldDataCache.cache_for_descriptor_descendents(
-                course_key, user, section_descriptor, depth=None, asides=XBlockAsidesConfig.possible_asides()
+            field_data_cache.add_descriptor_descendents(
+                section_descriptor, depth=None
             )
 
             # Verify that position a string is in fact an int
@@ -505,7 +504,7 @@ def _index_bulk_op(request, course_key, chapter, section, position):
                 request.user,
                 request,
                 section_descriptor,
-                section_field_data_cache,
+                field_data_cache,
                 course_key,
                 position
             )
@@ -620,8 +619,8 @@ def jump_to(_request, course_id, location):
     has access, and what they should see.
     """
     try:
-        course_key = SlashSeparatedCourseKey.from_deprecated_string(course_id)
-        usage_key = course_key.make_usage_key_from_deprecated_string(location)
+        course_key = CourseKey.from_string(course_id)
+        usage_key = UsageKey.from_string(location).replace(course_key=course_key)
     except InvalidKeyError:
         raise Http404(u"Invalid course_key or usage_key")
     try:
@@ -635,13 +634,27 @@ def jump_to(_request, course_id, location):
     # args provided by the redirect.
     # Rely on index to do all error handling and access control.
     if chapter is None:
-        return redirect('courseware', course_id=course_key.to_deprecated_string())
+        return redirect('courseware', course_id=unicode(course_key))
     elif section is None:
-        return redirect('courseware_chapter', course_id=course_key.to_deprecated_string(), chapter=chapter)
+        return redirect('courseware_chapter', course_id=unicode(course_key), chapter=chapter)
     elif position is None:
-        return redirect('courseware_section', course_id=course_key.to_deprecated_string(), chapter=chapter, section=section)
+        return redirect(
+            'courseware_section',
+            course_id=unicode(course_key),
+            chapter=chapter,
+            section=section
+        )
     else:
-        return redirect('courseware_position', course_id=course_key.to_deprecated_string(), chapter=chapter, section=section, position=position)
+        # Here we use the navigation_index from the position returned from
+        # path_to_location - we can only navigate to the topmost vertical at the
+        # moment
+        return redirect(
+            'courseware_position',
+            course_id=unicode(course_key),
+            chapter=chapter,
+            section=section,
+            position=navigation_index(position)
+        )
 
 
 @ensure_csrf_cookie
@@ -652,7 +665,6 @@ def course_info(request, course_id):
 
     Assumes the course_id is in a valid format.
     """
-
     course_key = SlashSeparatedCourseKey.from_deprecated_string(course_id)
 
     with modulestore().bulk_operations(course_key):
@@ -1065,11 +1077,12 @@ def fetch_reverify_banner_info(request, course_key):
     user = request.user
     if not user.id:
         return reverifications
-    enrollment = CourseEnrollment.get_or_create_enrollment(request.user, course_key)
-    course = modulestore().get_course(course_key)
-    info = single_course_reverification_info(user, course, enrollment)
-    if info:
-        reverifications[info.status].append(info)
+    enrollment = CourseEnrollment.get_enrollment(request.user, course_key)
+    if enrollment is not None:
+        course = modulestore().get_course(course_key)
+        info = single_course_reverification_info(user, course, enrollment)
+        if info:
+            reverifications[info.status].append(info)
     return reverifications
 
 

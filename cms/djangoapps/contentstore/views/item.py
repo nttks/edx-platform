@@ -24,7 +24,7 @@ from xblock.fields import Scope
 from xblock.fragment import Fragment
 
 import xmodule
-from xmodule.tabs import StaticTab, CourseTabList
+from xmodule.tabs import CourseTabList
 from xmodule.modulestore import ModuleStoreEnum, EdxJSONEncoder
 from xmodule.modulestore.django import modulestore
 from xmodule.modulestore.exceptions import ItemNotFoundError, InvalidLocationError
@@ -47,7 +47,7 @@ from contentstore.views.preview import get_preview_fragment
 from edxmako.shortcuts import render_to_string
 from models.settings.course_grading import CourseGradingModel
 from cms.lib.xblock.runtime import handler_url, local_resource_url
-from opaque_keys.edx.keys import UsageKey, CourseKey
+from opaque_keys.edx.keys import CourseKey
 from opaque_keys.edx.locator import LibraryUsageLocator
 from cms.lib.xblock.authoring_mixin import VISIBILITY_VIEW
 
@@ -264,7 +264,7 @@ def xblock_view_handler(request, usage_key_string, view_name):
                 # pylint: disable=too-many-format-args
                 return HttpResponse(
                     content="Couldn't parse paging parameters: enable_paging: "
-                            "%s, page_number: %s, page_size: %s".format(
+                            "{0}, page_number: {1}, page_size: {2}".format(
                                 request.REQUEST.get('enable_paging', 'false'),
                                 request.REQUEST.get('page_number', 0),
                                 request.REQUEST.get('page_size', 0)
@@ -272,6 +272,8 @@ def xblock_view_handler(request, usage_key_string, view_name):
                     status=400,
                     content_type="text/plain",
                 )
+
+            force_render = request.REQUEST.get('force_render', None)
 
             # Set up the context to be passed to each XBlock's render method.
             context = {
@@ -281,6 +283,7 @@ def xblock_view_handler(request, usage_key_string, view_name):
                 'root_xblock': xblock if (view_name == 'container_preview') else None,
                 'reorderable_items': reorderable_items,
                 'paging': paging,
+                'force_render': force_render,
             }
 
             fragment = get_preview_fragment(request, xblock, context)
