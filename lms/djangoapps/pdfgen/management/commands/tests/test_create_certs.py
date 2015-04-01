@@ -3,8 +3,9 @@ from django.core.management import call_command
 from django.core.management.base import CommandError
 from django.conf import settings
 from django.test.utils import override_settings
-from courseware.tests.tests import TEST_DATA_MONGO_MODULESTORE
+from xmodule.modulestore.tests.django_utils import TEST_DATA_MOCK_MODULESTORE
 from xmodule.modulestore.tests.factories import CourseFactory, ItemFactory
+from xmodule.modulestore.exceptions import DuplicateCourseError
 from capa.tests.response_xml_factory import OptionResponseXMLFactory
 from opaque_keys.edx.locator import CourseLocator
 from student.tests.factories import UserFactory, CourseEnrollmentFactory
@@ -15,6 +16,7 @@ from mock import patch, MagicMock, ANY
 from StringIO import StringIO
 import datetime
 import os
+from random import randint
 #from pytz import UTC
 from django.utils.timezone import UTC
 from reportlab.pdfgen import canvas
@@ -123,7 +125,7 @@ class GenerateCertCommandTestCase(TestCase):
 
 
 @override_settings(
-    MODULESTORE=TEST_DATA_MONGO_MODULESTORE,
+    MODULESTORE=TEST_DATA_MOCK_MODULESTORE,
     PDFGEN_BUCKET_NAME='bucket', PDFGEN_ACCESS_KEY_ID='akey',
     PDFGEN_SECRET_ACCESS_KEY='skey', PDFGEN_CERT_AUTHOR='author',
     PDFGEN_CERT_TITLE='title', PDFGEN_BASE_PDF_DIR='/tmp')
@@ -132,10 +134,18 @@ class GenerateCertCommandIntegrationTestCase(TestCase):
     def setUp(self):
         start_date = datetime.datetime(2000, 1, 1, tzinfo=UTC())
         end_date = datetime.datetime(2010, 12, 31, tzinfo=UTC())
-        self.course = CourseFactory.create(
-            org='org', number='num',
-            run='run', display_name='test_course',
-            start=start_date, end=end_date)
+        #self.course = CourseFactory.create(
+        #    org='org', number='num', run='run', display_name='test_course',
+        #    start=start_date, end=end_date)
+        for i in xrange(1, 10):
+            random = i * randint(1, 100)
+            try: 
+                self.course = CourseFactory.create(
+                    org='org_' + str(random), number='num', run="run", display_name='test_course',
+                    start=start_date, end=end_date)
+                break
+            except DuplicateCourseError:
+                print "wow"
 
         UserFactory.reset_sequence()
         self.students = UserFactory.create_batch(3)
@@ -198,7 +208,7 @@ class GenerateCertCommandIntegrationTestCase(TestCase):
             query_auth=False, expires_in=0, force_http=True)
         self.s3key_mock().close.assert_any_call()
 
-        self.assertEqual(std_mock.getvalue(), '\nFetching course data for org/num/run.\nFetching enrollment for students(org/num/run).\nUser robot1: Grade 100% - Pass : Status generating\nUser robot2: Grade 100% - Pass : Status generating\nUser robot3: Grade 100% - Pass : Status generating\n')
+        self.assertEqual(std_mock.getvalue(), '\nFetching course data for {}.\nFetching enrollment for students({}).\nUser robot1: Grade 100% - Pass : Status generating\nUser robot2: Grade 100% - Pass : Status generating\nUser robot3: Grade 100% - Pass : Status generating\n'.format(self.course.id, self.course.id))
 
     def test_delete(self):
         cert = GeneratedCertificateFactory(
@@ -224,7 +234,7 @@ class GenerateCertCommandIntegrationTestCase(TestCase):
         with patch('sys.stdout', new_callable=StringIO) as std_mock:
             call_command(self.prog_name, *self.args_report, **self.kwargs)
 
-        self.assertEqual(std_mock.getvalue(), '\nFetching course data for org/num/run\nSummary Report: Course Name [test_course]\n  User Name [robot1] (Grade :0.0% - None)\n\n\nTotal: Users 3, Pass 0( No grade.)\n')
+        self.assertEqual(std_mock.getvalue(), '\nFetching course data for {}\nSummary Report: Course Name [test_course]\n  User Name [robot1] (Grade :0.0% - None)\n\n\nTotal: Users 3, Pass 0( No grade.)\n'.format(self.course.id))
 
     def test_publish(self):
         cert = GeneratedCertificateFactory(
@@ -233,4 +243,4 @@ class GenerateCertCommandIntegrationTestCase(TestCase):
         with patch('sys.stdout', new_callable=StringIO) as std_mock:
             call_command(self.prog_name, *self.args_publish, **self.kwargs)
 
-        self.assertEqual(std_mock.getvalue(), "\nFetching course data for org/num/run\nFetching enrollment for students(org/num/run).\nPublish robot1's certificate : Status downloadable\n")
+        self.assertEqual(std_mock.getvalue(), "\nFetching course data for {}\nFetching enrollment for students({}).\nPublish robot1's certificate : Status downloadable\n".format(self.course.id, self.course.id))
