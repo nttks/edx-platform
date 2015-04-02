@@ -107,9 +107,8 @@ class ResetPasswordTests(TestCase):
         })
 
         (subject, msg, from_addr, to_addrs) = send_email.call_args[0]
-        #Note(EDX-701): Modified for gacco
-        #self.assertIn("Password reset", subject)
-        #self.assertIn("You're receiving this e-mail because you requested a password reset", msg)
+        self.assertIn("Password reset", subject)
+        self.assertIn("You're receiving this e-mail because you requested a password reset", msg)
         self.assertEquals(from_addr, settings.DEFAULT_FROM_EMAIL)
         self.assertEquals(len(to_addrs), 1)
         self.assertIn(self.user.email, to_addrs)
@@ -133,11 +132,9 @@ class ResetPasswordTests(TestCase):
         req.is_secure = Mock(return_value=is_secure)
         resp = password_reset(req)
         _, msg, _, _ = send_email.call_args[0]
-        #Note(EDX-701): Modified for gacco
-        #expected_msg = "Please go to the following page and choose a new password:\n\n" + protocol
+        expected_msg = "Please go to the following page and choose a new password:\n\n" + protocol
 
-        re.search(r'\n\nhttps://[^/]*/password_reset_confirm/(?P<uidb36>[0-9A-Za-z]+)-(?P<token>.+)/', msg).groupdict()
-        #self.assertIn(expected_msg, msg)
+        self.assertIn(expected_msg, msg)
 
     @unittest.skipUnless(settings.ROOT_URLCONF == 'lms.urls', "Test only valid in LMS")
     @patch('django.core.mail.send_mail')

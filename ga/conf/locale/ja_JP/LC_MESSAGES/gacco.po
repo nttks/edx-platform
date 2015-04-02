@@ -1836,6 +1836,65 @@ msgstr ""
 "\n"
 "<a href=\"%(MKTG_URL_FAQ)s\">連絡先情報、および、よくある質問</a>のページを見る"
 
+#: django/django/contrib/auth/templates/registration/password_reset_subject.txt
+msgid "Password reset on %(site_name)s"
+msgstr "■gacco パスワード変更"
+
+#: lms/templates/registration/password_reset_email.html:2
+#, python-format
+msgid ""
+"You're receiving this e-mail because you requested a password reset for your"
+" user account at %(site_name)s."
+msgstr ""
+"━━━━━━━━━\n"
+"■gacco パスワード再設定手続きのご案内\n"
+"━━━━━━━━━\n"
+"いつもgaccoをご利用いただきまして、ありがとうございます。"
+"\n"
+
+#: lms/templates/registration/password_reset_email.html:4
+msgid "Please go to the following page and choose a new password:"
+msgstr ""
+"下記のURLをクリックし、パスワードの再設定を行ってください。\n"
+"\n"
+"─────────\n"
+"【パスワード再設定手続き用ＵＲＬ】"
+
+#: lms/templates/registration/password_reset_email.html:9
+msgid ""
+"If you didn't request this change, you can disregard this email - we have "
+"not yet reset your password."
+msgstr ""
+"─────────\n"
+"\n"
+"※アクセスしてもエラー画面が表示される場合は、\n"
+"　再度パスワード再設定の申込を行ってください。\n"
+"\n"
+"※上記手続き用URLが改行され、URLをクリックしても\n"
+"　登録ページが表示されない場合は、URLをすべてコピーして\n"
+"　ブラウザのアドレス欄に貼り付けてアクセスしてください。\n"
+"\n"
+"─────────\n"
+"\n"
+"このメールは自動送信しています。ご返信いただいてもお答えできかね\n"
+"ますのでご了承ください。"
+
+#: lms/templates/registration/password_reset_email.html:11
+msgid "Thanks for using our site!"
+msgstr ""
+"==================\n"
+"・gaccoに関する「よくあるご質問」はコチラ\n"
+"https://support.gacco.org/\n"
+"\n"
+"・お問い合わせはマイページの「ヘルプ」ボタンよりお願いします\n"
+"https://lms.gacco.org/dashboard"
+"\n"
+
+#: lms/templates/registration/password_reset_email.html:13
+#, python-format
+msgid "The %(platform_name)s Team"
+msgstr "gacco運営チーム"
+
 #: lms/templates/dashboard.html
 msgid "Resign"
 msgstr "退会手続き"
