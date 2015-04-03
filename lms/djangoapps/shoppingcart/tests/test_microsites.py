@@ -22,19 +22,17 @@ def fake_all_orgs(default=None):  # pylint: disable=unused-argument
     """
     return set(['fakeX', 'fooX'])
 
+def fakex_microsite_configuration():
+    """
+    create a fake microsite configuration
+    """
+    return {'course_org_filter': 'fakeX'}
 
-def fakex_microsite(name, default=None):  # pylint: disable=unused-argument
+def non_microsite_configuration():
     """
-    create a fake microsite site name
+    create a fake microsite configuration
     """
-    return 'fakeX'
-
-
-def non_microsite(name, default=None):  # pylint: disable=unused-argument
-    """
-    create a fake microsite site name
-    """
-    return None
+    return {}
 
 
 @patch.dict('django.conf.settings.FEATURES', {'ENABLE_PAID_COURSE_REGISTRATION': True})
@@ -123,7 +121,7 @@ class TestOrderHistoryOnMicrositeDashboard(ModuleStoreTestCase):
         cart.purchase(first='FirstNameTesting123', street1='StreetTesting123')
         self.orderid_courseless_donation = cart.id
 
-    @mock.patch("microsite_configuration.microsite.get_value", fakex_microsite)
+    @mock.patch("microsite_configuration.microsite.get_configuration", fakex_microsite_configuration)
     @mock.patch("microsite_configuration.microsite.get_all_orgs", fake_all_orgs)
     def test_when_in_microsite_shows_orders_with_microsite_courses_only(self):
         self.client.login(username=self.user.username, password="password")
@@ -140,7 +138,7 @@ class TestOrderHistoryOnMicrositeDashboard(ModuleStoreTestCase):
         self.assertNotIn(receipt_url_cert_non_microsite, response.content)
         self.assertNotIn(receipt_url_donation, response.content)
 
-    @mock.patch("microsite_configuration.microsite.get_value", non_microsite)
+    @mock.patch("microsite_configuration.microsite.get_configuration", non_microsite_configuration)
     @mock.patch("microsite_configuration.microsite.get_all_orgs", fake_all_orgs)
     def test_when_not_in_microsite_shows_orders_with_non_microsite_courses_only(self):
         self.client.login(username=self.user.username, password="password")
