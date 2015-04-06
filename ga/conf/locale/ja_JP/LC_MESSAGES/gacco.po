@@ -1814,6 +1814,57 @@ msgstr "※未成年の方がお申し込みをいただく場合は、親権者
 msgid "Let's login and enjoy your courses!"
 msgstr "ログインして学習をはじめましょう。"
 
+#: lms/templates/emails/activation_email_subject.txt
+msgid "Activate Your {platform_name} Account"
+msgstr "■gacco 会員登録のご案内"
+
+#: lms/templates/emails/activation_email.txt:3
+msgid "Thank you for signing up for {platform_name}."
+msgstr ""
+"━━━━━━━━━\n"
+"■gacco 会員登録のご案内\n"
+"━━━━━━━━━\n"
+"この度は、gaccoに会員登録いただきまして、ありがとうございます。"
+
+#: lms/templates/emails/activation_email.txt:5
+msgid ""
+"To get started, please activate your account by clicking on the link below "
+"(you may also copy and paste the link into your browser's address bar)."
+msgstr ""
+"登録の手続きはまだ完了していません。\n"
+"以下のURLをクリックし、登録を完了してください。\n"
+"─────────\n"
+"【会員登録手続き用ＵＲＬ】"
+
+#: lms/templates/emails/activation_email.txt:46
+msgid ""
+"If you didn't request this, you don't need to do anything; you won't receive"
+" any more email from us. Please do not reply to this e-mail; if you require "
+"assistance, check the help section of the {platform_name} website."
+msgstr ""
+"─────────\n"
+"\n"
+"※上記手続き用URLが改行され、URLをクリックしても\n"
+"　登録ページが表示されない場合は、URLをすべてコピーして、\n"
+"　ブラウザのアドレス欄に貼り付けてアクセスしてください。\n"
+"\n"
+"─────────\n"
+"\n"
+"このメールは自動送信しています。ご返信いただいてもお答えできかね\n"
+"ますのでご了承ください。\n"
+"\n"
+"なお、このメールの内容に覚えのない方は、破棄していただきますよう\n"
+"お願い申し上げます。\n"
+"==================\n"
+"・gaccoに関する「よくあるご質問」はコチラ\n"
+"https://support.gacco.org/\n"
+"\n"
+"・お問い合わせはマイページの「ヘルプ」ボタンよりお願いします\n"
+"https://lms.gacco.org/dashboard\n"
+"\n"
+"\n"
+"gacco運営チーム"
+
 #: common/djangoapps/student/forms.py
 msgid "New password is required."
 msgstr "新パスワードは必須です。"
