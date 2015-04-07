@@ -5,12 +5,12 @@ import mock
 from mock import patch
 import shutil
 import lxml.html
+import ddt
 
 from datetime import timedelta
 from fs.osfs import OSFS
 from json import loads
 from path import path
-from tempdir import mkdtemp_clean
 from textwrap import dedent
 from uuid import uuid4
 from functools import wraps
@@ -21,8 +21,11 @@ from django.contrib.auth.models import User
 from django.test import TestCase
 from django.test.utils import override_settings
 
+from openedx.core.lib.tempdir import mkdtemp_clean
 from contentstore.tests.utils import parse_json, AjaxEnabledTestClient, CourseTestCase
 from contentstore.views.component import ADVANCED_COMPONENT_TYPES
+
+from edxval.api import create_video, get_videos_for_course
 
 from xmodule.contentstore.django import contentstore
 from xmodule.contentstore.utils import restore_asset_from_trashcan, empty_asset_trashcan
@@ -976,6 +979,7 @@ class MiscCourseTests(ContentStoreTestCase):
             self.assertEqual(resp.status_code, 200)
 
 
+@ddt.ddt
 class ContentStoreTest(ContentStoreTestCase):
     """
     Tests for the CMS ContentStore application.
@@ -1433,13 +1437,29 @@ class ContentStoreTest(ContentStoreTestCase):
         # make sure we found the item (e.g. it didn't error while loading)
         self.assertTrue(did_load_item)
 
-    def test_forum_id_generation(self):
-        course = CourseFactory.create()
+    @ddt.data(ModuleStoreEnum.Type.split, ModuleStoreEnum.Type.mongo)
+    def test_forum_id_generation(self, default_store):
+        """
+        Test that a discussion item, even if it doesn't set its discussion_id,
+        consistently generates the same one
+        """
+        course = CourseFactory.create(default_store=default_store)
 
-        # crate a new module and add it as a child to a vertical
-        new_discussion_item = self.store.create_item(self.user.id, course.id, 'discussion', 'new_component')
+        # create a discussion item
+        discussion_item = self.store.create_item(self.user.id, course.id, 'discussion', 'new_component')
 
-        self.assertNotEquals(new_discussion_item.discussion_id, '$$GUID$$')
+        # now fetch it from the modulestore to instantiate its descriptor
+        fetched = self.store.get_item(discussion_item.location)
+
+        # refetch it to be safe
+        refetched = self.store.get_item(discussion_item.location)
+
+        # and make sure the same discussion items have the same discussion ids
+        self.assertEqual(fetched.discussion_id, discussion_item.discussion_id)
+        self.assertEqual(fetched.discussion_id, refetched.discussion_id)
+
+        # and make sure that the id isn't the old "$$GUID$$"
+        self.assertNotEqual(discussion_item.discussion_id, '$$GUID$$')
 
     def test_metadata_inheritance(self):
         course_items = import_course_from_xml(
@@ -1694,10 +1714,36 @@ class RerunCourseTest(ContentStoreTestCase):
         self.assertInCourseListing(source_course_key)
         self.assertInCourseListing(destination_course_key)
 
-    def test_rerun_course_success(self):
+    def test_rerun_course_no_videos_in_val(self):
+        """
+        Test when rerunning a course with no videos, VAL copies nothing
+        """
         source_course = CourseFactory.create()
         destination_course_key = self.post_rerun_request(source_course.id)
         self.verify_rerun_course(source_course.id, destination_course_key, self.destination_course_data['display_name'])
+        videos = list(get_videos_for_course(destination_course_key))
+        self.assertEqual(0, len(videos))
+        self.assertInCourseListing(destination_course_key)
+
+    def test_rerun_course_success(self):
+        source_course = CourseFactory.create()
+        create_video(
+            dict(
+                edx_video_id="tree-hugger",
+                courses=[source_course.id],
+                status='test',
+                duration=2,
+                encoded_videos=[]
+            )
+        )
+        destination_course_key = self.post_rerun_request(source_course.id)
+        self.verify_rerun_course(source_course.id, destination_course_key, self.destination_course_data['display_name'])
+
+        # Verify that the VAL copies videos to the rerun
+        source_videos = list(get_videos_for_course(source_course.id))
+        target_videos = list(get_videos_for_course(destination_course_key))
+        self.assertEqual(1, len(source_videos))
+        self.assertEqual(source_videos, target_videos)
 
     def test_rerun_of_rerun(self):
         source_course = CourseFactory.create()

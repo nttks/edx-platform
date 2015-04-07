@@ -149,7 +149,7 @@
     </div>
 
     <%block name="footer">
-      ## Can be overridden by child templates wanting to hide the footer. 
+      ## Can be overridden by child templates wanting to hide the footer.
       <%
         if theme_enabled() and not is_microsite():
           footer_file = 'theme-footer.html'
@@ -173,12 +173,46 @@
 </html>
 
 <%def name="login_query()">${
-  u"?course_id={0}&enrollment_action={1}{email_opt_in}".format(
+  u"?course_id={0}&enrollment_action={1}{course_mode}{email_opt_in}".format(
     urlquote_plus(course_id),
     urlquote_plus(enrollment_action),
+    course_mode=(
+      u"&course_mode=" + urlquote_plus(course_mode)
+      if course_mode else ""
+    ),
     email_opt_in=(
       u"&email_opt_in=" + urlquote_plus(email_opt_in)
       if email_opt_in else ""
     )
   ) if course_id and enrollment_action else ""
 }</%def>
+
+<!-- Performance beacon for onload times -->
+% if settings.FEATURES.get('ENABLE_ONLOAD_BEACON', False):
+<script>
+  (function () {
+    var sample_rate = ${settings.ONLOAD_BEACON_SAMPLE_RATE};
+    var roll = Math.floor(Math.random() * 100)/100;
+    var onloadBeaconSent = false;
+
+    if(roll < sample_rate){
+      $(window).load(function() {
+        setTimeout(function(){
+          var t = window.performance.timing;
+
+          var data = {
+            event: "onload",
+            value: t.loadEventEnd - t.navigationStart,
+            page: window.location.href,
+          };
+
+          if (!onloadBeaconSent) {
+            $.ajax({method: "POST", url: "/performance", data: data});
+          }
+          onloadBeaconSent = true;
+        }, 0);
+      });
+    }
+  }());
+</script>
+% endif
