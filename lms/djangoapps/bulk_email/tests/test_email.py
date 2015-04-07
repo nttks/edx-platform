@@ -129,7 +129,7 @@ class TestEmailSendFromDashboardMockedHtmlToText(EmailSendFromDashboardTestCase)
         self.assertEquals(mail.outbox[0].to[0], self.instructor.email)
         self.assertEquals(
             mail.outbox[0].subject,
-            '[' + self.course.display_name + ']' + ' test subject for myself'
+            'test subject for myself'
         )
 
     def test_send_to_staff(self):
@@ -233,7 +233,7 @@ class TestEmailSendFromDashboardMockedHtmlToText(EmailSendFromDashboardTestCase)
         )
         self.assertEquals(
             mail.outbox[0].subject,
-            '[' + self.course.display_name + '] ' + uni_subject
+            uni_subject
         )
 
     def test_unicode_students_send_to_all(self):
