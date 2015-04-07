@@ -61,7 +61,6 @@ def url_class(is_active):
         %>
           <li>
              <a href="${tab.link_func(course, reverse) | h}" class="${url_class(tab_is_active)}">
-                 <i class="tab-icon ${tab.icon}"></i>
                  ${_(tab.name) | h}
                  % if tab_is_active:
                    <span class="sr">, current location</span>
