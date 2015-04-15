@@ -6,19 +6,25 @@ describe "DiscussionThreadListView", ->
         appendSetFixtures("""
         <script type="text/template" id="thread-list-template">
             <div class="forum-nav-header">
+                <div class="forum-nav-toggle">
+                    <ul>
+                        <li class="icon fa fa-search selected"></li>
+                        <li class="icon fa fa-reorder"></li>
+                    </ul>
+                </div>
+                <form class="forum-nav-search selected">
+                    <label>
+                        <span class="sr">Search</span>
+                        <input class="forum-nav-search-input" type="text" placeholder="Search all posts">
+                        <i class="icon fa fa-remove"></i>
+                        <i class="icon fa fa-search"></i>
+                    </label>
+                </form>
                 <a href="#" class="forum-nav-browse" aria-haspopup="true">
-                    <i class="icon fa fa-bars"></i>
                     <span class="sr">Discussion topics; current selection is: </span>
                     <span class="forum-nav-browse-current">All Discussions</span>
                     ▾
                 </a>
-                <form class="forum-nav-search">
-                    <label>
-                        <span class="sr">Search</span>
-                        <input class="forum-nav-search-input" type="text" placeholder="Search all posts">
-                        <i class="icon fa fa-search"></i>
-                    </label>
-                </form>
             </div>
             <div class="forum-nav-browse-menu-wrapper" style="display: none">
                 <form class="forum-nav-browse-filter">
@@ -346,6 +352,14 @@ describe "DiscussionThreadListView", ->
         @view.$el.find(".fa-search").click()
         expect(@view.searchFor).toHaveBeenCalled()
 
+    describe "Search reset events", ->
+
+      it "perform search reset when reset icon is clicked", ->
+        setupAjax()
+        spyOn(@view, "retrieveFirstPage")
+        @view.$el.find(".fa-remove").click()
+        expect(@view.retrieveFirstPage).toHaveBeenCalled()
+
     describe "username search", ->
 
         it "makes correct ajax calls", ->
@@ -593,3 +607,24 @@ describe "DiscussionThreadListView", ->
             ,
             "Parent"
           )
+
+    describe "Toggle navigation", ->
+
+      expectSearchVisible = () ->
+        expect($(".forum-nav-search").hasClass("selected")).toBeTruthy()
+        expect($(".forum-nav-toggle .fa-search").hasClass("selected")).toBeTruthy()
+        expect($(".forum-nav-browse").hasClass("selected")).toBeFalsy()
+        expect($(".forum-nav-toggle .fa-reorder").hasClass("selected")).toBeFalsy()
+
+      expectBrowseVisible = () ->
+        expect($(".forum-nav-search").hasClass("selected")).toBeFalsy()
+        expect($(".forum-nav-toggle .fa-search").hasClass("selected")).toBeFalsy()
+        expect($(".forum-nav-browse").hasClass("selected")).toBeTruthy()
+        expect($(".forum-nav-toggle .fa-reorder").hasClass("selected")).toBeTruthy()
+
+      it "display of search view and browser view should be toggled", ->
+        expectSearchVisible()
+        @view.$el.find(".forum-nav-toggle .fa-search").click()
+        expectBrowseVisible()
+        @view.$el.find(".forum-nav-toggle .fa-reorder").click()
+        expectSearchVisible()
