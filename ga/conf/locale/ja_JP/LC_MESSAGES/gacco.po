@@ -1828,15 +1828,16 @@ msgstr ""
 
 #: lms/templates/emails/activation_email.txt:5
 msgid ""
-"To get started, please activate your account by clicking on the link below "
-"(you may also copy and paste the link into your browser's address bar)."
+"Change your life and start learning today by activating your "
+"{platform_name} account. Click on the link below or copy and "
+"paste it into your browser's address bar."
 msgstr ""
 "登録の手続きはまだ完了していません。\n"
 "以下のURLをクリックし、登録を完了してください。\n"
 "─────────\n"
 "【会員登録手続き用ＵＲＬ】"
 
-#: lms/templates/emails/activation_email.txt:46
+#: lms/templates/emails/activation_email.txt:49
 msgid ""
 "If you didn't request this, you don't need to do anything; you won't receive"
 " any more email from us. Please do not reply to this e-mail; if you require "
