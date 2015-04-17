@@ -75,7 +75,6 @@ class ConditionalSteps(object):
         if not_attempted is None:
             answer_problem(self.COURSE_NUM, 'string', True)
             world.css_click("button.check", dismiss_alert=True)
-            world.css_click("input.check", dismiss_alert=True)
 
     def when_i_view_the_conditional(self, step):
         r'I view the conditional$'
