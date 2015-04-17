@@ -3936,7 +3936,6 @@ class TestBulkCohorting(ModuleStoreTestCase):
             'username,email,cohort\r\nfoo_username,bar_email,baz_cohort', mock_store_upload, mock_cohort_task
         )
 
-@override_settings(MODULESTORE=TEST_DATA_MOCK_MODULESTORE)
 class TestInstructorAPISurveyDownload(ModuleStoreTestCase, LoginEnrollmentTestCase):
     """
     Test instructor survey endpoint.
@@ -3945,6 +3944,7 @@ class TestInstructorAPISurveyDownload(ModuleStoreTestCase, LoginEnrollmentTestCa
         class _UserProfileFactory(UserProfileFactory):
             year_of_birth = None
 
+	super(TestInstructorAPISurveyDownload, self).setUp()
         self.course = CourseFactory.create()
         self.instructor = InstructorFactory(course_key=self.course.id)
         self.client.login(username=self.instructor.username, password='test')
@@ -4095,13 +4095,12 @@ class TestInstructorAPISurveyDownload(ModuleStoreTestCase, LoginEnrollmentTestCa
         )
 
 
-#class TestInstructorAPIProgressModules(ModuleStoreTestCase, LoginEnrollmentTestCase):
-@override_settings(MODULESTORE=TEST_DATA_MOCK_MODULESTORE)
 class TestInstructorAPIProgressModules(ModuleStoreTestCase):
     """
     Test instructor progress modules endpoint.
     """
     def setUp(self):
+	super(TestInstructorAPIProgressModules, self).setUp()
         self.course = CourseFactory.create()
         self.instructor = InstructorFactory(course_key=self.course.id)
         self.client.login(username=self.instructor.username, password='test')

@@ -7,14 +7,14 @@ from django.test.utils import override_settings
 from bulk_email.management.commands import deactivate_bulk_email
 from bulk_email.management.commands.tests.factories import OptoutFactory
 from student.tests.factories import CourseEnrollmentFactory, UserFactory
+from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
 from xmodule.modulestore.tests.factories import CourseFactory
-from xmodule.modulestore.tests.django_utils import TEST_DATA_MOCK_MODULESTORE
 
 
-@override_settings(MODULESTORE=TEST_DATA_MOCK_MODULESTORE)
-class BulkEmailCommandTestCase(TestCase):
+class BulkEmailCommandTestCase(ModuleStoreTestCase):
 
     def setUp(self):
+	super(BulkEmailCommandTestCase, self).setUp()
 
         self.kwargs = {"course_id": None, "reactivate": False}
         ###dummy course

@@ -3,7 +3,7 @@ from django.core.management import call_command
 from django.core.management.base import CommandError
 from django.conf import settings
 from django.test.utils import override_settings
-from xmodule.modulestore.tests.django_utils import TEST_DATA_MOCK_MODULESTORE
+from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
 from xmodule.modulestore.tests.factories import CourseFactory, ItemFactory
 from xmodule.modulestore.exceptions import DuplicateCourseError
 from capa.tests.response_xml_factory import OptionResponseXMLFactory
@@ -125,13 +125,13 @@ class GenerateCertCommandTestCase(TestCase):
 
 
 @override_settings(
-    MODULESTORE=TEST_DATA_MOCK_MODULESTORE,
     PDFGEN_BUCKET_NAME='bucket', PDFGEN_ACCESS_KEY_ID='akey',
     PDFGEN_SECRET_ACCESS_KEY='skey', PDFGEN_CERT_AUTHOR='author',
     PDFGEN_CERT_TITLE='title', PDFGEN_BASE_PDF_DIR='/tmp')
-class GenerateCertCommandIntegrationTestCase(TestCase):
+class GenerateCertCommandIntegrationTestCase(ModuleStoreTestCase):
 
     def setUp(self):
+        super(GenerateCertCommandIntegrationTestCase, self).setUp()
         start_date = datetime.datetime(2000, 1, 1, tzinfo=UTC())
         end_date = datetime.datetime(2010, 12, 31, tzinfo=UTC())
         #self.course = CourseFactory.create(
@@ -147,7 +147,7 @@ class GenerateCertCommandIntegrationTestCase(TestCase):
             except DuplicateCourseError:
                 print "wow"
 
-        UserFactory.reset_sequence()
+        UserFactory.reset_sequence(1)
         self.students = UserFactory.create_batch(3)
         for student in self.students:
             CourseEnrollmentFactory.create(

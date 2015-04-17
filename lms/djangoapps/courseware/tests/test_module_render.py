@@ -10,6 +10,7 @@ from functools import partial
 from bson import ObjectId
 from django.http import Http404, HttpResponse
 from django.core.urlresolvers import reverse
+from django.core.serializers.json import DjangoJSONEncoder
 from django.conf import settings
 from django.test.client import RequestFactory
 from django.contrib.auth.models import AnonymousUser
@@ -328,7 +329,7 @@ class TestHandleXBlockCallback(ModuleStoreTestCase, LoginEnrollmentTestCase):
                 'success': False,
                 'msg': 'Submission aborted! Maximum %d files may be submitted at once' %
                        settings.MAX_FILEUPLOADS_PER_INPUT
-            }, indent=2)
+            }, cls=DjangoJSONEncoder, indent=2, ensure_ascii=False)
         )
 
     def test_too_large_file(self):
@@ -349,7 +350,7 @@ class TestHandleXBlockCallback(ModuleStoreTestCase, LoginEnrollmentTestCase):
                 'success': False,
                 'msg': 'Submission aborted! Your file "%s" is too large (max size: %d MB)' %
                        (inputfile.name, settings.STUDENT_FILEUPLOAD_MAX_SIZE / (1000 ** 2))
-            }, indent=2)
+            }, cls=DjangoJSONEncoder, indent=2, ensure_ascii=False)
         )
 
     def test_xmodule_dispatch(self):
