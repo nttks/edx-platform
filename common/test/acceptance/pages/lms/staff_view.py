@@ -47,7 +47,8 @@ class StaffPage(CoursewarePage):
         """
         Answers the problem to give state that we can clean
         """
-        self.q(css='input.check').first.click()
+        with self.handle_alert():
+            self.q(css='input.check').first.click()
         self.wait_for_ajax()
 
     def load_problem_via_ajax(self):
