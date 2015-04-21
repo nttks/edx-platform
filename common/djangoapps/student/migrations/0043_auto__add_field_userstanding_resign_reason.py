@@ -88,6 +88,14 @@ class Migration(SchemaMigration):
             'email': ('django.db.models.fields.CharField', [], {'max_length': '255', 'db_index': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'})
         },
+        'student.dashboardconfiguration': {
+            'Meta': {'object_name': 'DashboardConfiguration'},
+            'change_date': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
+            'changed_by': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['auth.User']", 'null': 'True', 'on_delete': 'models.PROTECT'}),
+            'enabled': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'recent_enrollment_time_delta': ('django.db.models.fields.PositiveIntegerField', [], {'default': '0'})
+        },
         'student.loginfailures': {
             'Meta': {'object_name': 'LoginFailures'},
             'failure_count': ('django.db.models.fields.IntegerField', [], {'default': '0'}),
