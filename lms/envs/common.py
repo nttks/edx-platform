@@ -212,7 +212,7 @@ FEATURES = {
     # 'courseware.student_field_overrides.IndividualStudentOverrideProvider' to
     # the setting FIELD_OVERRIDE_PROVIDERS, in addition to setting this flag to
     # True.
-    'INDIVIDUAL_DUE_DATES': True,
+    'INDIVIDUAL_DUE_DATES': False,
 
     # Enable Custom Courses for EdX
     'CUSTOM_COURSES_EDX': False,
