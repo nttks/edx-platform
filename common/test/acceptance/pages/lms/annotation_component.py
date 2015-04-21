@@ -68,7 +68,8 @@ class AnnotationComponentPage(PageObject):
 
         answer_css = self.active_problem_selector('.tag[data-id="{}"]'.format(self.active_problem))
         # Selenium will first move the element into view then click on it.
-        self.q(css=answer_css).click()
+        with self.handle_alert():
+            self.q(css=answer_css).click()
         # Wait for the click to take effect, which is after the class is applied.
         self.wait_for(lambda: 'selected' in self.q(css=answer_css).attrs('class')[0], description='answer selected')
         # Click the "Check" button.
