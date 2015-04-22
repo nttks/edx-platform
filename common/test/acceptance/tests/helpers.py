@@ -7,6 +7,7 @@ import functools
 import requests
 import os
 from datetime import datetime
+from pytz import UTC
 from path import path
 from bok_choy.javascript import js_defined
 from bok_choy.web_app_test import WebAppTest
@@ -278,7 +279,7 @@ class EventsTestMixin(object):
         super(EventsTestMixin, self).setUp()
         self.event_collection = MongoClient()["test"]["events"]
         self.event_collection.drop()
-        self.start_time = datetime.now()
+        self.start_time = datetime.now(UTC)
 
     def assert_event_emitted_num_times(self, event_name, event_time, event_user_id, num_times_emitted):
         """
