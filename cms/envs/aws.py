@@ -320,6 +320,11 @@ DEPRECATED_ADVANCED_COMPONENT_TYPES = ENV_TOKENS.get(
 
 VIDEO_UPLOAD_PIPELINE = ENV_TOKENS.get('VIDEO_UPLOAD_PIPELINE', VIDEO_UPLOAD_PIPELINE)
 
+################ PUSH NOTIFICATIONS ###############
+
+PARSE_KEYS = AUTH_TOKENS.get("PARSE_KEYS", {})
+
+
 #date format the api will be formatting the datetime values
 API_DATE_FORMAT = '%Y-%m-%d'
 API_DATE_FORMAT = ENV_TOKENS.get('API_DATE_FORMAT', API_DATE_FORMAT)
@@ -336,7 +341,7 @@ YOUTUBE.update(ENV_TOKENS.get("YOUTUBE", {}))
 # Example: {'CN': 'http://api.xuetangx.com/edx/video?s3_url='}
 VIDEO_CDN_URL = ENV_TOKENS.get('VIDEO_CDN_URL', {})
 
-if FEATURES['ENABLE_COURSEWARE_INDEX']:
+if FEATURES['ENABLE_COURSEWARE_INDEX'] or FEATURES['ENABLE_LIBRARY_INDEX']:
     # Use ElasticSearch for the search engine
     SEARCH_ENGINE = "search.elastic.ElasticSearchEngine"
 

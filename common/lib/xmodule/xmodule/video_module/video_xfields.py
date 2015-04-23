@@ -52,13 +52,21 @@ class VideoFields(object):
         default=""
     )
     start_time = RelativeTime(  # datetime.timedelta object
-        help=_("Time you want the video to start if you don't want the entire video to play. Formatted as HH:MM:SS. The maximum value is 23:59:59."),
+        help=_(
+            "Time you want the video to start if you don't want the entire video to play. "
+            "Not supported in the native mobile app: the full video file will play. "
+            "Formatted as HH:MM:SS. The maximum value is 23:59:59."
+        ),
         display_name=_("Video Start Time"),
         scope=Scope.settings,
         default=datetime.timedelta(seconds=0)
     )
     end_time = RelativeTime(  # datetime.timedelta object
-        help=_("Time you want the video to stop if you don't want the entire video to play. Formatted as HH:MM:SS. The maximum value is 23:59:59."),
+        help=_(
+            "Time you want the video to stop if you don't want the entire video to play. "
+            "Not supported in the native mobile app: the full video file will play. "
+            "Formatted as HH:MM:SS. The maximum value is 23:59:59."
+        ),
         display_name=_("Video Stop Time"),
         scope=Scope.settings,
         default=datetime.timedelta(seconds=0)
@@ -160,8 +168,8 @@ class VideoFields(object):
         default=False
     )
     edx_video_id = String(
-        help=_("If you were assigned a Video ID by edX for the video to play in this component, enter the ID here. In this case, do not enter values in the Default Video URL, the Video File URLs, and the YouTube ID fields. If you were not assigned an edX Video ID, enter values in those other fields and ignore this field."),
-        display_name=_("EdX Video ID"),
+        help=_("If you were assigned a Video ID by edX for the video to play in this component, enter the ID here. In this case, do not enter values in the Default Video URL, the Video File URLs, and the YouTube ID fields. If you were not assigned a Video ID, enter values in those other fields and ignore this field."),  # pylint: disable=line-too-long
+        display_name=_("Video ID"),
         scope=Scope.settings,
         default="",
     )

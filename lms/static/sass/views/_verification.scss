@@ -219,7 +219,7 @@
           @extend %t-title7;
           @extend %t-weight2;
           vertical-align: middle;
-          color: $m-gray-l1;
+          color: $m-gray-d3;
           background: $m-gray-l4;
         }
       }
@@ -1431,7 +1431,7 @@
       }
     }
 
-    @include media( $desktop ) {
+    @include media( $edx-bp-large ) {
       .contribution-options {
         .field {
           width: auto;
@@ -1454,7 +1454,7 @@
       }
     }
 
-    @include media( $xl-desktop ) {
+    @include media( $edx-bp-huge ) {
       .register-choice {
         .list-actions {
           float: right;

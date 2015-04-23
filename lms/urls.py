@@ -95,12 +95,13 @@ urlpatterns = (
 
     # Course content API
     url(r'^api/course_structure/', include('course_structure_api.urls', namespace='course_structure_api')),
-)
 
-if settings.FEATURES["ENABLE_USER_REST_API"]:
-    urlpatterns += (
-        url(r'^api/user/', include('openedx.core.djangoapps.user_api.urls')),
-    )
+    # User API endpoints
+    url(r'^api/user/', include('openedx.core.djangoapps.user_api.urls')),
+
+    # Profile Images API endpoints
+    url(r'^api/profile_images/', include('openedx.core.djangoapps.profile_images.urls')),
+)
 
 if settings.FEATURES["ENABLE_COMBINED_LOGIN_REGISTRATION"]:
     # Backwards compatibility with old URL structure, but serve the new views
@@ -358,26 +359,8 @@ if settings.COURSEWARE_ENABLED:
         # For the instructor
         url(r'^courses/{}/instructor$'.format(settings.COURSE_ID_PATTERN),
             'instructor.views.instructor_dashboard.instructor_dashboard_2', name="instructor_dashboard"),
-        url(r'^courses/{}/ccx_coach$'.format(settings.COURSE_ID_PATTERN),
-            'ccx.views.dashboard', name='ccx_coach_dashboard'),
-        url(r'^courses/{}/create_ccx$'.format(settings.COURSE_ID_PATTERN),
-            'ccx.views.create_ccx', name='create_ccx'),
-        url(r'^courses/{}/save_ccx$'.format(settings.COURSE_ID_PATTERN),
-            'ccx.views.save_ccx', name='save_ccx'),
-        url(r'^courses/{}/ccx_invite$'.format(settings.COURSE_ID_PATTERN),
-            'ccx.views.ccx_invite', name='ccx_invite'),
-        url(r'^courses/{}/ccx_schedule$'.format(settings.COURSE_ID_PATTERN),
-            'ccx.views.ccx_schedule', name='ccx_schedule'),
-        url(r'^courses/{}/ccx_manage_student$'.format(settings.COURSE_ID_PATTERN),
-            'ccx.views.ccx_student_management', name='ccx_manage_student'),
-        url(r'^courses/{}/ccx_gradebook$'.format(settings.COURSE_ID_PATTERN),
-            'ccx.views.ccx_gradebook', name='ccx_gradebook'),
-        url(r'^courses/{}/ccx_grades.csv$'.format(settings.COURSE_ID_PATTERN),
-            'ccx.views.ccx_grades_csv', name='ccx_grades_csv'),
-        url(r'^courses/{}/ccx_set_grading_policy$'.format(settings.COURSE_ID_PATTERN),
-            'ccx.views.set_grading_policy', name='ccx_set_grading_policy'),
-        url(r'^courses/{}/switch_ccx(?:/(?P<ccx_id>[\d]+))?$'.format(settings.COURSE_ID_PATTERN),
-            'ccx.views.switch_active_ccx', name='switch_active_ccx'),
+
+
         url(r'^courses/{}/set_course_mode_price$'.format(settings.COURSE_ID_PATTERN),
             'instructor.views.instructor_dashboard.set_course_mode_price', name="set_course_mode_price"),
         url(r'^courses/{}/instructor/api/'.format(settings.COURSE_ID_PATTERN),
@@ -449,8 +432,11 @@ if settings.COURSEWARE_ENABLED:
         url(r'^courses/{}/lti_rest_endpoints/'.format(settings.COURSE_ID_PATTERN),
             'courseware.views.get_course_lti_endpoints', name='lti_rest_endpoints'),
 
-        # Student account and profile
+        # Student account
         url(r'^account/', include('student_account.urls')),
+
+        # Student profile
+        url(r'^u/(?P<username>[\w.@+-]+)$', 'student_profile.views.learner_profile', name='learner_profile'),
 
         # Student Notes
         url(r'^courses/{}/edxnotes'.format(settings.COURSE_ID_PATTERN),
@@ -632,14 +618,19 @@ if settings.FEATURES.get('AUTOMATIC_AUTH_FOR_TESTING'):
 if settings.FEATURES.get('ENABLE_THIRD_PARTY_AUTH'):
     urlpatterns += (
         url(r'', include('third_party_auth.urls')),
+        # NOTE: The following login_oauth_token endpoint is DEPRECATED.
+        # Please use the exchange_access_token endpoint instead.
+        url(r'^login_oauth_token/(?P<backend>[^/]+)/$', 'student.views.login_oauth_token'),
+    )
+
+# OAuth token exchange
+if settings.FEATURES.get('ENABLE_THIRD_PARTY_AUTH') and settings.FEATURES.get('ENABLE_OAUTH2_PROVIDER'):
+    urlpatterns += (
         url(
             r'^oauth2/exchange_access_token/(?P<backend>[^/]+)/$',
             oauth_exchange.views.AccessTokenExchangeView.as_view(),
             name="exchange_access_token"
         ),
-        # NOTE: The following login_oauth_token endpoint is DEPRECATED.
-        # Please use the exchange_access_token endpoint instead.
-        url(r'^login_oauth_token/(?P<backend>[^/]+)/$', 'student.views.login_oauth_token'),
     )
 
 # Certificates Web/HTML View
@@ -653,10 +644,22 @@ urlpatterns += (
     url(r'^xdomain_proxy.html$', 'cors_csrf.views.xdomain_proxy', name='xdomain_proxy'),
 )
 
+# Custom courses on edX (CCX) URLs
+if settings.FEATURES["CUSTOM_COURSES_EDX"]:
+    urlpatterns += (
+        url(r'^courses/{}/'.format(settings.COURSE_ID_PATTERN),
+            include('ccx.urls')),
+    )
+
+
 urlpatterns = patterns(*urlpatterns)
 
 if settings.DEBUG:
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+    urlpatterns += static(
+        settings.PROFILE_IMAGE_BACKEND['options']['base_url'],
+        document_root=settings.PROFILE_IMAGE_BACKEND['options']['location']
+    )
 
     # in debug mode, allow any template to be rendered (most useful for UX reference templates)
     urlpatterns += url(r'^template/(?P<template>.+)$', 'debug.views.show_reference_template'),

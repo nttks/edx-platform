@@ -3,6 +3,7 @@ Tests for user enrollment.
 """
 import json
 import unittest
+import datetime
 
 import ddt
 from django.core.cache import cache
@@ -305,6 +306,46 @@ class EnrollmentTest(EnrollmentTestMixin, ModuleStoreTestCase, APITestCase):
         self.assertEqual(mode['sku'], '123')
         self.assertEqual(mode['name'], CourseMode.HONOR)
 
+    @ddt.data(
+        # NOTE: Studio requires a start date, but this is not
+        # enforced at the data layer, so we need to handle the case
+        # in which no dates are specified.
+        (None, None, None, None),
+        (datetime.datetime(2015, 1, 2, 3, 4, 5), None, "2015-01-02T03:04:05Z", None),
+        (None, datetime.datetime(2015, 1, 2, 3, 4, 5), None, "2015-01-02T03:04:05Z"),
+        (datetime.datetime(2014, 6, 7, 8, 9, 10), datetime.datetime(2015, 1, 2, 3, 4, 5), "2014-06-07T08:09:10Z", "2015-01-02T03:04:05Z"),
+    )
+    @ddt.unpack
+    def test_get_course_details_course_dates(self, start_datetime, end_datetime, expected_start, expected_end):
+        course = CourseFactory.create(start=start_datetime, end=end_datetime)
+        self.assert_enrollment_status(course_id=unicode(course.id))
+
+        # Check course details
+        url = reverse('courseenrollmentdetails', kwargs={"course_id": unicode(course.id)})
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+
+        data = json.loads(resp.content)
+        self.assertEqual(data['course_start'], expected_start)
+        self.assertEqual(data['course_end'], expected_end)
+
+        # Check enrollment course details
+        url = reverse('courseenrollment', kwargs={"course_id": unicode(course.id)})
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+
+        data = json.loads(resp.content)
+        self.assertEqual(data['course_details']['course_start'], expected_start)
+        self.assertEqual(data['course_details']['course_end'], expected_end)
+
+        # Check enrollment list course details
+        resp = self.client.get(reverse('courseenrollments'))
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+
+        data = json.loads(resp.content)
+        self.assertEqual(data[0]['course_details']['course_start'], expected_start)
+        self.assertEqual(data[0]['course_details']['course_end'], expected_end)
+
     def test_with_invalid_course_id(self):
         self.assert_enrollment_status(course_id='entirely/fake/course', expected_status=status.HTTP_400_BAD_REQUEST)
 
@@ -495,7 +536,11 @@ class EnrollmentEmbargoTest(EnrollmentTestMixin, UrlResetMixin, ModuleStoreTestC
             'user': self.user.username
         })
 
-    def assert_access_denied(self, user_message_url):
+    def _get_absolute_url(self, path):
+        """ Generate an absolute URL for a resource on the test server. """
+        return u'http://testserver/{}'.format(path.lstrip('/'))
+
+    def assert_access_denied(self, user_message_path):
         """
         Verify that the view returns HTTP status 403 and includes a URL in the response, and no enrollment is created.
         """
@@ -507,6 +552,7 @@ class EnrollmentEmbargoTest(EnrollmentTestMixin, UrlResetMixin, ModuleStoreTestC
 
         # Expect that the redirect URL is included in the response
         resp_data = json.loads(response.content)
+        user_message_url = self._get_absolute_url(user_message_path)
         self.assertEqual(resp_data['user_message_url'], user_message_url)
 
         # Verify that we were not enrolled
@@ -517,8 +563,8 @@ class EnrollmentEmbargoTest(EnrollmentTestMixin, UrlResetMixin, ModuleStoreTestC
         """ Validates that enrollment changes are blocked if the request originates from an embargoed country. """
 
         # Use the helper to setup the embargo and simulate a request from a blocked IP address.
-        with restrict_course(self.course.id) as redirect_url:
-            self.assert_access_denied(redirect_url)
+        with restrict_course(self.course.id) as redirect_path:
+            self.assert_access_denied(redirect_path)
 
     def _setup_embargo(self):
         restricted_course = RestrictedCourse.objects.create(course_key=self.course.id)
@@ -548,9 +594,8 @@ class EnrollmentEmbargoTest(EnrollmentTestMixin, UrlResetMixin, ModuleStoreTestC
         self.user.profile.country = restricted_country.country
         self.user.profile.save()
 
-        user_message_url = reverse('embargo_blocked_message',
-                                   kwargs={'access_point': 'enrollment', 'message_key': 'default'})
-        self.assert_access_denied(user_message_url)
+        path = reverse('embargo_blocked_message', kwargs={'access_point': 'enrollment', 'message_key': 'default'})
+        self.assert_access_denied(path)
 
     @override_settings(EDX_API_KEY=EnrollmentTestMixin.API_KEY)
     @patch.dict(settings.FEATURES, {'EMBARGO': True})

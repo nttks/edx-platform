@@ -252,6 +252,9 @@ FEATURES['USE_MICROSITES'] = True
 # the one in lms/envs/test.py
 FEATURES['ENABLE_DISCUSSION_SERVICE'] = False
 
+# Enable a parental consent age limit for testing
+PARENTAL_CONSENT_AGE_LIMIT = 13
+
 # Enable content libraries code for the tests
 FEATURES['ENABLE_CONTENT_LIBRARIES'] = True
 
@@ -270,6 +273,7 @@ VIDEO_CDN_URL = {
 
 # Courseware Search Index
 FEATURES['ENABLE_COURSEWARE_INDEX'] = True
+FEATURES['ENABLE_LIBRARY_INDEX'] = True
 SEARCH_ENGINE = "search.tests.mock_search_engine.MockSearchEngine"
 
 # Dummy secret key for dev/test

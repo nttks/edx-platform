@@ -20,6 +20,7 @@
 -e git+https://github.com/jazkarta/edx-jsme.git@c5bfa5d361d6685d8c643838fc0055c25f8b7999#egg=edx-jsme
 -e git+https://github.com/pmitros/django-pyfs.git@d175715e0fe3367ec0f1ee429c242d603f6e8b10#egg=djpyfs
 git+https://github.com/mitocw/django-cas.git@60a5b8e5a62e63e0d5d224a87f0b489201a0c695#egg=django-cas
+-e git+https://github.com/dgrtwo/ParsePy.git@7949b9f754d1445eff8e8f20d0e967b9a6420639#egg=parse_rest
 
 # Our libraries:
 -e git+https://github.com/edx/XBlock.git@aed464a0e2f7478e93157150ac04133a745f5f46#egg=XBlock
@@ -43,6 +44,7 @@ git+https://github.com/mitocw/django-cas.git@60a5b8e5a62e63e0d5d224a87f0b489201a
 git+https://github.com/edx/edx-lint.git@8bf82a32ecb8598c415413df66f5232ab8d974e9#egg=edx_lint==0.2.1
 -e git+https://github.com/edx/xblock-utils.git@581ed636c862b286002bb9a3724cc883570eb54c#egg=xblock-utils
 -e git+https://github.com/edx-solutions/xblock-google-drive.git@138e6fa0bf3a2013e904a085b9fed77dab7f3f21#egg=xblock-google-drive
+-e git+https://github.com/edx/edx-reverification-block.git@1b7902db20bcefe7bd0109f866f830deaaf8d7f7#egg=edx-reverification-block
 
 # Third Party XBlocks
 -e git+https://github.com/mitodl/edx-sga@172a90fd2738f8142c10478356b2d9ed3e55334a#egg=edx-sga
