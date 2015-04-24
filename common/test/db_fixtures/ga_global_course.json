@@ -1,0 +1,18 @@
+[
+  {
+    "pk": 1,
+    "model": "course_global.courseglobalsetting",
+    "fields": {
+      "course_id": "course-v1:test_org+test_global_course+test_run",
+      "global_enabled": true
+    }
+  },
+  {
+    "pk": 2,
+    "model": "course_global.courseglobalsetting",
+    "fields": {
+      "course_id": "test_org/test_global_course/test_run",
+      "global_enabled": true
+    }
+  }
+]
