@@ -55,3 +55,36 @@ msgstr "解答を提出します。よろしいですか？"
 #: lms/static/coffee/src/instructor_dashboard/send_email.coffee
 msgid "E-mail will also be sent to users who have opt-out. Please carefully check whether the contents suitable for send to users who have opt-out."
 msgstr "メール受信設定をオフにしているユーザーにもメールが送信されます。受信拒否者に送信するべき内容かどうかを慎重に確認してください。"
+
+#: lms/static/js/progress_report.js
+msgid "Course"
+msgstr "コース"
+
+#: lms/static/js/progress_report.js
+msgid "Question"
+msgstr "設問"
+
+#: lms/static/js/progress_report.js
+msgid "Sum of answer"
+msgstr "回答総数"
+
+#: lms/static/js/progress_report.js
+msgid "Percentage of correct answer"
+msgstr "正解率"
+
+#: lms/static/js/progress_report.js
+msgid "Average of attempts"
+msgstr "平均試行回数"
+
+#: lms/static/js/progress_report.js
+msgid "Number of students"
+msgstr "学生数"
+
+#: lms/static/js/progress_report.js
+msgid "Number of assessments"
+msgstr "評価回数"
+
+#: lms/static/js/progress_report.js
+msgid "Score"
+msgstr "得点"
+

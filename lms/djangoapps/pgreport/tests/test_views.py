@@ -1,47 +1,92 @@
 from django.test import TestCase
 from mock import MagicMock, patch, ANY
-from contextlib import nested
 from pgreport.views import (
-    ProgressReport, UserDoesNotExists, InvalidCommand,
-    get_pgreport_csv, create_pgreport_csv, delete_pgreport_csv,
-    get_pgreport_table, update_pgreport_table
-)
-from pgreport.models import ProgressModules, ProgressModulesHistory
+    ProgressReportBase, ProblemReport, SubmissionReport, OpenAssessmentReport)
 from django.test.utils import override_settings
+from django.core.urlresolvers import reverse
+
 from xmodule.modulestore.tests.django_utils import TEST_DATA_MOCK_MODULESTORE
+
+from opaque_keys.edx.keys import CourseKey
 from opaque_keys.edx.locator import CourseLocator
 from xmodule.modulestore.tests.factories import CourseFactory, ItemFactory
 from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
+from capa.tests.response_xml_factory import OptionResponseXMLFactory
 
-import factory
-from factory.django import DjangoModelFactory
-from student.tests.factories import UserFactory, UserStandingFactory, CourseEnrollmentFactory
-from courseware.tests.factories import (InstructorFactory, StaffFactory)
-from django.contrib.auth.models import User
+from student.tests.factories import (
+    UserFactory, UserStandingFactory, CourseEnrollmentFactory)
+from courseware.tests.factories import (
+    InstructorFactory, StaffFactory, StudentModuleFactory)
 from student.models import UserStanding
-from gridfs.errors import GridFSError
-from xmodule.exceptions import NotFoundError
-from django.db import DatabaseError
+from courseware.tests.factories import StaffFactory, InstructorFactory
 
-from pytz import UTC
-import datetime
-import StringIO
-import gzip
-import unittest
+from courseware.courses import get_course
+from capa.correctmap import CorrectMap
+
+import json
+
+from openassessment.assessment.models import Assessment, AssessmentPart
+from openassessment.assessment.serializers import rubric_from_dict
+from submissions import api as sub_api
+from openassessment.assessment.api import peer as peer_api
+from openassessment.workflow import api as workflow_api
+
+
+class ProgressReportBaseTestCase(TestCase):
+    """ Test ProgressReportBase"""
+
+    def setUp(self):
+        self.course_id = 'course-v1:org+cn+run'
+        self.progress = ProgressReportBase(self.course_id)
+
+    def tearDown(self):
+        pass
+
+    def test_get_course_id(self):
+        course_id = self.progress.get_course_id(self.course_id)
+        self.assertIsInstance(course_id, CourseKey)
+
+    def test_get_course_id_by_course_key(self):
+        course_key = CourseKey.from_string(self.course_id)
+        course_id = self.progress.get_course_id(course_key)
+        self.assertIsInstance(course_id, CourseKey)
+
+    def test_get_course_location(self):
+        course_location = self.progress.get_course_location(self.course_id)
+        self.assertIsInstance(course_location, CourseLocator)
+
+    def test_get_course_location_by_course_locator(self):
+        course_locator = CourseLocator.from_string(self.course_id)
+        course_location = self.progress.get_course_location(course_locator)
+        self.assertIsInstance(course_location, CourseLocator)
+
+    @patch('pgreport.views.modulestore')
+    def test_get_display_name(self, mod_mock):
+        name_mock = MagicMock()
+        name_mock.display_name_with_default = "test_name"
+        name_mock.scope_ids.usage_id = "item_id"
+        mod_mock.return_value.get_items.return_value = [name_mock]
+
+        name = self.progress.get_display_name(
+            self.course_id, "item_id")
+
+        mod_mock.assert_called_with()
+        mod_mock().get_items.assert_called_with(
+            self.course_id, qualifiers={'category': "openassessment"})
+        self.assertEquals(name, "test_name")
 
 
 @override_settings(MODULESTORE=TEST_DATA_MOCK_MODULESTORE)
-class ProgressReportTestCase(ModuleStoreTestCase):
-    """ Test Progress Report """
+class ProblemReportTestCase(ModuleStoreTestCase):
+    """ Test ProblemReport"""
     COURSE_NAME = "test_pgreport"
     COURSE_NUM = 3
 
     def setUp(self):
-        self.output = StringIO.StringIO()
-        self.gzipfile = StringIO.StringIO()
         self.course = CourseFactory.create(
             display_name=self.COURSE_NAME,
         )
+
         self.course.raw_grader = [{
             'drop_count': 0,
             'min_count': 1,
@@ -59,6 +104,7 @@ class ProgressReportTestCase(ModuleStoreTestCase):
             StaffFactory.create(username='staff1', course_key=self.course.id),
             InstructorFactory.create(username='instructor1', course_key=self.course.id),
         ]
+
         UserStandingFactory.create(
             user=self.students[4],
             account_status=UserStanding.ACCOUNT_DISABLED,
@@ -68,8 +114,7 @@ class ProgressReportTestCase(ModuleStoreTestCase):
         for user in self.students:
             CourseEnrollmentFactory.create(user=user, course_id=self.course.id)
 
-        self.pgreport = ProgressReport(self.course.id)
-        self.pgreport2 = ProgressReport(self.course.id, lambda state: state)
+        self.pgreport = ProblemReport(self.course.id)
 
         self.chapter = ItemFactory.create(
             parent_location=self.course.location,
@@ -95,11 +140,7 @@ class ProgressReportTestCase(ModuleStoreTestCase):
             data={'data': "<html>foobar</html>"}
         )
         self.html.save()
-        """
-        course.children = [week1.location.url(), week2.location.url(),
-                           week3.location.url()]
-        """
-        from capa.tests.response_xml_factory import OptionResponseXMLFactory
+
         self.problem_xml = OptionResponseXMLFactory().build_xml(
             question_text='The correct answer is Correct',
             num_inputs=2,
@@ -109,7 +150,7 @@ class ProgressReportTestCase(ModuleStoreTestCase):
         )
 
         self.problems = []
-        for num in xrange(1, 3):
+        for num in xrange(1, 4):
             self.problems.append(ItemFactory.create(
                 parent_location=self.vertical.location,
                 category='problem',
@@ -155,632 +196,480 @@ class ProgressReportTestCase(ModuleStoreTestCase):
         self.log_mock = patcher.start()
         self.addCleanup(patcher.stop)
 
-        """
-        from xmodule.modulestore import Location
-        import json
         for user in self.students:
-            StudentModuleFactory.create(
-                grade=1,
-                max_grade=1,
-                student=user,
-                course_id=self.course.id,
-                #module_state_key=Location(self.problem).url(),
-                module_state_key=self.problem.location.url(),
-                #state = json.dumps({'attempts': self.attempts, 'done':True})
-                state = json.dumps({'done':True})
-            )
+            for problem in self.problems:
+                StudentModuleFactory.create(
+                    grade=1,
+                    max_grade=1,
+                    student=user,
+                    course_id=self.course.id,
+                    module_type="problem",
+                    module_state_key=problem.location,
+                    state=json.dumps({'attempts': 1, 'done': True})
+                )
 
-        ./lms/djangoapps/courseware/management/commands/tests/test_dump_course.py
-        def load_courses(self):
-        cp xmport-course common/test/data and modify TEST_DATA_MIXED_MODULESTORE
-        """
+        self.course_structure = [
+            {
+                'category': self.chapter.category,
+                'indent': 0,
+                'parent': [],
+                'has_children': True,
+                'module_size': 0,
+                'display_name': self.chapter.display_name,
+                'usage_id': unicode(self.chapter.location)
+            },
+            {
+                'category': self.section.category,
+                'indent': 1,
+                'parent': [unicode(self.chapter.location)],
+                'has_children': True,
+                'module_size': 0,
+                'display_name': self.section.display_name,
+                'usage_id': unicode(self.section.location)
+            },
+            {
+                'category': self.vertical.category,
+                'indent': 2,
+                'parent': [
+                    unicode(self.chapter.location),
+                    unicode(self.section.location)
+                ],
+                'has_children': True,
+                'module_size': 0,
+                'display_name': self.vertical.display_name,
+                'usage_id': unicode(self.vertical.location)
+            },
+            {
+                'category': self.problems[0].category,
+                'indent': 3,
+                'parent': [
+                    unicode(self.chapter.location),
+                    unicode(self.section.location),
+                    unicode(self.vertical.location)
+                ],
+                'has_children': False,
+                'module_size': 1,
+                'display_name': self.problems[0].display_name,
+                'usage_id': unicode(self.problems[0].location)
+            },
+            {
+                'category': self.problems[1].category,
+                'indent': 3,
+                'parent': [
+                    unicode(self.chapter.location),
+                    unicode(self.section.location),
+                    unicode(self.vertical.location)
+                ],
+                'has_children': False,
+                'module_size': 1,
+                'display_name': self.problems[1].display_name,
+                'usage_id': unicode(self.problems[1].location)
+            },
+            {
+                'category': self.problems[2].category,
+                'indent': 3,
+                'parent': [
+                    unicode(self.chapter.location),
+                    unicode(self.section.location),
+                    unicode(self.vertical.location)
+                ],
+                'has_children': False,
+                'module_size': 1,
+                'display_name': self.problems[2].display_name,
+                'usage_id': unicode(self.problems[2].location)
+            },
+        ]
 
     def tearDown(self):
-        self.output.close()
-        self.gzipfile.close()
+        pass
 
     def test_get_active_students(self):
-        counts, actives, users = ProgressReport.get_active_students(self.course.id)
+        counts, actives = self.pgreport.get_active_students()
         self.assertEquals(counts, 7)
         self.assertEquals(actives, 6)
-        self.assertItemsEqual(users, self.students[:4] + self.students[5:])
 
-        fake_course = CourseFactory.create(display_name="fake")
-        with self.assertRaises(UserDoesNotExists):
-            counts, actives, users = ProgressReport.get_active_students(fake_course.id)
+    @patch('pgreport.views.ProblemReport._get_children_module')
+    def test_get_course_structure(self, getcm_mock):
+        course = get_course(self.course.id)
+        self.pgreport.get_course_structure()
+        getcm_mock.assert_called_once_with(course)
 
-    def test_create_request(self):
-        from django.core.handlers.wsgi import WSGIRequest
-        request = self.pgreport._create_request()
-        self.assertIsInstance(request, WSGIRequest)
+    def test_get_children_module(self):
+        course = get_course(self.course.id)
+        self.pgreport._get_children_module(course)
+        self.assertEquals(self.pgreport.location_list, self.course_structure)
 
-    def test_calc_statistics(self):
-        self.pgreport.module_statistics = {
-            self.problems[0].location: [1.0, 5.6, 3.4, 9.8, 20.2],
-            self.problems[1].location: [5.0, 10.6, 8.4, 2.8, 134.8]}
-        calc_statistics = self.pgreport._calc_statistics()
-        self.assertEquals(calc_statistics[self.problems[0].location]["mean"], 8.0)
-        self.assertEquals(calc_statistics[self.problems[0].location]["median"], 5.6)
-        self.assertEquals(calc_statistics[self.problems[0].location]["variance"], 45.6)
+    @patch('pgreport.views.ProblemReport._get_student_answers_data')
+    @patch('pgreport.views.ProblemReport._get_correctmap_data')
+    def test_get_problem_data(self, gc_mock, gsa_mock):
+        problem_data = self.pgreport.get_problem_data()
         self.assertEquals(
-            calc_statistics[self.problems[0].location]["standard_deviation"], 6.753)
-
-        self.assertEquals(calc_statistics[self.problems[1].location]["mean"], 32.32)
-        self.assertEquals(calc_statistics[self.problems[1].location]["median"], 8.4)
-        self.assertEquals(calc_statistics[self.problems[1].location]["variance"], 2632.778)
-        self.assertEquals(
-            calc_statistics[self.problems[1].location]["standard_deviation"], 51.311)
-
-    def test_get_correctmap(self):
-        corrects = self.pgreport._get_correctmap(self.problems[0])
-        self.assertEquals(
-            corrects, {
-                unicode(self.problems[0].location) + "_2_1": 1,
-                unicode(self.problems[0].location) + "_2_2": 0
-            }
-        )
-
-    def test_get_student_answers(self):
-        answers1 = self.pgreport._get_student_answers(self.problems[0])
-        self.problems[1].student_answers = {
-            unicode(self.problems[1].location) + "_2_1": ["answer1", "answer2", 5]
-        }
-        answers2 = self.pgreport._get_student_answers(self.problems[1])
-
-        self.assertEquals(
-            answers1, {
-                unicode(self.problems[0].location) + "_2_1": {"Correct": 1},
-                unicode(self.problems[0].location) + "_2_2": {"Incorrect": 1}
-            }
-        )
-        self.assertEquals(answers2, {
-            unicode(self.problems[1].location) + "_2_1": ANY})
-        self.assertEquals(
-            answers2[unicode(self.problems[1].location) + "_2_1"],
-            {"answer1": 1, 5: 1, "answer2": 1}
-        )
-
-    def test_get_module_data(self):
-        module_mock = MagicMock()
-        module_data = self.pgreport._get_module_data(module_mock)
-        self.assertEquals(module_data, {
-            'start': module_mock.start,
-            'display_name': module_mock.display_name,
-            'student_answers': {},
-            'weight': module_mock.weight,
-            'correct_map': {},
-            'type': module_mock.category,
-            'due': module_mock.due,
-            'score/total': module_mock.get_progress()
-        })
-
-    def test_increment_student_answers(self):
-        name = unicode(self.problems[0].location)
-        unit_id1 = name + "_2_1"
-        unit_id2 = name + "_2_2"
-        unit_id3 = name + "_2_3"
-        answer = {"Correct": 1}
-        self.pgreport.module_summary[name] = {
-            "student_answers": {
-                unit_id1: {"Correct": 1}, unit_id2: {"Incorrect": 1}},
-        }
-
-        self.pgreport._increment_student_answers(name, answer, unit_id1)
-        self.pgreport._increment_student_answers(name, answer, unit_id2)
-        self.pgreport._increment_student_answers(name, answer, unit_id3)
-        self.assertEquals(self.pgreport.module_summary[name]["student_answers"], {
-            unit_id1: {"Correct": 2},
-            unit_id2: {"Correct": 1, "Incorrect": 1},
-            unit_id3: {"Correct": 1}})
-
-    def test_increment_student_correctmap(self):
-        name = unicode(self.problems[0].location)
-        unit_id1 = name + "_2_1"
-        unit_id2 = name + "_2_2"
-        unit_id3 = name + "_2_3"
-        self.pgreport.module_summary[name] = {
-            "correct_map": {unit_id1: 1, unit_id2: 2},
-        }
-        self.pgreport._increment_student_correctmap(name, 1, unit_id1)
-        self.pgreport._increment_student_correctmap(name, 1, unit_id2)
-        self.pgreport._increment_student_correctmap(name, 1, unit_id3)
-        self.assertEquals(self.pgreport.module_summary[name]["correct_map"], {
-            unit_id1: 2, unit_id2: 3, unit_id3: 1})
-
-    @unittest.skip("This test is not yet modified.")
-    def test_collect_module_summary(self):
-        module_mock = MagicMock()
-        progress_mock = MagicMock()
-        progress_mock.frac.return_value = (2.0, 3.0)
-        module_mock.get_progress.return_value = progress_mock
-        module_mock.location = self.problems[0].location
-
-        self.pgreport.collect_module_summary(module_mock)
-        self.assertEquals(self.pgreport.module_summary[module_mock.location], {
-            'count': 1,
-            'display_name': module_mock.display_name,
-            'weight': module_mock.weight,
-            'type': module_mock.category,
-            'total_score': 3.0,
-            'due': module_mock.due,
-            'score/total': progress_mock,
-            'submit_count': 1,
-            'start': module_mock.start,
-            'student_answers': {},
-            'max_score': 2.0,
-            'correct_map': {}
-        })
-
-        module_mock.is_submitted.return_value = False
-        module_data = {
-            "student_answers": {
-                unicode(module_mock.location) + "_2_1": {"Correct": 1},
-                unicode(module_mock.location) + "_2_2": [{"answer1": 1}, {"answer2": 2}]},
-            "correct_map": {
-                unicode(module_mock.location) + "_2_1": 1,
-                unicode(module_mock.location) + "_2_2": 2}
-        }
-
-        with patch(
-            'pgreport.views.ProgressReport._get_module_data',
-            return_value=module_data
-        ) as pgmock:
-            self.pgreport.collect_module_summary(module_mock)
-
-        self.assertEquals(
-            self.pgreport.module_summary[module_mock.location], {
-                'count': 2,
-                'display_name': module_mock.display_name,
-                'weight': module_mock.weight,
-                'type': module_mock.category,
-                'total_score': 6.0,
-                'due': module_mock.due,
-                'score/total': progress_mock,
-                'submit_count': 1,
-                'start': module_mock.start,
-                'student_answers': {
-                    unicode(module_mock.location) + '_2_1': {'Correct': 1},
-                    unicode(module_mock.location) + '_2_2': {'answer1': 1, 'answer2': 2}
+            problem_data, {
+                unicode(self.problems[0].location): {
+                    'counts': 7,
+                    'correct_maps': gc_mock.return_value,
+                    'attempts': 7,
+                    'student_answers': gsa_mock.return_value,
                 },
-                'max_score': 4.0,
-                'correct_map': module_data["correct_map"]
+                unicode(self.problems[1].location): {
+                    'counts': 7,
+                    'correct_maps': gc_mock.return_value,
+                    'attempts': 7,
+                    'student_answers': gsa_mock.return_value,
+                },
+                unicode(self.problems[2].location): {
+                    'counts': 7,
+                    'correct_maps': gc_mock.return_value,
+                    'attempts': 7,
+                    'student_answers': gsa_mock.return_value,
+                }
             }
         )
 
-    def test_yield_student_summary(self):
-        module_mock = MagicMock()
-        module_mock.location = self.problems[0].location
+    def test_get_correctmap_data(self):
+        sum_cmap = {}
+        cmap = CorrectMap()
+        cmap.set(answer_id='1_2_1', correctness='correct')
+        cmap.set(answer_id='1_2_2', correctness='incorrect')
+        cmap.set(answer_id='1_2_3', correctness='correct')
 
-        csvheader = [
-            'username', 'location', 'last_login', 'grade', 'percent',
-            'start', 'display_name', 'student_answers', 'weight', 'correct_map',
-            'type', 'due', 'score/total'
-        ]
-        rows = []
-        mg = MagicMock()
-        location_list = {
-            u'chapter': [self.chapter.location],
-            u'problem': [self.problems[0].location],
-            u'sequential': [self.section.location],
-            u'vertical': [self.vertical.location]
+        return_cmap = self.pgreport._get_correctmap_data(sum_cmap, cmap)
+        self.assertEquals(return_cmap, {'1_2_3': 1, '1_2_2': 0, '1_2_1': 1})
+
+        cmap.set(answer_id='1_2_3', correctness='incorrect')
+        cmap.set(answer_id='1_2_4', correctness='correct')
+
+        return_cmap = self.pgreport._get_correctmap_data(sum_cmap, cmap)
+        self.assertEquals(return_cmap, {'1_2_4': 1, '1_2_3': 1, '1_2_2': 0, '1_2_1': 2})
+
+    def test_get_student_answers_data(self):
+        sum_answers = {}
+        student_answers = {'1_2_1': 'abcd', '1_2_2': 'abcd', '1_2_3': 'xyz'}
+        return_answers = self.pgreport._get_student_answers_data(
+            sum_answers, student_answers)
+        self.assertEquals(return_answers, {
+            '1_2_1': {'abcd': 1}, '1_2_3': {'xyz': 1}, '1_2_2': {'abcd': 1}})
+
+        student_answers = {'1_2_1': 'abcd', '1_2_2': 'xyz', '1_2_3': 'xyz'}
+        return_answers = self.pgreport._get_student_answers_data(
+            sum_answers, student_answers)
+        self.assertEquals(return_answers, {
+            '1_2_1': {'abcd': 2}, '1_2_3': {'xyz': 2}, '1_2_2': {'abcd': 1, 'xyz': 1}})
+
+        student_answers = {'2_2_1': ['abc', 'def'], '2_2_2': ['xyz']}
+        return_answers = self.pgreport._get_student_answers_data(
+            sum_answers, student_answers)
+        self.assertEquals(return_answers, {
+            '1_2_1': {'abcd': 2}, '1_2_3': {'xyz': 2}, '1_2_2': {'abcd': 1, 'xyz': 1},
+            '2_2_1': {'abc': 1, 'def': 1}, '2_2_2': {'xyz': 1}})
+
+    @patch('pgreport.views.ProblemReport.get_problem_data')
+    @patch('pgreport.views.ProblemReport.get_course_structure')
+    def test_get_progress_list(self, getcs_mock, getpd_mock):
+        getcs_mock.return_value = self.course_structure
+        getpd_mock.return_value = {
+            unicode(self.problems[0].location): {
+                'counts': 7,
+                'correct_maps': {'1_2_1': 1, '1_2_2': 3},
+                'attempts': 7,
+                'student_answers': {'1_2_1': {'abcd': 2}, '1_2_2': {'xyz': 1}},
+            },
+            unicode(self.problems[1].location): {
+                'counts': 7,
+                'correct_maps': {'2_2_1': 0, '2_2_2': 5},
+                'attempts': 7,
+                'student_answers': {'2_2_1': {'abcd': 4}, '2_2_2': {'abc': 3}},
+            }
         }
 
-        grade_mock = MagicMock(return_value={'grade': True, 'percent': 1.0})
-        with nested(
-            patch('pgreport.views.grades'),
-            patch('pgreport.views.get_module_for_student',
-                side_effect=[module_mock, module_mock]),
-        ) as (grmock, gemock):
-            grmock.grade = grade_mock
-            #self.pgreport.update_state = lambda state: state
-            self.pgreport.students = User.objects.filter(id__in=[1, 2])
-            self.pgreport.location_list = location_list
-            for row in self.pgreport.yield_students_progress():
-                rows.append(row)
-
-        def create_csvrow(csvrows):
-            for i in [0, 1]:
-                csvrows.append([
-                    unicode(self.students[i].username), self.problems[0].location,
-                    self.students[i].last_login.strftime("%Y/%m/%d %H:%M:%S %Z"),
-                    True, 1.0, module_mock.start, module_mock.display_name,
-                    {}, module_mock.weight, {}, module_mock.category,
-                    module_mock.due, module_mock.get_progress(),
-                ])
-            return csvrows
-
-        grmock.grade.assert_called_with(ANY, ANY, ANY)
-        gemock.assert_called_with(ANY, ANY)
-        self.assertEquals(rows, create_csvrow([csvheader]))
-
-    """
-    def test_yield_student_summary_with_update_state(self):
-        module_mock = MagicMock()
-        module_mock.location = self.problems[0].location
-
-        csvheader = [
-            'username', 'location', 'last_login', 'grade', 'percent',
-            'start', 'display_name', 'student_answers', 'weight', 'correct_map',
-            'type', 'due', 'score/total'
-        ]
-        rows = []
-        mg = MagicMock()
-        location_list = {
-            u'chapter': [self.chapter.location],
-            u'problem': [self.problems[0].location],
-            u'sequential': [self.section.location],
-            u'vertical': [self.vertical.location]
+        question1 = {
+            'category': self.problems[0].category,
+            'indent': 3,
+            'parent': [
+                unicode(self.chapter.location),
+                unicode(self.section.location),
+                unicode(self.vertical.location)
+            ],
+            'has_children': False,
+            'module_size': 1,
+            'display_name': self.problems[0].display_name,
+            'usage_id': unicode(self.problems[0].location),
+            'attempts': 7,
+            'counts': 7,
+            'module_id': '1_2_1',
+            'student_answers': {'abcd': 2},
+            'correct_counts': 1
         }
 
-        grade_mock = MagicMock(return_value={'grade': True, 'percent': 1.0})
-        with nested(
-            patch('pgreport.views.grades'),
-            patch(
-                'pgreport.views.get_module_for_student',
-                side_effect=[module_mock, module_mock]
-            ),
-        ) as (grmock, gemock):
-            grmock.grade = grade_mock
-            self.pgreport.update_state = lambda state: state
-            self.pgreport.students = User.objects.filter(id__in=[1, 2])
-            self.pgreport.location_list = location_list
-            for row in self.pgreport.yield_students_progress():
-                rows.append(row)
+        question2 = {
+            'category': self.problems[0].category,
+            'indent': 3,
+            'parent': [
+                unicode(self.chapter.location),
+                unicode(self.section.location),
+                unicode(self.vertical.location)
+            ],
+            'has_children': False,
+            'module_size': 1,
+            'display_name': self.problems[0].display_name,
+            'usage_id': unicode(self.problems[0].location),
+            'attempts': 7,
+            'counts': 7,
+            'module_id': '1_2_2',
+            'student_answers': {'xyz': 1},
+            'correct_counts': 3
+        }
 
-        def create_csvrow(csvrows):
-            for i in [0, 1]:
-                csvrows.append([
-                    unicode(self.students[i].username), self.problems[0].location,
-                    self.students[i].last_login.strftime("%Y/%m/%d %H:%M:%S %Z"),
-                    True, 1.0, module_mock.start, module_mock.display_name,
-                    {}, module_mock.weight, {}, module_mock.category,
-                    module_mock.due, module_mock.get_progress(),
-                ])
-            return csvrows
+        question3 = {
+            'category': self.problems[1].category,
+            'indent': 3,
+            'parent': [
+                unicode(self.chapter.location),
+                unicode(self.section.location),
+                unicode(self.vertical.location)
+            ],
+            'has_children': False,
+            'module_size': 1,
+            'display_name': self.problems[1].display_name,
+            'usage_id': unicode(self.problems[1].location),
+            'attempts': 7,
+            'counts': 7,
+            'module_id': '2_2_1',
+            'student_answers': {'abcd': 4},
+            'correct_counts': 0
+        }
+        question4 = {
+            'category': self.problems[1].category,
+            'indent': 3,
+            'parent': [
+                unicode(self.chapter.location),
+                unicode(self.section.location),
+                unicode(self.vertical.location)
+            ],
+            'has_children': False,
+            'module_size': 1,
+            'display_name': self.problems[1].display_name,
+            'usage_id': unicode(self.problems[1].location),
+            'attempts': 7,
+            'counts': 7,
+            'module_id': '2_2_2',
+            'student_answers': {'abc': 3},
+            'correct_counts': 5
+        }
 
-        grmock.grade.assert_called_with(ANY, ANY, ANY)
-        gemock.assert_called_with(ANY, ANY, ANY)
-        self.assertEquals(rows, create_csvrow([csvheader]))
-    """
+        courses = [ c for c in self.course_structure if c['category'] != 'problem']
 
-    def test_get_children_rec(self):
-        course_mock = MagicMock()
-        course_mock.location = self.course.location
-        chapter_mock = MagicMock()
-        chapter_mock.has_children = True
-        chapter_mock.category = self.chapter.category
-        chapter_mock.location = self.chapter.location
-        chapter_mock.display_name = self.chapter.display_name
-        sequential_mock = MagicMock()
-        sequential_mock.has_children = True
-        sequential_mock.category = self.section.category
-        sequential_mock.location = self.section.location
-        sequential_mock.display_name = self.section.display_name
-        vertical_mock = MagicMock()
-        vertical_mock.has_children = True
-        vertical_mock.category = self.vertical.category
-        vertical_mock.location = self.vertical.location
-        vertical_mock.display_name = self.vertical.display_name
+        result = courses + [question1, question2, question3, question4]
+        return_list = self.pgreport.get_progress_list()
+        self.assertItemsEqual(return_list, result)
 
-        chapter_mock.get_children.return_value = [sequential_mock]
-        sequential_mock.get_children.return_value = [vertical_mock]
-        vertical_mock.get_children.return_value = self.problems
-        course_mock.get_children.return_value = [chapter_mock]
 
-        self.pgreport._get_children_rec(course_mock)
-
-        self.assertEquals(self.pgreport.location_list, {
-            u'chapter': [self.chapter.location],
-            u'problem': [self.problems[0].location, self.problems[1].location],
-            u'sequential': [self.section.location],
-            u'vertical': [self.vertical.location]
-        })
-
-        self.assertEquals(self.pgreport.location_parent, [
+class OpenAssessmentReportTestCase(TestCase):
+    """ Test OpenAssessmentReport """
+    RUBRIC_OPTIONS = [
+        {
+            "order_num": 0,
+            "name": u"Poor",
+            "points": 0,
+        },
+        {
+            "order_num": 1,
+            "name": u"Good",
+            "points": 1,
+        },
+        {
+            "order_num": 2,
+            "name": u"Excellent",
+            "points": 2,
+        },
+    ]
+    RUBRIC = {
+        'criteria': [
             {
-                self.problems[0].location: [
-                    self.chapter.display_name,
-                    self.section.display_name,
-                    self.vertical.display_name
-                ]
+                "order_num": 0,
+                "name": u"Content",
+                "prompt": u"Content",
+                "options": RUBRIC_OPTIONS
             },
             {
-                self.problems[1].location: [
-                    self.chapter.display_name,
-                    self.section.display_name,
-                    self.vertical.display_name
-                ]
-            },
-        ])
-
-    @patch('sys.stdout', new_callable=StringIO.StringIO)
-    @patch('pgreport.views.cache')
-    @patch('pgreport.views.ProgressReport.collect_module_summary')
-    def test_get_raw(self, cmmock, camock, symock):
-        with self.assertRaises(InvalidCommand):
-            self.pgreport.get_raw(command="fake")
-
-        summary = self.pgreport2.get_raw(command="summary")
-        self.assertEquals(summary, {
-            'enrollments': 7, 'active_students': 6, 'module_tree': []})
-
-        location_list = {
-            u'chapter': [self.chapter.location],
-            u'problem': [self.problems[0].location, self.problems[1].location],
-            u'sequential': [self.section.location],
-            u'vertical': [self.vertical.location]
-        }
-        module_summary = {'module_summary': {'dummy': 'dummy'}}
-
-        mg = MagicMock()
-        with nested(
-            patch('pgreport.views.grades', return_value={'grade': True, 'percent': 1.0}),
-            patch('pgreport.views.get_module_for_student', side_effect=[
-                None, mg, mg, mg, mg, mg, mg, mg, mg, mg, mg, mg, mg, mg]),
-        ) as (grmock, gemock):
-            self.pgreport.location_list = location_list
-            self.pgreport.module_summary = module_summary
-            modules = self.pgreport.get_raw(command="modules")
-
-        with nested(
-            patch('pgreport.views.grades', return_value={'grade': True, 'percent': 1.0}),
-            patch('pgreport.views.get_module_for_student', side_effect=[
-                None, mg, mg, mg, mg, mg, mg, mg, mg, mg, mg, mg, mg, mg]),
-        ) as (grmock, gemock):
-            self.pgreport.location_list = location_list
-            self.pgreport.module_summary = module_summary
-            summary, modules = self.pgreport.get_raw()
-
-        grmock.grade.assert_called_with(self.students[6], ANY, ANY)
-        gemock.assert_any_called_with(self.students[6], self.course, self.problems[0].location)
-
-    @unittest.skip("This test is not yet modified.")
-    def test_get_pgreport_csv(self):
-        gzipdata = gzip.GzipFile(fileobj=self.gzipfile, mode='wb')
-        gzipdata.write("row1\nrow2\nrow3\n")
-        gzipdata.close()
-
-        scontent_mock = MagicMock()
-        cstore_mock = MagicMock()
-        content_mock = MagicMock()
-        content_mock.stream_data.return_value = self.gzipfile.getvalue()
-        cstore_mock.find.return_value = content_mock
-
-        with nested(
-            patch('pgreport.views.StaticContent', return_value=scontent_mock),
-            patch('pgreport.views.contentstore', return_value=cstore_mock),
-            patch('sys.stdout', new_callable=StringIO.StringIO)
-        ) as (smock, cmock, stdmock):
-
-            get_pgreport_csv(self.course.id)
-
-        smock.compute_location.assert_called_once_with(ANY, "progress_students.csv.gz")
-        cmock.assert_called_once_with()
-        cmock.return_value.find.assert_called_once_with(ANY, throw_on_not_found=True, as_stream=True)
-        content_mock.stream_data.assert_called_once_with()
-        self.assertEquals(stdmock.getvalue(), 'row1\nrow2\nrow3\n')
-
-        cstore_mock.find.side_effect = NotFoundError()
-        with patch('pgreport.views.contentstore', return_value=cstore_mock):
-            with self.assertRaises(NotFoundError):
-                get_pgreport_csv(self.course.id)
-
-    @unittest.skip("This test is not yet modified.")
-    def test_create_pgreport_csv(self):
-        rows = [
-            ["username", "loc", "last_login"],
-            [self.students[0].username, unicode(self.problems[0].location), "2014/1/1"],
-            [self.students[1].username, unicode(self.problems[1].location), "2014/1/1"],
+                "order_num": 1,
+                "name": u"Ideas",
+                "prompt": u"Ideas",
+                "options": RUBRIC_OPTIONS
+            }
         ]
+    }
 
-        progress_mock = MagicMock()
-        progress_mock.get_raw.return_value = rows
-        scontent_mock = MagicMock()
-        cstore_mock = MagicMock()
-        cstore_mock.fs.new_file().__exit__.return_value = False
-
-        with nested(
-            patch('pgreport.views.StaticContent', return_value=scontent_mock),
-            patch('pgreport.views.contentstore', return_value=cstore_mock),
-            patch('pgreport.views.ProgressReport', return_value=progress_mock),
-        ) as (smock, cmock, pmock):
-            create_pgreport_csv(self.course.id)
-
-        smock.compute_location.assert_called_once_with(ANY, "progress_students.csv.gz")
-        cmock.assert_called_once_with()
-        cmock.return_value.find.assert_called_once_with(ANY)
-        cmock.return_value.find.return_value.get_id.assert_called_once_with()
-
-        progress_mock.get_raw.return_value = rows
-        cstore_mock.fs.new_file().__enter__().write.side_effect = GridFSError()
-        with nested(
-            patch('pgreport.views.StaticContent', return_value=scontent_mock),
-            patch('pgreport.views.contentstore', return_value=cstore_mock),
-            patch('pgreport.views.ProgressReport', return_value=progress_mock),
-        ) as (smock, cmock, pmock):
-            with self.assertRaises(GridFSError):
-                create_pgreport_csv(self.course.id)
-
-    def test_delete_pgreport_csv(self):
-        cstore_mock = MagicMock()
-        content_mock = MagicMock()
-
-        with nested(
-            patch('pgreport.views.StaticContent', return_value=content_mock),
-            patch('pgreport.views.contentstore', return_value=cstore_mock),
-        ) as (scmock, csmock):
-            delete_pgreport_csv(self.course.id)
-
-        scmock.compute_location.assert_called_once_with(ANY, "progress_students.csv.gz")
-        csmock.assert_called_once_with()
-        csmock.return_value.find.assert_called_once_with(ANY)
-        csmock.return_value.delete.assert_called_once_with(ANY)
-
-    def test_get_pgreport_table(self):
-        module_summary = {
-            'location': unicode(self.problems[0].location),
-            'count': 1,
-            'display_name': "display_name",
-            'weight': "weight",
-            'type': "category",
-            'total_score': 3.0,
-            'due': "due",
-            'score/total': "score-total",
-            'submit_count': 1,
-            'start': "start",
-            'student_answers': {},
-            'max_score': 2.0,
-            'correct_map': {}
-        }
-        filter_mock = MagicMock()
-        pgmodule_mock = MagicMock()
-        filter_mock.values.return_value = [module_summary]
-        pgmodule_mock.objects.filter.return_value = filter_mock
-
-        with patch('pgreport.views.ProgressModules', pgmodule_mock):
-            summary, modules = get_pgreport_table(self.course.id)
-
-        filter_mock.values.assert_called_once_with()
-        pgmodule_mock.objects.filter.assert_called_with(course_id=self.course.id)
-
-        self.assertEquals(summary, {
-            'enrollments': 7, 'active_students': 6,
-            'module_tree': [
-                {self.html.location: [u'Week 1', u'Lesson 1', u'Unit1']},
-                {self.problems[0].location: [u'Week 1', u'Lesson 1', u'Unit1']},
-                {self.problems[1].location: [u'Week 1', u'Lesson 1', u'Unit1']}
-            ]
-        })
-        self.assertEquals(modules, {unicode(self.problems[0].location): module_summary})
-
-    @unittest.skip("This test is not yet modified.")
-    def test_update_pgreport_table(self):
-        with patch('pgreport.views.ProgressModules') as pmock:
-            update_pgreport_table(self.course.id)
-
-        pmock.assert_any_call(
-            count=6, display_name=self.problems[0].display_name,
-            weight=None, standard_deviation=0.0, correct_map={}, median=0.0, due=None,
-            submit_count=0, start=datetime.datetime(2030, 1, 1, 0, 0, tzinfo=UTC),
-            location=self.problems[0].location, course_id=self.course.id, variance=0.0,
-            student_answers={}, max_score=0.0, total_score=12.0, mean=0.0
-        )
-
-        with patch('pgreport.views.ProgressModules', side_effect=DatabaseError()):
-            with self.assertRaises(DatabaseError):
-                update_pgreport_table(self.course.id)
-
-
-class ProgressModulesFactory(DjangoModelFactory):
-    FACTORY_FOR = ProgressModules
-    location = "i4x://org/cn/problem/unitid"
-    course_id = "org/cn/run"
-    created = datetime.datetime.now()
-    display_name = "problem unit"
-    module_type = "problem"
-    count = 2
-    max_score = 1
-    total_score = 2
-    submit_count = 1
-    weight = None
-    start = datetime.datetime.now()
-    due = None
-    correct_map = {u'i4x-org-cn-problem-unitid_2_1': 1}
-    student_answers = {u'i4x-org-cn-problem-unitid_2_1': {
-        u'choice_0': 1, u'choice_2': 1}}
-    mean = 0.5
-    median = 0.5
-    variance = 0.25
-    standard_deviation = 0.5
-
-
-class ProgressModulesHistoryFactory(DjangoModelFactory):
-    FACTORY_FOR = ProgressModulesHistory
-    progress_module = factory.SubFactory(ProgressModulesFactory)
-    created = datetime.datetime.now()
-    count = 2
-    max_score = 1
-    total_score = 2
-    submit_count = 1
-    weight = None
-    start = datetime.datetime.now()
-    due = None
-    correct_map = {u'i4x-org-cn-problem-unitid_2_1': 1}
-    student_answers = {u'i4x-org-cn-problem-unitid_2_1': {
-        u'choice_0': 1, u'choice_2': 1}}
-    mean = 0.5
-    median = 0.5
-    variance = 0.25
-    standard_deviation = 0.5
-
-
-class ProgressModulesTestCase(TestCase):
     def setUp(self):
-        self.start = self.created = datetime.datetime.utcnow()
-        self.pgmodule = ProgressModulesFactory.create(
-            start=self.start, created=self.created)
+        part_data = [
+            {
+                "selected": {'Content': 'Poor', 'Ideas': 'Good'},
+                "feedback": {'Content': 'Good feedback'},
+            },
+            {
+                "selected": {'Content': 'Excellent', 'Ideas': 'Good'},
+                "feedback": {
+                    'Content': 'Excellent feedback',
+                    'Ideas': 'Poor feedback'
+                },
+            },
+        ]
 
-        patcher = patch('pgreport.views.logging')
-        self.log_mock = patcher.start()
-        self.addCleanup(patcher.stop)
+        rubric = rubric_from_dict(self.RUBRIC)
+        assessment = Assessment.create(rubric, "Scorer", "block@openassessment@999", "PE")
+        AssessmentPart.create_from_option_names(
+            assessment, part_data[0]["selected"],
+            feedback=part_data[0]["feedback"]
+        )
+        AssessmentPart.create_from_option_names(
+            assessment, part_data[1]["selected"],
+            feedback=part_data[1]["feedback"]
+        )
+        self.oa = OpenAssessmentReport('course-v1:org+cn+run')
 
     def tearDown(self):
         pass
 
-    def test_repr(self):
-        self.assertEquals(
-            str(self.pgmodule),
-            "[ProgressModules] i4x://org/cn/problem/unitid"
-        )
-
-    def test_unicode(self):
-        self.assertEquals(
-            unicode(self.pgmodule),
-            "[ProgressModules] i4x://org/cn/problem/unitid"
-        )
-
-    def test_get_by_course_id(self):
-        loc = "i4x://org/cn/problem/unitid"
-        modules = ProgressModules.get_by_course_id(CourseLocator.from_string("org/cn/run"))
-        self.assertEquals(modules[loc]["count"], 2)
-        self.assertEquals(modules[loc]["display_name"], u'problem unit')
-        self.assertEquals(modules[loc]["weight"], None)
-        self.assertEquals(modules[loc]["standard_deviation"], 0.5)
-        self.assertEquals(modules[loc]["total_score"], 2.0)
-        self.assertEquals(modules[loc]["median"], 0.5)
-        self.assertEquals(modules[loc]["due"], None)
-        self.assertEquals(modules[loc]["submit_count"], 1)
-        self.assertEquals(modules[loc]["module_type"], u'problem')
-        self.assertEquals(modules[loc]["course_id"], u'org/cn/run')
-        self.assertEquals(modules[loc]["variance"], 0.25)
-        self.assertEquals(modules[loc]["student_answers"], u"{u'i4x-org-cn-problem-unitid_2_1': {u'choice_0': 1, u'choice_2': 1}}")
-        self.assertEquals(modules[loc]["max_score"], 1.0)
-        self.assertEquals(modules[loc]["correct_map"], u"{u'i4x-org-cn-problem-unitid_2_1': 1}")
-        self.assertEquals(modules[loc]["mean"], 0.5)
+    @patch(
+        'pgreport.views.ProgressReportBase.get_display_name',
+        return_value="display_name")
+    @patch('pgreport.views.PeerWorkflow')
+    def test_get_oa_rubric_scores(self, pw_mock, gdn_mock):
+        pw_mock.objects.filter().values_list.return_value = [
+            "block@openassessment@999"]
+        pw_mock.objects.filter().values.return_value = [{
+            "item_id": "item_id"}]
+        scores = self.oa.get_oa_rubric_scores()
+        self.assertEquals(scores, {
+            "item_id": {
+                'display_name': 'display_name',
+                'rubrics': {
+                    u'Content': {
+                        u'Poor': [1, 0],
+                        u'Good': [0, 1],
+                        u'Excellent': [1, 2],
+                    },
+                    u'Ideas': {
+                        u'Poor': [0, 0],
+                        u'Good': [2, 1],
+                        u'Excellent': [0, 2],
+                    }
+                }
+            }
+        })
 
 
-class ProgressModulesHistoryTestCase(TestCase):
+class SubmissionReportTestCase(TestCase):
+    """Test SubmissionReport"""
+    course_id = 'course-v1:org+cn+run'
+    STUDENT_ITEM = dict(
+        student_id="Tim",
+        course_id=course_id,
+        item_id="block@openassessment@999",
+        item_type="Peer_Submission",
+    )
+    STEPS = ['peer', 'self']
+
     def setUp(self):
-        self.maxDiff = 10000
-        self.start = self.created = datetime.datetime.utcnow()
-        self.phmodule = ProgressModulesHistoryFactory.create(
-            start=self.start, created=self.created)
-
-        patcher = patch('pgreport.views.logging')
-        self.log_mock = patcher.start()
-        self.addCleanup(patcher.stop)
+        self._create_student_and_submission(
+            'Testuser1', 'Test Answer', "block@openassessment@999", 5, 8)
+        self._create_student_and_submission(
+            'Testuser2', 'Test Answer', "block@openassessment@999", 8, 8)
+        self._create_student_and_submission(
+            'Testuser3', 'Test Answer', "block@openassessment@000", 25, 50)
+        self.submission = SubmissionReport(self.course_id)
 
     def tearDown(self):
         pass
 
-    def test_repr(self):
-        self.assertEquals(
-            str(self.phmodule),
-            "[ProgressModules] i4x://org/cn/problem/unitid : created {}".format(self.created)
-        )
+    def _create_student_and_submission(self, student, answer, item_id,
+                                       earned, possible, date=None):
 
-    def test_unicode(self):
-        self.assertEquals(
-            unicode(self.phmodule),
-            "[ProgressModules] i4x://org/cn/problem/unitid : created {}".format(self.created)
-        )
+        new_student_item = self.STUDENT_ITEM.copy()
+        new_student_item["student_id"] = student
+        new_student_item["item_id"] = item_id
+
+        submission = sub_api.create_submission(new_student_item, answer, date)
+        peer_api.on_start(submission["uuid"])
+        workflow_api.create_workflow(submission["uuid"], self.STEPS)
+        sub_api.set_score(submission["uuid"], earned, possible)
+
+        return submission, new_student_item
+
+    @patch(
+        'pgreport.views.ProgressReportBase.get_display_name',
+        return_value="display_name")
+    def test_get_submission_scores(self, gdn_mock):
+        scores = self.submission.get_submission_scores()
+        self.assertEquals(scores, {
+            u'block@openassessment@000': {
+                'display_name': 'display_name',
+                'rubrics': {
+                    'FinalScore': {
+                        u'0-0': [0, 0],
+                        u'1-5': [0, 1],
+                        u'6-10': [0, 2],
+                        u'11-15': [0, 3],
+                        u'16-20': [0, 4],
+                        u'21-25': [1, 5],
+                        u'26-30': [0, 6],
+                        u'31-35': [0, 7],
+                        u'36-40': [0, 8],
+                        u'41-45': [0, 9],
+                        u'46-50': [0, 10]
+                    }
+                }
+            },
+            u'block@openassessment@999': {
+                'display_name': 'display_name',
+                'rubrics': {
+                    'FinalScore': {
+                        u'0-0': [0, 0],
+                        u'1-1': [0, 1],
+                        u'2-2': [0, 2],
+                        u'3-3': [0, 3],
+                        u'4-4': [0, 4],
+                        u'5-5': [1, 5],
+                        u'6-6': [0, 6],
+                        u'7-7': [0, 7],
+                        u'8-8': [1, 8]
+                    }
+                }
+            }
+        })
+
+
+class AjaxRequestTestCase(TestCase):
+    """"""
+    def setUp(self):
+        self.course = CourseFactory.create(display_name='ajax_test')
+        self.progress_list_url = reverse(
+            'get_progress_list',
+            kwargs={'course_id': self.course.id.to_deprecated_string()})
+        self.submission_scores_url = reverse(
+            'get_submission_scores',
+            kwargs={'course_id': self.course.id.to_deprecated_string()})
+        self.oa_rubric_scores_url = reverse(
+            'get_oa_rubric_scores',
+            kwargs={'course_id': self.course.id.to_deprecated_string()})
+
+        self.instructor = InstructorFactory(course_key=self.course.id)
+        self.client.login(username=self.instructor.username, password='test')
+
+    @patch('pgreport.views.ProblemReport')
+    def test_ajax_get_progress_list(self, rep_mock):
+        response = self.client.get(self.progress_list_url, {})
+        self.assertEquals(response.status_code, 200)
+        rep_mock().get_progress_list.assert_called_with()
+
+    @patch('pgreport.views.OpenAssessmentReport')
+    def test_ajax_get_oa_rubric_scores(self, rep_mock):
+        response = self.client.get(self.oa_rubric_scores_url, {})
+        self.assertEquals(response.status_code, 200)
+        rep_mock().get_oa_rubric_scores.assert_called_with()
+
+    @patch('pgreport.views.SubmissionReport')
+    def test_ajax_get_submission_scores(self, rep_mock):
+        response = self.client.get(self.submission_scores_url, {})
+        self.assertEquals(response.status_code, 200)
+        rep_mock().get_submission_scores.assert_called_with()

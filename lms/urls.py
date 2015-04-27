@@ -87,6 +87,9 @@ urlpatterns = ('',  # nopep8
     # Entrance/Exit Survey (xmodule/templates/html)
     url(r'^survey_init$', 'ga_survey.views.survey_init', name="survey_init"),
     url(r'^survey_ajax$', 'ga_survey.views.survey_ajax', name="survey_ajax"),
+
+    # Progress Report
+    url(r'^pgreport/', include('pgreport.urls')),
 )
 
 if settings.FEATURES["ENABLE_MOBILE_REST_API"]:

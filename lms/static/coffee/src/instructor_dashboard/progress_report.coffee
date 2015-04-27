@@ -6,7 +6,6 @@ Progress Report
 # constructed with $section, a jquery object
 # which holds the section body container.
 std_ajax_err = -> window.InstructorDashboard.util.std_ajax_err.apply this, arguments
-PendingInstructorTasks = -> window.InstructorDashboard.util.PendingInstructorTasks
 
 class ProgressReport 
   constructor: (@$section) ->
@@ -15,37 +14,41 @@ class ProgressReport
     @$section.data 'wrapper', @
 
     # gather elements
-    @$pgreport_generate_btn = @$section.find("input[name='generate-pgreport-csv']'")
-    @$pgreport_download_btn = @$section.find("input[name='download-pgreport-csv']'")
-    @$pgreport_request_response       = @$section.find '.request-response'
-    @$pgreport_request_response_error = @$section.find '.request-response-error'
+    #@$progress_grid_div = @$section.find("#ProgressGrid")
+    #@$pgreport_request_response       = @$section.find '.request-response'
+    #@$pgreport_request_response_error = @$section.find '.request-response-error'
 
-    @$pgreport_generate_btn.click (e) =>
-      @clear_display()
-      url = @$pgreport_generate_btn.data 'endpoint'
-      $.ajax
-        dataType: 'json'
-        url: url
-        error: std_ajax_err =>
-          @clear_display()
-          @$pgreport_request_response_error.text gettext("Error generating csv. Please try again.")
-          $(".msg-error").css({"display":"block"})
-        success: (data) =>
-          @clear_display()
-          @$pgreport_request_response.text data['status']
-          $(".msg-confirm").css({"display":"block"})
+  loadData: ->
+    #@clear_display()
+    #url = @$progress_grid_div.data 'endpoint-problems'
+    #console.log(url);
 
-    @$pgreport_download_btn.click (e) =>
-      url = @$pgreport_download_btn.data 'endpoint'
-      location.href = url
+    #problem_list_url = "${section_data['problem_list_url']}";
+    #submission_scores_url = "${section_data['submission_scores_url']}";
+    #openassessment_rubric_scores_url = "${section_data['openassessment_rubric_scores_url']}";
+
+    #$.ajax
+      #dataType: 'json'
+      #url: url
+      #error: std_ajax_err =>
+        #@clear_display()
+        #@$pgreport_request_response_error.text gettext("Error: Data load. Please try again.")
+        #$(".msg-error").css({"display":"block"})
+      #success: (data) =>
+        #@clear_display()
+        #setGrid(data);
+        #@$pgreport_request_response.text data['status']
+        #$(".msg-confirm").css({"display":"block"})
 
   clear_display: ->
-    @$pgreport_request_response.empty()
-    @$pgreport_request_response_error.empty()
-    $(".msg-confirm").css({"display":"none"})
-    $(".msg-error").css({"display":"none"})
+    #@$pgreport_request_response.empty()
+    #@$pgreport_request_response_error.empty()
+    #$(".msg-confirm").css({"display":"none"})
+    #$(".msg-error").css({"display":"none"})
 
   onClickTitle: ->
+    #@loadData()
+
   onExit: ->
 
 # export for use

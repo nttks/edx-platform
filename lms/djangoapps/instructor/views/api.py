@@ -30,8 +30,6 @@ import urllib
 from student import auth
 from student.roles import CourseSalesAdminRole
 from util.file import store_uploaded_file, course_and_time_based_filename_generator, FileValidationException, UniversalNewlineIterator
-import datetime
-import pytz
 from util.json_request import JsonResponse
 from instructor.views.instructor_task_helpers import extract_email_features, extract_task_features
 
@@ -94,9 +92,6 @@ from opaque_keys.edx.keys import CourseKey
 from opaque_keys.edx.locations import SlashSeparatedCourseKey
 from opaque_keys import InvalidKeyError
 from student.models import UserProfile, Registration
-from xmodule.contentstore.content import StaticContent
-from xmodule.contentstore.django import contentstore
-from xmodule.exceptions import NotFoundError
 
 log = logging.getLogger(__name__)
 
@@ -2203,43 +2198,3 @@ def get_survey(request, course_id):  # pylint: disable=W0613
                 row.append(value)
             rows.append(row)
     return csv_response(course_id.replace('/', '-') + '-survey.csv', header, rows)
-
-
-@ensure_csrf_cookie
-@handle_dashboard_error
-@common_exceptions_400
-@cache_control(no_cache=True, no_store=True, must_revalidate=True)
-@require_level('staff')
-def create_pgreport_csv(request, course_id):
-    course_key = SlashSeparatedCourseKey.from_deprecated_string(course_id)
-    try:
-        instructor_task.api.submit_create_pgreport_csv(request, course_key)
-        success_status = _("Report is being generated! You can view the status of the generation task in the 'Pending Instructor Tasks' section.")
-        return JsonResponse({"status": success_status})
-    except AlreadyRunningError:
-        already_running_status = _("Report generation task is already in progress. Check the 'Pending Instructor Tasks' table for the status of the task. When completed, the report will be available for download in the table below.")
-        return JsonResponse({
-            "status": already_running_status
-        })
-
-
-@ensure_csrf_cookie
-@handle_dashboard_error
-@common_exceptions_400
-@cache_control(no_cache=True, no_store=True, must_revalidate=True)
-@require_level('staff')
-def get_pgreport_csv(request, course_id):
-    course_key = SlashSeparatedCourseKey.from_deprecated_string(course_id)
-    loc = StaticContent.compute_location(course_key, "progress_students.csv.gz")
-    store = contentstore()
-    try:
-        content = store.find(loc, throw_on_not_found=True, as_stream=True)
-    except NotFoundError as e:
-        return HttpResponseForbidden(e)
-
-    response = HttpResponse(content_type="application/x-gzip")
-    response['Content-Disposition'] = 'attachment; filename={}'.format(content.name)
-    for csv_data in content.stream_data():
-        response.write(csv_data)
-
-    return response
