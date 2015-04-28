@@ -1,67 +1,50 @@
 <%! from django.utils.translation import ugettext as _ %>
 <%page args="section_data"/>
+<%namespace name='static' file='/static_content.html'/>
 
 <div class="progress-report-container action-type-container">
-  <h2> ${_("Summary Progress")} </h2>
-  <table class="summary-table">
-    <tr align=center>
-      <th><br/></th>
-      <th>${section_data['course_display_name']}</th>
-    </tr>
-    %for key in section_data["summary_keys"]:
-    <tr>
-      <th>${key}</th>
-      <td>${section_data["summary_values"][key]}</td>
-    </tr>
-    %endfor
-  </table>
+  <div class="progress-summary">
+    <p><strong>${_("Course name")}</strong>: ${section_data['course_display_name']}</p>
+    <p><strong>${_("Enrollment counts")}</strong>: ${section_data['course_enrollments']}</p>
+    <p><strong title="${_('Activated and not resign user')}">${_("Active student counts")}</strong>: ${section_data['course_actives']}</p>
+  <div>
+  <br/>
+
+  <hr>
+  <h2> ${_("Problem Module Progress")} </h2>
+  <div id="ProgressGrid">
+    <div class="loading"><i class="fa fa-spinner fa-spin fa-5x"></i></div>
+  </div>
+  <br/>
+
+  <div>
+    <h2> ${_("Answer Distribution")} </h2>
+    <p id="SelectionStatus">${_("Select row in a table")}</p>
+    <div id="AnswerDistribution"></div>
+  </div>
   <br/>
   <hr>
 
-  <h2> ${_("Student Progress")} </h2>
-  <ul class="progress-report-list"> 
-    <li><p>${_("Current CSV: created ")}${ section_data['current_csv']}</p></li>
-    %if section_data['current_csv']:
-    <li><input type="button" name="download-pgreport-csv" value="${_("Download Progress Report")}" data-endpoint="${ section_data['progress_csv_url'] }" data-csv="true" class="csv"></li>
-    %endif
-    <li><input type="button" name="generate-pgreport-csv" value="${_("Generate Progress Report")}" data-endpoint="${ section_data['progress_report_url'] }"></li>
-  </ul>
+  <div>
+    <h2> ${_("Score distribution map for OpenAssessment")} </h2>
+    <select name="BarChart_items" id="BarChart_items"></select>
+    <br/>
+    <br/>
+    <div id="ProgressGraphs">
+      <div id="OpenassessmentScoreDistribution"></div>
+      <div id="SubmissionScoreDistribution"></div>
+    </div>
+  </div>
+
   <div class="request-response msg-confirm" id="pgreport-request-response"></div>
   <div class="request-response-error msg-error" id="pgreport-request-response-error"></div>
 
-
-%if settings.FEATURES.get('ENABLE_INSTRUCTOR_BACKGROUND_TASKS'):
-  <br/>
-  <div class="running-tasks-container action-type-container">
-    <h3> ${_("Pending Instructor Tasks")} </h3>
-    <p>${_("The status for any active tasks appears in a table below.")} </p>
-    <br />
-
-    <div class="running-tasks-table" data-endpoint="${ section_data['list_instructor_tasks_url'] }"></div>
-  </div>
-%endif
-
-%if section_data["modules"]: 
-  <hr>
-  <h2> ${_("Problem Module Progress")} </h2>
-  %for loc in section_data["module_tree"]:
-    %for key, value in loc.items():
-      %if section_data["modules"].has_key(str(key)):
-        <h3>Section: ${value[0]}, Subsection: ${value[1]}, Unit: ${value[2]}</h3>
-        <table class="modules-table">
-          <tr>
-            <th><br/></th>
-            <th>${key}</th>
-          </tr>
-          %for key, value in sorted(section_data["modules"][str(key)].items()):
-            <tr>
-              <th>${key}</th><td>${value}</td>
-            </tr>
-          %endfor
-        </table>
-        <br/>
-      %endif
-    %endfor
-  %endfor
-%endif
+  <script src="${static.url('js/progress_report.js')}"></script>
+  <script>
+    ProgressReport("${section_data['problem_list_url']}", "${section_data['submission_scores_url']}", "${section_data['openassessment_rubric_scores_url']}", "${section_data['section_key']}");
+  </script>
+  ##<script>
+  ##  <%namespace name="progress_report" file="/class_dashboard/progress_report.js"/>
+  ##  ${progress_report.body(section_data)}
+  ##</script>
 </div>

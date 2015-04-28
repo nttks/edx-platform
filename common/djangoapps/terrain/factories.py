@@ -6,7 +6,6 @@ and integration / BDD tests.
 import student.tests.factories as sf
 import xmodule.modulestore.tests.factories as xf
 import course_modes.tests.factories as cmf
-from pgreport.tests.test_views import ProgressModulesFactory
 from lettuce import world
 
 
@@ -18,4 +17,3 @@ world.absorb(sf.CourseEnrollmentAllowedFactory)
 world.absorb(cmf.CourseModeFactory)
 world.absorb(xf.CourseFactory)
 world.absorb(xf.ItemFactory)
-world.absorb(ProgressModulesFactory)
