@@ -5,8 +5,6 @@ from pgreport.views import (
 from django.test.utils import override_settings
 from django.core.urlresolvers import reverse
 
-from xmodule.modulestore.tests.django_utils import TEST_DATA_MOCK_MODULESTORE
-
 from opaque_keys.edx.keys import CourseKey
 from opaque_keys.edx.locator import CourseLocator
 from xmodule.modulestore.tests.factories import CourseFactory, ItemFactory
@@ -76,13 +74,14 @@ class ProgressReportBaseTestCase(TestCase):
         self.assertEquals(name, "test_name")
 
 
-@override_settings(MODULESTORE=TEST_DATA_MOCK_MODULESTORE)
 class ProblemReportTestCase(ModuleStoreTestCase):
     """ Test ProblemReport"""
     COURSE_NAME = "test_pgreport"
     COURSE_NUM = 3
 
     def setUp(self):
+        super(ProblemReportTestCase, self).setUp()
+
         self.course = CourseFactory.create(
             display_name=self.COURSE_NAME,
         )
@@ -639,9 +638,11 @@ class SubmissionReportTestCase(TestCase):
         })
 
 
-class AjaxRequestTestCase(TestCase):
+class AjaxRequestTestCase(ModuleStoreTestCase):
     """"""
     def setUp(self):
+        super(AjaxRequestTestCase, self).setUp()
+
         self.course = CourseFactory.create(display_name='ajax_test')
         self.progress_list_url = reverse(
             'get_progress_list',
