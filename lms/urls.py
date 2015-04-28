@@ -101,6 +101,9 @@ urlpatterns = (
 
     # Profile Images API endpoints
     url(r'^api/profile_images/', include('openedx.core.djangoapps.profile_images.urls')),
+
+    # Progress Report
+    url(r'^pgreport/', include('pgreport.urls')),
 )
 
 if settings.FEATURES["ENABLE_COMBINED_LOGIN_REGISTRATION"]:

@@ -2140,29 +2140,37 @@ msgstr "登録されたメールアドレスが間違っているか迷惑メー
 msgid "Progress Report"
 msgstr "進捗レポート"
 
-##: lms/templates/instructor/instructor_dashboard_2/progress_report.html
-#msgid "Student Progress"
-#msgstr "受講者の進捗"
+#: lms/templates/instructor/instructor_dashboard_2/progress_report.html
+msgid "Course name"
+msgstr "コース名"
 
 #: lms/templates/instructor/instructor_dashboard_2/progress_report.html
-msgid "Current CSV: created "
-msgstr "現行のCSV：作成日時 "
+msgid "Enrollment counts"
+msgstr "受講登録者数"
 
 #: lms/templates/instructor/instructor_dashboard_2/progress_report.html
-msgid "Download Progress Report"
-msgstr "進捗レポートのダウンロード"
+msgid "Active student counts"
+msgstr "有効登録者数"
 
 #: lms/templates/instructor/instructor_dashboard_2/progress_report.html
-msgid "Generate Progress Report"
-msgstr "進捗レポートの作成"
-
-#: lms/templates/instructor/instructor_dashboard_2/progress_report.html
-msgid "Summary Progress"
-msgstr "進捗サマリ"
+msgid "Activated and not resign user"
+msgstr "退会していないアクティベート済みユーザ"
 
 #: lms/templates/instructor/instructor_dashboard_2/progress_report.html
 msgid "Problem Module Progress"
 msgstr "Problemモジュールの進捗"
+
+#: lms/templates/instructor/instructor_dashboard_2/progress_report.html
+msgid "Answer Distribution"
+msgstr "解答の分布"
+
+#: lms/templates/instructor/instructor_dashboard_2/progress_report.html
+msgid "Select row in a table"
+msgstr "上表から行を選択してください"
+
+#: lms/templates/instructor/instructor_dashboard_2/progress_report.html
+msgid "Score distribution map for OpenAssessment"
+msgstr "OpenAssessmentの点数分布"
 
 #: lms/djangoapps/courseware/module_render.py
 msgid "Submission aborted! Maximum %d files may be submitted at once"

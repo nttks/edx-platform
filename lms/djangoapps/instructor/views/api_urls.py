@@ -112,10 +112,6 @@ urlpatterns = patterns(
 
     url(r'^get_survey$',
         'instructor.views.api.get_survey', name="get_survey"),
-    url(r'^generate_progress_report$', 'instructor.views.api.create_pgreport_csv',
-        name="create_pgreport_csv"),
-    url(r'^download_progress_report$', 'instructor.views.api.get_pgreport_csv',
-        name="get_pgreport_csv"),
 
     # Certificates
     url(r'^generate_example_certificates$',

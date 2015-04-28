@@ -18,7 +18,6 @@ from instructor_task.tasks import (
     reset_problem_attempts,
     delete_problem_state,
     send_bulk_course_email,
-    create_pgreport_csv,
     calculate_grades_csv,
     calculate_students_features_csv,
     cohort_students,
@@ -358,18 +357,6 @@ def submit_cohort_students(request, course_key, file_name):
     task_type = 'cohort_students'
     task_class = cohort_students
     task_input = {'file_name': file_name}
-    task_key = ""
-
-    return submit_task(request, task_type, task_class, course_key, task_input, task_key)
-
-
-def submit_create_pgreport_csv(request, course_key):
-    """
-    AlreadyRunningError is raised if the course's grades are already being updated.
-    """
-    task_type = 'create_pgreport_csv'
-    task_class = create_pgreport_csv
-    task_input = {}
     task_key = ""
 
     return submit_task(request, task_type, task_class, course_key, task_input, task_key)

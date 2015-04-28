@@ -42,15 +42,10 @@ from certificates import api as certs_api
 from class_dashboard.dashboard_data import get_section_display_name, get_array_section_has_problem
 from .tools import get_units_with_due_date, title_or_url, bulk_email_is_enabled_for_course
 from opaque_keys.edx.locations import SlashSeparatedCourseKey
+from pgreport.views import ProblemReport
 
 
 log = logging.getLogger(__name__)
-
-from pgreport.views import get_pgreport_table
-from django.core.cache import cache
-from xmodule.contentstore.django import contentstore
-from gridfs.errors import NoFile
-import pytz
 
 
 @ensure_csrf_cookie
@@ -525,6 +520,7 @@ def _section_metrics(course, access):
     }
     return section_data
 
+
 def _section_survey(course, access):
     """ Provide data for the corresponding survey section """
     course_key = course.id
@@ -539,37 +535,22 @@ def _section_survey(course, access):
 
 def _section_progress_report(course, access):
     """Report progress"""
-    course_key = course.id
-    summary, modules = get_pgreport_table(course_key)
-    module_tree = summary.pop("module_tree")
-    graded = cache.get('progress_summary')
-
-    if graded is not None:
-        summary["graded_count"] = int(graded)
-    store = contentstore()
-    org, cnum, _dummy = course_key.to_deprecated_string().split('/')
-
-    try:
-        content = store.fs.get_last_version('/c4x/{}/{}/asset/progress_students.csv.gz'.format(
-            org, cnum))
-        utc = pytz.utc.localize(content.upload_date)
-        tzdate = utc.astimezone(pytz.timezone(settings.TIME_ZONE))
-        current_csv = tzdate.strftime('%Y-%m-%d %H:%M:%S')
-    except NoFile:
-        current_csv = None
+    course_id = course.id
+    progress = ProblemReport(course_id)
+    enrollement_count, active_count = progress.get_active_students()
 
     section_data = {
         'section_key': 'progress_report',
         'section_display_name': _('Progress Report'),
         'access': access,
         'course_display_name': course.display_name,
-        'summary_keys': summary.keys(),
-        'summary_values': summary,
-        'modules': modules,
-        'module_tree': module_tree,
-        'current_csv': current_csv,
-        'progress_report_url': reverse('create_pgreport_csv', kwargs={'course_id': course_key.to_deprecated_string()}),
-        'progress_csv_url': reverse('get_pgreport_csv', kwargs={'course_id': course_key.to_deprecated_string()}),
-        'list_instructor_tasks_url': reverse('list_instructor_tasks', kwargs={'course_id': course_key.to_deprecated_string()}),
+        'course_enrollments': enrollement_count,
+        'course_actives': active_count,
+        'problem_list_url': reverse('get_progress_list', kwargs={'course_id': course_id}),
+        'submission_scores_url': reverse(
+            'get_submission_scores', kwargs={'course_id': course_id}),
+        'openassessment_rubric_scores_url': reverse(
+            'get_oa_rubric_scores', kwargs={'course_id': course_id}),
     }
+
     return section_data

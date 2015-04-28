@@ -51,3 +51,36 @@ msgstr "選びなおす"
 #: common/lib/xmodule/xmodule/js/src/capa/display.coffee
 msgid "Is this your final answer?"
 msgstr "解答を提出します。よろしいですか？"
+
+#: lms/static/js/progress_report.js
+msgid "Course"
+msgstr "コース"
+
+#: lms/static/js/progress_report.js
+msgid "Question"
+msgstr "設問"
+
+#: lms/static/js/progress_report.js
+msgid "Sum of answer"
+msgstr "回答総数"
+
+#: lms/static/js/progress_report.js
+msgid "Percentage of correct answer"
+msgstr "正解率"
+
+#: lms/static/js/progress_report.js
+msgid "Average of attempts"
+msgstr "平均試行回数"
+
+#: lms/static/js/progress_report.js
+msgid "Number of students"
+msgstr "学生数"
+
+#: lms/static/js/progress_report.js
+msgid "Number of assessments"
+msgstr "評価回数"
+
+#: lms/static/js/progress_report.js
+msgid "Score"
+msgstr "得点"
+

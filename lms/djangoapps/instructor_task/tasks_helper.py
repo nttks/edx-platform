@@ -37,8 +37,6 @@ from opaque_keys.edx.keys import UsageKey
 from openedx.core.djangoapps.course_groups.cohorts import add_user_to_cohort, is_course_cohorted
 from student.models import CourseEnrollment
 
-from pgreport.views import create_pgreport_csv
-
 # define different loggers for use within tasks and on client side
 TASK_LOG = logging.getLogger('edx.celery.task')
 
@@ -799,33 +797,3 @@ def cohort_students_and_upload(_xmodule_instance_args, _entry_id, course_id, tas
     upload_csv_to_report_store(output_rows, 'cohort_results', course_id, start_date)
 
     return task_progress.update_task_state(extra_meta=current_step)
-
-
-def push_students_report(_xmodule_instance_args, _entry_id, course_id, _task_input, action_name):
-    """
-    For a given `course_id`, generate a grades CSV file for all students
-    """
-    start_time = datetime.now(UTC)
-    status = True
-
-    def update_task_progress(state):
-        """Return a dict containing info about current task"""
-        current_time = datetime.now(UTC)
-
-        status, data = state.split(' ')
-        attempted, total = data.split('/')
-        entry = InstructorTask.objects.get(pk=_entry_id)
-
-        progress = {
-            'action_name': action_name,
-            'attempted': int(attempted),
-            'succeeded': int(attempted),
-            'total': int(total),
-            'duration_ms': int((current_time - start_time).total_seconds() * 1000),
-        }
-        entry.task_state = PROGRESS
-        entry.task_output = InstructorTask.create_output_for_success(progress)
-        entry.save_now()
-        #_get_current_task().update_state(state=status, meta=progress)
-
-    create_pgreport_csv(course_id, update_task_progress)
