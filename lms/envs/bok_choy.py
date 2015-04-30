@@ -149,6 +149,15 @@ PROFILE_IMAGE_BACKEND = {
     },
 }
 #####################################################################
+# gacco settings overrides.
+if os.environ.get('ENABLE_BOKCHOY_GA') in ['True', 'true', '1']:
+    FEATURES['USE_CUSTOM_THEME'] = True
+    THEME_NAME = 'gacco'
+
+    EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
+    EMAIL_FILE_PATH = 'test_root/bokchoy_email'
+
+#####################################################################
 # Lastly, see if the developer has any local overrides.
 try:
     from .private import *      # pylint: disable=import-error
