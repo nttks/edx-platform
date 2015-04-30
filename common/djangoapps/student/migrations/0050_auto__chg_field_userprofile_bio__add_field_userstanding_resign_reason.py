@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import datetime
+from south.utils import datetime_utils as datetime
 from south.db import db
 from south.v2 import SchemaMigration
 from django.db import models
@@ -8,6 +8,9 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
+
+        # Changing field 'UserProfile.bio'
+        db.alter_column('auth_userprofile', 'bio', self.gf('django.db.models.fields.CharField')(max_length=3000, null=True))
         # Adding field 'UserStanding.resign_reason'
         db.add_column('student_userstanding', 'resign_reason',
                       self.gf('django.db.models.fields.TextField')(max_length=1000, null=True),
@@ -15,6 +18,9 @@ class Migration(SchemaMigration):
 
 
     def backwards(self, orm):
+
+        # Changing field 'UserProfile.bio'
+        db.alter_column('auth_userprofile', 'bio', self.gf('django.db.models.fields.CharField')(null=True))
         # Deleting field 'UserStanding.resign_reason'
         db.delete_column('student_userstanding', 'resign_reason')
 
@@ -88,6 +94,39 @@ class Migration(SchemaMigration):
             'email': ('django.db.models.fields.CharField', [], {'max_length': '255', 'db_index': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'})
         },
+        'student.dashboardconfiguration': {
+            'Meta': {'object_name': 'DashboardConfiguration'},
+            'change_date': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
+            'changed_by': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['auth.User']", 'null': 'True', 'on_delete': 'models.PROTECT'}),
+            'enabled': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'recent_enrollment_time_delta': ('django.db.models.fields.PositiveIntegerField', [], {'default': '0'})
+        },
+        'student.entranceexamconfiguration': {
+            'Meta': {'unique_together': "(('user', 'course_id'),)", 'object_name': 'EntranceExamConfiguration'},
+            'course_id': ('xmodule_django.models.CourseKeyField', [], {'max_length': '255', 'db_index': 'True'}),
+            'created': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'null': 'True', 'db_index': 'True', 'blank': 'True'}),
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'skip_entrance_exam': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
+            'updated': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'db_index': 'True', 'blank': 'True'}),
+            'user': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['auth.User']"})
+        },
+        'student.languageproficiency': {
+            'Meta': {'unique_together': "(('code', 'user_profile'),)", 'object_name': 'LanguageProficiency'},
+            'code': ('django.db.models.fields.CharField', [], {'max_length': '16'}),
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'user_profile': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'language_proficiencies'", 'to': "orm['student.UserProfile']"})
+        },
+        'student.linkedinaddtoprofileconfiguration': {
+            'Meta': {'object_name': 'LinkedInAddToProfileConfiguration'},
+            'change_date': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
+            'changed_by': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['auth.User']", 'null': 'True', 'on_delete': 'models.PROTECT'}),
+            'company_identifier': ('django.db.models.fields.TextField', [], {}),
+            'dashboard_tracking_code': ('django.db.models.fields.TextField', [], {'default': "''", 'blank': 'True'}),
+            'enabled': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'trk_partner_name': ('django.db.models.fields.CharField', [], {'default': "''", 'max_length': '10', 'blank': 'True'})
+        },
         'student.loginfailures': {
             'Meta': {'object_name': 'LoginFailures'},
             'failure_count': ('django.db.models.fields.IntegerField', [], {'default': '0'}),
@@ -125,6 +164,7 @@ class Migration(SchemaMigration):
         'student.userprofile': {
             'Meta': {'object_name': 'UserProfile', 'db_table': "'auth_userprofile'"},
             'allow_certificate': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
+            'bio': ('django.db.models.fields.CharField', [], {'max_length': '3000', 'null': 'True', 'blank': 'True'}),
             'city': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
             'country': ('django_countries.fields.CountryField', [], {'max_length': '2', 'null': 'True', 'blank': 'True'}),
             'courseware': ('django.db.models.fields.CharField', [], {'default': "'course.xml'", 'max_length': '255', 'blank': 'True'}),
@@ -137,6 +177,7 @@ class Migration(SchemaMigration):
             'mailing_address': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
             'meta': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'db_index': 'True', 'max_length': '255', 'blank': 'True'}),
+            'profile_image_uploaded_at': ('django.db.models.fields.DateTimeField', [], {'null': 'True'}),
             'user': ('django.db.models.fields.related.OneToOneField', [], {'related_name': "'profile'", 'unique': 'True', 'to': "orm['auth.User']"}),
             'year_of_birth': ('django.db.models.fields.IntegerField', [], {'db_index': 'True', 'null': 'True', 'blank': 'True'})
         },

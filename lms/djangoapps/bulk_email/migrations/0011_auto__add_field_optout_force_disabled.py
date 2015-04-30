@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import datetime
+from south.utils import datetime_utils as datetime
 from south.db import db
 from south.v2 import SchemaMigration
 from django.db import models
@@ -51,20 +51,22 @@ class Migration(SchemaMigration):
         },
         'bulk_email.courseauthorization': {
             'Meta': {'object_name': 'CourseAuthorization'},
-            'course_id': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '255', 'db_index': 'True'}),
+            'course_id': ('xmodule_django.models.CourseKeyField', [], {'unique': 'True', 'max_length': '255', 'db_index': 'True'}),
             'email_enabled': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'})
         },
         'bulk_email.courseemail': {
             'Meta': {'object_name': 'CourseEmail'},
-            'course_id': ('django.db.models.fields.CharField', [], {'max_length': '255', 'db_index': 'True'}),
+            'course_id': ('xmodule_django.models.CourseKeyField', [], {'max_length': '255', 'db_index': 'True'}),
             'created': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
+            'from_addr': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True'}),
             'html_message': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'modified': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'}),
             'sender': ('django.db.models.fields.related.ForeignKey', [], {'default': '1', 'to': "orm['auth.User']", 'null': 'True', 'blank': 'True'}),
             'slug': ('django.db.models.fields.CharField', [], {'max_length': '128', 'db_index': 'True'}),
             'subject': ('django.db.models.fields.CharField', [], {'max_length': '128', 'blank': 'True'}),
+            'template_name': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True'}),
             'text_message': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
             'to_option': ('django.db.models.fields.CharField', [], {'default': "'myself'", 'max_length': '64'})
         },
@@ -72,11 +74,12 @@ class Migration(SchemaMigration):
             'Meta': {'object_name': 'CourseEmailTemplate'},
             'html_template': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'name': ('django.db.models.fields.CharField', [], {'max_length': '255', 'unique': 'True', 'null': 'True', 'blank': 'True'}),
             'plain_template': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'})
         },
         'bulk_email.optout': {
             'Meta': {'unique_together': "(('user', 'course_id'),)", 'object_name': 'Optout'},
-            'course_id': ('django.db.models.fields.CharField', [], {'max_length': '255', 'db_index': 'True'}),
+            'course_id': ('xmodule_django.models.CourseKeyField', [], {'max_length': '255', 'db_index': 'True'}),
             'force_disabled': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'user': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['auth.User']", 'null': 'True'})
