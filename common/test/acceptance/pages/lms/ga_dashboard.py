@@ -30,6 +30,12 @@ class DashboardPage(EdXDashboardPage):
         """
         self.q(css="#resign_button").first.click()
 
+    def click_reset_password(self):
+        """
+        Click reset password on dashboard
+        """
+        self.q(css="#pwd_reset_button").first.click()
+
     def is_exists_notification(self):
         """
         Return whether notification is displayed.
