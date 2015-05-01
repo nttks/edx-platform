@@ -24,6 +24,12 @@ class DashboardPage(EdXDashboardPage):
         """
         return self.q(css='section.dashboard-banner .activation-message').text
 
+    def click_resign(self):
+        """
+        Click resign on dashboard
+        """
+        self.q(css="#resign_button").first.click()
+
     def is_exists_notification(self):
         """
         Return whether notification is displayed.
