@@ -127,6 +127,13 @@ if os.environ.get('ENABLE_BOKCHOY_GA') in ['True', 'true', '1']:
     EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
     EMAIL_FILE_PATH = 'test_root/bokchoy_email'
 
+    # Password policy
+    FEATURES['ENFORCE_PASSWORD_POLICY'] = True
+    PASSWORD_MIN_LENGTH = 8
+    PASSWORD_COMPLEXITY = {"UPPER": 1, "LOWER": 1, "DIGITS": 1}
+    PASSWORD_DICTIONARY_EDIT_DISTANCE_THRESHOLD = 0
+    PASSWORD_DICTIONARY = ["Password1"]
+
 #####################################################################
 # Lastly, see if the developer has any local overrides.
 try:
