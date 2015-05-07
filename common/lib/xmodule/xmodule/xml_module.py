@@ -126,6 +126,7 @@ class XmlDescriptor(XModuleDescriptor):
     metadata_to_strip = ('data_dir',
                          'tabs', 'grading_policy',
                          'discussion_blackouts',
+                         'is_course_hidden',
                          # VS[compat] -- remove the below attrs once everything is in the CMS
                          'course', 'org', 'url_name', 'filename',
                          # Used for storing xml attributes between import and export, for roundtrips
