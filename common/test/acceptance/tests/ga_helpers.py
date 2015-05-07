@@ -4,6 +4,7 @@ Test helper functions and base classes.
 import os
 import os.path
 import time
+from itertools import chain
 
 from email import message_from_string
 from email.header import decode_header
@@ -47,19 +48,15 @@ class FilebasedEmailClient(object):
                 raise Exception("Timeout. No email file was found at %s." % self.email_file_path)
             time.sleep(self.WAIT_TIMEOUT)
 
-    def get_latest_message(self):
-        """
-        Get the latest email message
-        """
-        # Wait until email file appears
-        self._wait_for_messages()
-        files = self._get_files()
-        # Sort in the chronological order, most recent first
-        files.sort(key=os.path.getmtime, reverse=True)
-        file = files[0]
-        # Parse content of the file
+    def _get_messages_from_file(self, file):
         with open(file, 'r') as f:
-            msg = message_from_string(f.read())
+            return [message.strip() for message in f.read().split('-' * 79) if message.strip() != '']
+
+    def _parse_message(self, message):
+        """
+        Parse content of the file
+        """
+        msg = message_from_string(message)
         encoding = decode_header(msg.get('Subject'))[0][1] or 'utf-8'
         subject = decode_header(msg.get('Subject'))[0][0].decode(encoding)
         body = msg.get_payload()
@@ -71,10 +68,34 @@ class FilebasedEmailClient(object):
             'body': body
         }
 
+    def get_messages(self):
+        """
+        Get all messages
+        """
+        # Wait until email file appears
+        self._wait_for_messages()
+        files = self._get_files()
+        messages = list(chain.from_iterable([self._get_messages_from_file(file) for file in files]))
+        return [self._parse_message(message) for message in messages]
+
+    def get_latest_message(self):
+        """
+        Get the latest email message
+        """
+        # Wait until email file appears
+        self._wait_for_messages()
+        files = self._get_files()
+        # Sort in the chronological order, most recent first
+        files.sort(key=os.path.getmtime, reverse=True)
+        # Get latest message in the file
+        messages = self._get_messages_from_file(files[0])
+        message = messages[-1]
+        return self._parse_message(message)
+
     def clear_messages(self):
         """
         Remove all email files under `email_file_path`
         """
         files = self._get_files()
         for file in files:
-          os.remove(file)
+            os.remove(file)
