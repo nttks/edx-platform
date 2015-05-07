@@ -636,6 +636,14 @@ msgstr ""
 msgid "Cohorts are not currently supported by edX."
 msgstr ""
 
+#: common/lib/xmodule/xmodule/course_module.py
+msgid "Course Is Hidden"
+msgstr "コース非表示"
+
+#: common/lib/xmodule/xmodule/course_module.py
+msgid "Enter true or false. If true, the course is hidden."
+msgstr "trueかfalseを入力してください。trueにするとコースが非表示になります。"
+
 #: common/lib/xmodule/xmodule/lti_module.py
 msgid ""
 "Requesting user's username will only work if 'Open in a new page' is set "
@@ -1155,6 +1163,11 @@ msgstr "<span id=\"track-info\"></span> {course_number}?  <span id=\"refund-info
 #: lms/templates/dashboard/_dashboard_course_listing.html
 msgid "Unregister"
 msgstr "受講取消"
+
+#: templates/dashboard/_dashboard_course_listing.html
+#: lms/templates/dashboard/_dashboard_course_listing.html
+msgid "This course has been closed."
+msgstr "本講座のサービス提供は終了しました。"
 
 #: lms/templates/edx_footer.html
 msgid "2014 edX, except where noted, all rights reserved."

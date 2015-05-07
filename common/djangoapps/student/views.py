@@ -636,7 +636,8 @@ def dashboard(request):
                                        if _enrollment.refundable())
 
     block_courses = frozenset(course.id for course, enrollment in course_enrollment_pairs
-                              if is_course_blocked(request, CourseRegistrationCode.objects.filter(course_id=course.id, registrationcoderedemption__redeemed_by=request.user), course.id))
+                              if is_course_blocked(request, CourseRegistrationCode.objects.filter(course_id=course.id, registrationcoderedemption__redeemed_by=request.user), course.id) or (course.is_course_hidden and not staff_access))
+
 
     enrolled_courses_either_paid = frozenset(course.id for course, _enrollment in course_enrollment_pairs
                                              if _enrollment.is_paid_course())

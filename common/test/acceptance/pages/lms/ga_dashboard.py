@@ -67,3 +67,15 @@ class DashboardPage(EdXDashboardPage):
                 return False
         else:
             raise Exception("No course named {} was found on the dashboard".format(course_name))
+
+    @property
+    def hidden_course_text(self):
+        text_items = self.q(css='section #block-course-msg').text
+        if len(text_items) > 0:
+            return text_items[0]
+        else:
+            return ""
+
+    def is_hidden_course_link_active(self, course_id):
+        link_css = self._link_css(course_id)
+        return True if link_css is not None else False
