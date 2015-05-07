@@ -25,7 +25,7 @@ from student.models import (
 )
 from student.views import (process_survey_link, _cert_info,
                            change_enrollment, complete_course_mode_info)
-from student.tests.factories import UserFactory, CourseModeFactory
+from student.tests.factories import UserFactory, CourseModeFactory, AdminFactory
 from util.testing import EventTestMixin
 from util.model_utils import USER_SETTINGS_CHANGED_EVENT_NAME
 from xmodule.modulestore.tests.factories import CourseFactory
@@ -401,6 +401,24 @@ class DashboardTest(ModuleStoreTestCase):
         )
 
         self.assertFalse(enrollment.refundable())
+
+    def test_is_course_hidden(self):
+        admin_user = AdminFactory.create(
+            username='staff', email="staff@fake.edx.org", password='test')
+        course = CourseFactory.create(**{"metadata":{"is_course_hidden":True}})
+        CourseEnrollment.enroll(self.user, course.location.course_key, mode='honor')
+        CourseEnrollment.enroll(admin_user, course.location.course_key, mode='honor')
+
+        self.client.login(username="jack", password="test")
+        user_response = self.client.get(reverse('dashboard'))
+        self.assertEqual(user_response.status_code, 200)
+        self.assertIn('This course has been closed.', user_response.content)
+        self.client.logout
+
+        self.client.login(username="staff", password="test")
+        staff_response = self.client.get(reverse('dashboard'))
+        self.assertEqual(staff_response.status_code, 200)
+        self.assertNotIn('This course has been closed.', staff_response.content)
 
     @unittest.skipUnless(settings.ROOT_URLCONF == 'lms.urls', 'Test only valid in lms')
     def test_linked_in_add_to_profile_btn_not_appearing_without_config(self):

@@ -199,4 +199,5 @@ class AdvancedSettingsPage(CoursePage):
             'annotation_storage_url',
             'social_sharing_url',
             'teams_configuration',
+            'is_course_hidden',
         ]

@@ -325,6 +325,7 @@ def index(request, course_id, chapter=None, section=None,
     """
 
     course_key = CourseKey.from_string(course_id)
+    course = get_course_with_access(request.user, 'load', course_key)
 
     user = User.objects.prefetch_related("groups").get(id=request.user.id)
 
@@ -332,6 +333,9 @@ def index(request, course_id, chapter=None, section=None,
         course_id=course_key,
         registrationcoderedemption__redeemed_by=request.user
     )
+
+    if course.is_course_hidden and not has_access(request.user, 'staff', course):
+        return redirect(reverse('dashboard'))
 
     # Redirect to dashboard if the course is blocked due to non-payment.
     if is_course_blocked(request, redeemed_registration_codes, course_key):

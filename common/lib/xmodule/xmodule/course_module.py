@@ -834,6 +834,14 @@ class CourseFields(object):
         default=None,
         scope=Scope.settings,
     )
+    is_course_hidden = Boolean(
+        display_name=_("Course Is Hidden"),
+        default=False,
+        help=_(
+            "Enter true or false. If true, the course is hidden."
+        ),
+        scope=Scope.settings
+    )
 
     social_sharing_url = String(
         display_name=_("Social Media Sharing URL"),

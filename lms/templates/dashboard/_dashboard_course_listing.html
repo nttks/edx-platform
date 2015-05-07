@@ -335,8 +335,33 @@ from student.helpers import (
                 </li>
               </ul>
             </div>
-          </div>
-        %endif
+        </div>
+      %endif
+      % if course.is_course_hidden and not staff_access:
+        <p id="block-course-msg" class="course-block">
+          ${_("This course has been closed.")}
+        </p>
+      % elif is_course_blocked:
+        <p id="block-course-msg" class="course-block">
+          ${_("You can no longer access this course because payment has not yet been received. "
+              "You can {contact_link_start}contact the account holder{contact_link_end} "
+              "to request payment, or you can "
+              "{unenroll_link_start}unenroll{unenroll_link_end} "
+              "from this course").format(
+            contact_link_start='<a href="#">',
+            contact_link_end='</a>',
+            unenroll_link_start=(
+              '<a id="unregister_block_course" rel="leanModal" '
+              'data-course-id="{course_id}" data-course-number="{course_number}" '
+              'href="#unenroll-modal">'.format(
+                course_id=escape(course.id),
+                course_number=escape(course.number),
+              )
+            ),
+            unenroll_link_end="</a>",
+          )}
+        </p>
+      %endif
 
         % if is_course_blocked:
           <p id="block-course-msg" class="course-block">

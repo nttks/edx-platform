@@ -557,6 +557,28 @@ class ViewsTestCase(ModuleStoreTestCase):
             # Verify that the email opt-in checkbox does not appear
             self.assertNotContains(response, checkbox_html, html=True)
 
+    def test_index_course_is_hidden(self):
+        course = CourseFactory.create(**{"metadata":{"is_course_hidden":True}})
+        admin = AdminFactory()
+        enrollment = CourseEnrollment.enroll(self.user, course.id)
+        enrollment = CourseEnrollment.enroll(admin, course.id)
+        enrollment.save()
+        request_url = '/'.join([
+            '/courses',
+            course.id.to_deprecated_string(),
+            'courseware/'
+        ])
+
+        self.client.login(username=self.user.username, password="123456")
+        user_response = self.client.get(request_url)
+        self.assertEqual(user_response.status_code, 302)
+        self.assertEqual(user_response['Location'], 'http://testserver/dashboard')
+        self.client.logout()
+
+        self.client.login(username=admin.username, password="test")
+        staff_response = self.client.get(request_url)
+        self.assertEqual(staff_response.status_code, 200)
+
 
 @attr('shard_1')
 # setting TIME_ZONE_DISPLAYED_FOR_DEADLINES explicitly
