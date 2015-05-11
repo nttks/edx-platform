@@ -1,0 +1,10 @@
+[
+  {
+    "pk": 1,
+    "model": "bulk_email.courseemailtemplate",
+    "fields": {
+      "html_template": "<h1>test template</h1>",
+      "plain_template": "[test template]"
+    }
+  }
+]

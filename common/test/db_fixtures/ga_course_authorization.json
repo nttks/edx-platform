@@ -1,0 +1,34 @@
+[
+  {
+    "pk": 1,
+    "model": "bulk_email.courseauthorization",
+    "fields": {
+      "course_id": "course-v1:test_org+test_displayed_optout_checkbox_only_global_staff+test_run",
+      "email_enabled": true
+    }
+  },
+  {
+    "pk": 2,
+    "model": "bulk_email.courseauthorization",
+    "fields": {
+      "course_id": "test_org/test_displayed_optout_checkbox_only_global_staff/test_run",
+      "email_enabled": true
+    }
+  },
+  {
+    "pk": 3,
+    "model": "bulk_email.courseauthorization",
+    "fields": {
+      "course_id": "course-v1:test_org+test_send_to_all_include_optout+test_run",
+      "email_enabled": true
+    }
+  },
+  {
+    "pk": 4,
+    "model": "bulk_email.courseauthorization",
+    "fields": {
+      "course_id": "test_org/test_send_to_all_include_optout/test_run",
+      "email_enabled": true
+    }
+  }
+]
