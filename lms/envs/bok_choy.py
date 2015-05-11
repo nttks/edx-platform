@@ -134,6 +134,29 @@ if os.environ.get('ENABLE_BOKCHOY_GA') in ['True', 'true', '1']:
     PASSWORD_DICTIONARY_EDIT_DISTANCE_THRESHOLD = 0
     PASSWORD_DICTIONARY = ["Password1"]
 
+    MKTG_URL_LINK_MAP = {
+        "ABOUT": "gacco-about",
+        "BLOG": "gacco-blog",
+        "COURSES": "gacco-courses",
+        "FAQ": "gacco-support",
+        "NEWS": "gacco-news",
+        "PRIVACY": "gacco-privacy",
+        "HONOR": "gacco-privacy",
+        "ROOT": "gacco-root",
+        "TOS": "gacco-tos"
+    }
+
+    MKTG_URL_LINK_MAP_URLS = {
+        "gacco-about": "http://gacco.org/about.html",
+        "gacco-blog": "http://blog.goo.ne.jp/gacco2014",
+        "gacco-courses": "http://gacco.org/list.html",
+        "gacco-news": "https://support.gacco.org/hc/ja/categories/200033520",
+        "gacco-privacy": "https://support.gacco.org/hc/ja/articles/200749314",
+        "gacco-root": "http://gacco.org/",
+        "gacco-support": "https://support.gacco.org/",
+        "gacco-tos": "https://support.gacco.org/hc/ja/articles/200749224"
+    }
+
 #####################################################################
 # Lastly, see if the developer has any local overrides.
 try:
