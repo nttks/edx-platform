@@ -10,8 +10,11 @@ from lettuce.django import mail
 from nose.tools import assert_in, assert_equal  # pylint: disable=no-name-in-module
 from django.core.management import call_command
 from django.conf import settings
+from django.contrib.auth.models import User
 
 from courseware.tests.factories import StaffFactory, InstructorFactory
+from student.models import UserStanding
+from student.tests.factories import UserStandingFactory
 
 
 @step(u'Given there is a course with a staff, instructor and student')
@@ -50,6 +53,19 @@ def make_populated_course(step):  # pylint: disable=unused-argument
         password='test',
         is_staff=False
     )
+
+    # Make & register & disabled a student.
+    world.register_by_course_key(
+        course.id,
+        username='resign',
+        password='test',
+        is_staff=False
+    )
+    resign_user = User.objects.get(username='resign')
+    # This function is performed by the number of Examples in bulk_email.feature
+    # So, if the UserStanding already exists, don't try to create it again.
+    if len(UserStanding.objects.filter(user=resign_user)) == 0:
+        UserStandingFactory(user=resign_user, account_status=UserStanding.ACCOUNT_DISABLED, changed_by=resign_user)
 
     # Store the expected recipients
     # given each "send to" option
