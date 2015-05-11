@@ -6,6 +6,7 @@ from selenium.common.exceptions import NoSuchElementException
 
 from .dashboard import DashboardPage as EdXDashboardPage
 
+
 class DashboardPage(EdXDashboardPage):
     """
     Student dashboard, where the student can view
@@ -16,6 +17,20 @@ class DashboardPage(EdXDashboardPage):
         Initialize the page.
         """
         super(DashboardPage, self).__init__(browser)
+
+    def _get_element_in_course(self, course_name, selector):
+        """
+        Return the element in the course.
+        """
+        # Filter elements by course name, only returning the relevant course item
+        course_listing = self.q(css=".course").filter(lambda el: course_name in el.text).results
+
+        if course_listing:
+            # There should only be one course listing corresponding to the provided course name.
+            el = course_listing[0]
+            return el.find_element_by_css_selector(selector)
+        else:
+            raise Exception("No course named {} was found on the dashboard".format(course_name))
 
     @property
     def activation_message(self):
@@ -36,6 +51,15 @@ class DashboardPage(EdXDashboardPage):
         """
         self.q(css="#pwd_reset_button").first.click()
 
+    def change_email_settings(self, course_name):
+        """
+        Change email settings on dashboard
+        """
+        self._get_element_in_course(course_name, ".email-settings").click()
+        self.q(css="#receive_emails").first.click()
+        # there are multiple elements of id 'submit'
+        self.q(css="#email_settings_form #submit").first.click()
+
     def is_exists_notification(self):
         """
         Return whether notification is displayed.
@@ -43,30 +67,14 @@ class DashboardPage(EdXDashboardPage):
         return len(self.q(css='section.dashboard-notifications section')) > 0
 
     def is_enable_unenroll(self, course_name):
-        """Return whether unenroll link is displayed
-
-        Arguments:
-            course_name (str): The name of the course whose student could be cancelled.
-
-        Returns:
-            Boolean, whether students undoable.
-
-        Raises:
-            Exception, if no course with the provided name is found on the dashboard.
         """
-        # Filter elements by course name, only returning the relevant course item
-        course_listing = self.q(css=".course").filter(lambda el: course_name in el.text).results
-
-        if course_listing:
-            # There should only be one course listing corresponding to the provided course name.
-            el = course_listing[0]
-            try:
-                el.find_element_by_css_selector(".unenroll")
-                return True
-            except NoSuchElementException:
-                return False
-        else:
-            raise Exception("No course named {} was found on the dashboard".format(course_name))
+        Return whether unenroll link is displayed
+        """
+        try:
+            self._get_element_in_course(course_name, ".unenroll")
+            return True
+        except NoSuchElementException:
+            return False
 
     @property
     def hidden_course_text(self):
