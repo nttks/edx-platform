@@ -402,6 +402,7 @@ class DashboardTest(ModuleStoreTestCase):
 
         self.assertFalse(enrollment.refundable())
 
+    @unittest.skipUnless(settings.ROOT_URLCONF == 'lms.urls', 'Test only valid in lms')
     def test_is_course_hidden(self):
         admin_user = AdminFactory.create(
             username='staff', email="staff@fake.edx.org", password='test')
