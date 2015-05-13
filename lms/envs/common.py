@@ -1783,6 +1783,9 @@ INSTALLED_APPS = (
 
     # Credit courses
     'openedx.core.djangoapps.credit',
+
+    # Course global setting
+    'openedx.core.djangoapps.course_global',
 )
 
 ######################### CSRF #########################################
