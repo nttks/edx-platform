@@ -99,7 +99,9 @@ dir_rtl = 'rtl' if get_language_bidi() else 'ltr'
     style_overrides_file = None
 
   else:
-    header_extra_file = None
+    header_extra_file = microsite.get_value('head_extra_file')
+    if header_extra_file:
+        header_extra_file = microsite.get_template_path(header_extra_file)
 
     if settings.FEATURES['IS_EDX_DOMAIN'] and not is_microsite():
         header_file = microsite.get_template_path('navigation-edx.html')
