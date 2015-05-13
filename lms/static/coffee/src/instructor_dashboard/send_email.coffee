@@ -21,7 +21,9 @@ class SendEmail
     @$emailEditor = XBlock.initializeBlock($('.xblock-studio_view'));
     @$send_to = @$container.find("select[name='send_to']'")
     @$subject = @$container.find("input[name='subject']'")
+    @$checkbox_include_optout = @$container.find("input[name='include-optout']")
     @$btn_send = @$container.find("input[name='send']'")
+    @$optout_container = @$container.find(".optout-container")
     @$task_response = @$container.find(".request-response")
     @$request_response_error = @$container.find(".request-response-error")
     @$content_request_response_error = @$container.find(".content-request-response-error")
@@ -33,7 +35,19 @@ class SendEmail
     @$email_content_table_inner = @$container.find(".content-history-table-inner")
     @$email_messages_wrapper = @$container.find(".email-messages-wrapper")
 
+    # attach select handlers
+    @$send_to.change =>
+      if @$send_to.val() is 'all'
+        @$optout_container.show()
+      else
+        @$checkbox_include_optout.attr('checked', false)
+        @$optout_container.hide()
+
     # attach click handlers
+
+    @$checkbox_include_optout.click =>
+      if @$checkbox_include_optout.is(':checked')
+        alert gettext("E-mail will also be sent to users who have opt-out. Please carefully check whether the contents suitable for send to users who have opt-out.")
 
     @$btn_send.click =>
       if @$subject.val() == ""
@@ -71,6 +85,7 @@ class SendEmail
             send_to: @$send_to.val()
             subject: @$subject.val()
             message: @$emailEditor.save()['data']
+            include_optout: @$checkbox_include_optout.is(':checked')
 
           $.ajax
             type: 'POST'

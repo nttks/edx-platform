@@ -2207,6 +2207,26 @@ msgstr "上表から行を選択してください"
 msgid "Score distribution map for OpenAssessment"
 msgstr "OpenAssessmentの点数分布"
 
+#: lms/templates/instructor/instructor_dashboard_2/send_mail.html
+msgid "Include users who have opt-out"
+msgstr "受信拒否者を送信対象に含める"
+
+#: lms/templates/instructor/instructor_dashboard_2/send_mail.html
+msgid "If this option is <em>checked</em>, E-mail will also be sent to users who have opt-out."
+msgstr "このオプションが<em>有効</em>の場合、メール受信設定をオフにしているユーザーにもメールが送信されます"
+
+#: lms/templates/instructor/instructor_dashboard_2/send_mail.html
+msgid "If you checked 'Include users who have opt-out', then your E-mail will also be sent to users who have opt-out."
+msgstr "「受信拒否者を送信対象に含める」チェックボックスが有効の場合、メール受信設定をオフにしているユーザーにもメールが送信されます。"
+
+#: lms/templates/instructor/instructor_dashboard_2/send_mail.html
+msgid "Please carefully check whether the contents suitable for send to users who have opt-out."
+msgstr "受信拒否者に送信するべき内容かどうかを慎重に確認してください。"
+
+#: lms/templates/instructor/instructor_dashboard_2/send_mail.html
+msgid "e.g. About change of membership agreement"
+msgstr "例: ユーザーサービス利用規約の変更について"
+
 #: lms/djangoapps/courseware/module_render.py
 msgid "Submission aborted! Maximum %d files may be submitted at once"
 msgstr "一度にアップロードできるファイルは%d個までです"

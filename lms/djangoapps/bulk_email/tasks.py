@@ -38,7 +38,7 @@ from django.utils.translation import ugettext as _
 from bulk_email.models import (
     CourseEmail, Optout,
     SEND_TO_MYSELF, SEND_TO_ALL, TO_OPTIONS,
-    SEND_TO_STAFF,
+    SEND_TO_STAFF, SEND_TO_ALL_INCLUDE_OPTOUT
 )
 from courseware.courses import get_course, course_image_url
 from student.models import UserStanding
@@ -121,7 +121,7 @@ def _get_recipient_querysets(user_id, to_option, course_id):
         if to_option == SEND_TO_STAFF:
             return [use_read_replica_if_available(staff_instructor_qset)]
 
-        if to_option == SEND_TO_ALL:
+        if to_option == SEND_TO_ALL or to_option == SEND_TO_ALL_INCLUDE_OPTOUT:
             # We also require students to have activated their accounts to
             # provide verification that the provided email address is valid.
             enrollment_qset = User.objects.filter(
@@ -368,17 +368,21 @@ def send_course_email(entry_id, email_id, to_list, global_email_context, subtask
     return new_subtask_status.to_dict()
 
 
-def _filter_optouts_from_recipients(to_list, course_id):
+def _filter_optouts_from_recipients(to_list, course_id, to_option):
     """
     Filters a recipient list based on student opt-outs for a given course.
 
     Returns the filtered recipient list, as well as the number of optouts
     removed from the list.
     """
-    optouts = Optout.objects.filter(
+    optouts_filter = Optout.objects.filter(
         course_id=course_id,
         user__in=[i['pk'] for i in to_list]
-    ).values_list('user__email', flat=True)
+    )
+    if to_option == SEND_TO_ALL_INCLUDE_OPTOUT:
+        optouts_filter = optouts_filter.filter(force_disabled=True)
+
+    optouts = optouts_filter.values_list('user__email', flat=True)
     optouts = set(optouts)
     # Only count the num_optout for the first time the optouts are calculated.
     # We assume that the number will not change on retries, and so we don't need
@@ -474,7 +478,7 @@ def _send_course_email(entry_id, email_id, to_list, global_email_context, subtas
     # that existed at that time, and we don't need to keep checking for changes
     # in the Optout list.
     if subtask_status.get_retry_count() == 0:
-        to_list, num_optout = _filter_optouts_from_recipients(to_list, course_email.course_id)
+        to_list, num_optout = _filter_optouts_from_recipients(to_list, course_email.course_id, course_email.to_option)
         subtask_status.increment(skipped=num_optout)
 
     course_title = global_email_context['course_title']

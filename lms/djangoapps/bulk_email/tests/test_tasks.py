@@ -32,7 +32,7 @@ from django.core.management import call_command
 
 from xmodule.modulestore.tests.factories import CourseFactory
 
-from bulk_email.models import CourseEmail, Optout, SEND_TO_ALL
+from bulk_email.models import CourseEmail, Optout, SEND_TO_ALL, SEND_TO_ALL_INCLUDE_OPTOUT
 
 from instructor_task.tasks import send_bulk_course_email
 from instructor_task.subtasks import update_subtask_status, SubtaskStatus
@@ -89,13 +89,13 @@ class TestBulkEmailInstructorTask(InstructorTaskCourseTestCase):
         # load initial content (since we don't run migrations as part of tests):
         call_command("loaddata", "course_email_template.json")
 
-    def _create_input_entry(self, course_id=None):
+    def _create_input_entry(self, course_id=None, to_option=None):
         """
         Creates a InstructorTask entry for testing.
 
         Overrides the base class version in that this creates CourseEmail.
         """
-        to_option = SEND_TO_ALL
+        to_option = to_option or SEND_TO_ALL
         course_id = course_id or self.course.id
         course_email = CourseEmail.create(course_id, self.instructor, to_option, "Test Subject", "<p>This is a test message</p>")
         task_input = {'email_id': course_email.id}  # pylint: disable=no-member
@@ -187,6 +187,29 @@ class TestBulkEmailInstructorTask(InstructorTaskCourseTestCase):
         self._assert_single_subtask_status(entry, succeeded, failed, skipped, retried_nomax, retried_withmax)
         return entry
 
+    # TODO duplicated of _test_run_with_task
+    def _test_run_with_entry(self, task_class, task_entry, action_name, total, succeeded, failed=0, skipped=0, retried_nomax=0, retried_withmax=0):
+        """Run a task and check the number of emails processed."""
+        parent_status = self._run_task_with_mock_celery(task_class, task_entry.id, task_entry.task_id)
+
+        # check return value
+        self.assertEquals(parent_status.get('total'), total)
+        self.assertEquals(parent_status.get('action_name'), action_name)
+
+        # compare with task_output entry in InstructorTask table:
+        entry = InstructorTask.objects.get(id=task_entry.id)
+        status = json.loads(entry.task_output)
+        self.assertEquals(status.get('attempted'), succeeded + failed)
+        self.assertEquals(status.get('succeeded'), succeeded)
+        self.assertEquals(status.get('skipped'), skipped)
+        self.assertEquals(status.get('failed'), failed)
+        self.assertEquals(status.get('total'), total)
+        self.assertEquals(status.get('action_name'), action_name)
+        self.assertGreater(status.get('duration_ms'), 0)
+        self.assertEquals(entry.task_state, SUCCESS)
+        self._assert_single_subtask_status(entry, succeeded, failed, skipped, retried_nomax, retried_withmax)
+        return entry
+
     def test_successful(self):
         # Select number of emails to fit into a single subtask.
         num_emails = settings.BULK_EMAIL_EMAILS_PER_TASK
@@ -252,6 +275,26 @@ class TestBulkEmailInstructorTask(InstructorTaskCourseTestCase):
         with patch('bulk_email.tasks.get_connection', autospec=True) as get_conn:
             get_conn.return_value.send_messages.side_effect = cycle([None])
             self._test_run_with_task(send_bulk_course_email, 'emailed', num_emails, expected_succeeds, skipped=expected_skipped)
+
+    def test_skipped_include_optout(self):
+        # Select number of emails to fit into a single subtask.
+        num_emails = settings.BULK_EMAIL_EMAILS_PER_TASK
+        # We also send email to the instructor:
+        students = self._create_students(num_emails - 1)
+        # have every fourth student optout and every eighth student force disabled:
+        expected_skipped = int((num_emails + 7) / 8.0)
+        expected_succeeds = num_emails - expected_skipped
+        for index in range(0, num_emails, 4):
+            if index % 8 == 0:
+                Optout.objects.create(user=students[index], course_id=self.course.id, force_disabled=True)
+            else:
+                Optout.objects.create(user=students[index], course_id=self.course.id)
+        # mark some students as opting out.
+        # But are skipped only students who is force-disabled.
+        with patch('bulk_email.tasks.get_connection', autospec=True) as get_conn:
+            get_conn.return_value.send_messages.side_effect = cycle([None])
+            task_entry = self._create_input_entry(to_option=SEND_TO_ALL_INCLUDE_OPTOUT)
+            self._test_run_with_entry(send_bulk_course_email, task_entry, 'emailed', num_emails, expected_succeeds, skipped=expected_skipped)
 
     def _test_email_address_failures(self, exception):
         """Test that celery handles bad address errors by failing and not retrying."""

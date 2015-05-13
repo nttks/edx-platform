@@ -52,6 +52,24 @@
    <b>${_("A queued email CANNOT be cancelled.")}</b></p>
 </div>
  <br />
+ %if section_data['access']['admin']:
+  <div class="mail-option optout-container">
+    <input type="checkbox" name="include-optout" value="yes">
+    <label for="include-optout">${_("Include users who have opt-out")}</label>
+    <div class="hint include-optout-hint">
+      <span class="hint-caret"></span>
+      <p>${_("If this option is <em>checked</em>, E-mail will also be sent to users who have opt-out.")}</p>
+    </div>
+  </div>
+  <div class="submit-email-warning optout-container">
+    <p class="copy"><span style="color: red;"><b>${_("CAUTION!")}</b></span>
+    ${_("If you checked 'Include users who have opt-out', then your E-mail will also be sent to users who have opt-out.")}
+    <b>${_("Please carefully check whether the contents suitable for send to users who have opt-out.")}</b>
+    ${_("e.g. About change of membership agreement")}
+    </p>
+  </div>
+ <br />
+  %endif
   <input type="button" name="send" value="${_("Send Email")}" data-endpoint="${ section_data['send_email'] }" >
   <div class="request-response-error"></div>
 

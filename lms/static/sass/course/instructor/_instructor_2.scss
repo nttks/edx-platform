@@ -421,6 +421,47 @@
       }
     }
   }
+
+  .optout-container {
+    display: none;
+  }
+
+  .mail-option {
+    margin: ($baseline/2) 0;
+    position: relative;
+
+      label {
+        border-bottom: 1px dotted $base-font-color;
+      }
+
+    .hint {
+      @extend %t-copy-sub2;
+      display: none;
+      position: absolute;
+      top: 15px;
+      left: 150px;
+      padding: ($baseline/2);
+      width: 50%;
+      background-color: $light-gray;
+      box-shadow: 2px 2px 3px $shadow;
+
+      .hint-caret {
+        display: block;
+        position: absolute;
+        top: 0;
+        left: -15px;
+        border-top: 8px solid $light-gray;
+        border-right: 8px solid $light-gray;
+        border-bottom: 8px solid transparent;
+        border-left: 8px solid transparent;
+      }
+    }
+  }
+
+  label[for="include-optout"]:hover + .include-optout-hint {
+    display: block;
+  }
+
 }
 
 // view - membership
