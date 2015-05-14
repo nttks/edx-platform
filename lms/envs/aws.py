@@ -585,7 +585,7 @@ CELERY_TIMEZONE = ENV_TOKENS.get('CELERY_TIMEZONE', TIME_ZONE)
 ##### YOUTUBE #####
 YOUTUBE.update(ENV_TOKENS.get("YOUTUBE", {}))
 
-if FEATURES.get('ENABLE_COURSEWARE_SEARCH'):
+if FEATURES.get('ENABLE_COURSEWARE_SEARCH') or FEATURES.get('ENABLE_DASHBOARD_SEARCH'):
     # Use ElasticSearch as the search engine herein
     SEARCH_ENGINE = "search.elastic.ElasticSearchEngine"
 

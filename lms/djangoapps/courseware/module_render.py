@@ -498,15 +498,16 @@ def get_module_system_for_user(user, field_data_cache,
             user_location=user_location,
             request_token=request_token
         )
-        # rebinds module to a different student.  We'll change system, student_data, and scope_ids
-        authored_data = OverrideFieldData.wrap(
-            real_user, module.descriptor._field_data  # pylint: disable=protected-access
-        )
+
         module.descriptor.bind_for_student(
             inner_system,
-            LmsFieldData(authored_data, inner_student_data),
             real_user.id,
+            [
+                partial(OverrideFieldData.wrap, real_user),
+                partial(LmsFieldData, student_data=inner_student_data),
+            ],
         )
+
         module.descriptor.scope_ids = (
             module.descriptor.scope_ids._replace(user_id=real_user.id)  # pylint: disable=protected-access
         )
@@ -693,8 +694,15 @@ def get_module_for_descriptor_internal(user, descriptor, field_data_cache, cours
         request_token=request_token
     )
 
-    authored_data = OverrideFieldData.wrap(user, descriptor._field_data)  # pylint: disable=protected-access
-    descriptor.bind_for_student(system, LmsFieldData(authored_data, student_data), user.id)
+    descriptor.bind_for_student(
+        system,
+        user.id,
+        [
+            partial(OverrideFieldData.wrap, user),
+            partial(LmsFieldData, student_data=student_data),
+        ],
+    )
+
     descriptor.scope_ids = descriptor.scope_ids._replace(user_id=user.id)  # pylint: disable=protected-access
 
     # Do not check access when it's a noauth request.
@@ -816,7 +824,7 @@ def xblock_resource(request, block_type, uri):  # pylint: disable=unused-argumen
     return HttpResponse(content, mimetype=mimetype)
 
 
-def _get_module_by_usage_id(request, course_id, usage_id):
+def get_module_by_usage_id(request, course_id, usage_id):
     """
     Gets a module instance based on its `usage_id` in a course, for a given request/user
 
@@ -888,7 +896,7 @@ def _invoke_xblock_handler(request, course_id, usage_id, handler, suffix):
     if error_msg:
         return JsonResponse(object={'success': False, 'msg': error_msg}, status=413)
 
-    instance, tracking_context = _get_module_by_usage_id(request, course_id, usage_id)
+    instance, tracking_context = get_module_by_usage_id(request, course_id, usage_id)
 
     tracking_context_name = 'module_callback_handler'
     req = django_to_webob_request(request)
@@ -946,7 +954,7 @@ def xblock_view(request, course_id, usage_id, view_name):
     if not request.user.is_authenticated():
         raise PermissionDenied
 
-    instance, _ = _get_module_by_usage_id(request, course_id, usage_id)
+    instance, _ = get_module_by_usage_id(request, course_id, usage_id)
 
     try:
         fragment = instance.render(view_name, context=request.GET)
