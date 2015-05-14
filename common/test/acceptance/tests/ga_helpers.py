@@ -32,8 +32,11 @@ class FilebasedEmailClient(object):
         self.email_file_path = email_file_path
 
     def _get_files(self):
-        files = [os.path.join(self.email_file_path, file_name) for file_name in os.listdir(self.email_file_path)]
-        return files
+        if os.path.exists(self.email_file_path):
+            files = [os.path.join(self.email_file_path, file_name) for file_name in os.listdir(self.email_file_path)]
+            return files
+        else:
+            return []
 
     def _count_messages(self):
         files = self._get_files()
