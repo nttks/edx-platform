@@ -182,7 +182,7 @@ if os.environ.get('ENABLE_BOKCHOY_GA') in ['True', 'true', '1']:
         "gacco-courses": "http://gacco.org/list.html",
         "gacco-news": "https://support.gacco.org/hc/ja/categories/200033520",
         "gacco-privacy": "https://support.gacco.org/hc/ja/articles/200749314",
-        "gacco-root": "http://gacco.org/",
+        "gacco-root": "/",
         "gacco-support": "https://support.gacco.org/",
         "gacco-tos": "https://support.gacco.org/hc/ja/articles/200749224"
     }
