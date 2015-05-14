@@ -10,6 +10,7 @@ import unittest
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from mock import patch
+from nose.plugins.attrib import attr
 from opaque_keys.edx.locations import SlashSeparatedCourseKey
 
 from bulk_email.models import CourseAuthorization
@@ -18,6 +19,7 @@ from student.tests.factories import AdminFactory
 from xmodule.modulestore.tests.factories import CourseFactory
 
 
+@attr('shard_1')
 class TestNewInstructorDashboardEmailViewMongoBacked(ModuleStoreTestCase):
     """
     Check for email view on the new instructor dashboard
@@ -106,6 +108,7 @@ class TestNewInstructorDashboardEmailViewMongoBacked(ModuleStoreTestCase):
         self.assertFalse(self.email_link in response.content)
 
 
+@attr('shard_1')
 class TestNewInstructorDashboardEmailViewXMLBacked(ModuleStoreTestCase):
     """
     Check for email view on the new instructor dashboard

@@ -106,7 +106,7 @@ class SearchIndexerBase(object):
         response = searcher.search(
             doc_type=cls.DOCUMENT_TYPE,
             field_dictionary=cls._get_location_info(structure_key),
-            exclude_ids=exclude_items
+            exclude_dictionary={"id": list(exclude_items)}
         )
         result_ids = [result["data"]["id"] for result in response["results"]]
         for result_id in result_ids:
@@ -176,7 +176,8 @@ class SearchIndexerBase(object):
                 skip_child_index = skip_index or \
                     (triggered_at is not None and (triggered_at - item.subtree_edited_on) > reindex_age)
                 for child_item in item.get_children():
-                    index_item(child_item, skip_index=skip_child_index)
+                    if modulestore.has_published_version(child_item):
+                        index_item(child_item, skip_index=skip_child_index)
 
             if skip_index or not item_index_dictionary:
                 return
@@ -189,6 +190,7 @@ class SearchIndexerBase(object):
                 item_index['id'] = item_id
                 if item.start:
                     item_index['start_date'] = item.start
+                item_index.update(cls.supplemental_fields(item))
 
                 searcher.index(cls.DOCUMENT_TYPE, item_index)
                 indexed_count["count"] += 1
@@ -270,6 +272,14 @@ class SearchIndexerBase(object):
         """
         pass
 
+    @classmethod
+    def supplemental_fields(cls, item):  # pylint: disable=unused-argument
+        """
+        Any supplemental fields that get added to the index for the specified
+        item. Base implementation returns an empty dictionary
+        """
+        return {}
+
 
 class CoursewareSearchIndexer(SearchIndexerBase):
     """
@@ -284,6 +294,8 @@ class CoursewareSearchIndexer(SearchIndexerBase):
         'category': 'courseware_index'
     }
 
+    UNNAMED_MODULE_NAME = _("(Unnamed)")
+
     @classmethod
     def normalize_structure_key(cls, structure_key):
         """ Normalizes structure key for use in indexing """
@@ -297,7 +309,7 @@ class CoursewareSearchIndexer(SearchIndexerBase):
     @classmethod
     def _get_location_info(cls, normalized_structure_key):
         """ Builds location info dictionary """
-        return {"course": unicode(normalized_structure_key)}
+        return {"course": unicode(normalized_structure_key), "org": normalized_structure_key.org}
 
     @classmethod
     def do_course_reindex(cls, modulestore, course_key):
@@ -312,6 +324,30 @@ class CoursewareSearchIndexer(SearchIndexerBase):
         Perform additional indexing from loaded structure object
         """
         CourseAboutSearchIndexer.index_about_information(modulestore, structure)
+
+    @classmethod
+    def supplemental_fields(cls, item):
+        """
+        Add location path to the item object
+
+        Once we've established the path of names, the first name is the course
+        name, and the next 3 names are the navigable path within the edx
+        application. Notice that we stop at that level because a full path to
+        deep children would be confusing.
+        """
+        location_path = []
+        parent = item
+        while parent is not None:
+            path_component_name = parent.display_name
+            if not path_component_name:
+                path_component_name = cls.UNNAMED_MODULE_NAME
+            location_path.append(path_component_name)
+            parent = parent.get_parent()
+        location_path.reverse()
+        return {
+            "course_name": location_path[0],
+            "location": location_path[1:4]
+        }
 
 
 class LibrarySearchIndexer(SearchIndexerBase):

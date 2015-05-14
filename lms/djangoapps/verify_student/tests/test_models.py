@@ -128,7 +128,8 @@ def mock_software_secure_post_unavailable(url, headers=None, data=None, **kwargs
 @patch('verify_student.models.S3Connection', new=MockS3Connection)
 @patch('verify_student.models.Key', new=MockKey)
 @patch('verify_student.models.requests.post', new=mock_software_secure_post)
-class TestPhotoVerification(TestCase):
+@ddt.ddt
+class TestPhotoVerification(ModuleStoreTestCase):
 
     def test_state_transitions(self):
         """
@@ -505,6 +506,29 @@ class TestPhotoVerification(TestCase):
         result = SoftwareSecurePhotoVerification.verification_for_datetime(deadline, query)
         self.assertEqual(result, second_attempt)
 
+    @ddt.unpack
+    @ddt.data(
+        {'enrollment_mode': 'honor', 'status': (None, None), 'output': 'N/A'},
+        {'enrollment_mode': 'verified', 'status': (False, False), 'output': 'Not ID Verified'},
+        {'enrollment_mode': 'verified', 'status': (True, True), 'output': 'ID Verified'},
+        {'enrollment_mode': 'verified', 'status': (True, False), 'output': 'ID Verification Expired'}
+    )
+    def test_verification_status_for_user(self, enrollment_mode, status, output):
+        """
+        Verify verification_status_for_user returns correct status.
+        """
+        user = UserFactory.create()
+        course = CourseFactory.create()
+
+        user_reverified_path = 'verify_student.models.SoftwareSecurePhotoVerification.user_is_reverified_for_all'
+        with patch('verify_student.models.SoftwareSecurePhotoVerification.user_is_verified') as mock_verification:
+            with patch(user_reverified_path) as mock_re_verification:
+                mock_verification.return_value = status[0]
+                mock_re_verification.return_value = status[1]
+
+                status = SoftwareSecurePhotoVerification.verification_status_for_user(user, course.id, enrollment_mode)
+                self.assertEqual(status, output)
+
 
 @patch.dict(settings.VERIFY_STUDENT, FAKE_SETTINGS)
 @patch('verify_student.models.S3Connection', new=MockS3Connection)
@@ -747,6 +771,40 @@ class VerificationStatusTest(ModuleStoreTestCase):
             list(result.values_list('location_id', flat=True)),
             list(self.check_point2.checkpoint_status.all().values_list('location_id', flat=True))
         )
+
+    def test_get_location_id(self):
+        """ Getting location id for a specific checkpoint  """
+
+        # creating software secure attempt against checkpoint
+        self.check_point1.add_verification_attempt(SoftwareSecurePhotoVerification.objects.create(user=self.user))
+
+        # add initial verification status for checkpoint
+        VerificationStatus.add_verification_status(
+            checkpoint=self.check_point1,
+            user=self.user,
+            status='submitted',
+            location_id=self.dummy_reverification_item_id_1
+        )
+
+        attempt = SoftwareSecurePhotoVerification.objects.filter(user=self.user)
+
+        self.assertIsNotNone(VerificationStatus.get_location_id(attempt))
+        self.assertEqual(VerificationStatus.get_location_id(None), '')
+
+    def test_get_user_attempts(self):
+
+        # adding verification status
+        VerificationStatus.add_verification_status(
+            checkpoint=self.check_point1,
+            user=self.user,
+            status='submitted',
+            location_id=self.dummy_reverification_item_id_1
+        )
+
+        self.assertEqual(VerificationStatus.get_user_attempts(
+            course_key=self.course.id,
+            user_id=self.user.id,
+            related_assessment='midterm', location_id=self.dummy_reverification_item_id_1), 1)
 
 
 class SkippedReverificationTest(ModuleStoreTestCase):

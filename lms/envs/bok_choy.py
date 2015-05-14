@@ -55,8 +55,7 @@ MEDIA_URL = "/static/uploads/"
 ################################# CELERY ######################################
 
 CELERY_ALWAYS_EAGER = True
-CELERY_RESULT_BACKEND = 'cache'
-BROKER_TRANSPORT = 'memory'
+CELERY_RESULT_BACKEND = 'djcelery.backends.cache:CacheBackend'
 
 ###################### Grade Downloads ######################
 GRADES_DOWNLOAD = {
@@ -93,6 +92,9 @@ FEATURES['MILESTONES_APP'] = True
 
 # Enable pre-requisite course
 FEATURES['ENABLE_PREREQUISITE_COURSES'] = True
+
+# Enable student notes
+FEATURES['ENABLE_EDXNOTES'] = True
 
 # Unfortunately, we need to use debug mode to serve staticfiles
 DEBUG = True
