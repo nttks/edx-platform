@@ -10,6 +10,7 @@ from nose.plugins.attrib import attr
 from bok_choy.web_app_test import WebAppTest
 from lms.envs.bok_choy import EMAIL_FILE_PATH
 from ...fixtures.course import CourseFixture
+from ...pages.lms import BASE_URL
 from ...pages.lms.ga_header_footer import HeaderPage, FooterPage
 from ...pages.lms.ga_register import RegisterPage, ActivationPage
 from ..ga_helpers import EmailTestMixin
@@ -60,7 +61,7 @@ class RegistrationTest(WebAppTest, EmailTestMixin):
         ## Header links
         # Check link of logo
         self.assertEqual(
-            'http://gacco.org/',
+            BASE_URL + '/',
             requests.get(self.header_page.logo_link, allow_redirects=False).headers['Location']
         )
         if is_login:
