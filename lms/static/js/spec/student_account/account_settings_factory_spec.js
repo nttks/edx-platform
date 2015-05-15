@@ -26,6 +26,8 @@ define(['backbone', 'jquery', 'underscore', 'js/common_helpers/ajax_helpers', 'j
                     'options': Helpers.FIELD_OPTIONS
                 }, 'preferred_language': {
                     'options': Helpers.FIELD_OPTIONS
+                }, 'resign': {
+                    'url': '/resign'
                 }
             };
 
@@ -181,11 +183,13 @@ define(['backbone', 'jquery', 'underscore', 'js/common_helpers/ajax_helpers', 'j
                     }, requests);
                 });
 
-                var section2Fields = sectionsData[2].fields;
-                expect(section2Fields.length).toBe(2);
-                for (var i = 0; i < section2Fields.length; i++) {
+                expect(sectionsData[2].fields.length).toBe(1);
 
-                    var view = section2Fields[i].view;
+                var section3Fields = sectionsData[3].fields;
+                expect(section3Fields.length).toBe(2);
+                for (var i = 0; i < section3Fields.length; i++) {
+
+                    var view = section3Fields[i].view;
                     AccountSettingsFieldViewSpecHelpers.verifyAuthField(view, view.options, requests);
                 }
             });

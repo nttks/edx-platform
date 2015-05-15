@@ -124,6 +124,23 @@
                             })
                         }
                     ]
+                },
+                {
+                    title: gettext('Other procedures'),
+                    fields: [
+                        {
+                            view: new AccountSettingsFieldViews.ResignFieldView({
+                                model: userAccountModel,
+                                title: gettext('Resign'),
+                                screenReaderTitle: gettext('Resign'),
+                                valueAttribute: 'resign',
+                                emailAttribute: 'email',
+                                linkTitle: gettext('Resign'),
+                                linkHref: fieldsData.resign.url,
+                                helpMessage: gettext('When you click "Resign", a message will be sent to your email address. Click the link in the message to resign.')
+                            })
+                        }
+                    ]
                 }
             ];
 

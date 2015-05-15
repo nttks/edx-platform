@@ -175,6 +175,12 @@ class AccountSettingsPageTest(AccountSettingsTestMixin, WebAppTest):
                 ]
             },
             {
+                'title': 'Other procedures',
+                'fields': [
+                    'Resign',
+                ]
+            },
+            {
                 'title': 'Connected Accounts',
                 'fields': [
                     'Facebook',
