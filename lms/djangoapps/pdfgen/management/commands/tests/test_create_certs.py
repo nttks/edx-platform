@@ -3,6 +3,7 @@ from django.core.management import call_command
 from django.core.management.base import CommandError
 from django.conf import settings
 from django.test.utils import override_settings
+from xmodule.modulestore import ModuleStoreEnum
 from xmodule.modulestore.tests.django_utils import TEST_DATA_MOCK_MODULESTORE
 from xmodule.modulestore.tests.factories import CourseFactory, ItemFactory
 from xmodule.modulestore.exceptions import DuplicateCourseError
@@ -40,6 +41,7 @@ class GenerateCertCommandTestCase(TestCase):
             "debug": True, "prefix": "prefix", "exclude": "exclude"}
 
         self.course_id = "org/num/run"
+        self.split_course_id = "course-v1:org+num+run"
         self.invalid_course_id = "invalid_course_id"
 
         patcher0 = patch(
@@ -115,6 +117,7 @@ class GenerateCertCommandTestCase(TestCase):
 
     def test_check_course_id(self):
         cc.check_course_id(self.course_id)
+        cc.check_course_id(self.split_course_id)
 
         with self.assertRaises(CommandError) as e:
             cc.check_course_id(self.invalid_course_id)
@@ -140,8 +143,8 @@ class GenerateCertCommandIntegrationTestCase(TestCase):
         for i in xrange(1, 10):
             random = i * randint(1, 100)
             try: 
-                self.course = CourseFactory.create(
-                    org='org_' + str(random), number='num', run="run", display_name='test_course',
+                self.course = self._create_course(
+                    org='org_' + str(random), number='num', run='run', display_name='test_course',
                     start=start_date, end=end_date)
                 break
             except DuplicateCourseError:
@@ -178,10 +181,18 @@ class GenerateCertCommandIntegrationTestCase(TestCase):
         self.s3key_mock().generate_url.return_value = "http://example.com"
 
         self.pdf_path = settings.PDFGEN_BASE_PDF_DIR + "/" + self.kwargs['prefix'] + "-".join(
-            self.course.id.to_deprecated_string().split('/')) + ".pdf"
+            [self.course.id.org, self.course.id.course, self.course.id.run]) + ".pdf"
         self.base_pdf = canvas.Canvas(self.pdf_path, pagesize=landscape(A4))
         self.base_pdf.showPage()
         self.base_pdf.save()
+
+    def _create_course(self, org, number, run, display_name, start, end):
+        """
+        Create a course for draft
+        """
+        return CourseFactory.create(
+            org=org, number=number, run=run, display_name=display_name,
+            start=start, end=end)
 
     def tearDown(self):
         os.remove(self.pdf_path)
@@ -244,3 +255,17 @@ class GenerateCertCommandIntegrationTestCase(TestCase):
             call_command(self.prog_name, *self.args_publish, **self.kwargs)
 
         self.assertEqual(std_mock.getvalue(), "\nFetching course data for {}\nFetching enrollment for students({}).\nPublish robot1's certificate : Status downloadable\n".format(self.course.id, self.course.id))
+
+
+class GenerateCertCommandIntegrationSplitTestCase(GenerateCertCommandIntegrationTestCase):
+    """
+    Tests create_certs command for split courses
+    """
+
+    def _create_course(self, org, number, run, display_name, start, end):
+        """
+        Create a course for split
+        """
+        return CourseFactory.create(
+            org=org, number=number, display_name=display_name,
+            start=start, end=end, default_store=ModuleStoreEnum.Type.split)
