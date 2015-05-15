@@ -46,7 +46,7 @@ class Command(BaseCommand):
         active_only = options['active_only']
 
         # Result
-        output = PrettyTable(['Course ID', 'Course Name', 'Chapter Name', 'Sequential Name', 'Vertical Name', 'Draft?', 'Changed?'])
+        output = PrettyTable(['Course ID', 'Course Name', 'Chapter Name', 'Sequential Name', 'Vertical Name', 'Changed?'])
         output.align = 'l'
 
         # Find courses
@@ -78,12 +78,12 @@ class Command(BaseCommand):
                     for vertical_item in vertical_items:
                         #print "vertical_item.location=%s" % vertical_item.location
                         #print "vertical_item.published?=%s" % modulestore().has_item(vertical_item.location, revision=ModuleStoreEnum.RevisionOption.published_only)
+                        #print "vertical_item.is_draft?=%s" % getattr(vertical_item, 'is_draft', False)
                         #print "vertical_item.changed?=%s" % modulestore().has_changes(vertical_item)
-                        is_draft = vertical_item.is_draft
                         # Note: cribbed from cms/djangoapps/contentstore/views/tests/test_item.py
                         has_changes = modulestore().has_changes(vertical_item)
-                        if is_draft or has_changes:
-                            output.add_row([course_item.id, course_item.display_name, chapter_item.display_name, sequential_item.display_name, vertical_item.display_name, is_draft, has_changes])
+                        if has_changes:
+                            output.add_row([course_item.id, course_item.display_name, chapter_item.display_name, sequential_item.display_name, vertical_item.display_name, has_changes])
 
         # Print result
         print output
