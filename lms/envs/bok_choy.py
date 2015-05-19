@@ -120,7 +120,7 @@ PASSWORD_COMPLEXITY = {}
 
 #####################################################################
 # gacco settings overrides.
-if os.environ.get('ENABLE_BOKCHOY_GA') in ['True', 'true', '1']:
+if os.environ.get('ENABLE_BOKCHOY_GA'):
     FEATURES['USE_CUSTOM_THEME'] = True
     THEME_NAME = 'gacco'
 
