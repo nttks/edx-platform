@@ -4,7 +4,6 @@ End-to-end tests for resign feature
 """
 
 import re
-from nose.plugins.attrib import attr
 
 import bok_choy.browser
 from bok_choy.web_app_test import WebAppTest
@@ -16,12 +15,11 @@ from ...pages.lms.ga_resign import (
     ResignCompletePage,
     ResignConfirmPage
 )
-from ..ga_helpers import EmailTestMixin
+from ..ga_helpers import GaccoTestMixin
 from lms.envs.bok_choy import EMAIL_FILE_PATH
 
 
-@attr('shard_ga')
-class ResignTest(WebAppTest, EmailTestMixin):
+class ResignTest(WebAppTest, GaccoTestMixin):
     """
     Tests that the resign functionality works
     """

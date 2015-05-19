@@ -3,7 +3,6 @@ End-to-end tests for password reset feature
 """
 
 import re
-from nose.plugins.attrib import attr
 
 import bok_choy.browser
 from bok_choy.web_app_test import WebAppTest
@@ -12,7 +11,7 @@ from ...pages.lms.auto_auth import AutoAuthPage
 from ...pages.lms.ga_dashboard import DashboardPage
 from ...pages.lms.ga_password_reset import PasswordResetCompletePage, PasswordResetConfirmPage
 from ...pages.lms.login_and_register import CombinedLoginAndRegisterPage
-from ..ga_helpers import EmailTestMixin
+from ..ga_helpers import GaccoTestMixin
 from lms.envs.bok_choy import (
     EMAIL_FILE_PATH,
     PASSWORD_COMPLEXITY,
@@ -21,8 +20,7 @@ from lms.envs.bok_choy import (
 )
 
 
-@attr('shard_ga')
-class PasswordResetTest(WebAppTest, EmailTestMixin):
+class PasswordResetTest(WebAppTest, GaccoTestMixin):
     """
     Tests that the password reset functionality works
     """

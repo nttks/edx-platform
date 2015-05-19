@@ -4,15 +4,17 @@ Test helper functions and base classes.
 import os
 import os.path
 import time
+import unittest
 from itertools import chain
 
 from email import message_from_string
 from email.header import decode_header
 
 
-class EmailTestMixin(object):
+@unittest.skipUnless(os.environ.get('ENABLE_BOKCHOY_GA'), "Test only valid in gacco")
+class GaccoTestMixin(unittest.TestCase):
     """
-    Mixin for tests using emails
+    Mixin for gacco tests
     """
     def setup_email_client(self, email_file_path):
         """

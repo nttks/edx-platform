@@ -3,8 +3,6 @@
 End-to-end tests for the LMS Instructor Dashboard.
 """
 
-from nose.plugins.attrib import attr
-
 from bok_choy.web_app_test import WebAppTest
 from ...fixtures.course import CourseFixture
 from ...fixtures.ga_course_team import CourseTeamFixture
@@ -13,12 +11,11 @@ from ...pages.lms.auto_auth import AutoAuthPage
 from ...pages.lms.ga_dashboard import DashboardPage
 from ...pages.lms.ga_instructor_dashboard import InstructorDashboardPage
 from ...pages.lms.ga_login import LoginPage
-from ..ga_helpers import EmailTestMixin
+from ..ga_helpers import GaccoTestMixin
 from lms.envs.bok_choy import EMAIL_FILE_PATH
 
 
-@attr('shard_ga')
-class SendEmailTest(WebAppTest, EmailTestMixin):
+class SendEmailTest(WebAppTest, GaccoTestMixin):
     """
     Test the send email process.
     """

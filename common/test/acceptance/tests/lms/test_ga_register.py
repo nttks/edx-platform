@@ -5,7 +5,6 @@ End-to-end tests for the LMS registration flow.
 
 import re
 import requests
-from nose.plugins.attrib import attr
 
 from bok_choy.web_app_test import WebAppTest
 from lms.envs.bok_choy import EMAIL_FILE_PATH
@@ -13,11 +12,10 @@ from ...fixtures.course import CourseFixture
 from ...pages.lms import BASE_URL
 from ...pages.lms.ga_header_footer import HeaderPage, FooterPage
 from ...pages.lms.ga_register import RegisterPage, ActivationPage
-from ..ga_helpers import EmailTestMixin
+from ..ga_helpers import GaccoTestMixin
 
 
-@attr('shard_ga')
-class RegistrationTest(WebAppTest, EmailTestMixin):
+class RegistrationTest(WebAppTest, GaccoTestMixin):
     """
     Test the registration process.
     """
