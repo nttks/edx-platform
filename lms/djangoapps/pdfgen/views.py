@@ -154,7 +154,7 @@ class CertPDF(object):
         """ crate pdf """
         if os.path.isdir(self.base_pdf_dir):
             base_pdf = self.base_pdf_dir + "/" + self.prefix + "-".join(
-                self.course_id.to_deprecated_string().split('/')) + ".pdf"
+                [self.course_id.org, self.course_id.course, self.course_id.run]) + ".pdf"
             self.create_based_on_pdf(base_pdf)
             return
 
