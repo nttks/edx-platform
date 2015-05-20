@@ -283,10 +283,10 @@ FEATURES = {
     ],
 
     # Turn off account locking if failed login attempts exceeds a limit
-    'ENABLE_MAX_FAILED_LOGIN_ATTEMPTS': True,
+    'ENABLE_MAX_FAILED_LOGIN_ATTEMPTS': False,
 
     # Hide any Personally Identifiable Information from application logs
-    'SQUELCH_PII_IN_LOGS': True,
+    'SQUELCH_PII_IN_LOGS': False,
 
     # Toggles the embargo functionality, which blocks users from
     # the site or courses based on their location.
@@ -308,10 +308,10 @@ FEATURES = {
     'ENABLE_MKTG_SITE': False,
 
     # Prevent concurrent logins per user
-    'PREVENT_CONCURRENT_LOGINS': True,
+    'PREVENT_CONCURRENT_LOGINS': False,
 
-    # Turn on Advanced Security by default
-    'ADVANCED_SECURITY': True,
+    # Turn off Advanced Security by default
+    'ADVANCED_SECURITY': False,
 
     # When a logged in user goes to the homepage ('/') should the user be
     # redirected to the dashboard - this is default Open edX behavior. Set to
