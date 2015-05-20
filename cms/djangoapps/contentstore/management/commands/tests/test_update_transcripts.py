@@ -11,12 +11,15 @@ from uuid import uuid4
 from django.conf import settings
 from django.core.management import call_command
 from django.core.management.base import CommandError
+from django.test import TestCase
 from django.test.utils import override_settings
+from django.utils.timezone import UTC
 
 from contentstore.management.commands.update_transcripts import Command
 from xmodule.contentstore.content import StaticContent
 from xmodule.contentstore.django import contentstore, _CONTENTSTORE
 from xmodule.exceptions import NotFoundError
+from xmodule.modulestore import ModuleStoreEnum
 from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
 from xmodule.modulestore.tests.factories import CourseFactory, ItemFactory
 from xmodule.modulestore.django import modulestore, clear_existing_modulestores
@@ -35,7 +38,7 @@ command_output_file = tempfile.NamedTemporaryFile()
 
 
 @override_settings(TRANSCRIPTS_COMMAND_OUTPUT=command_output_file.name)
-class TestArgParsing(ModuleStoreTestCase):
+class TestArgParsing(TestCase):
     """
     Tests for parsing arguments of the `update_transcripts` command
     """
@@ -72,11 +75,12 @@ class TestArgParsing(ModuleStoreTestCase):
         """
         Tests for the case when S3 connection error raises
         """
+        course = CourseFactory.create()
         mock_store_class.side_effect = Exception("Failed to connect to S3.")
 
         errstring = "Could not establish a connection to S3 for transcripts backup."
         with self.assertRaisesRegexp(CommandError, errstring):
-            self.command.handle('org/course/name')
+            self.command.handle(course.id.to_deprecated_string())
 
         mock_store_class.assert_called_once_with()
 
@@ -96,7 +100,7 @@ class TestUpdateTranscripts(ModuleStoreTestCase):
         super(TestUpdateTranscripts, self).setUp()
 
         # Course with 1 video item, the transcripts of which don't exist on local store
-        self.course = CourseFactory.create(
+        self.course = self._create_course(
             org='edX', course='001', display_name='Robot Super Course')
         ItemFactory.create(
             parent_location=self.course.location, category='video',
@@ -112,7 +116,7 @@ class TestUpdateTranscripts(ModuleStoreTestCase):
         )
 
         # Course with 1 video item, the transcripts of which already uploaded to local store
-        self.course2 = CourseFactory.create(
+        self.course2 = self._create_course(
             org='edX', course='002', display_name='Transcripts Already Exist Course')
         ItemFactory.create(
             parent_location=self.course2.location, category='video',
@@ -148,8 +152,8 @@ class TestUpdateTranscripts(ModuleStoreTestCase):
         transcripts_utils.save_subs_to_store(self.subs, subs_id, self.course2)
 
         # Ended course
-        past_end = datetime.now() - timedelta(days=12)
-        self.course3 = CourseFactory.create(
+        past_end = datetime.now(UTC()) - timedelta(days=12)
+        self.course3 = self._create_course(
             org='edX', course='003', display_name='Already Ended Course', end=past_end)
 
         # patcher
@@ -167,13 +171,31 @@ class TestUpdateTranscripts(ModuleStoreTestCase):
         self.logger_info = patcher_logger_info.start()
         self.addCleanup(patcher_logger_info.stop)
 
-        self.addCleanup(ModuleStoreTestCase.drop_mongo_collections)
+        self.addCleanup(self._drop_mongo_collections)
         self.addCleanup(clear_existing_modulestores)
+
+    @staticmethod
+    def _drop_mongo_collections():
+        """
+        If using a Mongo-backed modulestore & contentstore, drop the collections.
+        """
+        module_store = modulestore()
+        if hasattr(module_store, '_drop_database'):
+            module_store._drop_database()  # pylint: disable=protected-access
+        _CONTENTSTORE.clear()
+        if hasattr(module_store, 'close_connections'):
+            module_store.close_connections()
+
+    def _create_course(self, org, course, display_name, end=None):
+        """
+        Create a course for draft
+        """
+        return CourseFactory.create(
+            org=org, course=course, display_name=display_name, end=end)
 
     def tearDown(self):
         self.clear_subs_content()
         MongoClient().drop_database(TEST_DATA_CONTENTSTORE['DOC_STORE_CONFIG']['db'])
-        _CONTENTSTORE.clear()
 
     def clear_subs_content(self):
         """Remove, if subtitles content exists."""
@@ -203,7 +225,7 @@ class TestUpdateTranscripts(ModuleStoreTestCase):
         call_command('update_transcripts', self.course.id.to_deprecated_string())
 
         self.mock_conn_class.assert_called_once_with(ANY, ANY)
-        self.assertEqual(2, self.mock_get_transcripts.call_count)
+        self.assertEqual(1, self.mock_get_transcripts.call_count)
 
         # assert info log
         self.assertIn("Can't receive transcripts from YouTube", self.logger_info.call_args[0][0])
@@ -282,3 +304,17 @@ class TestUpdateTranscripts(ModuleStoreTestCase):
         """
         with self.assertRaises(TypeError):
             call_command('update_transcripts')
+
+
+class TestUpdateTranscriptsSplit(TestUpdateTranscripts):
+    """
+    Tests update_transcripts command for split courses
+    """
+
+    def _create_course(self, org, course, display_name, end=None):
+        """
+        Create a course for split
+        """
+        return CourseFactory.create(
+            org=org, course=course, display_name=display_name, end=end,
+            default_store=ModuleStoreEnum.Type.split)
