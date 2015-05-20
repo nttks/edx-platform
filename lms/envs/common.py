@@ -247,10 +247,10 @@ FEATURES = {
     'ENABLED_PAYMENT_REPORTS': ["refund_report", "itemized_purchase_report", "university_revenue_share", "certificate_status"],
 
     # Turn off account locking if failed login attempts exceeds a limit
-    'ENABLE_MAX_FAILED_LOGIN_ATTEMPTS': True,
+    'ENABLE_MAX_FAILED_LOGIN_ATTEMPTS': False,
 
     # Hide any Personally Identifiable Information from application logs
-    'SQUELCH_PII_IN_LOGS': True,
+    'SQUELCH_PII_IN_LOGS': False,
 
     # Toggles the embargo functionality, which enable embargoing for particular courses
     'EMBARGO': False,
@@ -274,10 +274,10 @@ FEATURES = {
     'ENABLE_MKTG_SITE': False,
 
     # Prevent concurrent logins per user
-    'PREVENT_CONCURRENT_LOGINS': True,
+    'PREVENT_CONCURRENT_LOGINS': False,
 
-    # Turn on Advanced Security by default
-    'ADVANCED_SECURITY': True,
+    # Turn off Advanced Security by default
+    'ADVANCED_SECURITY': False,
 
     # Show a "Download your certificate" on the Progress page if the lowest
     # nonzero grade cutoff is met
