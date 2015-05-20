@@ -1,4 +1,4 @@
-from mock import patch, MagicMock, ANY
+from mock import patch
 
 from django.core.management.base import CommandError
 from django.test import TestCase
@@ -7,6 +7,7 @@ from django.test.utils import override_settings
 from bulk_email.management.commands import deactivate_bulk_email
 from bulk_email.management.commands.tests.factories import OptoutFactory
 from student.tests.factories import CourseEnrollmentFactory, UserFactory
+from xmodule.modulestore import ModuleStoreEnum
 from xmodule.modulestore.tests.factories import CourseFactory
 from xmodule.modulestore.tests.django_utils import TEST_DATA_MOCK_MODULESTORE
 
@@ -18,7 +19,7 @@ class BulkEmailCommandTestCase(TestCase):
 
         self.kwargs = {"course_id": None, "reactivate": False}
         ###dummy course
-        self.course = CourseFactory.create()
+        self.course = self._create_course()
 
         self.course_kwargs = {"course_id": self.course.id.to_deprecated_string(), "reactivate": False}
 
@@ -51,6 +52,12 @@ class BulkEmailCommandTestCase(TestCase):
 
         ### not existing user
         self.nouser_args = ["hogehoge"]
+
+    def _create_course(self):
+        """
+        Create a course for draft
+        """
+        return CourseFactory.create()
 
     def tearDown(self):
         pass
@@ -96,3 +103,15 @@ class BulkEmailCommandTestCase(TestCase):
     def test_handle_nouser(self):
         with self.assertRaises(CommandError):
             deactivate_bulk_email.Command().handle(*self.nouser_args, **self.kwargs)
+
+
+class BulkEmailCommandSplitTestCase(BulkEmailCommandTestCase):
+    """
+    Tests deactivate_bulk_email for split courses
+    """
+
+    def _create_course(self):
+        """
+        Create a course for draft
+        """
+        return CourseFactory.create(default_store=ModuleStoreEnum.Type.split)
