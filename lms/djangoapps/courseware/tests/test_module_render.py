@@ -1003,7 +1003,7 @@ class TestStaffDebugInfo(ModuleStoreTestCase):
             self.user,
             self.descriptor
         )
-        with patch('xmodule_modifiers.grade_histogram') as mock_grade_histogram:
+        with patch('openedx.core.lib.xblock_utils.grade_histogram') as mock_grade_histogram:
             mock_grade_histogram.return_value = []
             module = render.get_module(
                 self.user,
@@ -1025,7 +1025,7 @@ class TestStaffDebugInfo(ModuleStoreTestCase):
             max_grade=1,
             state="{}",
         )
-        with patch('xmodule_modifiers.grade_histogram') as mock_grade_histogram:
+        with patch('openedx.core.lib.xblock_utils.grade_histogram') as mock_grade_histogram:
             mock_grade_histogram.return_value = []
             module = render.get_module(
                 self.user,
@@ -1248,6 +1248,20 @@ class TestXmoduleRuntimeEvent(TestSubmittingProblems):
         student_module = StudentModule.objects.get(student=self.student_user, module_state_key=self.problem.location)
         self.assertIsNone(student_module.grade)
         self.assertIsNone(student_module.max_grade)
+
+    @patch('courseware.module_render.SCORE_CHANGED.send')
+    def test_score_change_signal(self, send_mock):
+        """Test that a Django signal is generated when a score changes"""
+        self.set_module_grade_using_publish(self.grade_dict)
+        expected_signal_kwargs = {
+            'sender': None,
+            'points_possible': self.grade_dict['max_value'],
+            'points_earned': self.grade_dict['value'],
+            'user_id': self.student_user.id,
+            'course_id': unicode(self.course.id),
+            'usage_id': unicode(self.problem.location)
+        }
+        send_mock.assert_called_with(**expected_signal_kwargs)
 
 
 @attr('shard_1')

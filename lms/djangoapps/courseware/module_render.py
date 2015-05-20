@@ -27,10 +27,13 @@ from django.utils.translation import ugettext as _
 from django.test.client import RequestFactory
 from django.views.decorators.csrf import csrf_exempt
 
+import newrelic.agent
+
 from capa.xqueue_interface import XQueueInterface
 from courseware.access import has_access, get_user_role
 from courseware.masquerade import setup_masquerade
 from courseware.model_data import FieldDataCache, DjangoKeyValueStore
+from courseware.models import SCORE_CHANGED
 from courseware.entrance_exams import (
     get_entrance_exam_score,
     user_must_complete_entrance_exam
@@ -55,7 +58,7 @@ from opaque_keys.edx.locations import SlashSeparatedCourseKey
 from xmodule.contentstore.django import contentstore
 from xmodule.modulestore.django import modulestore, ModuleI18nService
 from xmodule.modulestore.exceptions import ItemNotFoundError
-from xmodule_modifiers import (
+from openedx.core.lib.xblock_utils import (
     replace_course_urls,
     replace_jump_to_id_urls,
     replace_static_urls,
@@ -449,6 +452,17 @@ def get_module_system_for_user(user, field_data_cache,
             user,
             course_id,
             descriptor.location,
+        )
+
+        # Send a signal out to any listeners who are waiting for score change
+        # events.
+        SCORE_CHANGED.send(
+            sender=None,
+            points_possible=event['max_value'],
+            points_earned=event['value'],
+            user_id=user_id,
+            course_id=unicode(course_id),
+            usage_id=unicode(descriptor.location)
         )
 
     def publish(block, event_type, event):
@@ -897,6 +911,13 @@ def _invoke_xblock_handler(request, course_id, usage_id, handler, suffix):
         return JsonResponse(object={'success': False, 'msg': error_msg}, status=413)
 
     instance, tracking_context = get_module_by_usage_id(request, course_id, usage_id)
+
+    # Name the transaction so that we can view XBlock handlers separately in
+    # New Relic. The suffix is necessary for XModule handlers because the
+    # "handler" in those cases is always just "xmodule_handler".
+    nr_tx_name = "{}.{}".format(instance.__class__.__name__, handler)
+    nr_tx_name += "/{}".format(suffix) if suffix else ""
+    newrelic.agent.set_transaction_name(nr_tx_name, group="Python/XBlock/Handler")
 
     tracking_context_name = 'module_callback_handler'
     req = django_to_webob_request(request)
