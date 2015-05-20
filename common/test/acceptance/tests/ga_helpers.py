@@ -16,6 +16,10 @@ class GaccoTestMixin(unittest.TestCase):
     """
     Mixin for gacco tests
     """
+
+    WINDOW_WIDTH_PC = 1280
+    WINDOW_HEIGHT_PC = 800
+
     def setup_email_client(self, email_file_path):
         """
         Set up an email client
@@ -23,6 +27,12 @@ class GaccoTestMixin(unittest.TestCase):
         self.email_client = FilebasedEmailClient(email_file_path)
         self.email_client.clear_messages()
         self.addCleanup(self.email_client.clear_messages)
+
+    def setup_window_size_for_pc(self):
+        """
+        Set up window size for PC
+        """
+        self.browser.set_window_size(self.WINDOW_WIDTH_PC, self.WINDOW_HEIGHT_PC)
 
 
 class FilebasedEmailClient(object):
