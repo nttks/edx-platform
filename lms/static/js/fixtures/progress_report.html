@@ -1,0 +1,51 @@
+<div class="progress-report-container action-type-container">
+  <div class="progress-summary">
+  <div>
+
+  <div id="ProgressUpdate">
+    <span><strong>"Date of Last update"</strong></span>
+    <ul>
+      <li>"Problem Module Progress": <span class="structure">None</span>
+        <i class="fa fa-spinner fa-spin"></i>
+      </li>
+      <li>"Score distribution map for OpenAssessment"
+        <ul>
+          <li>"Final Score": <span class="submission">None</span>
+            <i class="fa fa-spinner fa-spin"></i>
+          </li>
+          <li>"Assessment per rubric": <span class="openassessment">None</span>
+            <i class="fa fa-spinner fa-spin"></i>
+          </li>
+        </ul>
+      </li>
+    </ul>
+    <form>
+      <input id="ForceUpdate" type="button" value="Update" />
+    </form>
+    <hr>
+  </div>
+
+  <h2> "Problem Module Progress" </h2>
+  <div id="ProgressGrid">
+    <div class="loading"><i class="fa fa-spinner fa-spin fa-5x"></i></div>
+  </div>
+
+  <div class="box">
+    <h2> "Answer Distribution" </h2>
+    <p id="SelectionStatus">"Select row in a table"</p>
+    <div id="AnswerDistribution"></div>
+    <div id="legendContainer"></div>
+  </div>
+
+  <div class="box">
+    <h2> "Score distribution map for OpenAssessment" </h2>
+    <select name="BarChart_items" id="BarChart_items"></select>
+    <div id="ProgressGraphs">
+      <div id="OpenassessmentScoreDistribution"></div>
+      <div id="SubmissionScoreDistribution"></div>
+    </div>
+  </div>
+
+  <div class="request-response msg-confirm" id="pgreport-request-response"></div>
+  <div class="request-response-error msg-error" id="pgreport-request-response-error"></div>
+</div>

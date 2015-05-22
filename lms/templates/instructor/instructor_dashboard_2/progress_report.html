@@ -8,28 +8,45 @@
     <p><strong>${_("Enrollment counts")}</strong>: ${section_data['course_enrollments']}</p>
     <p><strong title="${_('Activated and not resign user')}">${_("Active student counts")}</strong>: ${section_data['course_actives']}</p>
   <div>
-  <br/>
 
-  <hr>
+  <div id="ProgressUpdate">
+    <span><strong>${_("Date of Last update")}</strong></span>
+    <ul>
+      <li>${_("Problem Module Progress")}: <span class="structure">None</span>
+        <i class="fa fa-spinner fa-spin"></i>
+      </li>
+      <li>${_("Score distribution map for OpenAssessment")}
+        <ul>
+          <li>${_("Final Score")}: <span class="submission">None</span>
+            <i class="fa fa-spinner fa-spin"></i>
+          </li>
+          <li>${_("Assessment per rubric")}: <span class="openassessment">None</span>
+            <i class="fa fa-spinner fa-spin"></i>
+          </li>
+        </ul>
+      </li>
+    </ul>
+    <form>
+      <input id="ForceUpdate" type="button" value="${_('Update')}" />
+    </form>
+    <hr>
+  </div>
+
   <h2> ${_("Problem Module Progress")} </h2>
   <div id="ProgressGrid">
     <div class="loading"><i class="fa fa-spinner fa-spin fa-5x"></i></div>
   </div>
-  <br/>
 
-  <div>
+  <div class="box">
     <h2> ${_("Answer Distribution")} </h2>
     <p id="SelectionStatus">${_("Select row in a table")}</p>
     <div id="AnswerDistribution"></div>
+    <div id="legendContainer"></div>
   </div>
-  <br/>
-  <hr>
 
-  <div>
+  <div class="box">
     <h2> ${_("Score distribution map for OpenAssessment")} </h2>
     <select name="BarChart_items" id="BarChart_items"></select>
-    <br/>
-    <br/>
     <div id="ProgressGraphs">
       <div id="OpenassessmentScoreDistribution"></div>
       <div id="SubmissionScoreDistribution"></div>
@@ -43,8 +60,4 @@
   <script>
     ProgressReport("${section_data['problem_list_url']}", "${section_data['submission_scores_url']}", "${section_data['openassessment_rubric_scores_url']}", "${section_data['section_key']}");
   </script>
-  ##<script>
-  ##  <%namespace name="progress_report" file="/class_dashboard/progress_report.js"/>
-  ##  ${progress_report.body(section_data)}
-  ##</script>
 </div>

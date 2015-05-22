@@ -3,9 +3,10 @@ Function to grasp the progress of the course.
 """
 from django.views.decorators.http import require_GET
 from django.views.decorators.cache import cache_control
-from instructor.views.tools import handle_dashboard_error
+from django.core.cache import cache
 from instructor.views.api import require_level
 from util.json_request import JsonResponse
+from django.conf import settings
 
 from opaque_keys.edx.keys import CourseKey
 from opaque_keys.edx.locator import CourseLocator
@@ -14,16 +15,48 @@ from django.contrib.auth.models import User
 from student.models import UserStanding
 from courseware.models import StudentModule
 from submissions.models import ScoreSummary
-from openassessment.assessment.models import Assessment, PeerWorkflow, CriterionOption
+from openassessment.assessment.models import (
+    AssessmentPart, PeerWorkflow, CriterionOption)
 
 from xmodule.modulestore.django import modulestore
 from courseware.courses import get_course
 
+from urlparse import urlparse, parse_qs
+from datetime import datetime
+import pytz
 import logging
 import json
 
 
 log = logging.getLogger("progress_report")
+
+
+class ProgressReportCache(object):
+    def __init__(self, prefix):
+        self.key_prefix = prefix
+        self.timeout = 1200
+
+    def __call__(self, func):
+        def wrapper(*args, **kwargs):
+            key = self.key_prefix + ":" + unicode(args[0].course_id)
+            force = kwargs.get("force", False)
+
+            now = datetime.now(pytz.utc).astimezone(
+                pytz.timezone(settings.TIME_ZONE)).strftime("%Y/%m/%d %H:%M:%S")
+
+            result, cache_date, in_progress = cache.get(key, default=(None, now, False))
+            log.debug("### key {}, force {}, in_progress {}".format(key, force, in_progress))
+            if (result is None or force is True) and in_progress is False:
+                log.debug("*** key {}, Doing ***".format(key))
+                cache.set(key, (result, now, True), self.timeout)
+                result = func(*args, **kwargs)
+                #max limit, 30 days
+                cache.set(key, (result, now, False), 2592000)
+                cache_data = now
+
+            log.debug("### result {}, date {}".format(result, cache_date))
+            return result, cache_date, in_progress
+        return wrapper
 
 
 class ProgressReportBase(object):
@@ -176,7 +209,8 @@ class ProblemReport(ProgressReportBase):
 
         return sum_student_answers
 
-    def get_progress_list(self):
+    @ProgressReportCache('pgreport-structure')
+    def get_pgreport(self, force=False):
         structure = self.get_course_structure()
         problems = self.get_problem_data()
         result = []
@@ -214,11 +248,12 @@ class OpenAssessmentReport(ProgressReportBase):
         """Initialize."""
         super(OpenAssessmentReport, self).__init__(course_id)
 
-    def get_oa_rubric_scores(self):
+    @ProgressReportCache('pgreport-openassessment')
+    def get_pgreport(self, force=False):
         """
         Example:
         {
-            u'block-v1:org+cn1+run+type@openassessment+block@08e0dbcebea34f0fa205b14f18e0352d': {
+            u'eea2de81e5eb049e4ee22e131bb22941c3df2886': {
             'display_name': u'',
             'rubrics': [ u'Content': {u'Poor': [8, 0L], u'Fair': [1, 1L], u'Excellent': [3, 3L]},
             u'Ideas': {u'Poor': [6, 0L], u'Good': [3, 2L], u'Fair': [3, 1L]}]
@@ -226,45 +261,43 @@ class OpenAssessmentReport(ProgressReportBase):
             ...,
         }
         """
-        #for assessment in Assessment.objects.iterator():
-
         scores = {}
-        peer_list = PeerWorkflow.objects.filter(
-            course_id=self.course_id).values_list("submission_uuid", flat=True)
+        peer_qs = PeerWorkflow.objects.filter(course_id=self.course_id)
+        peer_dict = dict([(q.submission_uuid, q.item_id) for q in peer_qs])
+        peer_list = [k for k in peer_dict.keys()]
 
-        for assessment in Assessment.objects.filter(submission_uuid__in=list(peer_list)):
-            item_id = PeerWorkflow.objects.filter(
-                submission_uuid=assessment.submission_uuid
-            ).values("item_id")[0]["item_id"]
+        for part in AssessmentPart.objects.filter(assessment__submission_uuid__in=peer_list).select_related():
 
-            if item_id not in scores:
-                scores.update({item_id: {}})
-                scores[item_id]['display_name'] = self.get_display_name(
-                    self.course_location, item_id)
-                scores[item_id]['rubrics'] = {}
+            item_id = peer_dict[part.assessment.submission_uuid]
+            criterion_name = unicode(part.criterion.label)
+            criterion_id = part.criterion.id
+            option_order_num = part.option.order_num
+            option_name = unicode(part.option.label)
 
-            for part in assessment.parts.all().select_related():
-                criterion_id = part.criterion.id
-                criterion_name = part.criterion.name
-                option_order_num = part.option.order_num
-                option_name = part.option.name
+            try:
+                count = scores[item_id]['rubrics'][criterion_name][option_name][0] + 1
+                scores[item_id]['rubrics'][criterion_name][option_name] = [
+                    count, option_order_num]
+
+            except KeyError:
+                if item_id not in scores:
+                    scores.update({item_id: {}})
+                    scores[item_id]['display_name'] = self.get_display_name(
+                        self.course_location, item_id)
+                    scores[item_id]['rubrics'] = {}
 
                 if criterion_name not in scores[item_id]['rubrics']:
                     scores[item_id]['rubrics'].update({criterion_name: {}})
 
-                    for option in CriterionOption.objects.filter(
-                            criterion_id=criterion_id).values("name", "order_num"):
+                for option in CriterionOption.objects.filter(
+                        criterion_id=criterion_id).values("label", "order_num"):
 
+                    if option["label"] not in scores[item_id]['rubrics'][criterion_name]:
                         scores[item_id]['rubrics'][criterion_name].update(
-                            {option["name"]: [0, option["order_num"]]})
+                            {option["label"]: [0, option["order_num"]]})
 
-                    scores[item_id]['rubrics'][criterion_name][option_name] = [
-                        1, option_order_num]
-
-                else:
-                    count = scores[item_id]['rubrics'][criterion_name][option_name][0] + 1
-                    scores[item_id]['rubrics'][criterion_name][option_name] = [
-                        count, option_order_num]
+                scores[item_id]['rubrics'][criterion_name][option_name] = [
+                    1, option_order_num]
 
         return scores
 
@@ -275,20 +308,21 @@ class SubmissionReport(ProgressReportBase):
         """Initialize."""
         super(SubmissionReport, self).__init__(course_id)
 
-    def get_submission_scores(self):
+    @ProgressReportCache('pgreport-submission')
+    def get_pgreport(self, force=False):
         """
         Example:
         {
             u'block-v1:org+cn1+run+type@openassessment+block@08e0dbcebea34f0fa205b14f18e0352d': {
             'display_name': u'',
-            'rubrics': [ u'FinalScore': {u'0-9': [8, 0L], u'10-19': [1, 1L], u'20-29': [3, 3L]}],
+            'rubrics': [ u'Final_Score': {u'0-9': [8, 0L], u'10-19': [1, 1L], u'20-29': [3, 3L]}],
             },
             ...,
         }
         """
         scores = {}
         partition_size = 10
-        cname = 'FinalScore'
+        cname = 'Final_Score'
 
         score_summaries = ScoreSummary.objects.filter(
             student_item__course_id=unicode(self.course_location)
@@ -320,7 +354,7 @@ class SubmissionReport(ProgressReportBase):
                     score_min = 0
                     order_num = 0
 
-                    for score_max in xrange(0, summary.latest.points_possible + incr, incr):
+                    for score_max in xrange(incr, summary.latest.points_possible + incr, incr):
                         count = 0
                         if score_min <= summary.latest.points_earned <= score_max:
                             count = 1
@@ -332,31 +366,19 @@ class SubmissionReport(ProgressReportBase):
         return scores
 
 
-@handle_dashboard_error
 @require_level('staff')
 @require_GET
 @cache_control(no_cache=True, no_store=True, must_revalidate=True)
-def ajax_get_progress_list(request, course_id):
-    progress = ProblemReport(course_id)
-    result = progress.get_progress_list()
-    return JsonResponse(result)
+def ajax_get_pgreport(request, course_id, pgreport):
+    query = parse_qs(urlparse(request.get_full_path()).query)
+    force = query.get("force", "false")[0] in ['true', 'True', 'TRUE']
+    progress = pgreport(course_id)
+    result, cache_date, in_progress = progress.get_pgreport(force=force)
 
+    if in_progress is True:
+        response = JsonResponse(result, status=202)
+    else:
+        response = JsonResponse(result)
 
-@handle_dashboard_error
-@require_level('staff')
-@require_GET
-@cache_control(no_cache=True, no_store=True, must_revalidate=True)
-def ajax_get_oa_rubric_scores(request, course_id):
-    progress = OpenAssessmentReport(course_id)
-    result = progress.get_oa_rubric_scores()
-    return JsonResponse(result)
-
-
-@handle_dashboard_error
-@require_level('staff')
-@require_GET
-@cache_control(no_cache=True, no_store=True, must_revalidate=True)
-def ajax_get_submission_scores(request, course_id):
-    progress = SubmissionReport(course_id)
-    result = progress.get_submission_scores()
-    return JsonResponse(result)
+    response["X-Cache-Date"] = cache_date
+    return response

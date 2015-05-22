@@ -365,7 +365,7 @@ class ProblemReportTestCase(ModuleStoreTestCase):
 
     @patch('pgreport.views.ProblemReport.get_problem_data')
     @patch('pgreport.views.ProblemReport.get_course_structure')
-    def test_get_progress_list(self, getcs_mock, getpd_mock):
+    def test_get_pgreport(self, getcs_mock, getpd_mock):
         getcs_mock.return_value = self.course_structure
         getpd_mock.return_value = {
             unicode(self.problems[0].location): {
@@ -457,10 +457,11 @@ class ProblemReportTestCase(ModuleStoreTestCase):
             'correct_counts': 5
         }
 
-        courses = [ c for c in self.course_structure if c['category'] != 'problem']
+        courses = [c for c in self.course_structure if c['category'] != 'problem']
 
         result = courses + [question1, question2, question3, question4]
-        return_list = self.pgreport.get_progress_list()
+        return_list, cache_date, in_progress = self.pgreport.get_pgreport(force=True)
+        self.assertFalse(in_progress)
         self.assertItemsEqual(return_list, result)
 
 
@@ -470,16 +471,19 @@ class OpenAssessmentReportTestCase(TestCase):
         {
             "order_num": 0,
             "name": u"Poor",
+            "label": u"Poor",
             "points": 0,
         },
         {
             "order_num": 1,
             "name": u"Good",
+            "label": u"Good",
             "points": 1,
         },
         {
             "order_num": 2,
             "name": u"Excellent",
+            "label": u"Excellent",
             "points": 2,
         },
     ]
@@ -488,12 +492,14 @@ class OpenAssessmentReportTestCase(TestCase):
             {
                 "order_num": 0,
                 "name": u"Content",
+                "label": u"Content",
                 "prompt": u"Content",
                 "options": RUBRIC_OPTIONS
             },
             {
                 "order_num": 1,
                 "name": u"Ideas",
+                "label": u"Ideas",
                 "prompt": u"Ideas",
                 "options": RUBRIC_OPTIONS
             }
@@ -534,12 +540,13 @@ class OpenAssessmentReportTestCase(TestCase):
         'pgreport.views.ProgressReportBase.get_display_name',
         return_value="display_name")
     @patch('pgreport.views.PeerWorkflow')
-    def test_get_oa_rubric_scores(self, pw_mock, gdn_mock):
-        pw_mock.objects.filter().values_list.return_value = [
-            "block@openassessment@999"]
-        pw_mock.objects.filter().values.return_value = [{
-            "item_id": "item_id"}]
-        scores = self.oa.get_oa_rubric_scores()
+    def test_get_pgreport(self, pw_mock, gdn_mock):
+        mock = MagicMock()
+        mock.item_id = "item_id"
+        mock.submission_uuid = "block@openassessment@999"
+        pw_mock.objects.filter.return_value = [mock]
+        scores, cache_date, in_progress = self.oa.get_pgreport(force=True)
+        self.assertFalse(in_progress)
         self.assertEquals(scores, {
             "item_id": {
                 'display_name': 'display_name',
@@ -599,40 +606,39 @@ class SubmissionReportTestCase(TestCase):
     @patch(
         'pgreport.views.ProgressReportBase.get_display_name',
         return_value="display_name")
-    def test_get_submission_scores(self, gdn_mock):
-        scores = self.submission.get_submission_scores()
+    def test_get_pgreport(self, gdn_mock):
+        scores, cache_date, in_progress = self.submission.get_pgreport(force=True)
+        self.assertFalse(in_progress)
         self.assertEquals(scores, {
             u'block@openassessment@000': {
                 'display_name': 'display_name',
                 'rubrics': {
-                    'FinalScore': {
-                        u'0-0': [0, 0],
-                        u'1-5': [0, 1],
-                        u'6-10': [0, 2],
-                        u'11-15': [0, 3],
-                        u'16-20': [0, 4],
-                        u'21-25': [1, 5],
-                        u'26-30': [0, 6],
-                        u'31-35': [0, 7],
-                        u'36-40': [0, 8],
-                        u'41-45': [0, 9],
-                        u'46-50': [0, 10]
+                    'Final_Score': {
+                        u'0-5': [0, 0],
+                        u'6-10': [0, 1],
+                        u'11-15': [0, 2],
+                        u'16-20': [0, 3],
+                        u'21-25': [1, 4],
+                        u'26-30': [0, 5],
+                        u'31-35': [0, 6],
+                        u'36-40': [0, 7],
+                        u'41-45': [0, 8],
+                        u'46-50': [0, 9]
                     }
                 }
             },
             u'block@openassessment@999': {
                 'display_name': 'display_name',
                 'rubrics': {
-                    'FinalScore': {
-                        u'0-0': [0, 0],
-                        u'1-1': [0, 1],
-                        u'2-2': [0, 2],
-                        u'3-3': [0, 3],
-                        u'4-4': [0, 4],
-                        u'5-5': [1, 5],
-                        u'6-6': [0, 6],
-                        u'7-7': [0, 7],
-                        u'8-8': [1, 8]
+                    'Final_Score': {
+                        u'0-1': [0, 0],
+                        u'2-2': [0, 1],
+                        u'3-3': [0, 2],
+                        u'4-4': [0, 3],
+                        u'5-5': [1, 4],
+                        u'6-6': [0, 5],
+                        u'7-7': [0, 6],
+                        u'8-8': [1, 7]
                     }
                 }
             }
@@ -656,20 +662,24 @@ class AjaxRequestTestCase(TestCase):
         self.instructor = InstructorFactory(course_key=self.course.id)
         self.client.login(username=self.instructor.username, password='test')
 
-    @patch('pgreport.views.ProblemReport')
-    def test_ajax_get_progress_list(self, rep_mock):
+    def test_ajax_get_progress_list(self):
         response = self.client.get(self.progress_list_url, {})
+        self.assertIn("X-Cache-Date", response)
         self.assertEquals(response.status_code, 200)
-        rep_mock().get_progress_list.assert_called_with()
 
-    @patch('pgreport.views.OpenAssessmentReport')
-    def test_ajax_get_oa_rubric_scores(self, rep_mock):
+    def test_ajax_get_oa_rubric_scores(self):
         response = self.client.get(self.oa_rubric_scores_url, {})
+        self.assertIn("X-Cache-Date", response)
         self.assertEquals(response.status_code, 200)
-        rep_mock().get_oa_rubric_scores.assert_called_with()
 
-    @patch('pgreport.views.SubmissionReport')
-    def test_ajax_get_submission_scores(self, rep_mock):
+    def test_ajax_get_submission_scores(self):
         response = self.client.get(self.submission_scores_url, {})
+        self.assertIn("X-Cache-Date", response)
         self.assertEquals(response.status_code, 200)
-        rep_mock().get_submission_scores.assert_called_with()
+
+    @patch('pgreport.views.cache')
+    def test_in_progress(self, cache_mock):
+        cache_mock.get.return_value = (None, "date", True)
+        response = self.client.get(self.progress_list_url, {})
+        self.assertEquals(response["X-Cache-Date"], "date")
+        self.assertEquals(response.status_code, 202)

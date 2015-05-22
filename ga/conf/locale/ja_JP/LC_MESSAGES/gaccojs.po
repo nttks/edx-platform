@@ -88,3 +88,10 @@ msgstr "評価回数"
 msgid "Score"
 msgstr "得点"
 
+#: lms/static/js/progress_report.js
+msgid "Assessment"
+msgstr "評価"
+
+#: lms/static/js/progress_report.js
+msgid "Final_Score"
+msgstr "最終得点"
