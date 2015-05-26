@@ -3,8 +3,10 @@
 End-to-end tests for the LMS registration flow.
 """
 
+import os
 import re
 import requests
+import unittest
 
 from bok_choy.web_app_test import WebAppTest
 from lms.envs.bok_choy import EMAIL_FILE_PATH
@@ -46,6 +48,9 @@ class RegistrationTest(WebAppTest, GaccoTestMixin):
         # setup mail client
         self.setup_email_client(EMAIL_FILE_PATH)
 
+        # Set window size
+        self.setup_window_size_for_pc()
+
     def _get_activation_key_from_message(self, message):
         """
         Returns the activation key from email content.
@@ -66,7 +71,7 @@ class RegistrationTest(WebAppTest, GaccoTestMixin):
             # Check link of FAQ
             self.assertEqual(
                 'https://support.gacco.org/',
-                requests.get(self.header_page.navigation_menu_links[0], allow_redirects=False).headers['Location']
+                requests.get(self.header_page.navigation_menu_links[2], allow_redirects=False).headers['Location']
             )
 
         ## Footer links

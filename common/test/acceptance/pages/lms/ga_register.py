@@ -5,6 +5,7 @@ from . import BASE_URL
 from .ga_dashboard import DashboardPage
 from .login_and_register import RegisterPage as EdXRegisterPage
 
+
 class RegisterPage(EdXRegisterPage):
     """
     Account registration page.
