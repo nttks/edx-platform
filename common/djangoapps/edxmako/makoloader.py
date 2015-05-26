@@ -10,6 +10,8 @@ from edxmako.template import Template
 
 from openedx.core.lib.tempdir import mkdtemp_clean
 
+from microsite_configuration import microsite
+
 log = logging.getLogger(__name__)
 
 
@@ -62,8 +64,12 @@ class MakoLoader(object):
                 return source, file_path
 
     def load_template_source(self, template_name, template_dirs=None):
+        _template_name = microsite.get_template_path(template_name)
+        # Need to pass the relative path in django.utils._os.safe_join
+        if _template_name[0] == '/':
+            _template_name = _template_name[1:]
         # Just having this makes the template load as an instance, instead of a class.
-        return self.base_loader.load_template_source(template_name, template_dirs)
+        return self.base_loader.load_template_source(_template_name, template_dirs)
 
     def reset(self):
         self.base_loader.reset()

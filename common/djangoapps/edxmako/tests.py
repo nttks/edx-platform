@@ -11,12 +11,14 @@ from django.test.client import RequestFactory
 from django.core.urlresolvers import reverse
 import edxmako.middleware
 from edxmako.middleware import get_template_request_context
+from edxmako.makoloader import MakoFilesystemLoader
 from edxmako import add_lookup, LOOKUP
 from edxmako.shortcuts import (
     marketing_link,
     render_to_string,
     open_source_footer_context_processor
 )
+from microsite_configuration import microsite
 from student.tests.factories import UserFactory
 from util.testing import UrlResetMixin
 
@@ -119,3 +121,23 @@ def mako_middleware_process_request(request):
     """
     mako_middleware = edxmako.middleware.MakoMiddleware()
     mako_middleware.process_request(request)
+
+
+@unittest.skipUnless(settings.ROOT_URLCONF == 'lms.urls', 'Test only valid in lms')
+class MakoFilesystemLoaderTest(TestCase):
+    """
+    Tests that results are loaded with MakoFilesystemLoader.
+    """
+
+    def setUp(self):
+        self.loader = MakoFilesystemLoader()
+
+    def test_load_template_source_not_in_microsite(self):
+        _, file_path = self.loader.load_template_source('footer.html')
+        self.assertEqual(settings.PROJECT_ROOT / 'templates' / 'footer.html', file_path)
+
+    def test_load_template_source_in_microsite(self):
+        microsite._set_current_microsite('test_microsite', 'testmicrosite', 'testmicrosite.example.com')
+        _, file_path = self.loader.load_template_source('footer.html')
+        self.assertEqual(settings.MICROSITE_ROOT_DIR / 'test_microsite' / 'templates' / 'footer.html', file_path)
+        microsite.clear()
