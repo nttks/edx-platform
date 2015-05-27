@@ -741,7 +741,7 @@ msgstr "08月"
 #: common/djangoapps/util/date_utils.py:305
 msgctxt "abbreviated month name"
 msgid "Sep"
-msgstr "08月"
+msgstr "09月"
 
 #. Translators: this is an abbreviated month name that will be used when
 #. displaying dates, as in "Oct 10, 2014". It is used for the %b
