@@ -2169,6 +2169,22 @@ msgid "Activated and not resign user"
 msgstr "退会していないアクティベート済みユーザ"
 
 #: lms/templates/instructor/instructor_dashboard_2/progress_report.html
+msgid "Date of Last update"
+msgstr "最終更新日時"
+
+#: lms/templates/instructor/instructor_dashboard_2/progress_report.html
+msgid "Final Score"
+msgstr "最終得点"
+
+#: lms/templates/instructor/instructor_dashboard_2/progress_report.html
+msgid "Assessment per rubric"
+msgstr "ルーブリック毎の評価"
+
+#: lms/templates/instructor/instructor_dashboard_2/progress_report.html
+msgid "Update"
+msgstr "更新"
+
+#: lms/templates/instructor/instructor_dashboard_2/progress_report.html
 msgid "Problem Module Progress"
 msgstr "Problemモジュールの進捗"
 
