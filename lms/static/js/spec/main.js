@@ -567,6 +567,10 @@
             'annotator_1.2.9': {
                 exports: 'Annotator',
                 deps: ['jquery']
+            },
+            'js/progress_report': {
+                exports: 'ProgressReport',
+                deps: ['jquery', 'underscore']
             }
         }
     });
@@ -626,7 +630,8 @@
         'lms/include/js/spec/edxnotes/plugins/scroller_spec.js',
         'lms/include/js/spec/edxnotes/plugins/caret_navigation_spec.js',
         'lms/include/js/spec/edxnotes/collections/notes_spec.js',
-        'lms/include/js/spec/search/search_spec.js'
+        'lms/include/js/spec/search/search_spec.js',
+        'lms/include/js/spec/progress_report_spec.js'
     ]);
 
 }).call(this, requirejs, define);

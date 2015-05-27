@@ -1954,8 +1954,41 @@ input[name="subject"] {
   }
 }
 
-.instructor-dashboard-wrapper-2 section.idash-section#progress_report{
+.instructor-dashboard-wrapper-2 section.idash-section#progress_report {
   .progress-report-container {
+    padding: 40px 0;
+    div.box {
+      padding: 20px 0;
+    }
+
+    #ProgressUpdate {
+      padding: 20px 0;
+      width: 500px;
+      ul {
+        list-style-type: none;
+        margin: 0 0 20px 40px;
+        padding: 10px 0 0;
+        border: 1px solid #bbb;
+        border-radius: 1px;
+
+        li {
+          padding: 0 10px 5px;
+          i {
+            color: red;
+          }
+        }
+
+        ul {
+          border: none;
+          margin: 0 0 0 40px;
+          padding: 5px 0 0 0;
+        }
+      }
+      form {
+        margin: 10px 0 10px 40px;
+      }
+    }
+
     #ProgressGrid {
       height: 400px;
       border: solid 1px;
@@ -1964,6 +1997,7 @@ input[name="subject"] {
         border: solid 1px #EEEEEE;
       }
     }
+
     div.loading {
       height: 400px;
       text-align: center;
@@ -1976,6 +2010,10 @@ input[name="subject"] {
 
     .slick-header-column.ui-state-default {
       height: 25px;
+    }
+    
+    #BarChart_items {
+      margin-bottom: 20px;
     }
   }
 }
