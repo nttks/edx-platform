@@ -6471,14 +6471,14 @@ msgstr ""
 msgid ""
 "Please enter your new password twice so we can verify you typed it in "
 "correctly."
-msgstr ""
+msgstr "確認のために、新しいパスワードを二回入力してください。"
 
 #: lms/templates/registration/password_reset_confirm.html
 msgid ""
 "\n"
 "        Required fields are noted by %(bold_start)sbold text and an asterisk (*)%(bold_end)s.\n"
 "        "
-msgstr ""
+msgstr "%(bold_start)s(*)付きの太字の項目%(bold_end)sは必須となります。"
 
 #: lms/templates/registration/password_reset_confirm.html
 #: lms/templates/forgot_password_modal.html lms/templates/login.html
