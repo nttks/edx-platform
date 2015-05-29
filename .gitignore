@@ -34,9 +34,7 @@ codekit-config.json
 *.po
 *.prob
 !django.po
-!django.mo
 !djangojs.po
-!djangojs.mo
 !django-partial.po
 !django-studio.po
 !djangojs-partial.po
