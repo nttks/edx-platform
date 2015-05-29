@@ -1809,6 +1809,12 @@ msgid ""
 "Discover logo"
 msgstr "Visa、Master Card、American Express、Discover、Diners Club、DiscoverのロゴのついたJCB"
 
+#-#-#-#-#  Deleted or revised messages between named-release/birch(464ae71) and master(40745c2)  #-#-#-#-#
+
+#: lms/templates/courseware/course_about.html
+msgid "Register for {course.display_number_with_default}"
+msgstr "{course.display_number_with_default}を受講登録"
+
 #-#-#-#-#  Original messages in gacco  #-#-#-#-#
 
 #: lms/templates/register.html lms/templates/login.html
