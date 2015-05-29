@@ -1101,7 +1101,7 @@ msgstr "講座で学習"
 #: lms/templates/login.html:112 lms/templates/register-shib.html:83
 #: lms/templates/register.html:91
 msgid "Processing your account information"
-msgstr ""
+msgstr "会員登録しています"
 
 #: lms/templates/login.html:137
 msgid "Please log in"

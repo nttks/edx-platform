@@ -8426,7 +8426,7 @@ msgstr "講座で学習"
 #: lms/templates/login.html lms/templates/register-shib.html
 #: lms/templates/register.html
 msgid "Processing your account information"
-msgstr ""
+msgstr "会員登録しています"
 
 #: lms/templates/login.html
 msgid "Please log in"
