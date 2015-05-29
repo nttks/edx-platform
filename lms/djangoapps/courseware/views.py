@@ -425,7 +425,7 @@ def _index_bulk_op(request, course_key, chapter, section, position):
             'staff_access': staff_access,
             'studio_url': studio_url,
             'masquerade': masquerade,
-            'xqa_server': settings.FEATURES.get('USE_XQA_SERVER', 'http://xqa:server@content-qa.mitx.mit.edu/xqa'),
+            'xqa_server': settings.FEATURES.get('XQA_SERVER', "http://your_xqa_server.com"),
             'reverifications': fetch_reverify_banner_info(request, course_key),
         }
 
@@ -853,7 +853,7 @@ def course_about(request, course_id):
                     shoppingcart.models.CourseRegCodeItem.contained_in_order(cart, course_key)
 
             reg_then_add_to_cart_link = "{reg_url}?course_id={course_id}&enrollment_action=add_to_cart".format(
-                reg_url=reverse('register_user'), course_id=course.id.to_deprecated_string())
+                reg_url=reverse('register_user'), course_id=urllib.quote(str(course_id)))
 
         course_price = get_cosmetic_display_price(course, registration_price)
         can_add_course_to_cart = _is_shopping_cart_enabled and registration_price
@@ -1306,7 +1306,7 @@ def is_course_passed(course, grade_summary=None, student=None, request=None):
     if grade_summary is None:
         grade_summary = grades.grade(student, request, course)
 
-    return success_cutoff and grade_summary['percent'] > success_cutoff
+    return success_cutoff and grade_summary['percent'] >= success_cutoff
 
 
 @require_POST

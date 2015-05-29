@@ -1,30 +1,42 @@
 """
 Discussion API internal interface
 """
+from django.core.exceptions import ValidationError
 from django.http import Http404
 
 from collections import defaultdict
 
+from opaque_keys.edx.locator import CourseLocator
+
+from courseware.courses import get_course_with_access
 from discussion_api.pagination import get_paginated_data
+from discussion_api.serializers import CommentSerializer, ThreadSerializer, get_context
 from django_comment_client.utils import get_accessible_discussion_modules
-from django_comment_common.models import (
-    FORUM_ROLE_ADMINISTRATOR,
-    FORUM_ROLE_COMMUNITY_TA,
-    FORUM_ROLE_MODERATOR,
-    Role,
-)
 from lms.lib.comment_client.thread import Thread
-from lms.lib.comment_client.user import User
-from openedx.core.djangoapps.course_groups.cohorts import get_cohort_id, get_cohort_names
+from lms.lib.comment_client.utils import CommentClientRequestError
+from openedx.core.djangoapps.course_groups.cohorts import get_cohort_id
+from xmodule.tabs import DiscussionTab
 
 
-def get_course_topics(course, user):
+def _get_course_or_404(course_key, user):
+    """
+    Get the course descriptor, raising Http404 if the course is not found,
+    the user cannot access forums for the course, or the discussion tab is
+    disabled for the course.
+    """
+    course = get_course_with_access(user, 'load_forum', course_key)
+    if not any([isinstance(tab, DiscussionTab) for tab in course.tabs]):
+        raise Http404
+    return course
+
+
+def get_course_topics(course_key, user):
     """
     Return the course topic listing for the given course and user.
 
     Parameters:
 
-    course: The course to get topics for
+    course_key: The key of the course to get topics for
     user: The requesting user, for access control
 
     Returns:
@@ -39,6 +51,7 @@ def get_course_topics(course, user):
         """
         return module.sort_key or module.discussion_target
 
+    course = _get_course_or_404(course_key, user)
     discussion_modules = get_accessible_discussion_modules(course, user)
     modules_by_category = defaultdict(list)
     for module in discussion_modules:
@@ -77,75 +90,14 @@ def get_course_topics(course, user):
     }
 
 
-def _cc_thread_to_api_thread(thread, cc_user, staff_user_ids, ta_user_ids, group_ids_to_names):
-    """
-    Convert a thread data dict from the comment_client format (which is a direct
-    representation of the format returned by the comments service) to the format
-    used in this API
-
-    Arguments:
-      thread (comment_client.thread.Thread): The thread to convert
-      cc_user (comment_client.user.User): The comment_client representation of
-        the requesting user
-      staff_user_ids (set): The set of user ids for users with the Moderator or
-        Administrator role in the course
-      ta_user_ids (set): The set of user ids for users with the Community TA
-        role in the course
-      group_ids_to_names (dict): A mapping of group ids to names
-
-    Returns:
-      dict: The discussion_api format representation of the thread.
-    """
-    is_anonymous = (
-        thread["anonymous"] or
-        (
-            thread["anonymous_to_peers"] and
-            int(cc_user["id"]) not in (staff_user_ids | ta_user_ids)
-        )
-    )
-    ret = {
-        key: thread[key]
-        for key in [
-            "id",
-            "course_id",
-            "group_id",
-            "created_at",
-            "updated_at",
-            "title",
-            "pinned",
-            "closed",
-        ]
-    }
-    ret.update({
-        "topic_id": thread["commentable_id"],
-        "group_name": group_ids_to_names.get(thread["group_id"]),
-        "author": None if is_anonymous else thread["username"],
-        "author_label": (
-            None if is_anonymous else
-            "staff" if int(thread["user_id"]) in staff_user_ids else
-            "community_ta" if int(thread["user_id"]) in ta_user_ids else
-            None
-        ),
-        "type": thread["thread_type"],
-        "raw_body": thread["body"],
-        "following": thread["id"] in cc_user["subscribed_thread_ids"],
-        "abuse_flagged": cc_user["id"] in thread["abuse_flaggers"],
-        "voted": thread["id"] in cc_user["upvoted_ids"],
-        "vote_count": thread["votes"]["up_count"],
-        "comment_count": thread["comments_count"],
-        "unread_comment_count": thread["unread_comments_count"],
-    })
-    return ret
-
-
-def get_thread_list(request, course, page, page_size):
+def get_thread_list(request, course_key, page, page_size):
     """
     Return the list of all discussion threads pertaining to the given course
 
     Parameters:
 
     request: The django request objects used for build_absolute_uri
-    course: The course to get discussion threads for
+    course_key: The key of the course to get discussion threads for
     page: The page number (1-indexed) to retrieve
     page_size: The number of threads to retrieve per page
 
@@ -154,15 +106,14 @@ def get_thread_list(request, course, page, page_size):
     A paginated result containing a list of threads; see
     discussion_api.views.ThreadViewSet for more detail.
     """
-    user_is_privileged = Role.objects.filter(
-        course_id=course.id,
-        name__in=[FORUM_ROLE_ADMINISTRATOR, FORUM_ROLE_MODERATOR, FORUM_ROLE_COMMUNITY_TA],
-        users=request.user
-    ).exists()
-    cc_user = User.from_django_user(request.user).retrieve()
+    course = _get_course_or_404(course_key, request.user)
+    context = get_context(course, request)
     threads, result_page, num_pages, _ = Thread.search({
         "course_id": unicode(course.id),
-        "group_id": None if user_is_privileged else get_cohort_id(request.user, course.id),
+        "group_id": (
+            None if context["is_requester_privileged"] else
+            get_cohort_id(request.user, course.id)
+        ),
         "sort_key": "date",
         "sort_order": "desc",
         "page": page,
@@ -173,25 +124,87 @@ def get_thread_list(request, course, page, page_size):
     # behavior and return a 404 in that case
     if result_page != page:
         raise Http404
-    # TODO: cache staff_user_ids and ta_user_ids if we need to improve perf
-    staff_user_ids = {
-        user.id
-        for role in Role.objects.filter(
-            name__in=[FORUM_ROLE_ADMINISTRATOR, FORUM_ROLE_MODERATOR],
-            course_id=course.id
-        )
-        for user in role.users.all()
-    }
-    ta_user_ids = {
-        user.id
-        for role in Role.objects.filter(name=FORUM_ROLE_COMMUNITY_TA, course_id=course.id)
-        for user in role.users.all()
-    }
-    # For now, the only groups are cohorts
-    group_ids_to_names = get_cohort_names(course)
 
-    results = [
-        _cc_thread_to_api_thread(thread, cc_user, staff_user_ids, ta_user_ids, group_ids_to_names)
-        for thread in threads
-    ]
+    results = [ThreadSerializer(thread, context=context).data for thread in threads]
+    return get_paginated_data(request, results, page, num_pages)
+
+
+def get_comment_list(request, thread_id, endorsed, page, page_size):
+    """
+    Return the list of comments in the given thread.
+
+    Parameters:
+
+        request: The django request object used for build_absolute_uri and
+          determining the requesting user.
+
+        thread_id: The id of the thread to get comments for.
+
+        endorsed: Boolean indicating whether to get endorsed or non-endorsed
+          comments (or None for all comments). Must be None for a discussion
+          thread and non-None for a question thread.
+
+        page: The page number (1-indexed) to retrieve
+
+        page_size: The number of comments to retrieve per page
+
+    Returns:
+
+        A paginated result containing a list of comments; see
+        discussion_api.views.CommentViewSet for more detail.
+    """
+    response_skip = page_size * (page - 1)
+    try:
+        cc_thread = Thread(id=thread_id).retrieve(
+            recursive=True,
+            user_id=request.user.id,
+            mark_as_read=True,
+            response_skip=response_skip,
+            response_limit=page_size
+        )
+    except CommentClientRequestError:
+        # page and page_size are validated at a higher level, so the only
+        # possible request error is if the thread doesn't exist
+        raise Http404
+
+    course_key = CourseLocator.from_string(cc_thread["course_id"])
+    course = _get_course_or_404(course_key, request.user)
+    context = get_context(course, request, cc_thread)
+
+    # Ensure user has access to the thread
+    if not context["is_requester_privileged"] and cc_thread["group_id"]:
+        requester_cohort = get_cohort_id(request.user, course_key)
+        if requester_cohort is not None and cc_thread["group_id"] != requester_cohort:
+            raise Http404
+
+    # Responses to discussion threads cannot be separated by endorsed, but
+    # responses to question threads must be separated by endorsed due to the
+    # existing comments service interface
+    if cc_thread["thread_type"] == "question":
+        if endorsed is None:
+            raise ValidationError({"endorsed": ["This field is required for question threads."]})
+        elif endorsed:
+            # CS does not apply resp_skip and resp_limit to endorsed responses
+            # of a question post
+            responses = cc_thread["endorsed_responses"][response_skip:(response_skip + page_size)]
+            resp_total = len(cc_thread["endorsed_responses"])
+        else:
+            responses = cc_thread["non_endorsed_responses"]
+            resp_total = cc_thread["non_endorsed_resp_total"]
+    else:
+        if endorsed is not None:
+            raise ValidationError(
+                {"endorsed": ["This field may not be specified for discussion threads."]}
+            )
+        responses = cc_thread["children"]
+        resp_total = cc_thread["resp_total"]
+
+    # The comments service returns the last page of results if the requested
+    # page is beyond the last page, but we want be consistent with DRF's general
+    # behavior and return a 404 in that case
+    if not responses and page != 1:
+        raise Http404
+    num_pages = (resp_total + page_size - 1) / page_size if resp_total else 1
+
+    results = [CommentSerializer(response, context=context).data for response in responses]
     return get_paginated_data(request, results, page, num_pages)

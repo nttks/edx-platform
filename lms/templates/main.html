@@ -63,7 +63,7 @@ dir_rtl = 'rtl' if get_language_bidi() else 'ltr'
   <link rel="icon" type="image/x-icon" href="${static.url(microsite.get_value('favicon_path', settings.FAVICON_PATH))}" />
 
   <%static:css group='style-vendor'/>
-  <%static:css group='style-app'/>
+  <%static:css group='style-main'/>
 
   % if disable_courseware_js:
     <%static:js group='base_vendor'/>
@@ -133,8 +133,6 @@ dir_rtl = 'rtl' if get_language_bidi() else 'ltr'
   <div class="window-wrap" dir="${dir_rtl}">
     <a class="nav-skip" href="<%block name="nav_skip">#content</%block>">${_("Skip to main content")}</a>
 
-    <%include file="mathjax_accessible.html" />
-
     % if not disable_header:
         <%include file="${header_file}" />
     % endif
@@ -150,8 +148,10 @@ dir_rtl = 'rtl' if get_language_bidi() else 'ltr'
           <%
             if theme_enabled() and not is_microsite():
               footer_file = 'theme-footer.html'
+            elif settings.FEATURES.get('IS_EDX_DOMAIN', False) and  settings.FEATURES.get('ENABLE_FOOTER_V3', True) and not is_microsite():
+              footer_file = microsite.get_template_path('footer-edx-v3.html')
             elif settings.FEATURES.get('IS_EDX_DOMAIN', False) and not is_microsite():
-              footer_file = microsite.get_template_path('footer-edx-new.html')
+              footer_file = microsite.get_template_path('footer-edx-v2.html')
             else:
               footer_file = microsite.get_template_path('footer.html')
           %>

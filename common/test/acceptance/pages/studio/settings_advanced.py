@@ -200,4 +200,5 @@ class AdvancedSettingsPage(CoursePage):
             'social_sharing_url',
             'teams_configuration',
             'is_course_hidden',
+            'minimum_grade_credit',
         ]

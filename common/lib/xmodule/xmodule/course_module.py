@@ -16,6 +16,7 @@ from xmodule.exceptions import UndefinedContext
 from xmodule.seq_module import SequenceDescriptor, SequenceModule
 from xmodule.graders import grader_from_conf
 from xmodule.tabs import CourseTabList
+from xmodule.mixin import LicenseMixin
 import json
 
 from xblock.fields import Scope, List, String, Dict, Boolean, Integer, Float
@@ -863,6 +864,16 @@ class CourseFields(object):
         scope=Scope.settings
     )
 
+    minimum_grade_credit = Float(
+        display_name=_("Minimum Grade for Credit"),
+        help=_(
+            "The minimum grade that a learner must earn to receive credit in the course, "
+            "as a decimal between 0.0 and 1.0. For example, for 75%, enter 0.75."
+        ),
+        default=0.8,
+        scope=Scope.settings,
+    )
+
 
 class CourseModule(CourseFields, SequenceModule):  # pylint: disable=abstract-method
     """
@@ -872,7 +883,10 @@ class CourseModule(CourseFields, SequenceModule):  # pylint: disable=abstract-me
     """
 
 
-class CourseDescriptor(CourseFields, SequenceDescriptor):
+class CourseDescriptor(CourseFields, LicenseMixin, SequenceDescriptor):
+    """
+    The descriptor for the course XModule
+    """
     module_class = CourseModule
 
     def __init__(self, *args, **kwargs):
@@ -1003,9 +1017,11 @@ class CourseDescriptor(CourseFields, SequenceDescriptor):
             xml_object.remove(wiki_tag)
 
         definition, children = super(CourseDescriptor, cls).definition_from_xml(xml_object, system)
-
         definition['textbooks'] = textbooks
         definition['wiki_slug'] = wiki_slug
+
+        # load license if it exists
+        definition = LicenseMixin.parse_license_from_xml(definition, xml_object)
 
         return definition, children
 
@@ -1024,6 +1040,10 @@ class CourseDescriptor(CourseFields, SequenceDescriptor):
             wiki_xml_object = etree.Element('wiki')
             wiki_xml_object.set('slug', self.wiki_slug)
             xml_object.append(wiki_xml_object)
+
+        # handle license specifically. Default the course to have a license
+        # of "All Rights Reserved", if a license is not explicitly set.
+        self.add_license_to_xml(xml_object, default="all-rights-reserved")
 
         return xml_object
 
