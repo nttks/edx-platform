@@ -1811,6 +1811,10 @@ msgstr "Visa、Master Card、American Express、Discover、Diners Club、Discove
 msgid "Register for {course.display_number_with_default}"
 msgstr "{course.display_number_with_default}を受講登録"
 
+#: lms/templates/discussion/_underscore_templates.html
+msgid "How to use {platform_name} discussions"
+msgstr "ディスカッションの使い方"
+
 #-#-#-#-#  Original messages in gacco  #-#-#-#-#
 
 #: lms/templates/register.html lms/templates/login.html
