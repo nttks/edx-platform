@@ -11074,7 +11074,7 @@ msgstr "他の受講者が参加しようと思う、明確でわかりやすい
 
 #: lms/templates/discussion/_underscore_templates.html
 msgid "Enter your question or comment"
-msgstr ""
+msgstr "質問もしくはコメントを入力してください"
 
 #: lms/templates/discussion/_underscore_templates.html
 msgid "follow this post"
