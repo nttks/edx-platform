@@ -1423,10 +1423,6 @@ msgid ""
 msgstr ""
 
 #: lms/templates/discussion/_underscore_templates.html
-msgid "{post_type} posted {time_ago} by {author}"
-msgstr "{author}により{time_ago}に投稿"
-
-#: lms/templates/discussion/_underscore_templates.html
 #, python-format
 msgid "(this post is about %(courseware_title_linked)s)"
 msgstr "(%(courseware_title_linked)sについての投稿)"
