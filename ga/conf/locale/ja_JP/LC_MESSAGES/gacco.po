@@ -2256,7 +2256,7 @@ msgstr "わかりやすいタイトルをつけましょう。タイトルで、
 
 #: lms/templates/discussion/_underscore_templates.html
 msgid "Upvote good posts. This applies to questions and answers. Click on the green plus button so that good posts can be found more easily."
-msgstr "良い発言、役立つ発言に投票（【＋】）ボタンを押しましょう。"
+msgstr "良い発言、役立つ発言に <i class="icon fa fa-thumbs-o-up"></i>（いいね！）ボタンを押しましょう。"
 
 #: lms/templates/discussion/_underscore_templates.html
 msgid "Be specific. Write clearly with simple reasons."

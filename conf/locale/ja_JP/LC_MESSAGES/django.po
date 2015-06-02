@@ -11022,7 +11022,7 @@ msgstr "投稿の関心度"
 
 #: lms/templates/discussion/_underscore_templates.html
 msgid "Upvote posts and good responses"
-msgstr "良い投稿(投票)"
+msgstr "いいね！"
 
 #: lms/templates/discussion/_underscore_templates.html
 msgid "Report Forum Misuse"
