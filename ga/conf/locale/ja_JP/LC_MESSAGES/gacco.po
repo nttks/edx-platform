@@ -1423,10 +1423,6 @@ msgid ""
 msgstr ""
 
 #: lms/templates/discussion/_underscore_templates.html
-msgid "{post_type} posted {time_ago} by {author}"
-msgstr "{author}により{time_ago}に投稿"
-
-#: lms/templates/discussion/_underscore_templates.html
 #, python-format
 msgid "(this post is about %(courseware_title_linked)s)"
 msgstr "(%(courseware_title_linked)sについての投稿)"
@@ -1809,6 +1805,16 @@ msgid ""
 "Discover logo"
 msgstr "Visa、Master Card、American Express、Discover、Diners Club、DiscoverのロゴのついたJCB"
 
+#-#-#-#-#  Deleted or revised messages between named-release/birch(464ae71) and master(40745c2)  #-#-#-#-#
+
+#: lms/templates/courseware/course_about.html
+msgid "Register for {course.display_number_with_default}"
+msgstr "{course.display_number_with_default}を受講登録"
+
+#: lms/templates/discussion/_underscore_templates.html
+msgid "How to use {platform_name} discussions"
+msgstr "ディスカッションの使い方"
+
 #-#-#-#-#  Original messages in gacco  #-#-#-#-#
 
 #: lms/templates/register.html lms/templates/login.html
@@ -2093,7 +2099,7 @@ msgid ""
 msgstr ""
 "他にご質問がありますか？<br />"
 "まずは、{link_start}よくある質問{link_end}をご覧ください。こちらに一般的なご質問に対しての情報が掲載されています。<br /><br />"
-"お手数をお掛けしますが、サポートサイトにて記載のない内容については、改めてお問合せください。なお、返信には１～３営業日（土日祝日等を除く）を頂いております。また、一般的な端末の操作方法等については、私どもにてご案内できかねますことご承知おきいただけますと幸いです。":
+"お手数をお掛けしますが、サポートサイトにて記載のない内容については、改めてお問合せください。なお、返信には１～３営業日（土日祝日等を除く）を頂いております。また、一般的な端末の操作方法等については、私どもにてご案内できかねますことご承知おきいただけますと幸いです。"
 
 #: lms/templates/help_modal.html
 msgid "Please provide a subject."
@@ -2250,7 +2256,7 @@ msgstr "わかりやすいタイトルをつけましょう。タイトルで、
 
 #: lms/templates/discussion/_underscore_templates.html
 msgid "Upvote good posts. This applies to questions and answers. Click on the green plus button so that good posts can be found more easily."
-msgstr "良い発言、役立つ発言に投票（【＋】）ボタンを押しましょう。"
+msgstr "良い発言、役立つ発言に <i class="icon fa fa-thumbs-o-up"></i>（いいね！）ボタンを押しましょう。"
 
 #: lms/templates/discussion/_underscore_templates.html
 msgid "Be specific. Write clearly with simple reasons."

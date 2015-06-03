@@ -6140,7 +6140,7 @@ msgstr "\n既にこの問題は認識されています。少し経ってから�
 msgid ""
 "Please enter your new password twice so we can verify you typed it in "
 "correctly."
-msgstr ""
+msgstr "確認のために、新しいパスワードを二回入力してください。"
 
 #: lms/templates/registration/password_reset_confirm.html:96
 #, python-format
@@ -6148,7 +6148,7 @@ msgid ""
 "\n"
 "        Required fields are noted by %(bold_start)sbold text and an asterisk (*)%(bold_end)s.\n"
 "        "
-msgstr ""
+msgstr "%(bold_start)s(*)付きの太字の項目%(bold_end)sは必須となります。"
 
 #: lms/templates/registration/password_reset_confirm.html:102
 msgid "Required Information"

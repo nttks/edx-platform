@@ -1101,7 +1101,7 @@ msgstr "講座で学習"
 #: lms/templates/login.html:112 lms/templates/register-shib.html:83
 #: lms/templates/register.html:91
 msgid "Processing your account information"
-msgstr ""
+msgstr "会員登録しています"
 
 #: lms/templates/login.html:137
 msgid "Please log in"
@@ -3778,7 +3778,7 @@ msgstr "投稿の関心度"
 
 #: lms/templates/discussion/_underscore_templates.html:344
 msgid "Upvote posts and good responses"
-msgstr "良い投稿(投票)"
+msgstr "いいね！"
 
 #: lms/templates/discussion/_underscore_templates.html:348
 msgid "Report Forum Misuse"
@@ -3829,7 +3829,7 @@ msgstr "他の受講者が参加しようと思う、明確でわかりやすい
 
 #: lms/templates/discussion/_underscore_templates.html:414
 msgid "Enter your question or comment"
-msgstr ""
+msgstr "質問もしくはコメントを入力してください"
 
 #: lms/templates/discussion/_underscore_templates.html:418
 msgid "follow this post"

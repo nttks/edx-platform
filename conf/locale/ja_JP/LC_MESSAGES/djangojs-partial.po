@@ -1555,7 +1555,7 @@ msgstr "フルブラウザをやめる"
 #: common/lib/xmodule/xmodule/js/src/video/00_i18n.js:19
 #: common/lib/xmodule/xmodule/js/src/video/04_video_control.js:270
 msgid "Fill browser"
-msgstr "ブラウザを満たせ"
+msgstr "ブラウザ内で最大化する"
 
 #: common/lib/xmodule/xmodule/js/src/video/00_i18n.js:20
 msgid "Speed"
