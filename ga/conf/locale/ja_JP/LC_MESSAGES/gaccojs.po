@@ -48,6 +48,10 @@ msgstr "戻って、問題を解消してください"
 msgid "Thread list"
 msgstr "スレッド一覧"
 
+#: common/templates/js/discussion/thread-show.underscore
+msgid "%(post_type)s posted %(time_ago)s by %(author)s"
+msgstr "%(author)sにより%(time_ago)sに投稿"
+
 #-#-#-#-#  Original messages in gacco  #-#-#-#-#
 
 #: pollxblock/static/js/src/pollxblock.js
