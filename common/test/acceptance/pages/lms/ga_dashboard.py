@@ -55,7 +55,8 @@ class DashboardPage(EdXDashboardPage):
         """
         Change email settings on dashboard
         """
-        self._get_element_in_course(course_name, ".email-settings").click()
+        self._get_element_in_course(course_name, ".action-more").click()
+        self._get_element_in_course(course_name, ".action-email-settings").click()
         self.q(css="#receive_emails").first.click()
         # there are multiple elements of id 'submit'
         self.q(css="#email_settings_form #submit").first.click()
