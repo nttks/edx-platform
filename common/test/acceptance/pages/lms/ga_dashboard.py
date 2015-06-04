@@ -39,12 +39,6 @@ class DashboardPage(EdXDashboardPage):
         """
         return self.q(css='section.dashboard-banner .activation-message').text
 
-    def click_resign(self):
-        """
-        Click resign on dashboard
-        """
-        self.q(css="#resign_button").first.click()
-
     def change_email_settings(self, course_name):
         """
         Change email settings on dashboard
