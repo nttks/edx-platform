@@ -45,12 +45,6 @@ class DashboardPage(EdXDashboardPage):
         """
         self.q(css="#resign_button").first.click()
 
-    def click_reset_password(self):
-        """
-        Click reset password on dashboard
-        """
-        self.q(css="#pwd_reset_button").first.click()
-
     def change_email_settings(self, course_name):
         """
         Change email settings on dashboard

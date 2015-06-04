@@ -7,10 +7,11 @@ import re
 import bok_choy.browser
 from bok_choy.web_app_test import WebAppTest
 from ...pages.common.logout import LogoutPage
+from ...pages.lms.account_settings import AccountSettingsPage
 from ...pages.lms.auto_auth import AutoAuthPage
 from ...pages.lms.ga_dashboard import DashboardPage
+from ...pages.lms.ga_login import LoginPage
 from ...pages.lms.ga_password_reset import PasswordResetCompletePage, PasswordResetConfirmPage
-from ...pages.lms.login_and_register import CombinedLoginAndRegisterPage
 from ..ga_helpers import GaccoTestMixin
 from lms.envs.bok_choy import (
     EMAIL_FILE_PATH,
@@ -44,21 +45,22 @@ class PasswordResetTest(WebAppTest, GaccoTestMixin):
         # Auto login and visit dashboard
         AutoAuthPage(self.browser, username=self.username, password=self.password, email=self.email).visit()
         self.dashboard_page = DashboardPage(self.browser)
-        self.dashboard_page.visit()
+        self.account_settings_page = AccountSettingsPage(self.browser)
+        self.account_settings_page.visit()
 
     def _visit_password_reset_confirm_page(self):
         """
         Visits password reset confirm page
         """
         # Click reset password on dashboard
-        self.dashboard_page.click_reset_password()
+        self.account_settings_page.click_on_link_in_link_field('password')
 
         # Get keys from email
         email_message = self.email_client.get_latest_message()
         self.assertIsNotNone(re.match(self.PASSWORD_RESET_CONFIRM_MAIL_SUBJECT_PATTERN, email_message['subject']))
         matches = re.search(self.PASSWORD_RESET_CONFIRM_MAIL_URL_PATTERN, email_message['body'], re.MULTILINE)
         self.assertIsNotNone(matches)
-        uidb36= matches.groupdict()['uidb36']
+        uidb36 = matches.groupdict()['uidb36']
         token = matches.groupdict()['token']
 
         # Visit password reset confirm page
@@ -85,15 +87,14 @@ class PasswordResetTest(WebAppTest, GaccoTestMixin):
         bok_choy.browser.save_screenshot(self.browser, 'test_reset_password_success__3')
 
         # Fail to login with old password
-        login_page = CombinedLoginAndRegisterPage(self.browser, start_page='login')
+        login_page = LoginPage(self.browser)
         login_page.visit()
-        login_page.login(self.email, self.password)
+        login_page.login(self.email, self.password, False)
         self.assertIn(u"Email or password is incorrect.", login_page.wait_for_errors())
         bok_choy.browser.save_screenshot(self.browser, 'test_reset_password_success__4')
 
         # Succeed to login with new password
         login_page.login(self.email, new_password)
-        self.dashboard_page.wait_for_page()
         bok_choy.browser.save_screenshot(self.browser, 'test_reset_password_success__5')
 
     def test_reset_password_with_invalid_length_password(self):
