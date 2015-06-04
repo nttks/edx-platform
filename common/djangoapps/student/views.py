@@ -127,6 +127,8 @@ from notification_prefs.views import enable_notifications
 # Note that this lives in openedx, so this dependency should be refactored.
 from openedx.core.djangoapps.user_api.preferences import api as preferences_api
 
+from openedx.core.djangoapps.course_global.models import CourseGlobalSetting
+
 
 log = logging.getLogger("edx.student")
 AUDIT_LOG = logging.getLogger("audit")
@@ -616,6 +618,14 @@ def dashboard(request):
         )
     )
 
+    # only show unenroll settings for not global course.
+    global_courses = CourseGlobalSetting.all_course_id()
+    show_unenroll_settings_for = frozenset(
+        course.id for course, _ in course_enrollment_pairs if (
+          course.id not in global_courses
+        )
+    )
+
     # Verification Attempts
     # Used to generate the "you must reverify for course x" banner
     verification_status, verification_msg = SoftwareSecurePhotoVerification.user_status(user)
@@ -669,6 +679,7 @@ def dashboard(request):
         'all_course_modes': course_mode_info,
         'cert_statuses': cert_statuses,
         'show_email_settings_for': show_email_settings_for,
+        'show_unenroll_settings_for': show_unenroll_settings_for,
         'reverifications': reverifications,
         'verification_status': verification_status,
         'verification_status_by_course': verify_status_by_course,
@@ -1629,6 +1640,9 @@ def create_account_with_params(request, params):
             new_user.save()
             AUDIT_LOG.info(u"Login activated on extauth account - {0} ({1})".format(new_user.username, new_user.email))
 
+    # temporary enroll in global course.
+    _enroll_global_course(user.email)
+
 
 def set_marketing_cookie(request, response):
     """
@@ -1693,6 +1707,27 @@ def create_account(request, post_override=None):
     })
     set_marketing_cookie(request, response)
     return response
+
+
+def _enroll_global_course(email):
+    """
+    Enroll in the global course for the user.
+
+    `email` E-mail addres of the user.
+    """
+    try:
+        for course_id in CourseGlobalSetting.all_course_id():
+            # check whether course exists.
+            if not modulestore().has_course(course_id):
+                log.warning("Course {} does not exists".format(course_id))
+                continue
+            cea, _ = CourseEnrollmentAllowed.objects.get_or_create(course_id=course_id, email=email)
+            cea.auto_enroll = True
+            cea.save()
+    except Exception as e:  # pylint: disable=broad-except
+        # Exception will ignore but logged as error. User management command to enroll global course later.
+        log.error('Failed to temporary enroll to global course.')
+        log.exception(e)
 
 
 def auto_auth(request):

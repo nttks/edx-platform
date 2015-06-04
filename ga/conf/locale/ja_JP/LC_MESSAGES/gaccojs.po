@@ -101,3 +101,7 @@ msgstr "評価"
 #: lms/static/js/progress_report.js
 msgid "Final_Score"
 msgstr "最終得点"
+
+#: lms/static/coffee/src/instructor_dashboard/send_email.coffee
+msgid "E-mail will also be sent to users who have opt-out. Please carefully check whether the contents suitable for send to users who have opt-out."
+msgstr "メール受信設定をオフにしているユーザーにもメールが送信されます。受信拒否者に送信するべき内容かどうかを慎重に確認してください。"

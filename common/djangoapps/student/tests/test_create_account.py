@@ -20,6 +20,13 @@ from notification_prefs import NOTIFICATION_PREF_KEY
 
 from edxmako.tests import mako_middleware_process_request
 from external_auth.models import ExternalAuthMap
+
+from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
+from xmodule.modulestore.tests.factories import CourseFactory
+from openedx.core.djangoapps.course_global.tests.factories import CourseGlobalSettingFactory
+
+from opaque_keys.edx.locations import SlashSeparatedCourseKey
+
 import student
 
 TEST_CS_URL = 'https://comments.service.test:123/'
@@ -41,11 +48,12 @@ TEST_CS_URL = 'https://comments.service.test:123/'
         ]
     }
 )
-class TestCreateAccount(TestCase):
+class TestCreateAccount(ModuleStoreTestCase):
     """Tests for account creation"""
 
     def setUp(self):
-        super(TestCreateAccount, self).setUp()
+        super(TestCreateAccount, self).setUp(**{'create_user': False})
+
         self.username = "test_user"
         self.url = reverse("create_account")
         self.request_factory = RequestFactory()
@@ -57,6 +65,8 @@ class TestCreateAccount(TestCase):
             "honor_code": "true",
             "terms_of_service": "true",
         }
+        self.course_1 = CourseFactory.create(display_name="test course 1")
+        self.course_2 = CourseFactory.create(display_name="test course 2")
 
     @ddt.data("en", "eo")
     def test_default_lang_pref_saved(self, lang):
@@ -240,6 +250,29 @@ class TestCreateAccount(TestCase):
                 self.assertIsNotNone(preference)
             else:
                 self.assertIsNone(preference)
+
+    @unittest.skipUnless(settings.ROOT_URLCONF == 'lms.urls', 'Test only valid in lms')
+    def test_no_global_course(self):
+        response = self.client.post(self.url, self.params)
+        self.assertEqual(response.status_code, 200)
+        user = User.objects.get(username=self.username)
+        self.assertEqual(0, student.models.CourseEnrollmentAllowed.objects.all().count())
+
+    @unittest.skipUnless(settings.ROOT_URLCONF == 'lms.urls', 'Test only valid in lms')
+    def test_exists_global_course(self):
+        dummy_course_id = SlashSeparatedCourseKey('a', 'b', 'c')
+        CourseGlobalSettingFactory.create(course_id=dummy_course_id)
+        CourseGlobalSettingFactory.create(course_id=self.course_1.id)
+        CourseGlobalSettingFactory.create(course_id=self.course_2.id)
+
+        response = self.client.post(self.url, self.params)
+        self.assertEqual(response.status_code, 200)
+        user = User.objects.get(username=self.username)
+        cea1 = student.models.CourseEnrollmentAllowed.objects.get(email=user.email, course_id=self.course_1.id)
+        self.assertTrue(cea1.auto_enroll)
+        cea2 = student.models.CourseEnrollmentAllowed.objects.get(email=user.email, course_id=self.course_2.id)
+        self.assertTrue(cea2.auto_enroll)
+        self.assertFalse(student.models.CourseEnrollmentAllowed.objects.filter(course_id=dummy_course_id))
 
 
 @ddt.ddt
