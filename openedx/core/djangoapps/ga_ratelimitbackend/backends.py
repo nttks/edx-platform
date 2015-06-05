@@ -1,5 +1,5 @@
 """
-A Custom classes for django-ratelimit-backend. 
+A Custom classes for django-ratelimit-backend.
 """
 import logging
 
@@ -26,7 +26,7 @@ class RateLimitMixin(DjangoRateLimitMixin):
         Otherwise call original `get_counters` method.
         """
         ip_address = request.META.get('REMOTE_ADDR', '<none>')
-        if TrustedClient.objects.filter(ip_address=ip_address).exists():
+        if ip_address in TrustedClient.get_ip_address_list():
             log.debug("IP {} is in the SPOC client list.".format(ip_address))
             return {'': 0}
         else:
