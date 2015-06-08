@@ -40,15 +40,15 @@ class EnrollAllUsersTest(ModuleStoreTestCase):
         self.assertRaises(CommandError, call_command, ('enroll_global_course',), **{'all': True, 'course_id': self.courses[0].id.to_deprecated_string()})
 
     def test_enroll_one_course(self):
-        self.assertEquals(2, CourseEnrollment.num_enrolled_in(self.courses[0].id))
+        self.assertEquals(2, CourseEnrollment.objects.num_enrolled_in(self.courses[0].id))
         call_command('enroll_global_course', *[], **{'course_id': self.courses[0].id.to_deprecated_string()})
-        self.assertEquals(4, CourseEnrollment.num_enrolled_in(self.courses[0].id))
+        self.assertEquals(4, CourseEnrollment.objects.num_enrolled_in(self.courses[0].id))
 
     def test_enroll_all_courses(self):
-        self.assertEquals(2, CourseEnrollment.num_enrolled_in(self.courses[0].id))
-        self.assertEquals(1, CourseEnrollment.num_enrolled_in(self.courses[1].id))
+        self.assertEquals(2, CourseEnrollment.objects.num_enrolled_in(self.courses[0].id))
+        self.assertEquals(1, CourseEnrollment.objects.num_enrolled_in(self.courses[1].id))
 
         call_command('enroll_global_course', all=True)
 
-        self.assertEquals(4, CourseEnrollment.num_enrolled_in(self.courses[0].id))
-        self.assertEquals(4, CourseEnrollment.num_enrolled_in(self.courses[1].id))
+        self.assertEquals(4, CourseEnrollment.objects.num_enrolled_in(self.courses[0].id))
+        self.assertEquals(4, CourseEnrollment.objects.num_enrolled_in(self.courses[1].id))

@@ -26,8 +26,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1a\n"
 "Report-Msgid-Bugs-To: openedx-translation@googlegroups.com\n"
-"POT-Creation-Date: 2015-05-26 15:40+0000\n"
-"PO-Revision-Date: 2015-05-26 15:42:32.638527\n"
+"POT-Creation-Date: 2015-05-29 19:22+0000\n"
+"PO-Revision-Date: 2015-05-29 19:23:56.964169\n"
 "Last-Translator: \n"
 "Language-Team: openedx-translation <openedx-translation@googlegroups.com>\n"
 "MIME-Version: 1.0\n"
@@ -1647,11 +1647,6 @@ msgstr ""
 "\n"
 "Pröçééd tö thé Àdvänçéd Édïtör änd çönvért thïs prößlém tö XML? Ⱡ'σяєм ιρѕυм ∂σłσя ѕιт αмєт, ¢σηѕє¢тєтυя α∂ιριѕι¢ιηg єłιт, ѕє∂ ∂σ єιυѕмσ∂ тємρσя ιη¢ι∂ι∂υηт υт łαвσяє єт ∂σłσяє мαgηα αłιqυα. υт єηιм α∂ мιηιм νєηιαм, qυιѕ ησѕтяυ∂ єχєя¢ιтαтιση υłłαм¢σ łαвσяιѕ ηιѕι υт αłιqυιρ єχ єα ¢σммσ∂σ ¢σηѕєqυαт. ∂υιѕ αυтє ιяυяє ∂σłσя ιη яєρяєнєη∂єяιт ιη νσłυρтαтє νєłιт єѕѕє ¢ιłłυм ∂σłσяє єυ ƒυgιαт ηυłłα ραяιαтυя. єχ¢єρтєυя ѕιηт σ¢¢αє¢α#"
 
-#. Translators: This is the title of the text explaining a problem
-#: common/lib/xmodule/xmodule/js/src/problem/edit.js
-msgid "Explanation"
-msgstr "Éxplänätïön Ⱡ'σяєм ιρѕυм ∂σłσя #"
-
 #: common/lib/xmodule/xmodule/js/src/sequence/display.js
 msgid ""
 "Sequence error! Cannot navigate to %(tab_name)s in the current "
@@ -2372,6 +2367,7 @@ msgstr ""
 "¢σηѕє¢тєтυя#"
 
 #: lms/static/coffee/src/instructor_dashboard/data_download.js
+#: lms/static/js/instructor_dashboard/ecommerce.js
 msgid "Error generating grades. Please try again."
 msgstr ""
 "Érrör générätïng grädés. Pléäsé trý ägäïn. Ⱡ'σяєм ιρѕυм ∂σłσя ѕιт αмєт, "
@@ -2382,18 +2378,6 @@ msgid "Error generating problem grade report. Please try again."
 msgstr ""
 "Érrör générätïng prößlém grädé répört. Pléäsé trý ägäïn. Ⱡ'σяєм ιρѕυм ∂σłσя "
 "ѕιт αмєт, ¢σηѕє¢тєтυя α#"
-
-#: lms/static/coffee/src/instructor_dashboard/data_download.js
-msgid "File Name"
-msgstr "Fïlé Nämé Ⱡ'σяєм ιρѕυм ∂σł#"
-
-#: lms/static/coffee/src/instructor_dashboard/data_download.js
-msgid ""
-"Links are generated on demand and expire within 5 minutes due to the "
-"sensitive nature of student information."
-msgstr ""
-"Lïnks äré générätéd ön démänd änd éxpïré wïthïn 5 mïnütés düé tö thé "
-"sénsïtïvé nätüré öf stüdént ïnförmätïön. Ⱡ'σяєм ιρѕυм ∂σłσя ѕ#"
 
 #: lms/static/coffee/src/instructor_dashboard/instructor_analytics.js
 msgid "Unavailable metric display."
@@ -3104,6 +3088,18 @@ msgstr "Méssägé: Ⱡ'σяєм ιρѕυм ∂#"
 #: lms/static/coffee/src/instructor_dashboard/util.js
 msgid "No tasks currently running."
 msgstr "Nö täsks çürréntlý rünnïng. Ⱡ'σяєм ιρѕυм ∂σłσя ѕιт αмєт, ¢σηѕє#"
+
+#: lms/static/coffee/src/instructor_dashboard/util.js
+msgid "File Name"
+msgstr "Fïlé Nämé Ⱡ'σяєм ιρѕυм ∂σł#"
+
+#: lms/static/coffee/src/instructor_dashboard/util.js
+msgid ""
+"Links are generated on demand and expire within 5 minutes due to the "
+"sensitive nature of student information."
+msgstr ""
+"Lïnks äré générätéd ön démänd änd éxpïré wïthïn 5 mïnütés düé tö thé "
+"sénsïtïvé nätüré öf stüdént ïnförmätïön. Ⱡ'σяєм ιρѕυм ∂σłσя ѕ#"
 
 #: lms/static/coffee/src/staff_grading/staff_grading.js
 msgid "Grades saved.  Fetching the next submission to grade."

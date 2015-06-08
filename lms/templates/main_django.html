@@ -1,5 +1,8 @@
 <!DOCTYPE html>
-{% load compressed %}{% load sekizai_tags i18n microsite %}{% load url from future %}{% load staticfiles %}
+{% load compressed %}
+{% load sekizai_tags i18n microsite %}
+{% load url from future %}
+{% load staticfiles %}
 <html lang="{{LANGUAGE_CODE}}">
 <head>
   <meta charset="UTF-8">
@@ -39,10 +42,13 @@
     {% block body %}{% endblock %}
     {% block bodyextra %}{% endblock %}
   </div>
-  {% if IS_EDX_DOMAIN and not ENABLE_FOOTER_V3 %}
-    {% include "footer-edx-v2.html" %}
-  {% elif IS_EDX_DOMAIN and ENABLE_FOOTER_V3 %}
-    {% include "footer-edx-v3.html" %}
+  {% if IS_EDX_DOMAIN %}
+    {# TODO (ECOM-1339): Remove this check once we switch to the v3 footer permanently. #}
+    {% if ENABLE_BRANDING_API %}
+      {% include "footer-edx-v3.html" %}
+    {% else %}
+      {% include "footer-edx-v2.html" %}
+    {% endif %}
   {% elif ENABLE_CUSTOM_THEME %}
     {% include "theme-footer.html" %}
   {% else %}
