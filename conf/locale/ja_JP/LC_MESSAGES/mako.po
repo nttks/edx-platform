@@ -6184,7 +6184,7 @@ msgstr "戻る"
 
 #: lms/templates/registration/activate_account_notice.html:5
 msgid "Thanks for Registering!"
-msgstr "登録いただきありがとうございます！"
+msgstr "ご登録いただきありがとうございます！"
 
 #: lms/templates/registration/activate_account_notice.html:7
 msgid ""
