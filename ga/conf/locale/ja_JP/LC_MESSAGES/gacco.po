@@ -1815,6 +1815,13 @@ msgstr "{course.display_number_with_default}を受講登録"
 msgid "How to use {platform_name} discussions"
 msgstr "ディスカッションの使い方"
 
+#: common/djangoapps/student/views.py
+msgid ""
+"This account has not been activated. We have sent another activation "
+"message. Please check your e-mail for the activation instructions."
+msgstr "このアカウントはアクティベーションが完了していません。 アクティベーション用のメッセージを送信していますので、メールでアクティベーション方法を確認してください。"
+
+
 #-#-#-#-#  Original messages in gacco  #-#-#-#-#
 
 #: lms/templates/register.html lms/templates/login.html
