@@ -2097,9 +2097,9 @@ msgid ""
 "UTC.) In the meantime, please review our {link_start}detailed FAQs{link_end}"
 " where most questions have already been answered."
 msgstr ""
-"他にご質問がありますか？<br />"
-"まずは、{link_start}よくある質問{link_end}をご覧ください。こちらに一般的なご質問に対しての情報が掲載されています。<br /><br />"
-"お手数をお掛けしますが、サポートサイトにて記載のない内容については、改めてお問合せください。なお、返信には１～３営業日（土日祝日等を除く）を頂いております。また、一般的な端末の操作方法等については、私どもにてご案内できかねますことご承知おきいただけますと幸いです。"
+"他にご不明点はありますか？<br />"
+"まずは、{link_start}よくある質問{link_end}をご覧ください。こちらに一般的なご質問に対しての回答が掲載されています。<br /><br />"
+"お手数をお掛けしますが、よくある質問に記載のない内容については、改めてお問合せください。なお、返信には１～３営業日（土日祝日等を除く）を頂いております。また、一般的な端末の操作方法等については、私どもにてご案内できかねますことご承知おきいただけますと幸いです。"
 
 #: lms/templates/help_modal.html
 msgid "Please provide a subject."
