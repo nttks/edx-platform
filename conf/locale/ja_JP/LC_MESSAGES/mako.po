@@ -453,7 +453,7 @@ msgstr "受講登録をした講座"
 
 #: lms/templates/dashboard.html:201 lms/templates/dashboard.html:206
 msgid "Looks like you haven't enrolled in any courses yet."
-msgstr "まだどのコースも受講登録していないようです。"
+msgstr "受講登録をした講座はありません。"
 
 #: lms/templates/dashboard.html:203
 msgid "Find courses now!"

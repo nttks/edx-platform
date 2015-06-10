@@ -7829,7 +7829,7 @@ msgstr "受講登録をした講座"
 
 #: lms/templates/dashboard.html lms/templates/dashboard.html
 msgid "Looks like you haven't enrolled in any courses yet."
-msgstr "まだどのコースも受講登録していないようです。"
+msgstr "受講登録をした講座はありません。"
 
 #: lms/templates/dashboard.html
 msgid "Find courses now!"
