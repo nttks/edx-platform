@@ -7829,7 +7829,7 @@ msgstr "受講登録をした講座"
 
 #: lms/templates/dashboard.html lms/templates/dashboard.html
 msgid "Looks like you haven't enrolled in any courses yet."
-msgstr "まだどのコースも受講登録していないようです。"
+msgstr "受講登録をした講座はありません。"
 
 #: lms/templates/dashboard.html
 msgid "Find courses now!"
@@ -8426,7 +8426,7 @@ msgstr "講座で学習"
 #: lms/templates/login.html lms/templates/register-shib.html
 #: lms/templates/register.html
 msgid "Processing your account information"
-msgstr "会員登録しています"
+msgstr "会員情報を処理しています"
 
 #: lms/templates/login.html
 msgid "Please log in"
@@ -13420,7 +13420,7 @@ msgstr "戻る"
 
 #: lms/templates/registration/activate_account_notice.html
 msgid "Thanks for Registering!"
-msgstr "登録いただきありがとうございます！"
+msgstr "ご登録いただきありがとうございます！"
 
 #: lms/templates/registration/activate_account_notice.html
 msgid ""
