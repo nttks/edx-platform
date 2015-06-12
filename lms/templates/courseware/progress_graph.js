@@ -25,8 +25,8 @@ $(function () {
   colors = ["#b72121", "#600101", "#666666", "#333333"]
   categories = {}
 
-  tickIndex = 1
   sectionSpacer = 0.25
+  tickIndex = (1 + sectionSpacer) * (len(grade_summary['grade_breakdown']) + 1)
   sectionIndex = 0
 
   ticks = [] #These are the indices and x-axis labels for the data
@@ -34,6 +34,8 @@ $(function () {
   detail_tooltips = {} #This an dictionary mapping from 'section' -> array of detail_tooltips
   droppedScores = [] #These are the datapoints to indicate assignments which are not factored into the total score
   dropped_score_tooltips = []
+  
+  grade_summary['section_breakdown'].reverse()
 
   for section in grade_summary['section_breakdown']:
       if section.get('prominent', False):
@@ -47,7 +49,7 @@ $(function () {
       
       categoryData = categories[ section['category'] ]
     
-      categoryData['data'].append( [tickIndex, section['percent']] )
+      categoryData['data'].append( [section['percent'], tickIndex] )
       ticks.append( [tickIndex, section['label'] ] )
     
       if section['category'] in detail_tooltips:
@@ -68,7 +70,8 @@ $(function () {
   tickIndex += sectionSpacer
   
   series = categories.values()
-  overviewBarX = tickIndex
+  overviewBarX = 1
+  tickIndex += sectionSpacer
   extraColorIndex = len(categories) #Keeping track of the next color to use for categories not in categories[]
   
   if show_grade_breakdown:    
@@ -82,14 +85,13 @@ $(function () {
         
             series.append({
                 'label' : section['category'] + "-grade_breakdown",
-                'data' : [ [overviewBarX, section['percent']] ],
+                'data' : [ [section['percent'], overviewBarX] ],
                 'color' : color
             })
             
             detail_tooltips[section['category'] + "-grade_breakdown"] = [ section['detail'] ]
   
     ticks += [ [overviewBarX, "Total"] ]
-    tickIndex += 1 + sectionSpacer
   
   totalScore = grade_summary['percent']
   detail_tooltips['Dropped Scores'] = dropped_score_tooltips
@@ -116,7 +118,7 @@ $(function () {
   var grade_cutoff_ticks = ${ json.dumps(grade_cutoff_ticks) }
   
   //Always be sure that one series has the xaxis set to 2, or the second xaxis labels won't show up
-  series.push( {label: 'Dropped Scores', data: droppedScores, points: {symbol: "cross", show: true, radius: 3}, bars: {show: false}, color: "#333"} );
+  series.push( {label: 'Dropped Scores', data: droppedScores, points: {symbol: "cross", show: true, radius: 3}, bars: {show: false, horizontal: true}, color: "#333"} );
   
   // Allow for arbitrary grade markers e.g. ['A', 'B', 'C'], ['Pass'], etc.
   var ascending_grades = grade_cutoff_ticks.map(function (el) { return el[0]; }); // Percentage point (in decimal) of each grade cutoff
@@ -125,14 +127,14 @@ $(function () {
   var colors = ['#f3f3f3', '#e9e9e9', '#ddd'];
   var markings = [];
   for(var i=1; i<ascending_grades.length-1; i++) // Skip the i=0 marking, which starts from 0%
-    markings.push({yaxis: {from: ascending_grades[i], to: ascending_grades[i+1]}, color: colors[(i-1) % colors.length]});
+    markings.push({xaxis: {from: ascending_grades[i], to: ascending_grades[i+1]}, color: colors[(i-1) % colors.length]});
 
   var options = {
     series: {stack: true,
               lines: {show: false, steps: false },
-              bars: {show: true, barWidth: 0.8, align: 'center', lineWidth: 0, fill: .8 },},
-    xaxis: {tickLength: 0, min: 0.0, max: ${tickIndex - sectionSpacer}, ticks: ticks, labelAngle: 90},
-    yaxis: {ticks: grade_cutoff_ticks, min: 0.0, max: 1.0, labelWidth: 100},
+              bars: {show: true, barWidth: 0.8, horizontal: true, align: 'center', lineWidth: 0, fill: .8 },},
+    xaxis: {ticks: grade_cutoff_ticks, min: 0.0, max: 1.0, labelAngle: 90},
+    yaxis: {tickLength: 0, min: 0.0, max: ${tickIndex - sectionSpacer}, ticks: ticks, labelWidth: 100},
     grid: { hoverable: true, clickable: true, borderWidth: 1, markings: markings },
     legend: {show: false},
   };
@@ -142,7 +144,7 @@ $(function () {
     var plot = $.plot($grade_detail_graph, series, options);
     
     %if show_grade_breakdown:
-      var o = plot.pointOffset({x: ${overviewBarX} , y: ${totalScore}});
+      var o = plot.pointOffset({y: ${overviewBarX}, x: ${totalScore}});
       $grade_detail_graph.append('<div style="position:absolute;left:' + (o.left - 12) + 'px;top:' + (o.top - 20) + 'px">${"{totalscore:.0%}".format(totalscore=totalScore)}</div>');
     %endif
   }
