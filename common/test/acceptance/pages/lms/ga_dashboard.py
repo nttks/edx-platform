@@ -39,23 +39,12 @@ class DashboardPage(EdXDashboardPage):
         """
         return self.q(css='section.dashboard-banner .activation-message').text
 
-    def click_resign(self):
-        """
-        Click resign on dashboard
-        """
-        self.q(css="#resign_button").first.click()
-
-    def click_reset_password(self):
-        """
-        Click reset password on dashboard
-        """
-        self.q(css="#pwd_reset_button").first.click()
-
     def change_email_settings(self, course_name):
         """
         Change email settings on dashboard
         """
-        self._get_element_in_course(course_name, ".email-settings").click()
+        self._get_element_in_course(course_name, ".action-more").click()
+        self._get_element_in_course(course_name, ".action-email-settings").click()
         self.q(css="#receive_emails").first.click()
         # there are multiple elements of id 'submit'
         self.q(css="#email_settings_form #submit").first.click()

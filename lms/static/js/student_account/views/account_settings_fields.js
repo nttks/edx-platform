@@ -87,6 +87,48 @@
             }
         });
 
+        AccountSettingsFieldViews.ResignFieldView = FieldViews.LinkFieldView.extend({
+
+            initialize: function(options){
+                this._super(options);
+                _.bindAll(this, 'resign');
+            },
+
+            linkClicked: function(event){
+                event.preventDefault();
+                this.resign(event);
+            },
+
+            resign: function(){
+                var data = {};
+                data[this.options.emailAttribute] = this.model.get(this.options.emailAttribute);
+
+                var view = this;
+                $.ajax({
+                    type: 'POST',
+                    url: view.options.linkHref,
+                    data: data,
+                    success: function () {
+                        view.showSuccessMessage();
+                    },
+                    error: function (xhr) {
+                        view.showErrorMessage(xhr);
+                    }
+                });
+            },
+
+            successMessage: function () {
+                return this.indicators.success + interpolate_text(
+                    gettext(
+                        'An email has been sent to {email_address}. ' +
+                        'Follow the link in the email to resign.'
+                    ),
+                    {'email_address': this.model.get(this.options.emailAttribute)}
+                );
+            }
+
+        });
+
         AccountSettingsFieldViews.LanguageProficienciesFieldView = FieldViews.DropdownFieldView.extend({
 
             modelValue: function () {

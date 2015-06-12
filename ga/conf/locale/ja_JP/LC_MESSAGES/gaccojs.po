@@ -105,3 +105,21 @@ msgstr "最終得点"
 #: lms/static/coffee/src/instructor_dashboard/send_email.coffee
 msgid "E-mail will also be sent to users who have opt-out. Please carefully check whether the contents suitable for send to users who have opt-out."
 msgstr "メール受信設定をオフにしているユーザーにもメールが送信されます。受信拒否者に送信するべき内容かどうかを慎重に確認してください。"
+
+#: lms/static/js/student_account/views/account_settings_factory.js
+msgid "Other procedures"
+msgstr "その他の手続き"
+
+#: lms/static/js/student_account/views/account_settings_factory.js
+msgid "Resign"
+msgstr "退会手続き"
+
+#: lms/static/js/student_account/views/account_settings_factory.js
+msgid ""
+"When you click \"Resign\", a message will be sent to your email "
+"address. Click the link in the message to resign."
+msgstr "退会手続きリンクをクリックすると、登録されたメールアドレス宛に退会確認メールが送信されます。"
+
+#: lms/static/js/student_account/views/account_settings_fields.js
+msgid "An email has been sent to {email_address}. Follow the link in the email to resign."
+msgstr "まだ退会手続きは完了していません。「{email_address}」宛に確認メールが送信されます。メール文中にある退会確認用のリンクをクリックをすることで、退会処理をすることができます。別途メールを確認いただき、メール文中の案内をご覧ください。<span style=\"color: red;\">なお、同じメールアドレスでの新規登録はできませんのでご注意ください。</span>"

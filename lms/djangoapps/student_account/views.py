@@ -354,6 +354,8 @@ def account_settings_context(request):
                 'options': [(choice[0], _(choice[1])) for choice in UserProfile.LEVEL_OF_EDUCATION_CHOICES],  # pylint: disable=translation-of-non-string
             }, 'password': {
                 'url': reverse('password_reset'),
+            }, 'resign': {
+                'url': reverse('resign'),
             }, 'year_of_birth': {
                 'options': year_of_birth_options,
             }, 'preferred_language': {

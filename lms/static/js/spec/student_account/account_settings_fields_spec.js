@@ -43,6 +43,25 @@ define(['backbone', 'jquery', 'underscore', 'js/common_helpers/ajax_helpers', 'j
                 );
             });
 
+            it("sends request to resign on clicking link in ResignFieldView", function() {
+                requests = AjaxHelpers.requests(this);
+
+                var fieldData = FieldViewsSpecHelpers.createFieldData(AccountSettingsFieldViews.PasswordFieldView, {
+                    linkHref: '/resign',
+                    emailAttribute: 'email'
+                });
+
+                var view = new AccountSettingsFieldViews.ResignFieldView(fieldData).render();
+                view.$('.u-field-value > a').click();
+                AjaxHelpers.expectRequest(requests, 'POST', '/resign', "email=legolas%40woodland.middlearth");
+                AjaxHelpers.respondWithJson(requests, {"success": "true"});
+                FieldViewsSpecHelpers.expectMessageContains(
+                    view,
+                    "An email has been sent to legolas@woodland.middlearth. " +
+                    "Follow the link in the email to resign."
+                );
+            });
+
             it("sends request to /i18n/setlang/ after changing language preference in LanguagePreferenceFieldView", function() {
                 requests = AjaxHelpers.requests(this);
 

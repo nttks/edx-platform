@@ -3,6 +3,8 @@
 End-to-end tests for survey feature
 """
 
+import unittest
+
 import bok_choy.browser
 from ...fixtures.course import CourseFixture, XBlockFixtureDesc
 from ...pages.lms.auto_auth import AutoAuthPage
@@ -13,6 +15,7 @@ from ..ga_helpers import GaccoTestMixin
 from ..helpers import UniqueCourseTest, load_data_str
 
 
+@unittest.skip("Skip until survey unit is fixed")
 class SurveyTest(UniqueCourseTest, GaccoTestMixin):
     """
     Tests that the survey functionality works

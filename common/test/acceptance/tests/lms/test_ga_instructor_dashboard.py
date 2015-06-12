@@ -56,6 +56,7 @@ class SendEmailTest(WebAppTest, GaccoTestMixin):
         CourseTeamFixture(self.course_key, self.user_course_instructor['email'], True).install()
 
         # Initialize pages.
+        self.dashboard_page = DashboardPage(self.browser)
         self.instructor_dashboard_page = InstructorDashboardPage(self.browser, self.course_key)
         self.login_page = LoginPage(self.browser)
         self.logout_page = LogoutPage(self.browser)
@@ -106,6 +107,7 @@ class SendEmailTest(WebAppTest, GaccoTestMixin):
         ## login as instructor ##
         self.login_page.visit()
         self.login_page.login(self.user_course_instructor['email'], 'edx')
+        self.dashboard_page.wait_for_page()
 
         # Visit instructor dashboard and send email section
         self.instructor_dashboard_page.visit()
@@ -121,6 +123,7 @@ class SendEmailTest(WebAppTest, GaccoTestMixin):
         ## login as course staff ##
         self.login_page.visit()
         self.login_page.login(self.user_course_staff['email'], 'edx')
+        self.dashboard_page.wait_for_page()
 
         # Visit instructor dashboard and send email section
         self.instructor_dashboard_page.visit()
@@ -145,8 +148,7 @@ class SendEmailTest(WebAppTest, GaccoTestMixin):
         self._create_user(user_optout, self.course_key, False)
         self.login_page.visit()
         self.login_page.login(user_optout['email'], 'edx')
-        dashboard_page = DashboardPage(self.browser)
-        dashboard_page.change_email_settings(self.EMAIL_COURSE_DISPLAY)
+        self.dashboard_page.change_email_settings(self.EMAIL_COURSE_DISPLAY)
         self.logout_page.visit()
 
         # Login as global staff
