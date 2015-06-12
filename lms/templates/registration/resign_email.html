@@ -8,7 +8,7 @@
 
 ─────────
 【退会手続き用ＵＲＬ】
-https://{{domain}}{% url 'student.views.resign_confirm' uidb36=uid token=token %}
+{{ protocol }}://{{ site_name }}{% url 'student.views.resign_confirm' uidb36=uid token=token %}
 ─────────
 
 ※同じメールアドレスでの新規登録はできませんのでご注意ください。
