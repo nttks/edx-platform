@@ -177,6 +177,12 @@
     #grade-detail-graph {
       min-height: 400px;
       width: 100%;
+
+      .tickLabels .yAxis .tickLabel {
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        overflow: hidden;
+      }
     }
 
     > .chapters {
