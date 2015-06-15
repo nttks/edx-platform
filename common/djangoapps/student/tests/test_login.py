@@ -6,6 +6,7 @@ import unittest
 
 from django.test import TestCase
 from django.test.client import Client
+from django.test.utils import override_settings
 from django.conf import settings
 from django.core.cache import cache
 from django.core.urlresolvers import reverse, NoReverseMatch
@@ -24,6 +25,8 @@ from third_party_auth.tests.utils import (
 )
 from xmodule.modulestore.tests.factories import CourseFactory
 from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
+
+from openedx.core.djangoapps.ga_ratelimitbackend.tests.factories import TrustedClientFactory
 
 
 class LoginTest(TestCase):
@@ -189,6 +192,35 @@ class LoginTest(TestCase):
         # check to see if this response indicates that this was ratelimited
         response, _audit_log = self._login_response('test@edx.org', 'wrong_password')
         self._assert_response(response, success=False, value='Too many failed login attempts')
+
+    @override_settings(RATE_LIMIT_REQUESTS=31)
+    def test_login_ratelimited_override_requests(self):
+        # Try (and fail) logging in with fewer attempts than the limit of 31
+        # and verify that you can still successfully log in afterwards.
+        for i in xrange(30):
+            password = u'test_password{0}'.format(i)
+            response, _audit_log = self._login_response('test@edx.org', password)
+            self._assert_response(response, success=False)
+        # check to see if this response indicates that this was still not ratelimited
+        response, _audit_log = self._login_response('test@edx.org', 'wrong_password')
+        self._assert_response(response, success=False, value='Email or password is incorrect.')
+        # check to see if this response indicates that this was ratelimited
+        response, _audit_log = self._login_response('test@edx.org', 'test_password')
+        self._assert_response(response, success=False, value='Too many failed login attempts')
+
+    def test_login_ratelimited_in_trusted_client(self):
+        TrustedClientFactory.create(ip_address='127.0.0.1')
+        # try logging in 30 times in SPOC, the default limit in the number of failed
+        # login attempts in one 5 minute period before the rate gets limited
+        for i in xrange(30):
+            password = u'test_password{0}'.format(i)
+            self._login_response('test@edx.org', password)
+        # check to see if this response indicates that this was still not ratelimited
+        response, _audit_log = self._login_response('test@edx.org', 'wrong_password')
+        self._assert_response(response, success=False, value='Email or password is incorrect.')
+        # now try logging in with a valid password
+        response, _audit_log = self._login_response('test@edx.org', 'test_password')
+        self._assert_response(response, success=True)
 
     @patch.dict("django.conf.settings.FEATURES", {'PREVENT_CONCURRENT_LOGINS': True})
     def test_single_session(self):

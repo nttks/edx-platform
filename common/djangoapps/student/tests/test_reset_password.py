@@ -9,6 +9,7 @@ from django.core.cache import cache
 from django.conf import settings
 from django.test import TestCase
 from django.test.client import RequestFactory
+from django.test.utils import override_settings
 from django.contrib.auth.models import User
 from django.contrib.auth.hashers import UNUSABLE_PASSWORD
 from django.contrib.auth.tokens import default_token_generator
@@ -23,6 +24,8 @@ from student.tests.test_email import mock_render_to_string
 from util.testing import EventTestMixin
 
 from test_microsite import fake_site_name
+
+from openedx.core.djangoapps.ga_ratelimitbackend.tests.factories import TrustedClientFactory
 
 
 @ddt.ddt
@@ -93,6 +96,46 @@ class ResetPasswordTests(EventTestMixin, TestCase):
         bad_resp = password_reset(bad_req)
         self.assertEquals(bad_resp.status_code, 403)
         self.assert_no_events_were_emitted()
+
+        cache.clear()
+
+    @override_settings(RATE_LIMIT_REQUESTS=31)
+    @patch('student.views.render_to_string', Mock(side_effect=mock_render_to_string, autospec=True))
+    def test_password_reset_ratelimited_override_requests(self):
+        """ Try (and fail) resetting password 31 times in a row on an non-existant email address """
+        cache.clear()
+
+        for i in xrange(31):
+            good_req = self.request_factory.post('/password_reset/', {
+                'email': 'thisdoesnotexist{0}@foo.com'.format(i)
+            })
+            good_resp = password_reset(good_req)
+            self.assertEquals(good_resp.status_code, 200)
+
+        # then the rate limiter should kick in and give a HttpForbidden response
+        bad_req = self.request_factory.post('/password_reset/', {'email': 'thisdoesnotexist@foo.com'})
+        bad_resp = password_reset(bad_req)
+        self.assertEquals(bad_resp.status_code, 403)
+
+        cache.clear()
+
+    @patch('student.views.render_to_string', Mock(side_effect=mock_render_to_string, autospec=True))
+    def test_password_reset_ratelimited_in_trusted_client(self):
+        """ Try (and fail) resetting password 30 times in a row on an non-existant email address with trusted client """
+        TrustedClientFactory.create(ip_address='127.0.0.1')
+        cache.clear()
+
+        for i in xrange(30):
+            good_req = self.request_factory.post('/password_reset/', {
+                'email': 'thisdoesnotexist{0}@foo.com'.format(i)
+            })
+            good_resp = password_reset(good_req)
+            self.assertEquals(good_resp.status_code, 200)
+
+        # then the rate limiter should not kick in because IP is in the trusted client list.
+        goog_req = self.request_factory.post('/password_reset/', {'email': 'thisdoesnotexist@foo.com'})
+        good_resp = password_reset(good_req)
+        self.assertEquals(good_resp.status_code, 200)
 
         cache.clear()
 

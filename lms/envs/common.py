@@ -525,7 +525,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 
 # use the ratelimit backend to prevent brute force attacks
 AUTHENTICATION_BACKENDS = (
-    'ratelimitbackend.backends.RateLimitModelBackend',
+    'openedx.core.djangoapps.ga_ratelimitbackend.backends.RateLimitModelBackend',
 )
 STUDENT_FILEUPLOAD_MAX_SIZE = 4 * 1024 * 1024  # 4 MB
 MAX_FILEUPLOADS_PER_INPUT = 20
@@ -1842,6 +1842,9 @@ INSTALLED_APPS = (
 
     # Course global setting
     'openedx.core.djangoapps.course_global',
+
+    # custom ratelimit-backend
+    'openedx.core.djangoapps.ga_ratelimitbackend',
 )
 
 ######################### CSRF #########################################

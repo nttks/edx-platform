@@ -610,6 +610,15 @@ msgstr "ユーザー名は{0}文字以上としてください"
 msgid "Email cannot be more than {0} characters long"
 msgstr "Emailは{0}文字以上のものは利用できません"
 
+#: common/djangoapps/student/views.py
+msgid ""
+"Too many failed login attempts. Try again later.<br/><br/>At the time of "
+"your students in organizations such as universities / companies, there is "
+"a menu to remove the restriction. <a href=\"mailto:{support_email}\">Contact us</a>."
+msgstr ""
+"複数のログインエラーを検知したため、ログイン制限を行っております。しばらくしてから再度お試しください。<br/><br/>"
+"なお、大学/企業等の団体でのご受講の際に、制限を解除するメニューがございます。お問い合せは<a href=\"mailto:{support_email}\">こちら</a>"
+
 #: common/lib/xmodule/xmodule/course_module.py
 msgid ""
 "Enter the passports for course LTI tools in the following format: "
