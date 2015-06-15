@@ -206,7 +206,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 
 # use the ratelimit backend to prevent brute force attacks
 AUTHENTICATION_BACKENDS = (
-    'ratelimitbackend.backends.RateLimitModelBackend',
+    'openedx.core.djangoapps.ga_ratelimitbackend.backends.RateLimitModelBackend',
 )
 
 LMS_BASE = None
@@ -334,6 +334,7 @@ EMAIL_HOST_PASSWORD = ''
 DEFAULT_FROM_EMAIL = 'registration@example.com'
 DEFAULT_FEEDBACK_EMAIL = 'feedback@example.com'
 SERVER_EMAIL = 'devops@example.com'
+CONTACT_EMAIL = 'info@example.com'
 ADMINS = ()
 MANAGERS = ADMINS
 
@@ -694,6 +695,9 @@ INSTALLED_APPS = (
 
     # Additional problem types
     'edx_jsme',    # Molecular Structure
+
+    # custom ratelimit-backend
+    'openedx.core.djangoapps.ga_ratelimitbackend',
 )
 
 

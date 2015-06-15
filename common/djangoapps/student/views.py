@@ -1123,7 +1123,11 @@ def login_user(request, error=""):  # pylint: disable-msg=too-many-statements,un
         except RateLimitException:
             return JsonResponse({
                 "success": False,
-                "value": _('Too many failed login attempts. Try again later.'),
+                "value": _(
+                    "Too many failed login attempts. Try again later.<br/><br/>At the time of "
+                    "your students in organizations such as universities / companies, there is "
+                    "a menu to remove the restriction. <a href=\"mailto:{support_email}\">Contact us</a>."
+                ).format(support_email=settings.CONTACT_EMAIL),
             })  # TODO: this should be status code 429  # pylint: disable=fixme
 
     if user is None:
