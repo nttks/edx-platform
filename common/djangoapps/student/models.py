@@ -20,7 +20,7 @@ from collections import defaultdict, OrderedDict
 import dogstats_wrapper as dog_stats_api
 from urllib import urlencode
 
-from django.utils.translation import ugettext as _, ugettext_lazy
+from django.utils.translation import ugettext_lazy as _
 from django.conf import settings
 from django.utils import timezone
 from django.contrib.auth.models import User
@@ -37,6 +37,8 @@ from config_models.models import ConfigurationModel
 from track import contexts
 from eventtracking import tracker
 from importlib import import_module
+
+from south.modelsinspector import add_introspection_rules
 
 from opaque_keys.edx.locations import SlashSeparatedCourseKey
 
@@ -58,6 +60,26 @@ UNENROLL_DONE = Signal(providing_args=["course_enrollment", "skip_refund"])
 log = logging.getLogger(__name__)
 AUDIT_LOG = logging.getLogger("audit")
 SessionStore = import_module(settings.SESSION_ENGINE).SessionStore  # pylint: disable=invalid-name
+
+UNENROLLED_TO_ALLOWEDTOENROLL = 'from unenrolled to allowed to enroll'
+ALLOWEDTOENROLL_TO_ENROLLED = 'from allowed to enroll to enrolled'
+ENROLLED_TO_ENROLLED = 'from enrolled to enrolled'
+ENROLLED_TO_UNENROLLED = 'from enrolled to unenrolled'
+UNENROLLED_TO_ENROLLED = 'from unenrolled to enrolled'
+ALLOWEDTOENROLL_TO_UNENROLLED = 'from allowed to enroll to enrolled'
+UNENROLLED_TO_UNENROLLED = 'from unenrolled to unenrolled'
+DEFAULT_TRANSITION_STATE = 'N/A'
+
+TRANSITION_STATES = (
+    (UNENROLLED_TO_ALLOWEDTOENROLL, UNENROLLED_TO_ALLOWEDTOENROLL),
+    (ALLOWEDTOENROLL_TO_ENROLLED, ALLOWEDTOENROLL_TO_ENROLLED),
+    (ENROLLED_TO_ENROLLED, ENROLLED_TO_ENROLLED),
+    (ENROLLED_TO_UNENROLLED, ENROLLED_TO_UNENROLLED),
+    (UNENROLLED_TO_ENROLLED, UNENROLLED_TO_ENROLLED),
+    (ALLOWEDTOENROLL_TO_UNENROLLED, ALLOWEDTOENROLL_TO_UNENROLLED),
+    (UNENROLLED_TO_UNENROLLED, UNENROLLED_TO_UNENROLLED),
+    (DEFAULT_TRANSITION_STATE, DEFAULT_TRANSITION_STATE)
+)
 
 
 class AnonymousUserId(models.Model):
@@ -1172,6 +1194,8 @@ class CourseEnrollment(models.Model):
 
         `course_id` is our usual course_id string (e.g. "edX/Test101/2013_Fall)
         """
+        if not user.is_authenticated():
+            return False
         try:
             record = CourseEnrollment.objects.get(user=user, course_id=course_key)
             return record.is_active
@@ -1292,6 +1316,53 @@ class CourseEnrollment(models.Model):
         return CourseMode.is_verified_slug(self.mode)
 
 
+class ManualEnrollmentAudit(models.Model):
+    """
+    Table for tracking which enrollments were performed through manual enrollment.
+    """
+    enrollment = models.ForeignKey(CourseEnrollment, null=True)
+    enrolled_by = models.ForeignKey(User, null=True)
+    enrolled_email = models.CharField(max_length=255, db_index=True)
+    time_stamp = models.DateTimeField(auto_now_add=True, null=True)
+    state_transition = models.CharField(max_length=255, choices=TRANSITION_STATES)
+    reason = models.TextField(null=True)
+
+    @classmethod
+    def create_manual_enrollment_audit(cls, user, email, state_transition, reason, enrollment=None):
+        """
+        saves the student manual enrollment information
+        """
+        cls.objects.create(
+            enrolled_by=user,
+            enrolled_email=email,
+            state_transition=state_transition,
+            reason=reason,
+            enrollment=enrollment
+        )
+
+    @classmethod
+    def get_manual_enrollment_by_email(cls, email):
+        """
+        if matches returns the most recent entry in the table filtered by email else returns None.
+        """
+        try:
+            manual_enrollment = cls.objects.filter(enrolled_email=email).latest('time_stamp')
+        except cls.DoesNotExist:
+            manual_enrollment = None
+        return manual_enrollment
+
+    @classmethod
+    def get_manual_enrollment(cls, enrollment):
+        """
+        if matches returns the most recent entry in the table filtered by enrollment else returns None,
+        """
+        try:
+            manual_enrollment = cls.objects.filter(enrollment=enrollment).latest('time_stamp')
+        except cls.DoesNotExist:
+            manual_enrollment = None
+        return manual_enrollment
+
+
 class CourseEnrollmentAllowed(models.Model):
     """
     Table of users (specified by email address strings) who are allowed to enroll in a specified course.
@@ -1309,6 +1380,19 @@ class CourseEnrollmentAllowed(models.Model):
 
     def __unicode__(self):
         return "[CourseEnrollmentAllowed] %s: %s (%s)" % (self.email, self.course_id, self.created)
+
+    @classmethod
+    def may_enroll_and_unenrolled(cls, course_id):
+        """
+        Return QuerySet of students who are allowed to enroll in a course.
+
+        Result excludes students who have already enrolled in the
+        course.
+
+        `course_id` identifies the course for which to compute the QuerySet.
+        """
+        enrolled = CourseEnrollment.objects.users_enrolled_in(course_id=course_id).values_list('email', flat=True)
+        return CourseEnrollmentAllowed.objects.filter(course_id=course_id).exclude(email__in=enrolled)
 
 
 @total_ordering
@@ -1537,16 +1621,16 @@ class LinkedInAddToProfileConfiguration(ConfigurationModel):
     """
 
     MODE_TO_CERT_NAME = {
-        "honor": ugettext_lazy(u"{platform_name} Honor Code Certificate for {course_name}"),
-        "verified": ugettext_lazy(u"{platform_name} Verified Certificate for {course_name}"),
-        "professional": ugettext_lazy(u"{platform_name} Professional Certificate for {course_name}"),
-        "no-id-professional": ugettext_lazy(
+        "honor": _(u"{platform_name} Honor Code Certificate for {course_name}"),
+        "verified": _(u"{platform_name} Verified Certificate for {course_name}"),
+        "professional": _(u"{platform_name} Professional Certificate for {course_name}"),
+        "no-id-professional": _(
             u"{platform_name} Professional Certificate for {course_name}"
         ),
     }
 
     company_identifier = models.TextField(
-        help_text=ugettext_lazy(
+        help_text=_(
             u"The company identifier for the LinkedIn Add-to-Profile button "
             u"e.g 0_0dPSPyS070e0HsE9HNz_13_d11_"
         )
@@ -1559,7 +1643,7 @@ class LinkedInAddToProfileConfiguration(ConfigurationModel):
         max_length=10,
         default="",
         blank=True,
-        help_text=ugettext_lazy(
+        help_text=_(
             u"Short identifier for the LinkedIn partner used in the tracking code.  "
             u"(Example: 'edx')  "
             u"If no value is provided, tracking codes will not be sent to LinkedIn."
@@ -1682,6 +1766,33 @@ class EntranceExamConfiguration(models.Model):
         return can_skip
 
 
+class LanguageField(models.CharField):
+    """Represents a language from the ISO 639-1 language set."""
+
+    def __init__(self, *args, **kwargs):
+        """Creates a LanguageField.
+
+        Accepts all the same kwargs as a CharField, except for max_length and
+        choices. help_text defaults to a description of the ISO 639-1 set.
+        """
+        kwargs.pop('max_length', None)
+        kwargs.pop('choices', None)
+        help_text = kwargs.pop(
+            'help_text',
+            _("The ISO 639-1 language code for this language."),
+        )
+        super(LanguageField, self).__init__(
+            max_length=16,
+            choices=settings.ALL_LANGUAGES,
+            help_text=help_text,
+            *args,
+            **kwargs
+        )
+
+
+add_introspection_rules([], [r"^student\.models\.LanguageField"])
+
+
 class LanguageProficiency(models.Model):
     """
     Represents a user's language proficiency.
@@ -1700,5 +1811,5 @@ class LanguageProficiency(models.Model):
         max_length=16,
         blank=False,
         choices=settings.ALL_LANGUAGES,
-        help_text=ugettext_lazy("The ISO 639-1 language code for this language.")
+        help_text=_("The ISO 639-1 language code for this language.")
     )

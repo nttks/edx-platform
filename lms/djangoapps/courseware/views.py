@@ -19,7 +19,7 @@ from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User, AnonymousUser
 from django.contrib.auth.decorators import login_required
 from django.utils.timezone import UTC
-from django.views.decorators.http import require_GET, require_POST
+from django.views.decorators.http import require_GET, require_POST, require_http_methods
 from django.http import Http404, HttpResponse, HttpResponseBadRequest
 from django.shortcuts import redirect
 from certificates import api as certs_api
@@ -39,7 +39,7 @@ from courseware.courses import (
 )
 from courseware.masquerade import setup_masquerade
 from courseware.model_data import FieldDataCache
-from .module_render import toc_for_course, get_module_for_descriptor, get_module
+from .module_render import toc_for_course, get_module_for_descriptor, get_module, get_module_by_usage_id
 from .entrance_exams import (
     course_has_entrance_exam,
     get_entrance_exam_content,
@@ -51,13 +51,14 @@ from courseware.models import StudentModule, StudentModuleHistory
 from course_modes.models import CourseMode
 
 from open_ended_grading import open_ended_notifications
+from open_ended_grading.views import StaffGradingTab, PeerGradingTab, OpenEndedGradingTab
 from student.models import UserTestGroup, CourseEnrollment
 from student.views import is_course_blocked
 from util.cache import cache, cache_if_anonymous
 from xblock.fragment import Fragment
 from xmodule.modulestore.django import modulestore
 from xmodule.modulestore.exceptions import ItemNotFoundError, NoPathToItem
-from xmodule.tabs import CourseTabList, StaffGradingTab, PeerGradingTab, OpenEndedGradingTab
+from xmodule.tabs import CourseTabList
 from xmodule.x_module import STUDENT_VIEW
 import shoppingcart
 from shoppingcart.models import CourseRegistrationCode
@@ -116,15 +117,21 @@ def courses(request):
     """
     Render "find courses" page.  The course selection work is done in courseware.courses.
     """
-    courses = get_courses(request.user, request.META.get('HTTP_HOST'))
+    courses_list = []
+    course_discovery_meanings = getattr(settings, 'COURSE_DISCOVERY_MEANINGS', {})
+    if not settings.FEATURES.get('ENABLE_COURSE_DISCOVERY'):
+        courses_list = get_courses(request.user, request.META.get('HTTP_HOST'))
 
-    if microsite.get_value("ENABLE_COURSE_SORTING_BY_START_DATE",
-                           settings.FEATURES["ENABLE_COURSE_SORTING_BY_START_DATE"]):
-        courses = sort_by_start_date(courses)
-    else:
-        courses = sort_by_announcement(courses)
+        if microsite.get_value("ENABLE_COURSE_SORTING_BY_START_DATE",
+                               settings.FEATURES["ENABLE_COURSE_SORTING_BY_START_DATE"]):
+            courses_list = sort_by_start_date(courses_list)
+        else:
+            courses_list = sort_by_announcement(courses_list)
 
-    return render_to_response("courseware/courses.html", {'courses': courses})
+    return render_to_response(
+        "courseware/courses.html",
+        {'courses': courses_list, 'course_discovery_meanings': course_discovery_meanings}
+    )
 
 
 def render_accordion(request, course, chapter, section, field_data_cache):
@@ -361,7 +368,7 @@ def _index_bulk_op(request, course_key, chapter, section, position):
         try:
             int(position)
         except ValueError:
-            raise Http404("Position {} is not an integer!".format(position))
+            raise Http404(u"Position {} is not an integer!".format(position))
 
     user = request.user
     course = get_course_with_access(user, 'load', course_key, depth=2)
@@ -738,8 +745,6 @@ def static_tab(request, course_id, tab_slug):
         'tab': tab,
         'tab_contents': contents,
     })
-
-# TODO arjun: remove when custom tabs in place, see courseware/syllabus.py
 
 
 @ensure_csrf_cookie
@@ -1134,13 +1139,13 @@ def notification_image_for_tab(course_tab, user, course):
     """
 
     tab_notification_handlers = {
-        StaffGradingTab.type: open_ended_notifications.staff_grading_notifications,
-        PeerGradingTab.type: open_ended_notifications.peer_grading_notifications,
-        OpenEndedGradingTab.type: open_ended_notifications.combined_notifications
+        StaffGradingTab.name: open_ended_notifications.staff_grading_notifications,
+        PeerGradingTab.name: open_ended_notifications.peer_grading_notifications,
+        OpenEndedGradingTab.name: open_ended_notifications.combined_notifications
     }
 
-    if course_tab.type in tab_notification_handlers:
-        notifications = tab_notification_handlers[course_tab.type](course, user)
+    if course_tab.name in tab_notification_handlers:
+        notifications = tab_notification_handlers[course_tab.name](course, user)
         if notifications and notifications['pending_grading']:
             return notifications['img_path']
 
@@ -1343,7 +1348,8 @@ def generate_user_cert(request, course_id):
 
 
 def _track_successful_certificate_generation(user_id, course_id):  # pylint: disable=invalid-name
-    """Track an successfully certificate generation event.
+    """
+    Track a successful certificate generation event.
 
     Arguments:
         user_id (str): The ID of the user generting the certificate.
@@ -1369,3 +1375,36 @@ def _track_successful_certificate_generation(user_id, course_id):  # pylint: dis
                 }
             }
         )
+
+
+@require_http_methods(["GET", "POST"])
+def render_xblock(request, usage_key_string):
+    """
+    Returns an HttpResponse with HTML content for the xBlock with the given usage_key.
+    The returned HTML is a chromeless rendering of the xBlock (excluding content of the containing courseware).
+    """
+    usage_key = UsageKey.from_string(usage_key_string)
+    usage_key = usage_key.replace(course_key=modulestore().fill_in_run(usage_key.course_key))
+    course_key = usage_key.course_key
+
+    with modulestore().bulk_operations(course_key):
+        # verify the user has access to the course, including enrollment check
+        course = get_course_with_access(request.user, 'load', course_key, check_if_enrolled=True)
+
+        # get the block, which verifies whether the user has access to the block.
+        block, _ = get_module_by_usage_id(
+            request, unicode(course_key), unicode(usage_key), disable_staff_debug_info=True
+        )
+
+        context = {
+            'fragment': block.render('student_view', context=request.GET),
+            'course': course,
+            'disable_accordion': True,
+            'allow_iframing': True,
+            'disable_header': True,
+            'disable_window_wrap': True,
+            'disable_preview_menu': True,
+            'staff_access': has_access(request.user, 'staff', course),
+            'xqa_server': settings.FEATURES.get('XQA_SERVER', 'http://your_xqa_server.com'),
+        }
+        return render_to_response('courseware/courseware-chromeless.html', context)

@@ -327,6 +327,7 @@ FEATURES = {
     # ENABLE_OAUTH2_PROVIDER to True
     'ENABLE_MOBILE_REST_API': False,
     'ENABLE_MOBILE_SOCIAL_FACEBOOK_FEATURES': False,
+    'ENABLE_RENDER_XBLOCK_API': False,
 
     # Enable the combined login/registration form
     'ENABLE_COMBINED_LOGIN_REGISTRATION': False,
@@ -398,6 +399,16 @@ FEATURES = {
 
     # Teams feature
     'ENABLE_TEAMS': False,
+
+    # Show video bumper in LMS
+    'ENABLE_VIDEO_BUMPER': False,
+
+    # How many seconds to show the bumper again, default is 7 days:
+    'SHOW_BUMPER_PERIODICITY': 7 * 24 * 3600,
+
+    # Enable OpenBadge support. See the BADGR_* settings later in this file.
+    'ENABLE_OPENBADGES': False,
+
 }
 
 # Ignore static asset files on import which match this pattern
@@ -1038,9 +1049,8 @@ MOCK_STAFF_GRADING = False
 ################################# EdxNotes config  #########################
 
 # Configure the LMS to use our stub EdxNotes implementation
-EDXNOTES_INTERFACE = {
-    'url': 'http://localhost:8120/api/v1',
-}
+EDXNOTES_PUBLIC_API = 'http://localhost:8120/api/v1'
+EDXNOTES_INTERNAL_API = 'http://localhost:8120/api/v1'
 
 ########################## Parental controls config  #######################
 
@@ -1313,6 +1323,8 @@ reverify_js = [
 
 ccx_js = sorted(rooted_glob(PROJECT_ROOT / 'static', 'js/ccx/**/*.js'))
 
+discovery_js = ['js/discovery/main.js']
+
 
 PIPELINE_CSS = {
     'style-vendor': {
@@ -1419,6 +1431,20 @@ PIPELINE_CSS = {
         ],
         'output_filename': 'css/lms-footer-edx-rtl.css'
     },
+    'style-certificates': {
+        'source_filenames': [
+            'certificates/sass/main-ltr.css',
+            'css/vendor/font-awesome.css',
+        ],
+        'output_filename': 'css/certificates-style.css'
+    },
+    'style-certificates-rtl': {
+        'source_filenames': [
+            'certificates/sass/main-rtl.css',
+            'css/vendor/font-awesome.css',
+        ],
+        'output_filename': 'css/certificates-style-rtl.css'
+    },
 }
 
 
@@ -1514,7 +1540,11 @@ PIPELINE_JS = {
     },
     'footer_edx': {
         'source_filenames': ['js/footer-edx.js'],
-        'output_filename': 'js/footer-edx.js',
+        'output_filename': 'js/footer-edx.js'
+    },
+    'discovery': {
+        'source_filenames': discovery_js,
+        'output_filename': 'js/discovery.js'
     }
 }
 
@@ -1675,6 +1705,8 @@ YOUTUBE = {
             'v': 'set_youtube_id_of_11_symbols_here',
         },
     },
+
+    'IMAGE_API': 'http://img.youtube.com/vi/{youtube_id}/0.jpg',  # /maxresdefault.jpg for 1920*1080
 }
 
 ################################### APPS ######################################
@@ -1770,6 +1802,9 @@ INSTALLED_APPS = (
     'rest_framework',
     'openedx.core.djangoapps.user_api',
 
+    # Team API
+    'teams',
+
     # Shopping cart
     'shoppingcart',
 
@@ -1839,6 +1874,9 @@ INSTALLED_APPS = (
 
     # Credit courses
     'openedx.core.djangoapps.credit',
+
+    # Course teams
+    'teams',
 
     # Course global setting
     'openedx.core.djangoapps.course_global',
@@ -2018,6 +2056,13 @@ REGISTRATION_EXTRA_FIELDS = {
 ########################## CERTIFICATE NAME ########################
 CERT_NAME_SHORT = "Certificate"
 CERT_NAME_LONG = "Certificate of Achievement"
+
+#################### Badgr OpenBadges generation #######################
+# Be sure to set up images for course modes using the BadgeImageConfiguration model in the certificates app.
+BADGR_API_TOKEN = None
+# Do not add the trailing slash here.
+BADGR_BASE_URL = "http://localhost:8005"
+BADGR_ISSUER_SLUG = "example-issuer"
 
 ###################### Grade Downloads ######################
 GRADES_DOWNLOAD_ROUTING_KEY = HIGH_MEM_QUEUE

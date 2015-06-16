@@ -13,12 +13,20 @@ from django.test.client import Client
 from django.test.utils import override_settings
 
 from opaque_keys.edx.locator import CourseLocator
+from openedx.core.lib.tests.assertions.events import assert_event_matches
 from student.tests.factories import UserFactory
+from track.tests import EventTrackingTestCase
 from xmodule.modulestore.tests.factories import CourseFactory
 from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
 
-from certificates.models import ExampleCertificateSet, ExampleCertificate, GeneratedCertificate
-from certificates.tests.factories import CertificateHtmlViewConfigurationFactory
+from certificates.api import get_certificate_url
+from certificates.models import ExampleCertificateSet, ExampleCertificate, GeneratedCertificate, BadgeAssertion
+from certificates.tests.factories import (
+    CertificateHtmlViewConfigurationFactory,
+    LinkedInAddToProfileConfigurationFactory,
+    BadgeAssertionFactory,
+)
+from lms import urls
 
 FEATURES_WITH_CERTS_ENABLED = settings.FEATURES.copy()
 FEATURES_WITH_CERTS_ENABLED['CERTIFICATES_HTML_VIEW'] = True
@@ -170,9 +178,9 @@ class UpdateExampleCertificateViewTest(TestCase):
 
 
 @attr('shard_1')
-class CertificatesViewsTests(ModuleStoreTestCase):
+class CertificatesViewsTests(ModuleStoreTestCase, EventTrackingTestCase):
     """
-    Tests for the manual refund page
+    Tests for the certificates web/html views
     """
     def setUp(self):
         super(CertificatesViewsTests, self).setUp()
@@ -203,55 +211,298 @@ class CertificatesViewsTests(ModuleStoreTestCase):
             name=self.user.profile.name,
         )
         CertificateHtmlViewConfigurationFactory.create()
+        LinkedInAddToProfileConfigurationFactory.create()
+
+    def _add_course_certificates(self, count=1, signatory_count=0, is_active=True):
+        """
+        Create certificate for the course.
+        """
+        signatories = [
+            {
+                'name': 'Signatory_Name ' + str(i),
+                'title': 'Signatory_Title ' + str(i),
+                'organization': 'Signatory_Organization ' + str(i),
+                'signature_image_path': '/static/certificates/images/demo-sig{}.png'.format(i),
+                'id': i,
+            } for i in xrange(0, signatory_count)
+
+        ]
+
+        certificates = [
+            {
+                'id': i,
+                'name': 'Name ' + str(i),
+                'description': 'Description ' + str(i),
+                'course_title': 'course_title_' + str(i),
+                'org_logo_path': '/t4x/orgX/testX/asset/org-logo-{}.png'.format(i),
+                'signatories': signatories,
+                'version': 1,
+                'is_active': is_active
+            } for i in xrange(0, count)
+        ]
+
+        self.course.certificates = {'certificates': certificates}
+        self.course.save()
+        self.store.update_item(self.course, self.user.id)
 
     @override_settings(FEATURES=FEATURES_WITH_CERTS_ENABLED)
     def test_render_html_view_valid_certificate(self):
-        test_url = '/certificates/html?course={}'.format(unicode(self.course.id))
+        test_url = get_certificate_url(
+            user_id=self.user.id,
+            course_id=unicode(self.course.id)  # pylint: disable=no-member
+        )
+        self._add_course_certificates(count=1, signatory_count=2)
         response = self.client.get(test_url)
         self.assertIn(str(self.cert.verify_uuid), response.content)
 
         # Hit any "verified" mode-specific branches
         self.cert.mode = 'verified'
         self.cert.save()
-        test_url = '/certificates/html?course={}'.format(unicode(self.course.id))
         response = self.client.get(test_url)
         self.assertIn(str(self.cert.verify_uuid), response.content)
 
         # Hit any 'xseries' mode-specific branches
         self.cert.mode = 'xseries'
         self.cert.save()
-        test_url = '/certificates/html?course={}'.format(unicode(self.course.id))
         response = self.client.get(test_url)
         self.assertIn(str(self.cert.verify_uuid), response.content)
 
-    @override_settings(FEATURES=FEATURES_WITH_CERTS_DISABLED)
-    def test_render_html_view_invalid_feature_flag(self):
-        test_url = '/certificates/html?course={}'.format(unicode(self.course.id))
+    @override_settings(FEATURES=FEATURES_WITH_CERTS_ENABLED)
+    def test_render_html_view_with_valid_signatories(self):
+        test_url = get_certificate_url(
+            user_id=self.user.id,
+            course_id=self.course.id.to_deprecated_string()  # pylint: disable=no-member
+        )
+        self._add_course_certificates(count=1, signatory_count=2)
         response = self.client.get(test_url)
-        self.assertIn('invalid', response.content)
+        self.assertIn('course_title_0', response.content)
+        self.assertIn('/t4x/orgX/testX/asset/org-logo-0.png', response.content)
+        self.assertIn('Signatory_Name 0', response.content)
+        self.assertIn('Signatory_Title 0', response.content)
+        self.assertIn('Signatory_Organization 0', response.content)
+        self.assertIn('/static/certificates/images/demo-sig0.png', response.content)
 
     @override_settings(FEATURES=FEATURES_WITH_CERTS_ENABLED)
-    def test_render_html_view_missing_course_id(self):
-        test_url = '/certificates/html'
+    def test_course_display_name_not_override_with_course_title(self):
+        # if certificate in descriptor has not course_title then course name should not be overridden with this title.
+        test_url = get_certificate_url(
+            user_id=self.user.id,
+            course_id=self.course.id.to_deprecated_string()  # pylint: disable=no-member
+        )
+        test_certificates = [
+            {
+                'id': 0,
+                'name': 'Name 0',
+                'description': 'Description 0',
+                'signatories': [],
+                'version': 1,
+                'is_active':True
+            }
+        ]
+        self.course.certificates = {'certificates': test_certificates}
+        self.course.save()
+        self.store.update_item(self.course, self.user.id)
+        response = self.client.get(test_url)
+        self.assertNotIn('test_course_title_0', response.content)
+        self.assertIn('refundable course', response.content)
+
+    @override_settings(FEATURES=FEATURES_WITH_CERTS_ENABLED)
+    def test_certificate_view_without_org_logo(self):
+        test_url = get_certificate_url(
+            user_id=self.user.id,
+            course_id=self.course.id.to_deprecated_string()  # pylint: disable=no-member
+        )
+        test_certificates = [
+            {
+                'id': 0,
+                'name': 'Certificate Name 0',
+                'signatories': [],
+                'version': 1,
+                'is_active': True
+            }
+        ]
+        self.course.certificates = {'certificates': test_certificates}
+        self.course.save()
+        self.store.update_item(self.course, self.user.id)
+        response = self.client.get(test_url)
+        # make sure response html has only one organization logo container for edX
+        self.assertContains(response, "<li class=\"wrapper-organization\">", 1)
+
+    @override_settings(FEATURES=FEATURES_WITH_CERTS_ENABLED)
+    def test_render_html_view_without_signatories(self):
+        test_url = get_certificate_url(
+            user_id=self.user.id,
+            course_id=self.course.id.to_deprecated_string()  # pylint: disable=no-member
+        )
+        self._add_course_certificates(count=1, signatory_count=0)
+        response = self.client.get(test_url)
+        self.assertNotIn('Signatory_Name 0', response.content)
+        self.assertNotIn('Signatory_Title 0', response.content)
+
+    @override_settings(FEATURES=FEATURES_WITH_CERTS_DISABLED)
+    def test_render_html_view_invalid_feature_flag(self):
+        test_url = get_certificate_url(
+            user_id=self.user.id,
+            course_id=self.course.id.to_deprecated_string()  # pylint: disable=no-member
+        )
         response = self.client.get(test_url)
         self.assertIn('invalid', response.content)
 
     @override_settings(FEATURES=FEATURES_WITH_CERTS_ENABLED)
     def test_render_html_view_invalid_course_id(self):
-        test_url = '/certificates/html?course=az-23423-4vs'
+        test_url = get_certificate_url(
+            user_id=self.user.id,
+            course_id='az/23423/4vs'
+        )
+
         response = self.client.get(test_url)
         self.assertIn('invalid', response.content)
 
     @override_settings(FEATURES=FEATURES_WITH_CERTS_ENABLED)
     def test_render_html_view_invalid_course(self):
-        test_url = '/certificates/html?course=missing/course/key'
+        test_url = get_certificate_url(
+            user_id=self.user.id,
+            course_id='missing/course/key'
+        )
         response = self.client.get(test_url)
         self.assertIn('invalid', response.content)
 
     @override_settings(FEATURES=FEATURES_WITH_CERTS_ENABLED)
-    def test_render_html_view_invalid_certificate(self):
-        self.cert.delete()
-        self.assertEqual(len(GeneratedCertificate.objects.all()), 0)
-        test_url = '/certificates/html?course={}'.format(unicode(self.course.id))
+    def test_render_html_view_invalid_user(self):
+        test_url = get_certificate_url(
+            user_id=111,
+            course_id=self.course.id.to_deprecated_string()  # pylint: disable=no-member
+        )
         response = self.client.get(test_url)
         self.assertIn('invalid', response.content)
+
+    @override_settings(FEATURES=FEATURES_WITH_CERTS_ENABLED)
+    def test_render_html_view_invalid_user_certificate(self):
+        self.cert.delete()
+        self.assertEqual(len(GeneratedCertificate.objects.all()), 0)
+        test_url = get_certificate_url(
+            user_id=self.user.id,
+            course_id=self.course.id.to_deprecated_string()  # pylint: disable=no-member
+        )
+        response = self.client.get(test_url)
+        self.assertIn('invalid', response.content)
+
+    @override_settings(FEATURES=FEATURES_WITH_CERTS_ENABLED)
+    def test_render_html_view_with_preview_mode(self):
+        """
+        test certificate web view should render properly along with its signatories information when accessing it in
+        preview mode. Either the certificate is marked active or not.
+        """
+        self.cert.delete()
+        self.assertEqual(len(GeneratedCertificate.objects.all()), 0)
+        self._add_course_certificates(count=1, signatory_count=2)
+        test_url = get_certificate_url(
+            user_id=self.user.id,
+            course_id=self.course.id.to_deprecated_string()  # pylint: disable=no-member
+        )
+        response = self.client.get(test_url + '?preview=honor')
+        self.assertNotIn(self.course.display_name, response.content)
+        self.assertIn('course_title_0', response.content)
+        self.assertIn('Signatory_Title 0', response.content)
+
+        # mark certificate inactive but accessing in preview mode.
+        self._add_course_certificates(count=1, signatory_count=2, is_active=False)
+        response = self.client.get(test_url + '?preview=honor')
+        self.assertNotIn(self.course.display_name, response.content)
+        self.assertIn('course_title_0', response.content)
+        self.assertIn('Signatory_Title 0', response.content)
+
+    @override_settings(FEATURES=FEATURES_WITH_CERTS_ENABLED)
+    def test_render_html_view_invalid_certificate_configuration(self):
+        test_url = get_certificate_url(
+            user_id=self.user.id,
+            course_id=unicode(self.course.id)  # pylint: disable=no-member
+        )
+        response = self.client.get(test_url)
+        self.assertIn("Invalid Certificate", response.content)
+
+    @override_settings(FEATURES=FEATURES_WITH_CERTS_ENABLED)
+    def test_evidence_event_sent(self):
+        test_url = get_certificate_url(user_id=self.user.id, course_id=self.course_id) + '?evidence_visit=1'
+        self.recreate_tracker()
+        assertion = BadgeAssertion(
+            user=self.user, course_id=self.course_id, mode='honor',
+            data={
+                'image': 'http://www.example.com/image.png',
+                'json': {'id': 'http://www.example.com/assertion.json'},
+                'issuer': 'http://www.example.com/issuer.json',
+
+            }
+        )
+        assertion.save()
+        response = self.client.get(test_url)
+        self.assertEqual(response.status_code, 200)
+        assert_event_matches(
+            {
+                'name': 'edx.badges.assertion.evidence_visit',
+                'data': {
+                    'course_id': 'testorg/run1/refundable_course',
+                    # pylint: disable=no-member
+                    'assertion_id': assertion.id,
+                    'assertion_json_url': 'http://www.example.com/assertion.json',
+                    'assertion_image_url': 'http://www.example.com/image.png',
+                    'user_id': self.user.id,
+                    'issuer': 'http://www.example.com/issuer.json',
+                    'enrollment_mode': 'honor',
+                },
+            },
+            self.get_event()
+        )
+
+
+class TrackShareRedirectTest(ModuleStoreTestCase, EventTrackingTestCase):
+    """
+    Verifies the badge image share event is sent out.
+    """
+    def setUp(self):
+        super(TrackShareRedirectTest, self).setUp()
+        self.client = Client()
+        self.course = CourseFactory.create(
+            org='testorg', number='run1', display_name='trackable course'
+        )
+        self.assertion = BadgeAssertionFactory(
+            user=self.user, course_id=self.course.id, data={
+                'image': 'http://www.example.com/image.png',
+                'json': {'id': 'http://www.example.com/assertion.json'},
+                'issuer': 'http://www.example.com/issuer.json',
+            },
+        )
+        # Enabling the feature flag isn't enough to change the URLs-- they're already loaded by this point.
+        self.old_patterns = urls.urlpatterns
+        urls.urlpatterns += (urls.BADGE_SHARE_TRACKER_URL,)
+
+    def tearDown(self):
+        super(TrackShareRedirectTest, self).tearDown()
+        urls.urlpatterns = self.old_patterns
+
+    def test_social_event_sent(self):
+        test_url = '/certificates/badge_share_tracker/{}/social_network/{}/'.format(
+            unicode(self.course.id),
+            self.user.username,
+        )
+        self.recreate_tracker()
+        response = self.client.get(test_url)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response['Location'], 'http://www.example.com/image.png')
+        assert_event_matches(
+            {
+                'name': 'edx.badges.assertion.shared',
+                'data': {
+                    'course_id': 'testorg/run1/trackable_course',
+                    'social_network': 'social_network',
+                    # pylint: disable=no-member
+                    'assertion_id': self.assertion.id,
+                    'assertion_json_url': 'http://www.example.com/assertion.json',
+                    'assertion_image_url': 'http://www.example.com/image.png',
+                    'user_id': self.user.id,
+                    'issuer': 'http://www.example.com/issuer.json',
+                    'enrollment_mode': 'honor',
+                },
+            },
+            self.get_event()
+        )

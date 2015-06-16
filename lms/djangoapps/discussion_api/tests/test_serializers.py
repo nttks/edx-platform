@@ -23,6 +23,7 @@ from django_comment_common.models import (
     FORUM_ROLE_STUDENT,
     Role,
 )
+from lms.lib.comment_client.thread import Thread
 from student.tests.factories import UserFactory
 from util.testing import UrlResetMixin
 from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
@@ -378,7 +379,6 @@ class ThreadSerializerDeserializationTest(CommentsServiceMockMixin, UrlResetMixi
         httpretty.reset()
         httpretty.enable()
         self.addCleanup(httpretty.disable)
-        self.register_post_thread_response({"id": "test_id"})
         self.course = CourseFactory.create()
         self.user = UserFactory.create()
         self.register_get_user_response(self.user)
@@ -391,18 +391,34 @@ class ThreadSerializerDeserializationTest(CommentsServiceMockMixin, UrlResetMixi
             "title": "Test Title",
             "raw_body": "Test body",
         }
+        self.existing_thread = Thread(**make_minimal_cs_thread({
+            "id": "existing_thread",
+            "course_id": unicode(self.course.id),
+            "commentable_id": "original_topic",
+            "thread_type": "discussion",
+            "title": "Original Title",
+            "body": "Original body",
+            "user_id": str(self.user.id),
+        }))
 
-    def save_and_reserialize(self, data):
+    def save_and_reserialize(self, data, instance=None):
         """
-        Create a serializer with the given data, ensure that it is valid, save
-        the result, and return the full thread data from the serializer.
+        Create a serializer with the given data and (if updating) instance,
+        ensure that it is valid, save the result, and return the full thread
+        data from the serializer.
         """
-        serializer = ThreadSerializer(data=data, context=get_context(self.course, self.request))
+        serializer = ThreadSerializer(
+            instance,
+            data=data,
+            partial=(instance is not None),
+            context=get_context(self.course, self.request)
+        )
         self.assertTrue(serializer.is_valid())
         serializer.save()
         return serializer.data
 
-    def test_minimal(self):
+    def test_create_minimal(self):
+        self.register_post_thread_response({"id": "test_id"})
         saved = self.save_and_reserialize(self.minimal_data)
         self.assertEqual(
             urlparse(httpretty.last_request().path).path,
@@ -421,7 +437,7 @@ class ThreadSerializerDeserializationTest(CommentsServiceMockMixin, UrlResetMixi
         )
         self.assertEqual(saved["id"], "test_id")
 
-    def test_missing_field(self):
+    def test_create_missing_field(self):
         for field in self.minimal_data:
             data = self.minimal_data.copy()
             data.pop(field)
@@ -432,7 +448,8 @@ class ThreadSerializerDeserializationTest(CommentsServiceMockMixin, UrlResetMixi
                 {field: ["This field is required."]}
             )
 
-    def test_type(self):
+    def test_create_type(self):
+        self.register_post_thread_response({"id": "test_id"})
         data = self.minimal_data.copy()
         data["type"] = "question"
         self.save_and_reserialize(data)
@@ -440,3 +457,176 @@ class ThreadSerializerDeserializationTest(CommentsServiceMockMixin, UrlResetMixi
         data["type"] = "invalid_type"
         serializer = ThreadSerializer(data=data)
         self.assertFalse(serializer.is_valid())
+
+    def test_update_empty(self):
+        self.register_put_thread_response(self.existing_thread.attributes)
+        self.save_and_reserialize({}, self.existing_thread)
+        self.assertEqual(
+            httpretty.last_request().parsed_body,
+            {
+                "course_id": [unicode(self.course.id)],
+                "commentable_id": ["original_topic"],
+                "thread_type": ["discussion"],
+                "title": ["Original Title"],
+                "body": ["Original body"],
+                "anonymous": ["False"],
+                "anonymous_to_peers": ["False"],
+                "closed": ["False"],
+                "pinned": ["False"],
+                "user_id": [str(self.user.id)],
+            }
+        )
+
+    def test_update_all(self):
+        self.register_put_thread_response(self.existing_thread.attributes)
+        data = {
+            "topic_id": "edited_topic",
+            "type": "question",
+            "title": "Edited Title",
+            "raw_body": "Edited body",
+        }
+        saved = self.save_and_reserialize(data, self.existing_thread)
+        self.assertEqual(
+            httpretty.last_request().parsed_body,
+            {
+                "course_id": [unicode(self.course.id)],
+                "commentable_id": ["edited_topic"],
+                "thread_type": ["question"],
+                "title": ["Edited Title"],
+                "body": ["Edited body"],
+                "anonymous": ["False"],
+                "anonymous_to_peers": ["False"],
+                "closed": ["False"],
+                "pinned": ["False"],
+                "user_id": [str(self.user.id)],
+            }
+        )
+        for key in data:
+            self.assertEqual(saved[key], data[key])
+
+    def test_update_empty_string(self):
+        serializer = ThreadSerializer(
+            self.existing_thread,
+            data={field: "" for field in ["topic_id", "title", "raw_body"]},
+            partial=True,
+            context=get_context(self.course, self.request)
+        )
+        self.assertEqual(
+            serializer.errors,
+            {field: ["This field is required."] for field in ["topic_id", "title", "raw_body"]}
+        )
+
+    def test_update_course_id(self):
+        serializer = ThreadSerializer(
+            self.existing_thread,
+            data={"course_id": "some/other/course"},
+            partial=True,
+            context=get_context(self.course, self.request)
+        )
+        self.assertEqual(
+            serializer.errors,
+            {"course_id": ["This field is not allowed in an update."]}
+        )
+
+
+@ddt.ddt
+class CommentSerializerDeserializationTest(CommentsServiceMockMixin, ModuleStoreTestCase):
+    """Tests for ThreadSerializer deserialization."""
+    def setUp(self):
+        super(CommentSerializerDeserializationTest, self).setUp()
+        httpretty.reset()
+        httpretty.enable()
+        self.addCleanup(httpretty.disable)
+        self.course = CourseFactory.create()
+        self.user = UserFactory.create()
+        self.register_get_user_response(self.user)
+        self.request = RequestFactory().get("/dummy")
+        self.request.user = self.user
+        self.minimal_data = {
+            "thread_id": "test_thread",
+            "raw_body": "Test body",
+        }
+
+    def save_and_reserialize(self, data, parent_id=None):
+        """
+        Create a serializer with the given data, ensure that it is valid, save
+        the result, and return the full comment data from the serializer.
+        """
+        context = get_context(
+            self.course,
+            self.request,
+            make_minimal_cs_thread({"course_id": unicode(self.course.id)}),
+            parent_id
+        )
+        serializer = CommentSerializer(data=data, context=context)
+        self.assertTrue(serializer.is_valid())
+        serializer.save()
+        return serializer.data
+
+    @ddt.data(None, "test_parent")
+    def test_success(self, parent_id):
+        if parent_id:
+            self.register_get_comment_response({"thread_id": "test_thread", "id": parent_id})
+        self.register_post_comment_response(
+            {"id": "test_comment"},
+            thread_id=(None if parent_id else "test_thread"),
+            parent_id=parent_id
+        )
+        saved = self.save_and_reserialize(self.minimal_data, parent_id=parent_id)
+        expected_url = (
+            "/api/v1/comments/{}".format(parent_id) if parent_id else
+            "/api/v1/threads/test_thread/comments"
+        )
+        self.assertEqual(urlparse(httpretty.last_request().path).path, expected_url)
+        self.assertEqual(
+            httpretty.last_request().parsed_body,
+            {
+                "course_id": [unicode(self.course.id)],
+                "body": ["Test body"],
+                "user_id": [str(self.user.id)],
+            }
+        )
+        self.assertEqual(saved["id"], "test_comment")
+        self.assertEqual(saved["parent_id"], parent_id)
+
+    def test_parent_id_nonexistent(self):
+        self.register_get_comment_error_response("bad_parent", 404)
+        context = get_context(self.course, self.request, make_minimal_cs_thread(), "bad_parent")
+        serializer = CommentSerializer(data=self.minimal_data, context=context)
+        self.assertFalse(serializer.is_valid())
+        self.assertEqual(
+            serializer.errors,
+            {
+                "non_field_errors": [
+                    "parent_id does not identify a comment in the thread identified by thread_id."
+                ]
+            }
+        )
+
+    def test_parent_id_wrong_thread(self):
+        self.register_get_comment_response({"thread_id": "different_thread", "id": "test_parent"})
+        context = get_context(self.course, self.request, make_minimal_cs_thread(), "test_parent")
+        serializer = CommentSerializer(data=self.minimal_data, context=context)
+        self.assertFalse(serializer.is_valid())
+        self.assertEqual(
+            serializer.errors,
+            {
+                "non_field_errors": [
+                    "parent_id does not identify a comment in the thread identified by thread_id."
+                ]
+            }
+        )
+
+    def test_missing_field(self):
+        for field in self.minimal_data:
+            data = self.minimal_data.copy()
+            data.pop(field)
+            serializer = CommentSerializer(
+                data=data,
+                context=get_context(self.course, self.request, make_minimal_cs_thread())
+            )
+            self.assertFalse(serializer.is_valid())
+            self.assertEqual(
+                serializer.errors,
+                {field: ["This field is required."]}
+            )

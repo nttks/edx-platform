@@ -155,6 +155,9 @@ FEATURES = {
     # Enable course reruns, which will always use the split modulestore
     'ALLOW_COURSE_RERUNS': True,
 
+    # Certificates Web/HTML Views
+    'CERTIFICATES_HTML_VIEW': False,
+
     # Social Media Sharing on Student Dashboard
     'DASHBOARD_SHARE_SETTINGS': {
         # Note: Ensure 'CUSTOM_COURSE_URLS' has a matching value in lms/envs/common.py
@@ -163,6 +166,13 @@ FEATURES = {
 
     # Teams feature
     'ENABLE_TEAMS': False,
+
+    # Show video bumper in Studio
+    'ENABLE_VIDEO_BUMPER': False,
+
+    # How many seconds to show the bumper again, default is 7 days:
+    'SHOW_BUMPER_PERIODICITY': 7 * 24 * 3600,
+
 }
 
 ENABLE_JASMINE = False
@@ -650,6 +660,8 @@ YOUTUBE = {
             'v': 'set_youtube_id_of_11_symbols_here',
         },
     },
+
+    'IMAGE_API': 'http://img.youtube.com/vi/{youtube_id}/0.jpg',  # /maxresdefault.jpg for 1920*1080
 }
 
 ############################# VIDEO UPLOAD PIPELINE #############################
@@ -881,6 +893,10 @@ MAX_ASSET_UPLOAD_FILE_SIZE_URL = ""
 
 ### Default value for entrance exam minimum score
 ENTRANCE_EXAM_MIN_SCORE_PCT = 50
+
+### Default language for a new course
+DEFAULT_COURSE_LANGUAGE = "en"
+
 
 ################ ADVANCED_COMPONENT_TYPES ###############
 

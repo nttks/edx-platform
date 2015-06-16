@@ -50,7 +50,6 @@ urlpatterns = patterns(
     url(r'^heartbeat$', include('heartbeat.urls')),
 
     url(r'^user_api/', include('openedx.core.djangoapps.user_api.legacy_urls')),
-    url(r'^lang_pref/', include('lang_pref.urls')),
 )
 
 # User creation and updating views
@@ -114,6 +113,13 @@ urlpatterns += patterns(
     url(r'^group_configurations/{}$'.format(settings.COURSE_KEY_PATTERN), 'group_configurations_list_handler'),
     url(r'^group_configurations/{}/(?P<group_configuration_id>\d+)(/)?(?P<group_id>\d+)?$'.format(
         settings.COURSE_KEY_PATTERN), 'group_configurations_detail_handler'),
+    url(r'^certificates/{}$'.format(settings.COURSE_KEY_PATTERN), 'certificates.certificates_list_handler'),
+    url(r'^certificates/{}/(?P<certificate_id>\d+)/signatories/(?P<signatory_id>\d+)?$'.format(
+        settings.COURSE_KEY_PATTERN), 'certificates.signatory_detail_handler'),
+    url(r'^certificates/{}/(?P<certificate_id>\d+)?$'.format(settings.COURSE_KEY_PATTERN),
+        'certificates.certificates_detail_handler'),
+    url(r'^certificates/activation/{}/'.format(settings.COURSE_KEY_PATTERN),
+        'certificates.certificate_activation_handler'),
 
     url(r'^api/val/v0/', include('edxval.urls')),
 )

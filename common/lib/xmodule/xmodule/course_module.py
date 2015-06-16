@@ -23,6 +23,7 @@ from xblock.fields import Scope, List, String, Dict, Boolean, Integer, Float
 from .fields import Date
 from django.utils.timezone import UTC
 
+
 log = logging.getLogger(__name__)
 
 # Make '_' a no-op so we can scrape strings
@@ -175,16 +176,21 @@ class CourseFields(object):
         help=_('Enter the passports for course LTI tools in the following format: "id:client_key:client_secret".'),
         scope=Scope.settings
     )
-    textbooks = TextbookList(help="List of pairs of (title, url) for textbooks used in this course",
-                             default=[], scope=Scope.content)
+    textbooks = TextbookList(
+        help=_("List of pairs of (title, url) for textbooks used in this course"),
+        default=[],
+        scope=Scope.content
+    )
 
-    wiki_slug = String(help="Slug that points to the wiki for this course", scope=Scope.content)
-    enrollment_start = Date(help="Date that enrollment for this class is opened", scope=Scope.settings)
-    enrollment_end = Date(help="Date that enrollment for this class is closed", scope=Scope.settings)
-    start = Date(help="Start time when this module is visible",
-                 default=DEFAULT_START_DATE,
-                 scope=Scope.settings)
-    end = Date(help="Date that this class ends", scope=Scope.settings)
+    wiki_slug = String(help=_("Slug that points to the wiki for this course"), scope=Scope.content)
+    enrollment_start = Date(help=_("Date that enrollment for this class is opened"), scope=Scope.settings)
+    enrollment_end = Date(help=_("Date that enrollment for this class is closed"), scope=Scope.settings)
+    start = Date(
+        help=_("Start time when this module is visible"),
+        default=DEFAULT_START_DATE,
+        scope=Scope.settings
+    )
+    end = Date(help=_("Date that this class ends"), scope=Scope.settings)
     cosmetic_display_price = Integer(
         display_name=_("Cosmetic Course Display Price"),
         help=_(
@@ -208,7 +214,7 @@ class CourseFields(object):
         scope=Scope.settings
     )
     grading_policy = Dict(
-        help="Grading policy definition for this class",
+        help=_("Grading policy definition for this class"),
         default={
             "GRADER": [
                 {
@@ -378,6 +384,21 @@ class CourseFields(object):
             "Enter the remote gradebook mapping. Only use this setting when "
             "REMOTE_GRADEBOOK_URL has been specified."
         ),
+        scope=Scope.settings
+    )
+    enable_ccx = Boolean(
+        # Translators: Custom Courses for edX (CCX) is an edX feature for re-using course content. CCX Coach is
+        # a role created by a course Instructor to enable a person (the "Coach") to manage the custom course for
+        # his students.
+        display_name=_("Enable CCX"),
+        # Translators: Custom Courses for edX (CCX) is an edX feature for re-using course content. CCX Coach is
+        # a role created by a course Instructor to enable a person (the "Coach") to manage the custom course for
+        # his students.
+        help=_(
+            "Allow course instructors to assign CCX Coach roles, and allow coaches to manage Custom Courses on edX."
+            " When false, Custom Courses cannot be created, but existing Custom Courses will be preserved."
+        ),
+        default=False,
         scope=Scope.settings
     )
     allow_anonymous = Boolean(
@@ -663,10 +684,18 @@ class CourseFields(object):
         # Ensure that courses imported from XML keep their image
         default="images_course_image.jpg"
     )
-
+    issue_badges = Boolean(
+        display_name=_("Issue Open Badges"),
+        help=_(
+            "Issue Open Badges badges for this course. Badges are generated when certificates are created."
+        ),
+        scope=Scope.settings,
+        default=True
+    )
     ## Course level Certificate Name overrides.
     cert_name_short = String(
         help=_(
+            "Use this setting only when generating PDF certificates. "
             "Between quotation marks, enter the short name of the course to use on the certificate that "
             "students receive when they complete the course."
         ),
@@ -676,6 +705,7 @@ class CourseFields(object):
     )
     cert_name_long = String(
         help=_(
+            "Use this setting only when generating PDF certificates. "
             "Between quotation marks, enter the long name of the course to use on the certificate that students "
             "receive when they complete the course."
         ),
@@ -688,6 +718,15 @@ class CourseFields(object):
         display_name=_("Certificate Web/HTML View Overrides"),
         # Translators: These overrides allow for an alternative configuration of the certificate web view
         help=_("Enter course-specific overrides for the Web/HTML template parameters here (JSON format)"),
+        scope=Scope.settings,
+    )
+
+    # Specific certificate information managed via Studio (should eventually fold other cert settings into this)
+    certificates = Dict(
+        # Translators: This field is the container for course-specific certifcate configuration values
+        display_name=_("Certificate Configuration"),
+        # Translators: These overrides allow for an alternative configuration of the certificate web view
+        help=_("Enter course-specific configuration information here (JSON format)"),
         scope=Scope.settings,
     )
 
@@ -853,6 +892,12 @@ class CourseFields(object):
         ),
         default=None,
         scope=Scope.settings,
+    )
+    language = String(
+        display_name=_("Course Language"),
+        help=_("Specify the language of your course."),
+        default=None,
+        scope=Scope.settings
     )
 
     teams_configuration = Dict(

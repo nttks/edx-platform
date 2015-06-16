@@ -28,7 +28,6 @@ urlpatterns = (
 
     url(r'^admin_dashboard$', 'dashboard.views.dashboard'),
 
-    url(r'^change_email$', 'student.views.change_email_request', name="change_email"),
     url(r'^email_confirm/(?P<key>[^/]*)$', 'student.views.confirm_email_change'),
     url(r'^change_name$', 'student.views.change_name_request', name="change_name"),
     url(r'^event$', 'track.views.user_track'),
@@ -72,8 +71,6 @@ urlpatterns = (
     url(r'^user_api/', include('openedx.core.djangoapps.user_api.legacy_urls')),
 
     url(r'^notifier_api/', include('notifier_api.urls')),
-
-    url(r'^lang_pref/', include('lang_pref.urls')),
 
     url(r'^i18n/', include('django.conf.urls.i18n')),
 
@@ -259,6 +256,19 @@ if settings.WIKI_ENABLED:
     )
 
 if settings.COURSEWARE_ENABLED:
+    COURSE_URLS = patterns(
+        '',
+        url(
+            r'^look_up_registration_code$',
+            'instructor.views.registration_codes.look_up_registration_code',
+            name='look_up_registration_code'
+        ),
+        url(
+            r'^registration_code_details$',
+            'instructor.views.registration_codes.registration_code_details',
+            name='registration_code_details'
+        )
+    )
     urlpatterns += (
         url(r'^courses/{}/jump_to/(?P<location>.*)$'.format(settings.COURSE_ID_PATTERN),
             'courseware.views.jump_to', name="jump_to"),
@@ -379,6 +389,7 @@ if settings.COURSEWARE_ENABLED:
         url(r'^courses/{}/get_coupon_info$'.format(settings.COURSE_ID_PATTERN),
             'instructor.views.coupons.get_coupon_info', name="get_coupon_info"),
 
+        url(r'^courses/{}/'.format(settings.COURSE_ID_PATTERN), include(COURSE_URLS)),
         # see ENABLE_INSTRUCTOR_LEGACY_DASHBOARD section for legacy dash urls
 
         # Open Ended grading views
@@ -449,6 +460,22 @@ if settings.COURSEWARE_ENABLED:
 
         url(r'^api/branding/v1/', include('branding.api_urls')),
     )
+
+    if settings.FEATURES["ENABLE_TEAMS"]:
+        # Teams endpoints
+        urlpatterns += (
+            url(r'^api/team/', include('teams.api_urls')),
+            url(r'^courses/{}/teams'.format(settings.COURSE_ID_PATTERN), include('teams.urls'), name="teams_endpoints"),
+        )
+
+    if settings.FEATURES.get('ENABLE_RENDER_XBLOCK_API'):
+        # TODO (MA-789) This endpoint path still needs to be approved by the arch council.
+        # Until then, keep the version at v0.
+        urlpatterns += (
+            url(r'api/xblock/v0/xblock/{usage_key_string}$'.format(usage_key_string=settings.USAGE_KEY_PATTERN),
+                'courseware.views.render_xblock',
+                name='render_xblock'),
+        )
 
     # allow course staff to change to student view of courseware
     if settings.FEATURES.get('ENABLE_MASQUERADE'):
@@ -652,8 +679,20 @@ if settings.FEATURES.get('ENABLE_OAUTH2_PROVIDER'):
 # Certificates Web/HTML View
 if settings.FEATURES.get('CERTIFICATES_HTML_VIEW', False):
     urlpatterns += (
-        url(r'^certificates/html', 'certificates.views.render_html_view', name='cert_html_view'),
+        url(r'^certificates/user/(?P<user_id>[^/]*)/course/{course_id}'.format(course_id=settings.COURSE_ID_PATTERN),
+            'certificates.views.render_html_view', name='cert_html_view'),
     )
+
+BADGE_SHARE_TRACKER_URL = url(
+    r'^certificates/badge_share_tracker/{}/(?P<network>[^/]+)/(?P<student_username>[^/]+)/$'.format(
+        settings.COURSE_ID_PATTERN
+    ),
+    'certificates.views.track_share_redirect',
+    name='badge_share_tracker'
+)
+
+if settings.FEATURES.get('ENABLE_OPENBADGES', False):
+    urlpatterns += (BADGE_SHARE_TRACKER_URL,)
 
 # XDomain proxy
 urlpatterns += (

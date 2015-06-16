@@ -38,14 +38,32 @@ from course_modes.models import CourseMode, CourseModesArchive
 from student.roles import CourseFinanceAdminRole, CourseSalesAdminRole
 from certificates.models import CertificateGenerationConfiguration
 from certificates import api as certs_api
+from openedx.core.djangoapps.course_views.course_views import CourseViewType
 
 from class_dashboard.dashboard_data import get_section_display_name, get_array_section_has_problem
 from .tools import get_units_with_due_date, title_or_url, bulk_email_is_enabled_for_course
 from opaque_keys.edx.locations import SlashSeparatedCourseKey
 from pgreport.views import ProblemReport
 
-
 log = logging.getLogger(__name__)
+
+
+class InstructorDashboardViewType(CourseViewType):
+    """
+    Defines the Instructor Dashboard view type that is shown as a course tab.
+    """
+
+    name = "instructor"
+    title = _('Instructor')
+    view_name = "instructor_dashboard"
+    is_dynamic = True    # The "Instructor" tab is instead dynamically added when it is enabled
+
+    @classmethod
+    def is_enabled(cls, course, user=None):  # pylint: disable=unused-argument,redefined-outer-name
+        """
+        Returns true if the specified user has staff access.
+        """
+        return user and has_access(user, 'staff', course, course.id)
 
 
 @ensure_csrf_cookie
@@ -72,9 +90,11 @@ def instructor_dashboard_2(request, course_id):
     if not access['staff']:
         raise Http404()
 
+    is_white_label = CourseMode.is_white_label(course_key)
+
     sections = [
         _section_course_info(course, access),
-        _section_membership(course, access),
+        _section_membership(course, access, is_white_label),
         _section_cohort_management(course, access),
         _section_student_admin(course, access),
         _section_data_download(course, access),
@@ -94,8 +114,6 @@ def instructor_dashboard_2(request, course_id):
             u"one paid course mode to enable eCommerce options.",
             unicode(course_key), len(paid_modes)
         )
-
-    is_white_label = CourseMode.is_white_label(course_key)
 
     if (settings.FEATURES.get('INDIVIDUAL_DUE_DATES') and access['instructor']):
         sections.insert(3, _section_extensions(course))
@@ -190,6 +208,7 @@ def _section_e_commerce(course, access, paid_mode, coupons_enabled, reports_enab
         'list_financial_report_downloads_url': reverse('list_financial_report_downloads',
                                                        kwargs={'course_id': unicode(course_key)}),
         'list_instructor_tasks_url': reverse('list_instructor_tasks', kwargs={'course_id': unicode(course_key)}),
+        'look_up_registration_code': reverse('look_up_registration_code', kwargs={'course_id': unicode(course_key)}),
         'coupons': coupons,
         'sales_admin': access['sales_admin'],
         'coupons_enabled': coupons_enabled,
@@ -324,13 +343,16 @@ def _section_course_info(course, access):
     return section_data
 
 
-def _section_membership(course, access):
+def _section_membership(course, access, is_white_label):
     """ Provide data for the corresponding dashboard section """
     course_key = course.id
+    ccx_enabled = settings.FEATURES.get('CUSTOM_COURSES_EDX', False) and course.enable_ccx
     section_data = {
         'section_key': 'membership',
         'section_display_name': _('Membership'),
         'access': access,
+        'ccx_is_enabled': ccx_enabled,
+        'is_white_label': is_white_label,
         'enroll_button_url': reverse('students_update_enrollment', kwargs={'course_id': unicode(course_key)}),
         'unenroll_button_url': reverse('students_update_enrollment', kwargs={'course_id': unicode(course_key)}),
         'upload_student_csv_button_url': reverse('register_and_enroll_students', kwargs={'course_id': unicode(course_key)}),
@@ -426,6 +448,9 @@ def _section_data_download(course, access):
         'access': access,
         'get_grading_config_url': reverse('get_grading_config', kwargs={'course_id': unicode(course_key)}),
         'get_students_features_url': reverse('get_students_features', kwargs={'course_id': unicode(course_key)}),
+        'get_students_who_may_enroll_url': reverse(
+            'get_students_who_may_enroll', kwargs={'course_id': unicode(course_key)}
+        ),
         'get_anon_ids_url': reverse('get_anon_ids', kwargs={'course_id': unicode(course_key)}),
         'list_instructor_tasks_url': reverse('list_instructor_tasks', kwargs={'course_id': unicode(course_key)}),
         'list_report_downloads_url': reverse('list_report_downloads', kwargs={'course_id': unicode(course_key)}),

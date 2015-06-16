@@ -162,6 +162,7 @@ class AdvancedSettingsPage(CoursePage):
             'info_sidebar_name',
             'is_new',
             'ispublic',
+            'issue_badges',
             'max_student_enrollments_allowed',
             'no_grade',
             'display_coursenumber',
@@ -201,4 +202,5 @@ class AdvancedSettingsPage(CoursePage):
             'teams_configuration',
             'is_course_hidden',
             'minimum_grade_credit',
+            'video_bumper',
         ]

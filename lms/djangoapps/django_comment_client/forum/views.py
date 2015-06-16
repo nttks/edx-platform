@@ -8,10 +8,12 @@ import logging
 import xml.sax.saxutils as saxutils
 
 from django.contrib.auth.decorators import login_required
+from django.conf import settings
 from django.core.context_processors import csrf
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User
 from django.http import Http404, HttpResponseBadRequest
+from django.utils.translation import ugettext as _
 from django.views.decorators.http import require_GET
 import newrelic.agent
 
@@ -23,8 +25,10 @@ from openedx.core.djangoapps.course_groups.cohorts import (
     get_course_cohorts,
     is_commentable_cohorted
 )
+from courseware.tabs import EnrolledCourseViewType
 from courseware.access import has_access
 from xmodule.modulestore.django import modulestore
+from ccx.overrides import get_current_ccx
 
 from django_comment_client.permissions import cached_has_permission
 from django_comment_client.utils import (
@@ -43,6 +47,27 @@ THREADS_PER_PAGE = 20
 INLINE_THREADS_PER_PAGE = 20
 PAGES_NEARBY_DELTA = 2
 log = logging.getLogger("edx.discussions")
+
+
+class DiscussionCourseViewType(EnrolledCourseViewType):
+    """
+    A tab for the cs_comments_service forums.
+    """
+
+    name = 'discussion'
+    title = _('Discussion')
+    priority = None
+    view_name = 'django_comment_client.forum.views.forum_form_discussion'
+
+    @classmethod
+    def is_enabled(cls, course, user=None):
+        if not super(DiscussionCourseViewType, cls).is_enabled(course, user):
+            return False
+
+        if settings.FEATURES.get('CUSTOM_COURSES_EDX', False):
+            if get_current_ccx():
+                return False
+        return settings.FEATURES.get('ENABLE_DISCUSSION_SERVICE')
 
 
 def _attr_safe_json(obj):
@@ -172,7 +197,7 @@ def inline_discussion(request, course_key, discussion_id):
     """
     nr_transaction = newrelic.agent.current_transaction()
 
-    course = get_course_with_access(request.user, 'load_forum', course_key)
+    course = get_course_with_access(request.user, 'load', course_key, check_if_enrolled=True)
     cc_user = cc.User.from_django_user(request.user)
     user_info = cc_user.to_dict()
 
@@ -207,7 +232,7 @@ def forum_form_discussion(request, course_key):
     """
     nr_transaction = newrelic.agent.current_transaction()
 
-    course = get_course_with_access(request.user, 'load_forum', course_key, check_if_enrolled=True)
+    course = get_course_with_access(request.user, 'load', course_key, check_if_enrolled=True)
     course_settings = make_course_settings(course, request.user)
 
     user = cc.User.from_django_user(request.user)
@@ -274,7 +299,7 @@ def single_thread(request, course_key, discussion_id, thread_id):
     """
     nr_transaction = newrelic.agent.current_transaction()
 
-    course = get_course_with_access(request.user, 'load_forum', course_key)
+    course = get_course_with_access(request.user, 'load', course_key, check_if_enrolled=True)
     course_settings = make_course_settings(course, request.user)
     cc_user = cc.User.from_django_user(request.user)
     user_info = cc_user.to_dict()
@@ -377,7 +402,7 @@ def user_profile(request, course_key, user_id):
     nr_transaction = newrelic.agent.current_transaction()
 
     #TODO: Allow sorting?
-    course = get_course_with_access(request.user, 'load_forum', course_key)
+    course = get_course_with_access(request.user, 'load', course_key, check_if_enrolled=True)
     try:
         query_params = {
             'page': request.GET.get('page', 1),
@@ -440,7 +465,7 @@ def followed_threads(request, course_key, user_id):
 
     nr_transaction = newrelic.agent.current_transaction()
 
-    course = get_course_with_access(request.user, 'load_forum', course_key)
+    course = get_course_with_access(request.user, 'load', course_key, check_if_enrolled=True)
     try:
         profiled_user = cc.User(id=user_id, course_id=course_key)
 

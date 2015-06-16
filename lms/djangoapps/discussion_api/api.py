@@ -1,28 +1,32 @@
 """
 Discussion API internal interface
 """
+from collections import defaultdict
+from urllib import urlencode
+from urlparse import urlunparse
+
 from django.core.exceptions import ValidationError
+from django.core.urlresolvers import reverse
 from django.http import Http404
 
-from collections import defaultdict
-
 from opaque_keys import InvalidKeyError
-from opaque_keys.edx.locator import CourseLocator
+from opaque_keys.edx.locator import CourseKey
 
 from courseware.courses import get_course_with_access
-from discussion_api.forms import ThreadCreateExtrasForm
+from discussion_api.forms import ThreadActionsForm
 from discussion_api.pagination import get_paginated_data
 from discussion_api.serializers import CommentSerializer, ThreadSerializer, get_context
 from django_comment_client.base.views import (
     THREAD_CREATED_EVENT_NAME,
+    get_comment_created_event_data,
+    get_comment_created_event_name,
     get_thread_created_event_data,
     track_forum_event,
 )
 from django_comment_client.utils import get_accessible_discussion_modules
 from lms.lib.comment_client.thread import Thread
 from lms.lib.comment_client.utils import CommentClientRequestError
-from openedx.core.djangoapps.course_groups.cohorts import get_cohort_id
-from xmodule.tabs import DiscussionTab
+from openedx.core.djangoapps.course_groups.cohorts import get_cohort_id, is_commentable_cohorted
 
 
 def _get_course_or_404(course_key, user):
@@ -31,13 +35,53 @@ def _get_course_or_404(course_key, user):
     the user cannot access forums for the course, or the discussion tab is
     disabled for the course.
     """
-    course = get_course_with_access(user, 'load_forum', course_key)
-    if not any([isinstance(tab, DiscussionTab) for tab in course.tabs]):
+    course = get_course_with_access(user, 'load', course_key, check_if_enrolled=True)
+    if not any([tab.type == 'discussion' for tab in course.tabs]):
         raise Http404
     return course
 
 
-def get_course_topics(course_key, user):
+def _get_thread_and_context(request, thread_id, parent_id=None, retrieve_kwargs=None):
+    """
+    Retrieve the given thread and build a serializer context for it, returning
+    both. This function also enforces access control for the thread (checking
+    both the user's access to the course and to the thread's cohort if
+    applicable). Raises Http404 if the thread does not exist or the user cannot
+    access it.
+    """
+    retrieve_kwargs = retrieve_kwargs or {}
+    try:
+        if "mark_as_read" not in retrieve_kwargs:
+            retrieve_kwargs["mark_as_read"] = False
+        cc_thread = Thread(id=thread_id).retrieve(**retrieve_kwargs)
+        course_key = CourseKey.from_string(cc_thread["course_id"])
+        course = _get_course_or_404(course_key, request.user)
+        context = get_context(course, request, cc_thread, parent_id)
+        if (
+                not context["is_requester_privileged"] and
+                cc_thread["group_id"] and
+                is_commentable_cohorted(course.id, cc_thread["commentable_id"])
+        ):
+            requester_cohort = get_cohort_id(request.user, course.id)
+            if requester_cohort is not None and cc_thread["group_id"] != requester_cohort:
+                raise Http404
+        return cc_thread, context
+    except CommentClientRequestError:
+        # params are validated at a higher level, so the only possible request
+        # error is if the thread doesn't exist
+        raise Http404
+
+
+def get_thread_list_url(request, course_key, topic_id_list):
+    """
+    Returns the URL for the thread_list_url field, given a list of topic_ids
+    """
+    path = reverse("thread-list")
+    query_list = [("course_id", unicode(course_key))] + [("topic_id", topic_id) for topic_id in topic_id_list]
+    return request.build_absolute_uri(urlunparse(("", "", path, "", urlencode(query_list), "")))
+
+
+def get_course_topics(request, course_key):
     """
     Return the course topic listing for the given course and user.
 
@@ -58,22 +102,33 @@ def get_course_topics(course_key, user):
         """
         return module.sort_key or module.discussion_target
 
-    course = _get_course_or_404(course_key, user)
-    discussion_modules = get_accessible_discussion_modules(course, user)
+    course = _get_course_or_404(course_key, request.user)
+    discussion_modules = get_accessible_discussion_modules(course, request.user)
     modules_by_category = defaultdict(list)
     for module in discussion_modules:
         modules_by_category[module.discussion_category].append(module)
+
+    def get_sorted_modules(category):
+        """Returns key sorted modules by category"""
+        return sorted(modules_by_category[category], key=get_module_sort_key)
+
     courseware_topics = [
         {
             "id": None,
             "name": category,
+            "thread_list_url": get_thread_list_url(
+                request,
+                course_key,
+                [item.discussion_id for item in get_sorted_modules(category)]
+            ),
             "children": [
                 {
                     "id": module.discussion_id,
                     "name": module.discussion_target,
+                    "thread_list_url": get_thread_list_url(request, course_key, [module.discussion_id]),
                     "children": [],
                 }
-                for module in sorted(modules_by_category[category], key=get_module_sort_key)
+                for module in get_sorted_modules(category)
             ],
         }
         for category in sorted(modules_by_category.keys())
@@ -83,6 +138,7 @@ def get_course_topics(course_key, user):
         {
             "id": entry["id"],
             "name": name,
+            "thread_list_url": get_thread_list_url(request, course_key, [entry["id"]]),
             "children": [],
         }
         for name, entry in sorted(
@@ -97,7 +153,7 @@ def get_course_topics(course_key, user):
     }
 
 
-def get_thread_list(request, course_key, page, page_size):
+def get_thread_list(request, course_key, page, page_size, topic_id_list=None):
     """
     Return the list of all discussion threads pertaining to the given course
 
@@ -107,6 +163,7 @@ def get_thread_list(request, course_key, page, page_size):
     course_key: The key of the course to get discussion threads for
     page: The page number (1-indexed) to retrieve
     page_size: The number of threads to retrieve per page
+    topic_id_list: The list of topic_ids to get the discussion threads for
 
     Returns:
 
@@ -115,6 +172,7 @@ def get_thread_list(request, course_key, page, page_size):
     """
     course = _get_course_or_404(course_key, request.user)
     context = get_context(course, request)
+    topic_ids_csv = ",".join(topic_id_list) if topic_id_list else None
     threads, result_page, num_pages, _ = Thread.search({
         "course_id": unicode(course.id),
         "group_id": (
@@ -125,6 +183,7 @@ def get_thread_list(request, course_key, page, page_size):
         "sort_order": "desc",
         "page": page,
         "per_page": page_size,
+        "commentable_ids": topic_ids_csv,
     })
     # The comments service returns the last page of results if the requested
     # page is beyond the last page, but we want be consistent with DRF's general
@@ -161,28 +220,17 @@ def get_comment_list(request, thread_id, endorsed, page, page_size):
         discussion_api.views.CommentViewSet for more detail.
     """
     response_skip = page_size * (page - 1)
-    try:
-        cc_thread = Thread(id=thread_id).retrieve(
-            recursive=True,
-            user_id=request.user.id,
-            mark_as_read=True,
-            response_skip=response_skip,
-            response_limit=page_size
-        )
-    except CommentClientRequestError:
-        # page and page_size are validated at a higher level, so the only
-        # possible request error is if the thread doesn't exist
-        raise Http404
-
-    course_key = CourseLocator.from_string(cc_thread["course_id"])
-    course = _get_course_or_404(course_key, request.user)
-    context = get_context(course, request, cc_thread)
-
-    # Ensure user has access to the thread
-    if not context["is_requester_privileged"] and cc_thread["group_id"]:
-        requester_cohort = get_cohort_id(request.user, course_key)
-        if requester_cohort is not None and cc_thread["group_id"] != requester_cohort:
-            raise Http404
+    cc_thread, context = _get_thread_and_context(
+        request,
+        thread_id,
+        retrieve_kwargs={
+            "recursive": True,
+            "user_id": request.user.id,
+            "mark_as_read": True,
+            "response_skip": response_skip,
+            "response_limit": page_size,
+        }
+    )
 
     # Responses to discussion threads cannot be separated by endorsed, but
     # responses to question threads must be separated by endorsed due to the
@@ -217,6 +265,20 @@ def get_comment_list(request, thread_id, endorsed, page, page_size):
     return get_paginated_data(request, results, page, num_pages)
 
 
+def _do_extra_thread_actions(api_thread, cc_thread, request_fields, actions_form, context):
+    """
+    Perform any necessary additional actions related to thread creation or
+    update that require a separate comments service request.
+    """
+    form_following = actions_form.cleaned_data["following"]
+    if "following" in request_fields and form_following != api_thread["following"]:
+        if form_following:
+            context["cc_requester"].follow(cc_thread)
+        else:
+            context["cc_requester"].unfollow(cc_thread)
+        api_thread["following"] = form_following
+
+
 def create_thread(request, thread_data):
     """
     Create a thread.
@@ -237,31 +299,124 @@ def create_thread(request, thread_data):
     if not course_id:
         raise ValidationError({"course_id": ["This field is required."]})
     try:
-        course_key = CourseLocator.from_string(course_id)
+        course_key = CourseKey.from_string(course_id)
         course = _get_course_or_404(course_key, request.user)
     except (Http404, InvalidKeyError):
         raise ValidationError({"course_id": ["Invalid value."]})
 
     context = get_context(course, request)
     serializer = ThreadSerializer(data=thread_data, context=context)
-    extras_form = ThreadCreateExtrasForm(thread_data)
-    if not (serializer.is_valid() and extras_form.is_valid()):
-        raise ValidationError(dict(serializer.errors.items() + extras_form.errors.items()))
+    actions_form = ThreadActionsForm(thread_data)
+    if not (serializer.is_valid() and actions_form.is_valid()):
+        raise ValidationError(dict(serializer.errors.items() + actions_form.errors.items()))
     serializer.save()
 
-    thread = serializer.object
-    ret = serializer.data
-    following = extras_form.cleaned_data["following"]
-    if following:
-        context["cc_requester"].follow(thread)
-        ret["following"] = True
+    cc_thread = serializer.object
+    api_thread = serializer.data
+    _do_extra_thread_actions(api_thread, cc_thread, thread_data.keys(), actions_form, context)
 
     track_forum_event(
         request,
         THREAD_CREATED_EVENT_NAME,
         course,
-        thread,
-        get_thread_created_event_data(thread, followed=following)
+        cc_thread,
+        get_thread_created_event_data(cc_thread, followed=actions_form.cleaned_data["following"])
+    )
+
+    return api_thread
+
+
+def create_comment(request, comment_data):
+    """
+    Create a comment.
+
+    Parameters:
+
+        request: The django request object used for build_absolute_uri and
+          determining the requesting user.
+
+        comment_data: The data for the created comment.
+
+    Returns:
+
+        The created comment; see discussion_api.views.CommentViewSet for more
+        detail.
+    """
+    thread_id = comment_data.get("thread_id")
+    parent_id = comment_data.get("parent_id")
+    if not thread_id:
+        raise ValidationError({"thread_id": ["This field is required."]})
+    try:
+        cc_thread, context = _get_thread_and_context(request, thread_id, parent_id)
+    except Http404:
+        raise ValidationError({"thread_id": ["Invalid value."]})
+
+    serializer = CommentSerializer(data=comment_data, context=context)
+    if not serializer.is_valid():
+        raise ValidationError(serializer.errors)
+    serializer.save()
+
+    cc_comment = serializer.object
+    track_forum_event(
+        request,
+        get_comment_created_event_name(cc_comment),
+        context["course"],
+        cc_comment,
+        get_comment_created_event_data(cc_comment, cc_thread["commentable_id"], followed=False)
     )
 
     return serializer.data
+
+
+_THREAD_EDITABLE_BY_ANY = {"following"}
+_THREAD_EDITABLE_BY_AUTHOR = {"topic_id", "type", "title", "raw_body"} | _THREAD_EDITABLE_BY_ANY
+
+
+def _get_thread_editable_fields(cc_thread, context):
+    """
+    Get the list of editable fields for the given thread in the given context
+    """
+    is_author = context["cc_requester"]["id"] == cc_thread["user_id"]
+    if context["is_requester_privileged"] or is_author:
+        return _THREAD_EDITABLE_BY_AUTHOR
+    else:
+        return _THREAD_EDITABLE_BY_ANY
+
+
+def update_thread(request, thread_id, update_data):
+    """
+    Update a thread.
+
+    Parameters:
+
+        request: The django request object used for build_absolute_uri and
+          determining the requesting user.
+
+        thread_id: The id for the thread to update.
+
+        update_data: The data to update in the thread.
+
+    Returns:
+
+        The updated thread; see discussion_api.views.ThreadViewSet for more
+        detail.
+    """
+    cc_thread, context = _get_thread_and_context(request, thread_id)
+    editable_fields = _get_thread_editable_fields(cc_thread, context)
+    non_editable_errors = {
+        field: ["This field is not editable."]
+        for field in update_data.keys()
+        if field not in editable_fields
+    }
+    if non_editable_errors:
+        raise ValidationError(non_editable_errors)
+    serializer = ThreadSerializer(cc_thread, data=update_data, partial=True, context=context)
+    actions_form = ThreadActionsForm(update_data)
+    if not (serializer.is_valid() and actions_form.is_valid()):
+        raise ValidationError(dict(serializer.errors.items() + actions_form.errors.items()))
+    # Only save thread object if some of the edited fields are in the thread data, not extra actions
+    if set(update_data) - set(actions_form.fields):
+        serializer.save()
+    api_thread = serializer.data
+    _do_extra_thread_actions(api_thread, cc_thread, update_data.keys(), actions_form, context)
+    return api_thread

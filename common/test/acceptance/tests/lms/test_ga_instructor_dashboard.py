@@ -3,6 +3,8 @@
 End-to-end tests for the LMS Instructor Dashboard.
 """
 
+import unittest
+
 from bok_choy.web_app_test import WebAppTest
 from ...fixtures.course import CourseFixture
 from ...fixtures.ga_course_team import CourseTeamFixture
@@ -15,6 +17,7 @@ from ..ga_helpers import GaccoTestMixin
 from lms.envs.bok_choy import EMAIL_FILE_PATH
 
 
+@unittest.skip("Skip until gacco theme is fixed for courseware tab")
 class SendEmailTest(WebAppTest, GaccoTestMixin):
     """
     Test the send email process.

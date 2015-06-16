@@ -7,6 +7,29 @@ import re
 import httpretty
 
 
+def _get_thread_callback(thread_data):
+    """
+    Get a callback function that will return POST/PUT data overridden by
+    response_overrides.
+    """
+    def callback(request, _uri, headers):
+        """
+        Simulate the thread creation or update endpoint by returning the provided
+        data along with the data from response_overrides and dummy values for any
+        additional required fields.
+        """
+        response_data = make_minimal_cs_thread(thread_data)
+        for key, val_list in request.parsed_body.items():
+            val = val_list[0]
+            if key in ["anonymous", "anonymous_to_peers", "closed", "pinned"]:
+                response_data[key] = val == "True"
+            else:
+                response_data[key] = val
+        return (200, headers, json.dumps(response_data))
+
+    return callback
+
+
 class CommentsServiceMockMixin(object):
     """Mixin with utility methods for mocking the comments service"""
     def register_get_threads_response(self, threads, page, num_pages):
@@ -22,23 +45,23 @@ class CommentsServiceMockMixin(object):
             status=200
         )
 
-    def register_post_thread_response(self, response_overrides):
+    def register_post_thread_response(self, thread_data):
         """Register a mock response for POST on the CS commentable endpoint"""
-        def callback(request, _uri, headers):
-            """
-            Simulate the thread creation endpoint by returning the provided data
-            along with the data from response_overrides.
-            """
-            response_data = make_minimal_cs_thread(
-                {key: val[0] for key, val in request.parsed_body.items()}
-            )
-            response_data.update(response_overrides)
-            return (200, headers, json.dumps(response_data))
-
         httpretty.register_uri(
             httpretty.POST,
             re.compile(r"http://localhost:4567/api/v1/(\w+)/threads"),
-            body=callback
+            body=_get_thread_callback(thread_data)
+        )
+
+    def register_put_thread_response(self, thread_data):
+        """
+        Register a mock response for PUT on the CS endpoint for the given
+        thread_id.
+        """
+        httpretty.register_uri(
+            httpretty.PUT,
+            "http://localhost:4567/api/v1/threads/{}".format(thread_data["id"]),
+            body=_get_thread_callback(thread_data)
         )
 
     def register_get_thread_error_response(self, thread_id, status_code):
@@ -61,6 +84,56 @@ class CommentsServiceMockMixin(object):
             status=200
         )
 
+    def register_post_comment_response(self, response_overrides, thread_id=None, parent_id=None):
+        """
+        Register a mock response for POST on the CS comments endpoint for the
+        given thread or parent; exactly one of thread_id and parent_id must be
+        specified.
+        """
+        def callback(request, _uri, headers):
+            """
+            Simulate the comment creation endpoint by returning the provided data
+            along with the data from response_overrides.
+            """
+            response_data = make_minimal_cs_comment(
+                {key: val[0] for key, val in request.parsed_body.items()}
+            )
+            response_data.update(response_overrides or {})
+            return (200, headers, json.dumps(response_data))
+
+        if thread_id and not parent_id:
+            url = "http://localhost:4567/api/v1/threads/{}/comments".format(thread_id)
+        elif parent_id and not thread_id:
+            url = "http://localhost:4567/api/v1/comments/{}".format(parent_id)
+        else:  # pragma: no cover
+            raise ValueError("Exactly one of thread_id and parent_id must be provided.")
+
+        httpretty.register_uri(httpretty.POST, url, body=callback)
+
+    def register_get_comment_error_response(self, comment_id, status_code):
+        """
+        Register a mock error response for GET on the CS comment instance
+        endpoint.
+        """
+        httpretty.register_uri(
+            httpretty.GET,
+            "http://localhost:4567/api/v1/comments/{id}".format(id=comment_id),
+            body="",
+            status=status_code
+        )
+
+    def register_get_comment_response(self, response_overrides):
+        """
+        Register a mock response for GET on the CS comment instance endpoint.
+        """
+        comment = make_minimal_cs_comment(response_overrides)
+        httpretty.register_uri(
+            httpretty.GET,
+            "http://localhost:4567/api/v1/comments/{id}".format(id=comment["id"]),
+            body=json.dumps(comment),
+            status=200
+        )
+
     def register_get_user_response(self, user, subscribed_thread_ids=None, upvoted_ids=None):
         """Register a mock response for GET on the CS user instance endpoint"""
         httpretty.register_uri(
@@ -76,14 +149,16 @@ class CommentsServiceMockMixin(object):
 
     def register_subscription_response(self, user):
         """
-        Register a mock response for POST on the CS user subscription endpoint
+        Register a mock response for POST and DELETE on the CS user subscription
+        endpoint
         """
-        httpretty.register_uri(
-            httpretty.POST,
-            "http://localhost:4567/api/v1/users/{id}/subscriptions".format(id=user.id),
-            body=json.dumps({}),  # body is unused
-            status=200
-        )
+        for method in [httpretty.POST, httpretty.DELETE]:
+            httpretty.register_uri(
+                method,
+                "http://localhost:4567/api/v1/users/{id}/subscriptions".format(id=user.id),
+                body=json.dumps({}),  # body is unused
+                status=200
+            )
 
     def assert_query_params_equal(self, httpretty_request, expected_params):
         """

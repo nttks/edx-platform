@@ -5,15 +5,19 @@ import datetime
 import json
 import re
 import pytz
-from mock import patch
+import ddt
+import unittest
+from mock import patch, MagicMock
 from nose.plugins.attrib import attr
 
 from capa.tests.response_xml_factory import StringResponseXMLFactory
 from courseware.field_overrides import OverrideFieldData  # pylint: disable=import-error
 from courseware.tests.factories import StudentModuleFactory  # pylint: disable=import-error
 from courseware.tests.helpers import LoginEnrollmentTestCase  # pylint: disable=import-error
+from courseware.tabs import get_course_tab_list
 from django.core.urlresolvers import reverse
 from django.test.utils import override_settings
+from django.test import RequestFactory
 from edxmako.shortcuts import render_to_response  # pylint: disable=import-error
 from student.roles import CourseCcxCoachRole  # pylint: disable=import-error
 from student.tests.factories import (  # pylint: disable=import-error
@@ -22,12 +26,14 @@ from student.tests.factories import (  # pylint: disable=import-error
     UserFactory,
 )
 
+from opaque_keys.edx.locations import SlashSeparatedCourseKey
 from xmodule.x_module import XModuleMixin
 from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
 from xmodule.modulestore.tests.factories import (
     CourseFactory,
     ItemFactory,
 )
+import xmodule.tabs as tabs
 from ..models import (
     CustomCourseForEdX,
     CcxMembership,
@@ -54,6 +60,17 @@ def intercept_renderer(path, context):
     response.mako_context = context
     response.mako_template = path
     return response
+
+
+def ccx_dummy_request():
+    """
+    Returns dummy request object for CCX coach tab test
+    """
+    factory = RequestFactory()
+    request = factory.get('ccx_coach_dashboard')
+    request.user = MagicMock()
+
+    return request
 
 
 @attr('shard_1')
@@ -754,6 +771,46 @@ class TestSwitchActiveCCX(ModuleStoreTestCase, LoginEnrollmentTestCase):
         # request the course root and verify that the ccx is not active
         self.client.get(self.target_url)
         self.verify_active_ccx(self.client)
+
+
+@ddt.ddt
+class CCXCoachTabTestCase(ModuleStoreTestCase):
+    """
+    Test case for CCX coach tab.
+    """
+    def setUp(self):
+        super(CCXCoachTabTestCase, self).setUp()
+        self.course = CourseFactory.create()
+        self.user = UserFactory.create()
+        CourseEnrollmentFactory.create(user=self.user, course_id=self.course.id)
+        role = CourseCcxCoachRole(self.course.id)
+        role.add_users(self.user)
+
+    def check_ccx_tab(self):
+        """Helper function for verifying the ccx tab."""
+        request = RequestFactory().request()
+        request.user = self.user
+        all_tabs = get_course_tab_list(request, self.course)
+        return any(tab.type == 'ccx_coach' for tab in all_tabs)
+
+    @ddt.data(
+        (True, True, True),
+        (True, False, False),
+        (False, True, False),
+        (False, False, False),
+        (True, None, False)
+    )
+    @ddt.unpack
+    def test_coach_tab_for_ccx_advance_settings(self, ccx_feature_flag, enable_ccx, expected_result):
+        """
+        Test ccx coach tab state (visible or hidden) depending on the value of enable_ccx flag, ccx feature flag.
+        """
+        with self.settings(FEATURES={'CUSTOM_COURSES_EDX': ccx_feature_flag}):
+            self.course.enable_ccx = enable_ccx
+            self.assertEquals(
+                expected_result,
+                self.check_ccx_tab()
+            )
 
 
 def flatten(seq):

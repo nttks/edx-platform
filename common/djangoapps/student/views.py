@@ -58,12 +58,13 @@ from student.models import (
     PendingEmailChange, CourseEnrollment, unique_id_for_user,
     CourseEnrollmentAllowed, UserStanding, LoginFailures,
     create_comments_service_user, PasswordHistory, UserSignupSource,
-    DashboardConfiguration, LinkedInAddToProfileConfiguration)
+    DashboardConfiguration, LinkedInAddToProfileConfiguration, ManualEnrollmentAudit, ALLOWEDTOENROLL_TO_ENROLLED)
 from student.forms import (AccountCreationForm, PasswordResetFormNoActive,
                            SetPasswordFormErrorMessages, ResignForm, SetResignReasonForm)
 
 from verify_student.models import SoftwareSecurePhotoVerification, MidcourseReverificationWindow
 from certificates.models import CertificateStatuses, certificate_status_for_student
+from certificates.api import get_certificate_url, get_active_web_certificate  # pylint: disable=import-error
 from dark_lang.models import DarkLangConfig
 
 from xmodule.modulestore.django import modulestore
@@ -113,6 +114,7 @@ from student.helpers import (
     auth_pipeline_urls, set_logged_in_cookie,
     check_verify_status_by_course
 )
+from student.models import anonymous_id_for_user
 from xmodule.error_module import ErrorDescriptor
 from shoppingcart.models import DonationConfiguration, CourseRegistrationCode
 
@@ -342,7 +344,19 @@ def _cert_info(user, course, cert_status, course_mode):
         status_dict['show_survey_button'] = False
 
     if status == 'ready':
-        if 'download_url' not in cert_status:
+        # showing the certificate web view button if certificate is ready state and feature flags are enabled.
+        if settings.FEATURES.get('CERTIFICATES_HTML_VIEW', False):
+            if get_active_web_certificate(course) is not None:
+                status_dict.update({
+                    'show_cert_web_view': True,
+                    'cert_web_view_url': u'{url}'.format(
+                        url=get_certificate_url(user_id=user.id, course_id=unicode(course.id))
+                    )
+                })
+            else:
+                # don't show download certificate button if we don't have an active certificate for course
+                status_dict['show_download_url'] = False
+        elif 'download_url' not in cert_status:
             log.warning(
                 u"User %s has a downloadable cert for %s, but no download url",
                 user.username,
@@ -1822,11 +1836,21 @@ def auto_auth(request):
 
     # Provide the user with a valid CSRF token
     # then return a 200 response
-    success_msg = u"{} user {} ({}) with password {} and user_id {}".format(
-        u"Logged in" if login_when_done else "Created",
-        username, email, password, user.id
-    )
-    response = HttpResponse(success_msg)
+    if request.META.get('HTTP_ACCEPT') == 'application/json':
+        response = JsonResponse({
+            'created_status': u"Logged in" if login_when_done else "Created",
+            'username': username,
+            'email': email,
+            'password': password,
+            'user_id': user.id,  # pylint: disable=no-member
+            'anonymous_id': anonymous_id_for_user(user, None),
+        })
+    else:
+        success_msg = u"{} user {} ({}) with password {} and user_id {}".format(
+            u"Logged in" if login_when_done else "Created",
+            username, email, password, user.id  # pylint: disable=no-member
+        )
+        response = HttpResponse(success_msg)
     response.set_cookie('csrftoken', csrf(request)['csrf_token'])
     return response
 
@@ -1848,7 +1872,16 @@ def activate_account(request, key):
             ceas = CourseEnrollmentAllowed.objects.filter(email=student[0].email)
             for cea in ceas:
                 if cea.auto_enroll:
-                    CourseEnrollment.enroll(student[0], cea.course_id)
+                    enrollment = CourseEnrollment.enroll(student[0], cea.course_id)
+                    manual_enrollment_audit = ManualEnrollmentAudit.get_manual_enrollment_by_email(student[0].email)
+                    if manual_enrollment_audit is not None:
+                        # get the enrolled by user and reason from the ManualEnrollmentAudit table.
+                        # then create a new ManualEnrollmentAudit table entry for the same email
+                        # different transition state.
+                        ManualEnrollmentAudit.create_manual_enrollment_audit(
+                            manual_enrollment_audit.enrolled_by, student[0].email, ALLOWEDTOENROLL_TO_ENROLLED,
+                            manual_enrollment_audit.reason, enrollment
+                        )
 
             # enroll student in any pending CCXs he/she may have if auto_enroll flag is set
             if settings.FEATURES.get('CUSTOM_COURSES_EDX'):
@@ -2102,36 +2135,6 @@ def reactivation_email_for_user(user):
             "error": _('Unable to send reactivation email')
         })  # TODO: this should be status code 500  # pylint: disable=fixme
 
-    return JsonResponse({"success": True})
-
-
-# TODO: delete this method and redirect unit tests to validate_new_email and do_email_change_request
-# after accounts page work is done.
-@ensure_csrf_cookie
-def change_email_request(request):
-    """ AJAX call from the profile page. User wants a new e-mail.
-    """
-    ## Make sure it checks for existing e-mail conflicts
-    if not request.user.is_authenticated():
-        raise Http404
-
-    user = request.user
-
-    if not user.check_password(request.POST['password']):
-        return JsonResponse({
-            "success": False,
-            "error": _('Invalid password'),
-        })  # TODO: this should be status code 400  # pylint: disable=fixme
-
-    new_email = request.POST['new_email']
-    try:
-        validate_new_email(request.user, new_email)
-        do_email_change_request(request.user, new_email)
-    except ValueError as err:
-        return JsonResponse({
-            "success": False,
-            "error": err.message,
-        })
     return JsonResponse({"success": True})
 
 
