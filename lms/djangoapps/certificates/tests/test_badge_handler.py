@@ -115,6 +115,13 @@ class BadgeHandlerTestCase(ModuleStoreTestCase, EventTrackingTestCase):
             }
         )
 
+    def test_self_paced_description(self):
+        """
+        Verify that a badge created for a course with no end date gets a different description.
+        """
+        self.course.end = None
+        self.assertEqual(BadgeHandler.badge_description(self.course, 'honor'), 'Completed the course "Badged" (honor)')
+
     def test_ensure_badge_created_cache(self):
         """
         Make sure ensure_badge_created doesn't call create_badge if we know the badge is already there.
@@ -183,7 +190,7 @@ class BadgeHandlerTestCase(ModuleStoreTestCase, EventTrackingTestCase):
             'evidence': 'https://edx.org/certificates/user/2/course/edX/course_test/test_run?evidence_visit=1'
         })
         assert_event_matches({
-            'name': 'edx.badges.assertion.created',
+            'name': 'edx.badge.assertion.created',
             'data': {
                 'user_id': self.user.id,
                 'course_id': unicode(self.course.location.course_key),

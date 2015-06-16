@@ -327,7 +327,10 @@ FEATURES = {
     # ENABLE_OAUTH2_PROVIDER to True
     'ENABLE_MOBILE_REST_API': False,
     'ENABLE_MOBILE_SOCIAL_FACEBOOK_FEATURES': False,
+
+    # Enable APIs required for xBlocks on Mobile, and supported in general
     'ENABLE_RENDER_XBLOCK_API': False,
+    'ENABLE_COURSE_BLOCKS_NAVIGATION_API': False,
 
     # Enable the combined login/registration form
     'ENABLE_COMBINED_LOGIN_REGISTRATION': False,
@@ -409,6 +412,8 @@ FEATURES = {
     # Enable OpenBadge support. See the BADGR_* settings later in this file.
     'ENABLE_OPENBADGES': False,
 
+    # Credit course API
+    'ENABLE_CREDIT_API': False,
 }
 
 # Ignore static asset files on import which match this pattern
@@ -521,11 +526,6 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 
     # Allows the open edX footer to be leveraged in Django Templates.
     'edxmako.shortcuts.open_source_footer_context_processor',
-
-    # TODO (ECOM-1339): Remove once the V3 version of the footer is enabled permanently
-    # This allows us to pass the appropriate feature flag to the main Django template
-    # that contains the footer.
-    'branding.context_processors.branding_context_processor',
 
     # Shoppingcart processor (detects if request.user has a cart)
     'shoppingcart.context_processor.user_has_cart_context_processor',
@@ -1349,16 +1349,16 @@ PIPELINE_CSS = {
         'output_filename': 'css/lms-style-vendor-tinymce-skin.css',
     },
     'style-main': {
+        # this is unnecessary and can be removed
         'source_filenames': [
-            'sass/lms-main.css',
-            'css/edx-cc.css',
+            'css/lms-main.css',
         ],
         'output_filename': 'css/lms-main.css',
     },
     'style-main-rtl': {
+        # this is unnecessary and can be removed
         'source_filenames': [
-            'sass/lms-main-rtl.css',
-            'css/edx-cc.css',
+            'css/lms-main-rtl.css',
         ],
         'output_filename': 'css/lms-main-rtl.css',
     },
@@ -1372,14 +1372,14 @@ PIPELINE_CSS = {
     },
     'style-course': {
         'source_filenames': [
-            'sass/lms-course.css',
+            'css/lms-course.css',
             'xmodule/modules.css',
         ],
         'output_filename': 'css/lms-course.css',
     },
     'style-course-rtl': {
         'source_filenames': [
-            'sass/lms-course-rtl.css',
+            'css/lms-course-rtl.css',
             'xmodule/modules.css',
         ],
         'output_filename': 'css/lms-course-rtl.css',
@@ -1409,38 +1409,38 @@ PIPELINE_CSS = {
     },
     FOOTER_CSS['openedx']['ltr']: {
         'source_filenames': [
-            'sass/lms-footer.css',
+            'css/lms-footer.css',
         ],
         'output_filename': 'css/lms-footer.css',
     },
     FOOTER_CSS['openedx']['rtl']: {
         'source_filenames': [
-            'sass/lms-footer-rtl.css',
+            'css/lms-footer-rtl.css',
         ],
         'output_filename': 'css/lms-footer-rtl.css'
     },
     FOOTER_CSS['edx']['ltr']: {
         'source_filenames': [
-            'sass/lms-footer-edx.css',
+            'css/lms-footer-edx.css',
         ],
         'output_filename': 'css/lms-footer-edx.css'
     },
     FOOTER_CSS['edx']['rtl']: {
         'source_filenames': [
-            'sass/lms-footer-edx-rtl.css',
+            'css/lms-footer-edx-rtl.css',
         ],
         'output_filename': 'css/lms-footer-edx-rtl.css'
     },
     'style-certificates': {
         'source_filenames': [
-            'certificates/sass/main-ltr.css',
+            'certificates/css/main-ltr.css',
             'css/vendor/font-awesome.css',
         ],
         'output_filename': 'css/certificates-style.css'
     },
     'style-certificates-rtl': {
         'source_filenames': [
-            'certificates/sass/main-rtl.css',
+            'certificates/css/main-rtl.css',
             'css/vendor/font-awesome.css',
         ],
         'output_filename': 'css/certificates-style-rtl.css'
@@ -1721,6 +1721,9 @@ INSTALLED_APPS = (
     'djcelery',
     'south',
 
+    # History tables
+    'simple_history',
+
     # Database-backed configuration
     'config_models',
 
@@ -1935,25 +1938,29 @@ SOCIAL_MEDIA_FOOTER_DISPLAY = {
         # Translators: This is the website name of www.facebook.com.  Please
         # translate this the way that Facebook advertises in your language.
         "title": _("Facebook"),
-        "icon": "fa-facebook-square"
+        "icon": "fa-facebook-square",
+        "action": _("Like {platform_name} on Facebook")
     },
     "twitter": {
         # Translators: This is the website name of www.twitter.com.  Please
         # translate this the way that Twitter advertises in your language.
         "title": _("Twitter"),
-        "icon": "fa-twitter"
+        "icon": "fa-twitter",
+        "action": _("Follow {platform_name} on Twitter")
     },
     "linkedin": {
         # Translators: This is the website name of www.linkedin.com.  Please
         # translate this the way that LinkedIn advertises in your language.
         "title": _("LinkedIn"),
-        "icon": "fa-linkedin-square"
+        "icon": "fa-linkedin-square",
+        "action": _("Follow {platform_name} on LinkedIn")
     },
     "google_plus": {
         # Translators: This is the website name of plus.google.com.  Please
         # translate this the way that Google+ advertises in your language.
         "title": _("Google+"),
-        "icon": "fa-google-plus-square"
+        "icon": "fa-google-plus-square",
+        "action": _("Follow {platform_name} on Google+")
     },
     "tumblr": {
         # Translators: This is the website name of www.tumblr.com.  Please
@@ -1971,7 +1978,8 @@ SOCIAL_MEDIA_FOOTER_DISPLAY = {
         # Translators: This is the website name of www.reddit.com.  Please
         # translate this the way that Reddit advertises in your language.
         "title": _("Reddit"),
-        "icon": "fa-reddit"
+        "icon": "fa-reddit",
+        "action": _("Subscribe to the {platform_name} subreddit"),
     },
     "vk": {
         # Translators: This is the website name of https://vk.com.  Please
@@ -1989,7 +1997,8 @@ SOCIAL_MEDIA_FOOTER_DISPLAY = {
         # Translators: This is the website name of www.youtube.com.  Please
         # translate this the way that YouTube advertises in your language.
         "title": _("Youtube"),
-        "icon": "fa-youtube"
+        "icon": "fa-youtube",
+        "action": _("Subscribe to the {platform_name} YouTube channel")
     }
 }
 
@@ -2482,7 +2491,7 @@ PREVIEW_DOMAIN = 'preview'
 # If set to None, all courses will be listed on the homepage
 HOMEPAGE_COURSE_MAX = None
 
-################################ Settings for Credit Course Requirements ################################
+################################ Settings for Credit Courses ################################
 # Initial delay used for retrying tasks.
 # Additional retries use longer delays.
 # Value is in seconds.
@@ -2491,3 +2500,15 @@ CREDIT_TASK_DEFAULT_RETRY_DELAY = 30
 # Maximum number of retries per task for errors that are not related
 # to throttling.
 CREDIT_TASK_MAX_RETRIES = 5
+
+# Secret keys shared with credit providers.
+# Used to digitally sign credit requests (us --> provider)
+# and validate responses (provider --> us).
+# Each key in the dictionary is a credit provider ID, and
+# the value is the 32-character key.
+CREDIT_PROVIDER_SECRET_KEYS = {}
+
+# Maximum age in seconds of timestamps we will accept
+# when a credit provider notifies us that a student has been approved
+# or denied for credit.
+CREDIT_PROVIDER_TIMESTAMP_EXPIRATION = 15 * 60

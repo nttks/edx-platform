@@ -24,7 +24,7 @@ from openedx.core.djangoapps.course_groups.cohorts import get_cohort_names
 from openedx.core.lib.api.fields import NonEmptyCharField
 
 
-def get_context(course, request, thread=None, parent_id=None):
+def get_context(course, request, thread=None):
     """
     Returns a context appropriate for use with ThreadSerializer or
     (if thread is provided) CommentSerializer.
@@ -48,7 +48,6 @@ def get_context(course, request, thread=None, parent_id=None):
         "course": course,
         "request": request,
         "thread": thread,
-        "parent_id": parent_id,
         # For now, the only groups are cohorts
         "group_ids_to_names": get_cohort_names(course),
         "is_requester_privileged": requester.id in staff_user_ids or requester.id in ta_user_ids,
@@ -70,11 +69,22 @@ class _ContentSerializer(serializers.Serializer):
     voted = serializers.SerializerMethodField("get_voted")
     vote_count = serializers.SerializerMethodField("get_vote_count")
 
+    non_updatable_fields = ()
+
     def __init__(self, *args, **kwargs):
         super(_ContentSerializer, self).__init__(*args, **kwargs)
         # id is an invalid class attribute name, so we must declare a different
         # name above and modify it here
         self.fields["id"] = self.fields.pop("id_")
+
+        for field in self.non_updatable_fields:
+            setattr(self, "validate_{}".format(field), self._validate_non_updatable)
+
+    def _validate_non_updatable(self, attrs, _source):
+        """Ensure that a field is not edited in an update operation."""
+        if self.object:
+            raise ValidationError("This field is not allowed in an update.")
+        return attrs
 
     def _is_user_privileged(self, user_id):
         """
@@ -157,6 +167,8 @@ class ThreadSerializer(_ContentSerializer):
     endorsed_comment_list_url = serializers.SerializerMethodField("get_endorsed_comment_list_url")
     non_endorsed_comment_list_url = serializers.SerializerMethodField("get_non_endorsed_comment_list_url")
 
+    non_updatable_fields = ("course_id",)
+
     def __init__(self, *args, **kwargs):
         super(ThreadSerializer, self).__init__(*args, **kwargs)
         # type is an invalid class attribute name, so we must declare a
@@ -200,12 +212,6 @@ class ThreadSerializer(_ContentSerializer):
         """Returns the URL to retrieve the thread's non-endorsed comments."""
         return self.get_comment_list_url(obj, endorsed=False)
 
-    def validate_course_id(self, attrs, _source):
-        """Ensure that course_id is not edited in an update operation."""
-        if self.object:
-            raise ValidationError("This field is not allowed in an update.")
-        return attrs
-
     def restore_object(self, attrs, instance=None):
         if instance:
             for key, val in attrs.items():
@@ -219,24 +225,19 @@ class CommentSerializer(_ContentSerializer):
     """
     A serializer for comment data.
 
-    Because it is not a field in the underlying data, parent_id must be provided
-    in the context for both serialization and deserialization.
-
     N.B. This should not be used with a comment_client Comment object that has
     not had retrieve() called, because of the interaction between DRF's attempts
     at introspection and Comment's __getattr__.
     """
     thread_id = serializers.CharField()
-    parent_id = serializers.SerializerMethodField("get_parent_id")
+    parent_id = serializers.CharField(required=False)
     endorsed = serializers.BooleanField(read_only=True)
     endorsed_by = serializers.SerializerMethodField("get_endorsed_by")
     endorsed_by_label = serializers.SerializerMethodField("get_endorsed_by_label")
     endorsed_at = serializers.SerializerMethodField("get_endorsed_at")
     children = serializers.SerializerMethodField("get_children")
 
-    def get_parent_id(self, _obj):
-        """Returns the comment's parent's id (taken from the context)."""
-        return self.context["parent_id"]
+    non_updatable_fields = ("thread_id", "parent_id")
 
     def get_endorsed_by(self, obj):
         """
@@ -272,11 +273,8 @@ class CommentSerializer(_ContentSerializer):
         return endorsement["time"] if endorsement else None
 
     def get_children(self, obj):
-        """Returns the list of the comment's children, serialized."""
-        child_context = dict(self.context)
-        child_context["parent_id"] = obj["id"]
         return [
-            CommentSerializer(child, context=child_context).data
+            CommentSerializer(child, context=self.context).data
             for child in obj.get("children", [])
         ]
 
@@ -285,7 +283,7 @@ class CommentSerializer(_ContentSerializer):
         Ensure that parent_id identifies a comment that is actually in the
         thread identified by thread_id.
         """
-        parent_id = self.context["parent_id"]
+        parent_id = attrs.get("parent_id")
         if parent_id:
             parent = None
             try:
@@ -299,11 +297,12 @@ class CommentSerializer(_ContentSerializer):
         return attrs
 
     def restore_object(self, attrs, instance=None):
-        if instance:  # pragma: no cover
-            raise ValueError("CommentSerializer cannot be used for updates.")
+        if instance:
+            for key, val in attrs.items():
+                instance[key] = val
+            return instance
         return Comment(
             course_id=self.context["thread"]["course_id"],
-            parent_id=self.context["parent_id"],
             user_id=self.context["cc_requester"]["id"],
             **attrs
         )

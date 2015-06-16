@@ -8,6 +8,7 @@ from django.utils.translation import ugettext as _
 
 from rest_framework import status, response
 from rest_framework.exceptions import APIException
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.mixins import RetrieveModelMixin, UpdateModelMixin
 from rest_framework.generics import GenericAPIView
@@ -20,7 +21,7 @@ from openedx.core.lib.api.authentication import (
     SessionAuthenticationAllowInactiveUser,
     OAuth2AuthenticationAllowInactiveUser,
 )
-from openedx.core.lib.api.permissions import IsUserInUrl, IsAuthenticatedOrDebug
+from openedx.core.lib.api.permissions import IsUserInUrl
 from util.milestones_helpers import any_unfulfilled_milestones
 
 
@@ -68,6 +69,16 @@ class DeveloperErrorViewMixin(object):
             return self.make_validation_error_response(exc)
         else:
             raise
+
+
+class ExpandableFieldViewMixin(object):
+    """A view mixin to add expansion information to the serializer context for later use by an ExpandableField."""
+
+    def get_serializer_context(self):
+        """Adds expand information from query parameters to the serializer context to support expandable fields."""
+        result = super(ExpandableFieldViewMixin, self).get_serializer_context()
+        result['expand'] = [x for x in self.request.QUERY_PARAMS.get('expand', '').split(',') if x]
+        return result
 
 
 def view_course_access(depth=0, access_action='load', check_for_milestones=False):
@@ -121,7 +132,7 @@ def view_auth_classes(is_user=False):
             OAuth2AuthenticationAllowInactiveUser,
             SessionAuthenticationAllowInactiveUser
         )
-        func_or_class.permission_classes = (IsAuthenticatedOrDebug,)
+        func_or_class.permission_classes = (IsAuthenticated,)
         if is_user:
             func_or_class.permission_classes += (IsUserInUrl,)
         return func_or_class
@@ -140,6 +151,21 @@ def add_serializer_errors(serializer, data, field_errors):
                 'user_message': _(u"This value is invalid."),
             }
     return field_errors
+
+
+def build_api_error(message, **kwargs):
+    """Build an error dict corresponding to edX API conventions.
+
+    Args:
+        message (string): The string to use for developer and user messages.
+            The user message will be translated, but for this to work message
+            must have already been scraped. ugettext_noop is useful for this.
+        **kwargs: format parameters for message
+    """
+    return {
+        'developer_message': message.format(**kwargs),
+        'user_message': _(message).format(**kwargs),  # pylint: disable=translation-of-non-string
+    }
 
 
 class RetrievePatchAPIView(RetrieveModelMixin, UpdateModelMixin, GenericAPIView):

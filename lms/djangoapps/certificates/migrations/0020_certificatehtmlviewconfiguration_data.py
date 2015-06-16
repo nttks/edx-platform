@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import json
 from south.utils import datetime_utils as datetime
 from south.db import db
 from south.v2 import DataMigration
@@ -11,31 +12,16 @@ class Migration(DataMigration):
         """
         Bootstraps the HTML view template with some default configuration parameters
         """
-        json_config = """{
+        config = {
             "default": {
                 "accomplishment_class_append": "accomplishment-certificate",
-                "platform_name": "edX",
-                "company_about_url": "http://www.edx.org/about-us",
-                "company_privacy_url": "http://www.edx.org/edx-privacy-policy",
-                "company_tos_url": "http://www.edx.org/edx-terms-service",
-                "company_verified_certificate_url": "http://www.edx.org/verified-certificate",
-                "logo_src": "/static/certificates/images/logo-edx.svg",
-                "logo_url": "http://www.edx.org"
-            },
-            "honor": {
-                "certificate_type": "honor",
-                "certificate_title": "Honor Certificate",
-                "document_body_class_append": "is-honorcode"
-            },
-            "verified": {
-                "certificate_type": "verified",
-                "certificate_title": "Verified Certificate",
-                "document_body_class_append": "is-idverified"
-            },
-            "xseries": {
-                "certificate_type": "xseries",
-                "certificate_title": "XSeries Certificate",
-                "document_body_class_append": "is-xseries"
+                "platform_name": "Your Platform Name Here",
+                "company_about_url": "http://www.example.com/about-us",
+                "company_privacy_url": "http://www.example.com/privacy-policy",
+                "company_tos_url": "http://www.example.com/terms-service",
+                "company_verified_certificate_url": "http://www.example.com/verified-certificate",
+                "logo_src": "/static/certificates/images/logo.png",
+                "logo_url": "http://www.example.com"
             },
             "base": {
                 "certificate_type": "base",
@@ -47,14 +33,17 @@ class Migration(DataMigration):
                 "certificate_title": "Distinguished Certificate of Achievement",
                 "document_body_class_append": "is-distinguished"
             }
-        }"""
+        }
         orm.CertificateHtmlViewConfiguration.objects.create(
-            configuration=json_config,
+            configuration=json.dumps(config),
             enabled=False,
         )
 
     def backwards(self, orm):
-        "Write your backwards methods here."
+        """
+        Rolling back to zero-state, so remove all currently-defined configurations
+        """
+        orm.CertificateHtmlViewConfiguration.objects.all().delete()
 
     models = {
         'auth.group': {

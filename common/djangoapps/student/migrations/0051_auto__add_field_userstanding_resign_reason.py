@@ -8,9 +8,6 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-
-        # Changing field 'UserProfile.bio'
-        db.alter_column('auth_userprofile', 'bio', self.gf('django.db.models.fields.CharField')(max_length=3000, null=True))
         # Adding field 'UserStanding.resign_reason'
         db.add_column('student_userstanding', 'resign_reason',
                       self.gf('django.db.models.fields.TextField')(max_length=1000, null=True),
@@ -18,9 +15,6 @@ class Migration(SchemaMigration):
 
 
     def backwards(self, orm):
-
-        # Changing field 'UserProfile.bio'
-        db.alter_column('auth_userprofile', 'bio', self.gf('django.db.models.fields.CharField')(null=True))
         # Deleting field 'UserStanding.resign_reason'
         db.delete_column('student_userstanding', 'resign_reason')
 
@@ -95,7 +89,7 @@ class Migration(SchemaMigration):
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'})
         },
         'student.dashboardconfiguration': {
-            'Meta': {'object_name': 'DashboardConfiguration'},
+            'Meta': {'ordering': "('-change_date',)", 'object_name': 'DashboardConfiguration'},
             'change_date': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
             'changed_by': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['auth.User']", 'null': 'True', 'on_delete': 'models.PROTECT'}),
             'enabled': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
@@ -118,7 +112,7 @@ class Migration(SchemaMigration):
             'user_profile': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'language_proficiencies'", 'to': "orm['student.UserProfile']"})
         },
         'student.linkedinaddtoprofileconfiguration': {
-            'Meta': {'object_name': 'LinkedInAddToProfileConfiguration'},
+            'Meta': {'ordering': "('-change_date',)", 'object_name': 'LinkedInAddToProfileConfiguration'},
             'change_date': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
             'changed_by': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['auth.User']", 'null': 'True', 'on_delete': 'models.PROTECT'}),
             'company_identifier': ('django.db.models.fields.TextField', [], {}),
@@ -133,6 +127,16 @@ class Migration(SchemaMigration):
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'lockout_until': ('django.db.models.fields.DateTimeField', [], {'null': 'True'}),
             'user': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['auth.User']"})
+        },
+        'student.manualenrollmentaudit': {
+            'Meta': {'object_name': 'ManualEnrollmentAudit'},
+            'enrolled_by': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['auth.User']", 'null': 'True'}),
+            'enrolled_email': ('django.db.models.fields.CharField', [], {'max_length': '255', 'db_index': 'True'}),
+            'enrollment': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['student.CourseEnrollment']", 'null': 'True'}),
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'reason': ('django.db.models.fields.TextField', [], {'null': 'True'}),
+            'state_transition': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
+            'time_stamp': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'null': 'True', 'blank': 'True'})
         },
         'student.passwordhistory': {
             'Meta': {'object_name': 'PasswordHistory'},

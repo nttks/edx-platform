@@ -92,8 +92,8 @@ class RenderXBlockTestMixin(object):
         return response
 
     @ddt.data(
-        (ModuleStoreEnum.Type.mongo, 8),
-        (ModuleStoreEnum.Type.split, 5),
+        (ModuleStoreEnum.Type.mongo, 9),
+        (ModuleStoreEnum.Type.split, 8),
     )
     @ddt.unpack
     def test_courseware_html(self, default_store, mongo_calls):
@@ -110,6 +110,7 @@ class RenderXBlockTestMixin(object):
 
             with check_mongo_calls(mongo_calls):
                 url = get_redirect_url(self.course.id, self.html_block.location)
+                print url
                 response = self.client.get(url)
                 for chrome_element in self.COURSEWARE_CHROME_HTML_ELEMENTS:
                     self.assertContains(response, chrome_element)
@@ -150,12 +151,12 @@ class RenderXBlockTestMixin(object):
         self.setup_user(admin=False, enroll=True, login=True)
         self.verify_response()
 
-    def test_fail_unauthenticated(self):
+    def test_unauthenticated(self):
         self.setup_course()
         self.setup_user(admin=False, enroll=True, login=False)
         self.verify_response(expected_response_code=302)
 
-    def test_fail_unenrolled_student(self):
+    def test_unenrolled_student(self):
         self.setup_course()
         self.setup_user(admin=False, enroll=False, login=True)
         self.verify_response(expected_response_code=302)

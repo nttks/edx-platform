@@ -4,6 +4,7 @@ Acceptance tests for Content Libraries in Studio
 from ddt import ddt, data
 from unittest import skip
 from nose.plugins.attrib import attr
+from flaky import flaky
 
 from .base_studio_test import StudioLibraryTest
 from ...fixtures.course import XBlockFixtureDesc
@@ -129,6 +130,7 @@ class LibraryEditPageTest(StudioLibraryTest):
         """
         self.assertFalse(self.browser.find_elements_by_css_selector('span.large-discussion-icon'))
 
+    @flaky  # TODO fix this, see TNL-2322
     def test_library_pagination(self):
         """
         Scenario: Ensure that adding several XBlocks to a library results in pagination.
@@ -515,13 +517,14 @@ class LibraryUsersPageTest(StudioLibraryTest):
         self.page = LibraryUsersPage(self.browser, self.library_key)
         self.page.visit()
 
-    def _expect_refresh(self):
+    def _refresh_page(self):
         """
-        Wait for the page to reload.
+        Reload the page.
         """
-        self.page = LibraryUsersPage(self.browser, self.library_key).wait_for_page()
+        self.page = LibraryUsersPage(self.browser, self.library_key)
+        self.page.visit()
+        self.page.wait_until_ready()
 
-    @skip  # TODO fix this, see SOL-618
     def test_user_management(self):
         """
         Scenario: Ensure that we can edit the permissions of users.
@@ -585,7 +588,7 @@ class LibraryUsersPageTest(StudioLibraryTest):
             else:
                 return users[1], users[0]
 
-        self._expect_refresh()
+        self._refresh_page()
         user_me, them = get_two_users()
         check_is_only_admin(user_me)
 
@@ -599,7 +602,7 @@ class LibraryUsersPageTest(StudioLibraryTest):
         # Add Staff permissions to the new user:
 
         them.click_promote()
-        self._expect_refresh()
+        self._refresh_page()
         user_me, them = get_two_users()
         check_is_only_admin(user_me)
 
@@ -614,7 +617,7 @@ class LibraryUsersPageTest(StudioLibraryTest):
         # Add Admin permissions to the new user:
 
         them.click_promote()
-        self._expect_refresh()
+        self._refresh_page()
         user_me, them = get_two_users()
         self.assertIn("admin", user_me.role_label.lower())
         self.assertFalse(user_me.can_promote)
@@ -632,7 +635,7 @@ class LibraryUsersPageTest(StudioLibraryTest):
         # Delete the new user:
 
         them.click_delete()
-        self._expect_refresh()
+        self._refresh_page()
         self.assertEqual(len(self.page.users), 1)
         user = self.page.users[0]
         self.assertTrue(user.is_current_user)

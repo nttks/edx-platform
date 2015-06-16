@@ -43,12 +43,7 @@
     {% block bodyextra %}{% endblock %}
   </div>
   {% if IS_EDX_DOMAIN %}
-    {# TODO (ECOM-1339): Remove this check once we switch to the v3 footer permanently. #}
-    {% if ENABLE_BRANDING_API %}
-      {% include "footer-edx-v3.html" %}
-    {% else %}
-      {% include "footer-edx-v2.html" %}
-    {% endif %}
+    {% include "footer-edx-v3.html" %}
   {% elif ENABLE_CUSTOM_THEME %}
     {% include "theme-footer.html" %}
   {% else %}

@@ -94,6 +94,7 @@
             'js/student_profile/views/learner_profile_fields': 'js/student_profile/views/learner_profile_fields',
             'js/student_profile/views/learner_profile_factory': 'js/student_profile/views/learner_profile_factory',
             'js/student_profile/views/learner_profile_view': 'js/student_profile/views/learner_profile_view',
+            'js/ccx/schedule': 'js/ccx/schedule',
 
             // edxnotes
             'annotator_1.2.9': 'xmodule_js/common_static/js/vendor/edxnotes/annotator-full.min',
@@ -297,6 +298,10 @@
             'js/shoppingcart/shoppingcart.js': {
                 exports: 'js/shoppingcart/shoppingcart',
                 deps: ['jquery', 'underscore', 'gettext']
+            },
+            'js/ccx/schedule': {
+                exports: 'js/ccx/schedule',
+                deps: ['jquery', 'underscore', 'backbone', 'gettext']
             },
 
             // Backbone classes loaded explicitly until they are converted to use RequireJS
@@ -583,6 +588,7 @@
         // Run the LMS tests
         'lms/include/teams/js/spec/teams_factory_spec.js',
         'lms/include/js/spec/components/header/header_spec.js',
+        'lms/include/js/spec/components/tabbed/tabbed_view_spec.js',
         'lms/include/js/spec/photocapture_spec.js',
         'lms/include/js/spec/staff_debug_actions_spec.js',
         'lms/include/js/spec/views/notification_spec.js',
@@ -637,6 +643,7 @@
         'lms/include/js/spec/edxnotes/collections/notes_spec.js',
         'lms/include/js/spec/search/search_spec.js',
         'lms/include/js/spec/discovery/discovery_spec.js',
+        'lms/include/js/spec/ccx/schedule_spec.js',
         'lms/include/js/spec/progress_report_spec.js'
     ]);
 

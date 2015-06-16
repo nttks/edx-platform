@@ -173,6 +173,8 @@ FEATURES = {
     # How many seconds to show the bumper again, default is 7 days:
     'SHOW_BUMPER_PERIODICITY': 7 * 24 * 3600,
 
+    # Enable credit eligibility feature
+    'ENABLE_CREDIT_ELIGIBILITY': False,
 }
 
 ENABLE_JASMINE = False
@@ -483,15 +485,16 @@ PIPELINE_CSS = {
         'output_filename': 'css/cms-style-vendor-tinymce-skin.css',
     },
     'style-main': {
+        # this is unnecessary and can be removed
         'source_filenames': [
-            'sass/studio-main.css',
-            'css/edx-cc.css',
+            'css/studio-main.css',
         ],
         'output_filename': 'css/studio-main.css',
     },
     'style-main-rtl': {
+        # this is unnecessary and can be removed
         'source_filenames': [
-            'sass/studio-main-rtl.css',
+            'css/studio-main-rtl.css',
         ],
         'output_filename': 'css/studio-main-rtl.css',
     },
@@ -684,6 +687,9 @@ INSTALLED_APPS = (
     'djcelery',
     'south',
     'method_override',
+
+    # History tables
+    'simple_history',
 
     # Database-backed configuration
     'config_models',
@@ -995,3 +1001,8 @@ CREDIT_TASK_DEFAULT_RETRY_DELAY = 30
 # Maximum number of retries per task for errors that are not related
 # to throttling.
 CREDIT_TASK_MAX_RETRIES = 5
+
+# Maximum age in seconds of timestamps we will accept
+# when a credit provider notifies us that a student has been approved
+# or denied for credit.
+CREDIT_PROVIDER_TIMESTAMP_EXPIRATION = 15 * 60

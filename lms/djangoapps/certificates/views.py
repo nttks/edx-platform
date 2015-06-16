@@ -1,4 +1,5 @@
 """URL handlers related to certificate handling by LMS"""
+from microsite_configuration import microsite
 from datetime import datetime
 from uuid import uuid4
 from django.shortcuts import redirect, get_object_or_404
@@ -16,7 +17,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
 from capa.xqueue_interface import XQUEUE_METRIC_NAME
-from certificates.api import get_active_web_certificate, get_certificate_url
+from certificates.api import get_active_web_certificate, get_certificate_url, generate_user_certificates
 from certificates.models import (
     certificate_status_for_student,
     CertificateStatuses,
@@ -56,7 +57,6 @@ def request_certificate(request):
     """
     if request.method == "POST":
         if request.user.is_authenticated():
-            xqci = XQueueCertInterface()
             username = request.user.username
             student = User.objects.get(username=username)
             course_key = SlashSeparatedCourseKey.from_deprecated_string(request.POST.get('course_id'))
@@ -66,7 +66,7 @@ def request_certificate(request):
             if status in [CertificateStatuses.unavailable, CertificateStatuses.notpassing, CertificateStatuses.error]:
                 log_msg = u'Grading and certification requested for user %s in course %s via /request_certificate call'
                 logger.info(log_msg, username, course_key)
-                status = xqci.add_cert(student, course_key, course=course)
+                status = generate_user_certificates(student, course_key, course=course)
             return HttpResponse(json.dumps({'add_status': status}), mimetype='application/json')
         return HttpResponse(json.dumps({'add_status': 'ERRORANONYMOUSUSER'}), mimetype='application/json')
 
@@ -285,7 +285,7 @@ def _update_certificate_context(context, course, user, user_certificate):
     """
     # Populate dynamic output values using the course/certificate data loaded above
     user_fullname = user.profile.name
-    platform_name = context.get('platform_name')
+    platform_name = microsite.get_value("platform_name", settings.PLATFORM_NAME)
     certificate_type = context.get('certificate_type')
 
     context['username'] = user.username
@@ -461,18 +461,24 @@ def render_html_view(request, user_id, course_id):
 
     # Create the initial view context, bootstrapping with Django settings and passed-in values
     context = {}
-    context['platform_name'] = settings.PLATFORM_NAME
+    context['platform_name'] = microsite.get_value("platform_name", settings.PLATFORM_NAME)
     context['course_id'] = course_id
 
     # Update the view context with the default ConfigurationModel settings
     configuration = CertificateHtmlViewConfiguration.get_config()
-    context.update(configuration.get('default', {}))
+    # if we are in a microsite, then let's first see if there is an override
+    # section in our config
+    config_key = microsite.get_value('microsite_config_key', 'default')
+    # if there is no special microsite override, then let's use default
+    if config_key not in configuration:
+        config_key = 'default'
+    context.update(configuration.get(config_key, {}))
 
     # Translators:  'All rights reserved' is a legal term used in copyrighting to protect published content
     reserved = _("All rights reserved")
     context['copyright_text'] = '&copy; {year} {platform_name}. {reserved}.'.format(
         year=settings.COPYRIGHT_YEAR,
-        platform_name=settings.PLATFORM_NAME,
+        platform_name=context.get('platform_name'),
         reserved=reserved
     )
 
@@ -488,7 +494,7 @@ def render_html_view(request, user_id, course_id):
 
     # Translators: This line appears as a byline to a header image and describes the purpose of the page
     context['logo_subtitle'] = _("Certificate Validation")
-    context['logo_alt'] = settings.PLATFORM_NAME
+    context['logo_alt'] = context.get('platform_name')
     invalid_template_path = 'certificates/invalid.html'
 
     # Kick the user back to the "Invalid" screen if the feature is disabled
@@ -531,7 +537,7 @@ def render_html_view(request, user_id, course_id):
         try:
             badge = BadgeAssertion.objects.get(user=user, course_id=course_key)
             tracker.emit(
-                'edx.badges.assertion.evidence_visit',
+                'edx.badge.assertion.evidence_visited',
                 {
                     'user_id': user.id,
                     'course_id': unicode(course_key),
@@ -553,8 +559,9 @@ def render_html_view(request, user_id, course_id):
 
     # Get the active certificate configuration for this course
     # If we do not have an active certificate, we'll need to send the user to the "Invalid" screen
+    # Passing in the 'preview' parameter, if specified, will return a configuration, if defined
     active_configuration = get_active_web_certificate(course, request.GET.get('preview'))
-    if active_configuration is None and request.GET.get('preview') is None:
+    if active_configuration is None:
         return render_to_response(invalid_template_path, context)
     else:
         context['certificate_data'] = active_configuration
@@ -565,10 +572,23 @@ def render_html_view(request, user_id, course_id):
     # Append/Override the existing view context values with request-time values
     _update_certificate_context(context, course, user, user_certificate)
 
-    # Append/Override the existing view context values with any course-specific static values from Advanced Settings
-    context.update(course.cert_html_view_overrides)
+    # Microsites will need to be able to override any hard coded
+    # content that was put into the context in the
+    # _update_certificate_context() call above. For example the
+    # 'company_about_description' talks about edX, which we most likely
+    # do not want to keep in a microsite
+    #
+    # So we need to re-apply any configuration/content that
+    # we are sourceing from the database. This is somewhat duplicative of
+    # the code at the beginning of this method, but we
+    # need the configuration at the top as some error code paths
+    # require that to be set up early on in the pipeline
+    #
+    microsite_config_key = microsite.get_value('microsite_config_key')
+    if microsite_config_key:
+        context.update(configuration.get(microsite_config_key, {}))
 
-    # Override further with any course-specific static values
+    # Append/Override the existing view context values with any course-specific static values from Advanced Settings
     context.update(course.cert_html_view_overrides)
 
     # FINALLY, generate and send the output the client
@@ -583,7 +603,7 @@ def track_share_redirect(request__unused, course_id, network, student_username):
     course_id = CourseLocator.from_string(course_id)
     assertion = get_object_or_404(BadgeAssertion, user__username=student_username, course_id=course_id)
     tracker.emit(
-        'edx.badges.assertion.shared', {
+        'edx.badge.assertion.shared', {
             'course_id': unicode(course_id),
             'social_network': network,
             'assertion_id': assertion.id,

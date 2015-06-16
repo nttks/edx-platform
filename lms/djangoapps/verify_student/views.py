@@ -708,35 +708,6 @@ def create_order(request):
     actual use is to add a single product to the user's cart and request
     immediate checkout.
     """
-    # Only submit photos if photo data is provided by the client.
-    # TODO (ECOM-188): Once the A/B test of decoupling verified / payment
-    # completes, we may be able to remove photo submission from this step
-    # entirely.
-    submit_photo = (
-        'face_image' in request.POST and
-        'photo_id_image' in request.POST
-    )
-
-    if (
-        submit_photo and not
-        SoftwareSecurePhotoVerification.user_has_valid_or_pending(request.user)
-    ):
-        attempt = SoftwareSecurePhotoVerification(user=request.user)
-        try:
-            b64_face_image = request.POST['face_image'].split(",")[1]
-            b64_photo_id_image = request.POST['photo_id_image'].split(",")[1]
-        except IndexError:
-            log.error(u"Invalid image data during photo verification.")
-            context = {
-                'success': False,
-            }
-            return JsonResponse(context)
-        attempt.upload_face_image(b64_face_image.decode('base64'))
-        attempt.upload_photo_id_image(b64_photo_id_image.decode('base64'))
-        attempt.mark_ready()
-
-        attempt.save()
-
     course_id = request.POST['course_id']
     course_id = CourseKey.from_string(course_id)
     donation_for_course = request.session.get('donation_for_course', {})
@@ -858,7 +829,7 @@ def submit_photos_for_verification(request):
 
 
 def _compose_message_reverification_email(
-        course_key, user_id, related_assessment_location, status, is_secure
+        course_key, user_id, related_assessment_location, status, request
 ):  # pylint: disable=invalid-name
     """
     Compose subject and message for photo reverification email.
@@ -885,14 +856,13 @@ def _compose_message_reverification_email(
         context = {
             "status": status,
             "course_name": course.display_name_with_default,
-            "assessment": reverification_block.related_assessment,
-            "courseware_url": redirect_url
+            "assessment": reverification_block.related_assessment
         }
 
         # Allowed attempts is 1 if not set on verification block
-        allowed_attempts = 1 if reverification_block.attempts == 0 else reverification_block.attempts
-        user_attempts = VerificationStatus.get_user_attempts(user_id, course_key, related_assessment_location)
-        left_attempts = allowed_attempts - user_attempts
+        allowed_attempts = reverification_block.attempts + 1
+        used_attempts = VerificationStatus.get_user_attempts(user_id, course_key, related_assessment_location)
+        left_attempts = allowed_attempts - used_attempts
         is_attempt_allowed = left_attempts > 0
         verification_open = True
         if reverification_block.due:
@@ -902,9 +872,11 @@ def _compose_message_reverification_email(
         context["is_attempt_allowed"] = is_attempt_allowed
         context["verification_open"] = verification_open
         context["due_date"] = get_default_time_display(reverification_block.due)
-        context["is_secure"] = is_secure
-        context["site"] = microsite.get_value('SITE_NAME', 'localhost')
-        context['platform_name'] = microsite.get_value('platform_name', settings.PLATFORM_NAME),
+
+        context['platform_name'] = settings.PLATFORM_NAME
+        context["used_attempts"] = used_attempts
+        context["allowed_attempts"] = allowed_attempts
+        context["support_link"] = microsite.get_value('email_from_address', settings.CONTACT_EMAIL)
 
         re_verification_link = reverse(
             'verify_student_incourse_reverify',
@@ -913,7 +885,10 @@ def _compose_message_reverification_email(
                 related_assessment_location
             )
         )
-        context["reverify_link"] = re_verification_link
+
+        context["course_link"] = request.build_absolute_uri(redirect_url)
+        context["reverify_link"] = request.build_absolute_uri(re_verification_link)
+
         message = render_to_string('emails/reverification_processed.txt', context)
         log.info(
             "Sending email to User_Id=%s. Attempts left for this user are %s. "
@@ -1030,7 +1005,7 @@ def results_callback(request):
             related_assessment_location = checkpoints[0].checkpoint_location
 
             subject, message = _compose_message_reverification_email(
-                course_key, user_id, related_assessment_location, status, request.is_secure()
+                course_key, user_id, related_assessment_location, status, request
             )
 
             _send_email(user_id, subject, message)

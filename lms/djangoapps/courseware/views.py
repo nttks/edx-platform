@@ -24,7 +24,7 @@ from django.http import Http404, HttpResponse, HttpResponseBadRequest
 from django.shortcuts import redirect
 from certificates import api as certs_api
 from edxmako.shortcuts import render_to_response, render_to_string, marketing_link
-from django_future.csrf import ensure_csrf_cookie
+from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.cache import cache_control
 from django.db import transaction
 from markupsafe import escape
@@ -47,7 +47,7 @@ from .entrance_exams import (
     user_must_complete_entrance_exam,
     user_has_passed_entrance_exam
 )
-from courseware.models import StudentModule, StudentModuleHistory
+from courseware.user_state_client import DjangoXBlockUserStateClient
 from course_modes.models import CourseMode
 
 from open_ended_grading import open_ended_notifications
@@ -1067,6 +1067,21 @@ def _progress(request, course_key, student_id):
 
     if show_generate_cert_btn:
         context.update(certs_api.certificate_downloadable_status(student, course_key))
+        # showing the certificate web view button if feature flags are enabled.
+        if settings.FEATURES.get('CERTIFICATES_HTML_VIEW', False):
+            if certs_api.get_active_web_certificate(course) is not None:
+                context.update({
+                    'show_cert_web_view': True,
+                    'cert_web_view_url': u'{url}'.format(
+                        url=certs_api.get_certificate_url(user_id=student.id, course_id=unicode(course.id))
+                    )
+                })
+            else:
+                context.update({
+                    'is_downloadable': False,
+                    'is_generating': True,
+                    'download_url': None
+                })
 
     with grades.manual_transaction():
         response = render_to_response('courseware/progress.html', context)
@@ -1098,34 +1113,18 @@ def submission_history(request, course_id, student_username, location):
     if (student_username != request.user.username) and (not staff_access):
         raise PermissionDenied
 
+    user_state_client = DjangoXBlockUserStateClient()
     try:
-        student = User.objects.get(username=student_username)
-        student_module = StudentModule.objects.get(
-            course_id=course_key,
-            module_state_key=usage_key,
-            student_id=student.id
-        )
-    except User.DoesNotExist:
-        return HttpResponse(escape(_(u'User {username} does not exist.').format(username=student_username)))
-    except StudentModule.DoesNotExist:
+        history_entries = user_state_client.get_history(student_username, usage_key)
+    except DjangoXBlockUserStateClient.DoesNotExist:
         return HttpResponse(escape(_(u'User {username} has never accessed problem {location}').format(
             username=student_username,
             location=location
         )))
-    history_entries = StudentModuleHistory.objects.filter(
-        student_module=student_module
-    ).order_by('-id')
-
-    # If no history records exist, let's force a save to get history started.
-    if not history_entries:
-        student_module.save()
-        history_entries = StudentModuleHistory.objects.filter(
-            student_module=student_module
-        ).order_by('-id')
 
     context = {
         'history_entries': history_entries,
-        'username': student.username,
+        'username': student_username,
         'location': location,
         'course_id': course_key.to_deprecated_string()
     }
@@ -1139,9 +1138,9 @@ def notification_image_for_tab(course_tab, user, course):
     """
 
     tab_notification_handlers = {
-        StaffGradingTab.name: open_ended_notifications.staff_grading_notifications,
-        PeerGradingTab.name: open_ended_notifications.peer_grading_notifications,
-        OpenEndedGradingTab.name: open_ended_notifications.combined_notifications
+        StaffGradingTab.type: open_ended_notifications.staff_grading_notifications,
+        PeerGradingTab.type: open_ended_notifications.peer_grading_notifications,
+        OpenEndedGradingTab.type: open_ended_notifications.combined_notifications
     }
 
     if course_tab.name in tab_notification_handlers:
@@ -1378,7 +1377,7 @@ def _track_successful_certificate_generation(user_id, course_id):  # pylint: dis
 
 
 @require_http_methods(["GET", "POST"])
-def render_xblock(request, usage_key_string):
+def render_xblock(request, usage_key_string, check_if_enrolled=True):
     """
     Returns an HttpResponse with HTML content for the xBlock with the given usage_key.
     The returned HTML is a chromeless rendering of the xBlock (excluding content of the containing courseware).
@@ -1389,7 +1388,7 @@ def render_xblock(request, usage_key_string):
 
     with modulestore().bulk_operations(course_key):
         # verify the user has access to the course, including enrollment check
-        course = get_course_with_access(request.user, 'load', course_key, check_if_enrolled=True)
+        course = get_course_with_access(request.user, 'load', course_key, check_if_enrolled=check_if_enrolled)
 
         # get the block, which verifies whether the user has access to the block.
         block, _ = get_module_by_usage_id(

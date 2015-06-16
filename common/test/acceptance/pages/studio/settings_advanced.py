@@ -200,7 +200,6 @@ class AdvancedSettingsPage(CoursePage):
             'annotation_storage_url',
             'social_sharing_url',
             'teams_configuration',
-            'is_course_hidden',
-            'minimum_grade_credit',
             'video_bumper',
+            'is_course_hidden',
         ]

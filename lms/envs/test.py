@@ -281,6 +281,8 @@ FEATURES['ENABLE_OAUTH2_PROVIDER'] = True
 FEATURES['ENABLE_MOBILE_REST_API'] = True
 FEATURES['ENABLE_MOBILE_SOCIAL_FACEBOOK_FEATURES'] = True
 FEATURES['ENABLE_VIDEO_ABSTRACTION_LAYER_API'] = True
+FEATURES['ENABLE_COURSE_BLOCKS_NAVIGATION_API'] = True
+FEATURES['ENABLE_RENDER_XBLOCK_API'] = True
 
 ###################### Payment ##############################3
 # Enable fake payment processing page
@@ -495,7 +497,6 @@ FEATURES['CERTIFICATES_HTML_VIEW'] = True
 
 ######### custom courses #########
 INSTALLED_APPS += ('ccx',)
-MIDDLEWARE_CLASSES += ('ccx.overrides.CcxMiddleware',)
 FEATURES['CUSTOM_COURSES_EDX'] = True
 
 # Set dummy values for profile image settings.

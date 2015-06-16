@@ -117,7 +117,7 @@ class BadgeHandler(object):
             )
         else:
             return _(u'Completed the course "{course_name}" ({course_mode})').format(
-                start_date=course.display_name,
+                course_name=course.display_name,
                 course_mode=mode,
             )
 
@@ -157,7 +157,7 @@ class BadgeHandler(object):
         Send an analytics event to record the creation of a badge assertion.
         """
         tracker.emit(
-            'edx.badges.assertion.created', {
+            'edx.badge.assertion.created', {
                 'user_id': user.id,
                 'course_id': unicode(self.course_key),
                 'enrollment_mode': assertion.mode,

@@ -9,6 +9,8 @@ from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.http import Http404
 
+from rest_framework.exceptions import PermissionDenied
+
 from opaque_keys import InvalidKeyError
 from opaque_keys.edx.locator import CourseKey
 
@@ -24,6 +26,7 @@ from django_comment_client.base.views import (
     track_forum_event,
 )
 from django_comment_client.utils import get_accessible_discussion_modules
+from lms.lib.comment_client.comment import Comment
 from lms.lib.comment_client.thread import Thread
 from lms.lib.comment_client.utils import CommentClientRequestError
 from openedx.core.djangoapps.course_groups.cohorts import get_cohort_id, is_commentable_cohorted
@@ -41,7 +44,7 @@ def _get_course_or_404(course_key, user):
     return course
 
 
-def _get_thread_and_context(request, thread_id, parent_id=None, retrieve_kwargs=None):
+def _get_thread_and_context(request, thread_id, retrieve_kwargs=None):
     """
     Retrieve the given thread and build a serializer context for it, returning
     both. This function also enforces access control for the thread (checking
@@ -56,7 +59,7 @@ def _get_thread_and_context(request, thread_id, parent_id=None, retrieve_kwargs=
         cc_thread = Thread(id=thread_id).retrieve(**retrieve_kwargs)
         course_key = CourseKey.from_string(cc_thread["course_id"])
         course = _get_course_or_404(course_key, request.user)
-        context = get_context(course, request, cc_thread, parent_id)
+        context = get_context(course, request, cc_thread)
         if (
                 not context["is_requester_privileged"] and
                 cc_thread["group_id"] and
@@ -70,6 +73,39 @@ def _get_thread_and_context(request, thread_id, parent_id=None, retrieve_kwargs=
         # params are validated at a higher level, so the only possible request
         # error is if the thread doesn't exist
         raise Http404
+
+
+def _get_comment_and_context(request, comment_id):
+    """
+    Retrieve the given comment and build a serializer context for it, returning
+    both. This function also enforces access control for the comment (checking
+    both the user's access to the course and to the comment's thread's cohort if
+    applicable). Raises Http404 if the comment does not exist or the user cannot
+    access it.
+    """
+    try:
+        cc_comment = Comment(id=comment_id).retrieve()
+        _, context = _get_thread_and_context(
+            request,
+            cc_comment["thread_id"],
+            cc_comment["parent_id"]
+        )
+        return cc_comment, context
+    except CommentClientRequestError:
+        raise Http404
+
+
+def _is_user_author_or_privileged(cc_content, context):
+    """
+    Check if the user is the author of a content object or a privileged user.
+
+    Returns:
+        Boolean
+    """
+    return (
+        context["is_requester_privileged"] or
+        context["cc_requester"]["id"] == cc_content["user_id"]
+    )
 
 
 def get_thread_list_url(request, course_key, topic_id_list):
@@ -270,13 +306,20 @@ def _do_extra_thread_actions(api_thread, cc_thread, request_fields, actions_form
     Perform any necessary additional actions related to thread creation or
     update that require a separate comments service request.
     """
-    form_following = actions_form.cleaned_data["following"]
-    if "following" in request_fields and form_following != api_thread["following"]:
-        if form_following:
-            context["cc_requester"].follow(cc_thread)
-        else:
-            context["cc_requester"].unfollow(cc_thread)
-        api_thread["following"] = form_following
+    for field, form_value in actions_form.cleaned_data.items():
+        if field in request_fields and form_value != api_thread[field]:
+            api_thread[field] = form_value
+            if field == "following":
+                if form_value:
+                    context["cc_requester"].follow(cc_thread)
+                else:
+                    context["cc_requester"].unfollow(cc_thread)
+            else:
+                assert field == "voted"
+                if form_value:
+                    context["cc_requester"].vote(cc_thread, "up")
+                else:
+                    context["cc_requester"].unvote(cc_thread)
 
 
 def create_thread(request, thread_data):
@@ -343,11 +386,10 @@ def create_comment(request, comment_data):
         detail.
     """
     thread_id = comment_data.get("thread_id")
-    parent_id = comment_data.get("parent_id")
     if not thread_id:
         raise ValidationError({"thread_id": ["This field is required."]})
     try:
-        cc_thread, context = _get_thread_and_context(request, thread_id, parent_id)
+        cc_thread, context = _get_thread_and_context(request, thread_id)
     except Http404:
         raise ValidationError({"thread_id": ["Invalid value."]})
 
@@ -368,7 +410,7 @@ def create_comment(request, comment_data):
     return serializer.data
 
 
-_THREAD_EDITABLE_BY_ANY = {"following"}
+_THREAD_EDITABLE_BY_ANY = {"following", "voted"}
 _THREAD_EDITABLE_BY_AUTHOR = {"topic_id", "type", "title", "raw_body"} | _THREAD_EDITABLE_BY_ANY
 
 
@@ -376,8 +418,7 @@ def _get_thread_editable_fields(cc_thread, context):
     """
     Get the list of editable fields for the given thread in the given context
     """
-    is_author = context["cc_requester"]["id"] == cc_thread["user_id"]
-    if context["is_requester_privileged"] or is_author:
+    if _is_user_author_or_privileged(cc_thread, context):
         return _THREAD_EDITABLE_BY_AUTHOR
     else:
         return _THREAD_EDITABLE_BY_ANY
@@ -420,3 +461,90 @@ def update_thread(request, thread_id, update_data):
     api_thread = serializer.data
     _do_extra_thread_actions(api_thread, cc_thread, update_data.keys(), actions_form, context)
     return api_thread
+
+
+def update_comment(request, comment_id, update_data):
+    """
+    Update a comment.
+
+    Parameters:
+
+        request: The django request object used for build_absolute_uri and
+          determining the requesting user.
+
+        comment_id: The id for the comment to update.
+
+        update_data: The data to update in the comment.
+
+    Returns:
+
+        The updated comment; see discussion_api.views.CommentViewSet for more
+        detail.
+
+    Raises:
+
+        Http404: if the comment does not exist or is not accessible to the
+          requesting user
+
+        PermissionDenied: if the comment is accessible to but not editable by
+          the requesting user
+
+        ValidationError: if there is an error applying the update (e.g. raw_body
+          is empty or thread_id is included)
+    """
+    cc_comment, context = _get_comment_and_context(request, comment_id)
+    if not _is_user_author_or_privileged(cc_comment, context):
+        raise PermissionDenied()
+    serializer = CommentSerializer(cc_comment, data=update_data, partial=True, context=context)
+    if not serializer.is_valid():
+        raise ValidationError(serializer.errors)
+    # Only save comment object if the comment is actually modified
+    if update_data:
+        serializer.save()
+    return serializer.data
+
+
+def delete_thread(request, thread_id):
+    """
+    Delete a thread.
+
+    Parameters:
+
+        request: The django request object used for build_absolute_uri and
+          determining the requesting user.
+
+        thread_id: The id for the thread to delete
+
+    Raises:
+
+        PermissionDenied: if user does not have permission to delete thread
+
+    """
+    cc_thread, context = _get_thread_and_context(request, thread_id)
+    if _is_user_author_or_privileged(cc_thread, context):
+        cc_thread.delete()
+    else:
+        raise PermissionDenied
+
+
+def delete_comment(request, comment_id):
+    """
+    Delete a comment.
+
+    Parameters:
+
+        request: The django request object used for build_absolute_uri and
+          determining the requesting user.
+
+        comment_id: The id of the comment to delete
+
+    Raises:
+
+        PermissionDenied: if user does not have permission to delete thread
+
+    """
+    cc_comment, context = _get_comment_and_context(request, comment_id)
+    if _is_user_author_or_privileged(cc_comment, context):
+        cc_comment.delete()
+    else:
+        raise PermissionDenied

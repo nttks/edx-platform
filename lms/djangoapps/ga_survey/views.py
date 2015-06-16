@@ -6,7 +6,7 @@ import logging
 
 from django.contrib.auth.decorators import login_required
 from django.http import Http404
-from django_future.csrf import ensure_csrf_cookie
+from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.http import require_POST
 
 from ga_survey.models import SurveySubmission

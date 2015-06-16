@@ -27,12 +27,10 @@ from django.http import (HttpResponse, HttpResponseBadRequest, HttpResponseForbi
                          HttpResponseServerError, Http404)
 from django.shortcuts import redirect
 from django.utils.translation import ungettext
-from django_future.csrf import ensure_csrf_cookie
-from django.template.response import TemplateResponse
 from django.utils.http import cookie_date, base36_to_int
 from django.utils.translation import ugettext as _, get_language
 from django.views.decorators.cache import never_cache
-from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
 from django.views.decorators.debug import sensitive_post_parameters
 from django.views.decorators.http import require_POST, require_GET
 
@@ -62,7 +60,7 @@ from student.models import (
 from student.forms import (AccountCreationForm, PasswordResetFormNoActive,
                            SetPasswordFormErrorMessages, ResignForm, SetResignReasonForm)
 
-from verify_student.models import SoftwareSecurePhotoVerification, MidcourseReverificationWindow
+from verify_student.models import SoftwareSecurePhotoVerification  # pylint: disable=import-error
 from certificates.models import CertificateStatuses, certificate_status_for_student
 from certificates.api import get_certificate_url, get_active_web_certificate  # pylint: disable=import-error
 from dark_lang.models import DarkLangConfig
@@ -668,14 +666,10 @@ def dashboard(request):
 
     ccx_membership_triplets = []
     if settings.FEATURES.get('CUSTOM_COURSES_EDX', False):
-        from ccx import ACTIVE_CCX_KEY
         from ccx.utils import get_ccx_membership_triplets
         ccx_membership_triplets = get_ccx_membership_triplets(
             user, course_org_filter, org_filter_out_set
         )
-        # should we deselect any active CCX at this time so that we don't have
-        # to change the URL for viewing a course?  I think so.
-        request.session[ACTIVE_CCX_KEY] = None
 
     context = {
         'enrollment_message': enrollment_message,
