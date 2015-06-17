@@ -2337,3 +2337,7 @@ msgstr "お困りの場合はサポートサイトの「よくある質問」を
 #: templates/register-sidebar.html
 msgid "<a href=\"{faq_site}\">View our FAQs</a> for answers to membership registration."
 msgstr "会員登録に関する<a href=\"{faq_site}\">よくある質問の回答を見る。</a>"
+
+#: common/djangoapps/util/password_policy_validators.py
+msgid "Must be more complex ({0})"
+msgstr "{0}含めてください。"
