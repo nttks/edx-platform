@@ -2310,3 +2310,23 @@ msgstr "学習リスト"
 #: templates/courseware/progress.html
 msgid "Grade graph"
 msgstr "成績グラフ"
+
+#: templates/register.html
+msgid "{password_min_length} alphanumeric characters or more"
+msgstr "半角英数{password_min_length}文字以上"
+
+#: templates/register.html
+msgid "It includes single-byte uppercase and lowercase letters, numbers, one or more characters"
+msgstr "半角アルファベットの大文字、小文字、数字を1文字以上含めてください"
+
+#: templates/register-sidebar.html
+msgid "Please check the 'FAQs' if you experience any problems."
+msgstr "お困りの場合はサポートサイトの「よくある質問」をご確認ください。"
+
+#: templates/register-sidebar.html
+msgid "<a href=\"{faq_site}\">View our FAQs</a> for answers to membership registration."
+msgstr "会員登録に関する<a href=\"{faq_site}\">よくある質問の回答を見る。</a>"
+
+#: common/djangoapps/util/password_policy_validators.py
+msgid "Must be more complex ({0})"
+msgstr "{0}含めてください。"
