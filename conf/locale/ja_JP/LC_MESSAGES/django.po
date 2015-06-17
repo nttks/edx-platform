@@ -984,15 +984,15 @@ msgstr "次の組み合わせが必要です。 ({0})"
 
 #: common/djangoapps/util/password_policy_validators.py
 msgid "must contain {0} or more uppercase characters"
-msgstr "半角アルファベット大文字 {0} 文字以上"
+msgstr "半角アルファベットの大文字を {0} 文字以上"
 
 #: common/djangoapps/util/password_policy_validators.py
 msgid "must contain {0} or more lowercase characters"
-msgstr "半角アルファベット小文字 {0} 文字以上"
+msgstr "半角アルファベットの小文字を {0} 文字以上"
 
 #: common/djangoapps/util/password_policy_validators.py
 msgid "must contain {0} or more digits"
-msgstr "数字 {0} 文字以上"
+msgstr "数字を {0} 文字以上"
 
 #: common/djangoapps/util/password_policy_validators.py
 msgid "must contain {0} or more punctuation characters"
