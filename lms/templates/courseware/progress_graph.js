@@ -26,7 +26,7 @@ $(function () {
   categories = {}
 
   sectionSpacer = 0.25
-  tickIndex = (1 + sectionSpacer) * (len(grade_summary['grade_breakdown']) + 1)
+  tickIndex = 2.5
   sectionIndex = 0
 
   ticks = [] #These are the indices and x-axis labels for the data
@@ -145,7 +145,7 @@ $(function () {
     
     %if show_grade_breakdown:
       var o = plot.pointOffset({y: ${overviewBarX}, x: ${totalScore}});
-      $grade_detail_graph.append('<div style="position:absolute;left:' + (o.left - 12) + 'px;top:' + (o.top - 20) + 'px">${"{totalscore:.0%}".format(totalscore=totalScore)}</div>');
+      $grade_detail_graph.append('<div style="position:absolute;left:' + (o.left + 5) + 'px;top:' + (o.top - 5) + 'px">${"{totalscore:.0%}".format(totalscore=totalScore)}</div>');
     %endif
   }
       
