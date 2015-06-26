@@ -53,7 +53,7 @@ class ResignTest(WebAppTest, GaccoTestMixin):
         """
         # Click resign on dashboard
         self.account_settings_page.click_on_link_in_link_field('resign')
-        self.account_settings_page.wait_for_messsage(
+        self.account_settings_page.wait_for_message(
             'resign',
             'An email has been sent to {}. Follow the link in the email to resign.'.format(self.email)
         )

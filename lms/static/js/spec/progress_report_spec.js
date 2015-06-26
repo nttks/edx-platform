@@ -1,4 +1,4 @@
-define(['jquery', 'underscore', 'js/common_helpers/ajax_helpers', 'js/progress_report'],
+define(['jquery', 'underscore', 'common/js/spec_helpers/ajax_helpers', 'js/progress_report'],
     function($, _, AjaxHelpers, ProgressReport) {
         describe('progress_report.js', function() {
 

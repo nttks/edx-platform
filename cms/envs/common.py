@@ -175,6 +175,9 @@ FEATURES = {
 
     # Enable credit eligibility feature
     'ENABLE_CREDIT_ELIGIBILITY': False,
+
+    # Can the visibility of the discussion tab be configured on a per-course basis?
+    'ALLOW_HIDING_DISCUSSION_TAB': False,
 }
 
 ENABLE_JASMINE = False
@@ -208,6 +211,7 @@ MAKO_TEMPLATES['main'] = [
     COMMON_ROOT / 'templates',
     COMMON_ROOT / 'djangoapps' / 'pipeline_mako' / 'templates',
     COMMON_ROOT / 'djangoapps' / 'pipeline_js' / 'templates',
+    COMMON_ROOT / 'static',  # required to statically include common Underscore templates
 ]
 
 for namespace, template_dirs in lms.envs.common.MAKO_TEMPLATES.iteritems():
@@ -955,8 +959,6 @@ ADVANCED_PROBLEM_TYPES = [
     }
 ]
 
-#date format the api will be formatting the datetime values
-API_DATE_FORMAT = '%Y-%m-%d'
 
 # Files and Uploads type filter values
 
