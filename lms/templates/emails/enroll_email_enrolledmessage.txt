@@ -1,20 +1,19 @@
 <%! from django.utils.translation import ugettext as _ %>
 
-${_("Dear {full_name}").format(full_name=full_name)}
+${_(u"{full_name} 様").format(full_name=full_name)}
 
-${_("You have been enrolled in {course_name} at {site_name} by a member "
-	"of the course staff. The course should now appear on your {site_name} "
-	"dashboard.").format(
+${_(u"講座スタッフによって {site_name} の「{course_name}」に登録されました。 "
+	u"{site_name} のマイページに講座が表示されます。").format(
 		course_name=course.display_name_with_default,
 		site_name=site_name
 	)}
 
-${_("To start accessing course materials, please visit {course_url}").format(
+${_(u"{course_url} へアクセスしてください。").format(
 		course_url=course_url
 	)}
 
 ----
-${_("This email was automatically sent from {site_name} to "
-	"{full_name}").format(
+${_(u"このメールは {site_name} から "
+	u"{full_name} 様宛に送信されました。").format(
 		site_name=site_name, full_name=full_name
 	)}

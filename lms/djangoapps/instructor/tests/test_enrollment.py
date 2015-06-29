@@ -5,6 +5,7 @@ Unit tests for instructor.enrollment methods.
 
 import json
 import mock
+import unittest
 from abc import ABCMeta
 from courseware.models import StudentModule
 from django.conf import settings
@@ -478,6 +479,7 @@ class TestGetEmailParams(ModuleStoreTestCase):
         self.assertEqual(result['course_url'], self.course_url)
 
 
+@unittest.skip("Skip until #169 is fixed.")
 class TestRenderMessageToString(TestCase):
     """
     Test that email templates can be rendered in a language chosen manually.
