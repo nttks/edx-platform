@@ -13,6 +13,7 @@ import random
 import requests
 import shutil
 import tempfile
+import unittest
 from urllib import quote
 
 from django.conf import settings
@@ -553,6 +554,7 @@ class TestInstructorAPIBulkAccountCreationAndEnrollment(ModuleStoreTestCase, Log
 
 @ddt.ddt
 @override_settings(MODULESTORE=TEST_DATA_MOCK_MODULESTORE)
+@unittest.skip("Skip until #169 is fixed.")
 class TestInstructorAPIEnrollment(ModuleStoreTestCase, LoginEnrollmentTestCase):
     """
     Test enrollment modification endpoint.

@@ -3,6 +3,7 @@
 Unit tests for the localization of emails sent by instructor.api methods.
 """
 
+import unittest
 from django.core import mail
 from django.core.urlresolvers import reverse
 from django.test import TestCase
@@ -15,6 +16,7 @@ from openedx.core.djangoapps.user_api.models import UserPreference
 from xmodule.modulestore.tests.factories import CourseFactory
 
 
+@unittest.skip("Skip until #169 is fixed.")
 class TestInstructorAPIEnrollmentEmailLocalization(TestCase):
     """
     Test whether the enroll, unenroll and beta role emails are sent in the

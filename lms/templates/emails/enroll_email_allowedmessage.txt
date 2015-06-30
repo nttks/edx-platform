@@ -1,43 +1,43 @@
 <%! from django.utils.translation import ugettext as _ %>
 
-${_("Dear student,")}
+${_(u"受講者 様")}
 
-${_("You have been invited to join {course_name} at {site_name} by a "
-	"member of the course staff.").format(
+${_(u"{site_name} の 「{course_name}」に登録するよう"
+	u"講座スタッフから招待されました").format(
 		course_name=course.display_name_with_default,
 		site_name=site_name
 	)}
 % if is_shib_course:
 % if auto_enroll:
 
-${_("To access the course visit {course_url} and login.").format(course_url=course_url)}
+${_(u"受講するには {course_url} へアクセスし、ログインしてください。").format(course_url=course_url)}
 % elif course_about_url is not None:
 
-${_("To access the course visit {course_about_url} and register for the course.").format(
+${_(u"受講するには {course_about_url} へアクセスし、受講登録してください。").format(
 		course_about_url=course_about_url)}
 % endif
 % else:
 
-${_("To finish your registration, please visit {registration_url} and fill "
-	"out the registration form making sure to use {email_address} in the E-mail field.").format(
+${_(u"受講登録を完了するには {registration_url} へアクセスし、"
+	u"会員登録フォームのメールアドレス欄に {email_address} を入力してください。").format(
 		registration_url=registration_url,
 		email_address=email_address
 	)}
 % if auto_enroll:
-${_("Once you have registered and activated your account, you will see "
-	"{course_name} listed on your dashboard.").format(
+${_(u"会員登録およびアクティベーションが完了すると、"
+	u"マイページに「{course_name}」が表示されます。").format(
 		course_name=course.display_name_with_default
 	)}
 % elif course_about_url is not None:
-${_("Once you have registered and activated your account, visit {course_about_url} "
-	"to join the course.").format(course_about_url=course_about_url)}
+${_(u"会員登録およびアクティベーションが完了してから、 {course_about_url} へアクセスし、"
+	u"受講登録をしてください。").format(course_about_url=course_about_url)}
 % else:
-${_("You can then enroll in {course_name}.").format(course_name=course.display_name_with_default)}
+${_(u"「{course_name}」に受講登録ができます。").format(course_name=course.display_name_with_default)}
 % endif
 % endif
 
 ----
-${_("This email was automatically sent from {site_name} to "
-	"{email_address}").format(
+${_(u"このメールは {site_name} より "
+	u"{email_address} に送信されました。").format(
 		site_name=site_name, email_address=email_address
 	)}

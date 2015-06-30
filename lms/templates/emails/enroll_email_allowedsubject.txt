@@ -1,5 +1,5 @@
 <%! from django.utils.translation import ugettext as _ %>
 
-${_("You have been invited to register for {course_name}").format(
+${_(u"「{course_name}」に登録するように招待されています").format(
 		course_name=course.display_name_with_default
 	)}
