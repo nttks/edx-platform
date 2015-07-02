@@ -7,8 +7,10 @@ import uuid
 import time
 import json
 import warnings
+from datetime import timedelta
 from collections import defaultdict
 from pytz import UTC
+from requests import HTTPError
 from ipware.ip import get_ip
 
 from django.conf import settings
@@ -26,6 +28,7 @@ from django.db import IntegrityError, transaction
 from django.http import (HttpResponse, HttpResponseBadRequest, HttpResponseForbidden,
                          HttpResponseServerError, Http404)
 from django.shortcuts import redirect
+from django.utils import timezone
 from django.utils.translation import ungettext
 from django.utils.http import cookie_date, base36_to_int
 from django.utils.translation import ugettext as _, get_language
@@ -33,15 +36,12 @@ from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
 from django.views.decorators.debug import sensitive_post_parameters
 from django.views.decorators.http import require_POST, require_GET
-
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-
 from django.template.response import TemplateResponse
 
 from ratelimitbackend.exceptions import RateLimitException
 
-from requests import HTTPError
 
 from social.apps.django_app import utils as social_utils
 from social.backends import oauth as social_oauth
@@ -109,9 +109,10 @@ from util.password_policy_validators import (
 import third_party_auth
 from third_party_auth import pipeline, provider
 from student.helpers import (
-    set_logged_in_cookie, check_verify_status_by_course,
+    check_verify_status_by_course,
     auth_pipeline_urls, get_next_url_for_login_page
 )
+from student.cookies import set_logged_in_cookies, delete_logged_in_cookies
 from student.models import anonymous_id_for_user
 from xmodule.error_module import ErrorDescriptor
 from shoppingcart.models import DonationConfiguration, CourseRegistrationCode
@@ -126,15 +127,14 @@ from notification_prefs.views import enable_notifications
 
 # Note that this lives in openedx, so this dependency should be refactored.
 from openedx.core.djangoapps.user_api.preferences import api as preferences_api
+from openedx.core.djangoapps.credit.api import get_credit_eligibility, get_purchased_credit_courses
 
 from openedx.core.djangoapps.course_global.models import CourseGlobalSetting
 
 
 log = logging.getLogger("edx.student")
 AUDIT_LOG = logging.getLogger("audit")
-
 ReverifyInfo = namedtuple('ReverifyInfo', 'course_id course_name course_number date status display')  # pylint: disable=invalid-name
-
 SETTING_CHANGE_INITIATED = 'edx.user.settings.change_initiated'
 
 
@@ -406,7 +406,7 @@ def signin_user(request):
     for msg in messages.get_messages(request):
         if msg.extra_tags.split()[0] == "social-auth":
             # msg may or may not be translated. Try translating [again] in case we are able to:
-            third_party_auth_error = _(msg)  # pylint: disable=translation-of-non-string
+            third_party_auth_error = _(unicode(msg))  # pylint: disable=translation-of-non-string
             break
 
     context = {
@@ -462,10 +462,10 @@ def register_user(request, extra_context=None):
     # selected provider.
     if third_party_auth.is_enabled() and pipeline.running(request):
         running_pipeline = pipeline.get(request)
-        current_provider = provider.Registry.get_by_backend_name(running_pipeline.get('backend'))
+        current_provider = provider.Registry.get_from_pipeline(running_pipeline)
         overrides = current_provider.get_register_form_data(running_pipeline.get('kwargs'))
         overrides['running_pipeline'] = running_pipeline
-        overrides['selected_provider'] = current_provider.NAME
+        overrides['selected_provider'] = current_provider.name
         context.update(overrides)
 
     return render_to_response('register.html', context)
@@ -563,6 +563,13 @@ def dashboard(request):
     enrollment_message = _create_recent_enrollment_message(
         course_enrollment_pairs, course_modes_by_course
     )
+
+    # Retrieve the course modes for each course
+    enrolled_courses_dict = {}
+    for course, __ in course_enrollment_pairs:
+        enrolled_courses_dict[unicode(course.id)] = course
+
+    credit_messages = _create_credit_availability_message(enrolled_courses_dict, user)
 
     course_optouts = Optout.objects.filter(user=user).values_list('course_id', flat=True)
     course_optouts_force = Optout.objects.filter(user=user, force_disabled=True).values_list('course_id', flat=True)
@@ -679,6 +686,7 @@ def dashboard(request):
 
     context = {
         'enrollment_message': enrollment_message,
+        'credit_messages': credit_messages,
         'course_enrollment_pairs': course_enrollment_pairs,
         'course_optouts': course_optouts,
         'course_optouts_force': course_optouts_force,
@@ -743,6 +751,47 @@ def _create_recent_enrollment_message(course_enrollment_pairs, course_modes):
             'enrollment/course_enrollment_message.html',
             {'course_enrollment_messages': messages, 'platform_name': platform_name}
         )
+
+
+def _create_credit_availability_message(enrolled_courses_dict, user):  # pylint: disable=invalid-name
+    """Builds a dict of credit availability for courses.
+
+    Construct a for courses user has completed and has not purchased credit
+    from the credit provider yet.
+
+    Args:
+        course_enrollment_pairs (list): A list of tuples containing courses, and the associated enrollment information.
+        user (User): User object.
+
+    Returns:
+        A dict of courses user is eligible for credit.
+
+    """
+    user_eligibilities = get_credit_eligibility(user.username)
+    user_purchased_credit = get_purchased_credit_courses(user.username)
+
+    eligibility_messages = {}
+    for course_id, eligibility in user_eligibilities.iteritems():
+        if course_id not in user_purchased_credit:
+            duration = eligibility["seconds_good_for_display"]
+            curr_time = timezone.now()
+            validity_till = eligibility["created_at"] + timedelta(seconds=duration)
+            if validity_till > curr_time:
+                diff = validity_till - curr_time
+                urgent = diff.days <= 30
+                eligibility_messages[course_id] = {
+                    "user_id": user.id,
+                    "course_id": course_id,
+                    "course_name": enrolled_courses_dict[course_id].display_name,
+                    "providers": eligibility["providers"],
+                    "status": eligibility["status"],
+                    "provider": eligibility.get("provider"),
+                    "urgent": urgent,
+                    "user_full_name": user.get_full_name(),
+                    "expiry": validity_till
+                }
+
+    return eligibility_messages
 
 
 def _get_recently_enrolled_courses(course_enrollment_pairs):
@@ -953,10 +1002,11 @@ def login_user(request, error=""):  # pylint: disable-msg=too-many-statements,un
         running_pipeline = pipeline.get(request)
         username = running_pipeline['kwargs'].get('username')
         backend_name = running_pipeline['backend']
-        requested_provider = provider.Registry.get_by_backend_name(backend_name)
+        third_party_uid = running_pipeline['kwargs']['uid']
+        requested_provider = provider.Registry.get_from_pipeline(running_pipeline)
 
         try:
-            user = pipeline.get_authenticated_user(username, backend_name)
+            user = pipeline.get_authenticated_user(requested_provider, username, third_party_uid)
             third_party_auth_successful = True
         except User.DoesNotExist:
             AUDIT_LOG.warning(
@@ -964,12 +1014,12 @@ def login_user(request, error=""):  # pylint: disable-msg=too-many-statements,un
                     username=username, backend_name=backend_name))
             return HttpResponse(
                 _("You've successfully logged into your {provider_name} account, but this account isn't linked with an {platform_name} account yet.").format(
-                    platform_name=settings.PLATFORM_NAME, provider_name=requested_provider.NAME
+                    platform_name=settings.PLATFORM_NAME, provider_name=requested_provider.name
                 )
                 + "<br/><br/>" +
                 _("Use your {platform_name} username and password to log into {platform_name} below, "
                   "and then link your {platform_name} account with {provider_name} from your dashboard.").format(
-                      platform_name=settings.PLATFORM_NAME, provider_name=requested_provider.NAME
+                      platform_name=settings.PLATFORM_NAME, provider_name=requested_provider.name
                 )
                 + "<br/><br/>" +
                 _("If you don't have an {platform_name} account yet, click <strong>Register Now</strong> at the top of the page.").format(
@@ -1121,7 +1171,7 @@ def login_user(request, error=""):  # pylint: disable-msg=too-many-statements,un
 
         # Ensure that the external marketing site can
         # detect that the user is logged in.
-        return set_logged_in_cookie(request, response)
+        return set_logged_in_cookies(request, response, user)
 
     if settings.FEATURES['SQUELCH_PII_IN_LOGS']:
         AUDIT_LOG.warning(u"Login failed - Account not active for user.id: {0}, resending activation".format(user.id))
@@ -1188,10 +1238,8 @@ def logout_user(request):
             redirect_uri = '/'
 
     response = redirect(redirect_uri)
-    response.delete_cookie(
-        settings.EDXMKTG_COOKIE_NAME,
-        path='/', domain=settings.SESSION_COOKIE_DOMAIN,
-    )
+
+    delete_logged_in_cookies(response)
     return response
 
 
@@ -1514,6 +1562,13 @@ def create_account_with_params(request, params):
 
     dog_stats_api.increment("common.student.account_created")
 
+    # If the user is registering via 3rd party auth, track which provider they use
+    third_party_provider = None
+    running_pipeline = None
+    if third_party_auth.is_enabled() and pipeline.running(request):
+        running_pipeline = pipeline.get(request)
+        third_party_provider = provider.Registry.get_from_pipeline(running_pipeline)
+
     # Track the user's registration
     if settings.FEATURES.get('SEGMENT_IO_LMS') and hasattr(settings, 'SEGMENT_IO_LMS_KEY'):
         tracking_context = tracker.get_tracker().resolve_context()
@@ -1522,20 +1577,13 @@ def create_account_with_params(request, params):
             'username': user.username,
         })
 
-        # If the user is registering via 3rd party auth, track which provider they use
-        provider_name = None
-        if third_party_auth.is_enabled() and pipeline.running(request):
-            running_pipeline = pipeline.get(request)
-            current_provider = provider.Registry.get_by_backend_name(running_pipeline.get('backend'))
-            provider_name = current_provider.NAME
-
         analytics.track(
             user.id,
             "edx.bi.user.account.registered",
             {
                 'category': 'conversion',
                 'label': params.get('course_id'),
-                'provider': provider_name
+                'provider': third_party_provider.name if third_party_provider else None
             },
             context={
                 'Google Analytics': {
@@ -1552,6 +1600,7 @@ def create_account_with_params(request, params):
     # 2. Random user generation for other forms of testing.
     # 3. External auth bypassing activation.
     # 4. Have the platform configured to not require e-mail activation.
+    # 5. Registering a new user using a trusted third party provider (with skip_email_verification=True)
     #
     # Note that this feature is only tested as a flag set one way or
     # the other for *new* systems. we need to be careful about
@@ -1560,7 +1609,11 @@ def create_account_with_params(request, params):
     send_email = (
         not settings.FEATURES.get('SKIP_EMAIL_VALIDATION', None) and
         not settings.FEATURES.get('AUTOMATIC_AUTH_FOR_TESTING') and
-        not (do_external_auth and settings.FEATURES.get('BYPASS_ACTIVATION_EMAIL_FOR_EXTAUTH'))
+        not (do_external_auth and settings.FEATURES.get('BYPASS_ACTIVATION_EMAIL_FOR_EXTAUTH')) and
+        not (
+            third_party_provider and third_party_provider.skip_email_verification and
+            user.email == running_pipeline['kwargs'].get('details', {}).get('email')
+        )
     )
     if send_email:
         context = {
@@ -1619,32 +1672,7 @@ def create_account_with_params(request, params):
     # temporary enroll in global course.
     _enroll_global_course(user.email)
 
-
-def set_marketing_cookie(request, response):
-    """
-    Set the login cookie for the edx marketing site on the given response. Its
-    expiration will match that of the given request's session.
-    """
-    if request.session.get_expire_at_browser_close():
-        max_age = None
-        expires = None
-    else:
-        max_age = request.session.get_expiry_age()
-        expires_time = time.time() + max_age
-        expires = cookie_date(expires_time)
-
-    # we want this cookie to be accessed via javascript
-    # so httponly is set to None
-    response.set_cookie(
-        settings.EDXMKTG_COOKIE_NAME,
-        'true',
-        max_age=max_age,
-        expires=expires,
-        domain=settings.SESSION_COOKIE_DOMAIN,
-        path='/',
-        secure=None,
-        httponly=None
-    )
+    return new_user
 
 
 @csrf_exempt
@@ -1656,7 +1684,7 @@ def create_account(request, post_override=None):
     warnings.warn("Please use RegistrationView instead.", DeprecationWarning)
 
     try:
-        create_account_with_params(request, post_override or request.POST)
+        user = create_account_with_params(request, post_override or request.POST)
     except AccountValidationError as exc:
         return JsonResponse({'success': False, 'value': exc.message, 'field': exc.field}, status=400)
     except ValidationError as exc:
@@ -1681,7 +1709,7 @@ def create_account(request, post_override=None):
         'success': True,
         'redirect_url': redirect_url,
     })
-    set_marketing_cookie(request, response)
+    set_logged_in_cookies(request, response, user)
     return response
 
 
@@ -2240,66 +2268,6 @@ def confirm_email_change(request, key):  # pylint: disable=unused-argument
         # If we get an unexpected exception, be sure to rollback the transaction
         transaction.rollback()
         raise
-
-
-# TODO: DELETE AFTER NEW ACCOUNT PAGE DONE
-@ensure_csrf_cookie
-@require_POST
-def change_name_request(request):
-    """ Log a request for a new name. """
-    if not request.user.is_authenticated():
-        raise Http404
-
-    try:
-        pnc = PendingNameChange.objects.get(user=request.user.id)
-    except PendingNameChange.DoesNotExist:
-        pnc = PendingNameChange()
-    pnc.user = request.user
-    pnc.new_name = request.POST['new_name'].strip()
-    pnc.rationale = request.POST['rationale']
-    if len(pnc.new_name) < 2:
-        return JsonResponse({
-            "success": False,
-            "error": _('Name required'),
-        })  # TODO: this should be status code 400  # pylint: disable=fixme
-    pnc.save()
-
-    # The following automatically accepts name change requests. Remove this to
-    # go back to the old system where it gets queued up for admin approval.
-    accept_name_change_by_id(pnc.id)
-
-    return JsonResponse({"success": True})
-
-
-# TODO: DELETE AFTER NEW ACCOUNT PAGE DONE
-def accept_name_change_by_id(uid):
-    """
-    Accepts the pending name change request for the user represented
-    by user id `uid`.
-    """
-    try:
-        pnc = PendingNameChange.objects.get(id=uid)
-    except PendingNameChange.DoesNotExist:
-        return JsonResponse({
-            "success": False,
-            "error": _('Invalid ID'),
-        })  # TODO: this should be status code 400  # pylint: disable=fixme
-
-    user = pnc.user
-    u_prof = UserProfile.objects.get(user=user)
-
-    # Save old name
-    meta = u_prof.get_meta()
-    if 'old_names' not in meta:
-        meta['old_names'] = []
-    meta['old_names'].append([u_prof.name, pnc.rationale, datetime.datetime.now(UTC).isoformat()])
-    u_prof.set_meta(meta)
-
-    u_prof.name = pnc.new_name
-    u_prof.save()
-    pnc.delete()
-
-    return JsonResponse({"success": True})
 
 
 @require_POST

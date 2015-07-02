@@ -36,5 +36,7 @@ mysql-client
 virtualenvwrapper
 libgeos-ruby1.8
 lynx-cur
+libxmlsec1-dev
+swig
 fonts-vlgothic
 ttf-ubuntu-font-family

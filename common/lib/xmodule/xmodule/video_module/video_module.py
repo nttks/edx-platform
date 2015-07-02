@@ -86,7 +86,7 @@ log = logging.getLogger(__name__)
 _ = lambda text: text
 
 
-class VideoModule(VideoFields, VideoTranscriptsMixin, VideoStudentViewHandlers, XModule):
+class VideoModule(VideoFields, VideoTranscriptsMixin, VideoStudentViewHandlers, XModule, LicenseMixin):
     """
     XML source example:
         <video show_captions="true"
@@ -332,7 +332,7 @@ class VideoModule(VideoFields, VideoTranscriptsMixin, VideoStudentViewHandlers, 
 @XBlock.wants("request_cache")
 @XBlock.wants("settings")
 class VideoDescriptor(VideoFields, VideoTranscriptsMixin, VideoStudioViewHandlers,
-                      TabsEditingDescriptor, EmptyDataRawDescriptor):
+                      TabsEditingDescriptor, EmptyDataRawDescriptor, LicenseMixin):
     """
     Descriptor for `VideoModule`.
     """
@@ -381,9 +381,10 @@ class VideoDescriptor(VideoFields, VideoTranscriptsMixin, VideoStudioViewHandler
                 if not self.fields['download_video'].is_set_on(self):
                     self.download_video = True
 
-        # Set download_video field to default value if its not explicitly set for backward compatibility.
+        # Force download_video field to default value if it's not explicitly set for backward compatibility.
         if not self.fields['download_video'].is_set_on(self):
             self.download_video = self.download_video
+            self.force_save_fields(['download_video'])
 
         # for backward compatibility.
         # If course was existed and was not re-imported by the moment of adding `download_track` field,

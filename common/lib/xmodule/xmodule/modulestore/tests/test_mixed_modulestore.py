@@ -523,6 +523,75 @@ class TestMixedModuleStore(CommonMixedModuleStoreSetup):
         component = self.store.publish(component.location, self.user_id)
         self.assertFalse(self.store.has_changes(component))
 
+    @ddt.data('draft', 'split')
+    def test_unit_stuck_in_draft_mode(self, default_ms):
+        """
+        After revert_to_published() the has_changes() should return false if draft has no changes
+        """
+        self.initdb(default_ms)
+
+        test_course = self.store.create_course('testx', 'GreekHero', 'test_run', self.user_id)
+
+        # Create a dummy component to test against
+        xblock = self.store.create_item(
+            self.user_id,
+            test_course.id,
+            'vertical',
+            block_id='test_vertical'
+        )
+
+        # Not yet published, so changes are present
+        self.assertTrue(self.store.has_changes(xblock))
+
+        # Publish and verify that there are no unpublished changes
+        component = self.store.publish(xblock.location, self.user_id)
+        self.assertFalse(self.store.has_changes(component))
+
+        self.store.revert_to_published(component.location, self.user_id)
+        component = self.store.get_item(component.location)
+        self.assertFalse(self.store.has_changes(component))
+
+        # Publish and verify again
+        component = self.store.publish(component.location, self.user_id)
+        self.assertFalse(self.store.has_changes(component))
+
+    @ddt.data('draft', 'split')
+    def test_unit_stuck_in_published_mode(self, default_ms):
+        """
+        After revert_to_published() the has_changes() should return true if draft has changes
+        """
+        self.initdb(default_ms)
+
+        test_course = self.store.create_course('testx', 'GreekHero', 'test_run', self.user_id)
+
+        # Create a dummy component to test against
+        xblock = self.store.create_item(
+            self.user_id,
+            test_course.id,
+            'vertical',
+            block_id='test_vertical'
+        )
+
+        # Not yet published, so changes are present
+        self.assertTrue(self.store.has_changes(xblock))
+
+        # Publish and verify that there are no unpublished changes
+        component = self.store.publish(xblock.location, self.user_id)
+        self.assertFalse(self.store.has_changes(component))
+
+        # Discard changes and verify that there are no changes
+        self.store.revert_to_published(component.location, self.user_id)
+        component = self.store.get_item(component.location)
+        self.assertFalse(self.store.has_changes(component))
+
+        # Change the component, then check that there now are changes
+        component = self.store.get_item(component.location)
+        component.display_name = 'Changed Display Name'
+        self.store.update_item(component, self.user_id)
+
+        # Verify that changes are present
+        self.assertTrue(self.store.has_changes(component))
+
     def setup_has_changes(self, default_ms):
         """
         Common set up for has_changes tests below.
@@ -794,7 +863,7 @@ class TestMixedModuleStore(CommonMixedModuleStoreSetup):
     #   find: find parent (definition.children) 2x, find draft item, get inheritance items
     #   send: one delete query for specific item
     # Split:
-    #   find: active_version & structure
+    #   find: active_version & structure (cached)
     #   send: update structure and active_versions
     @ddt.data(('draft', 4, 1), ('split', 2, 2))
     @ddt.unpack
@@ -2015,8 +2084,11 @@ class TestMixedModuleStore(CommonMixedModuleStoreSetup):
                     course_key = course.id
 
                     def _clear_bulk_ops_record(course_key):  # pylint: disable=unused-argument
-                        """ Check if the signal has been fired. """
-                        self.assertEqual(receiver.call_count, 0)
+                        """
+                        Check if the signal has been fired.
+                        The course_published signal fires before the _clear_bulk_ops_record.
+                        """
+                        self.assertEqual(receiver.call_count, 1)
 
                     with patch.object(
                         self.store.thread_cache.default_store, '_clear_bulk_ops_record', wraps=_clear_bulk_ops_record
