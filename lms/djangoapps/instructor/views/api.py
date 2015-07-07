@@ -2145,13 +2145,13 @@ def get_survey(request, course_id):  # pylint: disable=W0613
     #Note(#EDX-501): Modified temporarily.
     #header = ['Unit ID', 'Survey Name', 'Created', 'User Name', 'Gender', 'Year of Birth',
     #          'Level of Education', 'Disabled']
-    header = ['Unit ID', 'Survey Name', 'Created', 'User Name', 'Disabled']
+    header = ['Unit ID', 'Survey Name', 'Created', 'User Name', 'Resigned', 'Unenrolled']
     rows = []
 
     #Note(yokose): raw() raises InterfaceError when using CourseKey
     #course_id = SlashSeparatedCourseKey.from_deprecated_string(course_id)
     submissions = list(SurveySubmission.objects.raw(
-        '''SELECT s.*, u.*, p.*, t.account_status
+        '''SELECT s.*, u.*, p.*, t.account_status, e.is_active
            FROM ga_survey_surveysubmission s
            LEFT OUTER JOIN auth_user u
            ON s.user_id = u.id
@@ -2159,7 +2159,9 @@ def get_survey(request, course_id):  # pylint: disable=W0613
            ON s.user_id = p.user_id
            LEFT OUTER JOIN student_userstanding t
            ON s.user_id = t.user_id
-           WHERE course_id = %s
+           LEFT OUTER JOIN student_courseenrollment e
+           ON s.user_id = e.user_id and s.course_id = e.course_id
+           WHERE s.course_id = %s
            ORDER BY s.unit_id, s.created''',
         [course_id]
     ))
@@ -2182,14 +2184,15 @@ def get_survey(request, course_id):  # pylint: disable=W0613
             except ValueError:
                 ans_dict = {}
                 msg = "Couldn't parse JSON in survey_answer, so treat each item as 'N/A'. course_id={0}, unit_id={1}, username={2}".format(
-                    unicode(s.course_id), s.unit_id, s.username)
+                    course_id, s.unit_id, s.username)
                 log.warning(msg)
             row = [s.unit_id, s.survey_name, s.created, s.username]
             #Note(EDX-501): Modified temporarily.
             #row.append(dict(UserProfile.GENDER_CHOICES).get(s.gender, s.gender) or '')
             #row.append(s.year_of_birth or '')
             #row.append(dict(UserProfile.LEVEL_OF_EDUCATION_CHOICES).get(s.level_of_education, s.level_of_education) or '')
-            row.append(s.account_status if s.account_status == UserStanding.ACCOUNT_DISABLED else '')
+            row.append('1' if s.account_status == UserStanding.ACCOUNT_DISABLED else '')
+            row.append('1' if not s.is_active else '')
             for key in keys:
                 value = ans_dict.get(key, 'N/A')
                 # NOTE: replace list into commified str
@@ -2197,4 +2200,6 @@ def get_survey(request, course_id):  # pylint: disable=W0613
                     value = ','.join(value)
                 row.append(value)
             rows.append(row)
-    return csv_response(course_id.replace('/', '-') + '-survey.csv', header, rows)
+    course_key = SlashSeparatedCourseKey.from_deprecated_string(course_id)
+    file_name = '{org}-{course}-{run}-survey.csv'.format(org=course_key.org, course=course_key.course, run=course_key.run)
+    return csv_response(file_name, header, rows)
