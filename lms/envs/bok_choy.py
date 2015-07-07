@@ -157,6 +157,9 @@ if os.environ.get('ENABLE_BOKCHOY_GA'):
         "gacco-tos": "https://support.gacco.org/hc/ja/articles/200749224"
     }
 
+    # OAuth2
+    FEATURES['ENABLE_OAUTH2_PROVIDER'] = True
+
 #####################################################################
 # Lastly, see if the developer has any local overrides.
 try:
