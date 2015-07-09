@@ -27,33 +27,35 @@
 </head>
 
 <body class="{% block bodyclass %}{% endblock %} lang_{{LANGUAGE_CODE}}">
-  <a class="nav-skip" href="{% block nav_skip %}#content{% endblock %}">{% trans "Skip to main content" %}</a>
-  {% with course=request.course %}
+  <div class="window-wrap" dir="${static.dir_rtl()}">
+    <a class="nav-skip" href="{% block nav_skip %}#content{% endblock %}">{% trans "Skip to main content" %}</a>
+    {% with course=request.course %}
+      {% if IS_EDX_DOMAIN %}
+        {% include "navigation-edx.html" %}
+      {% elif ENABLE_CUSTOM_THEME %}
+        {% include "theme-head-extra.html" %}
+        {% include "theme-header.html" %}
+      {% else %}
+        {% include "navigation.html" %}
+      {% endif %}
+    {% endwith %}
+    <div class="content-wrapper" id="content">
+      {% block body %}{% endblock %}
+      {% block bodyextra %}{% endblock %}
+    </div>
     {% if IS_EDX_DOMAIN %}
-      {% include "navigation-edx.html" %}
+      {% include "footer-edx-v3.html" %}
     {% elif ENABLE_CUSTOM_THEME %}
-      {% include "theme-head-extra.html" %}
-      {% include "theme-header.html" %}
+      {% include "theme-footer.html" %}
     {% else %}
-      {% include "navigation.html" %}
+      {% include "footer.html" %}
     {% endif %}
-  {% endwith %}
-  <div class="content-wrapper" id="content">
-    {% block body %}{% endblock %}
-    {% block bodyextra %}{% endblock %}
   </div>
-  {% if IS_EDX_DOMAIN %}
-    {% include "footer-edx-v3.html" %}
-  {% elif ENABLE_CUSTOM_THEME %}
-    {% include "theme-footer.html" %}
-  {% else %}
-    {% include "footer.html" %}
-  {% endif %}
 
-  {% compressed_js 'application' %}
-  {% compressed_js 'module-js' %}
+    {% compressed_js 'application' %}
+    {% compressed_js 'module-js' %}
 
-  {% render_block "js" %}
+    {% render_block "js" %}
 </body>
 </html>
 
