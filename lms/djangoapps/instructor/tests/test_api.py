@@ -4495,6 +4495,8 @@ class TestInstructorAPISurveyDownload(ModuleStoreTestCase, LoginEnrollmentTestCa
             account_status=UserStanding.ACCOUNT_ENABLED,
             changed_by=self.user1,
         )
+        CourseEnrollment.enroll(self.user1, self.course.id)
+        # Resigned user
         self.user2 = UserFactory.create(
             profile__gender='foo',
             profile__year_of_birth=None,
@@ -4505,11 +4507,13 @@ class TestInstructorAPISurveyDownload(ModuleStoreTestCase, LoginEnrollmentTestCa
             account_status=UserStanding.ACCOUNT_DISABLED,
             changed_by=self.user2,
         )
+        # Unenrolled user
         self.user3 = UserFactory.create(
             profile__gender=None,
             profile__year_of_birth=None,
             profile__level_of_education=None,
         )
+        # Dummy user
         self.user4 = UserFactory.create()
 
         self.submission1 = {
@@ -4580,20 +4584,20 @@ class TestInstructorAPISurveyDownload(ModuleStoreTestCase, LoginEnrollmentTestCa
         #    '"22222222222222222222222222222222","survey #2","%s","%s","","","","","","","","extra"'
         #    % (submission3.created, submission3.user.username)
         #)
-        self.assertEqual(rows[0], '"Unit ID","Survey Name","Created","User Name","Disabled","Q1","Q2","Q3","Q4"')
+        self.assertEqual(rows[0], '"Unit ID","Survey Name","Created","User Name","Resigned","Unenrolled","Q1","Q2","Q3","Q4"')
         self.assertEqual(
             rows[1],
-            '"11111111111111111111111111111111","survey #1","%s","%s","","1","1,2","submission #1","N/A"'
+            '"11111111111111111111111111111111","survey #1","%s","%s","","","1","1,2","submission #1","N/A"'
             % (submission1.created, submission1.user.username)
         )
         self.assertEqual(
             rows[2],
-            '"11111111111111111111111111111111","survey #1","%s","%s","disabled","1","2","submission #2","N/A"'
+            '"11111111111111111111111111111111","survey #1","%s","%s","1","1","1","2","submission #2","N/A"'
             % (submission2.created, submission2.user.username)
         )
         self.assertEqual(
             rows[3],
-            '"22222222222222222222222222222222","survey #2","%s","%s","","","","","extra"'
+            '"22222222222222222222222222222222","survey #2","%s","%s","","1","","","","extra"'
             % (submission3.created, submission3.user.username)
         )
 
@@ -4606,7 +4610,7 @@ class TestInstructorAPISurveyDownload(ModuleStoreTestCase, LoginEnrollmentTestCa
         self.assertEqual(1, len(rows))
         #Note(EDX-501): Modified temporarily.
         #self.assertEqual(rows[0], '"Unit ID","Survey Name","Created","User Name","Gender","Year of Birth","Level of Education","Disabled"')
-        self.assertEqual(rows[0], '"Unit ID","Survey Name","Created","User Name","Disabled"')
+        self.assertEqual(rows[0], '"Unit ID","Survey Name","Created","User Name","Resigned","Unenrolled"')
 
     def test_get_survey_when_data_is_broken(self):
         submission1 = SurveySubmissionFactory.create(**self.submission1)
@@ -4618,14 +4622,14 @@ class TestInstructorAPISurveyDownload(ModuleStoreTestCase, LoginEnrollmentTestCa
         body = response.content.rstrip('\n').replace('\r', '')
         rows = body.split('\n')
         self.assertEqual(3, len(rows))
-        self.assertEqual(rows[0], '"Unit ID","Survey Name","Created","User Name","Disabled","Q1","Q2","Q3"')
+        self.assertEqual(rows[0], '"Unit ID","Survey Name","Created","User Name","Resigned","Unenrolled","Q1","Q2","Q3"')
         self.assertEqual(
             rows[1],
-            '"11111111111111111111111111111111","survey #1","%s","%s","","1","1,2","submission #1"'
+            '"11111111111111111111111111111111","survey #1","%s","%s","","","1","1,2","submission #1"'
             % (submission1.created, submission1.user.username)
         )
         self.assertEqual(
             rows[2],
-            '"22222222222222222222222222222222","survey #5","%s","%s","","N/A","N/A","N/A"'
+            '"22222222222222222222222222222222","survey #5","%s","%s","","","N/A","N/A","N/A"'
             % (submission5.created, submission5.user.username)
         )
