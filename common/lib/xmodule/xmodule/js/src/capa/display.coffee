@@ -313,7 +313,8 @@ class @Problem
           @$('div.action input.check').focus()
         else
           @gentle_alert response.success
-      Logger.log 'problem_graded', [@answers, response.contents], @id
+      # NOTE(#65): response.contents is too long to be logged, so omit it.
+      Logger.log 'problem_graded', [@answers, ''], @id
     ).always(@enableCheckButtonAfterResponse)
 
   reset: =>

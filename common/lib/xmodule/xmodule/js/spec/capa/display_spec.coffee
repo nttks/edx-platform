@@ -172,7 +172,7 @@ describe 'Problem', ->
           always: (callable) -> callable()
           done: (callable) -> callable()
       @problem.check()
-      expect(Logger.log).toHaveBeenCalledWith 'problem_graded', ['foo=1&bar=2', 'mock grader response'], @problem.id
+      expect(Logger.log).toHaveBeenCalledWith 'problem_graded', ['foo=1&bar=2', ''], @problem.id
 
     it 'submit the answer for check', ->
       spyOn($, 'postWithPrefix').andCallFake (url, answers, callback) ->
