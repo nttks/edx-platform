@@ -2341,3 +2341,87 @@ msgstr "会員登録に関する<a href=\"{faq_site}\">よくある質問の回�
 #: common/djangoapps/util/password_policy_validators.py
 msgid "Must be more complex ({0})"
 msgstr "{0}含めてください。"
+
+#: templates/provider/authorize.html
+msgid "Authorization request"
+msgstr "認可リクエスト"
+
+#: templates/provider/authorize.html
+msgid "An error occurred with authorization request."
+msgstr "認可リクエストでエラーが発生しました。"
+
+#: templates/provider/authorize.html
+msgid "Error Code:"
+msgstr "エラーコード:"
+
+#: templates/provider/authorize.html
+msgid "would like to access your data with the following permissions:"
+msgstr "が次の許可を要求しています:"
+
+#: templates/provider/authorize.html
+msgid "Developer Info"
+msgstr "開発者情報"
+
+#: templates/provider/authorize.html
+msgid "When you click [Approve] you will be redirected to the following URL."
+msgstr "「承認する」をクリックすると次のURLにリダイレクトされます。"
+
+#: templates/provider/authorize.html
+msgid "Approve"
+msgstr "承認する"
+
+#: templates/provider/authorize.html
+msgid "When you click [Approve], it will be allowed to use your information in accordance with this app and gacco each of the Terms of Use and Privacy Policy."
+msgstr "「承認する」をクリックすると、このアプリケーションとgaccoがそれぞれの利用規約とプライバシーポリシーに従ってあなたの情報を利用することを許可することになります。"
+
+#: templates/provider/authorize.html
+msgid "Detail"
+msgstr "詳細"
+
+#: templates/provider/_profile.html
+msgid "Display of the basic profile information"
+msgstr "基本的なプロフィール情報の表示"
+
+#: templates/provider/_profile.html
+msgid "Display of name, username registered in gacco"
+msgstr "gaccoに登録された氏名、ユーザー名の表示"
+
+#: templates/provider/_openid.html
+msgid "Association with gacco user"
+msgstr "gaccoユーザーとの関連付け"
+
+#: templates/provider/_openid.html
+msgid "Authority to associate the user's user and gacco of this application"
+msgstr "このアプリケーションのユーザーとgaccoのユーザーを関連付ける権限"
+
+#: templates/provider/_email.html
+msgid "Display of the E-mail address"
+msgstr "メールアドレスの表示"
+
+#: templates/provider/_email.html
+msgid "Display E-mail address registered in gacco"
+msgstr "gaccoに登録されたメールアドレスの表示"
+
+#: templates/provider/_course_staff.html
+msgid "Display of course IDs that has been registered as a staff"
+msgstr "スタッフとして登録されている講座IDの表示"
+
+#: templates/provider/_course_staff.html
+msgid "Display of course IDs of gacco that has been registered as a staff"
+msgstr "スタッフとして登録されているgaccoの講座IDの表示"
+
+#: templates/provider/_course_instructor.html
+msgid "Display of course IDs that has been registered as an instructor"
+msgstr "講師として登録されている講座IDの表示"
+
+#: templates/provider/_course_instructor.html
+msgid "Display of course IDs of gacco that has been registered as an instructor"
+msgstr "講師として登録されているgaccoの講座IDの表示"
+
+#: templates/provider/_permissions.html
+msgid "Display of information about the permission"
+msgstr "権限に関する情報の表示"
+
+#: templates/provider/_permissions.html
+msgid "Display of information about the permission in gacco"
+msgstr "gaccoにおける権限に関する情報の表示"
