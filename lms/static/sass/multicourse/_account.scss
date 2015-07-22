@@ -5,7 +5,7 @@
 // =====
 
 // page-level
-.view-register, .view-login, .view-passwordreset, .view-resign {
+.view-register, .view-login, .view-passwordreset, .view-resign, .view-authorize {
   background: $container-bg;
 
 
@@ -158,7 +158,7 @@
 }
 
 // shared
-.login, .register, .passwordreset, .resign, #forgot-password-modal #password-reset {
+.login, .register, .passwordreset, .resign, .authorize, #forgot-password-modal #password-reset {
 
   // reset - horrible, but necessary
   p, ol, ul, h1, h2, h3, h4, h5, h6, label, input, textarea {
@@ -692,6 +692,22 @@
     padding: 0;
   }
 
+  .form-actions {
+    .action-primary {
+      width: flex-grid(3,8);
+    }
+
+    .action-cancel {
+      @extend %m-btn-secondary;
+      width: flex-grid(3,8);
+      line-height: lh(1);
+      margin: 0;
+    }
+  }
+}
+
+// authorize
+.view-authorize {
   .form-actions {
     .action-primary {
       width: flex-grid(3,8);

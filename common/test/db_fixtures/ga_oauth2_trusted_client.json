@@ -1,0 +1,9 @@
+[
+  {
+    "pk": 101,
+    "model": "oauth2_provider.trustedclient",
+    "fields": {
+      "client": 102
+    }
+  }
+]
