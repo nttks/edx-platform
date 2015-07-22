@@ -1,0 +1,26 @@
+[
+  {
+    "pk": 101,
+    "model": "oauth2.client",
+    "fields": {
+        "name": "oidc_test_app",
+        "url": "http://localhost:8003",
+        "redirect_uri": "http://localhost:8003/dashboard",
+        "client_id": "test_client_id",
+        "client_secret": "test_client_secret",
+        "client_type": 0
+    }
+  },
+  {
+    "pk": 102,
+    "model": "oauth2.client",
+    "fields": {
+        "name": "oidc_test_trusted_app",
+        "url": "http://localhost:8003",
+        "redirect_uri": "http://localhost:8003/dashboard",
+        "client_id": "test_trusted_client_id",
+        "client_secret": "test_trusted_client_secret",
+        "client_type": 0
+    }
+  }
+]

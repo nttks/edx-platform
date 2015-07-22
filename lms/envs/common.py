@@ -33,6 +33,7 @@ import sys
 import os
 import imp
 
+from datetime import timedelta
 from path import path
 from warnings import simplefilter
 from django.utils.translation import ugettext_lazy as _
@@ -494,6 +495,15 @@ OAUTH_OIDC_USERINFO_HANDLERS = (
     'oauth2_provider.oidc.handlers.EmailHandler',
     'oauth2_handler.UserInfoHandler'
 )
+
+# OpenID Connect available response_type
+OAUTH_RESPONSE_TYPE_CHOICES = ("code")
+
+# OpenID Connect expiry delta of grant code
+OAUTH_EXPIRE_CODE_DELTA = timedelta(seconds=10 * 60)
+
+# OpenID Connect expiry delta of access token for confidencial client
+OAUTH_EXPIRE_DELTA = timedelta(seconds=60 * 60)
 
 ################################## EDX WEB #####################################
 # This is where we stick our compiled template files. Most of the app uses Mako

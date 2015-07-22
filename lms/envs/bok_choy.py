@@ -204,6 +204,9 @@ if os.environ.get('ENABLE_BOKCHOY_GA'):
     REGISTRATION_EXTRA_FIELDS['country'] = 'optional'
     FEATURES['AUTOMATIC_AUTH_FOR_TESTING'] = False
 
+    # OAuth2
+    FEATURES['ENABLE_OAUTH2_PROVIDER'] = True
+
 #####################################################################
 # Lastly, see if the developer has any local overrides.
 try:
