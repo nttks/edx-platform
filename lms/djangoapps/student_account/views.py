@@ -20,17 +20,12 @@ from django.views.decorators.http import require_http_methods
 
 from lang_pref.api import released_languages
 from edxmako.shortcuts import render_to_response
-from microsite_configuration import microsite
 
 from external_auth.login_and_register import (
     login as external_auth_login,
     register as external_auth_register
 )
 from student.models import UserProfile
-from student.views import (
-    signin_user as old_login_view,
-    register_user as old_register_view
-)
 from student.helpers import get_next_url_for_login_page
 import third_party_auth
 from third_party_auth import pipeline
@@ -64,14 +59,6 @@ def login_and_registration_form(request, initial_mode="login"):
 
     # Retrieve the form descriptions from the user API
     form_descriptions = _get_form_descriptions(request)
-
-    # If this is a microsite, revert to the old login/registration pages.
-    # We need to do this for now to support existing themes.
-    if microsite.is_request_in_microsite():
-        if initial_mode == "login":
-            return old_login_view(request)
-        elif initial_mode == "register":
-            return old_register_view(request)
 
     # Allow external auth to intercept and handle the request
     ext_auth_response = _external_auth_intercept(request, initial_mode)

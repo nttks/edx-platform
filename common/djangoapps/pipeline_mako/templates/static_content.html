@@ -48,6 +48,6 @@ except:
 %></%def>
 
 <%def name="include(path)"><%
-from django.template.loaders.filesystem import _loader
+from edxmako.makoloader import _filesystem_loader as _loader
 source, template_path = _loader.load_template_source(path)
 %>${source}</%def>
