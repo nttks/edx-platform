@@ -341,11 +341,13 @@ from student.helpers import (
           </div>
         %endif
 
-        % if enrollment.course.is_course_hidden and not staff_access:
-          <p id="block-course-msg" class="course-block">
-            ${_("This course has been closed.")}
-          </p>
-        % elif is_course_blocked:
+        ## TODO Fix https://trello.com/c/SCQugfKo/319-dogwood-courseoverview-course-hidden
+        ## % if enrollment.course.is_course_hidden and not staff_access:
+        ##  <p id="block-course-msg" class="course-block">
+        ##    ${_("This course has been closed.")}
+        ##  </p>
+        ## % elif is_course_blocked:
+        % if is_course_blocked:
           <p id="block-course-msg" class="course-block">
             ${_("You can no longer access this course because payment has not yet been received. "
                 "You can {contact_link_start}contact the account holder{contact_link_end} "

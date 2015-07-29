@@ -45,7 +45,9 @@ from django.core.urlresolvers import reverse
     });
   </script>
   % if settings.FEATURES.get('ENABLE_DASHBOARD_SEARCH'):
-    <%static:js group='dashboard_search'/>
+    <%static:require_module module_name="js/search/dashboard/dashboard_search_factory" class_name="DashboardSearchFactory">
+        DashboardSearchFactory();
+    </%static:require_module>
   % endif
 </%block>
 
@@ -88,10 +90,10 @@ from django.core.urlresolvers import reverse
       % endfor
 
       % if settings.FEATURES.get('CUSTOM_COURSES_EDX', False):
-        % for ccx, membership, course in ccx_membership_triplets:
+        % for ccx, membership, course_overview in ccx_membership_triplets:
           <% show_courseware_link = ccx.has_started() %>
           <% is_course_blocked = False %>
-          <%include file='ccx/_dashboard_ccx_listing.html' args="ccx=ccx, membership=membership, course_overview=enrollment.course_overview, show_courseware_link=show_courseware_link, is_course_blocked=is_course_blocked" />
+          <%include file='ccx/_dashboard_ccx_listing.html' args="ccx=ccx, membership=membership, course_overview=course_overview, show_courseware_link=show_courseware_link, is_course_blocked=is_course_blocked" />
         % endfor
       % endif
 
