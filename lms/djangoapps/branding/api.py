@@ -175,14 +175,9 @@ def _footer_navigation_links():
             "url": link_url,
         }
         for link_name, link_url, link_title in [
-            ("about", marketing_link("ABOUT"), _("About")),
-            ("blog", marketing_link("BLOG"), _("Blog")),
-            ("news", marketing_link("NEWS"), _("News")),
-            ("faq", marketing_link("FAQ"), _("FAQs")),
-            ("contact", marketing_link("CONTACT"), _("Contact")),
-            ("jobs", marketing_link("JOBS"), _("Jobs")),
-            ("donate", marketing_link("DONATE"), _("Donate")),
-            ("sitemap", marketing_link("SITE_MAP"), _("Sitemap")),
+            ("terms_of_service", marketing_link("TOS"), _("Terms of Service and Honor Code")),
+            ("privacy_policy", marketing_link("PRIVACY"), _("Privacy Policy")),
+            ("faq", marketing_link("FAQ"), _("FAQ")),
         ]
         if link_url and link_url != "#"
     ]
