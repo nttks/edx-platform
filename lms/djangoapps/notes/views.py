@@ -45,6 +45,7 @@ class NotesTab(EnrolledTab):
     A tab for the course notes.
     """
     type = 'notes'
+    icon = 'fa fa-file-text'
     title = ugettext_noop("My Notes")
     view_name = "notes"
 

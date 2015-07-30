@@ -15,6 +15,7 @@ class WikiTab(EnrolledTab):
     """
 
     type = "wiki"
+    icon = 'fa fa-comment'
     title = ugettext_noop('Wiki')
     view_name = "course_wiki"
     is_hideable = True
