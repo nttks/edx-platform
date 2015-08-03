@@ -4,7 +4,6 @@ from xmodule.x_module import XModule
 from xmodule.raw_module import RawDescriptor
 from xmodule.editing_module import MetadataOnlyEditingDescriptor
 from xblock.fields import String, Scope, UNIQUE_ID
-from uuid import uuid4
 
 # Make '_' a no-op so we can scrape strings
 _ = lambda text: text
@@ -66,9 +65,13 @@ class DiscussionModule(DiscussionFields, XModule):
 
     def get_course(self):
         """
-        Return course by course id.
+        Return the CourseDescriptor at the root of the tree we're in.
         """
-        return self.descriptor.runtime.modulestore.get_course(self.course_id)
+        block = self
+        while block.parent:
+            block = block.get_parent()
+
+        return block
 
 
 class DiscussionDescriptor(DiscussionFields, MetadataOnlyEditingDescriptor, RawDescriptor):

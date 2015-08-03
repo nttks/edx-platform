@@ -1,6 +1,8 @@
 """
 tests for is_course_hidden.
 """
+import unittest
+
 from ...pages.lms.auto_auth import AutoAuthPage
 from ...pages.common.logout import LogoutPage
 from ...pages.lms.ga_dashboard import DashboardPage
@@ -8,6 +10,7 @@ from ...fixtures.course import CourseFixture
 from ..helpers import UniqueCourseTest
 
 
+@unittest.skip("Fix https://trello.com/c/SCQugfKo/319-dogwood-courseoverview-course-hidden")
 class HiddenCourseTest(UniqueCourseTest):
     """
     Tests that hidden course messages are displayed
