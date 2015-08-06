@@ -64,6 +64,7 @@ function (VideoPlayer, VideoStorage, i18n) {
         getCurrentLanguage: getCurrentLanguage,
         getDuration: getDuration,
         getPlayerMode: getPlayerMode,
+        getVideoMetadata: getVideoMetadata,
         initialize: initialize,
         isHtml5Mode: isHtml5Mode,
         isFlashMode: isFlashMode,
@@ -525,18 +526,61 @@ function (VideoPlayer, VideoStorage, i18n) {
             _setConfigurations(this);
             _renderElements(this);
         } else {
+            if (!this.youtubeXhr) {
+                this.youtubeXhr = this.getVideoMetadata();
+            }
 
-            console.log(
-                '[Video info]: Start player in YouTube mode.'
-            );
+            this.youtubeXhr
+                .always(function (json, status) {
+                    // It will work for both if statusCode is 200 or 410.
+                    var didSucceed = (json.error && json.error.code === 410) || status === 'success' || status === 'notmodified';
+                    if (!didSucceed) {
+                        console.log(
+                            '[Video info]: YouTube returned an error for ' +
+                            'video with id "' + id + '".'
+                        );
 
-            self.fetchMetadata();
-            self.parseSpeed();
+                        // When the youtube link doesn't work for any reason
+                        // (for example, the great firewall in china) any
+                        // alternate sources should automatically play.
+                        if (!_prepareHTML5Video(self)) {
+                            console.log(
+                                '[Video info]: Continue loading ' +
+                                'YouTube video.'
+                            );
 
-            _setConfigurations(self);
-            _renderElements(self);
+                            // Non-YouTube sources were not found either.
 
+                            el.find('.video-player div')
+                                .removeClass('hidden');
+                            el.find('.video-player h3')
+                                .addClass('hidden');
 
+                            // If in reality the timeout was to short, try to
+                            // continue loading the YouTube video anyways.
+                            self.fetchMetadata();
+                            self.parseSpeed();
+                        } else {
+                            console.log(
+                                '[Video info]: Change player mode to HTML5.'
+                            );
+
+                            // In-browser HTML5 player does not support quality
+                            // control.
+                            el.find('a.quality_control').hide();
+                        }
+                    } else {
+                        console.log(
+                            '[Video info]: Start player in YouTube mode.'
+                        );
+
+                        self.fetchMetadata();
+                        self.parseSpeed();
+                    }
+
+                    _setConfigurations(self);
+                    _renderElements(self);
+                });
         }
 
         return __dfd__.promise();
@@ -586,20 +630,33 @@ function (VideoPlayer, VideoStorage, i18n) {
     //     example the length of the video can be determined from the meta
     //     data.
     function fetchMetadata() {
-        var _this = this;
+        var _this = this,
+            metadataXHRs = [];
 
         this.metadata = {};
 
-        _this.el.trigger('metadata_received');
+        $.each(this.videos, function (speed, url) {
+            var xhr = _this.getVideoMetadata(url, function (data) {
+                if (data.data) {
+                    _this.metadata[data.data.id] = data.data;
+                }
+            });
 
-        // Not only do we trigger the "metadata_received" event, we also
-        // set a flag to notify that metadata has been received. This
-        // allows for code that will miss the "metadata_received" event
-        // to know that metadata has been received. This is important in
-        // cases when some code will subscribe to the "metadata_received"
-        // event after it has been triggered.
-        _this.youtubeMetadataReceived = true;
+            metadataXHRs.push(xhr);
+        });
 
+        $.when.apply(this, metadataXHRs).done(function () {
+            _this.el.trigger('metadata_received');
+
+            // Not only do we trigger the "metadata_received" event, we also
+            // set a flag to notify that metadata has been received. This
+            // allows for code that will miss the "metadata_received" event
+            // to know that metadata has been received. This is important in
+            // cases when some code will subscribe to the "metadata_received"
+            // event after it has been triggered.
+            _this.youtubeMetadataReceived = true;
+
+        });
     }
 
     // function parseSpeed()
@@ -635,6 +692,26 @@ function (VideoPlayer, VideoStorage, i18n) {
             this.storage.setItem('speed', this.speed, true);
             this.storage.setItem('general_speed', this.speed);
         }
+    }
+
+    function getVideoMetadata(url, callback) {
+        var successHandler, xhr;
+
+        if (typeof url !== 'string') {
+            url = this.videos['1.0'] || '';
+        }
+        successHandler = ($.isFunction(callback)) ? callback : null;
+        xhr = $.ajax({
+            url: [
+                document.location.protocol, '//', this.config.ytTestUrl, url,
+                '?v=2&alt=jsonc'
+            ].join(''),
+            dataType: 'jsonp',
+            timeout: this.config.ytTestTimeout,
+            success: successHandler
+        });
+
+        return xhr;
     }
 
     function saveState(async, data) {
