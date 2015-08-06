@@ -1,0 +1,3093 @@
+# edX translation file
+# Copyright (C) 2015 edX
+# This file is distributed under the GNU AFFERO GENERAL PUBLIC LICENSE.
+# EdX Team <info@edx.org>, 2015.
+# 
+msgid ""
+msgstr ""
+"Project-Id-Version: 0.1a\n"
+"Report-Msgid-Bugs-To: openedx-translation@googlegroups.com\n"
+"POT-Creation-Date: 2015-08-06 12:14+0900\n"
+"PO-Revision-Date: 2015-08-06 03:17:55.460157\n"
+"Last-Translator: \n"
+"Language-Team: openedx-translation <openedx-translation@googlegroups.com>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 1.3\n"
+"Language: en\n"
+
+#: cms/templates/404.html:14
+msgid "The page that you were looking for was not found."
+msgstr ""
+
+#: cms/templates/404.html:15
+msgid ""
+"Go back to the {homepage} or let us know about any pages that may have been "
+"moved at {email}."
+msgstr ""
+
+#: cms/templates/500.html:3
+msgid "{studio_name} Server Error"
+msgstr ""
+
+#: cms/templates/500.html:11
+msgid "The {studio_name} servers encountered an error"
+msgstr ""
+
+#: cms/templates/500.html:18
+msgid ""
+"An error occurred in {studio_name} and the page could not be loaded. Please "
+"try again in a few moments."
+msgstr ""
+
+#: cms/templates/500.html:19
+msgid ""
+"We've logged the error and our staff is currently working to resolve this "
+"error as soon as possible."
+msgstr ""
+
+#: cms/templates/500.html:20
+msgid "If the problem persists, please email us at {email_link}."
+msgstr ""
+
+#: cms/templates/activation_active.html:8
+#: cms/templates/activation_complete.html:7
+#: cms/templates/activation_invalid.html:7
+msgid "{studio_name} Account Activation"
+msgstr ""
+
+#: cms/templates/activation_active.html:20
+msgid "Your account is already active"
+msgstr ""
+
+#: cms/templates/activation_active.html:22
+msgid ""
+"This account, set up using {email}, has already been activated. Please sign "
+"in to start working within {studio_name}."
+msgstr ""
+
+#: cms/templates/activation_active.html:29
+#: cms/templates/activation_complete.html:27
+msgid "Sign into {studio_name}"
+msgstr ""
+
+#: cms/templates/activation_complete.html:18
+msgid "Your account activation is complete!"
+msgstr ""
+
+#: cms/templates/activation_complete.html:20
+msgid ""
+"Thank you for activating your account. You may now sign in and start using "
+"{studio_name} to author courses."
+msgstr ""
+
+#: cms/templates/activation_invalid.html:18
+msgid "Your account activation is invalid"
+msgstr ""
+
+#: cms/templates/activation_invalid.html:20
+msgid ""
+"We're sorry. Something went wrong with your activation. Check to make sure "
+"the URL you went to was correct, as e-mail programs will sometimes split it "
+"into two lines."
+msgstr ""
+
+#: cms/templates/activation_invalid.html:21
+msgid ""
+"If you still have issues, contact {platform_name} Support. In the meantime, "
+"you can also return to {link_start}the {studio_name} homepage.{link_end}"
+msgstr ""
+
+#: cms/templates/activation_invalid.html:32
+msgid "Contact {platform_name} Support"
+msgstr ""
+
+#: cms/templates/asset_index.html:7 cms/templates/asset_index.html:37
+#: cms/templates/widgets/header.html:72
+msgid "Files &amp; Uploads"
+msgstr ""
+
+#: cms/templates/asset_index.html:36 cms/templates/course_info.html:38
+#: cms/templates/course_outline.html:107 cms/templates/edit-tabs.html:31
+#: cms/templates/textbooks.html:39 cms/templates/videos_index.html:41
+#: cms/templates/widgets/header.html:57
+msgid "Content"
+msgstr ""
+
+#: cms/templates/asset_index.html:40 cms/templates/asset_index.html:41
+#: cms/templates/container.html:70 cms/templates/container.html:71
+#: cms/templates/course-create-rerun.html:31 cms/templates/course_info.html:42
+#: cms/templates/course_info.html:43 cms/templates/course_outline.html:111
+#: cms/templates/course_outline.html:112 cms/templates/edit-tabs.html:36
+#: cms/templates/edit-tabs.html:37 cms/templates/index.html:20
+#: cms/templates/index.html:21 cms/templates/library.html:53
+#: cms/templates/library.html:54 cms/templates/manage_users.html:27
+#: cms/templates/manage_users.html:28 cms/templates/manage_users_lib.html:27
+#: cms/templates/manage_users_lib.html:28 cms/templates/textbooks.html:43
+#: cms/templates/textbooks.html:44 cms/templates/videos_index.html:45
+#: cms/templates/videos_index.html:46
+#: cms/templates/ux/reference/container.html:37
+#: cms/templates/ux/reference/course-create-rerun.html:24
+#: cms/templates/ux/reference/outline.html:24
+msgid "Page Actions"
+msgstr ""
+
+#: cms/templates/asset_index.html:44 cms/templates/asset_index.html:90
+#: cms/templates/videos_index.html:49
+msgid "Upload New File"
+msgstr ""
+
+#: cms/templates/asset_index.html:62
+msgid "Adding Files for Your Course"
+msgstr ""
+
+#: cms/templates/asset_index.html:64
+msgid ""
+"To add files to use in your course, click {em_start}Upload New File{em_end}."
+" Then follow the prompts to upload a file from your computer."
+msgstr ""
+
+#: cms/templates/asset_index.html:66
+msgid ""
+"{em_start}Caution{em_end}: {platform_name} recommends that you limit the "
+"file size to {em_start}10 MB{em_end}. In addition, do not upload video or "
+"audio files. You should use a third party service to host multimedia files."
+msgstr ""
+
+#: cms/templates/asset_index.html:68
+msgid ""
+"The course image, textbook chapters, and files that appear on your Course "
+"Handouts sidebar also appear in this list."
+msgstr ""
+
+#: cms/templates/asset_index.html:71
+msgid "Using File URLs"
+msgstr ""
+
+#: cms/templates/asset_index.html:73
+msgid ""
+"Use the {em_start}{studio_name} URL{em_end} value to link to the file or "
+"image from a component, a course update, or a course handout."
+msgstr ""
+
+#: cms/templates/asset_index.html:75
+msgid ""
+"Use the {em_start}Web URL{em_end} value to reference the file or image only "
+"from outside of your course. {em_start}Note:{em_end} If you lock a file, the"
+" Web URL no longer works for external access to a file."
+msgstr ""
+
+#: cms/templates/asset_index.html:77
+msgid ""
+"To copy a URL, double click the value in the URL column, then copy the "
+"selected text."
+msgstr ""
+
+#: cms/templates/asset_index.html:80
+msgid "Learn more about managing files"
+msgstr ""
+
+#: cms/templates/asset_index.html:91
+msgid "Max per-file size: {max_filesize}MB"
+msgstr ""
+
+#: cms/templates/asset_index.html:102
+msgid "Choose File"
+msgstr ""
+
+#: cms/templates/asset_index.html:118
+msgid "Your file has been deleted."
+msgstr ""
+
+#: cms/templates/asset_index.html:123
+msgid "close alert"
+msgstr ""
+
+#: cms/templates/certificates.html:10
+msgid "Course Certificates"
+msgstr ""
+
+#: cms/templates/certificates.html:40 cms/templates/certificates.html:50
+#: cms/templates/certificates.html:67 cms/templates/export.html:122
+#: cms/templates/widgets/header.html:114
+msgid "Certificates"
+msgstr ""
+
+#: cms/templates/certificates.html:54
+msgid "This module is not enabled."
+msgstr ""
+
+#: cms/templates/certificates.html:68
+msgid ""
+"Upon successful completion of your course, learners receive a certificate to"
+" acknowledge their accomplishment. If you are a course team member with the "
+"Admin role in Studio, you can configure your course certificate."
+msgstr ""
+
+#: cms/templates/certificates.html:69
+msgid ""
+"Click {em_start}Add your first certificate{em_end} to add a certificate "
+"configuration. Upload the organization logo to be used on the certificate, "
+"and specify at least one signatory. You can include up to four signatories "
+"for a certificate. You can also upload a signature image file for each "
+"signatory. {em_start}Note:{em_end} Signature images are used only for "
+"verified certificates. Optionally, specify a different course title to use "
+"on your course certificate. You might want to use a different title if, for "
+"example, the official course name is too long to display well on a "
+"certificate."
+msgstr ""
+
+#: cms/templates/certificates.html:70
+msgid ""
+"Select a course mode and click {em_start}Preview Certificate{em_end} to "
+"preview the certificate that a learner in the selected enrollment track "
+"would receive. When the certificate is ready for issuing, click "
+"{em_start}Activate.{em_end} To stop issuing an active certificate, click "
+"{em_start}Deactivate{em_end}."
+msgstr ""
+
+#: cms/templates/certificates.html:71
+msgid ""
+" To edit the certificate configuration, hover over the top right corner of "
+"the form and click {em_start}Edit{em_end}. To delete a certificate, hover "
+"over the top right corner of the form and click the delete icon. In general,"
+" do not delete certificates after a course has started, because some "
+"certificates might already have been issued to learners."
+msgstr ""
+
+#: cms/templates/certificates.html:72
+msgid "Learn more about certificates"
+msgstr ""
+
+#: cms/templates/certificates.html:83 cms/templates/certificates.html:84
+#: cms/templates/group_configurations.html:93
+#: cms/templates/group_configurations.html:94 cms/templates/settings.html:440
+#: cms/templates/settings.html:441 cms/templates/settings_advanced.html:88
+#: cms/templates/settings_advanced.html:89
+#: cms/templates/settings_graders.html:149
+#: cms/templates/settings_graders.html:150
+msgid "Other Course Settings"
+msgstr ""
+
+#: cms/templates/certificates.html:86
+#: cms/templates/group_configurations.html:96
+#: cms/templates/settings_advanced.html:91
+#: cms/templates/settings_graders.html:152
+msgid "Details &amp; Schedule"
+msgstr ""
+
+#: cms/templates/certificates.html:87
+#: cms/templates/group_configurations.html:97 cms/templates/settings.html:443
+#: cms/templates/settings_advanced.html:92
+#: cms/templates/settings_graders.html:35 cms/templates/widgets/header.html:97
+msgid "Grading"
+msgstr ""
+
+#: cms/templates/certificates.html:88
+#: cms/templates/group_configurations.html:98
+#: cms/templates/manage_users.html:24 cms/templates/settings.html:444
+#: cms/templates/settings_advanced.html:93
+#: cms/templates/settings_graders.html:153
+#: cms/templates/widgets/header.html:100
+msgid "Course Team"
+msgstr ""
+
+#: cms/templates/certificates.html:89
+#: cms/templates/group_configurations.html:99 cms/templates/settings.html:446
+#: cms/templates/settings_advanced.html:9
+#: cms/templates/settings_advanced.html:31
+#: cms/templates/settings_graders.html:155
+#: cms/templates/widgets/header.html:106
+msgid "Advanced Settings"
+msgstr ""
+
+#: cms/templates/certificates.html:90
+#: cms/templates/group_configurations.html:11
+#: cms/templates/group_configurations.html:33 cms/templates/settings.html:445
+#: cms/templates/settings_advanced.html:94
+#: cms/templates/settings_graders.html:154
+#: cms/templates/widgets/header.html:103
+msgid "Group Configurations"
+msgstr ""
+
+#: cms/templates/checklists.html:7 cms/templates/checklists.html:32
+msgid "Course Checklists"
+msgstr ""
+
+#: cms/templates/checklists.html:31 cms/templates/export.html:43
+#: cms/templates/export_git.html:15 cms/templates/import.html:28
+#: cms/templates/widgets/header.html:123 cms/templates/widgets/header.html:180
+msgid "Tools"
+msgstr ""
+
+#: cms/templates/checklists.html:41
+msgid "Current Checklists"
+msgstr ""
+
+#: cms/templates/checklists.html:47
+msgid "What are course checklists?"
+msgstr ""
+
+#: cms/templates/checklists.html:49
+msgid ""
+"Course checklists are tools to help you understand and keep track of all the"
+" steps necessary to get your course ready for students."
+msgstr ""
+
+#: cms/templates/checklists.html:52
+msgid ""
+"Any changes you make to these checklists are saved automatically and are "
+"immediately visible to other course team members."
+msgstr ""
+
+#: cms/templates/checklists.html:57
+msgid "{studio_name} checklists"
+msgstr ""
+
+#: cms/templates/component.html:16 cms/templates/studio_xblock_wrapper.html:85
+#: cms/templates/studio_xblock_wrapper.html:87
+msgid "Duplicate"
+msgstr ""
+
+#: cms/templates/component.html:18
+msgid "Duplicate this component"
+msgstr ""
+
+#: cms/templates/component.html:24
+msgid "Delete this component"
+msgstr ""
+
+#: cms/templates/component.html:29 cms/templates/edit-tabs.html:116
+#: cms/templates/edit-tabs.html:117
+#: cms/templates/studio_xblock_wrapper.html:103
+msgid "Drag to reorder"
+msgstr ""
+
+#: cms/templates/container.html:65 cms/templates/library.html:48
+msgid "Display Name"
+msgstr ""
+
+#: cms/templates/container.html:75
+msgid "Open the courseware in the LMS"
+msgstr ""
+
+#: cms/templates/container.html:76
+msgid "View Live Version"
+msgstr ""
+
+#: cms/templates/container.html:80
+msgid "Preview the courseware in the LMS"
+msgstr ""
+
+#: cms/templates/container.html:81
+msgid "Preview"
+msgstr ""
+
+#: cms/templates/container.html:112
+msgid "Adding components"
+msgstr ""
+
+#: cms/templates/container.html:113
+msgid ""
+"Select a component type under {em_start}Add New Component{em_end}. Then "
+"select a template."
+msgstr ""
+
+#: cms/templates/container.html:114
+msgid ""
+"The new component is added at the bottom of the page or group. You can then "
+"edit and move the component."
+msgstr ""
+
+#: cms/templates/container.html:115
+msgid "Editing components"
+msgstr ""
+
+#: cms/templates/container.html:116
+msgid ""
+"Click the {em_start}Edit{em_end} icon in a component to edit its content."
+msgstr ""
+
+#: cms/templates/container.html:117
+msgid "Reorganizing components"
+msgstr ""
+
+#: cms/templates/container.html:118
+msgid "Drag components to new locations within this component."
+msgstr ""
+
+#: cms/templates/container.html:119
+msgid "For content experiments, you can drag components to other groups."
+msgstr ""
+
+#: cms/templates/container.html:120
+msgid "Working with content experiments"
+msgstr ""
+
+#: cms/templates/container.html:121
+msgid ""
+"Confirm that you have properly configured content in each of your experiment"
+" groups."
+msgstr ""
+
+#: cms/templates/container.html:124
+msgid "Learn more about component containers"
+msgstr ""
+
+#: cms/templates/container.html:130
+msgid "Unit Location"
+msgstr ""
+
+#: cms/templates/container.html:132
+msgid "Location ID"
+msgstr ""
+
+#: cms/templates/container.html:135
+msgid ""
+"Use this ID when you create links to this unit from other course content. "
+"You enter the ID in the URL field."
+msgstr ""
+
+#: cms/templates/container.html:139
+msgid "Location in Course Outline"
+msgstr ""
+
+#: cms/templates/course-create-rerun.html:9
+msgid "Create a Course Rerun of:"
+msgstr ""
+
+#: cms/templates/course-create-rerun.html:28
+msgid "Create a re-run of a course"
+msgstr ""
+
+#: cms/templates/course-create-rerun.html:41
+msgid "You are creating a re-run from:"
+msgstr ""
+
+#: cms/templates/course-create-rerun.html:55
+msgid ""
+"Provide identifying information for this re-run of the course. The original "
+"course is not affected in any way by a re-run."
+msgstr ""
+
+#: cms/templates/course-create-rerun.html:56
+msgid ""
+"Note: Together, the organization, course number, and course run must "
+"uniquely identify this new course instance."
+msgstr ""
+
+#: cms/templates/course-create-rerun.html:71
+msgid "Required Information to Create a re-run of a course"
+msgstr ""
+
+#. Translators: This is an example name for a new course, seen when filling
+#. out
+#. the form to create a new course.
+#: cms/templates/course-create-rerun.html:76 cms/templates/index.html:65
+msgid "e.g. Introduction to Computer Science"
+msgstr ""
+
+#: cms/templates/course-create-rerun.html:78
+msgid ""
+"The public display name for the new course. (This name is often the same as "
+"the original course name.)"
+msgstr ""
+
+#: cms/templates/course-create-rerun.html:83 cms/templates/index.html:70
+#: cms/templates/index.html:132 cms/templates/settings.html:60
+msgid "Organization"
+msgstr ""
+
+#. Translators: This is an example for the name of the organization sponsoring
+#. a course, seen when filling out the form to create a new course. The
+#. organization name cannot contain spaces.
+#. Translators: "e.g. UniversityX or OrganizationX" is a placeholder displayed
+#. when user put no data into this field.
+#: cms/templates/course-create-rerun.html:84 cms/templates/index.html:73
+#: cms/templates/index.html:133
+msgid "e.g. UniversityX or OrganizationX"
+msgstr ""
+
+#: cms/templates/course-create-rerun.html:86
+msgid ""
+"The name of the organization sponsoring the new course. (This name is often "
+"the same as the original organization name.)"
+msgstr ""
+
+#: cms/templates/course-create-rerun.html:87
+#: cms/templates/course-create-rerun.html:98
+#: cms/templates/course-create-rerun.html:108
+msgid "Note: No spaces or special characters are allowed."
+msgstr ""
+
+#. Translators: This is an example for the number used to identify a course,
+#. seen when filling out the form to create a new course. The number here is
+#. short for "Computer Science 101". It can contain letters but cannot contain
+#. spaces.
+#: cms/templates/course-create-rerun.html:95 cms/templates/index.html:81
+msgid "e.g. CS101"
+msgstr ""
+
+#: cms/templates/course-create-rerun.html:97
+msgid ""
+"The unique number that identifies the new course within the organization.  "
+"(This number is often the same as the original course number.)"
+msgstr ""
+
+#: cms/templates/course-create-rerun.html:104 cms/templates/index.html:87
+#: cms/templates/settings.html:72
+msgid "Course Run"
+msgstr ""
+
+#. Translators: This is an example for the "run" used to identify different
+#. instances of a course, seen when filling out the form to create a new
+#. course.
+#: cms/templates/course-create-rerun.html:105 cms/templates/index.html:89
+msgid "e.g. 2014_T1"
+msgstr ""
+
+#: cms/templates/course-create-rerun.html:107
+msgid ""
+"The term in which the new course will run. (This value is often different "
+"than the original course run value.)"
+msgstr ""
+
+#: cms/templates/course-create-rerun.html:120
+msgid "Create Re-run"
+msgstr ""
+
+#: cms/templates/course-create-rerun.html:130
+msgid "When will my course re-run start?"
+msgstr ""
+
+#: cms/templates/course-create-rerun.html:132
+msgid "The new course is set to start on January 1, 2030 at midnight (UTC)."
+msgstr ""
+
+#: cms/templates/course-create-rerun.html:137
+msgid "What transfers from the original course?"
+msgstr ""
+
+#: cms/templates/course-create-rerun.html:139
+msgid ""
+"The new course has the same course outline and content as the original "
+"course. All problems, videos, announcements, and other files are duplicated "
+"to the new course."
+msgstr ""
+
+#: cms/templates/course-create-rerun.html:144
+msgid "What does not transfer from the original course?"
+msgstr ""
+
+#: cms/templates/course-create-rerun.html:146
+msgid ""
+"You are the only member of the new course's staff. No students are enrolled "
+"in the course, and there is no student data. There is no content in the "
+"discussion topics or wiki."
+msgstr ""
+
+#: cms/templates/course-create-rerun.html:151
+msgid "Learn more about Course Re-runs"
+msgstr ""
+
+#: cms/templates/course_info.html:11 cms/templates/course_info.html:39
+msgid "Course Updates"
+msgstr ""
+
+#: cms/templates/course_info.html:46
+msgid "New Update"
+msgstr ""
+
+#: cms/templates/course_info.html:56
+msgid ""
+"Use course updates to notify students of important dates or exams, highlight"
+" particular discussions in the forums, announce schedule changes, and "
+"respond to student questions. You add or edit updates in HTML."
+msgstr ""
+
+#: cms/templates/course_outline.html:11 cms/templates/course_outline.html:108
+#: cms/templates/course_outline.html:164
+msgid "Course Outline"
+msgstr ""
+
+#: cms/templates/course_outline.html:38
+msgid ""
+"This course was created as a re-run. Some manual configuration is needed."
+msgstr ""
+
+#: cms/templates/course_outline.html:40
+msgid ""
+"No course content is currently visible, and no students are enrolled. Be "
+"sure to review and reset all dates, including the Course Start Date; set up "
+"the course team; review course updates and other assets for dated material; "
+"and seed the discussions and wiki."
+msgstr ""
+
+#: cms/templates/course_outline.html:47 cms/templates/index.html:245
+msgid "Dismiss"
+msgstr ""
+
+#: cms/templates/course_outline.html:61
+msgid "Warning"
+msgstr ""
+
+#: cms/templates/course_outline.html:64
+msgid "This course uses features that are no longer supported."
+msgstr ""
+
+#: cms/templates/course_outline.html:68
+msgid "You must delete or replace the following components."
+msgstr ""
+
+#: cms/templates/course_outline.html:69
+msgid "Unsupported Components"
+msgstr ""
+
+#: cms/templates/course_outline.html:82
+msgid ""
+"To avoid errors, {platform_name} strongly recommends that you remove "
+"unsupported features from the course advanced settings. To do this, go to "
+"the {link_start}Advanced Settings page{link_end}, locate the \"Advanced "
+"Module List\" setting, and then delete the following modules from the list."
+msgstr ""
+
+#: cms/templates/course_outline.html:87
+msgid "Unsupported Advance Modules"
+msgstr ""
+
+#: cms/templates/course_outline.html:115
+msgid "Click to add a new section"
+msgstr ""
+
+#: cms/templates/course_outline.html:116
+msgid "New Section"
+msgstr ""
+
+#: cms/templates/course_outline.html:121
+msgid "Reindex current course"
+msgstr ""
+
+#: cms/templates/course_outline.html:122
+msgid "Reindex"
+msgstr ""
+
+#: cms/templates/course_outline.html:128
+msgid "Collapse All Sections"
+msgstr ""
+
+#: cms/templates/course_outline.html:129
+msgid "Expand All Sections"
+msgstr ""
+
+#: cms/templates/course_outline.html:134
+msgid "Click to open the courseware in the LMS in a new tab"
+msgstr ""
+
+#: cms/templates/course_outline.html:134 cms/templates/edit-tabs.html:43
+#: cms/templates/index.html:293
+msgid "View Live"
+msgstr ""
+
+#: cms/templates/course_outline.html:146
+msgid "Course Start Date:"
+msgstr ""
+
+#: cms/templates/course_outline.html:151 cms/templates/course_outline.html:153
+msgid "Edit Start Date"
+msgstr ""
+
+#: cms/templates/course_outline.html:174
+msgid "Creating your course organization"
+msgstr ""
+
+#: cms/templates/course_outline.html:175
+msgid "You add sections, subsections, and units directly in the outline."
+msgstr ""
+
+#: cms/templates/course_outline.html:176
+msgid ""
+"Create a section, then add subsections and units. Open a unit to add course "
+"components."
+msgstr ""
+
+#: cms/templates/course_outline.html:177
+msgid "Reorganizing your course"
+msgstr ""
+
+#: cms/templates/course_outline.html:178
+msgid "Drag sections, subsections, and units to new locations in the outline."
+msgstr ""
+
+#: cms/templates/course_outline.html:179
+msgid "Setting release dates and grading policies"
+msgstr ""
+
+#: cms/templates/course_outline.html:180
+msgid ""
+"Select the Configure icon for a section or subsection to set its release "
+"date. When you configure a subsection, you can also set the grading policy "
+"and due date."
+msgstr ""
+
+#: cms/templates/course_outline.html:181
+msgid "Changing the content students see"
+msgstr ""
+
+#: cms/templates/course_outline.html:182
+msgid ""
+"To publish draft content, select the Publish icon for a section, subsection,"
+" or unit."
+msgstr ""
+
+#: cms/templates/course_outline.html:183
+msgid ""
+"To hide content from students, select the Configure icon for a section, "
+"subsection, or unit, then select {em_start}Hide from students{em_end}."
+msgstr ""
+
+#: cms/templates/course_outline.html:186
+msgid "Learn more about the course outline"
+msgstr ""
+
+#. Translators: Pages refer to the tabs that appear in the top navigation of
+#. each course.
+#: cms/templates/edit-tabs.html:10 cms/templates/edit-tabs.html:33
+#: cms/templates/export.html:110 cms/templates/widgets/header.html:69
+msgid "Pages"
+msgstr ""
+
+#: cms/templates/edit-tabs.html:40
+msgid "New Page"
+msgstr ""
+
+#: cms/templates/edit-tabs.html:55
+msgid ""
+"Note: Pages are publicly visible. If users know the URL of a page, they can "
+"view the page even if they are not registered for or logged in to your "
+"course."
+msgstr ""
+
+#: cms/templates/edit-tabs.html:102
+msgid "Show this page"
+msgstr ""
+
+#: cms/templates/edit-tabs.html:104 cms/templates/edit-tabs.html:106
+msgid "Show/hide page"
+msgstr ""
+
+#: cms/templates/edit-tabs.html:120 cms/templates/edit-tabs.html:121
+msgid "This page cannot be reordered"
+msgstr ""
+
+#: cms/templates/edit-tabs.html:134
+msgid "You can add additional custom pages to your course."
+msgstr ""
+
+#: cms/templates/edit-tabs.html:134
+msgid "Add a New Page"
+msgstr ""
+
+#: cms/templates/edit-tabs.html:142
+msgid "What are pages?"
+msgstr ""
+
+#: cms/templates/edit-tabs.html:143
+msgid ""
+"Pages are listed horizontally at the top of your course. Default pages "
+"(Courseware, Course info, Discussion, Wiki, and Progress) are followed by "
+"textbooks and custom pages that you create."
+msgstr ""
+
+#: cms/templates/edit-tabs.html:146
+msgid "Custom pages"
+msgstr ""
+
+#: cms/templates/edit-tabs.html:147
+msgid ""
+"You can create and edit custom pages to provide students with additional "
+"course content. For example, you can create pages for the grading policy, "
+"course slides, and a course calendar. "
+msgstr ""
+
+#: cms/templates/edit-tabs.html:150
+msgid "How do pages look to students in my course?"
+msgstr ""
+
+#: cms/templates/edit-tabs.html:151
+msgid ""
+"Students see the default and custom pages at the top of your course and use "
+"these links to navigate."
+msgstr ""
+
+#: cms/templates/edit-tabs.html:151
+msgid "See an example"
+msgstr ""
+
+#: cms/templates/edit-tabs.html:159
+msgid "Pages in Your Course"
+msgstr ""
+
+#: cms/templates/edit-tabs.html:161
+msgid "Preview of Pages in your course"
+msgstr ""
+
+#: cms/templates/edit-tabs.html:162
+msgid ""
+"Pages appear in your course's top navigation bar. The default pages "
+"(Courseware, Course Info, Discussion, Wiki, and Progress) are followed by "
+"textbooks and custom pages."
+msgstr ""
+
+#: cms/templates/edit-tabs.html:167 cms/templates/howitworks.html:167
+#: cms/templates/howitworks.html:180 cms/templates/howitworks.html:193
+msgid "close modal"
+msgstr ""
+
+#: cms/templates/error.html:12
+msgid "Internal Server Error"
+msgstr ""
+
+#: cms/templates/error.html:20 cms/templates/widgets/footer.html:24
+#: cms/templates/widgets/sock.html:58
+msgid "Use our feedback tool, Tender, to share your feedback"
+msgstr ""
+
+#: cms/templates/error.html:31
+msgid "The Page You Requested Page Cannot be Found"
+msgstr ""
+
+#: cms/templates/error.html:32
+msgid ""
+"We're sorry. We couldn't find the {studio_name} page you're looking for. You"
+" may want to return to the {studio_name} Dashboard and try again. If you are"
+" still having problems accessing things, please feel free to "
+"{link_start}contact {studio_name} support{link_end} for further help."
+msgstr ""
+
+#: cms/templates/error.html:38
+msgid "The Server Encountered an Error"
+msgstr ""
+
+#: cms/templates/error.html:39
+msgid ""
+"We're sorry. There was a problem with the server while trying to process "
+"your last request. You may want to return to the {studio_name} Dashboard or "
+"try this request again. If you are still having problems accessing things, "
+"please feel free to {link_start}contact {studio_name} support{link_end} for "
+"further help."
+msgstr ""
+
+#: cms/templates/error.html:45
+msgid "Back to dashboard"
+msgstr ""
+
+#: cms/templates/export.html:18 cms/templates/export.html:46
+msgid "Library Export"
+msgstr ""
+
+#: cms/templates/export.html:20 cms/templates/export.html:48
+msgid "Course Export"
+msgstr ""
+
+#: cms/templates/export.html:60
+msgid "About Exporting Libraries"
+msgstr ""
+
+#. Translators: ".tar.gz" is a file extension, and should not be translated
+#: cms/templates/export.html:63
+msgid ""
+"You can export libraries and edit them outside of {studio_name}. The "
+"exported file is a .tar.gz file (that is, a .tar file compressed with GNU "
+"Zip) that contains the library structure and content. You can also re-import"
+" libraries that you've exported."
+msgstr ""
+
+#: cms/templates/export.html:68
+msgid "About Exporting Courses"
+msgstr ""
+
+#. Translators: ".tar.gz" is a file extension, and should not be translated
+#: cms/templates/export.html:71
+msgid ""
+"You can export courses and edit them outside of {studio_name}. The exported "
+"file is a .tar.gz file (that is, a .tar file compressed with GNU Zip) that "
+"contains the course structure and content. You can also re-import courses "
+"that you've exported."
+msgstr ""
+
+#: cms/templates/export.html:74
+msgid ""
+"{em_start}Caution:{em_end} When you export a course, information such as "
+"MATLAB API keys, LTI passports, annotation secret token strings, and "
+"annotation storage URLs are included in the exported data. If you share your"
+" exported files, you may also be sharing sensitive or license-specific "
+"information."
+msgstr ""
+
+#: cms/templates/export.html:82
+msgid "Export My Library Content"
+msgstr ""
+
+#: cms/templates/export.html:84
+msgid "Export My Course Content"
+msgstr ""
+
+#: cms/templates/export.html:93
+msgid "Export Library Content"
+msgstr ""
+
+#: cms/templates/export.html:95
+msgid "Export Course Content"
+msgstr ""
+
+#: cms/templates/export.html:104
+msgid "Data {em_start}exported with{em_end} your course:"
+msgstr ""
+
+#: cms/templates/export.html:106
+msgid ""
+"Values from Advanced Settings, including MATLAB API keys and LTI passports"
+msgstr ""
+
+#: cms/templates/export.html:107
+msgid "Course Content (all Sections, Sub-sections, and Units)"
+msgstr ""
+
+#: cms/templates/export.html:108
+msgid "Course Structure"
+msgstr ""
+
+#: cms/templates/export.html:109
+msgid "Individual Problems"
+msgstr ""
+
+#: cms/templates/export.html:111
+msgid "Course Assets"
+msgstr ""
+
+#: cms/templates/export.html:112
+msgid "Course Settings"
+msgstr ""
+
+#: cms/templates/export.html:117
+msgid "Data {em_start}not exported{em_end} with your course:"
+msgstr ""
+
+#: cms/templates/export.html:119
+msgid "User Data"
+msgstr ""
+
+#: cms/templates/export.html:120
+msgid "Course Team Data"
+msgstr ""
+
+#: cms/templates/export.html:121
+msgid "Forum/discussion Data"
+msgstr ""
+
+#: cms/templates/export.html:131
+msgid "Why export a library?"
+msgstr ""
+
+#: cms/templates/export.html:132
+msgid ""
+"You may want to edit the XML in your library directly, outside of "
+"{studio_name}. You may want to create a backup copy of your library. Or, you"
+" may want to create a copy of your library that you can later import into "
+"another library instance and customize."
+msgstr ""
+
+#: cms/templates/export.html:138 cms/templates/export.html:162
+msgid "Opening the downloaded file"
+msgstr ""
+
+#. Translators: ".tar.gz" is a file extension, and should not be translated
+#: cms/templates/export.html:140
+msgid ""
+"Use an archive program to extract the data from the .tar.gz file. Extracted "
+"data includes the library.xml file, as well as subfolders that contain "
+"library content."
+msgstr ""
+
+#: cms/templates/export.html:143
+msgid "Learn more about exporting a library"
+msgstr ""
+
+#: cms/templates/export.html:149
+msgid "Why export a course?"
+msgstr ""
+
+#: cms/templates/export.html:150
+msgid ""
+"You may want to edit the XML in your course directly, outside of "
+"{studio_name}. You may want to create a backup copy of your course. Or, you "
+"may want to create a copy of your course that you can later import into "
+"another course instance and customize."
+msgstr ""
+
+#: cms/templates/export.html:156
+msgid "What content is exported?"
+msgstr ""
+
+#: cms/templates/export.html:158
+msgid ""
+"The course content and structure (including sections, subsections, and "
+"units) are exported. Values from Advanced Settings, including MATLAB API "
+"keys and LTI passports, are also exported. Other data, including student "
+"data, grading information, discussion forum data, course settings, and "
+"course team information, is not exported."
+msgstr ""
+
+#. Translators: ".tar.gz" is a file extension, and should not be translated
+#: cms/templates/export.html:164
+msgid ""
+"Use an archive program to extract the data from the .tar.gz file. Extracted "
+"data includes the course.xml file, as well as subfolders that contain course"
+" content."
+msgstr ""
+
+#: cms/templates/export.html:167
+msgid "Learn more about exporting a course"
+msgstr ""
+
+#: cms/templates/export_git.html:8
+msgid "Export Course to Git"
+msgstr ""
+
+#: cms/templates/export_git.html:16 cms/templates/export_git.html:43
+#: cms/templates/widgets/header.html:138
+msgid "Export to Git"
+msgstr ""
+
+#: cms/templates/export_git.html:26
+msgid "About Export to Git"
+msgstr ""
+
+#: cms/templates/export_git.html:28
+msgid "Use this to export your course to its git repository."
+msgstr ""
+
+#: cms/templates/export_git.html:29
+msgid ""
+"This will then trigger an automatic update of the main LMS site and update "
+"the contents of your course visible there to students if automatic git "
+"imports are configured."
+msgstr ""
+
+#: cms/templates/export_git.html:34
+msgid "Export Course to Git:"
+msgstr ""
+
+#: cms/templates/export_git.html:37
+msgid ""
+"giturl must be defined in your course settings before you can export to git."
+msgstr ""
+
+#: cms/templates/export_git.html:52
+msgid "Export Failed"
+msgstr ""
+
+#: cms/templates/export_git.html:54
+msgid "Export Succeeded"
+msgstr ""
+
+#: cms/templates/export_git.html:62
+msgid "Your course:"
+msgstr ""
+
+#: cms/templates/export_git.html:64
+msgid "Course git url:"
+msgstr ""
+
+#: cms/templates/group_configurations.html:42
+#: cms/templates/group_configurations.html:68
+#: cms/templates/visibility_editor.html:70
+msgid "Content Groups"
+msgstr ""
+
+#: cms/templates/group_configurations.html:50
+#: cms/templates/group_configurations.html:78
+msgid "Experiment Group Configurations"
+msgstr ""
+
+#: cms/templates/group_configurations.html:54
+msgid "This module is disabled at the moment."
+msgstr ""
+
+#: cms/templates/group_configurations.html:69
+msgid ""
+"If you have cohorts enabled in your course, you can use content groups to "
+"create cohort-specific courseware. In other words, you can customize the "
+"content that particular cohorts see in your course."
+msgstr ""
+
+#: cms/templates/group_configurations.html:70
+msgid ""
+"Each content group that you create can be associated with one or more "
+"cohorts. In addition to course content that is intended for all students, "
+"you can designate some content as visible only to specified content groups. "
+"Only learners in the cohorts that are associated with the specified content "
+"groups see the additional content."
+msgstr ""
+
+#: cms/templates/group_configurations.html:71
+msgid ""
+"Click {em_start}New content group{em_end} to add a new content group. To "
+"edit the name of a content group, hover over its box and click "
+"{em_start}Edit{em_end}. You can delete a content group only if it is not in "
+"use by a unit. To delete a content group, hover over its box and click the "
+"delete icon."
+msgstr ""
+
+#: cms/templates/group_configurations.html:72
+#: cms/templates/group_configurations.html:81
+msgid "Learn More"
+msgstr ""
+
+#: cms/templates/group_configurations.html:79
+msgid ""
+"Use experiment group configurations if you are conducting content "
+"experiments, also known as A/B testing, in your course. Experiment group "
+"configurations define how many groups of students are in a content "
+"experiment. When you create a content experiment for a course, you select "
+"the group configuration to use."
+msgstr ""
+
+#: cms/templates/group_configurations.html:80
+msgid ""
+"Click {em_start}New Group Configuration{em_end} to add a new configuration. "
+"To edit a configuration, hover over its box and click "
+"{em_start}Edit{em_end}. You can delete a group configuration only if it is "
+"not in use in an experiment. To delete a configuration, hover over its box "
+"and click the delete icon."
+msgstr ""
+
+#: cms/templates/howitworks.html:9
+msgid "Welcome"
+msgstr ""
+
+#: cms/templates/howitworks.html:17
+msgid "Welcome to {studio_name}"
+msgstr ""
+
+#: cms/templates/howitworks.html:22
+msgid ""
+"{studio_name} helps manage your online courses, so you can focus on teaching"
+" them"
+msgstr ""
+
+#: cms/templates/howitworks.html:32
+msgid "{studio_name}'s Many Features"
+msgstr ""
+
+#: cms/templates/howitworks.html:39 cms/templates/howitworks.html:40
+msgid "{studio_name} Helps You Keep Your Courses Organized"
+msgstr ""
+
+#: cms/templates/howitworks.html:48
+msgid "Keeping Your Course Organized"
+msgstr ""
+
+#: cms/templates/howitworks.html:49
+msgid ""
+"The backbone of your course is how it is organized. {studio_name} offers an "
+"<strong>Outline</strong> editor, providing a simple hierarchy and easy drag "
+"and drop to help you and your students stay organized."
+msgstr ""
+
+#: cms/templates/howitworks.html:53
+msgid "Simple Organization For Content"
+msgstr ""
+
+#: cms/templates/howitworks.html:54
+msgid ""
+"{studio_name} uses a simple hierarchy of <strong>sections</strong> and "
+"<strong>subsections</strong> to organize your content."
+msgstr ""
+
+#: cms/templates/howitworks.html:58
+msgid "Change Your Mind Anytime"
+msgstr ""
+
+#: cms/templates/howitworks.html:59
+msgid ""
+"Draft your outline and build content anywhere. Simple drag and drop tools "
+"let you reorganize quickly."
+msgstr ""
+
+#: cms/templates/howitworks.html:63
+msgid "Go A Week Or A Semester At A Time"
+msgstr ""
+
+#: cms/templates/howitworks.html:64
+msgid ""
+"Build and release <strong>sections</strong> to your students incrementally. "
+"You don't have to have it all done at once."
+msgstr ""
+
+#: cms/templates/howitworks.html:73 cms/templates/howitworks.html:74
+#: cms/templates/howitworks.html:82
+msgid "Learning is More than Just Lectures"
+msgstr ""
+
+#: cms/templates/howitworks.html:83
+msgid ""
+"{studio_name} lets you weave your content together in a way that reinforces "
+"learning. Insert videos, discussions, and a wide variety of exercises with "
+"just a few clicks."
+msgstr ""
+
+#: cms/templates/howitworks.html:87
+msgid "Create Learning Pathways"
+msgstr ""
+
+#: cms/templates/howitworks.html:88
+msgid ""
+"Help your students understand one concept at a time with multimedia, HTML, "
+"and exercises."
+msgstr ""
+
+#: cms/templates/howitworks.html:92
+msgid "Work Visually, Organize Quickly"
+msgstr ""
+
+#: cms/templates/howitworks.html:93
+msgid ""
+"Work visually and see exactly what your students will see. Reorganize all "
+"your content with drag and drop."
+msgstr ""
+
+#: cms/templates/howitworks.html:97
+msgid "A Broad Library of Problem Types"
+msgstr ""
+
+#: cms/templates/howitworks.html:98
+msgid ""
+"It's more than just multiple choice. {studio_name} supports more than a "
+"dozen types of problems to challenge your learners."
+msgstr ""
+
+#: cms/templates/howitworks.html:107 cms/templates/howitworks.html:108
+msgid ""
+"{studio_name} Gives You Simple, Fast, and Incremental Publishing. With "
+"Friends."
+msgstr ""
+
+#: cms/templates/howitworks.html:116
+msgid "Simple, Fast, and Incremental Publishing. With Friends."
+msgstr ""
+
+#: cms/templates/howitworks.html:117
+msgid ""
+"{studio_name} works like web applications you already know, yet understands "
+"how you build curriculum. Instant publishing to the web when you want it, "
+"incremental release when it makes sense. And with co-authors, you can have a"
+" whole team building a course, together."
+msgstr ""
+
+#: cms/templates/howitworks.html:121
+msgid "Instant Changes"
+msgstr ""
+
+#: cms/templates/howitworks.html:122
+msgid ""
+"Caught a bug? No problem. When you want, your changes go live when you click"
+" Save."
+msgstr ""
+
+#: cms/templates/howitworks.html:126
+msgid "Release-On Date Publishing"
+msgstr ""
+
+#: cms/templates/howitworks.html:127
+msgid ""
+"When you've finished a <strong>section</strong>, pick when you want it to go"
+" live and {studio_name} takes care of the rest. Build your course "
+"incrementally."
+msgstr ""
+
+#: cms/templates/howitworks.html:131
+msgid "Work in Teams"
+msgstr ""
+
+#: cms/templates/howitworks.html:132
+msgid ""
+"Co-authors have full access to all the same authoring tools. Make your "
+"course better through a team effort."
+msgstr ""
+
+#: cms/templates/howitworks.html:144
+msgid "Sign Up for {studio_name} Today!"
+msgstr ""
+
+#: cms/templates/howitworks.html:149
+msgid "Sign Up &amp; Start Making an {platform_name} Course"
+msgstr ""
+
+#: cms/templates/howitworks.html:152
+msgid "Already have a {studio_name} Account? Sign In"
+msgstr ""
+
+#: cms/templates/howitworks.html:159
+msgid "Outlining Your Course"
+msgstr ""
+
+#: cms/templates/howitworks.html:162
+msgid ""
+"Simple two-level outline to organize your couse. Drag and drop, and see your"
+" course at a glance."
+msgstr ""
+
+#: cms/templates/howitworks.html:172
+msgid "More than Just Lectures"
+msgstr ""
+
+#: cms/templates/howitworks.html:175
+msgid ""
+"Quickly create videos, text snippets, inline discussions, and a variety of "
+"problem types."
+msgstr ""
+
+#: cms/templates/howitworks.html:185
+msgid "Publishing on Date"
+msgstr ""
+
+#: cms/templates/howitworks.html:188
+msgid ""
+"Simply set the date of a section or subsection, and {studio_name} will "
+"publish it to your students for you."
+msgstr ""
+
+#: cms/templates/html_error.html:11
+msgid "We're having trouble rendering your component"
+msgstr ""
+
+#: cms/templates/html_error.html:14
+msgid ""
+"Students will not be able to access this component. Re-edit your component "
+"to fix the error."
+msgstr ""
+
+#: cms/templates/import.html:17 cms/templates/import.html:31
+msgid "Library Import"
+msgstr ""
+
+#: cms/templates/import.html:19 cms/templates/import.html:33
+msgid "Course Import"
+msgstr ""
+
+#: cms/templates/import.html:45
+msgid ""
+"Be sure you want to import a library before continuing. The contents of the "
+"imported library will replace the contents of the existing library. "
+"{em_start}You cannot undo a library import{em_end}. Before you proceed, we "
+"recommend that you export the current library, so that you have a backup "
+"copy of it."
+msgstr ""
+
+#: cms/templates/import.html:46
+msgid ""
+"The library that you import must be in a .tar.gz file (that is, a .tar file "
+"compressed with GNU Zip). This .tar.gz file must contain a library.xml file."
+" It may also contain other files."
+msgstr ""
+
+#: cms/templates/import.html:47
+msgid ""
+"The import process has five stages. During the first two stages, you must "
+"stay on this page. You can leave this page after the Unpacking stage has "
+"completed. We recommend, however, that you don't make important changes to "
+"your library until the import operation has completed."
+msgstr ""
+
+#: cms/templates/import.html:49
+msgid ""
+"Be sure you want to import a course before continuing. The contents of the "
+"imported course will replace the contents of the existing course. "
+"{em_start}You cannot undo a course import{em_end}. Before you proceed, we "
+"recommend that you export the current course, so that you have a backup copy"
+" of it."
+msgstr ""
+
+#: cms/templates/import.html:50
+msgid ""
+"The course that you import must be in a .tar.gz file (that is, a .tar file "
+"compressed with GNU Zip). This .tar.gz file must contain a course.xml file. "
+"It may also contain other files."
+msgstr ""
+
+#: cms/templates/import.html:51
+msgid ""
+"The import process has five stages. During the first two stages, you must "
+"stay on this page. You can leave this page after the Unpacking stage has "
+"completed. We recommend, however, that you don't make important changes to "
+"your course until the import operation has completed."
+msgstr ""
+
+#: cms/templates/import.html:61
+msgid "Select a .tar.gz File to Replace Your Library Content"
+msgstr ""
+
+#: cms/templates/import.html:63
+msgid "Select a .tar.gz File to Replace Your Course Content"
+msgstr ""
+
+#: cms/templates/import.html:71
+msgid "Choose a File to Import"
+msgstr ""
+
+#: cms/templates/import.html:76
+msgid "File Chosen:"
+msgstr ""
+
+#: cms/templates/import.html:84
+msgid "Replace my library with the selected file"
+msgstr ""
+
+#: cms/templates/import.html:86
+msgid "Replace my course with the selected file"
+msgstr ""
+
+#: cms/templates/import.html:94
+msgid "Library Import Status"
+msgstr ""
+
+#: cms/templates/import.html:96
+msgid "Course Import Status"
+msgstr ""
+
+#: cms/templates/import.html:108
+msgid "Uploading"
+msgstr ""
+
+#: cms/templates/import.html:112
+msgid "Transferring your file to our servers"
+msgstr ""
+
+#: cms/templates/import.html:123
+msgid "Unpacking"
+msgstr ""
+
+#: cms/templates/import.html:124
+msgid ""
+"Expanding and preparing folder/file structure (You can now leave this page "
+"safely, but avoid making drastic changes to content until this import is "
+"complete)"
+msgstr ""
+
+#: cms/templates/import.html:136
+msgid "Verifying"
+msgstr ""
+
+#: cms/templates/import.html:137
+msgid "Reviewing semantics, syntax, and required data"
+msgstr ""
+
+#: cms/templates/import.html:150
+msgid "Updating Library"
+msgstr ""
+
+#: cms/templates/import.html:152
+msgid "Updating Course"
+msgstr ""
+
+#: cms/templates/import.html:157
+msgid ""
+"Integrating your imported content into this library. This process might take"
+" longer with larger libraries."
+msgstr ""
+
+#: cms/templates/import.html:159
+msgid ""
+"Integrating your imported content into this course. This process might take "
+"longer with larger courses."
+msgstr ""
+
+#: cms/templates/import.html:171
+msgid "Success"
+msgstr ""
+
+#: cms/templates/import.html:176
+msgid "Your imported content has now been integrated into this library"
+msgstr ""
+
+#: cms/templates/import.html:178
+msgid "Your imported content has now been integrated into this course"
+msgstr ""
+
+#: cms/templates/import.html:186
+msgid "View Updated Library"
+msgstr ""
+
+#: cms/templates/import.html:188
+msgid "View Updated Outline"
+msgstr ""
+
+#: cms/templates/import.html:203
+msgid "Why import a library?"
+msgstr ""
+
+#: cms/templates/import.html:204
+msgid ""
+"You might want to update an existing library to a new version, or replace an"
+" existing library entirely. You might also have developed a library outside "
+"of {studio_name}."
+msgstr ""
+
+#: cms/templates/import.html:208
+msgid "Note: Library content is not automatically updated in courses"
+msgstr ""
+
+#: cms/templates/import.html:209
+msgid ""
+"If you change and import a library that is referenced by randomized content "
+"blocks in one or more courses, those courses do not automatically use the "
+"updated content. You must manually refresh the randomized content blocks to "
+"bring them up to date with the latest library content."
+msgstr ""
+
+#: cms/templates/import.html:212
+msgid "Learn more about importing a library"
+msgstr ""
+
+#: cms/templates/import.html:218
+msgid "Why import a course?"
+msgstr ""
+
+#: cms/templates/import.html:219
+msgid ""
+"You may want to run a new version of an existing course, or replace an "
+"existing course altogether. Or, you may have developed a course outside "
+"{studio_name}."
+msgstr ""
+
+#: cms/templates/import.html:223
+msgid "What content is imported?"
+msgstr ""
+
+#: cms/templates/import.html:224
+msgid ""
+"Only the course content and structure (including sections, subsections, and "
+"units) are imported. Other data, including student data, grading "
+"information, discussion forum data, course settings, and course team "
+"information, remains the same as it was in the existing course."
+msgstr ""
+
+#: cms/templates/import.html:228
+msgid "Warning: Importing while a course is running"
+msgstr ""
+
+#: cms/templates/import.html:229
+msgid ""
+"If you perform an import while your course is running, and you change the "
+"URL names (or url_name nodes) of any Problem components, the student data "
+"associated with those Problem components may be lost. This data includes "
+"students' problem scores."
+msgstr ""
+
+#: cms/templates/import.html:232
+msgid "Learn more about importing a course"
+msgstr ""
+
+#: cms/templates/index.html:5 cms/templates/index.html:17
+#: cms/templates/widgets/header.html:216
+msgid "{studio_name} Home"
+msgstr ""
+
+#: cms/templates/index.html:26
+msgid "New Course"
+msgstr ""
+
+#: cms/templates/index.html:28
+msgid "Email staff to create course"
+msgstr ""
+
+#: cms/templates/index.html:32
+msgid "New Library"
+msgstr ""
+
+#: cms/templates/index.html:51 cms/templates/index.html:113
+msgid "Please correct the highlighted fields below."
+msgstr ""
+
+#: cms/templates/index.html:56
+msgid "Create a New Course"
+msgstr ""
+
+#: cms/templates/index.html:59
+msgid "Required Information to Create a New Course"
+msgstr ""
+
+#: cms/templates/index.html:66
+msgid ""
+"The public display name for your course. This cannot be changed, but you can"
+" set a different display name in Advanced Settings later."
+msgstr ""
+
+#: cms/templates/index.html:74
+msgid "The name of the organization sponsoring the course."
+msgstr ""
+
+#: cms/templates/index.html:74
+msgid ""
+"Note: This is part of your course URL, so no spaces or special characters "
+"are allowed."
+msgstr ""
+
+#: cms/templates/index.html:74
+msgid ""
+"This cannot be changed, but you can set a different display name in Advanced"
+" Settings later."
+msgstr ""
+
+#: cms/templates/index.html:82
+msgid ""
+"The unique number that identifies your course within your organization."
+msgstr ""
+
+#: cms/templates/index.html:82 cms/templates/index.html:90
+msgid ""
+"Note: This is part of your course URL, so no spaces or special characters "
+"are allowed and it cannot be changed."
+msgstr ""
+
+#: cms/templates/index.html:90
+msgid "The term in which your course will run."
+msgstr ""
+
+#: cms/templates/index.html:100 cms/templates/index.html:152
+msgid "Create"
+msgstr ""
+
+#: cms/templates/index.html:118
+msgid "Create a New Library"
+msgstr ""
+
+#: cms/templates/index.html:121
+msgid "Required Information to Create a New Library"
+msgstr ""
+
+#: cms/templates/index.html:125
+msgid "Library Name"
+msgstr ""
+
+#. Translators: This is an example name for a new content library, seen when
+#. filling out the form to create a new library. (A library is a collection of
+#. content or problems.)
+#: cms/templates/index.html:127
+msgid "e.g. Computer Science Problems"
+msgstr ""
+
+#: cms/templates/index.html:128
+msgid "The public display name for your library."
+msgstr ""
+
+#: cms/templates/index.html:134
+msgid "The public organization name for your library."
+msgstr ""
+
+#: cms/templates/index.html:134 cms/templates/index.html:142
+msgid "This cannot be changed."
+msgstr ""
+
+#: cms/templates/index.html:139
+msgid "Library Code"
+msgstr ""
+
+#. Translators: This is an example for the "code" used to identify a library,
+#. seen when filling out the form to create a new library. This example is
+#. short for "Computer Science Problems". The example number may contain
+#. letters but must not contain spaces.
+#: cms/templates/index.html:141
+msgid "e.g. CSPROB"
+msgstr ""
+
+#: cms/templates/index.html:142
+msgid "The unique code that identifies this library."
+msgstr ""
+
+#: cms/templates/index.html:142
+msgid ""
+"Note: This is part of your library URL, so no spaces or special characters "
+"are allowed."
+msgstr ""
+
+#: cms/templates/index.html:162
+msgid "Courses Being Processed"
+msgstr ""
+
+#: cms/templates/index.html:182 cms/templates/index.html:224
+#: cms/templates/index.html:281
+msgid "Course Run:"
+msgstr ""
+
+#: cms/templates/index.html:188
+msgid "This course run is currently being created."
+msgstr ""
+
+#. Translators: This is a status message, used to inform the user of what the
+#. system is doing. This status means that the user has requested to re-run an
+#. existing course, and the system is currently in the process of duplicating
+#. and configuring the existing course so that it can be re-run.
+#: cms/templates/index.html:192
+msgid "Configuring as re-run"
+msgstr ""
+
+#: cms/templates/index.html:198
+msgid ""
+"The new course will be added to your course list in 5-10 minutes. Return to "
+"this page or {link_start}refresh it{link_end} to update the course list. The"
+" new course will need some manual configuration."
+msgstr ""
+
+#: cms/templates/index.html:239
+msgid ""
+"A system error occurred while your course was being processed. Please go to "
+"the original course to try the re-run again, or contact your PM for "
+"assistance."
+msgstr ""
+
+#: cms/templates/index.html:260
+msgid "Libraries"
+msgstr ""
+
+#: cms/templates/index.html:289
+msgid "Re-run Course"
+msgstr ""
+
+#: cms/templates/index.html:305
+msgid "Are you staff on an existing {studio_name} course?"
+msgstr ""
+
+#: cms/templates/index.html:307
+msgid ""
+"The course creator must give you access to the course. Contact the course "
+"creator or administrator for the course you are helping to author."
+msgstr ""
+
+#: cms/templates/index.html:315 cms/templates/index.html:323
+msgid "Create Your First Course"
+msgstr ""
+
+#: cms/templates/index.html:317
+msgid "Your new course is just a click away!"
+msgstr ""
+
+#: cms/templates/index.html:336
+msgid "Becoming a Course Creator in {studio_name}"
+msgstr ""
+
+#: cms/templates/index.html:341
+msgid ""
+"{studio_name} is a hosted solution for our xConsortium partners and selected"
+" guests. Courses for which you are a team member appear above for you to "
+"edit, while course creator privileges are granted by {platform_name}. Our "
+"team will evaluate your request and provide you feedback within 24 hours "
+"during the work week."
+msgstr ""
+
+#: cms/templates/index.html:346 cms/templates/index.html:371
+#: cms/templates/index.html:399
+msgid "Your Course Creator Request Status:"
+msgstr ""
+
+#: cms/templates/index.html:350
+msgid "Request the Ability to Create Courses"
+msgstr ""
+
+#: cms/templates/index.html:360 cms/templates/index.html:388
+msgid "Your Course Creator Request Status"
+msgstr ""
+
+#: cms/templates/index.html:365
+msgid ""
+"{studio_name} is a hosted solution for our xConsortium partners and selected"
+" guests. Courses for which you are a team member appear above for you to "
+"edit, while course creator privileges are granted by {platform_name}. Our "
+"team is has completed evaluating your request."
+msgstr ""
+
+#: cms/templates/index.html:374 cms/templates/index.html:402
+msgid "Your Course Creator request is:"
+msgstr ""
+
+#: cms/templates/index.html:377
+msgid "Denied"
+msgstr ""
+
+#: cms/templates/index.html:378
+msgid ""
+"Your request did not meet the criteria/guidelines specified by "
+"{platform_name} Staff."
+msgstr ""
+
+#: cms/templates/index.html:393
+msgid ""
+"{studio_name} is a hosted solution for our xConsortium partners and selected"
+" guests. Courses for which you are a team member appear above for you to "
+"edit, while course creator privileges are granted by {platform_name}. Our "
+"team is currently  evaluating your request."
+msgstr ""
+
+#: cms/templates/index.html:407
+msgid ""
+"Your request is currently being reviewed by {platform_name} staff and should"
+" be updated shortly."
+msgstr ""
+
+#: cms/templates/index.html:433
+msgid "(Read-only)"
+msgstr ""
+
+#: cms/templates/index.html:446
+msgid "Were you expecting to see a particular library here?"
+msgstr ""
+
+#: cms/templates/index.html:448
+msgid ""
+"The library creator must give you access to the library. Contact the library"
+" creator or administrator for the library you are helping to author."
+msgstr ""
+
+#: cms/templates/index.html:455 cms/templates/index.html:463
+msgid "Create Your First Library"
+msgstr ""
+
+#: cms/templates/index.html:457
+msgid ""
+"Libraries hold a pool of components that can be re-used across multiple "
+"courses. Create your first library with the click of a button!"
+msgstr ""
+
+#: cms/templates/index.html:474
+msgid "New to {studio_name}?"
+msgstr ""
+
+#: cms/templates/index.html:475
+msgid ""
+"Click Help in the upper-right corner to get more information about the "
+"{studio_name} page you are viewing. You can also use the links at the bottom"
+" of the page to access our continually updated documentation and other "
+"{studio_name} resources."
+msgstr ""
+
+#: cms/templates/index.html:480
+msgid "Getting Started with {studio_name}"
+msgstr ""
+
+#: cms/templates/index.html:484 cms/templates/index.html:563
+msgid "Use our feedback tool, Tender, to request help"
+msgstr ""
+
+#: cms/templates/index.html:485 cms/templates/widgets/sock.html:50
+msgid "Request help with {studio_name}"
+msgstr ""
+
+#: cms/templates/index.html:494 cms/templates/index.html:506
+#: cms/templates/index.html:512
+msgid "Can I create courses in {studio_name}?"
+msgstr ""
+
+#: cms/templates/index.html:495
+msgid ""
+"In order to create courses in {studio_name}, you must {link_start}contact "
+"{platform_name} staff to help you create a course{link_end}."
+msgstr ""
+
+#: cms/templates/index.html:507
+msgid ""
+"In order to create courses in {studio_name}, you must have course creator "
+"privileges to create your own course."
+msgstr ""
+
+#: cms/templates/index.html:525
+msgid ""
+"Your request to author courses in {studio_name} has been denied. Please "
+"{link_start}contact {platform_name} Staff with further questions{link_end}."
+msgstr ""
+
+#: cms/templates/index.html:542
+#, python-format
+msgid "Thanks for signing up, %(name)s!"
+msgstr ""
+
+#: cms/templates/index.html:547
+msgid "We need to verify your email address"
+msgstr ""
+
+#: cms/templates/index.html:549
+#, python-format
+msgid ""
+"Almost there! In order to complete your sign up we need you to verify your "
+"email address (%(email)s). An activation message and next steps should be "
+"waiting for you there."
+msgstr ""
+
+#: cms/templates/index.html:557
+msgid "Need help?"
+msgstr ""
+
+#: cms/templates/index.html:558
+msgid ""
+"Please check your Junk or Spam folders in case our email isn't in your "
+"INBOX. Still can't find the verification email? Request help via the link "
+"below."
+msgstr ""
+
+#: cms/templates/index.html:564
+msgid "Request help with your {studio_name} account"
+msgstr ""
+
+#: cms/templates/library.html:46
+msgid "Content Library"
+msgstr ""
+
+#: cms/templates/library.html:58
+msgid "Add Component"
+msgstr ""
+
+#: cms/templates/library.html:87
+msgid "Adding content to your library"
+msgstr ""
+
+#: cms/templates/library.html:88
+msgid ""
+"Add components to your library for use in courses, using Add New Component "
+"at the bottom of this page."
+msgstr ""
+
+#: cms/templates/library.html:89
+msgid ""
+"Components are listed in the order in which they are added, with the most "
+"recently added at the bottom. Use the pagination arrows to navigate from "
+"page to page if you have more than one page of components in your library."
+msgstr ""
+
+#: cms/templates/library.html:90
+msgid "Using library content in courses"
+msgstr ""
+
+#: cms/templates/library.html:91
+msgid ""
+"Use library content in courses by adding the "
+"{em_start}library_content{em_end} policy key to the Advanced Module List in "
+"the course's Advanced Settings, then adding a Randomized Content Block to "
+"your courseware. In the settings for each Randomized Content Block, select "
+"this library as the source library, and specify the number of problems to be"
+" randomly selected and displayed to each student."
+msgstr ""
+
+#: cms/templates/library.html:95
+msgid "Learn more about content libraries"
+msgstr ""
+
+#: cms/templates/login.html:7 cms/templates/widgets/header.html:239
+msgid "Sign In"
+msgstr ""
+
+#: cms/templates/login.html:15 cms/templates/login.html:41
+msgid "Sign In to {studio_name}"
+msgstr ""
+
+#: cms/templates/login.html:16
+msgid "Don't have a {studio_name} Account? Sign up!"
+msgstr ""
+
+#: cms/templates/login.html:23
+msgid "Required Information to Sign In to {studio_name}"
+msgstr ""
+
+#: cms/templates/login.html:51
+msgid "{studio_name} Support"
+msgstr ""
+
+#: cms/templates/login.html:55
+msgid ""
+"Having trouble with your account? Use {link_start}our support "
+"center{link_end} to look over self help steps, find solutions others have "
+"found to the same problem, or let us know of your issue."
+msgstr ""
+
+#: cms/templates/manage_users.html:8
+msgid "Course Team Settings"
+msgstr ""
+
+#: cms/templates/manage_users.html:32 cms/templates/manage_users_lib.html:32
+msgid "New Team Member"
+msgstr ""
+
+#: cms/templates/manage_users.html:47
+msgid "Add a User to Your Course's Team"
+msgstr ""
+
+#: cms/templates/manage_users.html:50 cms/templates/manage_users_lib.html:50
+msgid "New Team Member Information"
+msgstr ""
+
+#: cms/templates/manage_users.html:54 cms/templates/manage_users_lib.html:54
+msgid "User's Email Address"
+msgstr ""
+
+#: cms/templates/manage_users.html:56
+msgid ""
+"Please provide the email address of the course staff member you'd like to "
+"add"
+msgstr ""
+
+#: cms/templates/manage_users.html:63 cms/templates/manage_users_lib.html:63
+msgid "Add User"
+msgstr ""
+
+#: cms/templates/manage_users.html:79
+msgid "Add Team Members to This Course"
+msgstr ""
+
+#: cms/templates/manage_users.html:81
+msgid ""
+"Adding team members makes course authoring collaborative. Users must be "
+"signed up for {studio_name} and have an active account."
+msgstr ""
+
+#: cms/templates/manage_users.html:87
+msgid "Add a New Team Member"
+msgstr ""
+
+#: cms/templates/manage_users.html:96
+msgid "Course Team Roles"
+msgstr ""
+
+#: cms/templates/manage_users.html:97
+msgid ""
+"Course team members, or staff, are course co-authors. They have full writing"
+" and editing privileges on all course content."
+msgstr ""
+
+#: cms/templates/manage_users.html:98
+msgid ""
+"Admins are course team members who can add and remove other course team "
+"members."
+msgstr ""
+
+#: cms/templates/manage_users.html:103
+msgid "Transferring Ownership"
+msgstr ""
+
+#: cms/templates/manage_users.html:104
+msgid ""
+"Every course must have an Admin. If you're the Admin and you want transfer "
+"ownership of the course, click Add admin access to make another user the "
+"Admin, then ask that user to remove you from the Course Team list."
+msgstr ""
+
+#: cms/templates/manage_users_lib.html:8
+msgid "Library User Access"
+msgstr ""
+
+#: cms/templates/manage_users_lib.html:24
+#: cms/templates/widgets/header.html:173
+msgid "User Access"
+msgstr ""
+
+#: cms/templates/manage_users_lib.html:47
+msgid "Grant Access to This Library"
+msgstr ""
+
+#: cms/templates/manage_users_lib.html:56
+msgid "Provide the email address of the user you want to add"
+msgstr ""
+
+#: cms/templates/manage_users_lib.html:79
+msgid "Add More Users to This Library"
+msgstr ""
+
+#: cms/templates/manage_users_lib.html:81
+msgid ""
+"Grant other members of your course team access to this library. New library "
+"users must have an active {studio_name} account."
+msgstr ""
+
+#: cms/templates/manage_users_lib.html:87
+msgid "Add a New User"
+msgstr ""
+
+#: cms/templates/manage_users_lib.html:96
+msgid "Library Access Roles"
+msgstr ""
+
+#: cms/templates/manage_users_lib.html:97
+msgid "There are three access roles for libraries: User, Staff, and Admin."
+msgstr ""
+
+#: cms/templates/manage_users_lib.html:98
+msgid ""
+"Users can view library content and can reference or use library components "
+"in their courses, but they cannot edit the contents of a library."
+msgstr ""
+
+#: cms/templates/manage_users_lib.html:99
+msgid ""
+"Staff are content co-authors. They have full editing privileges on the "
+"contents of a library."
+msgstr ""
+
+#: cms/templates/manage_users_lib.html:100
+msgid ""
+"Admins have full editing privileges and can also add and remove other team "
+"members. There must be at least one user with Admin privileges in a library."
+msgstr ""
+
+#: cms/templates/register.html:8 cms/templates/widgets/header.html:236
+msgid "Sign Up"
+msgstr ""
+
+#: cms/templates/register.html:16
+msgid "Sign Up for {studio_name}"
+msgstr ""
+
+#: cms/templates/register.html:17
+msgid "Already have a {studio_name} Account? Sign in"
+msgstr ""
+
+#: cms/templates/register.html:20
+msgid ""
+"Ready to start creating online courses? Sign up below and start creating "
+"your first {platform_name} course today."
+msgstr ""
+
+#: cms/templates/register.html:28
+msgid "Required Information to Sign Up for {studio_name}"
+msgstr ""
+
+#: cms/templates/register.html:47
+msgid ""
+"This will be used in public discussions with your courses and in our edX101 "
+"support forums"
+msgstr ""
+
+#: cms/templates/register.html:57
+msgid "Your Location"
+msgstr ""
+
+#: cms/templates/register.html:70
+msgid "I agree to the {a_start} Terms of Service {a_end}"
+msgstr ""
+
+#: cms/templates/register.html:77
+msgid "Create My Account &amp; Start Authoring Courses"
+msgstr ""
+
+#: cms/templates/register.html:86
+msgid "Common {studio_name} Questions"
+msgstr ""
+
+#: cms/templates/register.html:89
+msgid "Who is {studio_name} for?"
+msgstr ""
+
+#: cms/templates/register.html:90
+msgid ""
+"{studio_name} is for anyone that wants to create online courses that "
+"leverage the global {platform_name} platform. Our users are often faculty "
+"members, teaching assistants and course staff, and members of instructional "
+"technology groups."
+msgstr ""
+
+#: cms/templates/register.html:96
+msgid ""
+"How technically savvy do I need to be to create courses in {studio_name}?"
+msgstr ""
+
+#: cms/templates/register.html:97
+msgid ""
+"{studio_name} is designed to be easy to use by almost anyone familiar with "
+"common web-based authoring environments (Wordpress, Moodle, etc.). No "
+"programming knowledge is required, but for some of the more advanced "
+"features, a technical background would be helpful. As always, we are here to"
+" help, so don't hesitate to dive right in."
+msgstr ""
+
+#: cms/templates/register.html:103
+msgid "I've never authored a course online before. Is there help?"
+msgstr ""
+
+#: cms/templates/register.html:104
+msgid ""
+"Absolutely. We have created an online course, edX101, that describes some "
+"best practices: from filming video, creating exercises, to the basics of "
+"running an online course. Additionally, we're always here to help, just drop"
+" us a note."
+msgstr ""
+
+#: cms/templates/settings.html:3
+msgid "Schedule &amp; Details Settings"
+msgstr ""
+
+#: cms/templates/settings.html:43
+msgid "Schedule & Details"
+msgstr ""
+
+#: cms/templates/settings.html:54
+msgid "Basic Information"
+msgstr ""
+
+#: cms/templates/settings.html:55
+msgid "The nuts and bolts of your course"
+msgstr ""
+
+#: cms/templates/settings.html:61 cms/templates/settings.html:67
+#: cms/templates/settings.html:73 cms/templates/settings.html:136
+#: cms/templates/settings.html:147 cms/templates/settings.html:159
+msgid "This field is disabled: this information cannot be changed."
+msgstr ""
+
+#: cms/templates/settings.html:80
+msgid "Course Summary Page"
+msgstr ""
+
+#: cms/templates/settings.html:80
+msgid "(for student enrollment and access)"
+msgstr ""
+
+#: cms/templates/settings.html:91
+msgid "Enroll in {course_display_name}"
+msgstr ""
+
+#: cms/templates/settings.html:94
+msgid ""
+"The course \"{course_display_name}\", provided by {platform_name}, is open "
+"for enrollment. Please navigate to this course at {link_for_about_page} to "
+"enroll."
+msgstr ""
+
+#: cms/templates/settings.html:100
+msgid "Send a note to students via email"
+msgstr ""
+
+#: cms/templates/settings.html:102
+msgid "Invite your students"
+msgstr ""
+
+#: cms/templates/settings.html:110
+msgid "Promoting Your Course with {platform_name}"
+msgstr ""
+
+#: cms/templates/settings.html:112
+msgid ""
+"Your course summary page will not be viewable until your course has been "
+"announced. To provide content for the page and preview it, follow the "
+"instructions provided by your Program Manager."
+msgstr ""
+
+#: cms/templates/settings.html:126
+msgid "Credit Eligibility Requirements"
+msgstr ""
+
+#: cms/templates/settings.html:127
+msgid "Steps needed for credit eligibility"
+msgstr ""
+
+#: cms/templates/settings.html:133 cms/templates/settings.html:135
+msgid "Minimum Passing Grade"
+msgstr ""
+
+#: cms/templates/settings.html:144
+msgid "Successful Proctored Exam"
+msgstr ""
+
+#: cms/templates/settings.html:146
+msgid "Proctored Exam {number}"
+msgstr ""
+
+#: cms/templates/settings.html:155
+msgid "Successful In-Course Reverification"
+msgstr ""
+
+#. Translators: 'Access to Assessment 1' means the access for a requirement
+#. with name 'Assessment 1'
+#: cms/templates/settings.html:158
+msgid "In-Course Reverification {number}"
+msgstr ""
+
+#: cms/templates/settings.html:160
+msgid "Access to {display_name}"
+msgstr ""
+
+#: cms/templates/settings.html:174
+msgid "Course Schedule"
+msgstr ""
+
+#: cms/templates/settings.html:175
+msgid "Dates that control when your course can be viewed"
+msgstr ""
+
+#: cms/templates/settings.html:183
+msgid "First day the course begins"
+msgstr ""
+
+#: cms/templates/settings.html:187
+msgid "Course Start Time"
+msgstr ""
+
+#: cms/templates/settings.html:189 cms/templates/settings.html:203
+#: cms/templates/settings.html:219 cms/templates/settings.html:233
+msgid "(UTC)"
+msgstr ""
+
+#: cms/templates/settings.html:197
+msgid "Last day your course is active"
+msgstr ""
+
+#: cms/templates/settings.html:201
+msgid "Course End Time"
+msgstr ""
+
+#: cms/templates/settings.html:211
+msgid "Enrollment Start Date"
+msgstr ""
+
+#: cms/templates/settings.html:213
+msgid "First day students can enroll"
+msgstr ""
+
+#: cms/templates/settings.html:217
+msgid "Enrollment Start Time"
+msgstr ""
+
+#: cms/templates/settings.html:225
+msgid "Enrollment End Date"
+msgstr ""
+
+#: cms/templates/settings.html:227
+msgid "Last day students can enroll"
+msgstr ""
+
+#: cms/templates/settings.html:231
+msgid "Enrollment End Time"
+msgstr ""
+
+#: cms/templates/settings.html:240
+msgid "These Dates Are Not Used When Promoting Your Course"
+msgstr ""
+
+#: cms/templates/settings.html:242
+msgid ""
+"These dates impact <strong>when your courseware can be viewed</strong>, but "
+"they are <strong>not the dates shown on your course summary page</strong>. "
+"To provide the course start and registration dates as shown on your course "
+"summary page, follow the instructions provided by your Program Manager."
+msgstr ""
+
+#: cms/templates/settings.html:256
+msgid "Course Details"
+msgstr ""
+
+#: cms/templates/settings.html:257
+msgid "Provide useful information about your course"
+msgstr ""
+
+#: cms/templates/settings.html:261
+msgid "Course Language"
+msgstr ""
+
+#: cms/templates/settings.html:268
+msgid ""
+"Identify the course language here. This is used to assist users find courses"
+" that are taught in a specific language."
+msgstr ""
+
+#: cms/templates/settings.html:277
+msgid "Introducing Your Course"
+msgstr ""
+
+#: cms/templates/settings.html:278
+msgid "Information for prospective students"
+msgstr ""
+
+#: cms/templates/settings.html:283
+msgid "Course Short Description"
+msgstr ""
+
+#: cms/templates/settings.html:285
+msgid ""
+"Appears on the course catalog page when students roll over the course name. "
+"Limit to ~150 characters"
+msgstr ""
+
+#: cms/templates/settings.html:291
+msgid "Course Overview"
+msgstr ""
+
+#: cms/templates/settings.html:295
+msgid "your course summary page"
+msgstr ""
+
+#: cms/templates/settings.html:297
+#, python-format
+msgid ""
+"Introductions, prerequisites, FAQs that are used on %s (formatted in HTML)"
+msgstr ""
+
+#: cms/templates/settings.html:304 cms/templates/settings.html:308
+#: cms/templates/settings.html:317
+msgid "Course Image"
+msgstr ""
+
+#: cms/templates/settings.html:312
+msgid ""
+"You can manage this image along with all of your other <a href='{}'>files "
+"&amp; uploads</a>"
+msgstr ""
+
+#: cms/templates/settings.html:319
+msgid ""
+"Your course currently does not have an image. Please upload one (JPEG or PNG"
+" format, and minimum suggested dimensions are 375px wide by 200px tall)"
+msgstr ""
+
+#. Translators: This is the placeholder text for a field that requests the URL
+#. for a course image
+#: cms/templates/settings.html:326
+msgid "Your course image URL"
+msgstr ""
+
+#: cms/templates/settings.html:327
+msgid ""
+"Please provide a valid path and name to your course image (Note: only JPEG "
+"or PNG format supported)"
+msgstr ""
+
+#: cms/templates/settings.html:329
+msgid "Upload Course Image"
+msgstr ""
+
+#: cms/templates/settings.html:335 cms/templates/settings.html:338
+msgid "Course Introduction Video"
+msgstr ""
+
+#: cms/templates/settings.html:341
+msgid "Delete Current Video"
+msgstr ""
+
+#. Translators: This is the placeholder text for a field that requests a
+#. YouTube video ID for a course video
+#: cms/templates/settings.html:347
+msgid "your YouTube video's ID"
+msgstr ""
+
+#: cms/templates/settings.html:348
+msgid "Enter your YouTube video's ID (along with any restriction parameters)"
+msgstr ""
+
+#: cms/templates/settings.html:361
+msgid "Expectations of the students taking this course"
+msgstr ""
+
+#: cms/templates/settings.html:366
+msgid "Hours of Effort per Week"
+msgstr ""
+
+#: cms/templates/settings.html:368
+msgid "Time spent on all course work"
+msgstr ""
+
+#: cms/templates/settings.html:372
+msgid "Prerequisite Course"
+msgstr ""
+
+#: cms/templates/settings.html:374
+msgid "None"
+msgstr ""
+
+#: cms/templates/settings.html:379
+msgid "Course that students must complete before beginning this course"
+msgstr ""
+
+#: cms/templates/settings.html:380
+msgid "set pre-requisite course"
+msgstr ""
+
+#: cms/templates/settings.html:385
+msgid "Entrance Exam"
+msgstr ""
+
+#: cms/templates/settings.html:389
+msgid "Require students to pass an exam before beginning the course."
+msgstr ""
+
+#: cms/templates/settings.html:392
+msgid ""
+"You can now view and author your course entrance exam from the "
+"{link_start}Course Outline{link_end}."
+msgstr ""
+
+#: cms/templates/settings.html:393
+msgid "Grade Requirements"
+msgstr ""
+
+#: cms/templates/settings.html:394
+msgid " %"
+msgstr ""
+
+#: cms/templates/settings.html:395
+msgid ""
+"The score student must meet in order to successfully complete the entrance "
+"exam. "
+msgstr ""
+
+#: cms/templates/settings.html:409
+msgid "Course Content License"
+msgstr ""
+
+#. Translators: At the course settings, the editor is able to select the
+#. default course content license.
+#. The course content will have this license set, some assets can override the
+#. license with their own.
+#. In the form, the license selector for course content is described using the
+#. following string:
+#: cms/templates/settings.html:413
+msgid "Select the default license for course content"
+msgstr ""
+
+#: cms/templates/settings.html:427
+msgid "How are these settings used?"
+msgstr ""
+
+#: cms/templates/settings.html:428
+msgid ""
+"Your course's schedule determines when students can enroll in and begin a "
+"course."
+msgstr ""
+
+#: cms/templates/settings.html:430
+msgid ""
+"Other information from this page appears on the About page for your course. "
+"This information includes the course overview, course image, introduction "
+"video, and estimated time requirements. Students use About pages to choose "
+"new courses to take."
+msgstr ""
+
+#: cms/templates/settings_advanced.html:42
+msgid "Your policy changes have been saved."
+msgstr ""
+
+#: cms/templates/settings_advanced.html:46
+msgid "There was an error saving your information. Please see below."
+msgstr ""
+
+#: cms/templates/settings_advanced.html:51
+msgid "Manual Policy Definition"
+msgstr ""
+
+#: cms/templates/settings_advanced.html:55
+msgid ""
+"<strong>Warning</strong>: Do not modify these policies unless you are "
+"familiar with their purpose."
+msgstr ""
+
+#: cms/templates/settings_advanced.html:60
+msgid "Show Deprecated Settings"
+msgstr ""
+
+#: cms/templates/settings_advanced.html:73
+msgid "What do advanced settings do?"
+msgstr ""
+
+#: cms/templates/settings_advanced.html:74
+msgid ""
+"Advanced settings control specific course functionality. On this page, you "
+"can edit manual policies, which are JSON-based key and value pairs that "
+"control specific course settings."
+msgstr ""
+
+#: cms/templates/settings_advanced.html:76
+msgid ""
+"Any policies you modify here override all other information you've defined "
+"elsewhere in {studio_name}. Do not edit policies unless you are familiar "
+"with both their purpose and syntax."
+msgstr ""
+
+#: cms/templates/settings_advanced.html:78
+msgid ""
+"{em_start}Note:{em_end} When you enter strings as policy values, ensure that"
+" you use double quotation marks (&quot;) around the string. Do not use "
+"single quotation marks (&apos;)."
+msgstr ""
+
+#: cms/templates/settings_graders.html:3
+msgid "Grading Settings"
+msgstr ""
+
+#: cms/templates/settings_graders.html:46
+msgid "Overall Grade Range"
+msgstr ""
+
+#: cms/templates/settings_graders.html:47
+msgid "Your overall grading scale for student final grades"
+msgstr ""
+
+#: cms/templates/settings_graders.html:82
+msgid "Credit Grade &amp; Eligibility"
+msgstr ""
+
+#: cms/templates/settings_graders.html:83
+msgid "Settings for credit eligibility"
+msgstr ""
+
+#: cms/templates/settings_graders.html:88
+msgid "Minimum Passing Grade to Earn Credit:"
+msgstr ""
+
+#: cms/templates/settings_graders.html:90
+msgid "Must be greater than or equal to passing grade"
+msgstr ""
+
+#: cms/templates/settings_graders.html:99
+msgid "Grading Rules &amp; Policies"
+msgstr ""
+
+#: cms/templates/settings_graders.html:100
+msgid "Deadlines, requirements, and logistics around grading student work"
+msgstr ""
+
+#: cms/templates/settings_graders.html:105
+msgid "Grace Period on Deadline:"
+msgstr ""
+
+#: cms/templates/settings_graders.html:107
+msgid "Leeway on due dates"
+msgstr ""
+
+#: cms/templates/settings_graders.html:115
+msgid "Assignment Types"
+msgstr ""
+
+#: cms/templates/settings_graders.html:116
+msgid "Categories and labels for any exercises that are gradable"
+msgstr ""
+
+#: cms/templates/settings_graders.html:125
+msgid "New Assignment Type"
+msgstr ""
+
+#: cms/templates/settings_graders.html:134
+msgid "What can I do on this page?"
+msgstr ""
+
+#: cms/templates/settings_graders.html:135
+msgid ""
+"You can use the slider under Overall Grade Range to specify whether your "
+"course is pass/fail or graded by letter, and to establish the thresholds for"
+" each grade."
+msgstr ""
+
+#: cms/templates/settings_graders.html:137
+msgid ""
+"You can specify whether your course offers students a grace period for late "
+"assignments."
+msgstr ""
+
+#: cms/templates/settings_graders.html:138
+msgid ""
+"You can also create assignment types, such as homework, labs, quizzes, and "
+"exams, and specify how much of a student's grade each assignment type is "
+"worth."
+msgstr ""
+
+#: cms/templates/studio_xblock_wrapper.html:57
+#: cms/templates/studio_xblock_wrapper.html:59
+msgid "Expand or Collapse"
+msgstr ""
+
+#: cms/templates/studio_xblock_wrapper.html:77
+msgid "Visibility Settings"
+msgstr ""
+
+#: cms/templates/studio_xblock_wrapper.html:79
+msgid "Visibility"
+msgstr ""
+
+#: cms/templates/studio_xblock_wrapper.html:121
+msgid "This block contains multiple components."
+msgstr ""
+
+#: cms/templates/temp-course-landing.html:36
+msgid "{platform_name} edge"
+msgstr ""
+
+#: cms/templates/textbooks.html:9 cms/templates/textbooks.html:40
+#: cms/templates/widgets/header.html:75
+msgid "Textbooks"
+msgstr ""
+
+#: cms/templates/textbooks.html:47
+msgid "New Textbook"
+msgstr ""
+
+#: cms/templates/textbooks.html:61
+msgid "Why should I break my textbook into chapters?"
+msgstr ""
+
+#: cms/templates/textbooks.html:62
+msgid ""
+"Breaking your textbook into multiple chapters reduces loading times for "
+"students, especially those with slow Internet connections. Breaking up "
+"textbooks into chapters can also help students more easily find topic-based "
+"information."
+msgstr ""
+
+#: cms/templates/textbooks.html:65
+msgid "What if my book isn't divided into chapters?"
+msgstr ""
+
+#: cms/templates/textbooks.html:66
+msgid ""
+"If your textbook doesn't have individual chapters, you can upload the entire"
+" text as a single chapter and enter a name of your choice in the Chapter "
+"Name field."
+msgstr ""
+
+#: cms/templates/textbooks.html:70
+msgid "Learn more about textbooks"
+msgstr ""
+
+#: cms/templates/videos_index.html:8 cms/templates/videos_index.html:42
+#: cms/templates/widgets/header.html:79
+msgid "Video Uploads"
+msgstr ""
+
+#: cms/templates/videos_index.html:62
+msgid "Why upload video files?"
+msgstr ""
+
+#: cms/templates/videos_index.html:63
+msgid ""
+"For a video to play on different devices, it needs to be available in "
+"multiple formats. After you upload an original video file in .mp4 or .mov "
+"format on this page, an automated process creates those additional formats "
+"and stores them for you."
+msgstr ""
+
+#: cms/templates/videos_index.html:64
+msgid "Monitoring files as they upload"
+msgstr ""
+
+#: cms/templates/videos_index.html:65
+msgid ""
+"Each video file that you upload needs to reach the video processing servers "
+"successfully before additional work can begin. You can monitor the progress "
+"of files as they upload, and try again if the upload fails."
+msgstr ""
+
+#: cms/templates/videos_index.html:66
+msgid "Managing uploaded files"
+msgstr ""
+
+#: cms/templates/videos_index.html:67
+msgid ""
+"After a file uploads successfully, automated processing begins. After "
+"automated processing begins for a file it is listed under Previous Uploads "
+"as {em_start}In Progress{em_end}. You can add the video to your course as "
+"soon as it has a unique video ID and the status is {em_start}Ready{em_end}. "
+"Allow 24 hours for file processing at the external video hosting sites to "
+"complete."
+msgstr ""
+
+#: cms/templates/videos_index.html:68
+msgid ""
+"If something goes wrong, the {em_start}Failed{em_end} status message "
+"appears. Check for problems in your original file and upload a replacement."
+msgstr ""
+
+#: cms/templates/videos_index.html:69
+msgid "How do I get the videos into my course?"
+msgstr ""
+
+#: cms/templates/videos_index.html:70
+msgid ""
+"As soon as the status for a file is {em_start}Ready{em_end}, you can add "
+"that video to a component in your course. Copy the unique video ID. In "
+"another browser window, on the Course Outline page, create or locate a video"
+" component to play this video. Edit the video component to paste the ID into"
+" the Advanced {em_start}Video ID{em_end} field. The video can play in the "
+"LMS as soon as its status is {em_start}Ready{em_end}, although processing "
+"may not be complete for all encodings and all video hosting sites."
+msgstr ""
+
+#: cms/templates/visibility_editor.html:18
+msgid "No content groups exist"
+msgstr ""
+
+#: cms/templates/visibility_editor.html:21
+msgid ""
+"Use content groups to give groups of students access to a specific set of "
+"course content. Create one or more content groups, and make specific "
+"components visible to them."
+msgstr ""
+
+#: cms/templates/visibility_editor.html:25
+msgid "Manage content groups"
+msgstr ""
+
+#. Translators: Any text between {screen_reader_start} and {screen_reader_end}
+#. is only read by screen readers and never shown in the browser.
+#: cms/templates/visibility_editor.html:33
+msgid ""
+"{screen_reader_start}Warning:{screen_reader_end} The Unit this component is "
+"contained in is hidden from students. Visibility settings here will be "
+"trumped by this."
+msgstr ""
+
+#: cms/templates/visibility_editor.html:49
+msgid "Make visible to:"
+msgstr ""
+
+#: cms/templates/visibility_editor.html:57
+msgid "All Students and Staff"
+msgstr ""
+
+#: cms/templates/visibility_editor.html:62
+msgid "Specific Content Groups"
+msgstr ""
+
+#: cms/templates/visibility_editor.html:91
+msgid "Deleted Content Group"
+msgstr ""
+
+#: cms/templates/visibility_editor.html:92
+msgid ""
+"Content group no longer exists. Please choose another or allow access to All"
+" Students and staff"
+msgstr ""
+
+#: cms/templates/emails/activation_email.txt:3
+msgid ""
+"Thank you for signing up for {studio_name}! To activate your account, please"
+" copy and paste this address into your web browser's address bar:"
+msgstr ""
+
+#: cms/templates/emails/activation_email.txt:11
+msgid ""
+"If you didn't request this, you don't need to do anything; you won't receive"
+" any more email from us. Please do not reply to this e-mail; if you require "
+"assistance, check the help section of the {studio_name} web site."
+msgstr ""
+
+#: cms/templates/emails/activation_email_subject.txt:2
+msgid "Your account for {studio_name}"
+msgstr ""
+
+#: cms/templates/emails/course_creator_admin_subject.txt:2
+msgid "{email} has requested {studio_name} course creator privileges on edge"
+msgstr ""
+
+#: cms/templates/emails/course_creator_admin_user_pending.txt:2
+msgid ""
+"User '{user}' with e-mail {email} has requested {studio_name} course creator"
+" privileges on edge."
+msgstr ""
+
+#: cms/templates/emails/course_creator_admin_user_pending.txt:5
+msgid "To grant or deny this request, use the course creator admin table."
+msgstr ""
+
+#: cms/templates/emails/course_creator_denied.txt:3
+msgid ""
+"Your request for course creation rights to {studio_name} have been denied. "
+"If you believe this was in error, please contact {email}"
+msgstr ""
+
+#: cms/templates/emails/course_creator_granted.txt:3
+msgid ""
+"Your request for course creation rights to {studio_name} have been granted. To create your first course, visit\n"
+"\n"
+"{url}"
+msgstr ""
+
+#: cms/templates/emails/course_creator_revoked.txt:3
+msgid ""
+"Your course creation rights to {studio_name} have been revoked. If you "
+"believe this was in error, please contact {email}"
+msgstr ""
+
+#: cms/templates/emails/course_creator_subject.txt:2
+msgid "Your course creator status for {studio_name}"
+msgstr ""
+
+#: cms/templates/registration/activation_complete.html:28
+msgid "You can now {link_start}login{link_end}."
+msgstr ""
+
+#: cms/templates/registration/reg_complete.html:3
+msgid ""
+"An activation link has been sent to {email}, along with instructions for "
+"activating your account."
+msgstr ""
+
+#: cms/templates/widgets/footer.html:24 cms/templates/widgets/sock.html:58
+msgid "Contact Us"
+msgstr ""
+
+#. Translators: 'EdX', 'edX', 'Studio', and 'Open edX' are trademarks of 'edX
+#. Inc.'. Please do not translate any of these trademarks and company names.
+#: cms/templates/widgets/footer.html:36
+msgid ""
+"EdX, Open edX, Studio, and the edX and Open edX logos are registered "
+"trademarks or trademarks of {link_start}edX Inc.{link_end}"
+msgstr ""
+
+#: cms/templates/widgets/footer.html:44 cms/templates/widgets/footer.html:45
+msgid "Powered by Open edX"
+msgstr ""
+
+#: cms/templates/widgets/header.html:46
+msgid "Current Course:"
+msgstr ""
+
+#: cms/templates/widgets/header.html:53 cms/templates/widgets/header.html:57
+#: cms/templates/widgets/header.html:88 cms/templates/widgets/header.html:163
+msgid "Course"
+msgstr ""
+
+#: cms/templates/widgets/header.html:63
+msgid "Outline"
+msgstr ""
+
+#: cms/templates/widgets/header.html:66
+msgid "Updates"
+msgstr ""
+
+#: cms/templates/widgets/header.html:94
+msgid "Schedule &amp; Details"
+msgstr ""
+
+#: cms/templates/widgets/header.html:128
+msgid "Checklists"
+msgstr ""
+
+#: cms/templates/widgets/header.html:131 cms/templates/widgets/header.html:186
+msgid "Import"
+msgstr ""
+
+#: cms/templates/widgets/header.html:134 cms/templates/widgets/header.html:189
+msgid "Export"
+msgstr ""
+
+#: cms/templates/widgets/header.html:156
+msgid "Current Library:"
+msgstr ""
+
+#: cms/templates/widgets/header.html:168
+msgid "Library"
+msgstr ""
+
+#: cms/templates/widgets/header.html:202 cms/templates/widgets/header.html:229
+msgid "Account"
+msgstr ""
+
+#: cms/templates/widgets/header.html:203 cms/templates/widgets/header.html:230
+msgid "Account Navigation"
+msgstr ""
+
+#: cms/templates/widgets/header.html:206 cms/templates/widgets/header.html:233
+msgid "Contextual Online Help"
+msgstr ""
+
+#: cms/templates/widgets/header.html:210
+msgid "Currently signed in as:"
+msgstr ""
+
+#: cms/templates/widgets/metadata-edit.html:34
+msgid "Launch Latex Source Compiler"
+msgstr ""
+
+#: cms/templates/widgets/problem-edit.html:16
+#: cms/templates/widgets/problem-edit.html:46
+msgid "Heading 1"
+msgstr ""
+
+#: cms/templates/widgets/problem-edit.html:18
+#: cms/templates/widgets/problem-edit.html:57
+msgid "Multiple Choice"
+msgstr ""
+
+#: cms/templates/widgets/problem-edit.html:20
+#: cms/templates/widgets/problem-edit.html:68
+msgid "Checkboxes"
+msgstr ""
+
+#: cms/templates/widgets/problem-edit.html:22
+#: cms/templates/widgets/problem-edit.html:79
+msgid "Text Input"
+msgstr ""
+
+#: cms/templates/widgets/problem-edit.html:24
+#: cms/templates/widgets/problem-edit.html:90
+msgid "Numerical Input"
+msgstr ""
+
+#: cms/templates/widgets/problem-edit.html:26
+#: cms/templates/widgets/problem-edit.html:100
+msgid "Dropdown"
+msgstr ""
+
+#: cms/templates/widgets/problem-edit.html:28
+#: cms/templates/widgets/problem-edit.html:115
+msgid "Explanation"
+msgstr ""
+
+#: cms/templates/widgets/problem-edit.html:32
+msgid "Advanced Editor"
+msgstr ""
+
+#: cms/templates/widgets/problem-edit.html:33
+msgid "Toggle Cheatsheet"
+msgstr ""
+
+#: cms/templates/widgets/problem-edit.html:109
+msgid "Label"
+msgstr ""
+
+#: cms/templates/widgets/sock.html:10
+msgid "Looking for help with {studio_name}?"
+msgstr ""
+
+#: cms/templates/widgets/sock.html:11
+msgid "Hide {studio_name} Help"
+msgstr ""
+
+#: cms/templates/widgets/sock.html:19 cms/templates/widgets/sock.html:23
+msgid "{studio_name} Documentation"
+msgstr ""
+
+#: cms/templates/widgets/sock.html:26
+msgid ""
+"You can click Help in the upper right corner of any page to get more "
+"information about the page you're on. You can also use the links below to "
+"download the Building and Running an {platform_name} Course PDF file, to go "
+"to the {platform_name} Author Support site, or to enroll in edX101."
+msgstr ""
+
+#: cms/templates/widgets/sock.html:31
+msgid "Building and Running an {platform_name} Course PDF"
+msgstr ""
+
+#: cms/templates/widgets/sock.html:36 cms/templates/widgets/sock.html:37
+msgid "{studio_name} Author Support"
+msgstr ""
+
+#: cms/templates/widgets/sock.html:42
+msgid "Enroll in edX101"
+msgstr ""
+
+#: cms/templates/widgets/sock.html:43
+msgid "How to use {studio_name} to build your course"
+msgstr ""
+
+#: cms/templates/widgets/sock.html:53
+msgid "Have problems, questions, or suggestions about {studio_name}?"
+msgstr ""
+
+#: cms/templates/widgets/tabs-aggregator.html:8
+msgid "name"
+msgstr ""

@@ -1,0 +1,1461 @@
+# edX translation file.
+# Copyright (C) 2015 EdX
+# This file is distributed under the GNU AFFERO GENERAL PUBLIC LICENSE.
+# EdX Team <info@edx.org>, 2015.
+# 
+msgid ""
+msgstr ""
+"Project-Id-Version: 0.1a\n"
+"Report-Msgid-Bugs-To: openedx-translation@googlegroups.com\n"
+"POT-Creation-Date: 2015-08-06 12:16+0900\n"
+"PO-Revision-Date: 2015-08-06 03:17:54.902347\n"
+"Last-Translator: \n"
+"Language-Team: openedx-translation <openedx-translation@googlegroups.com>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en\n"
+
+#: cms/static/js/certificates/views/signatory_details.js:67
+#: cms/static/js/models/section.js:28 cms/static/js/utils/drag_and_drop.js:292
+#: cms/static/js/views/asset.js:81 cms/static/js/views/container.js:42
+#: cms/static/js/views/course_info_handout.js:59
+#: cms/static/js/views/course_info_update.js:91
+#: cms/static/js/views/edit_textbook.js:63
+#: cms/static/js/views/list_item_editor.js:38
+#: cms/static/js/views/overview.js:78
+#: cms/static/js/views/overview_assignment_grader.js:71
+#: cms/static/js/views/modals/edit_xblock.js:163
+#: cms/static/js/views/utils/xblock_utils.js:115
+#: cms/static/js/views/utils/xblock_utils.js:130
+#: lms/static/js/ccx/schedule.js:205 lms/static/js/views/fields.js:35
+msgid "Saving"
+msgstr ""
+
+#: cms/static/js/certificates/views/signatory_editor.js:133
+#: cms/static/js/views/asset.js:53 cms/static/js/views/list_item.js:58
+#: cms/static/js/views/manage_users_and_roles.js:30
+#: cms/static/js/views/show_textbook.js:36
+#: common/static/js/vendor/ova/catch/js/catch.js:139
+#: common/static/js/vendor/ova/catch/js/catch.js:252
+msgid "Delete"
+msgstr ""
+
+#. Translators: This is the status of an active video upload
+#: cms/static/js/models/active_video_upload.js:11
+#: cms/static/js/views/assets.js:221 lms/static/js/views/fields.js:565
+msgid "Uploading"
+msgstr ""
+
+#: cms/static/js/views/metadata.js:538 lms/static/js/views/file_uploader.js:47
+msgid "Upload File"
+msgstr ""
+
+#: cms/static/js/views/validation.js:139
+#: lms/static/js/groups/views/cohort_discussions_course_wide.js:74
+#: lms/static/js/groups/views/cohort_discussions_inline.js:136
+#: lms/static/js/views/fields.js:36
+msgid "Your changes have been saved."
+msgstr ""
+
+#. Translators: This message will be added to the front of messages of type
+#. error,
+#. e.g. "Error: required field is missing".
+#: cms/static/js/views/xblock_validation.js:54
+#: lms/static/js/student_account/views/FinishAuthView.js:83
+#: lms/static/js/verify_student/views/payment_confirmation_step_view.js:64
+#: lms/static/js/verify_student/views/step_view.js:48
+#: lms/static/js/views/fields.js:24
+msgid "Error"
+msgstr ""
+
+#: common/lib/xmodule/xmodule/js/src/lti/lti.js:20
+msgid ""
+"Click OK to have your username and e-mail address sent to a 3rd party application.\n"
+"\n"
+"Click Cancel to return to this page without sending your information."
+msgstr ""
+
+#: common/lib/xmodule/xmodule/js/src/lti/lti.js:22
+msgid ""
+"Click OK to have your username sent to a 3rd party application.\n"
+"\n"
+"Click Cancel to return to this page without sending your information."
+msgstr ""
+
+#: common/lib/xmodule/xmodule/js/src/lti/lti.js:24
+msgid ""
+"Click OK to have your e-mail address sent to a 3rd party application.\n"
+"\n"
+"Click Cancel to return to this page without sending your information."
+msgstr ""
+
+#: common/lib/xmodule/xmodule/js/src/video/00_i18n.js:14
+#: common/lib/xmodule/xmodule/js/src/video/09_play_pause_control.js:29
+#: common/lib/xmodule/xmodule/js/src/video/09_play_pause_control.js:30
+#: common/lib/xmodule/xmodule/js/src/video/09_play_skip_control.js:29
+#: common/lib/xmodule/xmodule/js/src/video/09_play_skip_control.js:30
+msgid "Play"
+msgstr ""
+
+#: common/lib/xmodule/xmodule/js/src/video/00_i18n.js:15
+msgid "Pause"
+msgstr ""
+
+#: common/lib/xmodule/xmodule/js/src/video/00_i18n.js:16
+msgid "Mute"
+msgstr ""
+
+#: common/lib/xmodule/xmodule/js/src/video/00_i18n.js:17
+msgid "Unmute"
+msgstr ""
+
+#: common/lib/xmodule/xmodule/js/src/video/00_i18n.js:18
+#: common/lib/xmodule/xmodule/js/src/video/04_video_full_screen.js:149
+#: common/lib/xmodule/xmodule/js/src/video/04_video_full_screen.js:150
+msgid "Exit full browser"
+msgstr ""
+
+#: common/lib/xmodule/xmodule/js/src/video/00_i18n.js:19
+#: common/lib/xmodule/xmodule/js/src/video/04_video_full_screen.js:6
+#: common/lib/xmodule/xmodule/js/src/video/04_video_full_screen.js:7
+#: common/lib/xmodule/xmodule/js/src/video/04_video_full_screen.js:136
+#: common/lib/xmodule/xmodule/js/src/video/04_video_full_screen.js:137
+msgid "Fill browser"
+msgstr ""
+
+#: common/lib/xmodule/xmodule/js/src/video/00_i18n.js:20
+#: common/lib/xmodule/xmodule/js/src/video/08_video_speed_control.js:35
+msgid "Speed"
+msgstr ""
+
+#: common/lib/xmodule/xmodule/js/src/video/00_i18n.js:21
+#: common/lib/xmodule/xmodule/js/src/video/07_video_volume_control.js:43
+msgid "Volume"
+msgstr ""
+
+#. Translators: Volume level equals 0%.
+#: common/lib/xmodule/xmodule/js/src/video/00_i18n.js:23
+msgid "Muted"
+msgstr ""
+
+#. Translators: Volume level in range ]0,20]%
+#: common/lib/xmodule/xmodule/js/src/video/00_i18n.js:25
+msgid "Very low"
+msgstr ""
+
+#. Translators: Volume level in range ]20,40]%
+#: common/lib/xmodule/xmodule/js/src/video/00_i18n.js:27
+msgid "Low"
+msgstr ""
+
+#. Translators: Volume level in range ]40,60]%
+#: common/lib/xmodule/xmodule/js/src/video/00_i18n.js:29
+msgid "Average"
+msgstr ""
+
+#. Translators: Volume level in range ]60,80]%
+#: common/lib/xmodule/xmodule/js/src/video/00_i18n.js:31
+msgid "Loud"
+msgstr ""
+
+#. Translators: Volume level in range ]80,99]%
+#: common/lib/xmodule/xmodule/js/src/video/00_i18n.js:33
+msgid "Very loud"
+msgstr ""
+
+#. Translators: Volume level equals 100%.
+#: common/lib/xmodule/xmodule/js/src/video/00_i18n.js:35
+msgid "Maximum"
+msgstr ""
+
+#: common/lib/xmodule/xmodule/js/src/video/02_html5_video.js:216
+msgid ""
+"VideoPlayer: Element corresponding to the given selector was not found."
+msgstr ""
+
+#: common/lib/xmodule/xmodule/js/src/video/02_html5_video.js:266
+msgid "This browser cannot play .mp4, .ogg, or .webm files."
+msgstr ""
+
+#: common/lib/xmodule/xmodule/js/src/video/02_html5_video.js:267
+msgid "Try using a different browser, such as Google Chrome."
+msgstr ""
+
+#: common/lib/xmodule/xmodule/js/src/video/05_video_quality_control.js:10
+#: common/lib/xmodule/xmodule/js/src/video/05_video_quality_control.js:11
+#: common/lib/xmodule/xmodule/js/src/video/05_video_quality_control.js:143
+msgid "HD off"
+msgstr ""
+
+#: common/lib/xmodule/xmodule/js/src/video/05_video_quality_control.js:137
+msgid "HD on"
+msgstr ""
+
+#: common/lib/xmodule/xmodule/js/src/video/06_video_progress_slider.js:16
+#: common/lib/xmodule/xmodule/js/src/video/06_video_progress_slider.js:86
+#: common/lib/xmodule/xmodule/js/src/video/06_video_progress_slider.js:287
+msgid "Video position"
+msgstr ""
+
+#: common/lib/xmodule/xmodule/js/src/video/06_video_progress_slider.js:283
+msgid "Video ended"
+msgstr ""
+
+#: common/lib/xmodule/xmodule/js/src/video/06_video_progress_slider.js:302
+msgid "%(value)s hour"
+msgid_plural "%(value)s hours"
+msgstr[0] ""
+msgstr[1] ""
+
+#: common/lib/xmodule/xmodule/js/src/video/06_video_progress_slider.js:305
+msgid "%(value)s minute"
+msgid_plural "%(value)s minutes"
+msgstr[0] ""
+msgstr[1] ""
+
+#: common/lib/xmodule/xmodule/js/src/video/06_video_progress_slider.js:308
+msgid "%(value)s second"
+msgid_plural "%(value)s seconds"
+msgstr[0] ""
+msgstr[1] ""
+
+#: common/lib/xmodule/xmodule/js/src/video/07_video_volume_control.js:44
+msgid ""
+"Click on this button to mute or unmute this video or press UP or DOWN "
+"buttons to increase or decrease volume level."
+msgstr ""
+
+#: common/lib/xmodule/xmodule/js/src/video/08_video_speed_control.js:34
+msgid "Speeds"
+msgstr ""
+
+#: common/lib/xmodule/xmodule/js/src/video/09_play_skip_control.js:75
+msgid "Skip"
+msgstr ""
+
+#: common/lib/xmodule/xmodule/js/src/video/09_poster.js:28
+msgid "Play video"
+msgstr ""
+
+#: common/lib/xmodule/xmodule/js/src/video/09_skip_control.js:32
+#: common/lib/xmodule/xmodule/js/src/video/09_skip_control.js:33
+msgid "Do not show again"
+msgstr ""
+
+#: common/lib/xmodule/xmodule/js/src/video/09_video_caption.js:41
+#: common/lib/xmodule/xmodule/js/src/video/09_video_caption.js:42
+#: common/lib/xmodule/xmodule/js/src/video/09_video_caption.js:868
+msgid "Turn off captions"
+msgstr ""
+
+#: common/lib/xmodule/xmodule/js/src/video/09_video_caption.js:49
+msgid ""
+"Activating an item in this group will spool the video to the corresponding "
+"time point. To skip transcript, go to previous item."
+msgstr ""
+
+#: common/lib/xmodule/xmodule/js/src/video/09_video_caption.js:330
+msgid "Caption will be displayed when "
+msgstr ""
+
+#: common/lib/xmodule/xmodule/js/src/video/09_video_caption.js:860
+msgid "Turn on captions"
+msgstr ""
+
+#: common/lib/xmodule/xmodule/public/js/library_content_edit.js:18
+msgid "Updating with latest library content"
+msgstr ""
+
+#: common/lib/xmodule/xmodule/public/js/split_test_author_view.js:11
+msgid "Creating missing groups"
+msgstr ""
+
+#: common/static/coffee/src/discussion/views/discussion_topic_menu_view.js:166
+msgid "…"
+msgstr ""
+
+#: common/static/common/js/components/views/paging_header.js:24
+msgid "Showing %(first_index)s out of %(num_items)s total"
+msgstr ""
+
+#: common/static/common/js/components/views/paging_header.js:27
+msgid "Showing %(first_index)s-%(last_index)s out of %(num_items)s total"
+msgstr ""
+
+#: common/static/js/capa/drag_and_drop/base_image.js:21
+msgid "Drop target image"
+msgstr ""
+
+#: common/static/js/capa/drag_and_drop/draggable_events.js:86
+msgid "dragging out of slider"
+msgstr ""
+
+#: common/static/js/capa/drag_and_drop/draggable_events.js:88
+msgid "dragging"
+msgstr ""
+
+#: common/static/js/capa/drag_and_drop/draggable_events.js:110
+msgid "dropped in slider"
+msgstr ""
+
+#: common/static/js/capa/drag_and_drop/draggable_events.js:112
+msgid "dropped on target"
+msgstr ""
+
+#. Translators: %s will be a time quantity, such as "4 minutes" or "1 day"
+#: common/static/js/src/jquery.timeago.locale.js:3
+#, c-format
+msgid "%s ago"
+msgstr ""
+
+#. Translators: %s will be a time quantity, such as "4 minutes" or "1 day"
+#: common/static/js/src/jquery.timeago.locale.js:5
+#, c-format
+msgid "%s from now"
+msgstr ""
+
+#: common/static/js/src/jquery.timeago.locale.js:6
+msgid "less than a minute"
+msgstr ""
+
+#: common/static/js/src/jquery.timeago.locale.js:7
+msgid "about a minute"
+msgstr ""
+
+#: common/static/js/src/jquery.timeago.locale.js:8
+#, c-format
+msgid "%d minute"
+msgid_plural "%d minutes"
+msgstr[0] ""
+msgstr[1] ""
+
+#: common/static/js/src/jquery.timeago.locale.js:9
+msgid "about an hour"
+msgstr ""
+
+#: common/static/js/src/jquery.timeago.locale.js:10
+#, c-format
+msgid "about %d hour"
+msgid_plural "about %d hours"
+msgstr[0] ""
+msgstr[1] ""
+
+#: common/static/js/src/jquery.timeago.locale.js:11
+msgid "a day"
+msgstr ""
+
+#: common/static/js/src/jquery.timeago.locale.js:12
+#, c-format
+msgid "%d day"
+msgid_plural "%d days"
+msgstr[0] ""
+msgstr[1] ""
+
+#: common/static/js/src/jquery.timeago.locale.js:13
+msgid "about a month"
+msgstr ""
+
+#: common/static/js/src/jquery.timeago.locale.js:14
+#, c-format
+msgid "%d month"
+msgid_plural "%d months"
+msgstr[0] ""
+msgstr[1] ""
+
+#: common/static/js/src/jquery.timeago.locale.js:15
+msgid "about a year"
+msgstr ""
+
+#: common/static/js/src/jquery.timeago.locale.js:16
+#, c-format
+msgid "%d year"
+msgid_plural "%d years"
+msgstr[0] ""
+msgstr[1] ""
+
+#. Translators: please note that this is not a literal flag, but rather a
+#. report
+#: common/static/js/vendor/ova/flagging-annotator.js:48
+msgid "Check the box to remove all flags."
+msgstr ""
+
+#. Translators: 'totalFlags' is the number of flags solely for that annotation
+#: common/static/js/vendor/ova/flagging-annotator.js:93
+msgid "Check the box to remove %(totalFlags)s flag."
+msgid_plural "Check the box to remove %(totalFlags)s flags."
+msgstr[0] ""
+msgstr[1] ""
+
+#. Translators: 'count' is the number of flags solely for that annotation that
+#. will be removed
+#: common/static/js/vendor/ova/flagging-annotator.js:102
+msgid "Check the box to remove %(count)s flag."
+msgid_plural "Check the box to remove %(count)s flags."
+msgstr[0] ""
+msgstr[1] ""
+
+#: common/static/js/vendor/ova/flagging-annotator.js:105
+msgid "All flags have been removed. To undo, uncheck the box."
+msgstr ""
+
+#: common/static/js/vendor/ova/flagging-annotator.js:153
+#: common/static/js/vendor/ova/flagging-annotator.js:198
+msgid "You have already reported this annotation."
+msgstr ""
+
+#: common/static/js/vendor/ova/flagging-annotator.js:165
+#: common/static/js/vendor/ova/flagging-annotator.js:223
+msgid "Report annotation as inappropriate or offensive."
+msgstr ""
+
+#. Translators: 'count' is the number of flags solely for that annotation
+#: common/static/js/vendor/ova/flagging-annotator.js:183
+msgid "This annotation has %(count)s flag."
+msgid_plural "This annotation has %(count)s flags."
+msgstr[0] ""
+msgstr[1] ""
+
+#: common/static/js/vendor/ova/catch/js/catch.js:45
+msgid "User"
+msgstr ""
+
+#: common/static/js/vendor/ova/catch/js/catch.js:49
+msgid "Annotation"
+msgstr ""
+
+#: common/static/js/vendor/ova/catch/js/catch.js:54
+msgid "Start"
+msgstr ""
+
+#: common/static/js/vendor/ova/catch/js/catch.js:58
+msgid "End"
+msgstr ""
+
+#: common/static/js/vendor/ova/catch/js/catch.js:63
+msgid "#Replies"
+msgstr ""
+
+#: common/static/js/vendor/ova/catch/js/catch.js:67
+msgid "Date posted"
+msgstr ""
+
+#: common/static/js/vendor/ova/catch/js/catch.js:76
+#: lms/static/js/courseware/credit_progress.js:7
+#: lms/static/js/courseware/credit_progress.js:14
+msgid "More"
+msgstr ""
+
+#: common/static/js/vendor/ova/catch/js/catch.js:81
+#: common/static/js/vendor/ova/catch/js/catch.js:92
+msgid "My Notes"
+msgstr ""
+
+#: common/static/js/vendor/ova/catch/js/catch.js:82
+msgid "Instructor"
+msgstr ""
+
+#: common/static/js/vendor/ova/catch/js/catch.js:83
+#: common/static/js/vendor/ova/catch/js/catch.js:93
+msgid "Public"
+msgstr ""
+
+#: common/static/js/vendor/ova/catch/js/catch.js:84
+#: common/static/js/vendor/ova/catch/js/catch.js:94
+msgid "Search"
+msgstr ""
+
+#: common/static/js/vendor/ova/catch/js/catch.js:85
+#: common/static/js/vendor/ova/catch/js/catch.js:95
+msgid "Users"
+msgstr ""
+
+#. Translators: 'Tags' is the name of the view (noun) within the Student Notes
+#. page that shows all
+#. notes organized by the tags the student has associated with them (if any).
+#. When defining a
+#. note in the courseware, the student can choose to associate 1 or more tags
+#. with the note
+#. in order to group similar notes together and help with search.
+#: common/static/js/vendor/ova/catch/js/catch.js:86
+#: common/static/js/vendor/ova/catch/js/catch.js:96
+#: lms/static/js/edxnotes/views/tabs/tags.js:129
+msgid "Tags"
+msgstr ""
+
+#: common/static/js/vendor/ova/catch/js/catch.js:87
+#: common/static/js/vendor/ova/catch/js/catch.js:97
+msgid "Annotation Text"
+msgstr ""
+
+#: common/static/js/vendor/ova/catch/js/catch.js:88
+#: common/static/js/vendor/ova/catch/js/catch.js:98
+msgid "Clear"
+msgstr ""
+
+#: common/static/js/vendor/ova/catch/js/catch.js:104
+msgid "Text"
+msgstr ""
+
+#: common/static/js/vendor/ova/catch/js/catch.js:107
+msgid "Video"
+msgstr ""
+
+#: common/static/js/vendor/ova/catch/js/catch.js:110
+#: lms/static/js/views/fields.js:569
+msgid "Image"
+msgstr ""
+
+#: common/static/js/vendor/ova/catch/js/catch.js:246
+msgid "Reply"
+msgstr ""
+
+#: common/static/js/vendor/ova/catch/js/catch.js:249
+msgid "Edit"
+msgstr ""
+
+#: common/static/js/vendor/ova/catch/js/catch.js:261
+msgid "Tags:"
+msgstr ""
+
+#: lms/djangoapps/teams/static/teams/js/collections/topic.js:15
+msgid "name"
+msgstr ""
+
+#: lms/djangoapps/teams/static/teams/js/collections/topic.js:16
+msgid "team count"
+msgstr ""
+
+#: lms/djangoapps/teams/static/teams/js/views/teams_tab.js:15
+msgid ""
+"Course teams are organized into topics created by course instructors. Try to"
+" join others in an existing team before you decide to create a new team!"
+msgstr ""
+
+#: lms/djangoapps/teams/static/teams/js/views/teams_tab.js:16
+msgid "Teams"
+msgstr ""
+
+#: lms/djangoapps/teams/static/teams/js/views/teams_tab.js:33
+msgid "My Teams"
+msgstr ""
+
+#: lms/djangoapps/teams/static/teams/js/views/teams_tab.js:37
+msgid "Browse"
+msgstr ""
+
+#: lms/djangoapps/teams/static/teams/js/views/topic_card.js:19
+msgid "%(team_count)s Team"
+msgid_plural "%(team_count)s Teams"
+msgstr[0] ""
+msgstr[1] ""
+
+#: lms/djangoapps/teams/static/teams/js/views/topic_card.js:46
+msgid "View Teams in the %(topic_name)s Topic"
+msgstr ""
+
+#: lms/static/js/Markdown.Editor.js:30
+msgid "Insert Hyperlink"
+msgstr ""
+
+#. Translators: Please keep the quotation marks (") around this text
+#: lms/static/js/Markdown.Editor.js:32 lms/static/js/Markdown.Editor.js.c:35
+msgid "\"optional title\""
+msgstr ""
+
+#: lms/static/js/Markdown.Editor.js:33
+msgid "Insert Image (upload file or type url)"
+msgstr ""
+
+#: lms/static/js/Markdown.Editor.js:42
+msgid "Markdown Editing Help"
+msgstr ""
+
+#: lms/static/js/Markdown.Editor.js:1451
+msgid "Bold (Ctrl+B)"
+msgstr ""
+
+#: lms/static/js/Markdown.Editor.js:1452
+msgid "Italic (Ctrl+I)"
+msgstr ""
+
+#: lms/static/js/Markdown.Editor.js:1454
+msgid "Hyperlink (Ctrl+L)"
+msgstr ""
+
+#: lms/static/js/Markdown.Editor.js:1457
+msgid "Blockquote (Ctrl+Q)"
+msgstr ""
+
+#: lms/static/js/Markdown.Editor.js:1458
+msgid "Code Sample (Ctrl+K)"
+msgstr ""
+
+#: lms/static/js/Markdown.Editor.js:1459
+msgid "Image (Ctrl+G)"
+msgstr ""
+
+#: lms/static/js/Markdown.Editor.js:1463
+msgid "Numbered List (Ctrl+O)"
+msgstr ""
+
+#: lms/static/js/Markdown.Editor.js:1466
+msgid "Bulleted List (Ctrl+U)"
+msgstr ""
+
+#: lms/static/js/Markdown.Editor.js:1469
+msgid "Heading (Ctrl+H)"
+msgstr ""
+
+#: lms/static/js/Markdown.Editor.js:1470
+msgid "Horizontal Rule (Ctrl+R)"
+msgstr ""
+
+#: lms/static/js/Markdown.Editor.js:1472
+msgid "Undo (Ctrl+Z)"
+msgstr ""
+
+#: lms/static/js/Markdown.Editor.js:1476
+msgid "Redo (Ctrl+Y)"
+msgstr ""
+
+#: lms/static/js/Markdown.Editor.js:1477
+msgid "Redo (Ctrl+Shift+Z)"
+msgstr ""
+
+#: lms/static/js/Markdown.Editor.js:1544
+msgid "strong text"
+msgstr ""
+
+#: lms/static/js/Markdown.Editor.js:1548
+msgid "emphasized text"
+msgstr ""
+
+#: lms/static/js/Markdown.Editor.js:1751
+msgid "enter image description here"
+msgstr ""
+
+#: lms/static/js/Markdown.Editor.js:1754
+msgid "enter link description here"
+msgstr ""
+
+#: lms/static/js/Markdown.Editor.js:1835
+msgid "Blockquote"
+msgstr ""
+
+#: lms/static/js/Markdown.Editor.js:1992 lms/static/js/Markdown.Editor.js:2015
+msgid "enter code here"
+msgstr ""
+
+#: lms/static/js/Markdown.Editor.js:2109
+msgid "List item"
+msgstr ""
+
+#: lms/static/js/Markdown.Editor.js:2141
+msgid "Heading"
+msgstr ""
+
+#: lms/static/js/ajax-error.js:4
+msgid "You have been logged out of your edX account. "
+msgstr ""
+
+#: lms/static/js/course_survey.js:74
+msgid "There has been an error processing your survey."
+msgstr ""
+
+#: lms/static/js/staff_debug_actions.js:50
+msgid "Unknown Error Occurred."
+msgstr ""
+
+#: lms/static/js/staff_debug_actions.js:76
+msgid "Successfully reset the attempts for user {user}"
+msgstr ""
+
+#: lms/static/js/staff_debug_actions.js:77
+msgid "Failed to reset attempts."
+msgstr ""
+
+#: lms/static/js/staff_debug_actions.js:87
+msgid "Successfully deleted student state for user {user}"
+msgstr ""
+
+#: lms/static/js/staff_debug_actions.js:88
+msgid "Failed to delete student state."
+msgstr ""
+
+#: lms/static/js/staff_debug_actions.js:98
+msgid "Successfully rescored problem for user {user}"
+msgstr ""
+
+#: lms/static/js/staff_debug_actions.js:99
+msgid "Failed to rescore problem."
+msgstr ""
+
+#: lms/static/js/ccx/schedule.js:63
+msgid "All subsections"
+msgstr ""
+
+#: lms/static/js/ccx/schedule.js:81
+msgid "All units"
+msgstr ""
+
+#: lms/static/js/ccx/schedule.js:180
+msgid "Select a chapter"
+msgstr ""
+
+#: lms/static/js/ccx/schedule.js:215 lms/static/js/ccx/schedule.js.c:226
+msgid "Save changes"
+msgstr ""
+
+#: lms/static/js/ccx/schedule.js:315
+msgid "Enter Due Date"
+msgstr ""
+
+#: lms/static/js/ccx/schedule.js:316
+msgid "Enter Start Date"
+msgstr ""
+
+#: lms/static/js/courseware/credit_progress.js:14
+msgid "Less"
+msgstr ""
+
+#: lms/static/js/dashboard/donation.js:175
+msgid "Please enter a valid donation amount."
+msgstr ""
+
+#: lms/static/js/dashboard/donation.js:207
+msgid "Your donation could not be submitted."
+msgstr ""
+
+#: lms/static/js/dashboard/legacy.js:141
+msgid "An error occurred. Please try again later."
+msgstr ""
+
+#: lms/static/js/discovery/form.js:52
+#, c-format
+msgid "We couldn't find any results for \"%s\"."
+msgstr ""
+
+#: lms/static/js/discovery/form.js:59
+msgid "There was an error, try searching again."
+msgstr ""
+
+#: lms/static/js/edxnotes/plugins/accessibility.js:52
+msgid "Focus grabber"
+msgstr ""
+
+#: lms/static/js/edxnotes/views/search_box.js:12
+#: lms/static/js/edxnotes/views/toggle_notes_factory.js:12
+msgid ""
+"An error has occurred. Make sure that you are connected to the Internet, and"
+" then try refreshing the page."
+msgstr ""
+
+#: lms/static/js/edxnotes/views/search_box.js:14
+msgid ""
+"Please enter a term in the %(anchor_start)s search field%(anchor_end)s."
+msgstr ""
+
+#: lms/static/js/edxnotes/views/tab_item.js:25
+msgid "Current tab"
+msgstr ""
+
+#: lms/static/js/edxnotes/views/toggle_notes_factory.js:57
+msgid "Hide notes"
+msgstr ""
+
+#: lms/static/js/edxnotes/views/toggle_notes_factory.js:58
+msgid "Notes visible"
+msgstr ""
+
+#: lms/static/js/edxnotes/views/toggle_notes_factory.js:64
+msgid "Show notes"
+msgstr ""
+
+#: lms/static/js/edxnotes/views/toggle_notes_factory.js:65
+msgid "Notes hidden"
+msgstr ""
+
+#: lms/static/js/edxnotes/views/tabs/course_structure.js:49
+msgid "Location in Course"
+msgstr ""
+
+#: lms/static/js/edxnotes/views/tabs/recent_activity.js:25
+msgid "Recent Activity"
+msgstr ""
+
+#: lms/static/js/edxnotes/views/tabs/search_results.js:34
+msgid "No results found for \"%(query_string)s\". Please try searching again."
+msgstr ""
+
+#: lms/static/js/edxnotes/views/tabs/search_results.js:48
+msgid "Search Results"
+msgstr ""
+
+#. Translators: this is a title shown before all Notes that have no associated
+#. tags. It is put within
+#. brackets to differentiate it from user-defined tags, but it should still be
+#. translated.
+#: lms/static/js/edxnotes/views/tabs/tags.js:37
+msgid "[no tags]"
+msgstr ""
+
+#: lms/static/js/groups/views/cohort_discussions.js:64
+#: lms/static/js/groups/views/cohort_discussions_course_wide.js:76
+#: lms/static/js/groups/views/cohort_discussions_inline.js:138
+#: lms/static/js/groups/views/cohort_form.js:163
+#: lms/static/js/groups/views/cohorts.js:132
+msgid "We've encountered an error. Refresh your browser and then try again."
+msgstr ""
+
+#: lms/static/js/groups/views/cohort_editor.js:58
+msgid "Selected tab"
+msgstr ""
+
+#: lms/static/js/groups/views/cohort_editor.js:70
+msgid "Saved cohort"
+msgstr ""
+
+#: lms/static/js/groups/views/cohort_editor.js:113
+msgid "Error adding students."
+msgstr ""
+
+#: lms/static/js/groups/views/cohort_editor.js:116
+msgid "Enter a username or email."
+msgstr ""
+
+#: lms/static/js/groups/views/cohort_editor.js:166
+msgid "{numUsersAdded} student has been added to this cohort"
+msgid_plural "{numUsersAdded} students have been added to this cohort"
+msgstr[0] ""
+msgstr[1] ""
+
+#: lms/static/js/groups/views/cohort_editor.js:186
+msgid "{numMoved} student was removed from {oldCohort}"
+msgid_plural "{numMoved} students were removed from {oldCohort}"
+msgstr[0] ""
+msgstr[1] ""
+
+#: lms/static/js/groups/views/cohort_editor.js:195
+msgid "{numPresent} student was already in the cohort"
+msgid_plural "{numPresent} students were already in the cohort"
+msgstr[0] ""
+msgstr[1] ""
+
+#: lms/static/js/groups/views/cohort_editor.js:225
+msgid "Unknown user: {user}"
+msgstr ""
+
+#: lms/static/js/groups/views/cohort_editor.js:231
+msgid "There was an error when trying to add students:"
+msgid_plural "There were {numErrors} errors when trying to add students:"
+msgstr[0] ""
+msgstr[1] ""
+
+#: lms/static/js/groups/views/cohort_editor.js:245
+msgid "View all errors"
+msgstr ""
+
+#: lms/static/js/groups/views/cohort_form.js:108
+msgid "You must specify a name for the cohort"
+msgstr ""
+
+#: lms/static/js/groups/views/cohort_form.js:112
+msgid "You did not select a content group"
+msgstr ""
+
+#: lms/static/js/groups/views/cohort_form.js:115
+msgid "The selected content group does not exist"
+msgstr ""
+
+#: lms/static/js/groups/views/cohort_form.js:143
+msgid "The cohort cannot be saved"
+msgstr ""
+
+#: lms/static/js/groups/views/cohort_form.js:143
+msgid "The cohort cannot be added"
+msgstr ""
+
+#: lms/static/js/groups/views/cohorts.js:94
+msgid "You currently have no cohorts configured"
+msgstr ""
+
+#: lms/static/js/groups/views/cohorts.js:95
+msgid "Add Cohort"
+msgstr ""
+
+#: lms/static/js/groups/views/cohorts.js:233
+msgid ""
+"The {cohortGroupName} cohort has been created. You can manually add students"
+" to this cohort below."
+msgstr ""
+
+#: lms/static/js/groups/views/cohorts.js:263
+msgid "Assign students to cohorts by uploading a CSV file."
+msgstr ""
+
+#: lms/static/js/groups/views/cohorts.js:264
+msgid "Choose a .csv file"
+msgstr ""
+
+#: lms/static/js/groups/views/cohorts.js:265
+msgid "Only properly formatted .csv files will be accepted."
+msgstr ""
+
+#: lms/static/js/groups/views/cohorts.js:266
+msgid "Upload File and Assign Students"
+msgstr ""
+
+#: lms/static/js/groups/views/cohorts.js:271
+msgid ""
+"Your file '{file}' has been uploaded. Allow a few minutes for processing."
+msgstr ""
+
+#: lms/static/js/groups/views/course_cohort_settings_notification.js:25
+msgid "Cohorts Enabled"
+msgstr ""
+
+#: lms/static/js/groups/views/course_cohort_settings_notification.js:27
+msgid "Cohorts Disabled"
+msgstr ""
+
+#: lms/static/js/instructor_dashboard/certificates.js:19
+msgid "Allow students to generate certificates for this course?"
+msgstr ""
+
+#: lms/static/js/instructor_dashboard/certificates.js:21
+msgid "Prevent students from generating certificates in this course?"
+msgstr ""
+
+#: lms/static/js/instructor_dashboard/certificates.js:43
+msgid "Start generating certificates for all students in this course?"
+msgstr ""
+
+#: lms/static/js/instructor_dashboard/certificates.js:58
+msgid "Error while generating certificates. Please try again."
+msgstr ""
+
+#: lms/static/js/instructor_dashboard/ecommerce.js:51
+#: lms/static/js/instructor_dashboard/ecommerce.js:70
+msgid ""
+"There was a problem creating the report. Select \"Create Executive Summary\""
+" to try again."
+msgstr ""
+
+#: lms/static/js/instructor_dashboard/ecommerce.js:84
+msgid "Enter the enrollment code."
+msgstr ""
+
+#: lms/static/js/instructor_dashboard/ecommerce.js:112
+msgid "Cancel enrollment code"
+msgstr ""
+
+#: lms/static/js/instructor_dashboard/ecommerce.js:122
+msgid "Restore enrollment code"
+msgstr ""
+
+#: lms/static/js/instructor_dashboard/ecommerce.js:132
+msgid "Mark enrollment code as unused"
+msgstr ""
+
+#: lms/static/js/search/base/views/search_results_view.js:65
+#, c-format
+msgid "%s result"
+msgid_plural "%s results"
+msgstr[0] ""
+msgstr[1] ""
+
+#: lms/static/js/spec/instructor_dashboard/student_admin_spec.js:29
+#: lms/static/js/spec/instructor_dashboard/student_admin_spec.js:82
+#: lms/static/js/spec/instructor_dashboard/student_admin_spec.js:181
+msgid "Please enter a student email address or username."
+msgstr ""
+
+#: lms/static/js/spec/instructor_dashboard/student_admin_spec.js:31
+msgid "Entrance exam attempts is being reset for student '{student_id}'."
+msgstr ""
+
+#: lms/static/js/spec/instructor_dashboard/student_admin_spec.js:72
+msgid ""
+"Error resetting entrance exam attempts for student '{student_id}'. Make sure"
+" student identifier is correct."
+msgstr ""
+
+#: lms/static/js/spec/instructor_dashboard/student_admin_spec.js:84
+msgid "Started entrance exam rescore task for student '{student_id}'."
+msgstr ""
+
+#: lms/static/js/spec/instructor_dashboard/student_admin_spec.js:124
+msgid ""
+"Error starting a task to rescore entrance exam for student '{student_id}'."
+msgstr ""
+
+#: lms/static/js/spec/instructor_dashboard/student_admin_spec.js:135
+#: lms/static/js/spec/instructor_dashboard/student_admin_spec.js:235
+msgid "Enter a student's username or email address."
+msgstr ""
+
+#: lms/static/js/spec/instructor_dashboard/student_admin_spec.js:183
+#: lms/static/js/spec/instructor_dashboard/student_admin_spec.js:237
+msgid "Entrance exam state is being deleted for student '{student_id}'."
+msgstr ""
+
+#: lms/static/js/spec/instructor_dashboard/student_admin_spec.js:224
+msgid "Error deleting entrance exam state for student '{student_id}'. "
+msgstr ""
+
+#: lms/static/js/spec/instructor_dashboard/student_admin_spec.js:288
+msgid "Error getting entrance exam task history for student '{student_id}'. "
+msgstr ""
+
+#: lms/static/js/student_account/account.js:47
+msgid "The data could not be saved."
+msgstr ""
+
+#: lms/static/js/student_account/account.js:58
+msgid "Please enter a valid email address"
+msgstr ""
+
+#: lms/static/js/student_account/account.js:61
+msgid "Please enter a valid password"
+msgstr ""
+
+#: lms/static/js/student_account/account.js:128
+msgid ""
+"Password reset email sent. Follow the link in the email to change your "
+"password."
+msgstr ""
+
+#: lms/static/js/student_account/account.js:133
+msgid "We weren't able to send you a password reset email."
+msgstr ""
+
+#: lms/static/js/student_account/account.js:162
+msgid "Please check your email to confirm the change"
+msgstr ""
+
+#: lms/static/js/student_account/views/FinishAuthView.js:101
+msgid "Saving your email preference"
+msgstr ""
+
+#: lms/static/js/student_account/views/FinishAuthView.js:119
+msgid "Enrolling you in the selected course"
+msgstr ""
+
+#: lms/static/js/student_account/views/FinishAuthView.js:151
+msgid "Adding the selected course to your cart"
+msgstr ""
+
+#: lms/static/js/student_account/views/FinishAuthView.js:164
+msgid "Loading your courses"
+msgstr ""
+
+#: lms/static/js/student_account/views/account_settings_factory.js:25
+msgid "Basic Account Information (required)"
+msgstr ""
+
+#: lms/static/js/student_account/views/account_settings_factory.js:30
+#: lms/static/js/student_profile/views/learner_profile_factory.js:72
+msgid "Username"
+msgstr ""
+
+#: lms/static/js/student_account/views/account_settings_factory.js:33
+msgid ""
+"The name that identifies you throughout {platform_name}. You cannot change "
+"your username."
+msgstr ""
+
+#: lms/static/js/student_account/views/account_settings_factory.js:40
+msgid "Full Name"
+msgstr ""
+
+#: lms/static/js/student_account/views/account_settings_factory.js:42
+msgid ""
+"The name that appears on your certificates. Other learners never see your "
+"full name."
+msgstr ""
+
+#: lms/static/js/student_account/views/account_settings_factory.js:48
+msgid "Email Address"
+msgstr ""
+
+#: lms/static/js/student_account/views/account_settings_factory.js:51
+msgid ""
+"The email address you use to sign in. Communications from {platform_name} "
+"and your courses are sent to this address."
+msgstr ""
+
+#: lms/static/js/student_account/views/account_settings_factory.js:58
+msgid "Password"
+msgstr ""
+
+#: lms/static/js/student_account/views/account_settings_factory.js:59
+msgid "Reset your Password"
+msgstr ""
+
+#: lms/static/js/student_account/views/account_settings_factory.js:62
+msgid "Reset Password"
+msgstr ""
+
+#: lms/static/js/student_account/views/account_settings_factory.js:64
+msgid ""
+"When you click \"Reset Password\", a message will be sent to your email "
+"address. Click the link in the message to reset your password."
+msgstr ""
+
+#: lms/static/js/student_account/views/account_settings_factory.js:70
+msgid "Language"
+msgstr ""
+
+#: lms/static/js/student_account/views/account_settings_factory.js:75
+msgid ""
+"The language used throughout this site. This site is currently available in "
+"a limited number of languages."
+msgstr ""
+
+#: lms/static/js/student_account/views/account_settings_factory.js:84
+msgid "Country or Region"
+msgstr ""
+
+#: lms/static/js/student_account/views/account_settings_factory.js:92
+msgid "Additional Information (optional)"
+msgstr ""
+
+#: lms/static/js/student_account/views/account_settings_factory.js:97
+msgid "Education Completed"
+msgstr ""
+
+#: lms/static/js/student_account/views/account_settings_factory.js:105
+msgid "Gender"
+msgstr ""
+
+#: lms/static/js/student_account/views/account_settings_factory.js:113
+msgid "Year of Birth"
+msgstr ""
+
+#: lms/static/js/student_account/views/account_settings_factory.js:121
+#: lms/static/js/student_profile/views/learner_profile_factory.js:93
+msgid "Preferred Language"
+msgstr ""
+
+#: lms/static/js/student_account/views/account_settings_factory.js:132
+msgid "Connected Accounts"
+msgstr ""
+
+#: lms/static/js/student_account/views/account_settings_factory.js:138
+msgid "Connect your {accountName} account"
+msgstr ""
+
+#: lms/static/js/student_account/views/account_settings_fields.js:14
+msgid "We've sent a confirmation message to {new_email_address}. "
+msgstr ""
+
+#: lms/static/js/student_account/views/account_settings_fields.js:41
+msgid ""
+"You must sign out and sign back in before your language changes take effect."
+msgstr ""
+
+#: lms/static/js/student_account/views/account_settings_fields.js:82
+msgid "We've sent a message to {email_address}. "
+msgstr ""
+
+#: lms/static/js/student_account/views/account_settings_fields.js:122
+msgid "Unlink"
+msgstr ""
+
+#: lms/static/js/student_account/views/account_settings_fields.js:122
+msgid "Link"
+msgstr ""
+
+#: lms/static/js/student_account/views/account_settings_fields.js:170
+msgid "Unlinking"
+msgstr ""
+
+#: lms/static/js/student_account/views/account_settings_fields.js:170
+msgid "Linking"
+msgstr ""
+
+#: lms/static/js/student_account/views/account_settings_fields.js:174
+msgid "Successfully unlinked."
+msgstr ""
+
+#: lms/static/js/student_profile/views/learner_profile_factory.js:48
+msgid "{platform_name} learners can see my:"
+msgstr ""
+
+#: lms/static/js/student_profile/views/learner_profile_factory.js:52
+msgid "Limited Profile"
+msgstr ""
+
+#: lms/static/js/student_profile/views/learner_profile_factory.js:53
+msgid "Full Profile"
+msgstr ""
+
+#: lms/static/js/student_profile/views/learner_profile_factory.js:80
+msgid "Country"
+msgstr ""
+
+#: lms/static/js/student_profile/views/learner_profile_factory.js:86
+msgid "Add Country"
+msgstr ""
+
+#: lms/static/js/student_profile/views/learner_profile_factory.js:99
+msgid "Add language"
+msgstr ""
+
+#: lms/static/js/student_profile/views/learner_profile_factory.js:111
+msgid "About me"
+msgstr ""
+
+#: lms/static/js/student_profile/views/learner_profile_factory.js:112
+msgid ""
+"Tell other learners a little about yourself: where you live, what your "
+"interests are, why you're taking courses, or what you hope to learn."
+msgstr ""
+
+#: lms/static/js/student_profile/views/learner_profile_fields.js:19
+msgid "Account Settings page."
+msgstr ""
+
+#: lms/static/js/student_profile/views/learner_profile_fields.js:22
+msgid ""
+"You must specify your birth year before you can share your full profile. To "
+"specify your birth year, go to the {account_settings_page_link}"
+msgstr ""
+
+#: lms/static/js/student_profile/views/learner_profile_fields.js:27
+msgid ""
+"You must be over 13 to share a full profile. If you are over 13, make sure "
+"that you have specified a birth year on the {account_settings_page_link}"
+msgstr ""
+
+#: lms/static/js/student_profile/views/learner_profile_fields.js:47
+msgid "Profile Image"
+msgstr ""
+
+#: lms/static/js/student_profile/views/learner_profile_fields.js:55
+msgid "Profile image for {username}"
+msgstr ""
+
+#: lms/static/js/verify_student/views/image_input_view.js:91
+msgid "Image Upload Error"
+msgstr ""
+
+#: lms/static/js/verify_student/views/image_input_view.js:92
+msgid "Please verify that you have uploaded a valid image (PNG and JPEG)."
+msgstr ""
+
+#: lms/static/js/verify_student/views/incourse_reverify_view.js:83
+#: lms/static/js/verify_student/views/review_photos_step_view.js:71
+msgid "An error has occurred. Please try again later."
+msgstr ""
+
+#: lms/static/js/verify_student/views/incourse_reverify_view.js:93
+#: lms/static/js/verify_student/views/review_photos_step_view.js:81
+msgid "Could not submit photos"
+msgstr ""
+
+#: lms/static/js/verify_student/views/make_payment_step_view.js:36
+msgid "Professional Education Verified Certificate"
+msgstr ""
+
+#: lms/static/js/verify_student/views/make_payment_step_view.js:38
+msgid "Professional Education"
+msgstr ""
+
+#: lms/static/js/verify_student/views/make_payment_step_view.js:41
+msgid "Verified Certificate upgrade"
+msgstr ""
+
+#: lms/static/js/verify_student/views/make_payment_step_view.js:43
+msgid "Verified Certificate"
+msgstr ""
+
+#: lms/static/js/verify_student/views/make_payment_step_view.js:50
+msgid "Checkout"
+msgstr ""
+
+#: lms/static/js/verify_student/views/make_payment_step_view.js:52
+msgid "Checkout with PayPal"
+msgstr ""
+
+#. Translators: 'processor' is the name of a third-party payment processing
+#. vendor (example: "PayPal")
+#: lms/static/js/verify_student/views/make_payment_step_view.js:56
+msgid "Checkout with {processor}"
+msgstr ""
+
+#: lms/static/js/verify_student/views/make_payment_step_view.js:190
+msgid "An error has occurred. Please try again."
+msgstr ""
+
+#: lms/static/js/verify_student/views/make_payment_step_view.js:197
+msgid "Could not submit order"
+msgstr ""
+
+#: lms/static/js/verify_student/views/payment_confirmation_step_view.js:65
+msgid "Could not retrieve payment information"
+msgstr ""
+
+#: lms/static/js/verify_student/views/reverify_view.js:48
+msgid "Take a photo of your ID"
+msgstr ""
+
+#: lms/static/js/verify_student/views/reverify_view.js:49
+msgid "Review your info"
+msgstr ""
+
+#: lms/static/js/verify_student/views/reverify_view.js:50
+msgid "Confirm"
+msgstr ""
+
+#: lms/static/js/verify_student/views/step_view.js:49
+msgid "An error has occurred. Please try reloading the page."
+msgstr ""
+
+#: lms/static/js/verify_student/views/webcam_photo_view.js:103
+msgid "Video Capture Error"
+msgstr ""
+
+#: lms/static/js/verify_student/views/webcam_photo_view.js:104
+msgid ""
+"Please verify that your webcam is connected and that you have allowed your "
+"browser to access it."
+msgstr ""
+
+#: lms/static/js/verify_student/views/webcam_photo_view.js:196
+msgid "No Webcam Detected"
+msgstr ""
+
+#: lms/static/js/verify_student/views/webcam_photo_view.js:197
+msgid "You don't seem to have a webcam connected."
+msgstr ""
+
+#: lms/static/js/verify_student/views/webcam_photo_view.js:198
+msgid "Double-check that your webcam is connected and working to continue."
+msgstr ""
+
+#: lms/static/js/verify_student/views/webcam_photo_view.js:347
+msgid "Photo Captured successfully."
+msgstr ""
+
+#: lms/static/js/verify_student/views/webcam_photo_view.js:388
+msgid "No Flash Detected"
+msgstr ""
+
+#: lms/static/js/verify_student/views/webcam_photo_view.js:389
+msgid ""
+"You don't seem to have Flash installed. Get Flash to continue your "
+"verification."
+msgstr ""
+
+#: lms/static/js/views/fields.js:23
+msgid "Editable"
+msgstr ""
+
+#: lms/static/js/views/fields.js:25
+msgid "Validation Error"
+msgstr ""
+
+#: lms/static/js/views/fields.js:26
+msgid "In Progress"
+msgstr ""
+
+#: lms/static/js/views/fields.js:27
+msgid "Success"
+msgstr ""
+
+#: lms/static/js/views/fields.js:28
+msgid "Placeholder"
+msgstr ""
+
+#: lms/static/js/views/fields.js:33
+msgid "An error occurred. Please try again."
+msgstr ""
+
+#: lms/static/js/views/fields.js:561
+msgid "Upload an image"
+msgstr ""
+
+#: lms/static/js/views/fields.js:562
+msgid "Change image"
+msgstr ""
+
+#: lms/static/js/views/fields.js:563
+msgid "Remove"
+msgstr ""
+
+#: lms/static/js/views/fields.js:566
+msgid "Removing"
+msgstr ""
+
+#: lms/static/js/views/fields.js:575
+msgid "An error has occurred. Refresh the page, and then try again."
+msgstr ""
+
+#: lms/static/js/views/fields.js:713
+msgid "The file must be at least {size} in size."
+msgstr ""
+
+#: lms/static/js/views/fields.js:721
+msgid "The file must be smaller than {size} in size."
+msgstr ""
+
+#: lms/static/js/views/fields.js:756
+msgid ""
+"Upload is in progress. To avoid errors, stay on this page until the process "
+"is complete."
+msgstr ""
+
+#: lms/static/js/views/fields.js:758
+msgid ""
+"Removal is in progress. To avoid errors, stay on this page until the process"
+" is complete."
+msgstr ""
+
+#: lms/static/js/views/fields.js:763
+msgid "bytes"
+msgstr ""
+
+#: lms/static/js/views/fields.js:763
+msgid "KB"
+msgstr ""
+
+#: lms/static/js/views/fields.js:763
+msgid "MB"
+msgstr ""
+
+#: lms/static/js/views/file_uploader.js:85
+msgid "Your upload of '{file}' succeeded."
+msgstr ""
+
+#: lms/static/js/views/file_uploader.js:110
+msgid "Your upload of '{file}' failed."
+msgstr ""
+
+#: lms/templates/class_dashboard/all_section_metrics.js:12
+#: lms/templates/class_dashboard/all_section_metrics.js:59
+msgid "Unable to retrieve data, please try again later."
+msgstr ""
+
+#: lms/templates/class_dashboard/d3_stacked_bar_graph.js:354
+msgid "%(num_students)s student opened Subsection"
+msgid_plural "%(num_students)s students opened Subsection"
+msgstr[0] ""
+msgstr[1] ""
+
+#: lms/templates/class_dashboard/d3_stacked_bar_graph.js:358
+msgid "%(num_students)s student"
+msgid_plural "%(num_students)s students"
+msgstr[0] ""
+msgstr[1] ""
+
+#: lms/templates/class_dashboard/d3_stacked_bar_graph.js:360
+msgid "%(num_questions)s question"
+msgid_plural "%(num_questions)s questions"
+msgstr[0] ""
+msgstr[1] ""
+
+#: lms/templates/class_dashboard/d3_stacked_bar_graph.js:441
+msgid "Number of Students"
+msgstr ""

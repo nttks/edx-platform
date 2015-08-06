@@ -1,0 +1,1162 @@
+# edX translation file
+# Copyright (C) 2015 edX
+# This file is distributed under the GNU AFFERO GENERAL PUBLIC LICENSE.
+# EdX Team <info@edx.org>, 2015.
+# 
+msgid ""
+msgstr ""
+"Project-Id-Version: 0.1a\n"
+"Report-Msgid-Bugs-To: openedx-translation@googlegroups.com\n"
+"POT-Creation-Date: 2015-08-06 12:15+0900\n"
+"PO-Revision-Date: 2015-08-06 03:17:55.569616\n"
+"Last-Translator: \n"
+"Language-Team: openedx-translation <openedx-translation@googlegroups.com>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 1.3\n"
+"Language: en\n"
+
+#: cms/templates/js/add-xblock-component-menu-problem.underscore:64
+#: cms/templates/js/add-xblock-component-menu.underscore:22
+#: cms/templates/js/certificate-editor.underscore:50
+#: cms/templates/js/content-group-editor.underscore:32
+#: cms/templates/js/course_info_handouts.underscore:20
+#: cms/templates/js/course_info_update.underscore:21
+#: cms/templates/js/edit-textbook.underscore:26
+#: cms/templates/js/group-configuration-editor.underscore:46
+#: cms/templates/js/section-name-edit.underscore:4
+#: cms/templates/js/xblock-string-field-editor.underscore:14
+#: lms/templates/instructor/instructor_dashboard_2/cohort-form.underscore:143
+msgid "Cancel"
+msgstr ""
+
+#: cms/templates/js/asset-library.underscore:57
+#: cms/templates/js/basic-modal.underscore:17
+#: lms/templates/instructor/instructor_dashboard_2/enrollment-code-lookup-links.underscore:6
+msgid "Actions"
+msgstr ""
+
+#: cms/templates/js/certificate-editor.underscore:18
+#: cms/templates/js/group-configuration-editor.underscore:23
+#: lms/templates/commerce/receipt.underscore:19
+#: lms/templates/verify_student/payment_confirmation_step.underscore:19
+msgid "Description"
+msgstr ""
+
+#: cms/templates/js/certificate-editor.underscore:49
+#: cms/templates/js/content-group-editor.underscore:31
+#: cms/templates/js/course_info_handouts.underscore:19
+#: cms/templates/js/edit-textbook.underscore:25
+#: cms/templates/js/group-configuration-editor.underscore:45
+#: cms/templates/js/section-name-edit.underscore:3
+#: cms/templates/js/signatory-editor.underscore:10
+#: cms/templates/js/xblock-string-field-editor.underscore:13
+#: lms/templates/instructor/instructor_dashboard_2/cohort-discussions-course-wide.underscore:16
+#: lms/templates/instructor/instructor_dashboard_2/cohort-discussions-inline.underscore:35
+#: lms/templates/instructor/instructor_dashboard_2/cohort-form.underscore:141
+msgid "Save"
+msgstr ""
+
+#: cms/templates/js/previous-video-upload-list.underscore:15
+#: lms/templates/verify_student/enrollment_confirmation_step.underscore:16
+msgid "Status"
+msgstr ""
+
+#: lms/templates/ccx/schedule.underscore:4
+msgid "Unit"
+msgstr ""
+
+#: lms/templates/ccx/schedule.underscore:5
+msgid "Start Date"
+msgstr ""
+
+#: lms/templates/ccx/schedule.underscore:6
+msgid "Due Date"
+msgstr ""
+
+#: lms/templates/ccx/schedule.underscore:8
+msgid "remove all"
+msgstr ""
+
+#: lms/templates/ccx/schedule.underscore:22
+#: lms/templates/ccx/schedule.underscore:35
+#: lms/templates/ccx/schedule.underscore:45
+msgid "remove"
+msgstr ""
+
+#: lms/templates/commerce/receipt.underscore:4
+msgid "Thank you! We have received your payment."
+msgstr ""
+
+#: lms/templates/commerce/receipt.underscore:11
+#: lms/templates/verify_student/payment_confirmation_step.underscore:11
+msgid ""
+"Please print this page for your records; it serves as your receipt. You will"
+" also receive an email with the same information."
+msgstr ""
+
+#: lms/templates/commerce/receipt.underscore:18
+#: lms/templates/verify_student/payment_confirmation_step.underscore:18
+msgid "Order No."
+msgstr ""
+
+#: lms/templates/commerce/receipt.underscore:20
+#: lms/templates/verify_student/payment_confirmation_step.underscore:20
+msgid "Date"
+msgstr ""
+
+#: lms/templates/commerce/receipt.underscore:21
+#: lms/templates/verify_student/payment_confirmation_step.underscore:21
+msgid "Amount"
+msgstr ""
+
+#: lms/templates/commerce/receipt.underscore:45
+#: lms/templates/verify_student/payment_confirmation_step.underscore:45
+msgid "Total"
+msgstr ""
+
+#: lms/templates/commerce/receipt.underscore:56
+#: lms/templates/verify_student/payment_confirmation_step.underscore:56
+msgid "Please Note"
+msgstr ""
+
+#: lms/templates/commerce/receipt.underscore:58
+#: lms/templates/verify_student/payment_confirmation_step.underscore:58
+msgid "Crossed out items have been refunded."
+msgstr ""
+
+#: lms/templates/commerce/receipt.underscore:66
+#: lms/templates/verify_student/payment_confirmation_step.underscore:65
+msgid "Billed to"
+msgstr ""
+
+#: lms/templates/commerce/receipt.underscore:79
+#: lms/templates/verify_student/payment_confirmation_step.underscore:77
+msgid "No receipt available"
+msgstr ""
+
+#: lms/templates/commerce/receipt.underscore:84
+msgid "Go to Dashboard"
+msgstr ""
+
+#: lms/templates/commerce/receipt.underscore:86
+#: lms/templates/verify_student/payment_confirmation_step.underscore:135
+#, python-format
+msgid ""
+"If you don't verify your identity now, you can still explore your course "
+"from your dashboard. You will receive periodic reminders from "
+"%(platformName)s to verify your identity."
+msgstr ""
+
+#: lms/templates/commerce/receipt.underscore:87
+#: lms/templates/verify_student/payment_confirmation_step.underscore:136
+msgid "Want to confirm your identity later?"
+msgstr ""
+
+#: lms/templates/commerce/receipt.underscore:94
+msgid "Verify Now"
+msgstr ""
+
+#: lms/templates/dashboard/donation.underscore:5
+msgid "Donate"
+msgstr ""
+
+#: lms/templates/discovery/filter_bar.underscore:4
+msgid "CLEAR ALL"
+msgstr ""
+
+#: lms/templates/discovery/more_less_links.underscore:3
+msgid "MORE..."
+msgstr ""
+
+#: lms/templates/discovery/more_less_links.underscore:6
+msgid "LESS..."
+msgstr ""
+
+#: lms/templates/discovery/result_item.underscore:6
+msgid "LEARN MORE"
+msgstr ""
+
+#: lms/templates/discovery/result_item.underscore:15
+msgid "gettext("
+msgstr ""
+
+#: lms/templates/discovery/result_item.underscore:21
+msgid "Starts"
+msgstr ""
+
+#: lms/templates/discovery/search_facets_list.underscore:2
+msgid "Refine your search"
+msgstr ""
+
+#: lms/templates/edxnotes/note-item.underscore:3
+msgid "Highlighted text"
+msgstr ""
+
+#: lms/templates/edxnotes/note-item.underscore:7
+msgid "Less"
+msgstr ""
+
+#: lms/templates/edxnotes/note-item.underscore:9
+msgid "More"
+msgstr ""
+
+#: lms/templates/edxnotes/note-item.underscore:17
+msgid "Note"
+msgstr ""
+
+#: lms/templates/edxnotes/note-item.underscore:19
+msgid "You commented..."
+msgstr ""
+
+#: lms/templates/edxnotes/note-item.underscore:28
+msgid "Noted in:"
+msgstr ""
+
+#: lms/templates/edxnotes/note-item.underscore:35
+msgid "Last Edited:"
+msgstr ""
+
+#: lms/templates/edxnotes/note-item.underscore:39
+msgid "Tags:"
+msgstr ""
+
+#: lms/templates/edxnotes/tab-item.underscore:4
+msgid "name"
+msgstr ""
+
+#: lms/templates/edxnotes/tab-item.underscore:10
+msgid "Clear search results"
+msgstr ""
+
+#: lms/templates/fields/field_dropdown.underscore:29
+#: lms/templates/fields/field_textarea.underscore:14
+msgid "Click to edit"
+msgstr ""
+
+#: lms/templates/fields/field_text.underscore:2
+msgid "title"
+msgstr ""
+
+#: lms/templates/instructor/instructor_dashboard_2/cohort-discussions-course-wide.underscore:1
+#: lms/templates/instructor/instructor_dashboard_2/cohorts.underscore:54
+msgid "Specify whether discussion topics are divided by cohort"
+msgstr ""
+
+#: lms/templates/instructor/instructor_dashboard_2/cohort-discussions-course-wide.underscore:7
+msgid "Course-Wide Discussion Topics"
+msgstr ""
+
+#: lms/templates/instructor/instructor_dashboard_2/cohort-discussions-course-wide.underscore:8
+msgid ""
+"Select the course-wide discussion topics that you want to divide by cohort."
+msgstr ""
+
+#: lms/templates/instructor/instructor_dashboard_2/cohort-discussions-inline.underscore:8
+msgid "Content-Specific Discussion Topics"
+msgstr ""
+
+#: lms/templates/instructor/instructor_dashboard_2/cohort-discussions-inline.underscore:9
+msgid ""
+"Specify whether content-specific discussion topics are divided by cohort."
+msgstr ""
+
+#: lms/templates/instructor/instructor_dashboard_2/cohort-discussions-inline.underscore:13
+msgid "Always cohort content-specific discussion topics"
+msgstr ""
+
+#: lms/templates/instructor/instructor_dashboard_2/cohort-discussions-inline.underscore:19
+msgid "Cohort selected content-specific discussion topics"
+msgstr ""
+
+#: lms/templates/instructor/instructor_dashboard_2/cohort-discussions-inline.underscore:27
+msgid "No content-specific discussion topics exist."
+msgstr ""
+
+#: lms/templates/instructor/instructor_dashboard_2/cohort-discussions-subcategory.underscore:6
+msgid "Cohorted"
+msgstr ""
+
+#: lms/templates/instructor/instructor_dashboard_2/cohort-editor.underscore:5
+msgid "Selected tab"
+msgstr ""
+
+#: lms/templates/instructor/instructor_dashboard_2/cohort-editor.underscore:5
+msgid "Manage Students"
+msgstr ""
+
+#: lms/templates/instructor/instructor_dashboard_2/cohort-editor.underscore:6
+msgid "Settings"
+msgstr ""
+
+#: lms/templates/instructor/instructor_dashboard_2/cohort-editor.underscore:12
+msgid "Add students to this cohort"
+msgstr ""
+
+#: lms/templates/instructor/instructor_dashboard_2/cohort-editor.underscore:15
+msgid ""
+"Note: Students can be in only one cohort. Adding students to this group "
+"overrides any previous group assignment."
+msgstr ""
+
+#: lms/templates/instructor/instructor_dashboard_2/cohort-editor.underscore:24
+msgid ""
+"Enter email addresses and/or usernames, separated by new lines or commas, "
+"for the students you want to add. *"
+msgstr ""
+
+#: lms/templates/instructor/instructor_dashboard_2/cohort-editor.underscore:25
+#: lms/templates/instructor/instructor_dashboard_2/cohort-form.underscore:26
+msgid "(Required Field)"
+msgstr ""
+
+#: lms/templates/instructor/instructor_dashboard_2/cohort-editor.underscore:29
+msgid "e.g. johndoe@example.com, JaneDoe, joeydoe@example.com"
+msgstr ""
+
+#: lms/templates/instructor/instructor_dashboard_2/cohort-editor.underscore:32
+msgid ""
+"You will not receive notification for emails that bounce, so double-check "
+"your spelling."
+msgstr ""
+
+#: lms/templates/instructor/instructor_dashboard_2/cohort-editor.underscore:38
+msgid "Add Students"
+msgstr ""
+
+#: lms/templates/instructor/instructor_dashboard_2/cohort-form.underscore:5
+msgid "Add a New Cohort"
+msgstr ""
+
+#: lms/templates/instructor/instructor_dashboard_2/cohort-form.underscore:19
+msgid "Enter the name of the cohort"
+msgstr ""
+
+#: lms/templates/instructor/instructor_dashboard_2/cohort-form.underscore:25
+msgid "Cohort Name"
+msgstr ""
+
+#: lms/templates/instructor/instructor_dashboard_2/cohort-form.underscore:38
+msgid "Cohort Assignment Method"
+msgstr ""
+
+#: lms/templates/instructor/instructor_dashboard_2/cohort-form.underscore:41
+msgid "Automatic"
+msgstr ""
+
+#: lms/templates/instructor/instructor_dashboard_2/cohort-form.underscore:44
+msgid "Manual"
+msgstr ""
+
+#: lms/templates/instructor/instructor_dashboard_2/cohort-form.underscore:50
+msgid ""
+"There must be one cohort to which students can automatically be assigned."
+msgstr ""
+
+#: lms/templates/instructor/instructor_dashboard_2/cohort-form.underscore:56
+msgid "Associated Content Group"
+msgstr ""
+
+#: lms/templates/instructor/instructor_dashboard_2/cohort-form.underscore:58
+msgid "No Content Group"
+msgstr ""
+
+#: lms/templates/instructor/instructor_dashboard_2/cohort-form.underscore:60
+msgid "Select a Content Group"
+msgstr ""
+
+#: lms/templates/instructor/instructor_dashboard_2/cohort-form.underscore:63
+msgid "Choose a content group to associate"
+msgstr ""
+
+#: lms/templates/instructor/instructor_dashboard_2/cohort-form.underscore:65
+msgid "Not selected"
+msgstr ""
+
+#: lms/templates/instructor/instructor_dashboard_2/cohort-form.underscore:87
+msgid "Deleted Content Group"
+msgstr ""
+
+#: lms/templates/instructor/instructor_dashboard_2/cohort-form.underscore:126
+msgid "Create a content group"
+msgstr ""
+
+#: lms/templates/instructor/instructor_dashboard_2/cohort-group-header.underscore:5
+#, python-format
+msgid "(contains %(student_count)s student)"
+msgid_plural "(contains %(student_count)s students)"
+msgstr[0] ""
+msgstr[1] ""
+
+#: lms/templates/instructor/instructor_dashboard_2/cohort-group-header.underscore:14
+msgid ""
+"Students are added to this cohort only when you provide their email "
+"addresses or usernames on this page."
+msgstr ""
+
+#: lms/templates/instructor/instructor_dashboard_2/cohort-group-header.underscore:15
+#: lms/templates/instructor/instructor_dashboard_2/cohort-group-header.underscore:18
+msgid "What does this mean?"
+msgstr ""
+
+#: lms/templates/instructor/instructor_dashboard_2/cohort-group-header.underscore:17
+msgid "Students are added to this cohort automatically."
+msgstr ""
+
+#: lms/templates/instructor/instructor_dashboard_2/cohort-selector.underscore:2
+msgid "Select a cohort"
+msgstr ""
+
+#: lms/templates/instructor/instructor_dashboard_2/cohort-selector.underscore:7
+#, python-format
+msgid "%(cohort_name)s (%(user_count)s)"
+msgstr ""
+
+#: lms/templates/instructor/instructor_dashboard_2/cohorts.underscore:2
+msgid "Enable Cohorts"
+msgstr ""
+
+#: lms/templates/instructor/instructor_dashboard_2/cohorts.underscore:11
+msgid "Select a cohort to manage"
+msgstr ""
+
+#: lms/templates/instructor/instructor_dashboard_2/cohorts.underscore:16
+msgid "View Cohort"
+msgstr ""
+
+#: lms/templates/instructor/instructor_dashboard_2/cohorts.underscore:22
+msgid "Add Cohort"
+msgstr ""
+
+#: lms/templates/instructor/instructor_dashboard_2/cohorts.underscore:37
+msgid "Assign students to cohorts by uploading a CSV file"
+msgstr ""
+
+#: lms/templates/instructor/instructor_dashboard_2/cohorts.underscore:44
+#, python-format
+msgid ""
+"To review student cohort assignments or see the results of uploading a CSV "
+"file, download course profile information or cohort results on "
+"%(link_start)s the Data Download page. %(link_end)s"
+msgstr ""
+
+#: lms/templates/instructor/instructor_dashboard_2/enrollment-code-lookup-links.underscore:3
+msgid "Code"
+msgstr ""
+
+#: lms/templates/instructor/instructor_dashboard_2/enrollment-code-lookup-links.underscore:4
+msgid "Used"
+msgstr ""
+
+#: lms/templates/instructor/instructor_dashboard_2/enrollment-code-lookup-links.underscore:5
+msgid "Valid"
+msgstr ""
+
+#: lms/templates/search/course_search_item.underscore:2
+#: lms/templates/search/dashboard_search_item.underscore:2
+msgid "View"
+msgstr ""
+
+#: lms/templates/search/course_search_results.underscore:2
+#: lms/templates/search/dashboard_search_results.underscore:3
+msgid "Search Results"
+msgstr ""
+
+#: lms/templates/search/course_search_results.underscore:13
+#: lms/templates/search/dashboard_search_results.underscore:14
+#, python-format
+msgid "Load next %(num_items)s result"
+msgid_plural "Load next %(num_items)s results"
+msgstr[0] ""
+msgstr[1] ""
+
+#: lms/templates/search/course_search_results.underscore:23
+#: lms/templates/search/dashboard_search_results.underscore:24
+msgid "Sorry, no results were found."
+msgstr ""
+
+#: lms/templates/search/dashboard_search_results.underscore:2
+msgid "Back to Dashboard"
+msgstr ""
+
+#: lms/templates/search/search_error.underscore:1
+msgid "There was an error, try searching again."
+msgstr ""
+
+#: lms/templates/search/search_loading.underscore:1
+#: lms/templates/student_account/account_settings.underscore:14
+msgid "Loading"
+msgstr ""
+
+#: lms/templates/student_account/account.underscore:2
+msgid "New Address"
+msgstr ""
+
+#: lms/templates/student_account/account.underscore:6
+msgid "Password"
+msgstr ""
+
+#: lms/templates/student_account/account.underscore:11
+msgid "Change My Email Address"
+msgstr ""
+
+#: lms/templates/student_account/account.underscore:16
+msgid "Reset Password"
+msgstr ""
+
+#: lms/templates/student_account/account_settings.underscore:3
+msgid "Account Settings"
+msgstr ""
+
+#: lms/templates/student_account/account_settings.underscore:4
+msgid ""
+"These settings include basic information about your account. You can also "
+"specify additional information and see your linked social accounts on this "
+"page."
+msgstr ""
+
+#: lms/templates/student_account/account_settings.underscore:10
+msgid "section.title"
+msgstr ""
+
+#: lms/templates/student_account/account_settings.underscore:18
+#: lms/templates/student_profile/learner_profile.underscore:14
+msgid "An error occurred. Please reload the page."
+msgstr ""
+
+#: lms/templates/student_account/form_field.underscore:66
+msgid "Forgot password?"
+msgstr ""
+
+#: lms/templates/student_account/hinted_login.underscore:4
+#: lms/templates/student_account/login.underscore:34
+#: lms/templates/student_account/login.underscore:49
+#: lms/templates/student_account/register.underscore:71
+msgid "Sign in"
+msgstr ""
+
+#: lms/templates/student_account/hinted_login.underscore:8
+#, python-format
+msgid "Would you like to sign in using your %(providerName)s credentials?"
+msgstr ""
+
+#: lms/templates/student_account/hinted_login.underscore:12
+#, python-format
+msgid "Sign in using %(providerName)s"
+msgstr ""
+
+#: lms/templates/student_account/hinted_login.underscore:17
+#: lms/templates/student_account/institution_login.underscore:24
+#: lms/templates/student_account/institution_register.underscore:24
+msgid "or"
+msgstr ""
+
+#: lms/templates/student_account/hinted_login.underscore:22
+msgid "Show me other ways to sign in or register"
+msgstr ""
+
+#: lms/templates/student_account/institution_login.underscore:5
+msgid "Sign in with Institution/Campus Credentials"
+msgstr ""
+
+#: lms/templates/student_account/institution_login.underscore:10
+#: lms/templates/student_account/institution_register.underscore:10
+msgid "Choose your institution from the list below:"
+msgstr ""
+
+#: lms/templates/student_account/institution_login.underscore:29
+msgid "Back to sign in"
+msgstr ""
+
+#: lms/templates/student_account/institution_register.underscore:5
+msgid "Register with Institution/Campus Credentials"
+msgstr ""
+
+#: lms/templates/student_account/institution_register.underscore:29
+msgid "Register through edX"
+msgstr ""
+
+#: lms/templates/student_account/login.underscore:4
+#, python-format
+msgid ""
+"You have successfully signed into %(currentProvider)s, but your "
+"%(currentProvider)s account does not have a linked %(platformName)s account."
+" To link your accounts, sign in now using your %(platformName)s password."
+msgstr ""
+
+#: lms/templates/student_account/login.underscore:10
+msgid "Password Reset Email Sent"
+msgstr ""
+
+#: lms/templates/student_account/login.underscore:13
+msgid ""
+"We've sent instructions for resetting your password to the email address you"
+" provided."
+msgstr ""
+
+#: lms/templates/student_account/login.underscore:19
+msgid "We couldn't sign you in."
+msgstr ""
+
+#: lms/templates/student_account/login.underscore:25
+#, python-format
+msgid "An error occurred when signing you in to %(platformName)s."
+msgstr ""
+
+#: lms/templates/student_account/login.underscore:40
+msgid ""
+"Sign in here using your email address and password, or use one of the "
+"providers listed below."
+msgstr ""
+
+#: lms/templates/student_account/login.underscore:42
+msgid "Sign in here using your email address and password."
+msgstr ""
+
+#: lms/templates/student_account/login.underscore:44
+msgid "If you do not yet have an account, use the button below to register."
+msgstr ""
+
+#: lms/templates/student_account/login.underscore:55
+msgid "or sign in with"
+msgstr ""
+
+#: lms/templates/student_account/login.underscore:64
+#, python-format
+msgid "Sign in with %(providerName)s"
+msgstr ""
+
+#: lms/templates/student_account/login.underscore:71
+#: lms/templates/student_account/register.underscore:42
+msgid "Use my institution/campus credentials"
+msgstr ""
+
+#: lms/templates/student_account/login.underscore:81
+#, python-format
+msgid "New to %(platformName)s?"
+msgstr ""
+
+#: lms/templates/student_account/login.underscore:84
+msgid "Create an account"
+msgstr ""
+
+#: lms/templates/student_account/password_reset.underscore:2
+#: lms/templates/student_account/register.underscore:10
+msgid "An error occurred."
+msgstr ""
+
+#: lms/templates/student_account/password_reset.underscore:10
+msgid "Password assistance"
+msgstr ""
+
+#: lms/templates/student_account/password_reset.underscore:14
+msgid ""
+"Please enter your email address below and we will send you instructions for "
+"setting a new password."
+msgstr ""
+
+#: lms/templates/student_account/password_reset.underscore:18
+msgid "Reset my password"
+msgstr ""
+
+#: lms/templates/student_account/register.underscore:2
+msgid "We couldn't create your account."
+msgstr ""
+
+#: lms/templates/student_account/register.underscore:18
+#, python-format
+msgid "You've successfully signed into %(currentProvider)s."
+msgstr ""
+
+#: lms/templates/student_account/register.underscore:19
+#, python-format
+msgid ""
+"We just need a little more information before you start learning with "
+"%(platformName)s."
+msgstr ""
+
+#: lms/templates/student_account/register.underscore:26
+msgid "Create an account using"
+msgstr ""
+
+#: lms/templates/student_account/register.underscore:35
+#, python-format
+msgid "Create account using %(providerName)s."
+msgstr ""
+
+#: lms/templates/student_account/register.underscore:48
+msgid "or create a new one here"
+msgstr ""
+
+#: lms/templates/student_account/register.underscore:54
+msgid "Create a new account"
+msgstr ""
+
+#: lms/templates/student_account/register.underscore:61
+msgid "Create your account"
+msgstr ""
+
+#: lms/templates/student_account/register.underscore:62
+msgid "Required field"
+msgstr ""
+
+#: lms/templates/student_account/register.underscore:68
+msgid "Already have an account?"
+msgstr ""
+
+#: lms/templates/student_profile/learner_profile.underscore:20
+msgid "You are currently sharing a limited profile."
+msgstr ""
+
+#: lms/templates/student_profile/learner_profile.underscore:22
+msgid "This edX learner is currently sharing a limited profile."
+msgstr ""
+
+#: lms/templates/verify_student/enrollment_confirmation_step.underscore:3
+#, python-format
+msgid "Congratulations! You are now verified on %(platformName)s!"
+msgstr ""
+
+#: lms/templates/verify_student/enrollment_confirmation_step.underscore:5
+msgid "You are now enrolled as a verified student for:"
+msgstr ""
+
+#: lms/templates/verify_student/enrollment_confirmation_step.underscore:12
+msgid "A list of courses you have just enrolled in as a verified student"
+msgstr ""
+
+#: lms/templates/verify_student/enrollment_confirmation_step.underscore:15
+msgid "Course"
+msgstr ""
+
+#: lms/templates/verify_student/enrollment_confirmation_step.underscore:24
+#, python-format
+msgid "Starts: %(start)s"
+msgstr ""
+
+#: lms/templates/verify_student/enrollment_confirmation_step.underscore:33
+msgid "Explore your course!"
+msgstr ""
+
+#: lms/templates/verify_student/enrollment_confirmation_step.underscore:37
+msgid "Go to your Dashboard"
+msgstr ""
+
+#: lms/templates/verify_student/enrollment_confirmation_step.underscore:48
+msgid "Verified Status"
+msgstr ""
+
+#: lms/templates/verify_student/enrollment_confirmation_step.underscore:50
+#, python-format
+msgid ""
+"Thank you for submitting your photos. We will review them shortly. You can "
+"now sign up for any %(platformName)s course that offers verified "
+"certificates. Verification is good for one year. After one year, you must "
+"submit photos for verification again."
+msgstr ""
+
+#: lms/templates/verify_student/error.underscore:6
+msgid "Error:"
+msgstr ""
+
+#: lms/templates/verify_student/face_photo_step.underscore:4
+msgid "What You Need for Verification"
+msgstr ""
+
+#: lms/templates/verify_student/face_photo_step.underscore:6
+#: lms/templates/verify_student/intro_step.underscore:57
+#: lms/templates/verify_student/make_payment_step.underscore:70
+#: lms/templates/verify_student/payment_confirmation_step.underscore:121
+msgid "Webcam"
+msgstr ""
+
+#: lms/templates/verify_student/face_photo_step.underscore:7
+msgid ""
+"You need a computer that has a webcam. When you receive a browser prompt, "
+"make sure that you allow access to the camera."
+msgstr ""
+
+#: lms/templates/verify_student/face_photo_step.underscore:10
+msgid "Photo Identification"
+msgstr ""
+
+#: lms/templates/verify_student/face_photo_step.underscore:11
+msgid ""
+"You need a driver's license, passport, or other government-issued ID that "
+"has your name and photo."
+msgstr ""
+
+#: lms/templates/verify_student/face_photo_step.underscore:17
+#: lms/templates/verify_student/incourse_reverify.underscore:3
+msgid "Take Your Photo"
+msgstr ""
+
+#: lms/templates/verify_student/face_photo_step.underscore:19
+#, python-format
+msgid ""
+"When your face is in position, use the camera button %(icon)s below to take "
+"your photo."
+msgstr ""
+
+#: lms/templates/verify_student/face_photo_step.underscore:25
+msgid "To take a successful photo, make sure that:"
+msgstr ""
+
+#: lms/templates/verify_student/face_photo_step.underscore:29
+msgid "Your face is well-lit."
+msgstr ""
+
+#: lms/templates/verify_student/face_photo_step.underscore:30
+msgid "Your entire face fits inside the frame."
+msgstr ""
+
+#: lms/templates/verify_student/face_photo_step.underscore:31
+msgid "The photo of your face matches the photo on your ID."
+msgstr ""
+
+#: lms/templates/verify_student/face_photo_step.underscore:34
+#, python-format
+msgid ""
+"To use the current photo, select the camera button %(icon)s. To take another"
+" photo, select the retake button %(icon)s."
+msgstr ""
+
+#: lms/templates/verify_student/face_photo_step.underscore:39
+#: lms/templates/verify_student/id_photo_step.underscore:30
+#: lms/templates/verify_student/incourse_reverify.underscore:29
+msgid "Frequently Asked Questions"
+msgstr ""
+
+#: lms/templates/verify_student/face_photo_step.underscore:43
+#: lms/templates/verify_student/id_photo_step.underscore:35
+#: lms/templates/verify_student/incourse_reverify.underscore:33
+#, python-format
+msgid "Why does %(platformName)s need my photo?"
+msgstr ""
+
+#: lms/templates/verify_student/face_photo_step.underscore:45
+#: lms/templates/verify_student/id_photo_step.underscore:37
+#: lms/templates/verify_student/incourse_reverify.underscore:35
+msgid ""
+"As part of the verification process, you take a photo of both your face and "
+"a government-issued photo ID. Our authorization service confirms your "
+"identity by comparing the photo you take with the photo on your ID."
+msgstr ""
+
+#: lms/templates/verify_student/face_photo_step.underscore:47
+#: lms/templates/verify_student/id_photo_step.underscore:40
+#: lms/templates/verify_student/incourse_reverify.underscore:37
+#, python-format
+msgid "What does %(platformName)s do with this photo?"
+msgstr ""
+
+#: lms/templates/verify_student/face_photo_step.underscore:49
+#: lms/templates/verify_student/id_photo_step.underscore:42
+#: lms/templates/verify_student/incourse_reverify.underscore:39
+#, python-format
+msgid ""
+"We use the highest levels of security available to encrypt your photo and "
+"send it to our authorization service for review. Your photo and information "
+"are not saved or visible anywhere on %(platformName)s after the verification"
+" process is complete."
+msgstr ""
+
+#: lms/templates/verify_student/face_photo_step.underscore:63
+#: lms/templates/verify_student/id_photo_step.underscore:53
+#: lms/templates/verify_student/intro_step.underscore:76
+#: lms/templates/verify_student/payment_confirmation_step.underscore:144
+#, python-format
+msgid "Next: %(nextStepTitle)s"
+msgstr ""
+
+#: lms/templates/verify_student/id_photo_step.underscore:3
+msgid "Take a Photo of Your ID"
+msgstr ""
+
+#: lms/templates/verify_student/id_photo_step.underscore:5
+msgid ""
+"Use your webcam to take a photo of your ID. We will match this photo with "
+"the photo of your face and the name on your account."
+msgstr ""
+
+#: lms/templates/verify_student/id_photo_step.underscore:13
+msgid ""
+"You need an ID with your name and photo. A driver's license, passport, or "
+"other government-issued IDs are all acceptable."
+msgstr ""
+
+#: lms/templates/verify_student/id_photo_step.underscore:15
+#: lms/templates/verify_student/incourse_reverify.underscore:13
+msgid "Tips on taking a successful photo"
+msgstr ""
+
+#: lms/templates/verify_student/id_photo_step.underscore:19
+msgid "Ensure that you can see your photo and read your name"
+msgstr ""
+
+#: lms/templates/verify_student/id_photo_step.underscore:20
+msgid "Make sure your ID is well-lit"
+msgstr ""
+
+#: lms/templates/verify_student/id_photo_step.underscore:22
+#, python-format
+msgid "Once in position, use the camera button %(icon)s to capture your ID"
+msgstr ""
+
+#: lms/templates/verify_student/id_photo_step.underscore:24
+#: lms/templates/verify_student/incourse_reverify.underscore:23
+msgid "Use the retake photo button if you are not pleased with your photo"
+msgstr ""
+
+#: lms/templates/verify_student/image_input.underscore:1
+msgid "Preview of uploaded image"
+msgstr ""
+
+#: lms/templates/verify_student/image_input.underscore:3
+msgid "Upload an image or capture one with your web or phone camera."
+msgstr ""
+
+#: lms/templates/verify_student/incourse_reverify.underscore:5
+msgid ""
+"Use your webcam to take a photo of your face. We will match this photo with "
+"the photo on your ID."
+msgstr ""
+
+#: lms/templates/verify_student/incourse_reverify.underscore:17
+msgid "Make sure your face is well-lit"
+msgstr ""
+
+#: lms/templates/verify_student/incourse_reverify.underscore:18
+msgid "Be sure your entire face is inside the frame"
+msgstr ""
+
+#: lms/templates/verify_student/incourse_reverify.underscore:20
+#, python-format
+msgid "Once in position, use the camera button %(icon)s to capture your photo"
+msgstr ""
+
+#: lms/templates/verify_student/incourse_reverify.underscore:22
+msgid "Can we match the photo you took with the one on your ID?"
+msgstr ""
+
+#: lms/templates/verify_student/incourse_reverify.underscore:47
+msgid "Submit"
+msgstr ""
+
+#: lms/templates/verify_student/intro_step.underscore:6
+#, python-format
+msgid "Thanks for returning to verify your ID in: %(courseName)s"
+msgstr ""
+
+#: lms/templates/verify_student/intro_step.underscore:15
+#: lms/templates/verify_student/make_payment_step.underscore:31
+msgid ""
+"You need to activate your account before you can enroll in courses. Check "
+"your inbox for an activation email. After you complete activation you can "
+"return and refresh this page."
+msgstr ""
+
+#: lms/templates/verify_student/intro_step.underscore:27
+#: lms/templates/verify_student/make_payment_step.underscore:44
+#: lms/templates/verify_student/payment_confirmation_step.underscore:87
+msgid "Activate Your Account"
+msgstr ""
+
+#: lms/templates/verify_student/intro_step.underscore:34
+#: lms/templates/verify_student/make_payment_step.underscore:51
+msgid "Check Your Email"
+msgstr ""
+
+#: lms/templates/verify_student/intro_step.underscore:41
+#: lms/templates/verify_student/payment_confirmation_step.underscore:105
+msgid "Photo ID"
+msgstr ""
+
+#: lms/templates/verify_student/intro_step.underscore:49
+msgid ""
+"A driver's license, passport, or other government-issued ID with your name "
+"and photo"
+msgstr ""
+
+#: lms/templates/verify_student/make_payment_step.underscore:6
+#, python-format
+msgid "You are enrolling in: %(courseName)s"
+msgstr ""
+
+#: lms/templates/verify_student/make_payment_step.underscore:13
+#, python-format
+msgid "You are upgrading your enrollment for: %(courseName)s"
+msgstr ""
+
+#: lms/templates/verify_student/make_payment_step.underscore:18
+msgid ""
+"You can now enter your payment information and complete your enrollment."
+msgstr ""
+
+#: lms/templates/verify_student/make_payment_step.underscore:27
+#, python-format
+msgid ""
+"You can pay now even if you don't have the following items available, but "
+"you will need to have these by %(date)s to qualify to earn a Verified "
+"Certificate."
+msgstr ""
+
+#: lms/templates/verify_student/make_payment_step.underscore:33
+msgid ""
+"You can pay now even if you don't have the following items available, but "
+"you will need to have these to qualify to earn a Verified Certificate."
+msgstr ""
+
+#: lms/templates/verify_student/make_payment_step.underscore:58
+msgid "Government-Issued Photo ID"
+msgstr ""
+
+#: lms/templates/verify_student/make_payment_step.underscore:85
+msgid ""
+"ID-Verification is not required for this Professional Education course."
+msgstr ""
+
+#: lms/templates/verify_student/make_payment_step.underscore:86
+msgid ""
+"All professional education courses are fee-based, and require payment to "
+"complete the enrollment process."
+msgstr ""
+
+#: lms/templates/verify_student/make_payment_step.underscore:90
+msgid "You have already verified your ID!"
+msgstr ""
+
+#: lms/templates/verify_student/make_payment_step.underscore:93
+#, python-format
+msgid "Your verification status is good until %(verificationGoodUntil)s."
+msgstr ""
+
+#: lms/templates/verify_student/make_payment_step.underscore:104
+msgid "price"
+msgstr ""
+
+#: lms/templates/verify_student/payment_confirmation_step.underscore:4
+#, python-format
+msgid "Thank you! We have received your payment for %(courseName)s."
+msgstr ""
+
+#: lms/templates/verify_student/payment_confirmation_step.underscore:81
+msgid "Next Step: Confirm your identity"
+msgstr ""
+
+#: lms/templates/verify_student/payment_confirmation_step.underscore:94
+msgid "Check your email"
+msgstr ""
+
+#: lms/templates/verify_student/payment_confirmation_step.underscore:96
+msgid ""
+"You need to activate your account before you can enroll in courses. Check "
+"your inbox for an activation email."
+msgstr ""
+
+#: lms/templates/verify_student/payment_confirmation_step.underscore:113
+msgid ""
+"A driver's license, passport, or government-issued ID with your name and "
+"photo."
+msgstr ""
+
+#: lms/templates/verify_student/reverify_success_step.underscore:2
+msgid "Identity Verification In Progress"
+msgstr ""
+
+#: lms/templates/verify_student/reverify_success_step.underscore:5
+msgid ""
+"We have received your information and are verifying your identity. You will "
+"see a message on your dashboard when the verification process is complete "
+"(usually within 1-2 days). In the meantime, you can still access all "
+"available course content."
+msgstr ""
+
+#: lms/templates/verify_student/reverify_success_step.underscore:9
+msgid "Return to Your Dashboard"
+msgstr ""
+
+#: lms/templates/verify_student/review_photos_step.underscore:3
+msgid "Review Your Photos"
+msgstr ""
+
+#: lms/templates/verify_student/review_photos_step.underscore:5
+msgid ""
+"Make sure we can verify your identity with the photos and information you "
+"have provided."
+msgstr ""
+
+#: lms/templates/verify_student/review_photos_step.underscore:13
+#, python-format
+msgid "Photo of %(fullName)s"
+msgstr ""
+
+#: lms/templates/verify_student/review_photos_step.underscore:18
+#, python-format
+msgid "Photo of %(fullName)s's ID"
+msgstr ""
+
+#: lms/templates/verify_student/review_photos_step.underscore:25
+msgid "Photo requirements:"
+msgstr ""
+
+#: lms/templates/verify_student/review_photos_step.underscore:27
+msgid "Does the photo of you show your whole face?"
+msgstr ""
+
+#: lms/templates/verify_student/review_photos_step.underscore:28
+msgid "Does the photo of you match your ID photo?"
+msgstr ""
+
+#: lms/templates/verify_student/review_photos_step.underscore:29
+msgid "Is your name on your ID readable?"
+msgstr ""
+
+#: lms/templates/verify_student/review_photos_step.underscore:30
+#, python-format
+msgid "Does the name on your ID match your account name: %(fullName)s?"
+msgstr ""
+
+#: lms/templates/verify_student/review_photos_step.underscore:34
+msgid "Edit Your Name"
+msgstr ""
+
+#: lms/templates/verify_student/review_photos_step.underscore:39
+msgid ""
+"Make sure that the full name on your account matches the name on your ID."
+msgstr ""
+
+#: lms/templates/verify_student/review_photos_step.underscore:51
+msgid "Photos don't meet the requirements?"
+msgstr ""
+
+#: lms/templates/verify_student/review_photos_step.underscore:53
+msgid "Retake Your Photos"
+msgstr ""
+
+#: lms/templates/verify_student/review_photos_step.underscore:64
+msgid "Before proceeding, please confirm that your details match"
+msgstr ""
+
+#: lms/templates/verify_student/review_photos_step.underscore:70
+msgid "Confirm"
+msgstr ""
+
+#: lms/templates/verify_student/webcam_photo.underscore:4
+msgid ""
+"Don't see your picture? Make sure to allow your browser to use your camera "
+"when it asks for permission."
+msgstr ""
+
+#: lms/templates/verify_student/webcam_photo.underscore:7
+msgid "Live view of webcam"
+msgstr ""
+
+#: lms/templates/verify_student/webcam_photo.underscore:24
+msgid "Retake Photo"
+msgstr ""
+
+#: lms/templates/verify_student/webcam_photo.underscore:28
+msgid "Take Photo"
+msgstr ""
