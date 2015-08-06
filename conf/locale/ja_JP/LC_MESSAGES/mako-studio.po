@@ -1,119 +1,132 @@
 # edX translation file
 # Copyright (C) 2015 edX
 # This file is distributed under the GNU AFFERO GENERAL PUBLIC LICENSE.
-# EdX Team <info@edx.org>, 2015.
 # 
+# Translators:
+# watcafe, 2014-2015
+# kawa <h.kawasaki@nttks.co.jp>, 2014
+# h_yoshida <h_yoshida@matsumo-sys.com>, 2014-2015
+# 井上淳也 <junya.inoue@nttps.co.jp>, 2013
+# Osamu Takahashi, 2014
+# Shige Usui <ushige@live.com>, 2014
+# Shoji Kajita <kajita.shoji.5z@kyoto-u.ac.jp>, 2013
+# Takashi Nagai <ngi644@gmail.com>, 2014-2015
+# Toshiboumi Ohta <ohta@securesky-tech.com>, 2015
+# Shige Usui <ushige@live.com>, 2013-2014
+# Daisuke Yamamoto <yamamoto.daisuke@nitech.ac.jp>, 2013
+# わたカフェの店長, 2013
 msgid ""
 msgstr ""
-"Project-Id-Version: 0.1a\n"
+"Project-Id-Version: edx-platform\n"
 "Report-Msgid-Bugs-To: openedx-translation@googlegroups.com\n"
-"POT-Creation-Date: 2015-08-06 12:14+0900\n"
-"PO-Revision-Date: 2015-08-06 03:17:55.460157\n"
-"Last-Translator: \n"
-"Language-Team: openedx-translation <openedx-translation@googlegroups.com>\n"
+"POT-Creation-Date: 2015-07-06 12:00+0000\n"
+"PO-Revision-Date: 2015-07-06 12:12+0000\n"
+"Last-Translator: Sarina Canelake <sarina@edx.org>\n"
+"Language-Team: Japanese (Japan) (http://www.transifex.com/projects/p/edx-platform/language/ja_JP/)\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 1.3\n"
-"Language: en\n"
+"Language: ja_JP\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
 
 #: cms/templates/404.html:14
 msgid "The page that you were looking for was not found."
-msgstr ""
+msgstr "検索対象のページは見つかりませんでした．"
 
 #: cms/templates/404.html:15
 msgid ""
 "Go back to the {homepage} or let us know about any pages that may have been "
 "moved at {email}."
-msgstr ""
+msgstr "{homepage}に戻る もしくは 移動してしまったとみられるページについて私達 {email} に知らせてください。"
 
 #: cms/templates/500.html:3
 msgid "{studio_name} Server Error"
-msgstr ""
+msgstr "{studio_name}サーバーエラー"
 
 #: cms/templates/500.html:11
 msgid "The {studio_name} servers encountered an error"
-msgstr ""
+msgstr "{studio_name}でエラーが発生しました"
 
 #: cms/templates/500.html:18
 msgid ""
 "An error occurred in {studio_name} and the page could not be loaded. Please "
 "try again in a few moments."
-msgstr ""
+msgstr "{studio_name}でエラーが発生し、ページが読み込めませんでした。数分後に改めてお試しください。"
 
 #: cms/templates/500.html:19
 msgid ""
 "We've logged the error and our staff is currently working to resolve this "
 "error as soon as possible."
-msgstr ""
+msgstr "私たちはエラーを記録し、スタッフは現在、このエラーをできるだけ早く修正しようと働いています。"
 
 #: cms/templates/500.html:20
 msgid "If the problem persists, please email us at {email_link}."
-msgstr ""
+msgstr "もし、不具合が解消されない場合は、{email_link}へメールでご連絡ください。"
 
 #: cms/templates/activation_active.html:8
 #: cms/templates/activation_complete.html:7
 #: cms/templates/activation_invalid.html:7
 msgid "{studio_name} Account Activation"
-msgstr ""
+msgstr "{studio_name}アカウント有効化"
 
 #: cms/templates/activation_active.html:20
 msgid "Your account is already active"
-msgstr ""
+msgstr "アカウントは既に有効になっています"
 
 #: cms/templates/activation_active.html:22
 msgid ""
 "This account, set up using {email}, has already been activated. Please sign "
 "in to start working within {studio_name}."
-msgstr ""
+msgstr "このアカウント（{email}を使用して設定）は既に利用されています。{studio_name}で作業を開始するには、ログインしてください。"
 
 #: cms/templates/activation_active.html:29
 #: cms/templates/activation_complete.html:27
 msgid "Sign into {studio_name}"
-msgstr ""
+msgstr "{studio_name}にサインイン"
 
 #: cms/templates/activation_complete.html:18
 msgid "Your account activation is complete!"
-msgstr ""
+msgstr "アカウントが有効になりました！"
 
 #: cms/templates/activation_complete.html:20
 msgid ""
 "Thank you for activating your account. You may now sign in and start using "
 "{studio_name} to author courses."
-msgstr ""
+msgstr "アカウント登録ありがとうございます。{studio_name}にサインインしコースを作成することが出来る様になりました。"
 
 #: cms/templates/activation_invalid.html:18
 msgid "Your account activation is invalid"
-msgstr ""
+msgstr "アカウント登録が無効です"
 
 #: cms/templates/activation_invalid.html:20
 msgid ""
 "We're sorry. Something went wrong with your activation. Check to make sure "
 "the URL you went to was correct, as e-mail programs will sometimes split it "
 "into two lines."
-msgstr ""
+msgstr "申し訳ありません。アクティベーションができませんでした。メールプログラムが送付した URL を二行に分割してしまうことがありますので、アクセスした URL が間違いないかどうかをご確認ください。"
 
 #: cms/templates/activation_invalid.html:21
 msgid ""
 "If you still have issues, contact {platform_name} Support. In the meantime, "
 "you can also return to {link_start}the {studio_name} homepage.{link_end}"
-msgstr ""
+msgstr "まだ問題があるようであれば、{platform_name}サポートにコンタクトをしてください。その間、{link_start}{studio_name}ホームページ{link_end}に戻ることができます。"
 
 #: cms/templates/activation_invalid.html:32
 msgid "Contact {platform_name} Support"
-msgstr ""
+msgstr "{platform_name}サポートへの問い合わせ"
 
 #: cms/templates/asset_index.html:7 cms/templates/asset_index.html:37
 #: cms/templates/widgets/header.html:72
 msgid "Files &amp; Uploads"
-msgstr ""
+msgstr "ファイル &amp; アップロード"
 
 #: cms/templates/asset_index.html:36 cms/templates/course_info.html:38
 #: cms/templates/course_outline.html:107 cms/templates/edit-tabs.html:31
 #: cms/templates/textbooks.html:39 cms/templates/videos_index.html:41
 #: cms/templates/widgets/header.html:57
 msgid "Content"
-msgstr ""
+msgstr "コンテンツ"
 
 #: cms/templates/asset_index.html:40 cms/templates/asset_index.html:41
 #: cms/templates/container.html:70 cms/templates/container.html:71
@@ -131,99 +144,99 @@ msgstr ""
 #: cms/templates/ux/reference/course-create-rerun.html:24
 #: cms/templates/ux/reference/outline.html:24
 msgid "Page Actions"
-msgstr ""
+msgstr "ページの動き"
 
 #: cms/templates/asset_index.html:44 cms/templates/asset_index.html:90
 #: cms/templates/videos_index.html:49
 msgid "Upload New File"
-msgstr ""
+msgstr "新規ファイルをアップロード"
 
 #: cms/templates/asset_index.html:62
 msgid "Adding Files for Your Course"
-msgstr ""
+msgstr "この講座にファイルを追加中"
 
 #: cms/templates/asset_index.html:64
 msgid ""
 "To add files to use in your course, click {em_start}Upload New File{em_end}."
 " Then follow the prompts to upload a file from your computer."
-msgstr ""
+msgstr "この講座で使うファイルを追加するには、{em_start}新規ファイルアップロード{em_end}をクリックしてください。その後、案内に従うことでお使いのコンピュータからファイルがアップロードされます。"
 
 #: cms/templates/asset_index.html:66
 msgid ""
 "{em_start}Caution{em_end}: {platform_name} recommends that you limit the "
 "file size to {em_start}10 MB{em_end}. In addition, do not upload video or "
 "audio files. You should use a third party service to host multimedia files."
-msgstr ""
+msgstr "{em_start}注意{em_end}：{platform_name}システムはファイル上限を{em_start}10 MB{em_end}とすることを推奨しています。加えて、動画および音声ファイルをアップロードすることも推奨しません。マルチメディアファイルはサードパーティのホスティングサービスをお使いください。"
 
 #: cms/templates/asset_index.html:68
 msgid ""
 "The course image, textbook chapters, and files that appear on your Course "
 "Handouts sidebar also appear in this list."
-msgstr ""
+msgstr "この講座関連資料カラムに表示される講座画像、教材の章立て、そして、ファイルはこのリスト内にも表示されます。"
 
 #: cms/templates/asset_index.html:71
 msgid "Using File URLs"
-msgstr ""
+msgstr "ファイルURLを用いています"
 
 #: cms/templates/asset_index.html:73
 msgid ""
 "Use the {em_start}{studio_name} URL{em_end} value to link to the file or "
 "image from a component, a course update, or a course handout."
-msgstr ""
+msgstr "教材、お知らせ、および、講座関連資料からファイルもしくはイメージへリンクするには{em_start}{studio_name} URL{em_end}の値を使ってください。"
 
 #: cms/templates/asset_index.html:75
 msgid ""
 "Use the {em_start}Web URL{em_end} value to reference the file or image only "
 "from outside of your course. {em_start}Note:{em_end} If you lock a file, the"
 " Web URL no longer works for external access to a file."
-msgstr ""
+msgstr "コース外からファイルもしくは画像を参照するためには、{em_start}Web URL{em_end}を使ってください。{em_start}備考：{em_end}ファイルをロックするとWeb URLはファイルの外部アクセスとして機能しなくなります。"
 
 #: cms/templates/asset_index.html:77
 msgid ""
 "To copy a URL, double click the value in the URL column, then copy the "
 "selected text."
-msgstr ""
+msgstr "URLをコピーするには、URL欄の値をダブルクリックして選択されたテキストをコピーしてください。"
 
 #: cms/templates/asset_index.html:80
 msgid "Learn more about managing files"
-msgstr ""
+msgstr "ファイル管理についてもっと学ぶ"
 
 #: cms/templates/asset_index.html:91
 msgid "Max per-file size: {max_filesize}MB"
-msgstr ""
+msgstr "ファイル毎の最大サイズ：{max_filesize}MB"
 
 #: cms/templates/asset_index.html:102
 msgid "Choose File"
-msgstr ""
+msgstr "ファイルを選択"
 
 #: cms/templates/asset_index.html:118
 msgid "Your file has been deleted."
-msgstr ""
+msgstr "ファイルは削除されました．"
 
 #: cms/templates/asset_index.html:123
 msgid "close alert"
-msgstr ""
+msgstr "警告を閉じる"
 
 #: cms/templates/certificates.html:10
 msgid "Course Certificates"
-msgstr ""
+msgstr "講座の修了証"
 
 #: cms/templates/certificates.html:40 cms/templates/certificates.html:50
-#: cms/templates/certificates.html:67 cms/templates/export.html:122
+#: cms/templates/certificates.html:67 cms/templates/export.html:146
 #: cms/templates/widgets/header.html:114
 msgid "Certificates"
-msgstr ""
+msgstr "証明書"
 
 #: cms/templates/certificates.html:54
 msgid "This module is not enabled."
-msgstr ""
+msgstr "このモジュールは有効ではありません。"
 
 #: cms/templates/certificates.html:68
 msgid ""
 "Upon successful completion of your course, learners receive a certificate to"
 " acknowledge their accomplishment. If you are a course team member with the "
 "Admin role in Studio, you can configure your course certificate."
-msgstr ""
+msgstr "講座を所期の通り満了することができたら、受講者は受講を完了したことを認定する修了証を受領します。Studio の管理者権限を持っているコースチームのメンバーであれば、講座修了証の設定をすることができます。"
 
 #: cms/templates/certificates.html:69
 msgid ""
@@ -258,7 +271,7 @@ msgstr ""
 
 #: cms/templates/certificates.html:72
 msgid "Learn more about certificates"
-msgstr ""
+msgstr "修了証についてもっと知る"
 
 #: cms/templates/certificates.html:83 cms/templates/certificates.html:84
 #: cms/templates/group_configurations.html:93
@@ -268,21 +281,21 @@ msgstr ""
 #: cms/templates/settings_graders.html:149
 #: cms/templates/settings_graders.html:150
 msgid "Other Course Settings"
-msgstr ""
+msgstr "その他の設定"
 
 #: cms/templates/certificates.html:86
 #: cms/templates/group_configurations.html:96
 #: cms/templates/settings_advanced.html:91
 #: cms/templates/settings_graders.html:152
 msgid "Details &amp; Schedule"
-msgstr ""
+msgstr "詳細内容とスケジュール"
 
 #: cms/templates/certificates.html:87
 #: cms/templates/group_configurations.html:97 cms/templates/settings.html:443
 #: cms/templates/settings_advanced.html:92
 #: cms/templates/settings_graders.html:35 cms/templates/widgets/header.html:97
 msgid "Grading"
-msgstr ""
+msgstr "採点"
 
 #: cms/templates/certificates.html:88
 #: cms/templates/group_configurations.html:98
@@ -291,7 +304,7 @@ msgstr ""
 #: cms/templates/settings_graders.html:153
 #: cms/templates/widgets/header.html:100
 msgid "Course Team"
-msgstr ""
+msgstr "講座運営チーム"
 
 #: cms/templates/certificates.html:89
 #: cms/templates/group_configurations.html:99 cms/templates/settings.html:446
@@ -300,7 +313,7 @@ msgstr ""
 #: cms/templates/settings_graders.html:155
 #: cms/templates/widgets/header.html:106
 msgid "Advanced Settings"
-msgstr ""
+msgstr "詳細設定"
 
 #: cms/templates/certificates.html:90
 #: cms/templates/group_configurations.html:11
@@ -309,195 +322,195 @@ msgstr ""
 #: cms/templates/settings_graders.html:154
 #: cms/templates/widgets/header.html:103
 msgid "Group Configurations"
-msgstr ""
+msgstr "グループ設定"
 
 #: cms/templates/checklists.html:7 cms/templates/checklists.html:32
 msgid "Course Checklists"
-msgstr ""
+msgstr "開講チェックリスト"
 
 #: cms/templates/checklists.html:31 cms/templates/export.html:43
 #: cms/templates/export_git.html:15 cms/templates/import.html:28
 #: cms/templates/widgets/header.html:123 cms/templates/widgets/header.html:180
 msgid "Tools"
-msgstr ""
+msgstr "ツール"
 
 #: cms/templates/checklists.html:41
 msgid "Current Checklists"
-msgstr ""
+msgstr "現在のチェックリスト"
 
 #: cms/templates/checklists.html:47
 msgid "What are course checklists?"
-msgstr ""
+msgstr "このチェックリストは何ですか？"
 
 #: cms/templates/checklists.html:49
 msgid ""
 "Course checklists are tools to help you understand and keep track of all the"
 " steps necessary to get your course ready for students."
-msgstr ""
+msgstr "コースチェックリストは、コースを準備するために必要なすべてのステップを理解し、開講を支援するためのツールです。"
 
 #: cms/templates/checklists.html:52
 msgid ""
 "Any changes you make to these checklists are saved automatically and are "
 "immediately visible to other course team members."
-msgstr ""
+msgstr "あなたがこれらのチェックリストに加えた変更は自動的に保存され、他のコースチームのメンバーにすぐに表示されています。"
 
 #: cms/templates/checklists.html:57
 msgid "{studio_name} checklists"
-msgstr ""
+msgstr "{studio_name}チェックリスト"
 
 #: cms/templates/component.html:16 cms/templates/studio_xblock_wrapper.html:85
 #: cms/templates/studio_xblock_wrapper.html:87
 msgid "Duplicate"
-msgstr ""
+msgstr "複製"
 
 #: cms/templates/component.html:18
 msgid "Duplicate this component"
-msgstr ""
+msgstr "このアイテムを複製"
 
 #: cms/templates/component.html:24
 msgid "Delete this component"
-msgstr ""
+msgstr "このアイテムを削除"
 
 #: cms/templates/component.html:29 cms/templates/edit-tabs.html:116
 #: cms/templates/edit-tabs.html:117
 #: cms/templates/studio_xblock_wrapper.html:103
 msgid "Drag to reorder"
-msgstr ""
+msgstr "ドラッグして並び替え"
 
 #: cms/templates/container.html:65 cms/templates/library.html:48
 msgid "Display Name"
-msgstr ""
+msgstr "表示名"
 
 #: cms/templates/container.html:75
 msgid "Open the courseware in the LMS"
-msgstr ""
+msgstr "LMS の教材を開く"
 
 #: cms/templates/container.html:76
 msgid "View Live Version"
-msgstr ""
+msgstr "現行バージョンを見る"
 
 #: cms/templates/container.html:80
 msgid "Preview the courseware in the LMS"
-msgstr ""
+msgstr "LMS の教材をプレビュー"
 
 #: cms/templates/container.html:81
 msgid "Preview"
-msgstr ""
+msgstr "プレビュー"
 
 #: cms/templates/container.html:112
 msgid "Adding components"
-msgstr ""
+msgstr "アイテムを追加中"
 
 #: cms/templates/container.html:113
 msgid ""
 "Select a component type under {em_start}Add New Component{em_end}. Then "
 "select a template."
-msgstr ""
+msgstr "{em_start}新しいアイテムを追加{em_end}の下のアイテム形式を選択してください。すると、アイテムのひな形を選択することができます。"
 
 #: cms/templates/container.html:114
 msgid ""
 "The new component is added at the bottom of the page or group. You can then "
 "edit and move the component."
-msgstr ""
+msgstr "新しいアイテムがこのページもしくはグループの最下部に追加されました。アイテムを編集したり、移動させることができます。"
 
 #: cms/templates/container.html:115
 msgid "Editing components"
-msgstr ""
+msgstr "アイテムを編集中"
 
 #: cms/templates/container.html:116
 msgid ""
 "Click the {em_start}Edit{em_end} icon in a component to edit its content."
-msgstr ""
+msgstr "アイテムの中身を編集するには、{em_start}編集{em_end}アイコンをクリックしてください。"
 
 #: cms/templates/container.html:117
 msgid "Reorganizing components"
-msgstr ""
+msgstr "アイテムを再構成中"
 
 #: cms/templates/container.html:118
 msgid "Drag components to new locations within this component."
-msgstr ""
+msgstr "このアイテム内の新たなロケーションにアイテムをドラッグしてください。"
 
 #: cms/templates/container.html:119
 msgid "For content experiments, you can drag components to other groups."
-msgstr ""
+msgstr "コンテンツの調査のため、ほかのグループにアイテムをドラッグできます。"
 
 #: cms/templates/container.html:120
 msgid "Working with content experiments"
-msgstr ""
+msgstr "実験コンテンツと共に稼働中"
 
 #: cms/templates/container.html:121
 msgid ""
 "Confirm that you have properly configured content in each of your experiment"
 " groups."
-msgstr ""
+msgstr "各実験グループごとにコンテンツが適切に設定されているかを確認してください。"
 
 #: cms/templates/container.html:124
 msgid "Learn more about component containers"
-msgstr ""
+msgstr "アイテムのコンテナについてもっと学ぶ"
 
 #: cms/templates/container.html:130
 msgid "Unit Location"
-msgstr ""
+msgstr "単元のロケーション"
 
 #: cms/templates/container.html:132
 msgid "Location ID"
-msgstr ""
+msgstr "ロケーションID"
 
 #: cms/templates/container.html:135
 msgid ""
 "Use this ID when you create links to this unit from other course content. "
 "You enter the ID in the URL field."
-msgstr ""
+msgstr "他の講座コンテンツからこの単元へのリンクを生成する際にこのIDを使います。このIDをURL枠に入力してください。"
 
 #: cms/templates/container.html:139
 msgid "Location in Course Outline"
-msgstr ""
+msgstr "講座のアウトラインにおけるロケーション"
 
 #: cms/templates/course-create-rerun.html:9
 msgid "Create a Course Rerun of:"
-msgstr ""
+msgstr "次の講座の再開講を作成："
 
 #: cms/templates/course-create-rerun.html:28
 msgid "Create a re-run of a course"
-msgstr ""
+msgstr "再開講を作成"
 
 #: cms/templates/course-create-rerun.html:41
 msgid "You are creating a re-run from:"
-msgstr ""
+msgstr "次の講座から再開講を作成中："
 
 #: cms/templates/course-create-rerun.html:55
 msgid ""
 "Provide identifying information for this re-run of the course. The original "
 "course is not affected in any way by a re-run."
-msgstr ""
+msgstr "この講座の再開講のための情報を特定する情報を入力してください。再開講を行なっても元の講座は影響はありません。"
 
 #: cms/templates/course-create-rerun.html:56
 msgid ""
 "Note: Together, the organization, course number, and course run must "
 "uniquely identify this new course instance."
-msgstr ""
+msgstr "注意：組織、講座番号、開講日程を共に用いて、ユニークに新しい講座を指定する必要があります。"
 
 #: cms/templates/course-create-rerun.html:71
 msgid "Required Information to Create a re-run of a course"
-msgstr ""
+msgstr "再開講講座の設定に必要な情報"
 
 #. Translators: This is an example name for a new course, seen when filling
 #. out
 #. the form to create a new course.
 #: cms/templates/course-create-rerun.html:76 cms/templates/index.html:65
 msgid "e.g. Introduction to Computer Science"
-msgstr ""
+msgstr "例：計算機科学入門"
 
 #: cms/templates/course-create-rerun.html:78
 msgid ""
 "The public display name for the new course. (This name is often the same as "
 "the original course name.)"
-msgstr ""
+msgstr "新しい講座の公開表示名。(この名前はオリジナルの講座名と同じことが多いです。)"
 
 #: cms/templates/course-create-rerun.html:83 cms/templates/index.html:70
 #: cms/templates/index.html:132 cms/templates/settings.html:60
 msgid "Organization"
-msgstr ""
+msgstr "編成"
 
 #. Translators: This is an example for the name of the organization sponsoring
 #. a course, seen when filling out the form to create a new course. The
@@ -507,19 +520,19 @@ msgstr ""
 #: cms/templates/course-create-rerun.html:84 cms/templates/index.html:73
 #: cms/templates/index.html:133
 msgid "e.g. UniversityX or OrganizationX"
-msgstr ""
+msgstr "例： UniversityX or OrganizationX"
 
 #: cms/templates/course-create-rerun.html:86
 msgid ""
 "The name of the organization sponsoring the new course. (This name is often "
 "the same as the original organization name.)"
-msgstr ""
+msgstr "新しい講座の主催者名。(この名前はオリジナルの組織名と同じことが多いです。)"
 
 #: cms/templates/course-create-rerun.html:87
 #: cms/templates/course-create-rerun.html:98
 #: cms/templates/course-create-rerun.html:108
 msgid "Note: No spaces or special characters are allowed."
-msgstr ""
+msgstr "注意：スペースおよび記号は使えません。"
 
 #. Translators: This is an example for the number used to identify a course,
 #. seen when filling out the form to create a new course. The number here is
@@ -527,94 +540,94 @@ msgstr ""
 #. spaces.
 #: cms/templates/course-create-rerun.html:95 cms/templates/index.html:81
 msgid "e.g. CS101"
-msgstr ""
+msgstr "例：CS101"
 
 #: cms/templates/course-create-rerun.html:97
 msgid ""
 "The unique number that identifies the new course within the organization.  "
 "(This number is often the same as the original course number.)"
-msgstr ""
+msgstr "このユニークな数字は、組織内における新しいコースを特定するためのものです。(この数字はオリジナルの講座番号と同じことが多いです。)"
 
 #: cms/templates/course-create-rerun.html:104 cms/templates/index.html:87
 #: cms/templates/settings.html:72
 msgid "Course Run"
-msgstr ""
+msgstr "受講開始"
 
 #. Translators: This is an example for the "run" used to identify different
 #. instances of a course, seen when filling out the form to create a new
 #. course.
 #: cms/templates/course-create-rerun.html:105 cms/templates/index.html:89
 msgid "e.g. 2014_T1"
-msgstr ""
+msgstr "例： 2014_T1"
 
 #: cms/templates/course-create-rerun.html:107
 msgid ""
 "The term in which the new course will run. (This value is often different "
 "than the original course run value.)"
-msgstr ""
+msgstr "新しい講座が開かれる期間。(この値はオリジナルの講座実行値と異なります。)"
 
 #: cms/templates/course-create-rerun.html:120
 msgid "Create Re-run"
-msgstr ""
+msgstr "もう一度作成"
 
 #: cms/templates/course-create-rerun.html:130
 msgid "When will my course re-run start?"
-msgstr ""
+msgstr "私の講座の再実行はいつ開始されますか？"
 
 #: cms/templates/course-create-rerun.html:132
 msgid "The new course is set to start on January 1, 2030 at midnight (UTC)."
-msgstr ""
+msgstr "新しい講座は2030年1月1日午前0時(UTC)に開始されるようセットされました。"
 
 #: cms/templates/course-create-rerun.html:137
 msgid "What transfers from the original course?"
-msgstr ""
+msgstr "オリジナルの講座から何が転送されますか？"
 
 #: cms/templates/course-create-rerun.html:139
 msgid ""
 "The new course has the same course outline and content as the original "
 "course. All problems, videos, announcements, and other files are duplicated "
 "to the new course."
-msgstr ""
+msgstr "新しい講座はオリジナルの講座と同じ概略と内容です。すべての問題、動画、お知らせ、その他のファイルは新しい講座に複製されました。"
 
 #: cms/templates/course-create-rerun.html:144
 msgid "What does not transfer from the original course?"
-msgstr ""
+msgstr "オリジナルの講座から何が転送されませんか？"
 
 #: cms/templates/course-create-rerun.html:146
 msgid ""
 "You are the only member of the new course's staff. No students are enrolled "
 "in the course, and there is no student data. There is no content in the "
 "discussion topics or wiki."
-msgstr ""
+msgstr "あなたが唯一の講座スタッフメンバーです。受講者は登録されませんし受講者情報もありません。ディスカッションやWikiにコンテンツはありません。"
 
 #: cms/templates/course-create-rerun.html:151
 msgid "Learn more about Course Re-runs"
-msgstr ""
+msgstr "講座の再実行についてもっと学ぶ"
 
 #: cms/templates/course_info.html:11 cms/templates/course_info.html:39
 msgid "Course Updates"
-msgstr ""
+msgstr "講座の新着情報"
 
 #: cms/templates/course_info.html:46
 msgid "New Update"
-msgstr ""
+msgstr "新規情報"
 
 #: cms/templates/course_info.html:56
 msgid ""
 "Use course updates to notify students of important dates or exams, highlight"
 " particular discussions in the forums, announce schedule changes, and "
 "respond to student questions. You add or edit updates in HTML."
-msgstr ""
+msgstr "講座更新を使用して重要な日や試験を通知したり、特定のディスカッションやフォーラムをハイライトしたり、スケジュール変更を通知したり、受講者の質問の返信をしてください。更新の追加や更新はHTMLを使用します。"
 
 #: cms/templates/course_outline.html:11 cms/templates/course_outline.html:108
 #: cms/templates/course_outline.html:164
 msgid "Course Outline"
-msgstr ""
+msgstr "アウトライン"
 
 #: cms/templates/course_outline.html:38
 msgid ""
 "This course was created as a re-run. Some manual configuration is needed."
-msgstr ""
+msgstr "講座は再実行として作成されました。いくつかの設定が必要です。"
 
 #: cms/templates/course_outline.html:40
 msgid ""
@@ -622,15 +635,15 @@ msgid ""
 "sure to review and reset all dates, including the Course Start Date; set up "
 "the course team; review course updates and other assets for dated material; "
 "and seed the discussions and wiki."
-msgstr ""
+msgstr "可視の講座コンテンツがなくて、登録された受講者がいません。講座開始日が含まれるすべての日付を確認してリセットしてください。（講座チームの設定、講座修正など日付入りの資料の確認、ディスカッションとWikiをシード）"
 
 #: cms/templates/course_outline.html:47 cms/templates/index.html:245
 msgid "Dismiss"
-msgstr ""
+msgstr "解散"
 
 #: cms/templates/course_outline.html:61
 msgid "Warning"
-msgstr ""
+msgstr "警告"
 
 #: cms/templates/course_outline.html:64
 msgid "This course uses features that are no longer supported."
@@ -658,204 +671,204 @@ msgstr ""
 
 #: cms/templates/course_outline.html:115
 msgid "Click to add a new section"
-msgstr ""
+msgstr "クリックして新しい章を追加"
 
 #: cms/templates/course_outline.html:116
 msgid "New Section"
-msgstr ""
+msgstr "新しい章"
 
 #: cms/templates/course_outline.html:121
 msgid "Reindex current course"
-msgstr ""
+msgstr "現在の講座を再インデックス"
 
 #: cms/templates/course_outline.html:122
 msgid "Reindex"
-msgstr ""
+msgstr "再インデックス"
 
 #: cms/templates/course_outline.html:128
 msgid "Collapse All Sections"
-msgstr ""
+msgstr "すべてのセクションを折り畳む"
 
 #: cms/templates/course_outline.html:129
 msgid "Expand All Sections"
-msgstr ""
+msgstr "すべての章を展開"
 
 #: cms/templates/course_outline.html:134
 msgid "Click to open the courseware in the LMS in a new tab"
-msgstr ""
+msgstr "クリックして新しいタブでLMSの教材を開く"
 
 #: cms/templates/course_outline.html:134 cms/templates/edit-tabs.html:43
 #: cms/templates/index.html:293
 msgid "View Live"
-msgstr ""
+msgstr "ライブ表示"
 
 #: cms/templates/course_outline.html:146
 msgid "Course Start Date:"
-msgstr ""
+msgstr "講座開始日："
 
 #: cms/templates/course_outline.html:151 cms/templates/course_outline.html:153
 msgid "Edit Start Date"
-msgstr ""
+msgstr "開始日を編集"
 
 #: cms/templates/course_outline.html:174
 msgid "Creating your course organization"
-msgstr ""
+msgstr "講座の組織を作成中"
 
 #: cms/templates/course_outline.html:175
 msgid "You add sections, subsections, and units directly in the outline."
-msgstr ""
+msgstr "章、節、単元をアウトラインに直接追加してください。"
 
 #: cms/templates/course_outline.html:176
 msgid ""
 "Create a section, then add subsections and units. Open a unit to add course "
 "components."
-msgstr ""
+msgstr "章を作成し、その後、節や単元を追加します。アイテムを追加するには単元を開いてください。"
 
 #: cms/templates/course_outline.html:177
 msgid "Reorganizing your course"
-msgstr ""
+msgstr "講座を再構成中"
 
 #: cms/templates/course_outline.html:178
 msgid "Drag sections, subsections, and units to new locations in the outline."
-msgstr ""
+msgstr "章、節、単元をアウトラインにおける新しいロケーションにドラッグしてください。"
 
 #: cms/templates/course_outline.html:179
 msgid "Setting release dates and grading policies"
-msgstr ""
+msgstr "リリース日と採点ポリシーを設定中"
 
 #: cms/templates/course_outline.html:180
 msgid ""
 "Select the Configure icon for a section or subsection to set its release "
 "date. When you configure a subsection, you can also set the grading policy "
 "and due date."
-msgstr ""
+msgstr "章または節のリリース日を設定するための設定アイコンを選んでください。節を設定した時は採点ポリシーと締切も設定できます。"
 
 #: cms/templates/course_outline.html:181
 msgid "Changing the content students see"
-msgstr ""
+msgstr "受講生が見えるコンテンツを変更中"
 
 #: cms/templates/course_outline.html:182
 msgid ""
 "To publish draft content, select the Publish icon for a section, subsection,"
 " or unit."
-msgstr ""
+msgstr "下書きのコンテンツを発行するためには、章、節または単元の発行アイコンを選んでください。"
 
 #: cms/templates/course_outline.html:183
 msgid ""
 "To hide content from students, select the Configure icon for a section, "
 "subsection, or unit, then select {em_start}Hide from students{em_end}."
-msgstr ""
+msgstr "受講者からコンテンツを隠すには、章、節または単元の設定アイコンを選んで、{em_start}受講者から隠す{em_end}を選んでください。"
 
 #: cms/templates/course_outline.html:186
 msgid "Learn more about the course outline"
-msgstr ""
+msgstr "講座の概略についてもっと学ぶ"
 
 #. Translators: Pages refer to the tabs that appear in the top navigation of
 #. each course.
 #: cms/templates/edit-tabs.html:10 cms/templates/edit-tabs.html:33
 #: cms/templates/export.html:110 cms/templates/widgets/header.html:69
 msgid "Pages"
-msgstr ""
+msgstr "ページ"
 
 #: cms/templates/edit-tabs.html:40
 msgid "New Page"
-msgstr ""
+msgstr "新規ページ"
 
 #: cms/templates/edit-tabs.html:55
 msgid ""
 "Note: Pages are publicly visible. If users know the URL of a page, they can "
 "view the page even if they are not registered for or logged in to your "
 "course."
-msgstr ""
+msgstr "注意：ページは一般公開されます。ページのURLを知っていれば登録または講座にログインしていなくても閲覧することができます。"
 
 #: cms/templates/edit-tabs.html:102
 msgid "Show this page"
-msgstr ""
+msgstr "このページを表示"
 
 #: cms/templates/edit-tabs.html:104 cms/templates/edit-tabs.html:106
 msgid "Show/hide page"
-msgstr ""
+msgstr "このページを表示/非表示"
 
 #: cms/templates/edit-tabs.html:120 cms/templates/edit-tabs.html:121
 msgid "This page cannot be reordered"
-msgstr ""
+msgstr "このページは並べ替えることができません。"
 
 #: cms/templates/edit-tabs.html:134
 msgid "You can add additional custom pages to your course."
-msgstr ""
+msgstr "講座にカスタムページを追加することができます。"
 
 #: cms/templates/edit-tabs.html:134
 msgid "Add a New Page"
-msgstr ""
+msgstr "新しいページを追加"
 
 #: cms/templates/edit-tabs.html:142
 msgid "What are pages?"
-msgstr ""
+msgstr "ページとは？"
 
 #: cms/templates/edit-tabs.html:143
 msgid ""
 "Pages are listed horizontally at the top of your course. Default pages "
 "(Courseware, Course info, Discussion, Wiki, and Progress) are followed by "
 "textbooks and custom pages that you create."
-msgstr ""
+msgstr "ページはコースの上部に横に並びます。標準のページ(学習する、お知らせ、ディスカッション、Wiki、成績)は作成したテキストやカスタムページと一緒に並びます。"
 
 #: cms/templates/edit-tabs.html:146
 msgid "Custom pages"
-msgstr ""
+msgstr "カスタムページ"
 
 #: cms/templates/edit-tabs.html:147
 msgid ""
 "You can create and edit custom pages to provide students with additional "
 "course content. For example, you can create pages for the grading policy, "
 "course slides, and a course calendar. "
-msgstr ""
+msgstr "追加の講座コンテンツを受講者に提供する為にカスタムページを作成・編集することができます。例えば、評価ポリシー、講座スライド、講座カレンダーなどのページを作ることができます。"
 
 #: cms/templates/edit-tabs.html:150
 msgid "How do pages look to students in my course?"
-msgstr ""
+msgstr "ページは講座でどのように受講者にみえますか？"
 
 #: cms/templates/edit-tabs.html:151
 msgid ""
 "Students see the default and custom pages at the top of your course and use "
 "these links to navigate."
-msgstr ""
+msgstr "受講者には標準とカスタムページがページの講座の上部に表示されこのリンクを移動するために使用します。"
 
 #: cms/templates/edit-tabs.html:151
 msgid "See an example"
-msgstr ""
+msgstr "例を見る"
 
 #: cms/templates/edit-tabs.html:159
 msgid "Pages in Your Course"
-msgstr ""
+msgstr "講座内のページ"
 
 #: cms/templates/edit-tabs.html:161
 msgid "Preview of Pages in your course"
-msgstr ""
+msgstr "講座内のページのプレビュー"
 
 #: cms/templates/edit-tabs.html:162
 msgid ""
 "Pages appear in your course's top navigation bar. The default pages "
 "(Courseware, Course Info, Discussion, Wiki, and Progress) are followed by "
 "textbooks and custom pages."
-msgstr ""
+msgstr "ページはコースの上部のナビゲーションバーに表示されます。標準のページ(学習する、お知らせ、ディスカッション、Wiki、成績)は作成したテキストやカスタムページと一緒に並びます。"
 
 #: cms/templates/edit-tabs.html:167 cms/templates/howitworks.html:167
 #: cms/templates/howitworks.html:180 cms/templates/howitworks.html:193
 msgid "close modal"
-msgstr ""
+msgstr "モーダルを閉じる"
 
 #: cms/templates/error.html:12
 msgid "Internal Server Error"
-msgstr ""
+msgstr "内部サーバエラー"
 
 #: cms/templates/error.html:20 cms/templates/widgets/footer.html:24
 #: cms/templates/widgets/sock.html:58
 msgid "Use our feedback tool, Tender, to share your feedback"
-msgstr ""
+msgstr "あなたの評価を共有するにはフィードバックツールTenderを使ってください"
 
 #: cms/templates/error.html:31
 msgid "The Page You Requested Page Cannot be Found"
-msgstr ""
+msgstr "リクエストされたページが見つかりませんでした"
 
 #: cms/templates/error.html:32
 msgid ""
@@ -863,11 +876,11 @@ msgid ""
 " may want to return to the {studio_name} Dashboard and try again. If you are"
 " still having problems accessing things, please feel free to "
 "{link_start}contact {studio_name} support{link_end} for further help."
-msgstr ""
+msgstr "申し訳ございません。お探しの{studio_name}のページが見つかりませんでした。{studio_name}ダッシュボードに戻り、再実施願います。もしアクセスに問題が継続するようであれば、お気軽に{link_start}{studio_name}サポート{link_end} へご連絡ください。"
 
 #: cms/templates/error.html:38
 msgid "The Server Encountered an Error"
-msgstr ""
+msgstr "サーバでエラーが発生しました"
 
 #: cms/templates/error.html:39
 msgid ""
@@ -876,23 +889,23 @@ msgid ""
 "try this request again. If you are still having problems accessing things, "
 "please feel free to {link_start}contact {studio_name} support{link_end} for "
 "further help."
-msgstr ""
+msgstr "申し訳ございません。処理中にサーバーエラーが発生しました。{studio_name}ダッシュボードに戻り、再実施願います。もしアクセスに問題が継続するようであれば、お気軽に{link_start}{studio_name}サポート{link_end} へご連絡ください。"
 
 #: cms/templates/error.html:45
 msgid "Back to dashboard"
-msgstr ""
+msgstr "マイページに戻る"
 
 #: cms/templates/export.html:18 cms/templates/export.html:46
 msgid "Library Export"
-msgstr ""
+msgstr "ライブラリのエクスポート"
 
 #: cms/templates/export.html:20 cms/templates/export.html:48
 msgid "Course Export"
-msgstr ""
+msgstr "エクスポート"
 
 #: cms/templates/export.html:60
 msgid "About Exporting Libraries"
-msgstr ""
+msgstr "ライブラリのエクスポートについて"
 
 #. Translators: ".tar.gz" is a file extension, and should not be translated
 #: cms/templates/export.html:63
@@ -901,11 +914,11 @@ msgid ""
 "exported file is a .tar.gz file (that is, a .tar file compressed with GNU "
 "Zip) that contains the library structure and content. You can also re-import"
 " libraries that you've exported."
-msgstr ""
+msgstr "ライブラリはエクスポートして{studio_name}の外で編集することができます。エクスポートされたファイルは.tar.gz(.tarファイルGNU Zipで圧縮されたもの)で出力され、ライブラリ構造やコンテンツが含まれます。エクスポートされたライブラリは再度インポートすることができます。"
 
 #: cms/templates/export.html:68
 msgid "About Exporting Courses"
-msgstr ""
+msgstr "エクスポートについて"
 
 #. Translators: ".tar.gz" is a file extension, and should not be translated
 #: cms/templates/export.html:71
@@ -914,7 +927,7 @@ msgid ""
 "file is a .tar.gz file (that is, a .tar file compressed with GNU Zip) that "
 "contains the course structure and content. You can also re-import courses "
 "that you've exported."
-msgstr ""
+msgstr "講座はエクスポートして{studio_name}の外で編集することができます。エクスポートされたファイルは.tar.gz(.tarファイルGNU Zipで圧縮されたもの)で出力され、講座構造やコンテンツが含まれます。エクスポートされた講座は再度インポートすることができます。"
 
 #: cms/templates/export.html:74
 msgid ""
@@ -923,72 +936,72 @@ msgid ""
 "annotation storage URLs are included in the exported data. If you share your"
 " exported files, you may also be sharing sensitive or license-specific "
 "information."
-msgstr ""
+msgstr "{em_start}注意：{em_end}講座をエクスポートするとき、 MATLAB APIキー、LTIパスポート、注釈の秘密のトークン文字列、注釈の保存URLなどの情報がデータに含まれます。エクスポートされたファイルを共有すると、機密情報やライセンスに関わる情報を共有してしまう可能性があります。"
 
 #: cms/templates/export.html:82
 msgid "Export My Library Content"
-msgstr ""
+msgstr "私のライブラリコンテンツをエクスポート"
 
 #: cms/templates/export.html:84
 msgid "Export My Course Content"
-msgstr ""
+msgstr "講座コンテンツをエクスポートする"
 
 #: cms/templates/export.html:93
 msgid "Export Library Content"
-msgstr ""
+msgstr "ライブラリコンテンツをエクスポート"
 
 #: cms/templates/export.html:95
 msgid "Export Course Content"
-msgstr ""
+msgstr "コースのコンテンツをエクスポートする"
 
 #: cms/templates/export.html:104
 msgid "Data {em_start}exported with{em_end} your course:"
-msgstr ""
+msgstr "{em_start}エクスポートされた{em_end}講座のデータ："
 
 #: cms/templates/export.html:106
 msgid ""
 "Values from Advanced Settings, including MATLAB API keys and LTI passports"
-msgstr ""
+msgstr "MATLAB APIキーとLTIパスポートを含む詳細設定の値"
 
 #: cms/templates/export.html:107
 msgid "Course Content (all Sections, Sub-sections, and Units)"
-msgstr ""
+msgstr "講座コンテンツ (すべての章, 節, 単元)"
 
 #: cms/templates/export.html:108
 msgid "Course Structure"
-msgstr ""
+msgstr "コース構成"
 
 #: cms/templates/export.html:109
 msgid "Individual Problems"
-msgstr ""
+msgstr "個々の問題"
 
 #: cms/templates/export.html:111
 msgid "Course Assets"
-msgstr ""
+msgstr "素材"
 
 #: cms/templates/export.html:112
 msgid "Course Settings"
-msgstr ""
+msgstr "コース設定"
 
 #: cms/templates/export.html:117
 msgid "Data {em_start}not exported{em_end} with your course:"
-msgstr ""
+msgstr "{em_start}エクスポートされなかった{em_end}講座のデータ："
 
 #: cms/templates/export.html:119
 msgid "User Data"
-msgstr ""
+msgstr "ユーザ情報"
 
 #: cms/templates/export.html:120
 msgid "Course Team Data"
-msgstr ""
+msgstr "コースチーム情報"
 
 #: cms/templates/export.html:121
 msgid "Forum/discussion Data"
-msgstr ""
+msgstr "フォーラム／ディスカッションデータ"
 
 #: cms/templates/export.html:131
 msgid "Why export a library?"
-msgstr ""
+msgstr "ライブラリをエクスポートする目的は？"
 
 #: cms/templates/export.html:132
 msgid ""
@@ -996,11 +1009,11 @@ msgid ""
 "{studio_name}. You may want to create a backup copy of your library. Or, you"
 " may want to create a copy of your library that you can later import into "
 "another library instance and customize."
-msgstr ""
+msgstr "あなたは、{studio_name}以外で直接ライブラリ内のXMLを編集することがあります。 あなたは、ライブラリのバックアップコピーを作成したり、別のライブラリをインポートしてカスタマイズする事が出来ます"
 
 #: cms/templates/export.html:138 cms/templates/export.html:162
 msgid "Opening the downloaded file"
-msgstr ""
+msgstr "ダウンロードしたファイルを開いています"
 
 #. Translators: ".tar.gz" is a file extension, and should not be translated
 #: cms/templates/export.html:140
@@ -1008,15 +1021,15 @@ msgid ""
 "Use an archive program to extract the data from the .tar.gz file. Extracted "
 "data includes the library.xml file, as well as subfolders that contain "
 "library content."
-msgstr ""
+msgstr "圧縮ソフトウェアを使用して.tar.gzファイルを解凍してください。解凍されたファイルにはcourse.xmlファイル、ライブラリコンテンツを含むサブフォルダが含まれます。"
 
 #: cms/templates/export.html:143
 msgid "Learn more about exporting a library"
-msgstr ""
+msgstr "ライブラリのエクスポートについてもっと学ぶ"
 
 #: cms/templates/export.html:149
 msgid "Why export a course?"
-msgstr ""
+msgstr "コースをエキスポートする目的は？"
 
 #: cms/templates/export.html:150
 msgid ""
@@ -1024,11 +1037,11 @@ msgid ""
 "{studio_name}. You may want to create a backup copy of your course. Or, you "
 "may want to create a copy of your course that you can later import into "
 "another course instance and customize."
-msgstr ""
+msgstr "あなたは、{studio_name}以外で直接コース内のXMLを編集することがあります。 あなたは、コースのバックアップコピーを作成したり、別のコースをインポートしてカスタマイズする事が出来ます"
 
 #: cms/templates/export.html:156
 msgid "What content is exported?"
-msgstr ""
+msgstr "どのコンテンツがエクスポートされますか？"
 
 #: cms/templates/export.html:158
 msgid ""
@@ -1037,7 +1050,7 @@ msgid ""
 "keys and LTI passports, are also exported. Other data, including student "
 "data, grading information, discussion forum data, course settings, and "
 "course team information, is not exported."
-msgstr ""
+msgstr "コース内のコンテンツとコース構造(セクション、サブセクション、ユニットを含む)がエクスポートされます。MATLAB APIキーとLTIパスポートを含む詳細設定の値が含まれます。受講者情報、成績情報、ディスカッションデータ、コース設定、コース管理者情報は含まれません。"
 
 #. Translators: ".tar.gz" is a file extension, and should not be translated
 #: cms/templates/export.html:164
@@ -1045,82 +1058,82 @@ msgid ""
 "Use an archive program to extract the data from the .tar.gz file. Extracted "
 "data includes the course.xml file, as well as subfolders that contain course"
 " content."
-msgstr ""
+msgstr "圧縮ソフトウェアを使用して.tar.gzファイルを解凍してください。解凍されたファイルにはcourse.xmlファイル、講座コンテンツを含むサブフォルダが含まれます。"
 
 #: cms/templates/export.html:167
 msgid "Learn more about exporting a course"
-msgstr ""
+msgstr "講座のエクスポートについてもっと学ぶ"
 
 #: cms/templates/export_git.html:8
 msgid "Export Course to Git"
-msgstr ""
+msgstr "講座をGitにエクスポート"
 
 #: cms/templates/export_git.html:16 cms/templates/export_git.html:43
 #: cms/templates/widgets/header.html:138
 msgid "Export to Git"
-msgstr ""
+msgstr "Gitにエクスポート"
 
 #: cms/templates/export_git.html:26
 msgid "About Export to Git"
-msgstr ""
+msgstr "Gitにエクスポートについて"
 
 #: cms/templates/export_git.html:28
 msgid "Use this to export your course to its git repository."
-msgstr ""
+msgstr "gitレポジトリにコースをエクスポートするために使用します。"
 
 #: cms/templates/export_git.html:29
 msgid ""
 "This will then trigger an automatic update of the main LMS site and update "
 "the contents of your course visible there to students if automatic git "
 "imports are configured."
-msgstr ""
+msgstr "自動gitインポートが設定されている場合は、LMSサイトと受講者が見ることのできる講座の自動アップデートが行われます。"
 
 #: cms/templates/export_git.html:34
 msgid "Export Course to Git:"
-msgstr ""
+msgstr "Gitに講座をエクスポート："
 
 #: cms/templates/export_git.html:37
 msgid ""
 "giturl must be defined in your course settings before you can export to git."
-msgstr ""
+msgstr "コースをgitにエクスポートする前にgiturlを定義する必要があります。"
 
 #: cms/templates/export_git.html:52
 msgid "Export Failed"
-msgstr ""
+msgstr "エクスポート失敗"
 
 #: cms/templates/export_git.html:54
 msgid "Export Succeeded"
-msgstr ""
+msgstr "エクスポート成功"
 
 #: cms/templates/export_git.html:62
 msgid "Your course:"
-msgstr ""
+msgstr "講座："
 
 #: cms/templates/export_git.html:64
 msgid "Course git url:"
-msgstr ""
+msgstr "講座 git url："
 
 #: cms/templates/group_configurations.html:42
 #: cms/templates/group_configurations.html:68
 #: cms/templates/visibility_editor.html:70
 msgid "Content Groups"
-msgstr ""
+msgstr "コンテンツグループ"
 
 #: cms/templates/group_configurations.html:50
 #: cms/templates/group_configurations.html:78
 msgid "Experiment Group Configurations"
-msgstr ""
+msgstr "実験グループの設定"
 
 #: cms/templates/group_configurations.html:54
 msgid "This module is disabled at the moment."
-msgstr ""
+msgstr "このモジュールは現在利用できません。"
 
 #: cms/templates/group_configurations.html:69
 msgid ""
 "If you have cohorts enabled in your course, you can use content groups to "
 "create cohort-specific courseware. In other words, you can customize the "
 "content that particular cohorts see in your course."
-msgstr ""
+msgstr "講座でコホートを有効にすると、コホートに固有の教材を制作するためのコンテンツグループを使用することが可能となります。言い換えれば、特定のコホートだけが閲覧できるように講座のコンテンツを設定することができます。"
 
 #: cms/templates/group_configurations.html:70
 msgid ""
@@ -1129,7 +1142,7 @@ msgid ""
 "you can designate some content as visible only to specified content groups. "
 "Only learners in the cohorts that are associated with the specified content "
 "groups see the additional content."
-msgstr ""
+msgstr "作成したコンテンツグループは、一つ以上のコホートに関連付けることができます。これによりすべての学習者を対象としている課程コンテンツに追加する形で、特定のコンテンツグループだけを参照できるように設定できます。このようなコホートに含まれている課程受講者だけが関連付けられている特定のコンテンツグループを追加のコンテンツとして参照できます。"
 
 #: cms/templates/group_configurations.html:71
 msgid ""
@@ -1138,12 +1151,12 @@ msgid ""
 "{em_start}Edit{em_end}. You can delete a content group only if it is not in "
 "use by a unit. To delete a content group, hover over its box and click the "
 "delete icon."
-msgstr ""
+msgstr "{em_start}新しいコンテンツグループ{em_end} をクリックして新しいコンテンツグループを追加します。コンテンツグループの名前を変更するには、そのボックスの上にマウスオーバーし、{em_start}編集{em_end}をクリックします。単元で利用をしていない場合に限り、コンテンツグループを削除することができます。コンテンツグループを削除するには、そのボックスの上にマウスオーバーし削除アイコンをクリックします。"
 
 #: cms/templates/group_configurations.html:72
 #: cms/templates/group_configurations.html:81
 msgid "Learn More"
-msgstr ""
+msgstr "さらに詳しく"
 
 #: cms/templates/group_configurations.html:79
 msgid ""
@@ -1152,7 +1165,7 @@ msgid ""
 "configurations define how many groups of students are in a content "
 "experiment. When you create a content experiment for a course, you select "
 "the group configuration to use."
-msgstr ""
+msgstr "もし A/B テストとして知られているようなコンテンツの実験を行うのであれば、実験グループ設定を使うことができます。講座でコンテンツ実験を作成した時、使用する実験グループ設定を選択します。"
 
 #: cms/templates/group_configurations.html:80
 msgid ""
@@ -1161,122 +1174,122 @@ msgid ""
 "{em_start}Edit{em_end}. You can delete a group configuration only if it is "
 "not in use in an experiment. To delete a configuration, hover over its box "
 "and click the delete icon."
-msgstr ""
+msgstr "{em_start}新しいグループ設定{em_end} をクリックし新しい設定を追加します。既にある設定を編集するには、その設定ボックスの上をマウスオーバーし、{em_start}編集{em_end}をクリックします。単元で利用をしていない場合に限り、コンテンツグループを削除することができます。コンテンツグループを削除するには、そのボックスの上にマウスオーバーし削除アイコンをクリックします。"
 
 #: cms/templates/howitworks.html:9
 msgid "Welcome"
-msgstr ""
+msgstr "ようこそ"
 
 #: cms/templates/howitworks.html:17
 msgid "Welcome to {studio_name}"
-msgstr ""
+msgstr "{studio_name}へようこそ"
 
 #: cms/templates/howitworks.html:22
 msgid ""
 "{studio_name} helps manage your online courses, so you can focus on teaching"
 " them"
-msgstr ""
+msgstr "{studio_name}は、あなたのオンライン講座の管理に役立ちます。あなたは指導に集中できます。"
 
 #: cms/templates/howitworks.html:32
 msgid "{studio_name}'s Many Features"
-msgstr ""
+msgstr "{studio_name}の特徴"
 
 #: cms/templates/howitworks.html:39 cms/templates/howitworks.html:40
 msgid "{studio_name} Helps You Keep Your Courses Organized"
-msgstr ""
+msgstr "{studio_name}はあなたのコースの取りまとめをお手伝いします"
 
 #: cms/templates/howitworks.html:48
 msgid "Keeping Your Course Organized"
-msgstr ""
+msgstr "講座運営を維持するために"
 
 #: cms/templates/howitworks.html:49
 msgid ""
 "The backbone of your course is how it is organized. {studio_name} offers an "
 "<strong>Outline</strong> editor, providing a simple hierarchy and easy drag "
 "and drop to help you and your students stay organized."
-msgstr ""
+msgstr "コースの屋台骨はいかにそのコースが整えられているか、です。講師を支援し、受講者を整えるために、{studio_name}は、シンプルな階層構造をドラックアンドドロップで構成できる<strong>アウトライン</strong> エディターを提供します。"
 
 #: cms/templates/howitworks.html:53
 msgid "Simple Organization For Content"
-msgstr ""
+msgstr "コンテンツのためのシンプルな構成"
 
 #: cms/templates/howitworks.html:54
 msgid ""
 "{studio_name} uses a simple hierarchy of <strong>sections</strong> and "
 "<strong>subsections</strong> to organize your content."
-msgstr ""
+msgstr "{studio_name}はコンテンツを構成するために、シンプルな<strong>章</strong>と<strong>節</strong>の階層構造を用います。"
 
 #: cms/templates/howitworks.html:58
 msgid "Change Your Mind Anytime"
-msgstr ""
+msgstr "いつでも気持ちを切り替えられる"
 
 #: cms/templates/howitworks.html:59
 msgid ""
 "Draft your outline and build content anywhere. Simple drag and drop tools "
 "let you reorganize quickly."
-msgstr ""
+msgstr "アウトラインを下書きし、コンテンツを作成してください。ドラッグ＆ドロップツールによって素早く編集できます。"
 
 #: cms/templates/howitworks.html:63
 msgid "Go A Week Or A Semester At A Time"
-msgstr ""
+msgstr "一週間ずつ、もしくは一度に一学期分を"
 
 #: cms/templates/howitworks.html:64
 msgid ""
 "Build and release <strong>sections</strong> to your students incrementally. "
 "You don't have to have it all done at once."
-msgstr ""
+msgstr "<strong>章</strong>を構成し、受講者に公開することは段階的に実施できるのです。全てのことを一気にせずとも良いのです。"
 
 #: cms/templates/howitworks.html:73 cms/templates/howitworks.html:74
 #: cms/templates/howitworks.html:82
 msgid "Learning is More than Just Lectures"
-msgstr ""
+msgstr "単なる講義よりも、身に付けることは素晴らしい"
 
 #: cms/templates/howitworks.html:83
 msgid ""
 "{studio_name} lets you weave your content together in a way that reinforces "
 "learning. Insert videos, discussions, and a wide variety of exercises with "
 "just a few clicks."
-msgstr ""
+msgstr "{studio_name}によって、学習促進のためにコンテンツを組み合わせることができます。数クリックだけで、ビデオやディスカッション、たくさんの種類の問題を追加することができます。"
 
 #: cms/templates/howitworks.html:87
 msgid "Create Learning Pathways"
-msgstr ""
+msgstr "学習経路を作る"
 
 #: cms/templates/howitworks.html:88
 msgid ""
 "Help your students understand one concept at a time with multimedia, HTML, "
 "and exercises."
-msgstr ""
+msgstr "マルチメディアや、HTML、エクササイズに関するコンセプトに対する受講者の理解を助ける。"
 
 #: cms/templates/howitworks.html:92
 msgid "Work Visually, Organize Quickly"
-msgstr ""
+msgstr "動きは目に見え、整えるは素早い"
 
 #: cms/templates/howitworks.html:93
 msgid ""
 "Work visually and see exactly what your students will see. Reorganize all "
 "your content with drag and drop."
-msgstr ""
+msgstr "明確に動き、受講者が何を見るのかを的確に見なさい。ドラックアンドドロップでコンテンツを再構成しなさい。"
 
 #: cms/templates/howitworks.html:97
 msgid "A Broad Library of Problem Types"
-msgstr ""
+msgstr "問題種別ごとの幅広いライブラリ"
 
 #: cms/templates/howitworks.html:98
 msgid ""
 "It's more than just multiple choice. {studio_name} supports more than a "
 "dozen types of problems to challenge your learners."
-msgstr ""
+msgstr "単に複数選択するだけではありません。 {studio_name}  は、およそ1ダース以上の問題に対応しています。"
 
 #: cms/templates/howitworks.html:107 cms/templates/howitworks.html:108
 msgid ""
 "{studio_name} Gives You Simple, Fast, and Incremental Publishing. With "
 "Friends."
-msgstr ""
+msgstr "{studio_name}は、シンプル、早く、そして次から次へと段階的にコンテンツ発行ができる。友人と共に。"
 
 #: cms/templates/howitworks.html:116
 msgid "Simple, Fast, and Incremental Publishing. With Friends."
-msgstr ""
+msgstr "シンプル、早く、そして次から次へと段階的にコンテンツ発行ができる。友人と共に。"
 
 #: cms/templates/howitworks.html:117
 msgid ""
@@ -1284,98 +1297,98 @@ msgid ""
 "how you build curriculum. Instant publishing to the web when you want it, "
 "incremental release when it makes sense. And with co-authors, you can have a"
 " whole team building a course, together."
-msgstr ""
+msgstr "{studio_name}はおなじみのウェブアプリケーションのように動く、その上、どのようにカリキュラムを作れば良いかを教えるものだ。やろうとすれば手短にコンテンツ発行ができるし、意味をなすならば段階的なコンテンツのリリースもできる。そして、コンテンツの共同制作者との共同作業チームでもってコースを作ることができる。"
 
 #: cms/templates/howitworks.html:121
 msgid "Instant Changes"
-msgstr ""
+msgstr "簡潔な変更"
 
 #: cms/templates/howitworks.html:122
 msgid ""
 "Caught a bug? No problem. When you want, your changes go live when you click"
 " Save."
-msgstr ""
+msgstr "バグを見つけましたか？問題ありません。好きなときに保存をクリックすれば、変更が適用されます。"
 
 #: cms/templates/howitworks.html:126
 msgid "Release-On Date Publishing"
-msgstr ""
+msgstr "リリース―日時の発行"
 
 #: cms/templates/howitworks.html:127
 msgid ""
 "When you've finished a <strong>section</strong>, pick when you want it to go"
 " live and {studio_name} takes care of the rest. Build your course "
 "incrementally."
-msgstr ""
+msgstr "<strong>章</strong>を作り終えた時、いつそれをリリースしたいかを選べます。そして、{studio_name}は残りの分にも配慮します。コースを段階的に作っていくのだ。"
 
 #: cms/templates/howitworks.html:131
 msgid "Work in Teams"
-msgstr ""
+msgstr "チームで作業する"
 
 #: cms/templates/howitworks.html:132
 msgid ""
 "Co-authors have full access to all the same authoring tools. Make your "
 "course better through a team effort."
-msgstr ""
+msgstr "講座の共同制作者は同じオーサリングツールにアクセスできます。チームでの制作・運営を通じて、講座をより良いものとしましょう。"
 
 #: cms/templates/howitworks.html:144
 msgid "Sign Up for {studio_name} Today!"
-msgstr ""
+msgstr "今日、{studio_name}にサインアップ！"
 
 #: cms/templates/howitworks.html:149
 msgid "Sign Up &amp; Start Making an {platform_name} Course"
-msgstr ""
+msgstr "サインアップして{platform_name}コースの制作をスタート"
 
 #: cms/templates/howitworks.html:152
 msgid "Already have a {studio_name} Account? Sign In"
-msgstr ""
+msgstr "既に{studio_name}のアカウントをお持ちですか？ それならサインインを。"
 
 #: cms/templates/howitworks.html:159
 msgid "Outlining Your Course"
-msgstr ""
+msgstr "講座のアウトライン制作"
 
 #: cms/templates/howitworks.html:162
 msgid ""
 "Simple two-level outline to organize your couse. Drag and drop, and see your"
 " course at a glance."
-msgstr ""
+msgstr "シンプルな二階層のアウトラインで講座設計をします。わかりやすいドラック＆ドロップ操作が可能です。"
 
 #: cms/templates/howitworks.html:172
 msgid "More than Just Lectures"
-msgstr ""
+msgstr "単なる講義よりもすごい"
 
 #: cms/templates/howitworks.html:175
 msgid ""
 "Quickly create videos, text snippets, inline discussions, and a variety of "
 "problem types."
-msgstr ""
+msgstr "素早くビデオを作成し、要約を書き、埋め込みのディスカッションを用い、そして、様々な問題種別が使える。"
 
 #: cms/templates/howitworks.html:185
 msgid "Publishing on Date"
-msgstr ""
+msgstr "日時の発行"
 
 #: cms/templates/howitworks.html:188
 msgid ""
 "Simply set the date of a section or subsection, and {studio_name} will "
 "publish it to your students for you."
-msgstr ""
+msgstr "簡単に章や節の日時を設定でき、すると{studio_name}はそれをあなたの受講者に公開するのだ。"
 
 #: cms/templates/html_error.html:11
 msgid "We're having trouble rendering your component"
-msgstr ""
+msgstr "アイテムをレンダリングする際に問題が発生しました。"
 
 #: cms/templates/html_error.html:14
 msgid ""
 "Students will not be able to access this component. Re-edit your component "
 "to fix the error."
-msgstr ""
+msgstr "受講者はこのアイテムにアクセスすることができません。アイテムを再編集してエラーを修正してください。"
 
 #: cms/templates/import.html:17 cms/templates/import.html:31
 msgid "Library Import"
-msgstr ""
+msgstr "ライブラリのインポート"
 
 #: cms/templates/import.html:19 cms/templates/import.html:33
 msgid "Course Import"
-msgstr ""
+msgstr "インポート"
 
 #: cms/templates/import.html:45
 msgid ""
@@ -1384,14 +1397,14 @@ msgid ""
 "{em_start}You cannot undo a library import{em_end}. Before you proceed, we "
 "recommend that you export the current library, so that you have a backup "
 "copy of it."
-msgstr ""
+msgstr "継続する前にライブラリをインポートしたいか確認してください。インポートされたライブラリはこのライブラリのすべての内容を置き換えます。{em_start}インポートは取り消すことができません{em_end}。バックアップを残す為に、現在のライブラリを先にエクスポートすることをお勧めします。 "
 
 #: cms/templates/import.html:46
 msgid ""
 "The library that you import must be in a .tar.gz file (that is, a .tar file "
 "compressed with GNU Zip). This .tar.gz file must contain a library.xml file."
 " It may also contain other files."
-msgstr ""
+msgstr "インポートするライブラリは.tar.gzファイル(tarファイルGNU Zipで圧縮したファイル)である必要があります。この.tar.gzファイルにはlibrary.xmlファイルとその他のファイルを含む必要があります。"
 
 #: cms/templates/import.html:47
 msgid ""
@@ -1399,7 +1412,7 @@ msgid ""
 "stay on this page. You can leave this page after the Unpacking stage has "
 "completed. We recommend, however, that you don't make important changes to "
 "your library until the import operation has completed."
-msgstr ""
+msgstr "インポートの流れは５段階あります。はじめの２つの段階ではこのページで行います。展開が終わりましたら、別のページに遷移しても問題ありません。ただし、インポートの処理が完了するまでは重要な変更をライブラリにしないことをお勧めします。"
 
 #: cms/templates/import.html:49
 msgid ""
@@ -1408,14 +1421,14 @@ msgid ""
 "{em_start}You cannot undo a course import{em_end}. Before you proceed, we "
 "recommend that you export the current course, so that you have a backup copy"
 " of it."
-msgstr ""
+msgstr "継続する前に講座をインポートしたいか確認してください。インポートされた講座は現在の講座のすべての内容を置き換えます。{em_start}インポートは取り消すことができません{em_end}。バックアップを残す為に、現在の講座を先にエクスポートすることをお勧めします。 "
 
 #: cms/templates/import.html:50
 msgid ""
 "The course that you import must be in a .tar.gz file (that is, a .tar file "
 "compressed with GNU Zip). This .tar.gz file must contain a course.xml file. "
 "It may also contain other files."
-msgstr ""
+msgstr "インポートする講座は.tar.gzファイル(tarファイルGNU Zipで圧縮したファイル)である必要があります。この.tar.gzファイルにはcourse.xmlファイルとその他のファイルを含む必要があります。"
 
 #: cms/templates/import.html:51
 msgid ""
@@ -1423,121 +1436,121 @@ msgid ""
 "stay on this page. You can leave this page after the Unpacking stage has "
 "completed. We recommend, however, that you don't make important changes to "
 "your course until the import operation has completed."
-msgstr ""
+msgstr "インポートの流れは５段階あります。はじめの２つの段階ではこのページで行います。展開が終わりましたら、別のページに遷移しても問題ありません。ただし、インポートの処理が完了するまでは重要な変更を講座にしないことをお勧めします。"
 
 #: cms/templates/import.html:61
 msgid "Select a .tar.gz File to Replace Your Library Content"
-msgstr ""
+msgstr "入れ替えるライブラリコンテンツの.tar.gzファイルを選択してください"
 
 #: cms/templates/import.html:63
 msgid "Select a .tar.gz File to Replace Your Course Content"
-msgstr ""
+msgstr "入れ替えるコースコンテンツの.tar.gzファイルを選択してください"
 
 #: cms/templates/import.html:71
 msgid "Choose a File to Import"
-msgstr ""
+msgstr "インポートするファイルを選んでください"
 
 #: cms/templates/import.html:76
 msgid "File Chosen:"
-msgstr ""
+msgstr "選ばれたファイル："
 
 #: cms/templates/import.html:84
 msgid "Replace my library with the selected file"
-msgstr ""
+msgstr "選択されたファイルでライブラリを置き換える"
 
 #: cms/templates/import.html:86
 msgid "Replace my course with the selected file"
-msgstr ""
+msgstr "選択されたファイルで講座を置き換える"
 
 #: cms/templates/import.html:94
 msgid "Library Import Status"
-msgstr ""
+msgstr "ライブラリのインポート状況"
 
 #: cms/templates/import.html:96
 msgid "Course Import Status"
-msgstr ""
+msgstr "インポート状況"
 
 #: cms/templates/import.html:108
 msgid "Uploading"
-msgstr ""
+msgstr "アップデート中"
 
 #: cms/templates/import.html:112
 msgid "Transferring your file to our servers"
-msgstr ""
+msgstr "ファイルをサーバに転送中"
 
 #: cms/templates/import.html:123
 msgid "Unpacking"
-msgstr ""
+msgstr "解凍中"
 
 #: cms/templates/import.html:124
 msgid ""
 "Expanding and preparing folder/file structure (You can now leave this page "
 "safely, but avoid making drastic changes to content until this import is "
 "complete)"
-msgstr ""
+msgstr "解凍、そして、フォルダ/ファイル構造を準備しています(これ以降、このページを安全に離脱することができますが、インポートが完了するまでは大規模な変更は避けてください)"
 
 #: cms/templates/import.html:136
 msgid "Verifying"
-msgstr ""
+msgstr "確認中"
 
 #: cms/templates/import.html:137
 msgid "Reviewing semantics, syntax, and required data"
-msgstr ""
+msgstr "意味、構文、必須データを確認中"
 
 #: cms/templates/import.html:150
 msgid "Updating Library"
-msgstr ""
+msgstr "ライブラリ更新中"
 
 #: cms/templates/import.html:152
 msgid "Updating Course"
-msgstr ""
+msgstr "更新中"
 
 #: cms/templates/import.html:157
 msgid ""
 "Integrating your imported content into this library. This process might take"
 " longer with larger libraries."
-msgstr ""
+msgstr "このライブラリにインポートされたコンテンツを統合中。大きなライブラリでは処理に時間がかかります。"
 
 #: cms/templates/import.html:159
 msgid ""
 "Integrating your imported content into this course. This process might take "
 "longer with larger courses."
-msgstr ""
+msgstr "この講座にインポートされたコンテンツを統合中。大きな講座では処理に時間がかかります。"
 
 #: cms/templates/import.html:171
 msgid "Success"
-msgstr ""
+msgstr "成功"
 
 #: cms/templates/import.html:176
 msgid "Your imported content has now been integrated into this library"
-msgstr ""
+msgstr "インポートしたコンテンツは、このライブラリに統合されました。"
 
 #: cms/templates/import.html:178
 msgid "Your imported content has now been integrated into this course"
-msgstr ""
+msgstr "インポートしたコンテンツは、ただ今、本講座に統合されました。"
 
 #: cms/templates/import.html:186
 msgid "View Updated Library"
-msgstr ""
+msgstr "更新されたライブラリを見る"
 
 #: cms/templates/import.html:188
 msgid "View Updated Outline"
-msgstr ""
+msgstr "更新された概要を見る"
 
 #: cms/templates/import.html:203
 msgid "Why import a library?"
-msgstr ""
+msgstr "ライブラリをインポートする目的は？"
 
 #: cms/templates/import.html:204
 msgid ""
 "You might want to update an existing library to a new version, or replace an"
 " existing library entirely. You might also have developed a library outside "
 "of {studio_name}."
-msgstr ""
+msgstr "既存のライブラリを新しいバージョンに更新または既存のライブラリを完全に置き換えることをお勧めします。ライブラリを {studio_name} の外で開発しているかもしれません。"
 
 #: cms/templates/import.html:208
 msgid "Note: Library content is not automatically updated in courses"
-msgstr ""
+msgstr "注意：講座のライブラリコンテンツは自動的には更新されません"
 
 #: cms/templates/import.html:209
 msgid ""
@@ -1545,26 +1558,26 @@ msgid ""
 "blocks in one or more courses, those courses do not automatically use the "
 "updated content. You must manually refresh the randomized content blocks to "
 "bring them up to date with the latest library content."
-msgstr ""
+msgstr "講座でランダム化されたコンテンツブロックが参照しているライブラリを変更してインポートした場合、それらの講座は自動的には更新されたコンテンツを使いません。手動でランダム化されたコンテンツブロックを再読込して、最新のライブラリコンテンツに更新しなければなりません。"
 
 #: cms/templates/import.html:212
 msgid "Learn more about importing a library"
-msgstr ""
+msgstr "ライブラリのインポートについてもっと学ぶ"
 
 #: cms/templates/import.html:218
 msgid "Why import a course?"
-msgstr ""
+msgstr "コースをインポートする理由は何ですか？"
 
 #: cms/templates/import.html:219
 msgid ""
 "You may want to run a new version of an existing course, or replace an "
 "existing course altogether. Or, you may have developed a course outside "
 "{studio_name}."
-msgstr ""
+msgstr "既存の講座の新しいバージョンを実行または既存の講座を全部置き換えることをお勧めします。講座を{studio_name}の外で開発しているかもしれません。"
 
 #: cms/templates/import.html:223
 msgid "What content is imported?"
-msgstr ""
+msgstr "どのコンテンツがインポートされたのか？"
 
 #: cms/templates/import.html:224
 msgid ""
@@ -1572,11 +1585,11 @@ msgid ""
 "units) are imported. Other data, including student data, grading "
 "information, discussion forum data, course settings, and course team "
 "information, remains the same as it was in the existing course."
-msgstr ""
+msgstr "コース内のコンテンツとコース構造(セクション、サブセクション、ユニットを含む)のみがインポートされます。受講者情報、成績情報、ディスカッションデータ、コース設定、コース管理者情報は既存のコースのまま情報が残ります。"
 
 #: cms/templates/import.html:228
 msgid "Warning: Importing while a course is running"
-msgstr ""
+msgstr "警告：講座開講中のインポート"
 
 #: cms/templates/import.html:229
 msgid ""
@@ -1584,116 +1597,116 @@ msgid ""
 "URL names (or url_name nodes) of any Problem components, the student data "
 "associated with those Problem components may be lost. This data includes "
 "students' problem scores."
-msgstr ""
+msgstr "講座開講中にインポートを行い、問題型アイテムのURL名(またはurl_nameノード)を変更すると、そのアイテムに関連するデータが喪失する可能性があります。このデータは受講者の問題に対する得点が含まれます。"
 
 #: cms/templates/import.html:232
 msgid "Learn more about importing a course"
-msgstr ""
+msgstr "講座のインポートについてもっと学ぶ"
 
 #: cms/templates/index.html:5 cms/templates/index.html:17
 #: cms/templates/widgets/header.html:216
 msgid "{studio_name} Home"
-msgstr ""
+msgstr "{studio_name}ホーム"
 
 #: cms/templates/index.html:26
 msgid "New Course"
-msgstr ""
+msgstr "新講座"
 
 #: cms/templates/index.html:28
 msgid "Email staff to create course"
-msgstr ""
+msgstr "開講希望の方は運営者へメールをしてください。"
 
 #: cms/templates/index.html:32
 msgid "New Library"
-msgstr ""
+msgstr "新しいライブラリ"
 
 #: cms/templates/index.html:51 cms/templates/index.html:113
 msgid "Please correct the highlighted fields below."
-msgstr ""
+msgstr "下記にハイライトしているところを訂正してください。"
 
 #: cms/templates/index.html:56
 msgid "Create a New Course"
-msgstr ""
+msgstr "新規講座を制作する"
 
 #: cms/templates/index.html:59
 msgid "Required Information to Create a New Course"
-msgstr ""
+msgstr "講座制作に必要な情報"
 
 #: cms/templates/index.html:66
 msgid ""
 "The public display name for your course. This cannot be changed, but you can"
 " set a different display name in Advanced Settings later."
-msgstr ""
+msgstr "このコースの表示名です。これは変更することはできませんが、詳細設定にて別の表示名を設定することができます。"
 
 #: cms/templates/index.html:74
 msgid "The name of the organization sponsoring the course."
-msgstr ""
+msgstr "講座の提供者の組織名"
 
 #: cms/templates/index.html:74
 msgid ""
 "Note: This is part of your course URL, so no spaces or special characters "
 "are allowed."
-msgstr ""
+msgstr "注意：これは講座URLの一部ですので、スペースおよび記号は使えません。"
 
 #: cms/templates/index.html:74
 msgid ""
 "This cannot be changed, but you can set a different display name in Advanced"
 " Settings later."
-msgstr ""
+msgstr "これは変更することはできませんが、詳細設定にて別の表示名を設定することができます。"
 
 #: cms/templates/index.html:82
 msgid ""
 "The unique number that identifies your course within your organization."
-msgstr ""
+msgstr "このユニークな数字は、あなたの組織内におけるあなたのコースを特定するためのものです。"
 
 #: cms/templates/index.html:82 cms/templates/index.html:90
 msgid ""
 "Note: This is part of your course URL, so no spaces or special characters "
 "are allowed and it cannot be changed."
-msgstr ""
+msgstr "注意：これは講座URLの一部ですので、変更することもスペースおよび記号を使用することもできません。"
 
 #: cms/templates/index.html:90
 msgid "The term in which your course will run."
-msgstr ""
+msgstr "いつコース開始するかについての項目。"
 
 #: cms/templates/index.html:100 cms/templates/index.html:152
 msgid "Create"
-msgstr ""
+msgstr "作成"
 
 #: cms/templates/index.html:118
 msgid "Create a New Library"
-msgstr ""
+msgstr "新しいライブラリを作成"
 
 #: cms/templates/index.html:121
 msgid "Required Information to Create a New Library"
-msgstr ""
+msgstr "新しいライブラリ作成に必要な情報"
 
 #: cms/templates/index.html:125
 msgid "Library Name"
-msgstr ""
+msgstr "ライブラリ名"
 
 #. Translators: This is an example name for a new content library, seen when
 #. filling out the form to create a new library. (A library is a collection of
 #. content or problems.)
 #: cms/templates/index.html:127
 msgid "e.g. Computer Science Problems"
-msgstr ""
+msgstr "例：計算機科学問題"
 
 #: cms/templates/index.html:128
 msgid "The public display name for your library."
-msgstr ""
+msgstr "公開するライブラリ名"
 
 #: cms/templates/index.html:134
 msgid "The public organization name for your library."
-msgstr ""
+msgstr "公開するライブラリの組織名"
 
 #: cms/templates/index.html:134 cms/templates/index.html:142
 msgid "This cannot be changed."
-msgstr ""
+msgstr "これは変更できません"
 
 #: cms/templates/index.html:139
 msgid "Library Code"
-msgstr ""
+msgstr "ライブラリコード"
 
 #. Translators: This is an example for the "code" used to identify a library,
 #. seen when filling out the form to create a new library. This example is
@@ -1701,30 +1714,30 @@ msgstr ""
 #. letters but must not contain spaces.
 #: cms/templates/index.html:141
 msgid "e.g. CSPROB"
-msgstr ""
+msgstr "例：CSPROB"
 
 #: cms/templates/index.html:142
 msgid "The unique code that identifies this library."
-msgstr ""
+msgstr "このライブラリを特定するための一意の文字列です。"
 
 #: cms/templates/index.html:142
 msgid ""
 "Note: This is part of your library URL, so no spaces or special characters "
 "are allowed."
-msgstr ""
+msgstr "注意：これはライブラリURLの一部ですので、スペースおよび記号は使えません。"
 
 #: cms/templates/index.html:162
 msgid "Courses Being Processed"
-msgstr ""
+msgstr "講座は処理中です"
 
 #: cms/templates/index.html:182 cms/templates/index.html:224
 #: cms/templates/index.html:281
 msgid "Course Run:"
-msgstr ""
+msgstr "受講開始："
 
 #: cms/templates/index.html:188
 msgid "This course run is currently being created."
-msgstr ""
+msgstr "講座の実行は現在作成中です。"
 
 #. Translators: This is a status message, used to inform the user of what the
 #. system is doing. This status means that the user has requested to re-run an
@@ -1732,51 +1745,51 @@ msgstr ""
 #. and configuring the existing course so that it can be re-run.
 #: cms/templates/index.html:192
 msgid "Configuring as re-run"
-msgstr ""
+msgstr "再実行として設定中"
 
 #: cms/templates/index.html:198
 msgid ""
 "The new course will be added to your course list in 5-10 minutes. Return to "
 "this page or {link_start}refresh it{link_end} to update the course list. The"
 " new course will need some manual configuration."
-msgstr ""
+msgstr "新しい講座は講座リストに5-10分で追加されます。講座リストを更新するにはこのページに戻ってくるか{link_start}再読込{link_end}してください。新しい講座はいくつか手動で設定が必要です。"
 
 #: cms/templates/index.html:239
 msgid ""
 "A system error occurred while your course was being processed. Please go to "
 "the original course to try the re-run again, or contact your PM for "
 "assistance."
-msgstr ""
+msgstr "講座の処理中にシステムエラーが発生しました。オリジナルのコースに行って再実行をもう一度試すか、PMまでお問い合わせください。"
 
 #: cms/templates/index.html:260
 msgid "Libraries"
-msgstr ""
+msgstr "ライブラリ"
 
 #: cms/templates/index.html:289
 msgid "Re-run Course"
-msgstr ""
+msgstr "コース再実行"
 
 #: cms/templates/index.html:305
 msgid "Are you staff on an existing {studio_name} course?"
-msgstr ""
+msgstr "あなたは既に存在する{studio_name}コースのスタッフですか？"
 
 #: cms/templates/index.html:307
 msgid ""
 "The course creator must give you access to the course. Contact the course "
 "creator or administrator for the course you are helping to author."
-msgstr ""
+msgstr "講座の製作者があなたにアクセス権を与えなければなりません。講座の製作者または管理者に編集についてお問い合わせください。"
 
 #: cms/templates/index.html:315 cms/templates/index.html:323
 msgid "Create Your First Course"
-msgstr ""
+msgstr "最初の講座を作る"
 
 #: cms/templates/index.html:317
 msgid "Your new course is just a click away!"
-msgstr ""
+msgstr "クリックするだけで新しい講座を制作できます。"
 
 #: cms/templates/index.html:336
 msgid "Becoming a Course Creator in {studio_name}"
-msgstr ""
+msgstr "{studio_name}でのコース製作者になる"
 
 #: cms/templates/index.html:341
 msgid ""
@@ -1785,20 +1798,20 @@ msgid ""
 "edit, while course creator privileges are granted by {platform_name}. Our "
 "team will evaluate your request and provide you feedback within 24 hours "
 "during the work week."
-msgstr ""
+msgstr "{studio_name}はxConsortiumのパートナーと選ばれしゲストに提供されるものです。コース製作者の特権を{platform_name}から移譲されているのであれば、あなたがメンバーであるコースは編集できるよう表示されます。我々はあなたからのリクエストを査定し、営業週のうちであれば24時間以内にフィードバックを提供します。"
 
 #: cms/templates/index.html:346 cms/templates/index.html:371
 #: cms/templates/index.html:399
 msgid "Your Course Creator Request Status:"
-msgstr ""
+msgstr "講座制作者の要求処理状態："
 
 #: cms/templates/index.html:350
 msgid "Request the Ability to Create Courses"
-msgstr ""
+msgstr "講座制作の権限をリクエストする"
 
 #: cms/templates/index.html:360 cms/templates/index.html:388
 msgid "Your Course Creator Request Status"
-msgstr ""
+msgstr "講座制作権限のリクエスト状況"
 
 #: cms/templates/index.html:365
 msgid ""
@@ -1806,21 +1819,21 @@ msgid ""
 " guests. Courses for which you are a team member appear above for you to "
 "edit, while course creator privileges are granted by {platform_name}. Our "
 "team is has completed evaluating your request."
-msgstr ""
+msgstr "{studio_name}はxConsortiumのパートナーと選ばれしゲストに提供されるものです。コース製作者の特権を{platform_name}から移譲されているのであれば、あなたがメンバーであるコースは編集できるよう表示されます。我々はあなたからのリクエストを査定完了しました。"
 
 #: cms/templates/index.html:374 cms/templates/index.html:402
 msgid "Your Course Creator request is:"
-msgstr ""
+msgstr "講座制作者の要求状態："
 
 #: cms/templates/index.html:377
 msgid "Denied"
-msgstr ""
+msgstr "否認されました"
 
 #: cms/templates/index.html:378
 msgid ""
 "Your request did not meet the criteria/guidelines specified by "
 "{platform_name} Staff."
-msgstr ""
+msgstr "あなたのリクエストは規約/ガイドラインに適合しなかったと{platform_name}スタッフにより特定されました。"
 
 #: cms/templates/index.html:393
 msgid ""
@@ -1828,41 +1841,41 @@ msgid ""
 " guests. Courses for which you are a team member appear above for you to "
 "edit, while course creator privileges are granted by {platform_name}. Our "
 "team is currently  evaluating your request."
-msgstr ""
+msgstr "{studio_name}はxConsortiumのパートナーと選ばれしゲストに提供されるものです。コース製作者の特権を{platform_name}から移譲されているのであれば、あなたがメンバーであるコースは編集できるよう表示されます。我々はあなたからのリクエストを現在査定中です。"
 
 #: cms/templates/index.html:407
 msgid ""
 "Your request is currently being reviewed by {platform_name} staff and should"
 " be updated shortly."
-msgstr ""
+msgstr "あなたのリクエストは現在、{platform_name}スタッフによりレビューされており、近々、更新されるものです。"
 
 #: cms/templates/index.html:433
 msgid "(Read-only)"
-msgstr ""
+msgstr "(変更不可)"
 
 #: cms/templates/index.html:446
 msgid "Were you expecting to see a particular library here?"
-msgstr ""
+msgstr "特定のライブラリが表示されることを期待しましたか？"
 
 #: cms/templates/index.html:448
 msgid ""
 "The library creator must give you access to the library. Contact the library"
 " creator or administrator for the library you are helping to author."
-msgstr ""
+msgstr "ライブラリの製作者があなたにアクセス権を与えなければなりません。ライブラリの製作者または管理者に編集についてお問い合わせください。"
 
 #: cms/templates/index.html:455 cms/templates/index.html:463
 msgid "Create Your First Library"
-msgstr ""
+msgstr "最初のライブラリを作成"
 
 #: cms/templates/index.html:457
 msgid ""
 "Libraries hold a pool of components that can be re-used across multiple "
 "courses. Create your first library with the click of a button!"
-msgstr ""
+msgstr "ライブラリは講座をまたいで再利用可能なコンポーネントを保持します。ボタンをクリックして最初のライブラリを作りましょう！"
 
 #: cms/templates/index.html:474
 msgid "New to {studio_name}?"
-msgstr ""
+msgstr "{studio_name}は初めてですか？"
 
 #: cms/templates/index.html:475
 msgid ""
@@ -1870,51 +1883,51 @@ msgid ""
 "{studio_name} page you are viewing. You can also use the links at the bottom"
 " of the page to access our continually updated documentation and other "
 "{studio_name} resources."
-msgstr ""
+msgstr "あなたが見ている{studio_name}ページに関する詳細情報を入手するには、右上のヘルプをクリックしてください。継続的に更新している文書や、その他の{studio_name}のリソースにアクセスするには、ページの下の方にあるリンクも使用できます。"
 
 #: cms/templates/index.html:480
 msgid "Getting Started with {studio_name}"
-msgstr ""
+msgstr "{studio_name}を始める"
 
 #: cms/templates/index.html:484 cms/templates/index.html:563
 msgid "Use our feedback tool, Tender, to request help"
-msgstr ""
+msgstr "ヘルプを求めるにはフィードバックツールTenderを使ってください"
 
 #: cms/templates/index.html:485 cms/templates/widgets/sock.html:50
 msgid "Request help with {studio_name}"
-msgstr ""
+msgstr "{studio_name}のヘルプをリクエストする"
 
 #: cms/templates/index.html:494 cms/templates/index.html:506
 #: cms/templates/index.html:512
 msgid "Can I create courses in {studio_name}?"
-msgstr ""
+msgstr "私は{studio_name}でコースを作ることができますか？"
 
 #: cms/templates/index.html:495
 msgid ""
 "In order to create courses in {studio_name}, you must {link_start}contact "
 "{platform_name} staff to help you create a course{link_end}."
-msgstr ""
+msgstr "{studio_name}で講座を作成するためには、{link_start}{platform_name}スタッフにコース作成についてのヘルプをお問い合わせ{link_end}ください。"
 
 #: cms/templates/index.html:507
 msgid ""
 "In order to create courses in {studio_name}, you must have course creator "
 "privileges to create your own course."
-msgstr ""
+msgstr "{studio_name}でコースを作るためには、自分のコースを作成するための権限を得ている必要があります。"
 
 #: cms/templates/index.html:525
 msgid ""
 "Your request to author courses in {studio_name} has been denied. Please "
 "{link_start}contact {platform_name} Staff with further questions{link_end}."
-msgstr ""
+msgstr "あなたの{studio_name}の講座編集のリクエストは拒否されました。詳細は{link_start}{platform_name}スタッフ{link_end}までお問い合わせください。"
 
 #: cms/templates/index.html:542
 #, python-format
 msgid "Thanks for signing up, %(name)s!"
-msgstr ""
+msgstr "%(name)s、登録いただきありがとうございます！"
 
 #: cms/templates/index.html:547
 msgid "We need to verify your email address"
-msgstr ""
+msgstr "メールアドレスを確認する必要があります。"
 
 #: cms/templates/index.html:549
 #, python-format
@@ -1922,51 +1935,51 @@ msgid ""
 "Almost there! In order to complete your sign up we need you to verify your "
 "email address (%(email)s). An activation message and next steps should be "
 "waiting for you there."
-msgstr ""
+msgstr "もうあと少し！登録を完了するためには、 (%(email)s) を検証する必要があります。アクティベーション用メール、そして、次の一歩をお待ちしています。"
 
 #: cms/templates/index.html:557
 msgid "Need help?"
-msgstr ""
+msgstr "うまくいかない場合"
 
 #: cms/templates/index.html:558
 msgid ""
 "Please check your Junk or Spam folders in case our email isn't in your "
 "INBOX. Still can't find the verification email? Request help via the link "
 "below."
-msgstr ""
+msgstr "受信フォルダにメールがない場合には、迷惑メールフォルダを確認してください。それでも、検証用メールが見つからない場合には、次のリンクから支援依頼を出してください。"
 
 #: cms/templates/index.html:564
 msgid "Request help with your {studio_name} account"
-msgstr ""
+msgstr "{studio_name}のアカウントについてヘルプをリクエストする"
 
 #: cms/templates/library.html:46
 msgid "Content Library"
-msgstr ""
+msgstr "コンテンツライブラリ"
 
 #: cms/templates/library.html:58
 msgid "Add Component"
-msgstr ""
+msgstr "コンポーネントを追加"
 
 #: cms/templates/library.html:87
 msgid "Adding content to your library"
-msgstr ""
+msgstr "ライブラリにコンテンツを追加中"
 
 #: cms/templates/library.html:88
 msgid ""
 "Add components to your library for use in courses, using Add New Component "
 "at the bottom of this page."
-msgstr ""
+msgstr "講座で使うためにコンポーネントをライブラリに追加してください。ページの下で追加できます。"
 
 #: cms/templates/library.html:89
 msgid ""
 "Components are listed in the order in which they are added, with the most "
 "recently added at the bottom. Use the pagination arrows to navigate from "
 "page to page if you have more than one page of components in your library."
-msgstr ""
+msgstr "コンポーネントは追加された古い順に並んでいます。ライブラリに複数のページがある場合は矢印でページを移動できます。"
 
 #: cms/templates/library.html:90
 msgid "Using library content in courses"
-msgstr ""
+msgstr "講座でライブラリコンテンツを使う"
 
 #: cms/templates/library.html:91
 msgid ""
@@ -1976,214 +1989,214 @@ msgid ""
 "your courseware. In the settings for each Randomized Content Block, select "
 "this library as the source library, and specify the number of problems to be"
 " randomly selected and displayed to each student."
-msgstr ""
+msgstr "講座の詳細設定で詳細モジュールリストに{em_start}library_content{em_end}ポリシーキーを追加してから、ランダム化コンテンツブロックをコース教材に追加して講座でライブラリコンテンツを使います。ランダム化コンテンツブロックごとの設定ではこのライブラリをソースライブラリとして選択し、受講者ごとにランダムに選ばれる問題数を設定します。"
 
 #: cms/templates/library.html:95
 msgid "Learn more about content libraries"
-msgstr ""
+msgstr "コンテンツライブラリについてもっと学ぶ"
 
 #: cms/templates/login.html:7 cms/templates/widgets/header.html:239
 msgid "Sign In"
-msgstr ""
+msgstr "サインイン"
 
 #: cms/templates/login.html:15 cms/templates/login.html:41
 msgid "Sign In to {studio_name}"
-msgstr ""
+msgstr "{studio_name}にサインイン"
 
 #: cms/templates/login.html:16
 msgid "Don't have a {studio_name} Account? Sign up!"
-msgstr ""
+msgstr "{studio_name}アカウントをお持ちでない? サインアップをお願いします!"
 
 #: cms/templates/login.html:23
 msgid "Required Information to Sign In to {studio_name}"
-msgstr ""
+msgstr "{studio_name}へのサインインに必要な必須情報"
 
 #: cms/templates/login.html:51
 msgid "{studio_name} Support"
-msgstr ""
+msgstr "{studio_name} サポート"
 
 #: cms/templates/login.html:55
 msgid ""
 "Having trouble with your account? Use {link_start}our support "
 "center{link_end} to look over self help steps, find solutions others have "
 "found to the same problem, or let us know of your issue."
-msgstr ""
+msgstr "アカウントで問題が発生していますか？{link_start}サポートセンタ{link_end} を使って自己解決支援の手順に目を通してください。そして、他の人が既に発見している解決策を探してください。それでもダメならば、スタッフに問題状況を教えてください。"
 
 #: cms/templates/manage_users.html:8
 msgid "Course Team Settings"
-msgstr ""
+msgstr "チーム設定"
 
 #: cms/templates/manage_users.html:32 cms/templates/manage_users_lib.html:32
 msgid "New Team Member"
-msgstr ""
+msgstr "新たなチームメンバー"
 
 #: cms/templates/manage_users.html:47
 msgid "Add a User to Your Course's Team"
-msgstr ""
+msgstr "本講座の制作・運営チームにユーザーを追加する。"
 
 #: cms/templates/manage_users.html:50 cms/templates/manage_users_lib.html:50
 msgid "New Team Member Information"
-msgstr ""
+msgstr "新しいメンバー情報"
 
 #: cms/templates/manage_users.html:54 cms/templates/manage_users_lib.html:54
 msgid "User's Email Address"
-msgstr ""
+msgstr "ユーザーのメールアドレス"
 
 #: cms/templates/manage_users.html:56
 msgid ""
 "Please provide the email address of the course staff member you'd like to "
 "add"
-msgstr ""
+msgstr "講座制作・運営メンバーに追加したい方のメールアドレスを入力してください。"
 
 #: cms/templates/manage_users.html:63 cms/templates/manage_users_lib.html:63
 msgid "Add User"
-msgstr ""
+msgstr "ユーザー追加"
 
 #: cms/templates/manage_users.html:79
 msgid "Add Team Members to This Course"
-msgstr ""
+msgstr "本講座に制作・運営メンバーを追加する。"
 
 #: cms/templates/manage_users.html:81
 msgid ""
 "Adding team members makes course authoring collaborative. Users must be "
 "signed up for {studio_name} and have an active account."
-msgstr ""
+msgstr "メンバー追加はコース制作を協同的なものとします。ユーザーは {studio_name} に登録することでアクティブなアカウントを持ちます。"
 
 #: cms/templates/manage_users.html:87
 msgid "Add a New Team Member"
-msgstr ""
+msgstr "新規メンバー追加"
 
 #: cms/templates/manage_users.html:96
 msgid "Course Team Roles"
-msgstr ""
+msgstr "コースチームの役割"
 
 #: cms/templates/manage_users.html:97
 msgid ""
 "Course team members, or staff, are course co-authors. They have full writing"
 " and editing privileges on all course content."
-msgstr ""
+msgstr "コースチームメンバー、スタッフが講座の共著者です。彼らは講座コンテンツへの書き込みと編集のフル権限を持っています。"
 
 #: cms/templates/manage_users.html:98
 msgid ""
 "Admins are course team members who can add and remove other course team "
 "members."
-msgstr ""
+msgstr "管理者は他のコースチームメンバーを追加と削除できるコースチームメンバーです。"
 
 #: cms/templates/manage_users.html:103
 msgid "Transferring Ownership"
-msgstr ""
+msgstr "所有権を引き継ぎ"
 
 #: cms/templates/manage_users.html:104
 msgid ""
 "Every course must have an Admin. If you're the Admin and you want transfer "
 "ownership of the course, click Add admin access to make another user the "
 "Admin, then ask that user to remove you from the Course Team list."
-msgstr ""
+msgstr "全てのコースに管理者は必要です。コースの所有権を引き渡すには、「管理者のアクセスを追加する」をクリックし、他のユーザーを管理者にします。そして、そのユーザーにあなたをコースチーム一覧から削除してもらうように依頼してください。"
 
 #: cms/templates/manage_users_lib.html:8
 msgid "Library User Access"
-msgstr ""
+msgstr "ライブラリユーザーアクセス"
 
 #: cms/templates/manage_users_lib.html:24
 #: cms/templates/widgets/header.html:173
 msgid "User Access"
-msgstr ""
+msgstr "ユーザーアクセス"
 
 #: cms/templates/manage_users_lib.html:47
 msgid "Grant Access to This Library"
-msgstr ""
+msgstr "アクセス権をライブラリに与える"
 
 #: cms/templates/manage_users_lib.html:56
 msgid "Provide the email address of the user you want to add"
-msgstr ""
+msgstr "追加したいユーザーのメールアドレスを入力してください"
 
 #: cms/templates/manage_users_lib.html:79
 msgid "Add More Users to This Library"
-msgstr ""
+msgstr "このライブラリにさらにユーザーを追加"
 
 #: cms/templates/manage_users_lib.html:81
 msgid ""
 "Grant other members of your course team access to this library. New library "
 "users must have an active {studio_name} account."
-msgstr ""
+msgstr "このライブラリに対してコースチームの他のメンバーのアクセス権を与えてください。新しいライブラリユーザーは有効な{studio_name}アカウントが必要です。"
 
 #: cms/templates/manage_users_lib.html:87
 msgid "Add a New User"
-msgstr ""
+msgstr "新しいユーザを追加"
 
 #: cms/templates/manage_users_lib.html:96
 msgid "Library Access Roles"
-msgstr ""
+msgstr "ライブラリアクセスロール"
 
 #: cms/templates/manage_users_lib.html:97
 msgid "There are three access roles for libraries: User, Staff, and Admin."
-msgstr ""
+msgstr "ライブラリには３つのアクセス役割があります：ユーザー、スタッフ、アドミン"
 
 #: cms/templates/manage_users_lib.html:98
 msgid ""
 "Users can view library content and can reference or use library components "
 "in their courses, but they cannot edit the contents of a library."
-msgstr ""
+msgstr "ユーザーはライブラリコンテンツの参照、講座のライブラリコンポーネントの参照、使用ができますが、ライブラリのコンテンツの編集はできません。"
 
 #: cms/templates/manage_users_lib.html:99
 msgid ""
 "Staff are content co-authors. They have full editing privileges on the "
 "contents of a library."
-msgstr ""
+msgstr "スタッフはコンテンツの共同作者です。ライブラリに対してのコンテンツのフル編集権限を持っています。"
 
 #: cms/templates/manage_users_lib.html:100
 msgid ""
 "Admins have full editing privileges and can also add and remove other team "
 "members. There must be at least one user with Admin privileges in a library."
-msgstr ""
+msgstr "アドミンはフル編集権限とチームメンバーの追加と削除が行えます。ライブラリには最低１人のアドミン権限を持ったユーザーが必要です。"
 
 #: cms/templates/register.html:8 cms/templates/widgets/header.html:236
 msgid "Sign Up"
-msgstr ""
+msgstr "会員登録"
 
 #: cms/templates/register.html:16
 msgid "Sign Up for {studio_name}"
-msgstr ""
+msgstr "{studio_name}にサインアップ"
 
 #: cms/templates/register.html:17
 msgid "Already have a {studio_name} Account? Sign in"
-msgstr ""
+msgstr "既に{studio_name}のアカウントをお持ちですか？ それならサインインを。"
 
 #: cms/templates/register.html:20
 msgid ""
 "Ready to start creating online courses? Sign up below and start creating "
 "your first {platform_name} course today."
-msgstr ""
+msgstr "コース開設の準備はできましたか？ 次から新規登録して{platform_name}コースを作成しましょう！"
 
 #: cms/templates/register.html:28
 msgid "Required Information to Sign Up for {studio_name}"
-msgstr ""
+msgstr "{studio_name}へのサインアップに必要な必須情報"
 
 #: cms/templates/register.html:47
 msgid ""
 "This will be used in public discussions with your courses and in our edX101 "
 "support forums"
-msgstr ""
+msgstr "これは本講座とedX101のサポートフォーラムに用いられる公開ディスカッションとなるでしょう。"
 
 #: cms/templates/register.html:57
 msgid "Your Location"
-msgstr ""
+msgstr "住所"
 
 #: cms/templates/register.html:70
 msgid "I agree to the {a_start} Terms of Service {a_end}"
-msgstr ""
+msgstr " {a_start} 利用規約 {a_end} に同意します。"
 
 #: cms/templates/register.html:77
 msgid "Create My Account &amp; Start Authoring Courses"
-msgstr ""
+msgstr "アカウントを作成し、講座を制作"
 
 #: cms/templates/register.html:86
 msgid "Common {studio_name} Questions"
-msgstr ""
+msgstr "{studio_name}についてのよくある質問"
 
 #: cms/templates/register.html:89
 msgid "Who is {studio_name} for?"
-msgstr ""
+msgstr "誰のために{studio_name}はありますか？"
 
 #: cms/templates/register.html:90
 msgid ""
@@ -2191,12 +2204,12 @@ msgid ""
 "leverage the global {platform_name} platform. Our users are often faculty "
 "members, teaching assistants and course staff, and members of instructional "
 "technology groups."
-msgstr ""
+msgstr "{studio_name} は{platform_name}プラットフォームを活用してオンラインコースを作成したい人のためにあります。 多くの場合、教員（アシスタント、スタッフ、教育技術グループメンバーを含む）がユーザとなります。"
 
 #: cms/templates/register.html:96
 msgid ""
 "How technically savvy do I need to be to create courses in {studio_name}?"
-msgstr ""
+msgstr "{studio_name}でコースを作成するためには、どのような技術が必要ですか？"
 
 #: cms/templates/register.html:97
 msgid ""
@@ -2205,11 +2218,11 @@ msgid ""
 "programming knowledge is required, but for some of the more advanced "
 "features, a technical background would be helpful. As always, we are here to"
 " help, so don't hesitate to dive right in."
-msgstr ""
+msgstr "{studio_name}は、誰にでも使いやすいように、一般的なWebベースのオーサリング環境(WordpressやMoodleなどと同様)です。高度な機能を用いる場合を除いてはプログラミング知識を必要としません。"
 
 #: cms/templates/register.html:103
 msgid "I've never authored a course online before. Is there help?"
-msgstr ""
+msgstr "講座制作は初めてなのですが、ヘルプは用意されていますか？"
 
 #: cms/templates/register.html:104
 msgid ""
@@ -2217,71 +2230,71 @@ msgid ""
 "best practices: from filming video, creating exercises, to the basics of "
 "running an online course. Additionally, we're always here to help, just drop"
 " us a note."
-msgstr ""
+msgstr "もちろんです。オンライン講座を作成するベストプラクティスとして「edX101」が作成されています。その中で、映像撮影、設問の作成からオンライン講座を運営するにあたっての基本要件が説明されています。また、スタッフもいるのでお気軽にお問合せください。"
 
 #: cms/templates/settings.html:3
 msgid "Schedule &amp; Details Settings"
-msgstr ""
+msgstr "スケジュールと詳細設定"
 
 #: cms/templates/settings.html:43
 msgid "Schedule & Details"
-msgstr ""
+msgstr "スケジュールと詳細"
 
 #: cms/templates/settings.html:54
 msgid "Basic Information"
-msgstr ""
+msgstr "基本情報"
 
 #: cms/templates/settings.html:55
 msgid "The nuts and bolts of your course"
-msgstr ""
+msgstr "講座の要点"
 
 #: cms/templates/settings.html:61 cms/templates/settings.html:67
 #: cms/templates/settings.html:73 cms/templates/settings.html:136
 #: cms/templates/settings.html:147 cms/templates/settings.html:159
 msgid "This field is disabled: this information cannot be changed."
-msgstr ""
+msgstr "このフィールドは使えません：この情報は変更できません"
 
 #: cms/templates/settings.html:80
 msgid "Course Summary Page"
-msgstr ""
+msgstr "講座概要ページ"
 
 #: cms/templates/settings.html:80
 msgid "(for student enrollment and access)"
-msgstr ""
+msgstr "(受講者の受講登録とアクセス)"
 
 #: cms/templates/settings.html:91
 msgid "Enroll in {course_display_name}"
-msgstr ""
+msgstr "{course_display_name}に受講登録する"
 
 #: cms/templates/settings.html:94
 msgid ""
 "The course \"{course_display_name}\", provided by {platform_name}, is open "
 "for enrollment. Please navigate to this course at {link_for_about_page} to "
 "enroll."
-msgstr ""
+msgstr "{platform_name}の講座\"{course_display_name}\"は受講募集中です。講座へ受講登録するには{link_for_about_page}へアクセスしてください。"
 
 #: cms/templates/settings.html:100
 msgid "Send a note to students via email"
-msgstr ""
+msgstr "受講者にメールでノートを送る"
 
 #: cms/templates/settings.html:102
 msgid "Invite your students"
-msgstr ""
+msgstr "受講者を招待する"
 
 #: cms/templates/settings.html:110
 msgid "Promoting Your Course with {platform_name}"
-msgstr ""
+msgstr " {platform_name}でコースをプロモする"
 
 #: cms/templates/settings.html:112
 msgid ""
 "Your course summary page will not be viewable until your course has been "
 "announced. To provide content for the page and preview it, follow the "
 "instructions provided by your Program Manager."
-msgstr ""
+msgstr "講座詳細ページは講座がアナウンスされるまでみえません。このページのコンテンツを提供し、プレビューするにはProgram Managerより提供される指示に従ってください。"
 
 #: cms/templates/settings.html:126
 msgid "Credit Eligibility Requirements"
-msgstr ""
+msgstr "履修適格性の要求事項"
 
 #: cms/templates/settings.html:127
 msgid "Steps needed for credit eligibility"
@@ -2315,60 +2328,60 @@ msgstr ""
 
 #: cms/templates/settings.html:174
 msgid "Course Schedule"
-msgstr ""
+msgstr "スケジュール"
 
 #: cms/templates/settings.html:175
 msgid "Dates that control when your course can be viewed"
-msgstr ""
+msgstr "講座をいつ閲覧可能とするかを管理する日時"
 
 #: cms/templates/settings.html:183
 msgid "First day the course begins"
-msgstr ""
+msgstr "受講開始日"
 
 #: cms/templates/settings.html:187
 msgid "Course Start Time"
-msgstr ""
+msgstr "受講開始時"
 
 #: cms/templates/settings.html:189 cms/templates/settings.html:203
 #: cms/templates/settings.html:219 cms/templates/settings.html:233
 msgid "(UTC)"
-msgstr ""
+msgstr "(UTC)"
 
 #: cms/templates/settings.html:197
 msgid "Last day your course is active"
-msgstr ""
+msgstr "開講最終日"
 
 #: cms/templates/settings.html:201
 msgid "Course End Time"
-msgstr ""
+msgstr "受講終了時刻"
 
 #: cms/templates/settings.html:211
 msgid "Enrollment Start Date"
-msgstr ""
+msgstr "受講登録開始日"
 
 #: cms/templates/settings.html:213
 msgid "First day students can enroll"
-msgstr ""
+msgstr "受講登録開始日"
 
 #: cms/templates/settings.html:217
 msgid "Enrollment Start Time"
-msgstr ""
+msgstr "受講登録開始時刻"
 
 #: cms/templates/settings.html:225
 msgid "Enrollment End Date"
-msgstr ""
+msgstr "受講登録終了日"
 
 #: cms/templates/settings.html:227
 msgid "Last day students can enroll"
-msgstr ""
+msgstr "受講登録最終日"
 
 #: cms/templates/settings.html:231
 msgid "Enrollment End Time"
-msgstr ""
+msgstr "受講登録終了時刻"
 
 #: cms/templates/settings.html:240
 msgid "These Dates Are Not Used When Promoting Your Course"
-msgstr ""
+msgstr "これらの日時には講座のプロモーションには使用されません。"
 
 #: cms/templates/settings.html:242
 msgid ""
@@ -2376,7 +2389,7 @@ msgid ""
 "they are <strong>not the dates shown on your course summary page</strong>. "
 "To provide the course start and registration dates as shown on your course "
 "summary page, follow the instructions provided by your Program Manager."
-msgstr ""
+msgstr "<strong>「学習する」が表示可能なとき、</strong>あなたのこれらの日時は強調されます。しかしながら、<strong>講座のサマリーページには日時が表示されません。</strong>サマリーページに講座の開始・登録日時を表示させるには、あなたのProgram Managerからの支持に従ってください。"
 
 #: cms/templates/settings.html:256
 msgid "Course Details"
@@ -2398,146 +2411,146 @@ msgstr ""
 
 #: cms/templates/settings.html:277
 msgid "Introducing Your Course"
-msgstr ""
+msgstr "導入"
 
 #: cms/templates/settings.html:278
 msgid "Information for prospective students"
-msgstr ""
+msgstr "未受講者への情報"
 
 #: cms/templates/settings.html:283
 msgid "Course Short Description"
-msgstr ""
+msgstr "講座概要"
 
 #: cms/templates/settings.html:285
 msgid ""
 "Appears on the course catalog page when students roll over the course name. "
 "Limit to ~150 characters"
-msgstr ""
+msgstr "講座一覧ページで講座名の上に受講者がカーソルを合わせた際に表示されます。150文字以内"
 
 #: cms/templates/settings.html:291
 msgid "Course Overview"
-msgstr ""
+msgstr "講座概要"
 
 #: cms/templates/settings.html:295
 msgid "your course summary page"
-msgstr ""
+msgstr "講座概要ページ"
 
 #: cms/templates/settings.html:297
 #, python-format
 msgid ""
 "Introductions, prerequisites, FAQs that are used on %s (formatted in HTML)"
-msgstr ""
+msgstr "導入、必須条件、よくある質問は %s (formatted in HTML) 上で使われます。"
 
 #: cms/templates/settings.html:304 cms/templates/settings.html:308
 #: cms/templates/settings.html:317
 msgid "Course Image"
-msgstr ""
+msgstr "講座イメージ"
 
 #: cms/templates/settings.html:312
 msgid ""
 "You can manage this image along with all of your other <a href='{}'>files "
 "&amp; uploads</a>"
-msgstr ""
+msgstr "他の人全てに加えて、あなたもこの画像を管理することができる<a href='{}'>ファイル &amp; アップロード</a>"
 
 #: cms/templates/settings.html:319
 msgid ""
 "Your course currently does not have an image. Please upload one (JPEG or PNG"
 " format, and minimum suggested dimensions are 375px wide by 200px tall)"
-msgstr ""
+msgstr "本講座は現在イメージ画像がありません。次の仕様を満たす画像をアップロードしてください。(JPEG もしくは PNG 形式で最小サイズで横375ピクセル・縦200ピクセルです)"
 
 #. Translators: This is the placeholder text for a field that requests the URL
 #. for a course image
 #: cms/templates/settings.html:326
 msgid "Your course image URL"
-msgstr ""
+msgstr "コースのイメージのURL"
 
 #: cms/templates/settings.html:327
 msgid ""
 "Please provide a valid path and name to your course image (Note: only JPEG "
 "or PNG format supported)"
-msgstr ""
+msgstr "講座イメージ画像への適正なファイルパス、そしてファイル名を提供してください (注意：JPEG と PNG 形式のみの利用可能)"
 
 #: cms/templates/settings.html:329
 msgid "Upload Course Image"
-msgstr ""
+msgstr "講座イメージ画像をアップロード"
 
 #: cms/templates/settings.html:335 cms/templates/settings.html:338
 msgid "Course Introduction Video"
-msgstr ""
+msgstr "導入ムービー"
 
 #: cms/templates/settings.html:341
 msgid "Delete Current Video"
-msgstr ""
+msgstr "現在のビデオを削除する"
 
 #. Translators: This is the placeholder text for a field that requests a
 #. YouTube video ID for a course video
 #: cms/templates/settings.html:347
 msgid "your YouTube video's ID"
-msgstr ""
+msgstr "YouTubeビデオのID"
 
 #: cms/templates/settings.html:348
 msgid "Enter your YouTube video's ID (along with any restriction parameters)"
-msgstr ""
+msgstr "YouTubeのビデオIDを入力する (制限値と共に)"
 
 #: cms/templates/settings.html:361
 msgid "Expectations of the students taking this course"
-msgstr ""
+msgstr "受講者に期待する要件"
 
 #: cms/templates/settings.html:366
 msgid "Hours of Effort per Week"
-msgstr ""
+msgstr "学習時間／週"
 
 #: cms/templates/settings.html:368
 msgid "Time spent on all course work"
-msgstr ""
+msgstr "受講に要する時間"
 
 #: cms/templates/settings.html:372
 msgid "Prerequisite Course"
-msgstr ""
+msgstr "必要条件講座"
 
 #: cms/templates/settings.html:374
 msgid "None"
-msgstr ""
+msgstr "なし"
 
 #: cms/templates/settings.html:379
 msgid "Course that students must complete before beginning this course"
-msgstr ""
+msgstr "この講座を始める前に完了しなければならない講座"
 
 #: cms/templates/settings.html:380
 msgid "set pre-requisite course"
-msgstr ""
+msgstr "事前必須講座を設定する"
 
 #: cms/templates/settings.html:385
 msgid "Entrance Exam"
-msgstr ""
+msgstr "入学試験"
 
 #: cms/templates/settings.html:389
 msgid "Require students to pass an exam before beginning the course."
-msgstr ""
+msgstr "受講者は講座を始める前に試験を合格する必要がある"
 
 #: cms/templates/settings.html:392
 msgid ""
 "You can now view and author your course entrance exam from the "
 "{link_start}Course Outline{link_end}."
-msgstr ""
+msgstr "{link_start}講座概要{link_end}から講座参加試験を参照して編集できます。"
 
 #: cms/templates/settings.html:393
 msgid "Grade Requirements"
-msgstr ""
+msgstr "要求される成績"
 
 #: cms/templates/settings.html:394
 msgid " %"
-msgstr ""
+msgstr " %"
 
 #: cms/templates/settings.html:395
 msgid ""
 "The score student must meet in order to successfully complete the entrance "
 "exam. "
-msgstr ""
+msgstr "受講者が入学試験を完了するために必要な点数。"
 
 #: cms/templates/settings.html:409
 msgid "Course Content License"
-msgstr ""
+msgstr "講座コンテンツライセンス"
 
 #. Translators: At the course settings, the editor is able to select the
 #. default course content license.
@@ -2547,17 +2560,17 @@ msgstr ""
 #. following string:
 #: cms/templates/settings.html:413
 msgid "Select the default license for course content"
-msgstr ""
+msgstr "講座の既定ライセンスを選択"
 
 #: cms/templates/settings.html:427
 msgid "How are these settings used?"
-msgstr ""
+msgstr "これらの設定はどのように利用されるのか？"
 
 #: cms/templates/settings.html:428
 msgid ""
 "Your course's schedule determines when students can enroll in and begin a "
 "course."
-msgstr ""
+msgstr "講座のスケジュールは、いつ受講者が履修登録し開始できるのかを定義します。"
 
 #: cms/templates/settings.html:430
 msgid ""
@@ -2565,66 +2578,66 @@ msgid ""
 "This information includes the course overview, course image, introduction "
 "video, and estimated time requirements. Students use About pages to choose "
 "new courses to take."
-msgstr ""
+msgstr "講座の解説ページにここにあるその他の内容は表示されます。この情報は講座概要、講座画像、解説ビデオ、必要時間が含まれます。受講者は新しい講座を選ぶために解説ページを使います。"
 
 #: cms/templates/settings_advanced.html:42
 msgid "Your policy changes have been saved."
-msgstr ""
+msgstr "ポリシー変更が保存されました．"
 
 #: cms/templates/settings_advanced.html:46
 msgid "There was an error saving your information. Please see below."
-msgstr ""
+msgstr "情報を保存する際にエラーが発生しました。以下を参照願います。"
 
 #: cms/templates/settings_advanced.html:51
 msgid "Manual Policy Definition"
-msgstr ""
+msgstr "マニュアルポリシーの定義"
 
 #: cms/templates/settings_advanced.html:55
 msgid ""
 "<strong>Warning</strong>: Do not modify these policies unless you are "
 "familiar with their purpose."
-msgstr ""
+msgstr "<strong>警告</strong>：利用目的について熟知していない限りこれらを変更してはいけません"
 
 #: cms/templates/settings_advanced.html:60
 msgid "Show Deprecated Settings"
-msgstr ""
+msgstr "不正な設定を表示する"
 
 #: cms/templates/settings_advanced.html:73
 msgid "What do advanced settings do?"
-msgstr ""
+msgstr "詳細設定とは？"
 
 #: cms/templates/settings_advanced.html:74
 msgid ""
 "Advanced settings control specific course functionality. On this page, you "
 "can edit manual policies, which are JSON-based key and value pairs that "
 "control specific course settings."
-msgstr ""
+msgstr "詳細設定は講座の特有の機能を設定できます。このページではJSONベースのキーバリューペアのマニュアルポリシーで講座特有の設定を制御できます。"
 
 #: cms/templates/settings_advanced.html:76
 msgid ""
 "Any policies you modify here override all other information you've defined "
 "elsewhere in {studio_name}. Do not edit policies unless you are familiar "
 "with both their purpose and syntax."
-msgstr ""
+msgstr "ここで修正したポリシーは{studio_name}で他に定義したすべての情報を上書きします。ポリシーの用途と記述に慣れた人以外は編集しないようにしてください。"
 
 #: cms/templates/settings_advanced.html:78
 msgid ""
 "{em_start}Note:{em_end} When you enter strings as policy values, ensure that"
 " you use double quotation marks (&quot;) around the string. Do not use "
 "single quotation marks (&apos;)."
-msgstr ""
+msgstr "{em_start}注意：{em_end} ポリシーの値を入力する際にはダブルクォーテーション (&quot;) を使用するようにしてください。 シングルクォーテーションは使用しないでください (&apos;)。"
 
 #: cms/templates/settings_graders.html:3
 msgid "Grading Settings"
-msgstr ""
+msgstr "採点設定"
 
 #: cms/templates/settings_graders.html:46
 msgid "Overall Grade Range"
-msgstr ""
+msgstr "全評価レンジ"
 
 #: cms/templates/settings_graders.html:47
 msgid "Your overall grading scale for student final grades"
-msgstr ""
+msgstr "受講者の最終評価についての全評価スケール"
 
 #: cms/templates/settings_graders.html:82
 msgid "Credit Grade &amp; Eligibility"
@@ -2644,89 +2657,89 @@ msgstr ""
 
 #: cms/templates/settings_graders.html:99
 msgid "Grading Rules &amp; Policies"
-msgstr ""
+msgstr "評価のルールとポリシー"
 
 #: cms/templates/settings_graders.html:100
 msgid "Deadlines, requirements, and logistics around grading student work"
-msgstr ""
+msgstr "受講生の提出物のグレーディングに関する、締め切り、条件、運用"
 
 #: cms/templates/settings_graders.html:105
 msgid "Grace Period on Deadline:"
-msgstr ""
+msgstr "締切までの期間"
 
 #: cms/templates/settings_graders.html:107
 msgid "Leeway on due dates"
-msgstr ""
+msgstr "締切の猶予"
 
 #: cms/templates/settings_graders.html:115
 msgid "Assignment Types"
-msgstr ""
+msgstr "課題の種類"
 
 #: cms/templates/settings_graders.html:116
 msgid "Categories and labels for any exercises that are gradable"
-msgstr ""
+msgstr "グレーディング可能なエクササイズに適用するカテゴリーとラベル"
 
 #: cms/templates/settings_graders.html:125
 msgid "New Assignment Type"
-msgstr ""
+msgstr "新しい課題の種類"
 
 #: cms/templates/settings_graders.html:134
 msgid "What can I do on this page?"
-msgstr ""
+msgstr "このページで何ができるのか？"
 
 #: cms/templates/settings_graders.html:135
 msgid ""
 "You can use the slider under Overall Grade Range to specify whether your "
 "course is pass/fail or graded by letter, and to establish the thresholds for"
 " each grade."
-msgstr ""
+msgstr "全評価レンジの下にあるスライダーで各評価ごとに基準を設定することができ、合格/不合格か文字で評価するのかを設定することができます。"
 
 #: cms/templates/settings_graders.html:137
 msgid ""
 "You can specify whether your course offers students a grace period for late "
 "assignments."
-msgstr ""
+msgstr "遅れた受講者の受け入れる猶予期間を認めるのか設定することができます。"
 
 #: cms/templates/settings_graders.html:138
 msgid ""
 "You can also create assignment types, such as homework, labs, quizzes, and "
 "exams, and specify how much of a student's grade each assignment type is "
 "worth."
-msgstr ""
+msgstr "宿題、ラボ、クイズ、試験などの割り当てタイプを作成することができ、それぞれの割り当てがどれほど価値があるか定義できます。"
 
 #: cms/templates/studio_xblock_wrapper.html:57
 #: cms/templates/studio_xblock_wrapper.html:59
 msgid "Expand or Collapse"
-msgstr ""
+msgstr "広げるまたはたたむ"
 
 #: cms/templates/studio_xblock_wrapper.html:77
 msgid "Visibility Settings"
-msgstr ""
+msgstr "閲覧状況設定"
 
 #: cms/templates/studio_xblock_wrapper.html:79
 msgid "Visibility"
-msgstr ""
+msgstr "閲覧状況"
 
 #: cms/templates/studio_xblock_wrapper.html:121
 msgid "This block contains multiple components."
-msgstr ""
+msgstr "このブロックは複数のアイテムを含みます。"
 
 #: cms/templates/temp-course-landing.html:36
 msgid "{platform_name} edge"
-msgstr ""
+msgstr "{platform_name} edge"
 
 #: cms/templates/textbooks.html:9 cms/templates/textbooks.html:40
 #: cms/templates/widgets/header.html:75
 msgid "Textbooks"
-msgstr ""
+msgstr "テキスト"
 
 #: cms/templates/textbooks.html:47
 msgid "New Textbook"
-msgstr ""
+msgstr "新しいテキスト"
 
 #: cms/templates/textbooks.html:61
 msgid "Why should I break my textbook into chapters?"
-msgstr ""
+msgstr "どうしてテキストブックを章に分けた方がよいのか？"
 
 #: cms/templates/textbooks.html:62
 msgid ""
@@ -2734,31 +2747,31 @@ msgid ""
 "students, especially those with slow Internet connections. Breaking up "
 "textbooks into chapters can also help students more easily find topic-based "
 "information."
-msgstr ""
+msgstr "テキストを複数の章に分けることにより、遅いインターネット接続の受講者のロード時間を短縮することができます。また、テキストを章に分けることによりトピックで情報を見つけやすくなります。"
 
 #: cms/templates/textbooks.html:65
 msgid "What if my book isn't divided into chapters?"
-msgstr ""
+msgstr "私の書籍がチャプタに分割されなかったらどうなるか？"
 
 #: cms/templates/textbooks.html:66
 msgid ""
 "If your textbook doesn't have individual chapters, you can upload the entire"
 " text as a single chapter and enter a name of your choice in the Chapter "
 "Name field."
-msgstr ""
+msgstr "もし、テキストに独立した章が無い場合は、テキスト全部を１つの章としてアップロードし、チャプター名の欄で名前を決めることができます。"
 
 #: cms/templates/textbooks.html:70
 msgid "Learn more about textbooks"
-msgstr ""
+msgstr "テキストについてもっと学ぶ"
 
 #: cms/templates/videos_index.html:8 cms/templates/videos_index.html:42
 #: cms/templates/widgets/header.html:79
 msgid "Video Uploads"
-msgstr ""
+msgstr "ビデオのアップロード"
 
 #: cms/templates/videos_index.html:62
 msgid "Why upload video files?"
-msgstr ""
+msgstr "なぜビデオをアップロードするのか"
 
 #: cms/templates/videos_index.html:63
 msgid ""
@@ -2766,22 +2779,22 @@ msgid ""
 "multiple formats. After you upload an original video file in .mp4 or .mov "
 "format on this page, an automated process creates those additional formats "
 "and stores them for you."
-msgstr ""
+msgstr "ビデオを違うデバイスで再生するには複数のフォーマットである必要があります。このページでオリジナルビデオを.mp4フォーマットまたは.movフォーマットでアップロードした後、自動実行されるプロセスで追加のフォーマットが作られ格納されます。"
 
 #: cms/templates/videos_index.html:64
 msgid "Monitoring files as they upload"
-msgstr ""
+msgstr "アップロードする際にモニタリングする"
 
 #: cms/templates/videos_index.html:65
 msgid ""
 "Each video file that you upload needs to reach the video processing servers "
 "successfully before additional work can begin. You can monitor the progress "
 "of files as they upload, and try again if the upload fails."
-msgstr ""
+msgstr "次の処理をする前にすべてのビデオはビデオ処理サーバに到達する必要があります。アップロード中に進捗を参照することができ、アップロードが失敗した場合はもう一度実行してください。"
 
 #: cms/templates/videos_index.html:66
 msgid "Managing uploaded files"
-msgstr ""
+msgstr "アップロードファイルの管理"
 
 #: cms/templates/videos_index.html:67
 msgid ""
@@ -2791,17 +2804,17 @@ msgid ""
 "soon as it has a unique video ID and the status is {em_start}Ready{em_end}. "
 "Allow 24 hours for file processing at the external video hosting sites to "
 "complete."
-msgstr ""
+msgstr "ファイルのアップロードが成功した後、自動処理が始まります。自動処理が開始された後、事前アプロードにあるファイルが{em_start}処理中{em_end}となります。一意のビデオIDが生成され、 ステータスが{em_start}準備完了{em_end}になったら講座にビデオを追加することができます。外部のビデオ提供サイトの処理が完了するするために24時間必要です。"
 
 #: cms/templates/videos_index.html:68
 msgid ""
 "If something goes wrong, the {em_start}Failed{em_end} status message "
 "appears. Check for problems in your original file and upload a replacement."
-msgstr ""
+msgstr "何か問題が発生した場合、{em_start}失敗{em_end}メッセージが表示されます。オリジナルのファイルにある問題を確認し、修正したファイルをアップロードしてください。"
 
 #: cms/templates/videos_index.html:69
 msgid "How do I get the videos into my course?"
-msgstr ""
+msgstr "どのようにビデオを講座に取り込みますか？"
 
 #: cms/templates/videos_index.html:70
 msgid ""
@@ -2816,18 +2829,18 @@ msgstr ""
 
 #: cms/templates/visibility_editor.html:18
 msgid "No content groups exist"
-msgstr ""
+msgstr "コンテンツグループが存在しません"
 
 #: cms/templates/visibility_editor.html:21
 msgid ""
 "Use content groups to give groups of students access to a specific set of "
 "course content. Create one or more content groups, and make specific "
 "components visible to them."
-msgstr ""
+msgstr "受講者グループに特定のセットの講座を受講させる場合にはコンテンツグループを使用します。１つ以上のコンテンツグループを作成し、特定のコンポーネントを表示閲覧可能にしてください。"
 
 #: cms/templates/visibility_editor.html:25
 msgid "Manage content groups"
-msgstr ""
+msgstr "コンテンツグループの管理"
 
 #. Translators: Any text between {screen_reader_start} and {screen_reader_end}
 #. is only read by screen readers and never shown in the browser.
@@ -2836,97 +2849,97 @@ msgid ""
 "{screen_reader_start}Warning:{screen_reader_end} The Unit this component is "
 "contained in is hidden from students. Visibility settings here will be "
 "trumped by this."
-msgstr ""
+msgstr "{screen_reader_start}注意：{screen_reader_end} この単元に含まれるコンポーネントは受講者に表示されません。ここで設定された表示設定はこれにより上書きされます。"
 
 #: cms/templates/visibility_editor.html:49
 msgid "Make visible to:"
-msgstr ""
+msgstr "次の人に表示する："
 
 #: cms/templates/visibility_editor.html:57
 msgid "All Students and Staff"
-msgstr ""
+msgstr "すべての受講者とスタッフ"
 
 #: cms/templates/visibility_editor.html:62
 msgid "Specific Content Groups"
-msgstr ""
+msgstr "特定のコンテンツグループ"
 
 #: cms/templates/visibility_editor.html:91
 msgid "Deleted Content Group"
-msgstr ""
+msgstr "削除されたコンテンツグループ"
 
 #: cms/templates/visibility_editor.html:92
 msgid ""
 "Content group no longer exists. Please choose another or allow access to All"
 " Students and staff"
-msgstr ""
+msgstr "コンテンツグループはもう存在しません。すべての受講者とスタッフに対して他のアクセス許可を与えてください。"
 
 #: cms/templates/emails/activation_email.txt:3
 msgid ""
 "Thank you for signing up for {studio_name}! To activate your account, please"
 " copy and paste this address into your web browser's address bar:"
-msgstr ""
+msgstr "{studio_name}に登録いただきありがとうござ合います。アカウントを有効化するにはこのアドレスをウェブブラウザのアドレスバーにコピー＆ペーストしてください。"
 
 #: cms/templates/emails/activation_email.txt:11
 msgid ""
 "If you didn't request this, you don't need to do anything; you won't receive"
 " any more email from us. Please do not reply to this e-mail; if you require "
 "assistance, check the help section of the {studio_name} web site."
-msgstr ""
+msgstr "もしこれをリクエストしていないのであれば、何もする必要はありません。私たちからのメールをこれ以上、受け取りません。このメールには返信しないでください。もし、支援が必要であれば、{studio_name}のウェブサイトのヘルプを参照してください。"
 
 #: cms/templates/emails/activation_email_subject.txt:2
 msgid "Your account for {studio_name}"
-msgstr ""
+msgstr "{studio_name}のアカウント"
 
 #: cms/templates/emails/course_creator_admin_subject.txt:2
 msgid "{email} has requested {studio_name} course creator privileges on edge"
-msgstr ""
+msgstr "{email} は{studio_name}でのコース製作者の特権をedgeにおいて要求しました"
 
 #: cms/templates/emails/course_creator_admin_user_pending.txt:2
 msgid ""
 "User '{user}' with e-mail {email} has requested {studio_name} course creator"
 " privileges on edge."
-msgstr ""
+msgstr "メールアドレス {email} である'{user}'は{studio_name}コース製作者の特権をedgeにおいて要求しました。"
 
 #: cms/templates/emails/course_creator_admin_user_pending.txt:5
 msgid "To grant or deny this request, use the course creator admin table."
-msgstr ""
+msgstr "この要求を承認もしくは却下するには、講座制作者の管理テーブルを使ってください。"
 
 #: cms/templates/emails/course_creator_denied.txt:3
 msgid ""
 "Your request for course creation rights to {studio_name} have been denied. "
 "If you believe this was in error, please contact {email}"
-msgstr ""
+msgstr "{studio_name}におけるコース作成権限の取得要求は却下されました。これがエラーだと思われる場合には、{email}へコンタクトをお願いします。"
 
 #: cms/templates/emails/course_creator_granted.txt:3
 msgid ""
 "Your request for course creation rights to {studio_name} have been granted. To create your first course, visit\n"
 "\n"
 "{url}"
-msgstr ""
+msgstr "{studio_name}におけるコース作成権限の取得要求は承認されました。最初のコースを作成するには次の場所を進んでください\n\n{url}"
 
 #: cms/templates/emails/course_creator_revoked.txt:3
 msgid ""
 "Your course creation rights to {studio_name} have been revoked. If you "
 "believe this was in error, please contact {email}"
-msgstr ""
+msgstr "あなたの{studio_name}におけるコース作成権限は失効しました。もしこれがエラーだと思うのであれば、{email}へコンタクトをお願いします。"
 
 #: cms/templates/emails/course_creator_subject.txt:2
 msgid "Your course creator status for {studio_name}"
-msgstr ""
+msgstr "{studio_name}におけるコース作成権限の状況"
 
 #: cms/templates/registration/activation_complete.html:28
 msgid "You can now {link_start}login{link_end}."
-msgstr ""
+msgstr " {link_start} ログイン {link_end}できます。"
 
 #: cms/templates/registration/reg_complete.html:3
 msgid ""
 "An activation link has been sent to {email}, along with instructions for "
 "activating your account."
-msgstr ""
+msgstr "アクティベーションリンクが アカウントをアクティベートする方法とともに {email} に送信されました。"
 
 #: cms/templates/widgets/footer.html:24 cms/templates/widgets/sock.html:58
 msgid "Contact Us"
-msgstr ""
+msgstr "お問い合わせ"
 
 #. Translators: 'EdX', 'edX', 'Studio', and 'Open edX' are trademarks of 'edX
 #. Inc.'. Please do not translate any of these trademarks and company names.
@@ -2934,7 +2947,7 @@ msgstr ""
 msgid ""
 "EdX, Open edX, Studio, and the edX and Open edX logos are registered "
 "trademarks or trademarks of {link_start}edX Inc.{link_end}"
-msgstr ""
+msgstr "EdX、Open edX、StudioおよびedX、Open edXロゴは {link_start}edX Inc.{link_end} の商標または登録商標です。"
 
 #: cms/templates/widgets/footer.html:44 cms/templates/widgets/footer.html:45
 msgid "Powered by Open edX"
@@ -2942,123 +2955,123 @@ msgstr ""
 
 #: cms/templates/widgets/header.html:46
 msgid "Current Course:"
-msgstr ""
+msgstr "学習中の講座："
 
 #: cms/templates/widgets/header.html:53 cms/templates/widgets/header.html:57
 #: cms/templates/widgets/header.html:88 cms/templates/widgets/header.html:163
 msgid "Course"
-msgstr ""
+msgstr "講座"
 
 #: cms/templates/widgets/header.html:63
 msgid "Outline"
-msgstr ""
+msgstr "アウトライン"
 
 #: cms/templates/widgets/header.html:66
 msgid "Updates"
-msgstr ""
+msgstr "最近"
 
 #: cms/templates/widgets/header.html:94
 msgid "Schedule &amp; Details"
-msgstr ""
+msgstr "スケジュールと詳細"
 
 #: cms/templates/widgets/header.html:128
 msgid "Checklists"
-msgstr ""
+msgstr "チェックリスト"
 
 #: cms/templates/widgets/header.html:131 cms/templates/widgets/header.html:186
 msgid "Import"
-msgstr ""
+msgstr "インポート"
 
 #: cms/templates/widgets/header.html:134 cms/templates/widgets/header.html:189
 msgid "Export"
-msgstr ""
+msgstr "エクスポート"
 
 #: cms/templates/widgets/header.html:156
 msgid "Current Library:"
-msgstr ""
+msgstr "現在のライブラリ："
 
 #: cms/templates/widgets/header.html:168
 msgid "Library"
-msgstr ""
+msgstr "ライブラリ"
 
 #: cms/templates/widgets/header.html:202 cms/templates/widgets/header.html:229
 msgid "Account"
-msgstr ""
+msgstr "アカウント"
 
 #: cms/templates/widgets/header.html:203 cms/templates/widgets/header.html:230
 msgid "Account Navigation"
-msgstr ""
+msgstr "アカウントのナビゲーション"
 
 #: cms/templates/widgets/header.html:206 cms/templates/widgets/header.html:233
 msgid "Contextual Online Help"
-msgstr ""
+msgstr "コンテキストによるオンラインヘルプ"
 
 #: cms/templates/widgets/header.html:210
 msgid "Currently signed in as:"
-msgstr ""
+msgstr "サインインしています："
 
 #: cms/templates/widgets/metadata-edit.html:34
 msgid "Launch Latex Source Compiler"
-msgstr ""
+msgstr "Latexコンパイラを起動する"
 
 #: cms/templates/widgets/problem-edit.html:16
 #: cms/templates/widgets/problem-edit.html:46
 msgid "Heading 1"
-msgstr ""
+msgstr "見出し1"
 
 #: cms/templates/widgets/problem-edit.html:18
 #: cms/templates/widgets/problem-edit.html:57
 msgid "Multiple Choice"
-msgstr ""
+msgstr "多項選択"
 
 #: cms/templates/widgets/problem-edit.html:20
 #: cms/templates/widgets/problem-edit.html:68
 msgid "Checkboxes"
-msgstr ""
+msgstr "チェックボックス"
 
 #: cms/templates/widgets/problem-edit.html:22
 #: cms/templates/widgets/problem-edit.html:79
 msgid "Text Input"
-msgstr ""
+msgstr "テキスト入力"
 
 #: cms/templates/widgets/problem-edit.html:24
 #: cms/templates/widgets/problem-edit.html:90
 msgid "Numerical Input"
-msgstr ""
+msgstr "数字入力"
 
 #: cms/templates/widgets/problem-edit.html:26
 #: cms/templates/widgets/problem-edit.html:100
 msgid "Dropdown"
-msgstr ""
+msgstr "ドロップダウン"
 
 #: cms/templates/widgets/problem-edit.html:28
 #: cms/templates/widgets/problem-edit.html:115
 msgid "Explanation"
-msgstr ""
+msgstr "説明"
 
 #: cms/templates/widgets/problem-edit.html:32
 msgid "Advanced Editor"
-msgstr ""
+msgstr "詳細エディタ"
 
 #: cms/templates/widgets/problem-edit.html:33
 msgid "Toggle Cheatsheet"
-msgstr ""
+msgstr "Cheatsheetを切り替える"
 
 #: cms/templates/widgets/problem-edit.html:109
 msgid "Label"
-msgstr ""
+msgstr "ラベル"
 
 #: cms/templates/widgets/sock.html:10
 msgid "Looking for help with {studio_name}?"
-msgstr ""
+msgstr "{studio_name}用ヘルプを探していますか？"
 
 #: cms/templates/widgets/sock.html:11
 msgid "Hide {studio_name} Help"
-msgstr ""
+msgstr "{studio_name}のヘルプを非表示"
 
 #: cms/templates/widgets/sock.html:19 cms/templates/widgets/sock.html:23
 msgid "{studio_name} Documentation"
-msgstr ""
+msgstr "{studio_name}ドキュメント"
 
 #: cms/templates/widgets/sock.html:26
 msgid ""
@@ -3066,27 +3079,27 @@ msgid ""
 "information about the page you're on. You can also use the links below to "
 "download the Building and Running an {platform_name} Course PDF file, to go "
 "to the {platform_name} Author Support site, or to enroll in edX101."
-msgstr ""
+msgstr "全てのページの右上部分に、あなたが今いるページに関する詳細情報を記載したHelpがあります。作成・管理している{platform_name} 講座PDFのダウンロード部分の下のリンクからは、{platform_name} 製作サポートサイトへ移動したり、edX101への登録をしたりできます。"
 
 #: cms/templates/widgets/sock.html:31
 msgid "Building and Running an {platform_name} Course PDF"
-msgstr ""
+msgstr "{platform_name}講座PDFの作成と管理"
 
 #: cms/templates/widgets/sock.html:36 cms/templates/widgets/sock.html:37
 msgid "{studio_name} Author Support"
-msgstr ""
+msgstr "{studio_name}設計者サポート"
 
 #: cms/templates/widgets/sock.html:42
 msgid "Enroll in edX101"
-msgstr ""
+msgstr "edX101を受講する"
 
 #: cms/templates/widgets/sock.html:43
 msgid "How to use {studio_name} to build your course"
-msgstr ""
+msgstr "{studio_name}を使ってコースを設計するには"
 
 #: cms/templates/widgets/sock.html:53
 msgid "Have problems, questions, or suggestions about {studio_name}?"
-msgstr ""
+msgstr "{studio_name}に関する質問、要望はありますか？"
 
 #: cms/templates/widgets/tabs-aggregator.html:8
 msgid "name"
