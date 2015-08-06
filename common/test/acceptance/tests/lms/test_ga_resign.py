@@ -10,12 +10,12 @@ from bok_choy.web_app_test import WebAppTest
 from ...pages.lms.auto_auth import AutoAuthPage
 from ...pages.lms.account_settings import AccountSettingsPage
 from ...pages.lms.ga_dashboard import DashboardPage
-from ...pages.lms.ga_login import LoginPage
 from ...pages.lms.ga_resign import (
     DisabledAccountPage,
     ResignCompletePage,
     ResignConfirmPage
 )
+from ...pages.lms.login_and_register import CombinedLoginAndRegisterPage
 from ..ga_helpers import GaccoTestMixin
 from lms.envs.bok_choy import EMAIL_FILE_PATH
 
@@ -85,9 +85,9 @@ class ResignTest(WebAppTest, GaccoTestMixin):
         bok_choy.browser.save_screenshot(self.browser, 'test_resign_success__2')
 
         # Fail to login and redirect to disabled account page
-        login_page = LoginPage(self.browser)
+        login_page = CombinedLoginAndRegisterPage(self.browser, start_page='login')
         login_page.visit()
-        login_page.login(self.email, self.password, False)
+        login_page.login(self.email, self.password)
         DisabledAccountPage(self.browser).wait_for_page()
         bok_choy.browser.save_screenshot(self.browser, 'test_resign_success__3')
 

@@ -15,10 +15,10 @@ from ...pages.common.logout import LogoutPage
 from ...pages.lms import BASE_URL
 from ...pages.lms.auto_auth import AutoAuthPage
 from ...pages.lms.ga_authorize import (
-    AuthorizePage, AuthorizeConfirmPage, LoginPage as AuthorizeLoginPage,
+    AuthorizePage, AuthorizeConfirmPage,
 )
 from ...pages.lms.ga_dashboard import DashboardPage
-from ...pages.lms.ga_login import LoginPage
+from ...pages.lms.login_and_register import CombinedLoginAndRegisterPage
 from ..ga_helpers import GaccoTestMixin
 from ..helpers import UniqueCourseTest
 
@@ -60,10 +60,14 @@ class AuthorizeTest(UniqueCourseTest, GaccoTestMixin):
         # Set window size
         self.setup_window_size_for_pc()
 
-    def _access_authorize_page(self, response_type, client_id, redirect_uri, scope, state, nonce):
+    def _access_authorize_page(self, response_type, client_id, redirect_uri, scope, state, nonce, next_page=None):
+        if next_page is None:
+            next_page = self.authorize_confirm_page
+
         AuthorizePage(self.browser, response_type, client_id, redirect_uri, scope, state, nonce).visit()
         if self.browser.get_cookie(EDXMKTG_LOGGED_IN_COOKIE_NAME) is None:
-            AuthorizeLoginPage(self.browser).login(self.user['email'], 'edx')
+            CombinedLoginAndRegisterPage(self.browser, start_page='login').login(self.user['email'], 'edx')
+            next_page.wait_for_page()
 
     def _create_user(self, user, staff):
         AutoAuthPage(
@@ -211,14 +215,8 @@ class AuthorizeTest(UniqueCourseTest, GaccoTestMixin):
         nonce = 'dummy_nonce'
 
         # Access to authorize page
-        AuthorizePage(self.browser, 'code', self.client_id, redirect_uri, scope, state, nonce).visit()
-
-        login_page = LoginPage(self.browser)
-        login_page.wait_for_page()
-        login_page.login(self.user['email'], 'edx')
-
         # Bypass the AuthorizePage
-        DashboardPage(self.browser).wait_for_page()
+        self._access_authorize_page('code', self.client_id, redirect_uri, scope, state, nonce, next_page=DashboardPage(self.browser))
 
         result_url = urlparse.urlparse(self.browser.current_url)
         # Check state is keeping
