@@ -319,5 +319,3 @@ class CMSVideoTest(CMSVideoBaseTest):
         self.save_unit_settings()
 
         self.video.click_player_button('play')
-
-        self.assertTrue(self.video.is_slider_range_visible)
