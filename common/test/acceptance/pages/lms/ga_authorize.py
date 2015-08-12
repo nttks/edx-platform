@@ -6,7 +6,7 @@ import urllib
 from bok_choy.page_object import PageObject
 from . import BASE_URL
 
-from .ga_login import LoginPage as _LoginPage
+from ...pages.lms.login_and_register import CombinedLoginAndRegisterPage
 
 
 class AuthorizePage(PageObject):
@@ -47,7 +47,7 @@ class AuthorizePage(PageObject):
         if self.browser.get_cookie('edxloggedin'):
             return AuthorizeConfirmPage(self.browser).is_browser_on_page()
         else:
-            return LoginPage(self.browser).is_browser_on_page()
+            return CombinedLoginAndRegisterPage(self.browser, start_page='login').is_browser_on_page()
 
 
 class AuthorizeConfirmPage(PageObject):
@@ -88,20 +88,3 @@ class AuthorizeConfirmPage(PageObject):
         Click the Cancel button
         """
         self.q(css='button.action-cancel').click()
-
-
-class LoginPage(_LoginPage):
-    """
-    Login page for OIDC
-    """
-
-    def submit(self, next_page=True):
-        """
-        Submit registration info to create an account.
-        """
-        self.q(css='button#submit').first.click()
-
-        # The next page is the authorize confirm page; make sure it loads
-        authroize = AuthorizeConfirmPage(self.browser)
-        authroize.wait_for_page()
-        return authroize

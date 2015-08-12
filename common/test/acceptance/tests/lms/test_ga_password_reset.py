@@ -10,8 +10,8 @@ from ...pages.common.logout import LogoutPage
 from ...pages.lms.account_settings import AccountSettingsPage
 from ...pages.lms.auto_auth import AutoAuthPage
 from ...pages.lms.ga_dashboard import DashboardPage
-from ...pages.lms.ga_login import LoginPage
 from ...pages.lms.ga_password_reset import PasswordResetCompletePage, PasswordResetConfirmPage
+from ...pages.lms.login_and_register import CombinedLoginAndRegisterPage
 from ..ga_helpers import GaccoTestMixin
 from lms.envs.bok_choy import (
     EMAIL_FILE_PATH,
@@ -87,9 +87,9 @@ class PasswordResetTest(WebAppTest, GaccoTestMixin):
         bok_choy.browser.save_screenshot(self.browser, 'test_reset_password_success__3')
 
         # Fail to login with old password
-        login_page = LoginPage(self.browser)
+        login_page = CombinedLoginAndRegisterPage(self.browser, start_page='login')
         login_page.visit()
-        login_page.login(self.email, self.password, False)
+        login_page.login(self.email, self.password)
         self.assertIn(u"Email or password is incorrect.", login_page.wait_for_errors())
         bok_choy.browser.save_screenshot(self.browser, 'test_reset_password_success__4')
 
