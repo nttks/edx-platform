@@ -12,8 +12,10 @@ from bok_choy.web_app_test import WebAppTest
 from lms.envs.bok_choy import EMAIL_FILE_PATH
 from ...fixtures.course import CourseFixture
 from ...pages.lms import BASE_URL
+from ...pages.lms.ga_dashboard import DashboardPage
 from ...pages.lms.ga_header_footer import HeaderPage, FooterPage
-from ...pages.lms.ga_register import RegisterPage, ActivationPage
+from ...pages.lms.ga_register import ActivationPage
+from ...pages.lms.login_and_register import CombinedLoginAndRegisterPage
 from ..ga_helpers import GaccoTestMixin
 
 
@@ -41,7 +43,7 @@ class RegistrationTest(WebAppTest, GaccoTestMixin):
         """
         super(RegistrationTest, self).setUp()
 
-        self.register_page = RegisterPage(self.browser)
+        self.register_page = CombinedLoginAndRegisterPage(self.browser)
         self.header_page = HeaderPage(self.browser)
         self.footer_page = FooterPage(self.browser)
 
@@ -105,8 +107,12 @@ class RegistrationTest(WebAppTest, GaccoTestMixin):
         self.assert_header_footer_link(is_login=False)
 
         # User ragistration
-        self.register_page.provide_info(self.EMAIL, self.PASSWORD, self.USERNAME, self.FULL_NAME)
-        dashboard_page = self.register_page.submit()
+        self.register_page.register(
+            email=self.EMAIL, password=self.PASSWORD, username=self.USERNAME,
+            full_name=self.FULL_NAME, terms_of_service=True
+        )
+        dashboard_page = DashboardPage(self.browser)
+        dashboard_page.wait_for_page()
 
         # Check successfully registerered and logged in.
         self.assertIn(self.EMAIL, dashboard_page.activation_message[0])

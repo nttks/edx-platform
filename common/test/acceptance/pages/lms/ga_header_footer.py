@@ -32,7 +32,7 @@ class FooterPage(PageObject):
     url = None
 
     def is_browser_on_page(self):
-        return self.q(css='div.edxyfooter footer').present
+        return self.q(css='#footer-openedx').present
 
     @property
     def blog_link(self):
@@ -42,4 +42,4 @@ class FooterPage(PageObject):
         """
         Returns the url of navigation link by specified class name.
         """
-        return self.q(css='div.edxyfooter footer nav.nav-colophon .{} a'.format(class_name)).attrs('href')[0]
+        return self.q(css='#footer-openedx nav.nav-colophon .{} a'.format(class_name)).attrs('href')[0]
