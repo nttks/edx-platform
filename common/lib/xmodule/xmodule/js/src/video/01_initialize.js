@@ -16,6 +16,8 @@ define(
 'video/01_initialize.js',
 ['video/03_video_player.js', 'video/00_video_storage.js', 'video/00_i18n.js'],
 function (VideoPlayer, VideoStorage, i18n) {
+    var moment = window.moment;
+
     /**
      * @function
      *
@@ -31,6 +33,9 @@ function (VideoPlayer, VideoStorage, i18n) {
 
         state.initialize(element)
             .done(function () {
+                if (state.isYoutubeType()) {
+                    state.parseSpeed();
+                }
                 // On iPhones and iPods native controls are used.
                 if (/iP(hone|od)/i.test(state.isTouch[0])) {
                     _hideWaitPlaceholder(state);
@@ -64,6 +69,7 @@ function (VideoPlayer, VideoStorage, i18n) {
         getCurrentLanguage: getCurrentLanguage,
         getDuration: getDuration,
         getPlayerMode: getPlayerMode,
+        getVideoMetadata: getVideoMetadata,
         initialize: initialize,
         isHtml5Mode: isHtml5Mode,
         isFlashMode: isFlashMode,
@@ -75,7 +81,10 @@ function (VideoPlayer, VideoStorage, i18n) {
         setSpeed: setSpeed,
         speedToString: speedToString,
         trigger: trigger,
-        youtubeId: youtubeId
+        youtubeId: youtubeId,
+        loadHtmlPlayer: loadHtmlPlayer,
+        loadYoutubePlayer: loadYoutubePlayer,
+        loadYouTubeIFrameAPI: loadYouTubeIFrameAPI
     },
 
         _youtubeApiDeferred = null,
@@ -126,6 +135,9 @@ function (VideoPlayer, VideoStorage, i18n) {
             onYTApiReady = function () {
                 console.log('[Video info]: YouTube API is available and is loaded.');
 
+                if (state.htmlPlayerLoaded) { return; }
+
+                console.log('[Video info]: Starting YouTube player.');
                 video = VideoPlayer(state);
 
                 state.modules.push(video);
@@ -178,7 +190,6 @@ function (VideoPlayer, VideoStorage, i18n) {
                 if (!_youtubeApiDeferred) {
                     _youtubeApiDeferred = $.Deferred();
                     setupOnYouTubeIframeAPIReady();
-                    _loadYoutubeApi(state);
                 } else if (!window.onYouTubeIframeAPIReady || !window.onYouTubeIframeAPIReady.done) {
                     // The Deferred object could have been already defined in a previous
                     // initialization of the video module. However, since then the global variable
@@ -200,21 +211,32 @@ function (VideoPlayer, VideoStorage, i18n) {
 
             state.modules.push(video);
             state.__dfd__.resolve();
+            state.htmlPlayerLoaded = true;
         }
     }
 
-    function _loadYoutubeApi(state) {
-        console.log('[Video info]: YouTube API is not loaded. Will try to load...');
+    function _waitForYoutubeApi(state) {
+        console.log('[Video info]: Starting to wait for YouTube API to load.');
 
         window.setTimeout(function () {
             // If YouTube API will load OK, it will run `onYouTubeIframeAPIReady`
             // callback, which will set `state.youtubeApiAvailable` to `true`.
             // If something goes wrong at this stage, `state.youtubeApiAvailable` is
             // `false`.
-            _reportToServer(state, state.youtubeApiAvailable);
+            if (!state.youtubeApiAvailable) {
+                console.log('[Video info]: YouTube API is not available.');
+                if (!state.htmlPlayerLoaded) {
+                    state.loadHtmlPlayer();
+                }
+            }
+            state.el.trigger('youtube_availability', [state.youtubeApiAvailable]);
         }, state.config.ytTestTimeout);
 
-        $.getScript(document.location.protocol + '//' + state.config.ytApiUrl);
+    }
+
+    function loadYouTubeIFrameAPI(scriptTag) {
+        var firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag.parentNode.insertBefore(scriptTag, firstScriptTag);
     }
 
     function _reportToServer(state, youtubeIsAvailable) {
@@ -457,6 +479,50 @@ function (VideoPlayer, VideoStorage, i18n) {
         });
     }
 
+    function loadYoutubePlayer() {
+        if (this.htmlPlayerLoaded) { return; }
+
+        console.log(
+            '[Video info]: Fetch metadata for YouTube video.'
+        );
+
+        this.fetchMetadata();
+        this.parseSpeed();
+    }
+
+    function loadHtmlPlayer() {
+
+        // When the youtube link doesn't work for any reason
+        // (for example, firewall) any
+        // alternate sources should automatically play.
+        if (!_prepareHTML5Video(this)) {
+            console.log(
+                '[Video info]: Continue loading ' +
+                'YouTube video.'
+            );
+
+            // Non-YouTube sources were not found either.
+
+            this.el.find('.video-player div')
+                .removeClass('hidden');
+            this.el.find('.video-player h3')
+                .addClass('hidden');
+
+            // If in reality the timeout was to short, try to
+            // continue loading the YouTube video anyways.
+            this.loadYoutubePlayer();
+        } else {
+            console.log(
+                '[Video info]: Start HTML5 player.'
+            );
+
+            // In-browser HTML5 player does not support quality
+            // control.
+            this.el.find('a.quality_control').hide();
+            _renderElements(this);
+        }
+    }
+
     // function initialize(element)
     // The function set initial configuration and preparation.
 
@@ -493,7 +559,7 @@ function (VideoPlayer, VideoStorage, i18n) {
         // jQuery .data() return object with keys in lower camelCase format.
         this.config = $.extend({}, _getConfiguration(el.data(), storage), {
             element: element,
-            fadeOutTimeout:     1400,
+            fadeOutTimeout: 1400,
             captionsFreezeTime: 10000,
             mode: $.cookie('edX_video_player_mode'),
             // Available HD qualities will only be accessible once the video has
@@ -509,6 +575,9 @@ function (VideoPlayer, VideoStorage, i18n) {
         this.speed = this.speedToString(
             this.config.speed || this.config.generalSpeed
         );
+        this.htmlPlayerLoaded = false;
+
+        _setConfigurations(this);
 
         if (!(_parseYouTubeIDs(this))) {
 
@@ -521,24 +590,30 @@ function (VideoPlayer, VideoStorage, i18n) {
             }
 
             console.log('[Video info]: Start player in HTML5 mode.');
-
-            _setConfigurations(this);
             _renderElements(this);
         } else {
+            _renderElements(this);
 
-            console.log(
-                '[Video info]: Start player in YouTube mode.'
-            );
+            _waitForYoutubeApi(this);
 
-            self.fetchMetadata();
-            self.parseSpeed();
+            var scriptTag = document.createElement('script');
 
-            _setConfigurations(self);
-            _renderElements(self);
+            scriptTag.src = this.config.ytApiUrl;
+            scriptTag.async = true;
 
+            $(scriptTag).on('load', function() {
+                self.loadYoutubePlayer();
+            });
+            $(scriptTag).on('error', function() {
+                console.log(
+                    '[Video info]: YouTube returned an error for ' +
+                    'video with id "' + self.id + '".'
+                );
+                self.loadHtmlPlayer();
+            });
 
+            window.Video.loadYouTubeIFrameAPI(scriptTag);
         }
-
         return __dfd__.promise();
     }
 
@@ -586,20 +661,32 @@ function (VideoPlayer, VideoStorage, i18n) {
     //     example the length of the video can be determined from the meta
     //     data.
     function fetchMetadata() {
-        var _this = this;
+        var self = this,
+            metadataXHRs = [];
 
         this.metadata = {};
 
-        _this.el.trigger('metadata_received');
+        metadataXHRs = _.map(this.videos, function (url, speed) {
+            return self.getVideoMetadata(url, function (data) {
+                if (data.items.length > 0) {
+                    var metaDataItem = data.items[0];
+                    self.metadata[metaDataItem.id] = metaDataItem.contentDetails;
+                }
+            });
+        });
 
-        // Not only do we trigger the "metadata_received" event, we also
-        // set a flag to notify that metadata has been received. This
-        // allows for code that will miss the "metadata_received" event
-        // to know that metadata has been received. This is important in
-        // cases when some code will subscribe to the "metadata_received"
-        // event after it has been triggered.
-        _this.youtubeMetadataReceived = true;
+        $.when.apply(this, metadataXHRs).done(function () {
+            self.el.trigger('metadata_received');
 
+            // Not only do we trigger the "metadata_received" event, we also
+            // set a flag to notify that metadata has been received. This
+            // allows for code that will miss the "metadata_received" event
+            // to know that metadata has been received. This is important in
+            // cases when some code will subscribe to the "metadata_received"
+            // event after it has been triggered.
+            self.youtubeMetadataReceived = true;
+
+        });
     }
 
     // function parseSpeed()
@@ -634,6 +721,24 @@ function (VideoPlayer, VideoStorage, i18n) {
         if (updateStorage) {
             this.storage.setItem('speed', this.speed, true);
             this.storage.setItem('general_speed', this.speed);
+        }
+    }
+
+    function getVideoMetadata(url, callback) {
+        var successHandler, xhr;
+
+        if (typeof url !== 'string') {
+            url = this.videos['1.0'] || '';
+        }
+        // Will hit the API URL iF YT key is defined in settings.
+        if (this.config.ytKey) {
+            return $.ajax({
+                url: [this.config.ytTestUrl, '?id=', url, '&part=contentDetails&key=', this.config.ytKey].join(''),
+                timeout: this.config.ytTestTimeout,
+                success: _.isFunction(callback) ? callback : null
+            });
+        } else {
+            return $.Deferred().reject().promise();
         }
     }
 
@@ -674,11 +779,16 @@ function (VideoPlayer, VideoStorage, i18n) {
 
     function getDuration() {
         try {
-            return this.metadata[this.youtubeId()].duration;
+           return moment.duration(this.metadata[this.youtubeId()].duration, moment.ISO_8601).asSeconds();
         } catch (err) {
-            return _.result(this.metadata[this.youtubeId('1.0')], 'duration') || 0;
+            try{
+                return _.result(this.metadata[this.youtubeId('1.0')], 'duration');
+            } catch (err) {
+                return  0;
+            } 
         }
     }
+
 
     /**
      * Sets player mode.
