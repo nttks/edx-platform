@@ -13,6 +13,7 @@ class EdxNotesTab(EnrolledTab):
     """
 
     type = "edxnotes"
+    icon = 'fa fa-file-text'
     title = ugettext_noop("Notes")
     view_name = "edxnotes"
 

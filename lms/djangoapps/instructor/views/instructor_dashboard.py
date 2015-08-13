@@ -54,6 +54,7 @@ class InstructorDashboardTab(CourseTab):
     """
 
     type = "instructor"
+    icon = 'fa fa-gears'
     title = ugettext_noop('Instructor')
     view_name = "instructor_dashboard"
     is_dynamic = True    # The "Instructor" tab is instead dynamically added when it is enabled
