@@ -28,6 +28,7 @@ class CoursewareTab(EnrolledTab):
     The main courseware view.
     """
     type = 'courseware'
+    icon = 'fa fa-edit'
     title = ugettext_noop('Courseware')
     priority = 10
     view_name = 'courseware'
@@ -40,6 +41,7 @@ class CourseInfoTab(CourseTab):
     The course info view.
     """
     type = 'course_info'
+    icon = 'fa fa-info-circle'
     title = ugettext_noop('Course Info')
     priority = 20
     view_name = 'info'
@@ -57,6 +59,7 @@ class SyllabusTab(EnrolledTab):
     A tab for the course syllabus.
     """
     type = 'syllabus'
+    icon = 'fa fa-list-alt'
     title = ugettext_noop('Syllabus')
     priority = 30
     view_name = 'syllabus'
@@ -75,6 +78,7 @@ class ProgressTab(EnrolledTab):
     The course progress view.
     """
     type = 'progress'
+    icon = 'fa fa-bar-chart'
     title = ugettext_noop('Progress')
     priority = 40
     view_name = 'progress'
@@ -115,6 +119,7 @@ class TextbookTabs(TextbookTabsBase):
     A tab representing the collection of all textbook tabs.
     """
     type = 'textbooks'
+    icon = 'fa fa-book'
     priority = None
     view_name = 'book'
 
@@ -139,6 +144,7 @@ class PDFTextbookTabs(TextbookTabsBase):
     A tab representing the collection of all PDF textbook tabs.
     """
     type = 'pdf_textbooks'
+    icon = 'fa fa-book'
     priority = None
     view_name = 'pdf_book'
 
@@ -158,6 +164,7 @@ class HtmlTextbookTabs(TextbookTabsBase):
     A tab representing the collection of all Html textbook tabs.
     """
     type = 'html_textbooks'
+    icon = 'fa fa-book'
     priority = None
     view_name = 'html_book'
 
@@ -224,6 +231,7 @@ class ExternalDiscussionCourseTab(LinkTab):
     """
 
     type = 'external_discussion'
+    icon = 'fa fa-question-circle'
     # Translators: 'Discussion' refers to the tab in the courseware that leads to the discussion forums
     title = ugettext_noop('Discussion')
     priority = None
@@ -247,6 +255,7 @@ class ExternalLinkCourseTab(LinkTab):
     A course tab containing an external link.
     """
     type = 'external_link'
+    icon = 'fa fa-question-circle'
     priority = None
     is_default = False    # An external link tab is not added to a course by default
     allow_multiple = True
@@ -264,6 +273,7 @@ class SingleTextbookTab(CourseTab):
     Textbook collection tab.  It should not be serialized or persisted.
     """
     type = 'single_textbook'
+    icon = 'fa fa-book'
     is_movable = False
     is_collection_item = True
     priority = None

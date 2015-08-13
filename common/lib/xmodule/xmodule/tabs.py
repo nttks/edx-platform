@@ -229,6 +229,7 @@ class StaticTab(CourseTab):
     A custom tab.
     """
     type = 'static_tab'
+    icon = 'fa fa-circle'
     is_default = False  # A static tab is never added to a course by default
     allow_multiple = True
 

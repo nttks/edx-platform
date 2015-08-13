@@ -55,6 +55,7 @@ class DiscussionTab(EnrolledTab):
     """
 
     type = 'discussion'
+    icon = 'fa fa-comments'
     title = ugettext_noop('Discussion')
     priority = None
     view_name = 'django_comment_client.forum.views.forum_form_discussion'
