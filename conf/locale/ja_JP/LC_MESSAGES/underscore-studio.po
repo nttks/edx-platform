@@ -4,13 +4,15 @@
 # 
 # Translators:
 # watcafe, 2014
-# h_yoshida <h_yoshida@matsumo-sys.com>, 2014
+# h_yoshida <h_yoshida@matsumo-sys.com>, 2014-2015
+# Miyuki Harada <mykhrd@gmail.com>, 2015
+# Toshiboumi Ohta <ohta@securesky-tech.com>, 2015
 msgid ""
 msgstr ""
 "Project-Id-Version: edx-platform\n"
 "Report-Msgid-Bugs-To: openedx-translation@googlegroups.com\n"
-"POT-Creation-Date: 2015-02-26 16:06+0000\n"
-"PO-Revision-Date: 2015-02-20 21:40+0000\n"
+"POT-Creation-Date: 2015-07-06 12:00+0000\n"
+"PO-Revision-Date: 2015-06-29 01:43+0000\n"
 "Last-Translator: Sarina Canelake <sarina@edx.org>\n"
 "Language-Team: Japanese (Japan) (http://www.transifex.com/projects/p/edx-platform/language/ja_JP/)\n"
 "MIME-Version: 1.0\n"
@@ -22,17 +24,21 @@ msgstr ""
 
 #: cms/templates/js/active-video-upload-list.underscore:3
 msgid "Drag and drop or click here to upload video files."
-msgstr ""
+msgstr "ビデオファイルをアップロードするにはここをクリックするか、ここにドラッグ＆ドロップしてください。"
 
 #: cms/templates/js/active-video-upload.underscore:3
 msgid "status"
-msgstr ""
+msgstr "状態"
 
 #: cms/templates/js/add-xblock-component-menu-problem.underscore:4
 msgid "Common Problem Types"
 msgstr "一般的な問題種別"
 
 #: cms/templates/js/add-xblock-component-menu-problem.underscore:7
+msgid "Common Problems with Hints and Feedback"
+msgstr "ヒントとフィードバックに共通の問題"
+
+#: cms/templates/js/add-xblock-component-menu-problem.underscore:10
 msgid "Advanced"
 msgstr "詳細設定"
 
@@ -54,13 +60,15 @@ msgstr "プレビュー"
 
 #: cms/templates/js/asset-library.underscore:19
 #: cms/templates/js/previous-video-upload-list.underscore:11
+#: cms/templates/js/signatory-details.underscore:10
+#: cms/templates/js/signatory-editor.underscore:23
 msgid "Name"
 msgstr "名前"
 
 #: cms/templates/js/asset-library.underscore:20
 #: cms/templates/js/asset-library.underscore:53
 msgid "- Sortable"
-msgstr ""
+msgstr "- ソート可能"
 
 #: cms/templates/js/asset-library.underscore:26
 msgid "Type"
@@ -74,11 +82,6 @@ msgstr "追加日"
 #: cms/templates/js/asset-library.underscore:56
 msgid "URL"
 msgstr "URL"
-
-#: cms/templates/js/asset-library.underscore:57
-#: cms/templates/js/basic-modal.underscore:17
-msgid "Actions"
-msgstr "行動"
 
 #: cms/templates/js/asset-library.underscore:67
 msgid "You haven't added any assets to this course yet."
@@ -102,7 +105,7 @@ msgstr "ファイルを選択"
 
 #: cms/templates/js/asset.underscore:4
 msgid "No description available"
-msgstr ""
+msgstr "説明がありません"
 
 #: cms/templates/js/asset.underscore:9
 msgid "Open/download this file"
@@ -110,11 +113,11 @@ msgstr "このファイルを開く/ダウンロード"
 
 #: cms/templates/js/asset.underscore:23
 msgid "Studio:"
-msgstr ""
+msgstr "スタジオ："
 
 #: cms/templates/js/asset.underscore:29
 msgid "Web:"
-msgstr ""
+msgstr "ウェブ："
 
 #: cms/templates/js/asset.underscore:39
 msgid "Delete this asset"
@@ -128,16 +131,147 @@ msgstr "このアセットをロックします"
 msgid "Lock/unlock file"
 msgstr "ファイルをロック/ロック解除"
 
-#: cms/templates/js/checklist.underscore:10
-#, python-format
-msgid "{number}% of checklists completed"
-msgstr "チェックリストの {number}% oの項目を完了"
+#: cms/templates/js/certificate-details.underscore:11
+#: cms/templates/js/content-group-details.underscore:14
+#: cms/templates/js/group-configuration-details.underscore:14
+msgid "ID"
+msgstr "ID"
+
+#: cms/templates/js/certificate-details.underscore:17
+msgid "Certificate Details"
+msgstr "修了証の概要"
+
+#: cms/templates/js/certificate-details.underscore:21
+#: cms/templates/js/certificate-editor.underscore:23
+msgid "Course Title Override"
+msgstr "講座の表題を無視"
+
+#: cms/templates/js/certificate-details.underscore:26
+#: cms/templates/js/certificate-editor.underscore:40
+msgid "Certificate Signatories"
+msgstr "修了証の署名"
+
+#: cms/templates/js/certificate-details.underscore:34
+#: cms/templates/js/content-group-details.underscore:27
+#: cms/templates/js/course_info_handouts.underscore:1
+#: cms/templates/js/group-configuration-details.underscore:45
+#: cms/templates/js/show-textbook.underscore:40
+#: cms/templates/js/signatory-details.underscore:4
+#: cms/templates/js/xblock-string-field-editor.underscore:3
+msgid "Edit"
+msgstr "編集"
+
+#: cms/templates/js/certificate-details.underscore:36
+#: cms/templates/js/certificate-details.underscore:37
+#: cms/templates/js/certificate-editor.underscore:53
+#: cms/templates/js/content-group-details.underscore:30
+#: cms/templates/js/content-group-details.underscore:31
+#: cms/templates/js/content-group-details.underscore:35
+#: cms/templates/js/content-group-editor.underscore:36
+#: cms/templates/js/content-group-editor.underscore:37
+#: cms/templates/js/content-group-editor.underscore:41
+#: cms/templates/js/course-outline.underscore:86
+#: cms/templates/js/course-outline.underscore:88
+#: cms/templates/js/course_grade_policy.underscore:33
+#: cms/templates/js/group-configuration-details.underscore:49
+#: cms/templates/js/group-configuration-details.underscore:53
+#: cms/templates/js/group-configuration-editor.underscore:50
+#: cms/templates/js/group-configuration-editor.underscore:54
+#: cms/templates/js/show-textbook.underscore:43
+#: cms/templates/js/signatory-editor.underscore:15
+#: cms/templates/js/xblock-outline.underscore:31
+#: cms/templates/js/xblock-outline.underscore:33
+msgid "Delete"
+msgstr "削除"
+
+#: cms/templates/js/certificate-editor.underscore:5
+#: cms/templates/js/content-group-editor.underscore:4
+#: cms/templates/js/edit-textbook.underscore:5
+#: cms/templates/js/group-configuration-editor.underscore:4
+msgid "error.message"
+msgstr "エラーメッセージ"
+
+#: cms/templates/js/certificate-editor.underscore:11
+msgid "Certificate Information"
+msgstr "修了証の情報"
+
+#: cms/templates/js/certificate-editor.underscore:13
+msgid "Certificate Name"
+msgstr "修了証名"
+
+#: cms/templates/js/certificate-editor.underscore:14
+#: cms/templates/js/certificate-editor.underscore:15
+msgid "Name of the certificate"
+msgstr "修了証の名称"
+
+#: cms/templates/js/certificate-editor.underscore:19
+#: cms/templates/js/certificate-editor.underscore:20
+msgid "Description of the certificate"
+msgstr "修了証の説明"
+
+#: cms/templates/js/certificate-editor.underscore:24
+msgid "Course title"
+msgstr "講座名"
+
+#: cms/templates/js/certificate-editor.underscore:25
+msgid "Title of the course"
+msgstr "講座のタイトル"
+
+#: cms/templates/js/certificate-editor.underscore:28
+msgid "Organization Logo"
+msgstr "所属組織のロゴ"
+
+#: cms/templates/js/certificate-editor.underscore:32
+msgid "Path to organization logo"
+msgstr "所属組織のロゴへのパス"
+
+#: cms/templates/js/certificate-editor.underscore:33
+msgid "Maximum logo height 125px, width variable"
+msgstr "ロゴの縦サイズは最大 125ピクセルで、幅は可変"
+
+#: cms/templates/js/certificate-editor.underscore:44
+msgid "Add Signatory"
+msgstr "署名を追加する"
+
+#: cms/templates/js/certificate-editor.underscore:45
+msgid "(Up to 4 signatories are allowed for a certificate)"
+msgstr " ( 修了証には、4つまでの署名ができます )"
+
+#: cms/templates/js/certificate-editor.underscore:49
+#: cms/templates/js/content-group-editor.underscore:31
+#: cms/templates/js/group-configuration-editor.underscore:45
+msgid "Create"
+msgstr "作成"
+
+#: cms/templates/js/certificate-web-preview.underscore:1
+msgid "Choose mode"
+msgstr "モードを選択"
+
+#: cms/templates/js/certificate-web-preview.underscore:8
+msgid "Preview Certificate"
+msgstr "修了証の下見をする"
+
+#: cms/templates/js/certificate-web-preview.underscore:13
+msgid "Activate"
+msgstr "有効化する"
+
+#: cms/templates/js/certificate-web-preview.underscore:15
+msgid "Deactivate"
+msgstr "無効化"
+
+#: cms/templates/js/checklist.underscore:14
+msgid "{number}{pct_sign} of checklists completed"
+msgstr "{number}{pct_sign} のチェックリスト完了"
 
 #: cms/templates/js/checklist.underscore:17
+msgid "%"
+msgstr "%"
+
+#: cms/templates/js/checklist.underscore:27
 msgid "Tasks Completed:"
 msgstr "タスク完了："
 
-#: cms/templates/js/checklist.underscore:50
+#: cms/templates/js/checklist.underscore:60
 msgid "This link will open in a new browser window/tab"
 msgstr "新しいブラウザウィンドウまたはタブにこのリンクを開く"
 
@@ -147,73 +281,30 @@ msgid ""
 "changes you will change the student experience."
 msgstr "危険：この単元の最新版が生きている状態です。変更分を公開することで、受講者の使い勝手に変更が発生することになります。"
 
-#: cms/templates/js/content-group-details.underscore:14
-#: cms/templates/js/group-configuration-details.underscore:14
-msgid "ID"
-msgstr "ID"
-
-#: cms/templates/js/content-group-details.underscore:27
-#: cms/templates/js/course_info_handouts.underscore:1
-#: cms/templates/js/group-configuration-details.underscore:45
-#: cms/templates/js/show-textbook.underscore:40
-#: cms/templates/js/xblock-string-field-editor.underscore:3
-msgid "Edit"
-msgstr "編集"
-
-#: cms/templates/js/content-group-details.underscore:30
-#: cms/templates/js/content-group-details.underscore:31
-#: cms/templates/js/content-group-details.underscore:35
-#: cms/templates/js/content-group-editor.underscore:36
-#: cms/templates/js/content-group-editor.underscore:37
-#: cms/templates/js/content-group-editor.underscore:41
-#: cms/templates/js/course-outline.underscore:83
-#: cms/templates/js/course-outline.underscore:85
-#: cms/templates/js/course_grade_policy.underscore:33
-#: cms/templates/js/group-configuration-details.underscore:49
-#: cms/templates/js/group-configuration-details.underscore:53
-#: cms/templates/js/group-configuration-editor.underscore:50
-#: cms/templates/js/group-configuration-editor.underscore:54
-#: cms/templates/js/show-textbook.underscore:43
-#: cms/templates/js/xblock-outline.underscore:28
-#: cms/templates/js/xblock-outline.underscore:30
-msgid "Delete"
-msgstr "削除"
-
 #: cms/templates/js/content-group-details.underscore:34
 #: cms/templates/js/content-group-editor.underscore:40
 msgid "Cannot delete when in use by a unit"
-msgstr ""
+msgstr "単元で使用されている時は削除できません"
 
 #: cms/templates/js/content-group-details.underscore:44
 msgid "This content group is used in:"
-msgstr ""
-
-#: cms/templates/js/content-group-editor.underscore:4
-#: cms/templates/js/edit-textbook.underscore:5
-#: cms/templates/js/group-configuration-editor.underscore:4
-msgid "error.message"
-msgstr "エラーメッセージ"
+msgstr "このコンテンツグループは次で使用されています："
 
 #: cms/templates/js/content-group-editor.underscore:10
 msgid "Content Group Name"
-msgstr ""
+msgstr "コンテンツグループ名"
 
 #: cms/templates/js/content-group-editor.underscore:13
 msgid "Content Group ID"
-msgstr ""
+msgstr "コンテンツグループID"
 
 #: cms/templates/js/content-group-editor.underscore:18
 msgid "This is the name of the group"
-msgstr ""
+msgstr "これはグループの名前です"
 
 #: cms/templates/js/content-group-editor.underscore:25
 msgid "This content group is used in one or more units."
-msgstr ""
-
-#: cms/templates/js/content-group-editor.underscore:31
-#: cms/templates/js/group-configuration-editor.underscore:45
-msgid "Create"
-msgstr "作成"
+msgstr "このコンテンツグループは１つ以上の単元で使用されています。"
 
 #: cms/templates/js/course-outline.underscore:10
 msgid "Contains staff only content"
@@ -236,58 +327,72 @@ msgstr "コンテンツへの未公開の変更は将来公開されることと
 msgid "Not Graded"
 msgstr "未採点"
 
-#: cms/templates/js/course-outline.underscore:57
+#: cms/templates/js/course-outline.underscore:48
+#: cms/templates/js/xblock-outline.underscore:11
+#, python-format
+msgid "Collapse/Expand this %(xblock_type)s"
+msgstr "この %(xblock_type)s をたたむ/広げる"
+
+#: cms/templates/js/course-outline.underscore:60
 msgid "Display Name"
 msgstr "表示名"
 
-#: cms/templates/js/course-outline.underscore:67
-#: cms/templates/js/course-outline.underscore:69
-#: cms/templates/js/publish-xblock.underscore:104
+#: cms/templates/js/course-outline.underscore:70
+#: cms/templates/js/course-outline.underscore:72
+#: cms/templates/js/publish-xblock.underscore:108
 msgid "Publish"
 msgstr "発行"
 
-#: cms/templates/js/course-outline.underscore:75
-#: cms/templates/js/course-outline.underscore:77
+#: cms/templates/js/course-outline.underscore:78
+#: cms/templates/js/course-outline.underscore:80
 msgid "Configure"
 msgstr "変更"
 
-#: cms/templates/js/course-outline.underscore:90
-#: cms/templates/js/course-outline.underscore:92
+#: cms/templates/js/course-outline.underscore:94
+#: cms/templates/js/course-outline.underscore:96
 msgid "Drag to reorder"
 msgstr "ドラッグして並び替え"
 
-#: cms/templates/js/course-outline.underscore:102
+#: cms/templates/js/course-outline.underscore:114
 msgid "Release Status:"
 msgstr "リリース状況："
 
-#: cms/templates/js/course-outline.underscore:106
+#: cms/templates/js/course-outline.underscore:118
 #: cms/templates/js/publish-xblock.underscore:15
-#: cms/templates/js/xblock-outline.underscore:40
+#: cms/templates/js/xblock-outline.underscore:43
 msgid "Released:"
 msgstr "公開日："
 
-#: cms/templates/js/course-outline.underscore:109
+#: cms/templates/js/course-outline.underscore:121
 #: cms/templates/js/publish-xblock.underscore:17
 msgid "Scheduled:"
 msgstr "段取り済："
 
-#: cms/templates/js/course-outline.underscore:112
-#: cms/templates/js/publish-xblock.underscore:55
+#: cms/templates/js/course-outline.underscore:124
+#: cms/templates/js/publish-xblock.underscore:57
 msgid "Unscheduled"
 msgstr "未定"
 
-#: cms/templates/js/course-outline.underscore:123
+#: cms/templates/js/course-outline.underscore:136
 msgid "Graded as:"
 msgstr "評価："
 
-#: cms/templates/js/course-outline.underscore:127
+#: cms/templates/js/course-outline.underscore:140
 msgid "Due:"
 msgstr "締切"
 
-#: cms/templates/js/course-outline.underscore:145
-#: cms/templates/js/xblock-outline.underscore:54
+#: cms/templates/js/course-outline.underscore:159
+#: cms/templates/js/xblock-outline.underscore:57
 msgid "You haven't added any content to this course yet."
 msgstr "この講座にはコンテンツが何も登録されていません。"
+
+#: cms/templates/js/course-outline.underscore:163
+#: cms/templates/js/course-outline.underscore:184
+#: cms/templates/js/xblock-outline.underscore:61
+#: cms/templates/js/xblock-outline.underscore:77
+#, python-format
+msgid "Click to add a new %(xblock_type)s"
+msgstr "クリックして新しい %(xblock_type)s を追加"
 
 #: cms/templates/js/course_grade_policy.underscore:3
 msgid "Assignment Type Name"
@@ -342,6 +447,18 @@ msgid ""
 "There is invalid code in your content. Please check to make sure it is valid"
 " HTML."
 msgstr "無効なコードがコンテンツに含まれています。有効なHTMLであることを確認してください。"
+
+#: cms/templates/js/course_info_update.underscore:14
+msgid "Send push notification to mobile apps"
+msgstr "モバイルアプリケーションへプッシュ通知を送信"
+
+#: cms/templates/js/course_info_update.underscore:15
+msgid "Send notification to mobile apps"
+msgstr "モバイルアプリケーションへ通知を送信"
+
+#: cms/templates/js/course_info_update.underscore:20
+msgid "Post"
+msgstr "投稿"
 
 #: cms/templates/js/due-date-editor.underscore:3
 msgid "Due Date:"
@@ -422,7 +539,7 @@ msgstr "採点"
 
 #: cms/templates/js/grading-editor.underscore:5
 msgid "Grade as:"
-msgstr ""
+msgstr "評価："
 
 #: cms/templates/js/group-configuration-details.underscore:52
 #: cms/templates/js/group-configuration-editor.underscore:53
@@ -483,11 +600,60 @@ msgstr "他のグループを追加"
 msgid ""
 "This configuration is currently used in content experiments. If you make "
 "changes to the groups, you may need to edit those experiments."
-msgstr ""
+msgstr "この設定は実験コンテンツで使用されています。グループの設定を変更する場合、その実験でも編集しなければなりません。"
 
 #: cms/templates/js/group-edit.underscore:4
 msgid "delete group"
 msgstr "グループを削除"
+
+#: cms/templates/js/license-selector.underscore:3
+msgid "License Type"
+msgstr "ライセンスのタイプ"
+
+#: cms/templates/js/license-selector.underscore:18
+msgid "Learn more about {license_name}"
+msgstr "{license_name}についてもっと学ぶ"
+
+#: cms/templates/js/license-selector.underscore:34
+msgid "Options for {license_name}"
+msgstr " {license_name} のオプション"
+
+#: cms/templates/js/license-selector.underscore:37
+msgid "The following options are available for the {license_name} license."
+msgstr " {license_name} ライセンスでは、以下のオプションが利用できます。"
+
+#: cms/templates/js/license-selector.underscore:74
+msgid "License Display"
+msgstr "ライセンス表示"
+
+#: cms/templates/js/license-selector.underscore:77
+msgid ""
+"The following message will be displayed at the bottom of the courseware "
+"pages within your course:"
+msgstr "以降のメッセージは、講座の教材ページの下部に表示されます："
+
+#: cms/templates/js/license-selector.underscore:82
+#: cms/templates/js/license-selector.underscore:110
+msgid "All Rights Reserved"
+msgstr "全著作権保有"
+
+#: cms/templates/js/license-selector.underscore:101
+msgid "Creative Commons licensed content, with terms as follow:"
+msgstr "クリエィティブ・コモンライセンスのコンテンツで、その条項は以下の通り："
+
+#: cms/templates/js/license-selector.underscore:105
+msgid "Some Rights Reserved"
+msgstr "部分的に著作権があります"
+
+#: cms/templates/js/list.underscore:7
+#, python-format
+msgid "Add your first %(item_type)s"
+msgstr "最初の %(item_type)s を追加"
+
+#: cms/templates/js/list.underscore:17
+#, python-format
+msgid "New %(item_type)s"
+msgstr "新規 %(item_type)s"
 
 #: cms/templates/js/metadata-dict-entry.underscore:6
 #: cms/templates/js/metadata-list-entry.underscore:9
@@ -501,8 +667,6 @@ msgstr "追加"
 #: cms/templates/js/metadata-number-entry.underscore:4
 #: cms/templates/js/metadata-option-entry.underscore:12
 #: cms/templates/js/metadata-string-entry.underscore:4
-#: cms/templates/js/mock/mock-xmodule-editor.underscore:21
-#: cms/templates/js/mock/mock-xmodule-settings-only-editor.underscore:17
 #: cms/templates/js/video/metadata-translations-entry.underscore:9
 msgid "Clear"
 msgstr "クリア"
@@ -513,8 +677,6 @@ msgstr "クリア"
 #: cms/templates/js/metadata-number-entry.underscore:5
 #: cms/templates/js/metadata-option-entry.underscore:13
 #: cms/templates/js/metadata-string-entry.underscore:5
-#: cms/templates/js/mock/mock-xmodule-editor.underscore:22
-#: cms/templates/js/mock/mock-xmodule-settings-only-editor.underscore:18
 #: cms/templates/js/video/metadata-translations-entry.underscore:11
 msgid "Clear Value"
 msgstr "値を削除"
@@ -542,81 +704,75 @@ msgstr "このコースにまだテキストを追加していません。"
 msgid "Add your first textbook"
 msgstr "最初のテキストを追加"
 
-#: cms/templates/js/paging-footer.underscore:3
 #: cms/templates/js/paging-header.underscore:7
 msgid "Previous"
-msgstr "前"
+msgstr ""
 
-#: cms/templates/js/paging-footer.underscore:6
-msgid "Page number"
-msgstr "ページ番号"
-
-#: cms/templates/js/paging-footer.underscore:14
 #: cms/templates/js/paging-header.underscore:8
 msgid "Next"
-msgstr "次"
+msgstr ""
 
 #: cms/templates/js/previous-video-upload-list.underscore:2
 msgid "Previous Uploads"
-msgstr ""
+msgstr "過去のアップロード"
 
 #: cms/templates/js/previous-video-upload-list.underscore:5
 msgid "Download available encodings (.csv)"
-msgstr ""
+msgstr "ダウンロード可能なエンコード(.csv)"
 
 #: cms/templates/js/previous-video-upload-list.underscore:12
 msgid "Duration"
-msgstr ""
+msgstr "期間"
 
 #: cms/templates/js/previous-video-upload-list.underscore:14
 msgid "Video ID"
-msgstr ""
+msgstr "動画ID"
 
 #: cms/templates/js/publish-history.underscore:2
 msgid "Never published"
-msgstr ""
+msgstr "過去に未公開"
 
 #: cms/templates/js/publish-history.underscore:4
 #: cms/templates/js/publish-xblock.underscore:35
 #, python-format
 msgid "Last published %(last_published_date)s by %(publish_username)s"
-msgstr ""
+msgstr "%(publish_username)s により 最終公開 %(last_published_date)s "
 
 #: cms/templates/js/publish-history.underscore:5
 #: cms/templates/js/publish-xblock.underscore:31
 #: cms/templates/js/publish-xblock.underscore:36
 #: cms/templates/js/staff-lock-editor.underscore:19
 msgid "message"
-msgstr ""
+msgstr "メッセージ"
 
 #: cms/templates/js/publish-history.underscore:10
 #: cms/templates/js/publish-xblock.underscore:40
 msgid "Previously published"
-msgstr ""
+msgstr "過去に公開済み"
 
 #: cms/templates/js/publish-xblock.underscore:2
 msgid "Draft (Never published)"
-msgstr ""
+msgstr "ドラフト(過去に未公開)"
 
 #: cms/templates/js/publish-xblock.underscore:4
 msgid "Visible to Staff Only"
-msgstr ""
+msgstr "スタッフのみ閲覧可能"
 
 #: cms/templates/js/publish-xblock.underscore:6
 msgid "Published and Live"
-msgstr ""
+msgstr "公開済み＆ライブ"
 
 #: cms/templates/js/publish-xblock.underscore:8
 msgid "Published (not yet released)"
-msgstr ""
+msgstr "公開済み(未リリース)"
 
 #: cms/templates/js/publish-xblock.underscore:10
 msgid "Draft (Unpublished changes)"
-msgstr ""
+msgstr "ドラフト(未公開の変更)"
 
 #: cms/templates/js/publish-xblock.underscore:13
 msgid "Release:"
-msgstr ""
+msgstr "リリース："
 
 #: cms/templates/js/publish-xblock.underscore:23
 msgid "Publishing Status"
@@ -625,167 +781,200 @@ msgstr "発行ステータス"
 #: cms/templates/js/publish-xblock.underscore:30
 #, python-format
 msgid "Draft saved on %(last_saved_date)s by %(edit_username)s"
-msgstr ""
+msgstr "%(edit_username)sによりドラフト保存%(last_saved_date)s "
 
-#: cms/templates/js/publish-xblock.underscore:63
-msgid "Is Visible To:"
-msgstr ""
+#: cms/templates/js/publish-xblock.underscore:52
+#, python-format
+msgid "with %(release_date_from)s"
+msgstr "%(release_date_from)s と共に"
 
 #: cms/templates/js/publish-xblock.underscore:65
+msgid "Is Visible To:"
+msgstr "次の人が参照可能："
+
+#: cms/templates/js/publish-xblock.underscore:67
 msgid "Will Be Visible To:"
-msgstr ""
+msgstr "次の人が参照可能になる："
 
-#: cms/templates/js/publish-xblock.underscore:70
+#: cms/templates/js/publish-xblock.underscore:72
 msgid "Staff Only"
-msgstr ""
+msgstr "スタッフのみ"
 
-#: cms/templates/js/publish-xblock.underscore:78
+#: cms/templates/js/publish-xblock.underscore:76
+#, python-format
+msgid "with %(section_or_subsection)s"
+msgstr "%(section_or_subsection)s と共に"
+
+#: cms/templates/js/publish-xblock.underscore:82
 msgid "Staff and Students"
-msgstr ""
+msgstr "スタッフと受講者"
 
-#: cms/templates/js/publish-xblock.underscore:83
+#: cms/templates/js/publish-xblock.underscore:87
 msgid "Some content in this unit is visible only to particular content groups"
-msgstr ""
+msgstr "このコンテンツの幾つかは特定のコンテンツグループにのみ閲覧可能です。"
 
-#: cms/templates/js/publish-xblock.underscore:94
+#: cms/templates/js/publish-xblock.underscore:98
 #: cms/templates/js/staff-lock-editor.underscore:10
 msgid "Hide from students"
-msgstr ""
+msgstr "受講者から隠す"
 
-#: cms/templates/js/publish-xblock.underscore:109
+#: cms/templates/js/publish-xblock.underscore:113
 msgid "Discard Changes"
-msgstr ""
+msgstr "変更を破棄"
 
 #: cms/templates/js/release-date-editor.underscore:1
 msgid "Release Date and Time"
-msgstr ""
+msgstr "リリース日と時間"
 
 #: cms/templates/js/release-date-editor.underscore:5
 msgid "Release Date:"
-msgstr ""
+msgstr "リリース日："
 
 #: cms/templates/js/release-date-editor.underscore:11
 msgid "Release Time in UTC:"
-msgstr ""
+msgstr "リリース日（UTC）："
 
 #: cms/templates/js/release-date-editor.underscore:21
 #: cms/templates/js/release-date-editor.underscore:23
 msgid "Clear Release Date/Time"
-msgstr ""
+msgstr "リリース日/時間を削除"
 
 #: cms/templates/js/show-textbook.underscore:37
 msgid "View Live"
 msgstr "ライブ表示"
 
+#: cms/templates/js/signatory-details.underscore:14
+#: cms/templates/js/signatory-editor.underscore:31
+msgid "Title"
+msgstr "件名"
+
+#: cms/templates/js/signatory-details.underscore:18
+#: cms/templates/js/signatory-editor.underscore:39
+msgid "Organization"
+msgstr "組織"
+
+#: cms/templates/js/signatory-editor.underscore:6
+msgid "Close"
+msgstr ""
+
+#: cms/templates/js/signatory-editor.underscore:21
+msgid "Certificate Signatory Configuration"
+msgstr "修了証署名設定"
+
+#: cms/templates/js/signatory-editor.underscore:24
+msgid "Name of the signatory"
+msgstr "署名の名前"
+
+#: cms/templates/js/signatory-editor.underscore:25
+#: cms/templates/js/signatory-editor.underscore:41
+msgid "Maximum 40 characters"
+msgstr "最大40文字"
+
+#: cms/templates/js/signatory-editor.underscore:32
+msgid "Title of the signatory"
+msgstr "署名のタイトル"
+
+#: cms/templates/js/signatory-editor.underscore:33
+msgid "2 Lines, 40 characters each"
+msgstr "2行 40文字づつ"
+
+#: cms/templates/js/signatory-editor.underscore:40
+msgid "Organization of the signatory"
+msgstr "署名の組織"
+
+#: cms/templates/js/signatory-editor.underscore:47
+msgid "Signature Image"
+msgstr "署名イメージ"
+
+#: cms/templates/js/signatory-editor.underscore:53
+msgid "Path to Signature Image"
+msgstr "署名イメージへのパス"
+
+#: cms/templates/js/signatory-editor.underscore:54
+msgid "Image must be 450px X 150px transparent PNG"
+msgstr "画像は 450 x 150 ピクセルの透過 PNG でなければなりません。"
+
 #: cms/templates/js/staff-lock-editor.underscore:2
 msgid "Student Visibility"
-msgstr ""
+msgstr "受講者の閲覧可能状態"
 
 #: cms/templates/js/staff-lock-editor.underscore:16
 msgid ""
 "If the unit was previously published and released to students, any changes "
 "you made to the unit when it was hidden will now be visible to students."
-msgstr ""
+msgstr "単元が過去に受講者に発行されていた場合、非公開中の変更は受講者に表示されるようになります。"
 
 #: cms/templates/js/staff-lock-editor.underscore:18
 #, python-format
 msgid ""
 "If you make this %(xblockType)s visible to students, students will be able "
 "to see its content after the release date has passed and you have published "
-"the unit(s)."
-msgstr ""
+"the unit."
+msgstr "この %(xblockType)s を受講者に参照可能にすると、単位を発表し、リリース日が過ぎる後にコンテンツが受講者に表示されます。"
 
 #: cms/templates/js/staff-lock-editor.underscore:25
 msgid ""
 "Any subsections or units that are explicitly hidden from students will "
 "remain hidden after you clear this option for the section."
-msgstr ""
+msgstr "どの節や単元でも明示的に受講者から隠している場合はこの章に対してこのオプションを削除しても隠された状態を保ちます。"
 
 #: cms/templates/js/staff-lock-editor.underscore:28
 msgid ""
 "Any units that are explicitly hidden from students will remain hidden after "
 "you clear this option for the subsection."
-msgstr ""
+msgstr "どの単元も明示的に隠されている場合は節に対してこのオプションを削除しても隠された状態を保ちます。"
+
+#: cms/templates/js/team-member.underscore:4
+msgid "Current Role:"
+msgstr "現在のロール:"
+
+#: cms/templates/js/team-member.underscore:8
+msgid "You!"
+msgstr "本アカウント"
+
+#: cms/templates/js/team-member.underscore:19
+msgid "send an email message to {email}"
+msgstr "{email} にメールを送る"
+
+#: cms/templates/js/team-member.underscore:32
+msgid "Promote another member to Admin to remove your admin rights"
+msgstr "他のメンバーを管理者に昇格し、あなたの管理権限を削除する"
+
+#: cms/templates/js/team-member.underscore:35
+msgid "Add {role} Access"
+msgstr "{role} のアクセスを追加する"
+
+#: cms/templates/js/team-member.underscore:35
+msgid "Remove {role} Access"
+msgstr "{role} のアクセスを削除する"
+
+#: cms/templates/js/team-member.underscore:44
+msgid "Delete the user, {username}"
+msgstr "{username} を削除"
 
 #: cms/templates/js/upload-dialog.underscore:25
 msgid "File upload succeeded"
 msgstr "ファイルのアップロード成功"
 
-#: cms/templates/js/validation-error-modal.underscore:5
-msgid ""
-"There were {strong_start}{num_errors} validation error(s){strong_end} while "
-"trying to save the course setting(s) in the database."
-msgstr ""
-
-#: cms/templates/js/validation-error-modal.underscore:12
+#: cms/templates/js/validation-error-modal.underscore:16
 msgid ""
 "Please check the following validation feedbacks and reflect them in your "
 "course settings:"
-msgstr ""
+msgstr "以下の検証フィードバックを確認して、講座設定に反映させてください。"
 
 #: cms/templates/js/xblock-string-field-editor.underscore:2
 #: cms/templates/js/xblock-string-field-editor.underscore:11
 msgid "Edit the name"
-msgstr ""
+msgstr "名前を編集"
 
 #: cms/templates/js/xblock-string-field-editor.underscore:9
 #, python-format
 msgid "Edit %(display_name)s (required)"
-msgstr ""
+msgstr "編集 %(display_name)s (必須)"
 
 #: cms/templates/js/xblock-string-field-editor.underscore:10
 msgid "formLabel"
-msgstr ""
-
-#: cms/templates/js/mock/mock-container-page.underscore:64
-msgid "Unit Location"
-msgstr "単元のロケーション"
-
-#: cms/templates/js/mock/mock-container-page.underscore:69
-msgid ""
-"Use this ID when you create links to this unit from other course content. "
-"You enter the ID in the URL field."
-msgstr "他の講座コンテンツからこの単元へのリンクを生成する際にこのIDを使います。このIDをURL枠に入力してください。"
-
-#: cms/templates/js/mock/mock-index-page.underscore:212
-msgid "Courses"
-msgstr "講座一覧"
-
-#: cms/templates/js/mock/mock-index-page.underscore:213
-msgid "Libraries"
-msgstr ""
-
-#: cms/templates/js/mock/mock-settings-page.underscore:77
-msgid "Entrance Exam"
-msgstr ""
-
-#: cms/templates/js/mock/mock-settings-page.underscore:81
-msgid "Require students to pass an exam before beginning the course."
-msgstr ""
-
-#: cms/templates/js/mock/mock-settings-page.underscore:84
-msgid "To create your course entrance exam, go to the"
-msgstr ""
-
-#: cms/templates/js/mock/mock-settings-page.underscore:84
-msgid "Course Outline"
-msgstr "アウトライン"
-
-#: cms/templates/js/mock/mock-settings-page.underscore:84
-msgid ". An Entrance Exam section will be created automatically."
-msgstr ""
-
-#: cms/templates/js/mock/mock-settings-page.underscore:85
-msgid "Minimum Passing Score"
-msgstr ""
-
-#: cms/templates/js/mock/mock-settings-page.underscore:86
-msgid "%"
-msgstr ""
-
-#: cms/templates/js/mock/mock-settings-page.underscore:87
-msgid "The minimum score a student must receive to pass the entrance exam."
-msgstr ""
+msgstr "formLabel"
 
 #: cms/templates/js/video/metadata-translations-item.underscore:2
 msgid "Remove"
@@ -800,7 +989,7 @@ msgid ""
 "To be sure all students can access the video, we recommend providing both an"
 " .mp4 and a .webm version of your video. Click below to add a URL for "
 "another version. These URLs cannot be YouTube URLs. The first listed video "
-"that\\'s compatible with the student\\'s computer will play."
+"that's compatible with the student's computer will play."
 msgstr "すべての受講者がビデオを見ることができるように、.mp4と.webmの両方の種類のビデオを提供することをお勧めします。別の種類のURLを追加するには以下をクリックします。これらのURLはYouTubeは指定できません。一覧の中のから受講者が対応する１番目のビデオが再生されます。"
 
 #: cms/templates/js/video/transcripts/metadata-videolist-entry.underscore:25
@@ -832,9 +1021,10 @@ msgstr "どの字幕を使用しますか？"
 msgid "Error."
 msgstr "エラー"
 
-#: cms/templates/js/video/transcripts/messages/transcripts-choose.underscore:21
-msgid "Timed Transcript from"
-msgstr "字幕の追加元"
+#: cms/templates/js/video/transcripts/messages/transcripts-choose.underscore:22
+#, python-format
+msgid "Timed Transcript from %(filename)s"
+msgstr "%(filename)s からの時刻情報付き字幕"
 
 #: cms/templates/js/video/transcripts/messages/transcripts-found.underscore:1
 msgid "Timed Transcript Found"
@@ -881,9 +1071,9 @@ msgstr "EdX字幕がありません"
 
 #: cms/templates/js/video/transcripts/messages/transcripts-import.underscore:3
 msgid ""
-"EdX doesn\\'t have a timed transcript for this video in Studio, but we found"
-" a transcript on YouTube. You can import the YouTube transcript or upload "
-"your own .srt transcript file."
+"EdX doesn't have a timed transcript for this video in Studio, but we found a"
+" transcript on YouTube. You can import the YouTube transcript or upload your"
+" own .srt transcript file."
 msgstr "EdXにはStudioでビデオに対応する字幕がありませんが、YouTubeに字幕ファイルがありました。YouTubeの字幕をインポートするか、独自の.srtファイルをアップロードすることができます。"
 
 #: cms/templates/js/video/transcripts/messages/transcripts-import.underscore:10
