@@ -3,8 +3,6 @@
 End-to-end tests for the LMS Instructor Dashboard.
 """
 
-import unittest
-
 from bok_choy.web_app_test import WebAppTest
 from ...fixtures.course import CourseFixture
 from ...fixtures.ga_course_team import CourseTeamFixture
@@ -12,12 +10,11 @@ from ...pages.common.logout import LogoutPage
 from ...pages.lms.auto_auth import AutoAuthPage
 from ...pages.lms.ga_dashboard import DashboardPage
 from ...pages.lms.ga_instructor_dashboard import InstructorDashboardPage
-from ...pages.lms.ga_login import LoginPage
+from ...pages.lms.login_and_register import CombinedLoginAndRegisterPage
 from ..ga_helpers import GaccoTestMixin
 from lms.envs.bok_choy import EMAIL_FILE_PATH
 
 
-@unittest.skip("Skip until gacco theme is fixed for courseware tab")
 class SendEmailTest(WebAppTest, GaccoTestMixin):
     """
     Test the send email process.
@@ -61,11 +58,14 @@ class SendEmailTest(WebAppTest, GaccoTestMixin):
         # Initialize pages.
         self.dashboard_page = DashboardPage(self.browser)
         self.instructor_dashboard_page = InstructorDashboardPage(self.browser, self.course_key)
-        self.login_page = LoginPage(self.browser)
+        self.login_page = CombinedLoginAndRegisterPage(self.browser, start_page='login')
         self.logout_page = LogoutPage(self.browser)
 
         # Set up email client
         self.setup_email_client(EMAIL_FILE_PATH)
+
+        # Set window size
+        self.setup_window_size_for_pc()
 
     def _create_user(self, user, course_key, staff):
         AutoAuthPage(
@@ -78,6 +78,11 @@ class SendEmailTest(WebAppTest, GaccoTestMixin):
         ).visit()
         LogoutPage(self.browser).visit()
 
+    def _login(self, email, password='edx'):
+        self.login_page.visit()
+        self.login_page.login(email, password)
+        self.dashboard_page.wait_for_page()
+
     def test_displayed_optout_checkbox_only_global_staff(self):
         """
         Scenario:
@@ -85,8 +90,7 @@ class SendEmailTest(WebAppTest, GaccoTestMixin):
         """
 
         ## login as global staff ##
-        self.login_page.visit()
-        self.login_page.login(self.user_global_staff['email'], 'edx')
+        self._login(self.user_global_staff['email'])
 
         # Visit instructor dashboard and send email section
         self.instructor_dashboard_page.visit()
@@ -108,9 +112,7 @@ class SendEmailTest(WebAppTest, GaccoTestMixin):
         self.logout_page.visit()
 
         ## login as instructor ##
-        self.login_page.visit()
-        self.login_page.login(self.user_course_instructor['email'], 'edx')
-        self.dashboard_page.wait_for_page()
+        self._login(self.user_course_instructor['email'])
 
         # Visit instructor dashboard and send email section
         self.instructor_dashboard_page.visit()
@@ -124,9 +126,7 @@ class SendEmailTest(WebAppTest, GaccoTestMixin):
         self.logout_page.visit()
 
         ## login as course staff ##
-        self.login_page.visit()
-        self.login_page.login(self.user_course_staff['email'], 'edx')
-        self.dashboard_page.wait_for_page()
+        self._login(self.user_course_staff['email'])
 
         # Visit instructor dashboard and send email section
         self.instructor_dashboard_page.visit()
@@ -149,14 +149,12 @@ class SendEmailTest(WebAppTest, GaccoTestMixin):
         # Create student and set email off.
         user_optout = {'username': 'test_optout', 'email': 'test_optout@example.com'}
         self._create_user(user_optout, self.course_key, False)
-        self.login_page.visit()
-        self.login_page.login(user_optout['email'], 'edx')
+        self._login(user_optout['email'])
         self.dashboard_page.change_email_settings(self.EMAIL_COURSE_DISPLAY)
         self.logout_page.visit()
 
         # Login as global staff
-        self.login_page.visit()
-        self.login_page.login(self.user_global_staff['email'], 'edx')
+        self._login(self.user_global_staff['email'])
 
         # Visit instructor dashboard and send email section
         self.instructor_dashboard_page.visit()

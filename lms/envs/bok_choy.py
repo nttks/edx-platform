@@ -216,7 +216,6 @@ if os.environ.get('ENABLE_BOKCHOY_GA'):
     }
 
     # Use old Login and Register page
-    FEATURES['ENABLE_COMBINED_LOGIN_REGISTRATION'] = False
     REGISTRATION_EXTRA_FIELDS['country'] = 'optional'
     FEATURES['AUTOMATIC_AUTH_FOR_TESTING'] = False
 
