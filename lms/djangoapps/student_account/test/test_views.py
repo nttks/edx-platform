@@ -334,26 +334,22 @@ class StudentAccountLoginAndRegistrationTest(ThirdPartyAuthTestMixin, UrlResetMi
         response = self.client.get(reverse('account_login'), params)
         self.assertContains(response, "data-third-party-auth-hint='oa2-google-oauth2'")
 
+    @ddt.data(
+        ("account_login", "login"),
+        ("account_register", "register"),
+    )
+    @ddt.unpack
     @override_settings(SITE_NAME=settings.MICROSITE_TEST_HOSTNAME)
-    def test_microsite_uses_old_login_page(self):
+    def test_microsite_login_and_registration_form(self, url_name, initial_mode):
         # Retrieve the login page from a microsite domain
-        # and verify that we're served the old page.
-        resp = self.client.get(
-            reverse("account_login"),
+        # and verify that we're served the `new` page.
+        # default of edX served `old` page, but gacco served `new` page.
+        response = self.client.get(
+            reverse(url_name),
             HTTP_HOST=settings.MICROSITE_TEST_HOSTNAME
         )
-        self.assertContains(resp, "Log into your Test Microsite Account")
-        self.assertContains(resp, "login-form")
-
-    def test_microsite_uses_old_register_page(self):
-        # Retrieve the register page from a microsite domain
-        # and verify that we're served the old page.
-        resp = self.client.get(
-            reverse("account_register"),
-            HTTP_HOST=settings.MICROSITE_TEST_HOSTNAME
-        )
-        self.assertContains(resp, "Register for Test Microsite")
-        self.assertContains(resp, "register-form")
+        expected_data = u"data-initial-mode=\"{mode}\"".format(mode=initial_mode)
+        self.assertContains(response, expected_data)
 
     def _assert_third_party_auth_data(self, response, current_backend, current_provider, providers):
         """Verify that third party auth info is rendered correctly in a DOM data attribute. """
