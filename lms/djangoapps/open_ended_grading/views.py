@@ -71,6 +71,7 @@ class StaffGradingTab(EnrolledTab):
     A tab for staff grading.
     """
     type = 'staff_grading'
+    icon = 'fa fa-check-square-o'
     title = _("Staff grading")
     view_name = "staff_grading"
 
@@ -88,6 +89,7 @@ class PeerGradingTab(EnrolledTab):
     A tab for peer grading.
     """
     type = 'peer_grading'
+    icon = 'fa fa-check-square-o'
     # Translators: "Peer grading" appears on a tab that allows
     # students to view open-ended problems that require grading
     title = _("Peer grading")
@@ -107,6 +109,7 @@ class OpenEndedGradingTab(EnrolledTab):
     A tab for open ended grading.
     """
     type = 'open_ended'
+    icon = 'fa fa-check-square-o'
     # Translators: "Open Ended Panel" appears on a tab that, when clicked, opens up a panel that
     # displays information about open-ended problems that a user has submitted or needs to grade
     title = _("Open Ended Panel")
