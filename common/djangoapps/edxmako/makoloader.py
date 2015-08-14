@@ -87,3 +87,6 @@ class MakoAppDirectoriesLoader(MakoLoader):
 
     def __init__(self):
         MakoLoader.__init__(self, AppDirectoriesLoader())
+
+
+_filesystem_loader = MakoFilesystemLoader()
