@@ -2283,6 +2283,14 @@ msgstr ""
 "悪い例：問Xについて、私は〜と解釈し、〜と回答した結果、正答or誤答でした。<br/>"
 "悪い例：私は全問正解でしたが、問Xについては〜と回答しました。"
 
+#: openedx/core/djangoapps/user_api/views.py
+msgid "{password_min_length} alphanumeric characters or more"
+msgstr "半角英数{password_min_length}文字以上"
+
+#: openedx/core/djangoapps/user_api/views.py
+msgid "It includes single-byte uppercase and lowercase letters, numbers, one or more characters"
+msgstr "半角アルファベットの大文字、小文字、数字を1文字以上含めてください"
+
 #-#-#-#-#  Original messages in gacco/templates  #-#-#-#-#
 
 #: templates/theme-footer.html
@@ -2310,14 +2318,6 @@ msgstr "学習リスト"
 #: templates/courseware/progress.html
 msgid "Grade graph"
 msgstr "成績グラフ"
-
-#: templates/register.html
-msgid "{password_min_length} alphanumeric characters or more"
-msgstr "半角英数{password_min_length}文字以上"
-
-#: templates/register.html
-msgid "It includes single-byte uppercase and lowercase letters, numbers, one or more characters"
-msgstr "半角アルファベットの大文字、小文字、数字を1文字以上含めてください"
 
 #: templates/register-sidebar.html
 msgid "Please check the 'FAQs' if you experience any problems."

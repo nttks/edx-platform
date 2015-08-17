@@ -424,9 +424,19 @@ class RegistrationView(APIView):
         # meant to hold the user's password.
         password_label = _(u"Password")
 
+        # Translators: These instructions appear on the registration form, immediately
+        # below a field meant to hold the user's password.
+        password_instructions = u"{password_instructions_number} ({password_instructions_type})".format(
+            password_instructions_number=_("{password_min_length} alphanumeric characters or more").format(
+                password_min_length=settings.PASSWORD_MIN_LENGTH
+            ),
+            password_instructions_type=_("It includes single-byte uppercase and lowercase letters, numbers, one or more characters")
+        )
+
         form_desc.add_field(
             "password",
             label=password_label,
+            instructions=password_instructions,
             field_type="password",
             restrictions={
                 "min_length": PASSWORD_MIN_LENGTH,
