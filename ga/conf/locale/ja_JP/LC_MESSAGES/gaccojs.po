@@ -123,3 +123,7 @@ msgstr "退会手続きリンクをクリックすると、登録されたメー
 #: lms/static/js/student_account/views/account_settings_fields.js
 msgid "An email has been sent to {email_address}. Follow the link in the email to resign."
 msgstr "まだ退会手続きは完了していません。「{email_address}」宛に確認メールが送信されます。メール文中にある退会確認用のリンクをクリックをすることで、退会処理をすることができます。別途メールを確認いただき、メール文中の案内をご覧ください。<span style=\"color: red;\">なお、同じメールアドレスでの新規登録はできませんのでご注意ください。</span>"
+
+#: lms/templates/student_account/register.underscore
+msgid "If you are under 20 years old, you have to get permission of your parents to regist this site."
+msgstr "※未成年の方がお申し込みをいただく場合は、親権者の同意が必要となります。"
