@@ -1841,10 +1841,6 @@ msgstr "ようこそ！{platform_name}へ。"
 msgid "{platform_name} is an educational Web Service. For everyone, for free."
 msgstr "{platform_name}は誰でも無料で受講できるウェブサービスです。"
 
-#: lms/templates/register.html
-msgid "If you are under 20 years old, you have to get permission of your parents to regist this site."
-msgstr "※未成年の方がお申し込みをいただく場合は、親権者の同意が必要となります。"
-
 #: lms/templates/login.html
 msgid "Let's login and enjoy your courses!"
 msgstr "ログインして学習をはじめましょう。"
