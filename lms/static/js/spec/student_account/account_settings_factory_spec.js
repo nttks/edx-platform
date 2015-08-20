@@ -147,7 +147,7 @@ define(['backbone', 'jquery', 'underscore', 'common/js/spec_helpers/ajax_helpers
 
                 var sectionsData = accountSettingsView.options.sectionsData;
 
-                expect(sectionsData[0].fields.length).toBe(6);
+                expect(sectionsData[0].fields.length).toBe(5);
 
                 var textFields = [sectionsData[0].fields[1], sectionsData[0].fields[2]];
                 for (var i = 0; i < textFields.length ; i++) {
@@ -165,7 +165,7 @@ define(['backbone', 'jquery', 'underscore', 'common/js/spec_helpers/ajax_helpers
                     }, requests);
                 }
 
-                expect(sectionsData[1].fields.length).toBe(4);
+                expect(sectionsData[1].fields.length).toBe(3);
                 var dropdownFields = [
                     sectionsData[1].fields[0],
                     sectionsData[1].fields[1],

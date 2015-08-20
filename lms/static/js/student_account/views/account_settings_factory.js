@@ -79,16 +79,6 @@
                                 options: fieldsData.language.options,
                                 persistChanges: true
                             })
-                        },
-                        {
-                            view: new FieldViews.DropdownFieldView({
-                                model: userAccountModel,
-                                required: true,
-                                title: gettext('Country or Region'),
-                                valueAttribute: 'country',
-                                options: fieldsData['country']['options'],
-                                persistChanges: true
-                            })
                         }
                     ]
                 },
@@ -119,15 +109,6 @@
                                 title: gettext('Year of Birth'),
                                 valueAttribute: 'year_of_birth',
                                 options: fieldsData['year_of_birth']['options'],
-                                persistChanges: true
-                            })
-                        },
-                        {
-                            view: new AccountSettingsFieldViews.LanguageProficienciesFieldView({
-                                model: userAccountModel,
-                                title: gettext('Preferred Language'),
-                                valueAttribute: 'language_proficiencies',
-                                options: fieldsData.preferred_language.options,
                                 persistChanges: true
                             })
                         }
