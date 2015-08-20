@@ -162,7 +162,6 @@ class AccountSettingsPageTest(AccountSettingsTestMixin, WebAppTest):
                     'Email Address',
                     'Password',
                     'Language',
-                    'Country or Region'
                 ]
             },
             {
@@ -171,7 +170,6 @@ class AccountSettingsPageTest(AccountSettingsTestMixin, WebAppTest):
                     'Education Completed',
                     'Gender',
                     'Year of Birth',
-                    'Preferred Language',
                 ]
             },
             {
@@ -402,39 +400,6 @@ class AccountSettingsPageTest(AccountSettingsTestMixin, WebAppTest):
                 u'',
                 [u'1980', u''],
             )
-
-    def test_country_field(self):
-        """
-        Test behaviour of "Country or Region" field.
-        """
-        self._test_dropdown_field(
-            u'country',
-            u'Country or Region',
-            u'',
-            [u'Pakistan', u'Palau'],
-        )
-
-    def test_preferred_language_field(self):
-        """
-        Test behaviour of "Preferred Language" field.
-        """
-        self._test_dropdown_field(
-            u'language_proficiencies',
-            u'Preferred Language',
-            u'',
-            [u'Pushto', u''],
-        )
-
-        actual_events = self.wait_for_events(event_filter=self.settings_changed_event_filter, number_of_matches=2)
-        self.assert_events_match(
-            [
-                self.expected_settings_changed_event(
-                    'language_proficiencies', [], [{'code': 'ps'}], table='student_languageproficiency'),
-                self.expected_settings_changed_event(
-                    'language_proficiencies', [{'code': 'ps'}], [], table='student_languageproficiency'),
-            ],
-            actual_events
-        )
 
     def test_connected_accounts(self):
         """
