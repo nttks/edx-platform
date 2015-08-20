@@ -839,6 +839,7 @@ class RegistrationViewTest(ThirdPartyAuthTestMixin, ApiTestCase):
     def test_patch_not_allowed(self):
         raise SkipTest("Django 1.4's test client does not support patch")
 
+    @override_settings(PASSWORD_MIN_LENGTH=PASSWORD_MIN_LENGTH)
     def test_register_form_default_fields(self):
         no_extra_fields_setting = {}
 
@@ -896,6 +897,7 @@ class RegistrationViewTest(ThirdPartyAuthTestMixin, ApiTestCase):
                 u"type": u"password",
                 u"required": True,
                 u"label": u"Password",
+                u"instructions": u"{password_min_length} alphanumeric characters or more (It includes single-byte uppercase and lowercase letters, numbers, one or more characters)".format(password_min_length=PASSWORD_MIN_LENGTH),
                 u"restrictions": {
                     'min_length': PASSWORD_MIN_LENGTH,
                     'max_length': PASSWORD_MAX_LENGTH
