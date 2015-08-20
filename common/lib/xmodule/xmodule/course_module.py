@@ -912,7 +912,8 @@ class CourseFields(object):
             "Enter configuration for the teams feature. Expects two entries: max_team_size and topics, where "
             "topics is a list of topics."
         ),
-        scope=Scope.settings
+        scope=Scope.settings,
+        deprecated=True,  # Deprecated until the teams feature is made generally available
     )
 
     enable_proctored_exams = Boolean(
@@ -956,7 +957,7 @@ class CourseDescriptor(CourseFields, SequenceDescriptor, LicenseMixin):
         super(CourseDescriptor, self).__init__(*args, **kwargs)
         _ = self.runtime.service(self, "i18n").ugettext
 
-        if not self.wiki_slug:
+        if self.wiki_slug is None:
             self.wiki_slug = self.location.course
 
         if self.due_date_display_format is None and self.show_timezone is False:
