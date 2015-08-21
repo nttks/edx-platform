@@ -9,10 +9,11 @@ from django.core.urlresolvers import reverse
 from survey.models import SurveyForm
 
 from xmodule.modulestore.tests.factories import CourseFactory
+from xmodule.modulestore.tests.utils import XssTestMixin
 from courseware.tests.helpers import LoginEnrollmentTestCase
 
 
-class SurveyViewsTests(LoginEnrollmentTestCase):
+class SurveyViewsTests(LoginEnrollmentTestCase, XssTestMixin):
     """
     All tests for the views.py file
     """
@@ -36,6 +37,7 @@ class SurveyViewsTests(LoginEnrollmentTestCase):
         })
 
         self.course = CourseFactory.create(
+            display_name='<script>alert("XSS")</script>',
             course_survey_required=True,
             course_survey_name=self.test_survey_name
         )
@@ -169,3 +171,13 @@ class SurveyViewsTests(LoginEnrollmentTestCase):
             resp,
             reverse('info', kwargs={'course_id': unicode(self.course_without_survey.id)})
         )
+
+    def test_survey_xss(self):
+        """Test that course display names are correctly HTML-escaped."""
+        response = self.client.get(
+            reverse(
+                'course_survey',
+                kwargs={'course_id': unicode(self.course.id)}
+            )
+        )
+        self.assert_xss(response, '<script>alert("XSS")</script>')
