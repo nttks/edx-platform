@@ -73,7 +73,7 @@ class RegistrationTest(WebAppTest, GaccoTestMixin):
             # Check link of FAQ
             self.assertEqual(
                 'https://support.gacco.org/',
-                requests.get(self.header_page.navigation_menu_links[2], allow_redirects=False).headers['Location']
+                requests.get(self.header_page.navigation_menu_links[1], allow_redirects=False).headers['Location']
             )
 
         ## Footer links
