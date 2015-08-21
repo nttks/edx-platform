@@ -99,10 +99,10 @@
 <script type="text/javascript">
   $(function() {
     var MAX_CHARACTER_LENGTH = 1000;
-    var course_id_matches = location.href.match(/^.+\/courses\/([^/+]+[/|\+][^/+]+[/|\+][^/]+)\/courseware\/.+$/);
-    var course_id = (course_id_matches)? course_id_matches[1] : '';
-    var is_lms = (course_id_matches != null);
-    var usage_id = $('.xblock.xblock-student_view.xmodule_display.xmodule_VerticalModule').data('usage-id');
+    var is_lms = $('.xblock.xblock-student_view.xblock-student_view-sequential').length > 0;
+    var vertical_module = $('.xblock.xblock-student_view.xblock-student_view-vertical');
+    var course_id = vertical_module.data('course-id');
+    var usage_id = vertical_module.data('usage-id');
     var unit_id = (usage_id)? usage_id.match(/^.+(?:;_vertical;_|\+block@)([0-9a-f]+)$/)[1] : '';
     // survey_init
     if (is_lms) {
@@ -113,20 +113,22 @@
         contentType: 'application/json',
         data: {'course_id': course_id,
                'unit_id': unit_id},
-      }).done(function(data) {
-        if (data.success) {
-          // not yet submitted
-          show_init();
-        } else {
-          // already submitted
-          show_already_submitted();
-          $.each(data.survey_answer, function(i, v) {
-            v = (v instanceof Array) ? v : [v];
-            $('#survey-form').find('*[name=' + i + ']').val(v);
-          });
+        success: function(data) {
+          if (data.success) {
+            // not yet submitted
+            show_init();
+          } else {
+            // already submitted
+            show_already_submitted();
+            $.each(data.survey_answer, function(i, v) {
+              v = (v instanceof Array) ? v : [v];
+              $('#survey-form').find('*[name=' + i + ']').val(v);
+            });
+          }
+        },
+        error: function() {
+          show_error();
         }
-      }).fail(function() {
-        show_error();
       });
     } else {
       // you're in Studio
@@ -185,25 +187,27 @@
               xhr.abort();
               window.scrollTo(0, 0);
           }
+        },
+        success: function(data) {
+          if (data.success) {
+            // complete
+            $('#survey-init-message').addClass('is-disabled');
+            $('#survey-error-message').addClass('is-disabled');
+            $('#survey-already-submitted-message').addClass('is-disabled');
+            $('#survey-inputcheck-message').addClass('is-disabled');
+            $('#survey-complete-message').removeClass('is-disabled');
+            $('#survey-form').removeClass('is-disabled');
+            $('#survey-submit-button').addClass('disabled');
+          } else {
+            // already submitted
+            show_already_submitted();
+          }
+          window.scrollTo(0, 0);
+        },
+        error: function() {
+          show_error();
+          window.scrollTo(0, 0);
         }
-      }).done(function(data) {
-        if (data.success) {
-          // complete
-          $('#survey-init-message').addClass('is-disabled');
-          $('#survey-error-message').addClass('is-disabled');
-          $('#survey-already-submitted-message').addClass('is-disabled');
-          $('#survey-inputcheck-message').addClass('is-disabled');
-          $('#survey-complete-message').removeClass('is-disabled');
-          $('#survey-form').removeClass('is-disabled');
-          $('#survey-submit-button').addClass('disabled');
-        } else {
-          // already submitted
-          show_already_submitted();
-        }
-        window.scrollTo(0, 0);
-      }).fail(function() {
-        show_error();
-        window.scrollTo(0, 0);
       });
     });
     function show_init() {
