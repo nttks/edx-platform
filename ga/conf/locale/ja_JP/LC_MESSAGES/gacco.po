@@ -2289,20 +2289,6 @@ msgstr "半角アルファベットの大文字、小文字、数字を1文字�
 
 #-#-#-#-#  Original messages in gacco/templates  #-#-#-#-#
 
-#: templates/theme-footer.html
-msgid "NTT DOCOMO, INC."
-msgstr "NTT DOCOMO, INC"
-
-#: templates/theme-footer.html
-msgid "NTT Knowledge Square Inc."
-msgstr "NTT Knowledge Square Inc."
-
-#: templates/theme-footer.html
-msgid ""
-"Copyright (c) 2015 NTT Knowledge Square Inc., except where noted, all rights "
-"reserved."
-msgstr "Copyright (c) 2015 NTT Knowledge Square Inc., except where noted, all rights reserved."
-
 #: templates/theme-header.html
 msgid "Menu"
 msgstr "メニュー"
