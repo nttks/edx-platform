@@ -13,6 +13,7 @@ from django.test.utils import override_settings
 from django.contrib.auth.models import User
 from django.contrib.auth.hashers import UNUSABLE_PASSWORD
 from django.contrib.auth.tokens import default_token_generator
+
 from django.utils.http import int_to_base36
 
 from mock import Mock, patch
@@ -23,7 +24,7 @@ from student.tests.factories import UserFactory
 from student.tests.test_email import mock_render_to_string
 from util.testing import EventTestMixin
 
-from test_microsite import fake_site_name
+from .test_microsite import fake_microsite_get_value
 
 from openedx.core.djangoapps.ga_ratelimitbackend.tests.factories import TrustedClientFactory
 
@@ -228,7 +229,7 @@ class ResetPasswordTests(EventTestMixin, TestCase):
             )
 
     @unittest.skipUnless(settings.ROOT_URLCONF == 'lms.urls', "Test only valid in LMS")
-    @patch("microsite_configuration.microsite.get_value", fake_site_name)
+    @patch("microsite_configuration.microsite.get_value", fake_microsite_get_value)
     @patch('django.core.mail.send_mail')
     def test_reset_password_email_microsite(self, send_email):
         """
@@ -241,7 +242,7 @@ class ResetPasswordTests(EventTestMixin, TestCase):
         req.get_host = Mock(return_value=None)
         req.user = self.user
         password_reset(req)
-        _, msg, _, _ = send_email.call_args[0]
+        _, msg, from_addr, _ = send_email.call_args[0]
 
         reset_msg = "you requested a password reset for your user account at openedx.localhost"
 
@@ -250,6 +251,7 @@ class ResetPasswordTests(EventTestMixin, TestCase):
         self.assert_event_emitted(
             SETTING_CHANGE_INITIATED, user_id=self.user.id, setting=u'password', old=None, new=None
         )
+        self.assertEqual(from_addr, "no-reply@fakeuniversity.com")
 
     @patch('student.views.password_reset_confirm')
     def test_reset_password_bad_token(self, reset_confirm):
@@ -274,6 +276,16 @@ class ResetPasswordTests(EventTestMixin, TestCase):
         self.assertEquals(confirm_kwargs['token'], self.token)
         self.user = User.objects.get(pk=self.user.pk)
         self.assertTrue(self.user.is_active)
+
+    @patch('student.views.password_reset_confirm')
+    @patch("microsite_configuration.microsite.get_value", fake_microsite_get_value)
+    def test_reset_password_good_token_microsite(self, reset_confirm):
+        """Tests password reset confirmation page for micro site"""
+
+        good_reset_req = self.request_factory.get('/password_reset_confirm/{0}-{1}/'.format(self.uidb36, self.token))
+        password_reset_confirm_wrapper(good_reset_req, self.uidb36, self.token)
+        confirm_kwargs = reset_confirm.call_args[1]
+        self.assertEquals(confirm_kwargs['extra_context']['platform_name'], 'Fake University')
 
     @patch('student.views.password_reset_confirm')
     def test_reset_password_with_reused_password(self, reset_confirm):

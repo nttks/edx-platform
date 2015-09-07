@@ -13,7 +13,7 @@ import urlparse
 from contextlib import contextmanager
 from datetime import datetime
 from pytz import UTC
-from path import path
+from path import Path as path
 from bok_choy.javascript import js_defined
 from bok_choy.web_app_test import WebAppTest
 from bok_choy.promise import EmptyPromise, Promise
