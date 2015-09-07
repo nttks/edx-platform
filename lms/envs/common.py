@@ -34,7 +34,7 @@ import os
 import imp
 
 from datetime import timedelta
-from path import path
+from path import Path as path
 from warnings import simplefilter
 from django.utils.translation import ugettext_lazy as _
 
@@ -407,6 +407,9 @@ FEATURES = {
 
     # Teams feature
     'ENABLE_TEAMS': True,
+
+    # Enable indexing teams for search
+    'ENABLE_TEAMS_SEARCH': False,
 
     # Show video bumper in LMS
     'ENABLE_VIDEO_BUMPER': False,
