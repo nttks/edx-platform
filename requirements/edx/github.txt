@@ -44,7 +44,7 @@ git+https://github.com/hmarr/django-debug-toolbar-mongo.git@b0686a76f1ce3532088c
 -e git+https://github.com/edx/edx-submissions.git@7c766502058e04bc9094e6cbe286e949794b80b3#egg=edx-submissions
 -e git+https://github.com/edx/opaque-keys.git@df0dd602869e498e512659bb4bd243309e30e19a#egg=opaque-keys
 git+https://github.com/edx/ease.git@release-2015-07-14#egg=ease==0.1.3
--e git+https://github.com/edx/i18n-tools.git@v0.1.1#egg=i18n-tools
+-e git+https://github.com/edx/i18n-tools.git@56f048af9b6868613c14aeae760548834c495011#egg=i18n-tools
 -e git+https://github.com/nttks/edx-oauth2-provider.git@gacco/cypress#egg=oauth2-provider
 -e git+https://github.com/edx/edx-val.git@v0.0.5#egg=edx-val
 -e git+https://github.com/pmitros/RecommenderXBlock.git@518234bc354edbfc2651b9e534ddb54f96080779#egg=recommender-xblock
