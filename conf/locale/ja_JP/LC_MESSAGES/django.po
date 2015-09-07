@@ -752,7 +752,7 @@ msgstr ""
 msgid ""
 "This account has not yet been activated. An activation email has been re-"
 "sent to {email_address}."
-msgstr ""
+msgstr "アカウントのアクティベートが完了していません。{email_address}にアカウントアクティベーション用のメールを送信しました。"
 
 #. Translators: the translation for "LONG_DATE_FORMAT" must be a format
 #. string for formatting dates in a long form.  For example, the
