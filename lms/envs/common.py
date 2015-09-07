@@ -431,6 +431,10 @@ FEATURES = {
 
     # Enable LTI Provider feature.
     'ENABLE_LTI_PROVIDER': False,
+
+    # Optional security feature for ORA2 file upload
+    'ENABLE_ORA2_WAF_PROXY': False,
+    'ENABLE_ORA2_FILE_TYPE_STRICT_CHECK': False,
 }
 
 # Ignore static asset files on import which match this pattern
@@ -2230,6 +2234,11 @@ ORA2_FILE_PREFIX = None
 # Default File Upload Storage bucket and prefix. Used by the FileUpload Service.
 FILE_UPLOAD_STORAGE_BUCKET_NAME = 'edxuploads'
 FILE_UPLOAD_STORAGE_PREFIX = 'submissions_attachments'
+
+# Security settings for ORA2 file upload
+ORA2_WAF_PROXY_SERVER_IP = None
+ORA2_WAF_PROXY_SERVER_PORT = None
+ORA2_WAF_VIRUS_DETECTION_KEYWORD = ''
 
 ##### ACCOUNT LOCKOUT DEFAULT PARAMETERS #####
 MAX_FAILED_LOGIN_ATTEMPTS_ALLOWED = 5
