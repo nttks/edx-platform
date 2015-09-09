@@ -283,12 +283,12 @@ msgid "Username should only consist of A-Z and 0-9, with no spaces."
 msgstr "ユーザ名は半角英数の文字のみが利用可能です。なお、全角文字、記号およびスペースは利用できません。"
 
 #: common/djangoapps/student/forms.py
-msgid "Username cannot be more than %(limit_value)s characters long"
-msgstr ""
+msgid "Username cannot be more than {num} characters long"
+msgstr "ユーザー名は{num}文字以下で入力してください。"
 
 #: common/djangoapps/student/forms.py
-msgid "Email cannot be more than %(limit_value)s characters long"
-msgstr ""
+msgid "Email cannot be more than {num} characters long"
+msgstr "メールアドレスは{num}文字以下で入力してください。"
 
 #: common/djangoapps/student/forms.py
 msgid "You must accept the terms of service."
@@ -572,6 +572,10 @@ msgstr "再アクティベーション用のメールの送信ができません
 #: common/djangoapps/student/views.py
 msgid "Invalid password"
 msgstr "不正なパスワード"
+
+#: common/djangoapps/student/views.py
+msgid "Valid e-mail is required."
+msgstr "正しいメールアドレスが必要です。"
 
 #: common/djangoapps/student/views.py
 msgid "Valid e-mail address required."
