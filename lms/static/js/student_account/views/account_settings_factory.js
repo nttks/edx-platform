@@ -147,6 +147,7 @@
                                 helpMessage: '',
                                 connected: provider.connected,
                                 connectUrl: provider.connect_url,
+                                acceptsLogins: provider.accepts_logins,
                                 disconnectUrl: provider.disconnect_url
                             })
                         };
