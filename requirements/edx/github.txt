@@ -59,6 +59,7 @@ git+https://github.com/edx/ecommerce-api-client.git@1.1.0#egg=ecommerce-api-clie
 -e git+https://github.com/edx/edx-organizations.git@release-2015-08-31#egg=edx-organizations
 
 git+https://github.com/edx/edx-proctoring.git@0.8.3#egg=edx-proctoring==0.8.3
+-e git+https://github.com/nttks/python-social-auth.git@master#egg=python-social-auth
 
 # Third Party XBlocks
 -e git+https://github.com/mitodl/edx-sga@172a90fd2738f8142c10478356b2d9ed3e55334a#egg=edx-sga
