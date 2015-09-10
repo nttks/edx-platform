@@ -586,7 +586,7 @@ msgid ""
 "You have successfully signed into %(currentProvider)s, but your "
 "%(currentProvider)s account does not have a linked %(platformName)s account."
 " To link your accounts, sign in now using your %(platformName)s password."
-msgstr ""
+msgstr "%(currentProvider)sへのログインに成功しましたが、%(currentProvider)sのアカウントと%(platformName)sのアカウントの連携設定は完了していません。アカウントの連携設定を完了するために、%(platformName)sのメールアドレスとパスワードでログインしてください。"
 
 #: lms/templates/student_account/login.underscore:10
 msgid "Password Reset Email Sent"
@@ -623,7 +623,7 @@ msgstr ""
 
 #: lms/templates/student_account/login.underscore:55
 msgid "or sign in with"
-msgstr "または次でサインインする"
+msgstr "または次でログインする"
 
 #: lms/templates/student_account/login.underscore:64
 #, python-format
@@ -670,7 +670,7 @@ msgstr "アカウントを作成することができませんでした。"
 #: lms/templates/student_account/register.underscore:18
 #, python-format
 msgid "You've successfully signed into %(currentProvider)s."
-msgstr "%(currentProvider)sへのサインインに成功しました。"
+msgstr "%(currentProvider)sへのログインに成功しました。"
 
 #: lms/templates/student_account/register.underscore:19
 #, python-format
