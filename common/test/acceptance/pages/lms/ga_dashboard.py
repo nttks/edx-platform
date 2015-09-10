@@ -76,3 +76,38 @@ class DashboardPage(EdXDashboardPage):
     def is_hidden_course_link_active(self, course_id):
         link_css = self._link_css(course_id)
         return True if link_css is not None else False
+
+    def show_unenroll_settings(self, course_name):
+        """
+        Show available unenroll settings on dashboard
+        """
+        try:
+            self._get_element_in_course(course_name, ".action-more").click()
+            self._get_element_in_course(course_name, ".action-unenroll").click()
+            return True
+        except NoSuchElementException:
+            return False
+
+    def show_email_settings(self, course_name):
+        """
+        Show available change email settings on dashboard
+        """
+        try:
+            self._get_element_in_course(course_name, ".action-more").click()
+            self._get_element_in_course(course_name, ".action-email-settings").click()
+            return True
+        except NoSuchElementException:
+            return False
+
+    def is_available_unenroll_settings(self):
+        """
+        Is available unenroll settings on dashboard
+        """
+        return self.q(css='#unenroll-modal').visible
+
+    def is_available_change_email_settings(self):
+        """
+        Is available change email settings on dashboard
+        """
+        return self.q(css='#email-settings-modal').visible
+
