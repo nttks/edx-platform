@@ -67,6 +67,7 @@ def instructor_dashboard_2(request, course_id):
         'forum_admin': has_forum_access(
             request.user, course_key, FORUM_ROLE_ADMINISTRATOR
         ),
+        'personal_info': request.user.is_staff,
     }
 
     if not access['staff']:
@@ -76,7 +77,6 @@ def instructor_dashboard_2(request, course_id):
         _section_course_info(course, access),
         _section_membership(course, access),
         _section_student_admin(course, access),
-        _section_data_download(course, access),
         _section_analytics(course, access),
         _section_survey(course, access),
         _section_progress_report(course, access),
@@ -98,6 +98,10 @@ def instructor_dashboard_2(request, course_id):
 
     if (settings.FEATURES.get('INDIVIDUAL_DUE_DATES') and access['instructor']):
         sections.insert(3, _section_extensions(course))
+
+    # Gate access to Data Download tab
+    if access['personal_info']:
+        sections.append(_section_data_download(course, access))
 
     # Gate access to course email by feature flag & by course-specific authorization
     if bulk_email_is_enabled_for_course(course_key):
