@@ -89,6 +89,7 @@ from util.milestones_helpers import (
     set_prerequisite_courses,
     is_valid_course_key
 )
+from ga_maintenance_cms.models import MaintenanceMessage
 
 log = logging.getLogger(__name__)
 
@@ -455,6 +456,7 @@ def course_listing(request):
 
     courses = _remove_in_process_courses(courses, in_process_course_actions)
     in_process_course_actions = [format_in_process_course_view(uca) for uca in in_process_course_actions]
+    maintenance_message = MaintenanceMessage.messages_for_all()
 
     return render_to_response('index.html', {
         'courses': courses,
@@ -467,7 +469,8 @@ def course_listing(request):
         'course_creator_status': _get_course_creator_status(request.user),
         'rerun_creator_status': GlobalStaff().has_user(request.user),
         'allow_unicode_course_id': settings.FEATURES.get('ALLOW_UNICODE_COURSE_ID', False),
-        'allow_course_reruns': settings.FEATURES.get('ALLOW_COURSE_RERUNS', True)
+        'allow_course_reruns': settings.FEATURES.get('ALLOW_COURSE_RERUNS', True),
+        'maintenance_message': maintenance_message
     })
 
 
