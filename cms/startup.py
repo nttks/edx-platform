@@ -8,6 +8,7 @@ from django.conf import settings
 settings.INSTALLED_APPS  # pylint: disable=pointless-statement
 
 from openedx.core.lib.django_startup import autostartup
+import edxmako
 from monkey_patch import django_utils_translation
 
 
@@ -62,6 +63,10 @@ def enable_theme():
 
     # Calculate the location of the theme's files
     theme_root = settings.ENV_ROOT / "themes" / settings.THEME_NAME
+
+    # Include the theme's templates in the template search paths
+    settings.TEMPLATE_DIRS.insert(0, theme_root / 'templates_cms')
+    edxmako.paths.add_lookup('main', theme_root / 'templates_cms', prepend=True)
 
     # Namespace the theme's static files to 'themes/<theme_name>' to
     # avoid collisions with default edX static files
