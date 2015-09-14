@@ -43,5 +43,6 @@ class StartupTestCase(TestCase):
             settings.FAVICON_PATH,
             'themes/bar/images/favicon.ico'
         )
+        self.assertEqual(settings.ENV_ROOT / 'themes/bar/templates_cms', settings.TEMPLATE_DIRS[0])
         exp_path = (u'themes/bar', settings.ENV_ROOT / "themes/bar/static")
         self.assertIn(exp_path, settings.STATICFILES_DIRS)
