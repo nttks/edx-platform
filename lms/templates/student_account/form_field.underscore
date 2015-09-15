@@ -18,7 +18,11 @@
             } %>
             <% if ( required ) { %> aria-required="true" required<% } %>>
         <% _.each(options, function(el) { %>
-            <option value="<%= el.value%>"<% if ( el.default ) { %> data-isdefault="true"<% } %>><%= el.name %></option>
+            <% if ( name === 'gender' || name === 'level_of_education' ) { %>
+                <option value="<%= el.value%>"<% if ( el.default ) { %> data-isdefault="true"<% } %>><%= gettext(el.name) %></option>
+            <% } else { %>
+                <option value="<%= el.value%>"<% if ( el.default ) { %> data-isdefault="true"<% } %>><%= el.name %></option>
+            <% } %>
         <% }); %>
         </select>
     <% } else if ( type === 'textarea' ) { %>

@@ -52,6 +52,52 @@ msgstr "スレッド一覧"
 msgid "%(post_type)s posted %(time_ago)s by %(author)s"
 msgstr "%(author)sにより%(time_ago)sに投稿"
 
+#-#-#-#-#  Missing messages for openedx-releases/cypress  #-#-#-#-#
+
+#. Translators: This is used in lms/templates/student_account/form_field.underscore
+msgid "Male"
+msgstr "男性"
+
+#. Translators: This is used in lms/templates/student_account/form_field.underscore
+msgid "Female"
+msgstr "女性"
+
+#. Translators: This is used in lms/templates/student_account/form_field.underscore
+msgid "Other"
+msgstr "その他"
+
+#. Translators: This is used in lms/templates/student_account/form_field.underscore
+msgid "Doctorate"
+msgstr "大学院卒（博士課程修了）"
+
+#. Translators: This is used in lms/templates/student_account/form_field.underscore
+msgid "Master's or professional degree"
+msgstr "大学院卒（修士課程修了）"
+
+#. Translators: This is used in lms/templates/student_account/form_field.underscore
+msgid "Bachelor's degree"
+msgstr "4年制および6年制大学卒"
+
+#. Translators: This is used in lms/templates/student_account/form_field.underscore
+msgid "Associate degree"
+msgstr "短大・専門学校卒"
+
+#. Translators: This is used in lms/templates/student_account/form_field.underscore
+msgid "Secondary/high school"
+msgstr "高校卒"
+
+#. Translators: This is used in lms/templates/student_account/form_field.underscore
+msgid "Junior secondary/junior high/middle school"
+msgstr "中学校卒"
+
+#. Translators: This is used in lms/templates/student_account/form_field.underscore
+msgid "Elementary/primary school"
+msgstr "小学校卒"
+
+#. Translators: This is used in lms/templates/student_account/form_field.underscore
+msgid "None"
+msgstr "なし"
+
 #-#-#-#-#  Original messages in gacco  #-#-#-#-#
 
 #: pollxblock/static/js/src/pollxblock.js
