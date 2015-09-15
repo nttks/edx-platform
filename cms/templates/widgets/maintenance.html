@@ -1,0 +1,9 @@
+<div class="maintenance">
+  <ul class="list-maintenance">
+    % for data in maintenance_message:
+    <li class="maintenance-item">
+        ${data["message"]}
+    </li>
+    % endfor
+  </ul>
+</div>
