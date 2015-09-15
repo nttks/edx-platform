@@ -1101,7 +1101,7 @@ class RegistrationViewTest(ThirdPartyAuthTestMixin, ApiTestCase):
         self._assert_reg_field(
             {"honor_code": "required"},
             {
-                "label": "I agree to the {platform_name} <a href=\"https://www.test.com/honor\">Terms of Service and Honor Code</a>.".format(
+                "label": "I agree to the {platform_name} <a href=\"https://www.test.com/honor\" target=\"_blank\">Terms of Service and Honor Code</a>.".format(
                     platform_name=settings.PLATFORM_NAME
                 ),
                 "name": "honor_code",
@@ -1109,7 +1109,7 @@ class RegistrationViewTest(ThirdPartyAuthTestMixin, ApiTestCase):
                 "type": "checkbox",
                 "required": True,
                 "errorMessages": {
-                    "required": "You must agree to the {platform_name} <a href=\"https://www.test.com/honor\">Terms of Service and Honor Code</a>.".format(
+                    "required": "You must agree to the {platform_name} <a href=\"https://www.test.com/honor\" target=\"_blank\">Terms of Service and Honor Code</a>.".format(
                         platform_name=settings.PLATFORM_NAME
                     )
                 }
@@ -1122,7 +1122,7 @@ class RegistrationViewTest(ThirdPartyAuthTestMixin, ApiTestCase):
         self._assert_reg_field(
             {"honor_code": "required"},
             {
-                "label": "I agree to the {platform_name} <a href=\"/honor\">Terms of Service and Honor Code</a>.".format(
+                "label": "I agree to the {platform_name} <a href=\"/honor\" target=\"_blank\">Terms of Service and Honor Code</a>.".format(
                     platform_name=settings.PLATFORM_NAME
                 ),
                 "name": "honor_code",
@@ -1130,7 +1130,7 @@ class RegistrationViewTest(ThirdPartyAuthTestMixin, ApiTestCase):
                 "type": "checkbox",
                 "required": True,
                 "errorMessages": {
-                    "required": "You must agree to the {platform_name} <a href=\"/honor\">Terms of Service and Honor Code</a>.".format(
+                    "required": "You must agree to the {platform_name} <a href=\"/honor\" target=\"_blank\">Terms of Service and Honor Code</a>.".format(
                         platform_name=settings.PLATFORM_NAME
                     )
                 }
@@ -1149,7 +1149,7 @@ class RegistrationViewTest(ThirdPartyAuthTestMixin, ApiTestCase):
         self._assert_reg_field(
             {"honor_code": "required", "terms_of_service": "required"},
             {
-                "label": "I agree to the {platform_name} <a href=\"https://www.test.com/honor\">Honor Code</a>.".format(
+                "label": "I agree to the {platform_name} <a href=\"https://www.test.com/honor\" target=\"_blank\">Honor Code</a>.".format(
                     platform_name=settings.PLATFORM_NAME
                 ),
                 "name": "honor_code",
@@ -1157,7 +1157,7 @@ class RegistrationViewTest(ThirdPartyAuthTestMixin, ApiTestCase):
                 "type": "checkbox",
                 "required": True,
                 "errorMessages": {
-                    "required": "You must agree to the {platform_name} <a href=\"https://www.test.com/honor\">Honor Code</a>.".format(
+                    "required": "You must agree to the {platform_name} <a href=\"https://www.test.com/honor\" target=\"_blank\">Honor Code</a>.".format(
                         platform_name=settings.PLATFORM_NAME
                     )
                 }
@@ -1168,7 +1168,7 @@ class RegistrationViewTest(ThirdPartyAuthTestMixin, ApiTestCase):
         self._assert_reg_field(
             {"honor_code": "required", "terms_of_service": "required"},
             {
-                "label": "I agree to the {platform_name} <a href=\"https://www.test.com/tos\">Terms of Service</a>.".format(
+                "label": "I agree to the {platform_name} <a href=\"https://www.test.com/tos\" target=\"_blank\">Terms of Service</a>.".format(
                     platform_name=settings.PLATFORM_NAME
                 ),
                 "name": "terms_of_service",
@@ -1176,7 +1176,7 @@ class RegistrationViewTest(ThirdPartyAuthTestMixin, ApiTestCase):
                 "type": "checkbox",
                 "required": True,
                 "errorMessages": {
-                    "required": "You must agree to the {platform_name} <a href=\"https://www.test.com/tos\">Terms of Service</a>.".format(
+                    "required": "You must agree to the {platform_name} <a href=\"https://www.test.com/tos\" target=\"_blank\">Terms of Service</a>.".format(
                         platform_name=settings.PLATFORM_NAME
                     )
                 }
@@ -1191,7 +1191,7 @@ class RegistrationViewTest(ThirdPartyAuthTestMixin, ApiTestCase):
         self._assert_reg_field(
             {"honor_code": "required", "terms_of_service": "required"},
             {
-                "label": "I agree to the {platform_name} <a href=\"/honor\">Honor Code</a>.".format(
+                "label": "I agree to the {platform_name} <a href=\"/honor\" target=\"_blank\">Honor Code</a>.".format(
                     platform_name=settings.PLATFORM_NAME
                 ),
                 "name": "honor_code",
@@ -1199,7 +1199,7 @@ class RegistrationViewTest(ThirdPartyAuthTestMixin, ApiTestCase):
                 "type": "checkbox",
                 "required": True,
                 "errorMessages": {
-                    "required": "You must agree to the {platform_name} <a href=\"/honor\">Honor Code</a>.".format(
+                    "required": "You must agree to the {platform_name} <a href=\"/honor\" target=\"_blank\">Honor Code</a>.".format(
                         platform_name=settings.PLATFORM_NAME
                     )
                 }
@@ -1210,7 +1210,7 @@ class RegistrationViewTest(ThirdPartyAuthTestMixin, ApiTestCase):
         self._assert_reg_field(
             {"honor_code": "required", "terms_of_service": "required"},
             {
-                "label": "I agree to the {platform_name} <a href=\"/tos\">Terms of Service</a>.".format(
+                "label": "I agree to the {platform_name} <a href=\"/tos\" target=\"_blank\">Terms of Service</a>.".format(
                     platform_name=settings.PLATFORM_NAME
                 ),
                 "name": "terms_of_service",
@@ -1218,7 +1218,7 @@ class RegistrationViewTest(ThirdPartyAuthTestMixin, ApiTestCase):
                 "type": "checkbox",
                 "required": True,
                 "errorMessages": {
-                    "required": "You must agree to the {platform_name} <a href=\"/tos\">Terms of Service</a>.".format(
+                    "required": "You must agree to the {platform_name} <a href=\"/tos\" target=\"_blank\">Terms of Service</a>.".format(
                         platform_name=settings.PLATFORM_NAME
                     )
                 }
