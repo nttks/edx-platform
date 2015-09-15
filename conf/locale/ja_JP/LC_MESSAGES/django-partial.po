@@ -5011,7 +5011,7 @@ msgstr "権限"
 
 #: lms/djangoapps/dashboard/sysadmin.py:664
 msgid "full_name"
-msgstr "フルネーム"
+msgstr "氏名"
 
 #: lms/djangoapps/dashboard/management/commands/git_add_course.py:29
 msgid ""
@@ -5682,7 +5682,7 @@ msgstr "遠隔の評価エンジンの応答：{action}"
 #: lms/djangoapps/instructor/views/legacy.py:542
 #: openedx/core/djangoapps/user_api/views.py:355
 msgid "Full name"
-msgstr "フルネーム"
+msgstr "氏名"
 
 #: lms/djangoapps/instructor/views/legacy.py:544
 msgid "{title} in course {course_key}"
@@ -8063,7 +8063,7 @@ msgstr "プロファイルイメージのためのファイルが提供されて
 #: openedx/core/djangoapps/user_api/views.py:329
 #: openedx/core/djangoapps/user_api/views.py:778
 msgid "username@domain.com"
-msgstr "username@domain.com"
+msgstr "例：username@domain.com"
 
 #: openedx/core/djangoapps/user_api/views.py:77
 #: openedx/core/djangoapps/user_api/views.py:783
@@ -8099,7 +8099,7 @@ msgstr "{username}は別のアカウントで利用されている可能性が�
 #. a field on the registration form meant to hold the user's name.
 #: openedx/core/djangoapps/user_api/views.py:359
 msgid "Jane Doe"
-msgstr "山田 太郎"
+msgstr "例：学校 太郎"
 
 #. Translators: These instructions appear on the registration form,
 #. immediately
@@ -8112,19 +8112,19 @@ msgstr "修了証に表示するために用いる情報です"
 #. meant to hold the user's public username.
 #: openedx/core/djangoapps/user_api/views.py:388
 msgid "Public username"
-msgstr "公開名"
+msgstr "ユーザー名"
 
 #: openedx/core/djangoapps/user_api/views.py:393
 msgid ""
 "The name that will identify you in your courses - {bold_start}(cannot be "
 "changed later){bold_end}"
-msgstr "講座であなたを特定するための名前 {bold_start}(後から変更はできません){bold_end}"
+msgstr "ディスカッションの際に表示されるユーザー名となります {bold_start}(一度、登録すると変更できません){bold_end}"
 
 #. Translators: This example username is used as a placeholder in
 #. a field on the registration form meant to hold the user's username.
 #: openedx/core/djangoapps/user_api/views.py:399
 msgid "JaneDoe"
-msgstr "山田太郎"
+msgstr "例：gacco"
 
 #. Translators: This label appears above a dropdown menu on the registration
 #. form used to select the user's highest completed level of education.

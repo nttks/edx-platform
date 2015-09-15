@@ -1149,7 +1149,7 @@ class RegistrationViewTest(ThirdPartyAuthTestMixin, ApiTestCase):
         self._assert_reg_field(
             {"honor_code": "required", "terms_of_service": "required"},
             {
-                "label": "I agree to the {platform_name} <a href=\"https://www.test.com/honor\" target=\"_blank\">Honor Code</a>.".format(
+                "label": "I agree to the {platform_name} <a href=\"https://www.test.com/honor\" target=\"_blank\">Privacy Policy</a>.".format(
                     platform_name=settings.PLATFORM_NAME
                 ),
                 "name": "honor_code",
@@ -1157,7 +1157,7 @@ class RegistrationViewTest(ThirdPartyAuthTestMixin, ApiTestCase):
                 "type": "checkbox",
                 "required": True,
                 "errorMessages": {
-                    "required": "You must agree to the {platform_name} <a href=\"https://www.test.com/honor\" target=\"_blank\">Honor Code</a>.".format(
+                    "required": "You must agree to the {platform_name} <a href=\"https://www.test.com/honor\" target=\"_blank\">Privacy Policy</a>.".format(
                         platform_name=settings.PLATFORM_NAME
                     )
                 }
@@ -1191,7 +1191,7 @@ class RegistrationViewTest(ThirdPartyAuthTestMixin, ApiTestCase):
         self._assert_reg_field(
             {"honor_code": "required", "terms_of_service": "required"},
             {
-                "label": "I agree to the {platform_name} <a href=\"/honor\" target=\"_blank\">Honor Code</a>.".format(
+                "label": "I agree to the {platform_name} <a href=\"/honor\" target=\"_blank\">Privacy Policy</a>.".format(
                     platform_name=settings.PLATFORM_NAME
                 ),
                 "name": "honor_code",
@@ -1199,7 +1199,7 @@ class RegistrationViewTest(ThirdPartyAuthTestMixin, ApiTestCase):
                 "type": "checkbox",
                 "required": True,
                 "errorMessages": {
-                    "required": "You must agree to the {platform_name} <a href=\"/honor\" target=\"_blank\">Honor Code</a>.".format(
+                    "required": "You must agree to the {platform_name} <a href=\"/honor\" target=\"_blank\">Privacy Policy</a>.".format(
                         platform_name=settings.PLATFORM_NAME
                     )
                 }

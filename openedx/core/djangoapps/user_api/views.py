@@ -618,7 +618,7 @@ class RegistrationView(APIView):
         """
         # Separate terms of service and honor code checkboxes
         if self._is_field_visible("terms_of_service"):
-            terms_text = _(u"Honor Code")
+            terms_text = _(u"Privacy Policy")
 
         # Combine terms of service and honor code checkboxes
         else:

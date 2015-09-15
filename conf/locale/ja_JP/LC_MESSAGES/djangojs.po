@@ -3057,7 +3057,7 @@ msgstr "パスワードを忘れた方はこちら"
 #: lms/templates/student_account/login.underscore
 #: lms/templates/student_account/register.underscore
 msgid "Sign in"
-msgstr "サインイン"
+msgstr "ログイン"
 
 #: lms/templates/student_account/hinted_login.underscore
 msgid "Would you like to sign in using your %(providerName)s credentials?"
@@ -3212,7 +3212,7 @@ msgstr "必須項目"
 
 #: lms/templates/student_account/register.underscore
 msgid "Already have an account?"
-msgstr "既にアカウントをお持ちですか？"
+msgstr "既にアカウントをお持ちの方はこちら"
 
 #: lms/templates/student_profile/learner_profile.underscore
 msgid "You are currently sharing a limited profile."
