@@ -28,6 +28,37 @@ msgstr ""
 "Language: ja_JP\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
+#: cms/static/coffee/src/main.js:35
+msgid ""
+"This may be happening because of an error with our server or your internet "
+"connection. Try refreshing the page or making sure you are online."
+msgstr "サーバーかあなたのインターネット接続に問題がある場合に発生します。ページの再読み込みをするか、インターネット接続を確認してください。"
+
+#: cms/static/coffee/src/main.js:38
+msgid "Studio's having trouble saving your work"
+msgstr "Studio は作業の保存に問題があります。"
+
+#: cms/static/coffee/src/views/tabs.js:140
+msgid "Delete Page Confirmation"
+msgstr "ページ確認の削除"
+
+#: cms/static/coffee/src/views/tabs.js:141
+msgid ""
+"Are you sure you want to delete this page? This action cannot be undone."
+msgstr "このページを消しても大丈夫ですか？このアクションは取り消しできません。"
+
+#: cms/static/coffee/src/views/tabs.js:155
+#: cms/static/js/certificates/views/signatory_editor.js:136
+#: cms/static/js/views/course_info_update.js:159
+#: cms/static/js/views/list_item.js:61 cms/static/js/views/show_textbook.js:40
+#: cms/static/js/views/utils/xblock_utils.js:85
+msgid "Deleting"
+msgstr "削除しています"
+
+#: cms/static/coffee/src/xblock/cms.runtime.v1.js:59
+msgid "OpenAssessment Save Error"
+msgstr "保存エラー"
+
 #: cms/static/js/base.js:48
 msgid "This link will open in a new browser window/tab"
 msgstr "このリンクでは新しいウィンドウかタブが開きます。"
@@ -93,13 +124,6 @@ msgstr "署名一覧から \"<%= signatoryName %>\" を削除しますか？"
 #: cms/static/js/views/course_info_update.js:148
 msgid "This action cannot be undone."
 msgstr "このアクションは取り消しできません．"
-
-#: cms/static/js/certificates/views/signatory_editor.js:136
-#: cms/static/js/views/course_info_update.js:159
-#: cms/static/js/views/list_item.js:61 cms/static/js/views/show_textbook.js:40
-#: cms/static/js/views/utils/xblock_utils.js:85
-msgid "Deleting"
-msgstr "削除しています"
 
 #: cms/static/js/certificates/views/signatory_editor.js:156
 #: cms/static/js/factories/export.js:50 cms/static/js/views/asset.js:69
