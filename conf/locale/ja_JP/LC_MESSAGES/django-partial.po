@@ -8087,13 +8087,13 @@ msgstr "ログイン状態を保存"
 msgid ""
 "It looks like {email_address} belongs to an existing account. Try again with"
 " a different email address."
-msgstr "{email_address}は別のアカウントで利用されている可能性があります。別のemailアドレスにてお試しください。"
+msgstr "'{email_address}' は既に利用されています。別のメールアドレスをご利用ください。"
 
 #: openedx/core/djangoapps/user_api/views.py:278
 msgid ""
 "It looks like {username} belongs to an existing account. Try again with a "
 "different username."
-msgstr "{username}は別のアカウントで利用されている可能性があります。別のユーザー名にてお試しください。"
+msgstr "'{username}' は既に利用されています。別のユーザー名をご利用ください。"
 
 #. Translators: This example name is used as a placeholder in
 #. a field on the registration form meant to hold the user's name.

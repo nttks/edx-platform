@@ -98,6 +98,18 @@ msgstr "小学校卒"
 msgid "None"
 msgstr "なし"
 
+#: common/static/js/utils/edx.utils.validate.js
+msgid "The email address you've provided isn't formatted correctly."
+msgstr "正しいメールアドレスが必要です。"
+
+#: common/static/js/utils/edx.utils.validate.js
+msgid "%(field)s must have at least %(count)d characters."
+msgstr "%(field)sは%(count)d文字以上である必要があります。"
+
+#: common/static/js/utils/edx.utils.validate.js
+msgid "Please enter your %(field)s."
+msgstr "%(field)sが必要です。"
+
 #-#-#-#-#  Original messages in gacco  #-#-#-#-#
 
 #: pollxblock/static/js/src/pollxblock.js
