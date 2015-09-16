@@ -239,12 +239,6 @@ FEATURES = {
     # only edX superusers can perform the downloads)
     'ALLOW_COURSE_STAFF_GRADE_DOWNLOADS': False,
 
-    # Give course staff unrestricted access to profile downloads
-    'ALLOW_COURSE_STAFF_PROFILE_DOWNLOADS': False,
-
-    # Give course staff unrestricted access to view student gradebook
-    'ALLOW_COURSE_STAFF_VIEW_GRADEBOOK': False,
-
     'ENABLED_PAYMENT_REPORTS': ["refund_report", "itemized_purchase_report", "university_revenue_share", "certificate_status"],
 
     # Turn off account locking if failed login attempts exceeds a limit
