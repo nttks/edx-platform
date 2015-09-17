@@ -9,9 +9,9 @@ from __future__ import absolute_import
 
 from lettuce import world, step
 from mock import patch
-from nose.tools import assert_in  # pylint: disable=no-name-in-module
+from nose.tools import assert_in, assert_true, assert_false  # pylint: disable=no-name-in-module
 
-from courseware.tests.factories import StaffFactory, InstructorFactory
+from courseware.tests.factories import StaffFactory, InstructorFactory, GlobalStaffFactory
 
 
 @step(u'Given I am "([^"]*)" for a very large course')
@@ -26,11 +26,11 @@ def make_large_course(step, role):
 
 @step(u'Given I am "([^"]*)" for a course')
 def i_am_staff_or_instructor(step, role):  # pylint: disable=unused-argument
-    ## In summary: makes a test course, makes a new Staff or Instructor user
+    ## In summary: makes a test course, makes a new Staff or Instructor or GlobalStaff user
     ## (depending on `role`), and logs that user in to the course
 
     # Store the role
-    assert_in(role, ['instructor', 'staff'])
+    assert_in(role, ['admin', 'instructor', 'staff'])
 
     # Clear existing courses to avoid conflicts
     world.clear_courses()
@@ -43,9 +43,22 @@ def i_am_staff_or_instructor(step, role):  # pylint: disable=unused-argument
     )
 
     world.course_key = course.id
-    world.role = 'instructor'
-    # Log in as the an instructor or staff for the course
-    if role == 'instructor':
+    # Log in as an admin or an instructor or staff for the course
+    if role == 'admin':
+        world.role = 'admin'
+        # Make & register a global staff
+        world.admin = GlobalStaffFactory()
+        world.enroll_user(world.admin, world.course_key)
+
+        world.log_in(
+            username=world.admin.username,
+            password='test',
+            email=world.admin.email,
+            name=world.admin.profile.name
+        )
+
+    elif role == 'instructor':
+        world.role = 'instructor'
         # Make & register an instructor for the course
         world.instructor = InstructorFactory(course_key=world.course_key)
         world.enroll_user(world.instructor, world.course_key)
@@ -77,6 +90,27 @@ def go_to_section(section_name):
     world.visit(u'/courses/{}'.format(world.course_key))
     world.css_click(u'a[href="/courses/{}/instructor"]'.format(world.course_key))
     world.css_click('a[data-section="{0}"]'.format(section_name))
+
+
+@step(u"I visit the instructor dashboard")
+def go_to_instructor_dashboard(step):  # pylint: disable=unused-argument
+    world.visit(u'/courses/{}'.format(world.course_key))
+    world.css_click(u'a[href="/courses/{}/instructor"]'.format(world.course_key))
+
+
+@step(u'I see a "([^"]*)" tab')
+def find_tab(step, tab_name):  # pylint: disable=unused-argument
+    assert_true(verify_tab_is_visible(tab_name))
+
+
+@step(u'I do not see a "([^"]*)" tab')
+def find_no_such_tab(step, tab_name):  # pylint: disable=unused-argument
+    assert_false(verify_tab_is_visible(tab_name))
+
+
+def verify_tab_is_visible(tab_name):
+    tabs = world.css_find('ul.instructor-nav > li.nav-item')
+    return any([tab.text.upper() == tab_name.upper() for tab in tabs])
 
 
 @step(u'I click "([^"]*)"')

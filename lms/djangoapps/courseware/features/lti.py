@@ -10,7 +10,7 @@ from selenium.common.exceptions import NoAlertPresentException
 from nose.tools import assert_true, assert_equal, assert_in, assert_is_none
 from lettuce import world, step
 
-from courseware.tests.factories import InstructorFactory, BetaTesterFactory
+from courseware.tests.factories import InstructorFactory, BetaTesterFactory, GlobalStaffFactory
 from courseware.access import has_access
 from student.tests.factories import UserFactory
 
@@ -251,6 +251,10 @@ def i_am_registered_for_the_course(coursenum, metadata, user='Instructor'):
         assert not has_access(normal_student, 'load', course_descriptor)
         assert has_access(user, 'load', course_descriptor)
         assert has_access(instructor, 'load', course_descriptor)
+    elif user == 'GlobalStaff':
+        create_course_for_lti(coursenum, metadata)
+        course_descriptor = world.scenario_dict['COURSE']
+        user = GlobalStaffFactory()
     else:
         metadata.update({'start': datetime.datetime(1970, 1, 1, tzinfo=UTC)})
         create_course_for_lti(coursenum, metadata)
@@ -409,3 +413,8 @@ def check_lti_component_no_elem(_step, text):
     }
     assert_in(text, selector_map)
     assert_true(world.is_css_not_present(selector_map[text]))
+
+
+@step('I do not see the "View Gradebook" link$')
+def check_no_view_gradebook_link(_step):
+    assert_true(world.is_css_not_present("a.gradebook-link"))
