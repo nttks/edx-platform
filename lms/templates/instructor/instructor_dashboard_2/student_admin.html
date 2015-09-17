@@ -5,7 +5,7 @@
   %if section_data['is_small_course']:
   ## Show the gradebook for small courses
     <h2>${_("Student Gradebook")}</h2>
-      %if settings.FEATURES.get('ALLOW_COURSE_STAFF_VIEW_GRADEBOOK') or section_data['access']['admin']:
+      %if section_data['access']['personal_info']:
       <p>
 	${_("Click here to view the gradebook for enrolled students. This feature is only visible to courses with a small number of total enrolled students.")}
       </p>
