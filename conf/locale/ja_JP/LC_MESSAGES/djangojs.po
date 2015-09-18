@@ -5471,17 +5471,17 @@ msgstr "エラーが発生しました。"
 
 #: lms/templates/student_account/password_reset.underscore
 msgid "Password assistance"
-msgstr "パスワードの支援"
+msgstr "パスワードの変更"
 
 #: lms/templates/student_account/password_reset.underscore
 msgid ""
 "Please enter your email address below and we will send you instructions for "
 "setting a new password."
-msgstr "以下にメールアドレスを入力してください、すると、私たちは新しいパスワードを設定する方法を記載したメールを送信します。"
+msgstr "以下のメールアドレス宛に、新しいパスワードの設定方法を記載したメールを送信します。"
 
 #: lms/templates/student_account/password_reset.underscore
 msgid "Reset my password"
-msgstr "パスワードをリセット"
+msgstr "パスワードを変更する"
 
 #: lms/templates/student_account/register.underscore
 msgid "We couldn't create your account."
