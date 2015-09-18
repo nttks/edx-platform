@@ -600,7 +600,7 @@ msgstr "入力されたemailアドレスへパスワードリセットの手順�
 
 #: lms/templates/student_account/login.underscore:19
 msgid "We couldn't sign you in."
-msgstr "サインインに失敗しました。"
+msgstr "ログインに失敗しました。"
 
 #: lms/templates/student_account/login.underscore:25
 #, python-format
