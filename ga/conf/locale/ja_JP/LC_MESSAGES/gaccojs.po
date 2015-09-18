@@ -110,6 +110,18 @@ msgstr "%(field)sは%(count)d文字以上である必要があります。"
 msgid "Please enter your %(field)s."
 msgstr "%(field)sが必要です。"
 
+#: common/static/common/templates/discussion/thread-show.underscore
+msgid "This post is visible to everyone."
+msgstr "この投稿は全ユーザーに表示されます。"
+
+#: common/static/common/templates/discussion/thread-show.underscore
+msgid "Related to: %(courseware_title_linked)s"
+msgstr "この投稿は%(courseware_title_linked)sについてのものです"
+
+#: common/static/common/templates/discussion/thread-show.underscore
+msgid "Reported"
+msgstr "報告済"
+
 #-#-#-#-#  Original messages in gacco  #-#-#-#-#
 
 #: pollxblock/static/js/src/pollxblock.js
