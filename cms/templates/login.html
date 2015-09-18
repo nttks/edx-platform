@@ -60,6 +60,13 @@ from django.utils.translation import ugettext as _
       </aside>
     % endif
   </section>
+
+  % if len(maintenance_message) > 0:
+    <div class="wrapper-mast">
+    <%include file="widgets/maintenance.html" />
+    </div>
+  % endif
+
 </div>
 </%block>
 

@@ -13,6 +13,9 @@
 
 <%block name="content">
 <div class="wrapper-mast wrapper">
+  % if len(maintenance_message) > 0:
+    <%include file="widgets/maintenance.html" />
+  % endif
   <header class="mast has-actions">
     <h1 class="page-header">${_("{studio_name} Home").format(studio_name=settings.STUDIO_SHORT_NAME)}</h1>
 

@@ -16,7 +16,8 @@
   position: relative;
 
   .mast,
-  .metadata {
+  .metadata,
+  .maintenance {
     @include clearfix();
     position: relative;
     max-width: $fg-max-width;
@@ -311,3 +312,31 @@
 .right {
   float: right;
 }
+
+.maintenance {
+  border-bottom: 1px solid $gray-l4;
+  padding-bottom: ($baseline/2);
+  .maintenance-item {
+    display: block;
+    color: $gray-l2;
+    > h3 {
+      @extend %t-title4;
+      color: #000;
+    }
+    > div {
+      width: 75%;
+      color: #000;
+      background-color: #f0b594;
+      border: 1px solid #f18041;
+      border-radius: 5px;
+      margin: 2px 2px 10px;
+      padding: 2px 13px;
+    }
+    > p {
+      color: $gray-l2;
+      margin-left: 15px;
+      line-height: 100%;
+    }
+  }
+}
+

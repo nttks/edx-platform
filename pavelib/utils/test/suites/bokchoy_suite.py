@@ -106,6 +106,14 @@ class BokChoyTestSuite(TestSuite):
             )
         )
 
+        sh(
+            "DEFAULT_STORE={default_store}"
+            " ./manage.py cms --settings bok_choy loaddata --traceback"
+            " common/test/db_fixtures/cms/*.json".format(
+                default_store=self.default_store,
+            )
+        )
+
         if self.imports_dir:
             sh(
                 "DEFAULT_STORE={default_store}"
