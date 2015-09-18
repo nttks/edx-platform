@@ -1659,16 +1659,6 @@ msgid ""
 "(exclusive)."
 msgstr "この数値は、一度でもページを開いた、動画を再生した、ディスカッションに投稿した、問題に回答した、もしくはその他の活動を完了した受講者の数です。計測対象は開始日の０時(ちょうどを含む)から閉講日の０時(ちょうどを含まない)期間となります。"
 
-#: lms/templates/registration/activate_account_notice.html
-msgid "Thanks For Registering!"
-msgstr "ご登録いただき、ありがとうございます！"
-
-#: lms/templates/registration/activate_account_notice.html
-msgid ""
-"Your account is not active yet. An activation link has been sent to "
-"{email}, along with instructions for activating your account."
-msgstr "会員登録の手続きはまだ完了していません。【会員登録手続き用のURL】は {email} 宛に送信されておりますので、そのメールに記載された【会員登録手続き用のURL】にアクセスして、会員登録を完了してください。"
-
 #: lms/templates/shoppingcart/list.html
 msgid "Your Shopping Cart"
 msgstr ""
