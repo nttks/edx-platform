@@ -4,7 +4,7 @@
 
 <div class="progress-report-container action-type-container">
   <div class="progress-summary">
-    <p><strong>${_("Course name")}</strong>: ${section_data['course_display_name']}</p>
+    <p><strong>${_("Course name")}</strong>: ${section_data['course_display_name'] | h}</p>
     <p><strong>${_("Enrollment counts")}</strong>: ${section_data['course_enrollments']}</p>
     <p><strong title="${_('Activated and not resign user')}">${_("Active student counts")}</strong>: ${section_data['course_actives']}</p>
   <div>
