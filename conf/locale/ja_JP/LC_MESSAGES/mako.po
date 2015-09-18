@@ -1170,7 +1170,7 @@ msgstr "会員登録"
 #: lms/templates/navigation-edx.html:136 lms/templates/navigation-edx.html:138
 #: lms/templates/navigation.html:143 lms/templates/navigation.html:145
 msgid "Sign in"
-msgstr "サインイン"
+msgstr "ログイン"
 
 #: lms/templates/navigation-edx.html:149 lms/templates/navigation.html:155
 msgid ""
@@ -1288,7 +1288,7 @@ msgstr "表示名を入力："
 #: lms/templates/register-shib.html:126 lms/templates/register.html:190
 #: lms/templates/register.html:231
 msgid "Will be shown in any discussions or forums you participate in"
-msgstr "上記はディスカッションの際に表示されるユーザー名となります"
+msgstr "ディスカッションの際に表示されるユーザー名となります"
 
 #: lms/templates/register-shib.html:153 lms/templates/register.html:333
 msgid "Account Acknowledgements"
@@ -1538,7 +1538,7 @@ msgstr "{platform_name}へのサインアップが完了"
 
 #: lms/templates/signup_modal.html:153
 msgid "Already have an account?"
-msgstr "既にアカウントをお持ちですか？"
+msgstr "既にアカウントをお持ちの方はこちら"
 
 #: lms/templates/signup_modal.html:153
 msgid "Login."
