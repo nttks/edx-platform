@@ -1917,7 +1917,7 @@ msgid ""
 "          "
 msgstr ""
 "\n"
-"<a href=\"%(MKTG_URL_FAQ)s\">連絡先情報、および、よくある質問</a>のページを見る"
+"<a href=\"%(MKTG_URL_FAQ)s\">よくある質問</a>のページを見る"
 
 #: django/django/contrib/auth/templates/registration/password_reset_subject.txt
 msgid "Password reset on %(site_name)s"
