@@ -8068,7 +8068,7 @@ msgstr "例：username@domain.com"
 #: openedx/core/djangoapps/user_api/views.py:77
 #: openedx/core/djangoapps/user_api/views.py:783
 msgid "The email address you used to register with {platform_name}"
-msgstr "このemailアドレスで{platform_name}に登録"
+msgstr "{platform_name}に登録しているメールアドレスです"
 
 #. Translators: This label appears above a field on the login form
 #. meant to hold the user's password.

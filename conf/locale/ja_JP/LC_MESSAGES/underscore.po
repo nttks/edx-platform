@@ -638,7 +638,7 @@ msgstr ""
 #: lms/templates/student_account/login.underscore:81
 #, python-format
 msgid "New to %(platformName)s?"
-msgstr "%(platformName)sに慣れていないですか？"
+msgstr "%(platformName)sのアカウントをまだお持ちでない方はこちら"
 
 #: lms/templates/student_account/login.underscore:84
 msgid "Create an account"
