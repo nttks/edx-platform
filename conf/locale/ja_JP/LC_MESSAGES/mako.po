@@ -491,11 +491,11 @@ msgstr "ユーザー名"
 
 #: lms/templates/dashboard.html:157
 msgid "Want to change your account settings?"
-msgstr "アカウント設定の変更を希望しますか？"
+msgstr "登録情報を変更する場合"
 
 #: lms/templates/dashboard.html:158
 msgid "Click the arrow next to your username above."
-msgstr "上のユーザ名のとなりにある矢印をクリックしてください"
+msgstr "右上に表示されている▼ボタンをクリックしてメニューを開き、「アカウント設定」を選択してください。"
 
 #: lms/templates/dashboard.html:163
 msgid "Order History"
@@ -6703,7 +6703,7 @@ msgid ""
 "You've successfully created an account on {platform_name}. We've sent an "
 "account activation message to {email}. To activate your account and start "
 "enrolling in courses, click the link in the message."
-msgstr "{platform_name}のアカウント登録に成功しました。{email}にアカウントアクティベーション用のメールを送信しました。アカウントをアクティベーションし、講座の受講登録をはじめるには、メール内のリンクをクリックしてください。"
+msgstr "{platform_name}への会員登録の手続きはまだ完了していません。【会員登録手続き用のURL】が {email} 宛に送信されておりますので、メール内の手続き用URLをクリックしてアクティベーションを完了してください。"
 
 #: lms/templates/registration/activation_complete.html:12
 msgid "Activation Complete!"

@@ -600,7 +600,7 @@ msgstr "入力されたemailアドレスへパスワードリセットの手順�
 
 #: lms/templates/student_account/login.underscore:19
 msgid "We couldn't sign you in."
-msgstr "サインインに失敗しました。"
+msgstr "ログインに失敗しました。"
 
 #: lms/templates/student_account/login.underscore:25
 #, python-format
@@ -638,7 +638,7 @@ msgstr ""
 #: lms/templates/student_account/login.underscore:81
 #, python-format
 msgid "New to %(platformName)s?"
-msgstr "%(platformName)sに慣れていないですか？"
+msgstr "%(platformName)sのアカウントをまだお持ちでない方はこちら"
 
 #: lms/templates/student_account/login.underscore:84
 msgid "Create an account"
@@ -651,17 +651,17 @@ msgstr "エラーが発生しました。"
 
 #: lms/templates/student_account/password_reset.underscore:10
 msgid "Password assistance"
-msgstr "パスワードの支援"
+msgstr "パスワードの変更"
 
 #: lms/templates/student_account/password_reset.underscore:14
 msgid ""
 "Please enter your email address below and we will send you instructions for "
 "setting a new password."
-msgstr "以下にメールアドレスを入力してください、すると、私たちは新しいパスワードを設定する方法を記載したメールを送信します。"
+msgstr "以下のメールアドレス宛に、新しいパスワードの設定方法を記載したメールを送信します。"
 
 #: lms/templates/student_account/password_reset.underscore:18
 msgid "Reset my password"
-msgstr "パスワードをリセット"
+msgstr "パスワードを変更する"
 
 #: lms/templates/student_account/register.underscore:2
 msgid "We couldn't create your account."
