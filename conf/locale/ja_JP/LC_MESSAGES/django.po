@@ -1199,19 +1199,19 @@ msgstr "処理中"
 #. question
 #: common/lib/capa/capa/inputtypes.py
 msgid "This is correct."
-msgstr ""
+msgstr "正解"
 
 #: common/lib/capa/capa/inputtypes.py
 msgid "This is incorrect."
-msgstr ""
+msgstr "不正解"
 
 #: common/lib/capa/capa/inputtypes.py common/lib/capa/capa/inputtypes.py
 msgid "This is unanswered."
-msgstr ""
+msgstr "未回答"
 
 #: common/lib/capa/capa/inputtypes.py
 msgid "This is being processed."
-msgstr ""
+msgstr "処理中"
 
 #. Translators: 'ChoiceGroup' is an input type and should not be translated.
 #: common/lib/capa/capa/inputtypes.py
@@ -12159,7 +12159,7 @@ msgstr "{course.display_number_with_default}のお知らせ"
 msgid ""
 "You were most recently in {section_link}.  If you're done with that, choose "
 "another section on the left."
-msgstr "前回は{section_link}にアクセスしました。別のものを学習する場合には、該当の項目をメニュー（単元リスト）からお選びください。"
+msgstr "前回は{section_link}にアクセスしました。別のものを学習する場合には、該当の項目をメニュー（学習リスト）からお選びください。"
 
 #: lms/templates/dashboard/_dashboard_certificate_information.html
 msgid ""

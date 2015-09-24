@@ -3344,7 +3344,7 @@ msgstr "シラバス"
 msgid ""
 "You were most recently in {section_link}.  If you're done with that, choose "
 "another section on the left."
-msgstr "前回は{section_link}にアクセスしました。別のものを学習する場合には、該当の項目をメニュー（単元リスト）からお選びください。"
+msgstr "前回は{section_link}にアクセスしました。別のものを学習する場合には、該当の項目をメニュー（学習リスト）からお選びください。"
 
 #: lms/templates/dashboard/_dashboard_certificate_information.html:32
 msgid ""
