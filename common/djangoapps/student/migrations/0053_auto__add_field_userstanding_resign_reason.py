@@ -113,6 +113,19 @@ class Migration(SchemaMigration):
             'updated': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'db_index': 'True', 'blank': 'True'}),
             'user': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['auth.User']"})
         },
+        'student.historicalcourseenrollment': {
+            'Meta': {'ordering': "(u'-history_date', u'-history_id')", 'object_name': 'HistoricalCourseEnrollment'},
+            'course_id': ('xmodule_django.models.CourseKeyField', [], {'max_length': '255', 'db_index': 'True'}),
+            'created': ('django.db.models.fields.DateTimeField', [], {'db_index': 'True', 'null': 'True', 'blank': 'True'}),
+            u'history_date': ('django.db.models.fields.DateTimeField', [], {}),
+            u'history_id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            u'history_type': ('django.db.models.fields.CharField', [], {'max_length': '1'}),
+            u'history_user': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "u'+'", 'null': 'True', 'on_delete': 'models.SET_NULL', 'to': "orm['auth.User']"}),
+            'id': ('django.db.models.fields.IntegerField', [], {'db_index': 'True', 'blank': 'True'}),
+            'is_active': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
+            'mode': ('django.db.models.fields.CharField', [], {'default': "'honor'", 'max_length': '100'}),
+            'user': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "u'+'", 'null': 'True', 'on_delete': 'models.DO_NOTHING', 'to': "orm['auth.User']"})
+        },
         'student.languageproficiency': {
             'Meta': {'unique_together': "(('code', 'user_profile'),)", 'object_name': 'LanguageProficiency'},
             'code': ('django.db.models.fields.CharField', [], {'max_length': '16'}),
