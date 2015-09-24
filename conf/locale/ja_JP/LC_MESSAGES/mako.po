@@ -2082,17 +2082,17 @@ msgstr "{course_number} {ccx_name} 表紙イメージ"
 #: lms/templates/ccx/_dashboard_ccx_listing.html:49
 #: lms/templates/dashboard/_dashboard_course_listing.html:92
 msgid "Ended - {end_date}"
-msgstr "終了日 - {end_date}"
+msgstr "受講終了日 - {end_date}"
 
 #: lms/templates/ccx/_dashboard_ccx_listing.html:51
 #: lms/templates/dashboard/_dashboard_course_listing.html:94
 msgid "Started - {start_date}"
-msgstr "開始日 - {start_date}"
+msgstr "開講日 - {start_date}"
 
 #: lms/templates/ccx/_dashboard_ccx_listing.html:53
 #: lms/templates/dashboard/_dashboard_course_listing.html:98
 msgid "Starts - {start_date}"
-msgstr "開始日付 - {start_date}"
+msgstr "開講日 - {start_date}"
 
 #: lms/templates/ccx/_dashboard_ccx_listing.html:62
 #: lms/templates/ccx/_dashboard_ccx_listing.html:64
