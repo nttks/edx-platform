@@ -36,6 +36,14 @@ def find_student_profile_table(step):  # pylint: disable=unused-argument
             world.staff.profile.gender,
             world.staff.profile.goals
         ]
+    elif world.role == 'admin':
+        expected_data = [
+            world.admin.username,
+            world.admin.email,
+            world.admin.profile.name,
+            world.admin.profile.gender,
+            world.admin.profile.goals
+        ]
     for datum in expected_data:
         assert_in(datum, world.css_text('#data-student-profiles-table'))
 
