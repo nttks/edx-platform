@@ -9698,7 +9698,7 @@ msgstr "詳細を教えてください。"
 
 #: lms/templates/help_modal.html
 msgid "Include error messages, steps which lead to the issue, etc"
-msgstr "エラーメッセージ、トラブルが発生する手順等を含むようにしてください"
+msgstr "エラーメッセージ、トラブルが発生する手順等を含むようにしてください。"
 
 #: lms/templates/help_modal.html lms/templates/manage_user_standing.html
 #: lms/templates/register-shib.html
@@ -9746,7 +9746,7 @@ msgstr "発生したトラブルの詳細"
 
 #: lms/templates/help_modal.html
 msgid "Include error messages, steps which lead to the issue, etc."
-msgstr "エラーメッセージ、トラブルが発生する手順等を含むようにしてください"
+msgstr "エラーメッセージ、トラブルが発生する手順等を含むようにしてください。"
 
 #: lms/templates/help_modal.html
 msgid "suggestion"
