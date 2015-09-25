@@ -2395,3 +2395,7 @@ msgstr "権限に関する情報の表示"
 #: templates/provider/_permissions.html
 msgid "Display of information about the permission in gacco"
 msgstr "gaccoにおける権限に関する情報の表示"
+
+#: templates/dashboard/_dashboard_course_listing.html
+msgid "Course has not yet started"
+msgstr "講座はまだ開始していません"
