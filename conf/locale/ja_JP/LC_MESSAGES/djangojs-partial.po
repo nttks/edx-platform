@@ -114,7 +114,7 @@ msgstr "ファイルをアップロード"
 #: lms/static/js/groups/views/cohort_discussions_inline.js:136
 #: lms/static/js/views/fields.js:36
 msgid "Your changes have been saved."
-msgstr "変更は保存されました．"
+msgstr "変更は保存されました。"
 
 #. Translators: This message will be added to the front of messages of type
 #. error,
@@ -3335,7 +3335,7 @@ msgstr "アカウントの基本情報 (必須)"
 msgid ""
 "The name that identifies you throughout {platform_name}. You cannot change "
 "your username."
-msgstr "{platform_name} で一貫して使われる確認のための名前です。このユーザ名を変更することはできません。"
+msgstr "{platform_name} サービス内のディスカッション等で表示されるユーザー名です。このユーザー名を変更することはできません。"
 
 #: lms/static/js/student_account/views/account_settings_factory.js:40
 msgid "Full Name"
@@ -3345,7 +3345,7 @@ msgstr "氏名"
 msgid ""
 "The name that appears on your certificates. Other learners never see your "
 "full name."
-msgstr "修了証に表示される名前です。他の受講者があなたの実名をみることは出来ません。"
+msgstr "修了証に表示される名前です。他の受講者があなたの氏名をみることはできません。"
 
 #: lms/static/js/student_account/views/account_settings_factory.js:48
 msgid "Email Address"
@@ -3355,7 +3355,7 @@ msgstr "メールアドレス"
 msgid ""
 "The email address you use to sign in. Communications from {platform_name} "
 "and your courses are sent to this address."
-msgstr "サインインの際に使うメールアドレスです。{platform_name} や講座からのお知らせなどは、このメールアドレス宛てに送付されます。"
+msgstr "ログインの際に使うメールアドレスです。{platform_name} や講座からのお知らせなどは、このメールアドレス宛てに送付されます。"
 
 #: lms/static/js/student_account/views/account_settings_factory.js:58
 msgid "Password"
@@ -3373,7 +3373,7 @@ msgstr "パスワード変更"
 msgid ""
 "When you click \"Reset Password\", a message will be sent to your email "
 "address. Click the link in the message to reset your password."
-msgstr "「パスワードをリセット」をクリックすると、メールアドレスにメッセージが送付されます。そのメッセージにあるリンクをクリックするとパスワードがリセットされます。"
+msgstr "「パスワード変更」をクリックすると、登録されたメールアドレス宛にパスワード変更メールが送信されます。メールに記載の手続き用URLをクリックし、お手続きください。"
 
 #: lms/static/js/student_account/views/account_settings_factory.js:70
 msgid "Language"
