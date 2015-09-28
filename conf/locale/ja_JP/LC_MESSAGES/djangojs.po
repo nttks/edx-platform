@@ -5427,7 +5427,7 @@ msgstr "ログインに失敗しました。"
 
 #: lms/templates/student_account/login.underscore
 msgid "An error occurred when signing you in to %(platformName)s."
-msgstr ""
+msgstr "%(platformName)s へのログイン処理中にエラーが発生しました。"
 
 #: lms/templates/student_account/login.underscore
 msgid ""
