@@ -15,7 +15,7 @@ define(['jquery',
                         course_id: 'test/course/id',
                         topic_id: 'test-topic',
                         description: 'A team for testing',
-                        last_activity_at: "2015-08-21T18:53:01.145Z",
+                        last_activity_at: "2015-08-21T12:53:01.145Z",
                         country: 'us',
                         language: 'en',
                         membership: []
