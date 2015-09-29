@@ -71,9 +71,15 @@ class ProfileDistributionWidget
 
           graph_data = _.map feature_res.data, (value, key) -> [parseInt(key), value]
 
+          options = {
+            xaxis: {
+              tickDecimals:0
+            }
+          }
+
           $.plot graph_placeholder, [
             data: graph_data
-          ]
+          ], options
         else
           console.warn("unable to show distribution #{feature_res.type}")
           @show_error gettext('Unavailable metric display.')
