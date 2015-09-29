@@ -75,6 +75,7 @@ from social.pipeline import partial
 from social.pipeline.social_auth import associate_by_email
 
 import student
+from third_party_auth.models import OAuth2ProviderConfig
 
 from logging import getLogger
 
@@ -366,7 +367,7 @@ def get_duplicate_provider(messages):
     unfortunately not in a reusable constant.
 
     Returns:
-        string name of the python-social-auth backend that has the duplicate
+        string name of the provider that has the duplicate
         account, or None if there is no duplicate (and hence no error).
     """
     social_auth_messages = [m for m in messages if m.message.endswith('is already in use.')]
@@ -376,7 +377,7 @@ def get_duplicate_provider(messages):
 
     assert len(social_auth_messages) == 1
     backend_name = social_auth_messages[0].extra_tags.split()[1]
-    return backend_name
+    return OAuth2ProviderConfig.current(backend_name).name
 
 
 def get_provider_user_states(user):

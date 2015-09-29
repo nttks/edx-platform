@@ -446,7 +446,7 @@ class AccountSettingsViewTest(ThirdPartyAuthTestMixin, TestCase):
             context['user_preferences_api_url'], reverse('preferences_api', kwargs={'username': self.user.username})
         )
 
-        self.assertEqual(context['duplicate_provider'], 'facebook')
+        self.assertEqual(context['duplicate_provider'], 'Facebook')
         self.assertEqual(context['auth']['providers'][0]['name'], 'Facebook')
         self.assertEqual(context['auth']['providers'][1]['name'], 'Google')
 
