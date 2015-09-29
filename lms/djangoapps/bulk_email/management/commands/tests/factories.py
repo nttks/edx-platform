@@ -8,7 +8,8 @@ from student.tests.factories import UserFactory
 
 
 class OptoutFactory(DjangoModelFactory):
-    FACTORY_FOR = Optout
+    class Meta(object):
+        model = Optout
 
     user = factory.SubFactory(UserFactory)
     course_id = SlashSeparatedCourseKey('edX', 'Open_DemoX', 'edx_demo_course')

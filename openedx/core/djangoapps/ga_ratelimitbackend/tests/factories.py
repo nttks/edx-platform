@@ -7,4 +7,5 @@ class TrustedClientFactory(DjangoModelFactory):
     """
     Factory for the TrustedClient model.
     """
-    FACTORY_FOR = TrustedClient
+    class Meta(object):
+        model = TrustedClient

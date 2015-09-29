@@ -16,7 +16,8 @@ from student.tests.factories import UserFactory
 
 
 class SurveySubmissionFactory(DjangoModelFactory):
-    FACTORY_FOR = SurveySubmission
+    class Meta(object):
+        model = SurveySubmission
 
     course_id = CourseLocator.from_string('edX/test/course1')
     unit_id = '11111111111111111111111111111111'
