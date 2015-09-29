@@ -7,4 +7,5 @@ class CourseGlobalSettingFactory(DjangoModelFactory):
     """
     Factory for the CourseGlobalSetting model.
     """
-    FACTORY_FOR = CourseGlobalSetting
+    class Meta(object):
+        model = CourseGlobalSetting

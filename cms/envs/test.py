@@ -94,9 +94,6 @@ STATICFILES_STORAGE = 'pipeline.storage.NonPackagingPipelineStorage'
 STATIC_URL = "/static/"
 PIPELINE_ENABLED = False
 
-TENDER_DOMAIN = "help.edge.edx.org"
-TENDER_SUBDOMAIN = "edxedge"
-
 # Update module store settings per defaults for tests
 update_module_store_settings(
     MODULESTORE,
@@ -283,9 +280,6 @@ SEARCH_ENGINE = "search.tests.mock_search_engine.MockSearchEngine"
 
 # teams feature
 FEATURES['ENABLE_TEAMS'] = True
-
-# teams search
-FEATURES['ENABLE_TEAMS_SEARCH'] = True
 
 # Dummy secret key for dev/test
 SECRET_KEY = '85920908f28904ed733fe576320db18cabd7b6cd'

@@ -175,9 +175,6 @@ FEATURES = {
     # Teams feature
     'ENABLE_TEAMS': True,
 
-    # Teams search feature
-    'ENABLE_TEAMS_SEARCH': False,
-
     # Show video bumper in Studio
     'ENABLE_VIDEO_BUMPER': False,
 
@@ -286,13 +283,6 @@ XQUEUE_INTERFACE = {
 simplefilter('ignore')
 
 ################################# Middleware ###################################
-# List of finder classes that know how to find static files in
-# various locations.
-STATICFILES_FINDERS = (
-    'staticfiles.finders.FileSystemFinder',
-    'staticfiles.finders.AppDirectoriesFinder',
-    'pipeline.finders.PipelineFinder',
-)
 
 # List of callables that know how to import templates from various sources.
 TEMPLATE_LOADERS = (
@@ -473,8 +463,22 @@ MESSAGE_STORAGE = 'django.contrib.messages.storage.session.SessionStorage'
 ##### EMBARGO #####
 EMBARGO_SITE_REDIRECT_URL = None
 
-############################### Pipeline #######################################
+############################### PIPELINE #######################################
+
+# Process static files using RequireJS Optimizer
 STATICFILES_STORAGE = 'openedx.core.lib.django_require.staticstorage.OptimizedCachedRequireJsStorage'
+
+# List of finder classes that know how to find static files in various locations.
+# Note: the pipeline finder is included to be able to discover optimized files
+STATICFILES_FINDERS = [
+    'staticfiles.finders.FileSystemFinder',
+    'staticfiles.finders.AppDirectoriesFinder',
+    'pipeline.finders.PipelineFinder',
+]
+
+# Don't use compression by default
+PIPELINE_CSS_COMPRESSOR = None
+PIPELINE_JS_COMPRESSOR = None
 
 from openedx.core.lib.rooted_paths import rooted_glob
 
@@ -563,7 +567,8 @@ PIPELINE_JS_COMPRESSOR = None
 STATICFILES_IGNORE_PATTERNS = (
     "*.py",
     "*.pyc",
-    # it would be nice if we could do, for example, "**/*.scss",
+
+    # It would be nice if we could do, for example, "**/*.scss",
     # but these strings get passed down to the `fnmatch` module,
     # which doesn't support that. :(
     # http://docs.python.org/2/library/fnmatch.html
@@ -575,6 +580,10 @@ STATICFILES_IGNORE_PATTERNS = (
     "coffee/*/*.coffee",
     "coffee/*/*/*.coffee",
     "coffee/*/*/*/*.coffee",
+
+    # Ignore tests
+    "spec",
+    "spec_helpers",
 
     # Symlinks used by js-test-tool
     "xmodule_js",
@@ -619,18 +628,6 @@ REQUIRE_ENVIRONMENT = "node"
 # problems: http://django-debug-toolbar.readthedocs.org/en/1.0/installation.html#explicit-setup
 
 DEBUG_TOOLBAR_PATCH_SETTINGS = False
-
-################################# TENDER ######################################
-
-# If you want to enable Tender integration (http://tenderapp.com/),
-# put in the subdomain where Tender hosts tender_widget.js. For example,
-# if you want to use the URL https://example.tenderapp.com/tender_widget.js,
-# you should use "example".
-TENDER_SUBDOMAIN = None
-# If you want to have a vanity domain that points to Tender, put that here.
-# For example, "help.myapp.com". Otherwise, should should be your full
-# tenderapp domain name: for example, "example.tenderapp.com".
-TENDER_DOMAIN = None
 
 ################################# CELERY ######################################
 
@@ -1010,6 +1007,9 @@ ADVANCED_COMPONENT_TYPES = [
 
     # In-course reverification checkpoint
     'edx-reverification-block',
+
+    # Peer instruction tool
+    'ubcpi',
 ]
 
 # Adding components in this list will disable the creation of new problem for

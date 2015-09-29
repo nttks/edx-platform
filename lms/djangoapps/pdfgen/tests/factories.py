@@ -8,7 +8,8 @@ from pytz import UTC
 
 
 class CertificateWhitelistFactory(DjangoModelFactory):
-    FACTORY_FOR = CertificateWhitelist
+    class Meta(object):
+        model = CertificateWhitelist
 
     user = factory.SubFactory(UserFactory)
     course_id = CourseLocator.from_string("org/num/run")
@@ -16,7 +17,8 @@ class CertificateWhitelistFactory(DjangoModelFactory):
 
 
 class GeneratedCertificateFactory(DjangoModelFactory):
-    FACTORY_FOR = GeneratedCertificate
+    class Meta(object):
+        model = GeneratedCertificate
 
     user = factory.SubFactory(UserFactory)
     course_id = CourseLocator.from_string("org/num/run")

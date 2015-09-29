@@ -280,6 +280,8 @@ OPENID_PROVIDER_TRUSTED_ROOTS = ['*']
 
 ############################## OAUTH2 Provider ################################
 FEATURES['ENABLE_OAUTH2_PROVIDER'] = True
+# don't cache courses for testing
+OIDC_COURSE_HANDLER_CACHE_TIMEOUT = 0
 
 ########################### External REST APIs #################################
 FEATURES['ENABLE_MOBILE_REST_API'] = True
@@ -496,9 +498,6 @@ FEATURES['ENABLE_EDXNOTES'] = True
 
 # Enable teams feature for tests.
 FEATURES['ENABLE_TEAMS'] = True
-
-# Enable teams search for tests.
-FEATURES['ENABLE_TEAMS_SEARCH'] = True
 
 # Add milestones to Installed apps for testing
 INSTALLED_APPS += ('milestones', 'openedx.core.djangoapps.call_stack_manager')
