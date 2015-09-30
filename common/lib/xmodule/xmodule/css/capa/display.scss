@@ -234,7 +234,7 @@ div.problem {
 
       // CASE: unanswered
       &.unanswered {
-        @include status-icon($gray-l4, "\f128");
+        @include status-icon($gray-l4, "\25CF");
       }
 
       // CASE: processing
@@ -755,7 +755,7 @@ div.problem {
       }
 
       .status {
-        @include status-icon($gray-l4, "\f128");
+        @include status-icon($gray-l4, "\25CF");
       }
     }
   }
