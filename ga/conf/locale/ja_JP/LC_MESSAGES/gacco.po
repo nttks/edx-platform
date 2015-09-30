@@ -1830,6 +1830,11 @@ msgid ""
 "message. Please check your e-mail for the activation instructions."
 msgstr "このアカウントはアクティベーションが完了していません。 アクティベーション用のメッセージを送信していますので、メールでアクティベーション方法を確認してください。"
 
+#-#-#-#-#  Missing messages for openedx-releases/cypress  #-#-#-#-#
+
+#: lms/djangoapps/student_account/views.py
+msgid "Authentication process canceled"
+msgstr "アカウント連携先サービスへの連携要求がキャンセルされました。他の方法でログインまたは会員登録を行ってください。"
 
 #-#-#-#-#  Original messages in gacco  #-#-#-#-#
 
