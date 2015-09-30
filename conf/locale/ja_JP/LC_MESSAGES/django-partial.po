@@ -1099,19 +1099,19 @@ msgstr "処理中"
 #. question
 #: common/lib/capa/capa/inputtypes.py:95
 msgid "This is correct."
-msgstr ""
+msgstr "正解"
 
 #: common/lib/capa/capa/inputtypes.py:96
 msgid "This is incorrect."
-msgstr ""
+msgstr "不正解"
 
 #: common/lib/capa/capa/inputtypes.py:97 common/lib/capa/capa/inputtypes.py:98
 msgid "This is unanswered."
-msgstr ""
+msgstr "未回答"
 
 #: common/lib/capa/capa/inputtypes.py:99
 msgid "This is being processed."
-msgstr ""
+msgstr "処理中"
 
 #. Translators: 'ChoiceGroup' is an input type and should not be translated.
 #: common/lib/capa/capa/inputtypes.py:464
