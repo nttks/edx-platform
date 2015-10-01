@@ -611,7 +611,7 @@ msgstr "再アクティベーション用のメールの送信ができません
 
 #: common/djangoapps/student/views.py:2059
 msgid "Valid e-mail address required."
-msgstr "正しいメールアドレスが必要です。"
+msgstr "メールアドレスの形式が間違っています。見直してください。"
 
 #: common/djangoapps/student/views.py:2062
 msgid "Old email is the same as the new email."
@@ -8200,7 +8200,7 @@ msgstr "ユーザー設定の更新のデータが提供されていません"
 
 #: openedx/core/lib/api/view_utils.py:151
 msgid "This value is invalid."
-msgstr "値が不正です。"
+msgstr "入力値に問題があるので見直してください。"
 
 #: openedx/core/lib/api/view_utils.py:197
 msgid "This field is not editable"
