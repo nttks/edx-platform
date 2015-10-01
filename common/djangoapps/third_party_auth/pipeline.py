@@ -57,6 +57,7 @@ rather than spreading them across two functions in the pipeline.
 See http://psa.matiasaguirre.net/docs/pipeline.html for more docs.
 """
 
+import itertools
 import random
 import string  # pylint: disable-msg=deprecated-module
 from collections import OrderedDict
@@ -157,7 +158,6 @@ _AUTH_ENTRY_CHOICES = frozenset([
 ])
 
 _DEFAULT_RANDOM_PASSWORD_LENGTH = 12
-_PASSWORD_CHARSET = string.letters + string.digits
 
 logger = getLogger(__name__)
 
@@ -424,7 +424,14 @@ def make_random_password(length=None, choice_fn=random.SystemRandom().choice):
         String. The resulting password.
     """
     length = length if length is not None else _DEFAULT_RANDOM_PASSWORD_LENGTH
-    return ''.join(choice_fn(_PASSWORD_CHARSET) for _ in xrange(length))
+    # Guarantee that includes three types of the character type of upper and lower case, numbers.
+    password = list(itertools.chain(
+        (choice_fn(string.ascii_lowercase) for _ in xrange(length / 3)),
+        (choice_fn(string.ascii_uppercase) for _ in xrange(length / 3)),
+        (choice_fn(string.digits) for _ in xrange(length / 3 + length % 3))
+    ))
+    random.shuffle(password)
+    return ''.join(password)
 
 
 def running(request):
