@@ -880,7 +880,7 @@ class RegistrationViewTest(ThirdPartyAuthTestMixin, ApiTestCase):
                 u"required": True,
                 u"label": u"Public username",
                 u"placeholder": u"JaneDoe",
-                u"instructions": u"The name that will identify you in your courses - <strong>(cannot be changed later)</strong>",
+                u"instructions": u"Alphanumeric characters 2 or more characters, 30 characters or less<br>The name that will identify you in your courses - <strong>(cannot be changed later)</strong>",
                 u"restrictions": {
                     "min_length": USERNAME_MIN_LENGTH,
                     "max_length": USERNAME_MAX_LENGTH
@@ -969,7 +969,7 @@ class RegistrationViewTest(ThirdPartyAuthTestMixin, ApiTestCase):
                     u"required": True,
                     u"label": u"Public username",
                     u"placeholder": u"JaneDoe",
-                    u"instructions": u"The name that will identify you in your courses - <strong>(cannot be changed later)</strong>",
+                    u"instructions": u"Alphanumeric characters 2 or more characters, 30 characters or less<br>The name that will identify you in your courses - <strong>(cannot be changed later)</strong>",
                     u"restrictions": {
                         "min_length": USERNAME_MIN_LENGTH,
                         "max_length": USERNAME_MAX_LENGTH
