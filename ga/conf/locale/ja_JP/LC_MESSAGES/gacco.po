@@ -2281,6 +2281,14 @@ msgstr "半角英数{password_min_length}文字以上"
 msgid "It includes single-byte uppercase and lowercase letters, numbers, one or more characters"
 msgstr "半角アルファベットの大文字、小文字、数字を1文字以上含めてください"
 
+#: openedx/core/djangoapps/user_api/views.py
+msgid "Alphanumeric characters {min_length} or more characters, {max_length} characters or less"
+msgstr "半角英数{min_length}文字以上、{max_length}文字以下"
+
+#: openedx/core/djangoapps/user_api/views.py
+msgid "I agree to the {platform_name} {terms_of_service}."
+msgstr "{terms_of_service}に同意"
+
 #-#-#-#-#  Original messages in gacco/templates  #-#-#-#-#
 
 #: templates/theme-header.html
