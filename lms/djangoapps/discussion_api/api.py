@@ -341,7 +341,7 @@ def get_thread_list(
     if result_page != page:
         raise Http404
 
-    results = [ThreadSerializer(thread, context=context).data for thread in threads]
+    results = [ThreadSerializer(thread, remove_fields=['response_count'], context=context).data for thread in threads]
     ret = get_paginated_data(request, results, page, num_pages)
     ret["text_search_rewrite"] = text_search_rewrite
     return ret
@@ -555,12 +555,12 @@ def create_thread(request, thread_data):
     ):
         thread_data = thread_data.copy()
         thread_data["group_id"] = get_cohort_id(user, course_key)
-    serializer = ThreadSerializer(data=thread_data, context=context)
+    serializer = ThreadSerializer(data=thread_data, remove_fields=['response_count'], context=context)
     actions_form = ThreadActionsForm(thread_data)
     if not (serializer.is_valid() and actions_form.is_valid()):
         raise ValidationError(dict(serializer.errors.items() + actions_form.errors.items()))
     serializer.save()
-    cc_thread = serializer.object
+    cc_thread = serializer.instance
     thread_created.send(sender=None, user=user, post=cc_thread)
     api_thread = serializer.data
     _do_extra_actions(api_thread, cc_thread, thread_data.keys(), actions_form, context)
@@ -606,7 +606,7 @@ def create_comment(request, comment_data):
     if not (serializer.is_valid() and actions_form.is_valid()):
         raise ValidationError(dict(serializer.errors.items() + actions_form.errors.items()))
     serializer.save()
-    cc_comment = serializer.object
+    cc_comment = serializer.instance
     comment_created.send(sender=None, user=request.user, post=cc_comment)
     api_comment = serializer.data
     _do_extra_actions(api_comment, cc_comment, comment_data.keys(), actions_form, context)
@@ -642,7 +642,8 @@ def update_thread(request, thread_id, update_data):
     """
     cc_thread, context = _get_thread_and_context(request, thread_id)
     _check_editable_fields(cc_thread, update_data, context)
-    serializer = ThreadSerializer(cc_thread, data=update_data, partial=True, context=context)
+    serializer = ThreadSerializer(cc_thread, remove_fields=['response_count'], data=update_data, partial=True,
+                                  context=context)
     actions_form = ThreadActionsForm(update_data)
     if not (serializer.is_valid() and actions_form.is_valid()):
         raise ValidationError(dict(serializer.errors.items() + actions_form.errors.items()))

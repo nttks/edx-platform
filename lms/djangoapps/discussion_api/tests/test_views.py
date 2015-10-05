@@ -215,7 +215,7 @@ class ThreadViewSetListTest(DiscussionAPIViewTestMixin, ModuleStoreTestCase):
             "non_endorsed_comment_list_url": None,
             "editable_fields": ["abuse_flagged", "following", "voted"],
             "read": False,
-            "has_endorsed": False
+            "has_endorsed": False,
         }]
         self.register_get_threads_response(source_threads, page=1, num_pages=2)
         response = self.client.get(self.url, {"course_id": unicode(self.course.id)})
@@ -436,7 +436,7 @@ class ThreadViewSetCreateTest(DiscussionAPIViewTestMixin, ModuleStoreTestCase):
             "non_endorsed_comment_list_url": None,
             "editable_fields": ["abuse_flagged", "following", "raw_body", "title", "topic_id", "type", "voted"],
             "read": False,
-            "has_endorsed": False
+            "has_endorsed": False,
         }
         response = self.client.post(
             self.url,
@@ -530,7 +530,7 @@ class ThreadViewSetPartialUpdateTest(DiscussionAPIViewTestMixin, ModuleStoreTest
             "non_endorsed_comment_list_url": None,
             "editable_fields": ["abuse_flagged", "following", "raw_body", "title", "topic_id", "type", "voted"],
             "read": False,
-            "has_endorsed": False
+            "has_endorsed": False,
         }
         response = self.client.patch(  # pylint: disable=no-member
             self.url,
@@ -571,7 +571,7 @@ class ThreadViewSetPartialUpdateTest(DiscussionAPIViewTestMixin, ModuleStoreTest
             content_type="application/json"
         )
         expected_response_data = {
-            "field_errors": {"title": {"developer_message": "This field is required."}}
+            "field_errors": {"title": {"developer_message": "This field may not be blank."}}
         }
         self.assertEqual(response.status_code, 400)
         response_data = json.loads(response.content)
@@ -690,7 +690,7 @@ class CommentViewSetListTest(DiscussionAPIViewTestMixin, ModuleStoreTestCase):
             200,
             {
                 "results": expected_comments,
-                "next": "http://testserver/api/discussion/v1/comments/?thread_id={}&page=2".format(
+                "next": "http://testserver/api/discussion/v1/comments/?page=2&thread_id={}".format(
                     self.thread_id
                 ),
                 "previous": None,
@@ -946,7 +946,7 @@ class CommentViewSetPartialUpdateTest(DiscussionAPIViewTestMixin, ModuleStoreTes
             content_type="application/json"
         )
         expected_response_data = {
-            "field_errors": {"raw_body": {"developer_message": "This field is required."}}
+            "field_errors": {"raw_body": {"developer_message": "This field may not be blank."}}
         }
         self.assertEqual(response.status_code, 400)
         response_data = json.loads(response.content)
@@ -1001,7 +1001,8 @@ class ThreadViewSetRetrieveTest(DiscussionAPIViewTestMixin, ModuleStoreTestCase)
             "read": False,
             "has_endorsed": False,
             "id": "test_thread",
-            "type": "discussion"
+            "type": "discussion",
+            "response_count": 0,
         }
         self.register_get_thread_response(cs_thread)
         response = self.client.get(self.url)

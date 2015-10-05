@@ -94,11 +94,11 @@ class SerializerTestMixin(CommentsServiceMockMixin, UrlResetMixin):
         self.assertEqual(actual_serialized_anonymous, expected_serialized_anonymous)
 
     @ddt.data(
-        (FORUM_ROLE_ADMINISTRATOR, False, "staff"),
+        (FORUM_ROLE_ADMINISTRATOR, False, "Staff"),
         (FORUM_ROLE_ADMINISTRATOR, True, None),
-        (FORUM_ROLE_MODERATOR, False, "staff"),
+        (FORUM_ROLE_MODERATOR, False, "Staff"),
         (FORUM_ROLE_MODERATOR, True, None),
-        (FORUM_ROLE_COMMUNITY_TA, False, "community_ta"),
+        (FORUM_ROLE_COMMUNITY_TA, False, "Community TA"),
         (FORUM_ROLE_COMMUNITY_TA, True, None),
         (FORUM_ROLE_STUDENT, False, None),
         (FORUM_ROLE_STUDENT, True, None),
@@ -108,7 +108,7 @@ class SerializerTestMixin(CommentsServiceMockMixin, UrlResetMixin):
         """
         Test correctness of the author_label field.
 
-        The label should be "staff", "staff", or "community_ta" for the
+        The label should be "Staff", "Staff", or "Community TA" for the
         Administrator, Moderator, and Community TA roles, respectively, but
         the label should not be present if the content is anonymous.
 
@@ -144,7 +144,8 @@ class ThreadSerializerSerializationTest(SerializerTestMixin, SharedModuleStoreTe
             "user_id": str(self.author.id),
             "username": self.author.username,
             "read": True,
-            "endorsed": True
+            "endorsed": True,
+            "resp_total": 0,
         }
         merged_overrides.update(overrides)
         return make_minimal_cs_thread(merged_overrides)
@@ -179,7 +180,8 @@ class ThreadSerializerSerializationTest(SerializerTestMixin, SharedModuleStoreTe
             "comments_count": 5,
             "unread_comments_count": 3,
             "read": False,
-            "endorsed": False
+            "endorsed": False,
+            "response_count": None,
         }
         expected = {
             "id": "test_thread",
@@ -208,7 +210,8 @@ class ThreadSerializerSerializationTest(SerializerTestMixin, SharedModuleStoreTe
             "non_endorsed_comment_list_url": None,
             "editable_fields": ["abuse_flagged", "following", "voted"],
             "read": False,
-            "has_endorsed": False
+            "has_endorsed": False,
+            "response_count": None,
         }
         self.assertEqual(self.serialize(thread), expected)
 
@@ -247,6 +250,19 @@ class ThreadSerializerSerializationTest(SerializerTestMixin, SharedModuleStoreTe
         self.register_get_user_response(self.user, subscribed_thread_ids=[thread_id])
         serialized = self.serialize(self.make_cs_content({"id": thread_id}))
         self.assertEqual(serialized["following"], True)
+
+    def test_response_count(self):
+        thread_data = self.make_cs_content({"resp_total": 2})
+        self.register_get_thread_response(thread_data)
+        serialized = self.serialize(Thread(id=thread_data["id"]))
+        self.assertEqual(serialized["response_count"], 2)
+
+    def test_response_count_missing(self):
+        thread_data = self.make_cs_content({})
+        del thread_data["resp_total"]
+        self.register_get_thread_response(thread_data)
+        serialized = self.serialize(Thread(id=thread_data["id"]))
+        self.assertIsNone(serialized["response_count"], None)
 
 
 @ddt.ddt
@@ -352,9 +368,9 @@ class CommentSerializerTest(SerializerTestMixin, SharedModuleStoreTestCase):
         self.assertEqual(actual_endorser_anonymous, expected_endorser_anonymous)
 
     @ddt.data(
-        (FORUM_ROLE_ADMINISTRATOR, "staff"),
-        (FORUM_ROLE_MODERATOR, "staff"),
-        (FORUM_ROLE_COMMUNITY_TA, "community_ta"),
+        (FORUM_ROLE_ADMINISTRATOR, "Staff"),
+        (FORUM_ROLE_MODERATOR, "Staff"),
+        (FORUM_ROLE_COMMUNITY_TA, "Community TA"),
         (FORUM_ROLE_STUDENT, None),
     )
     @ddt.unpack
@@ -362,7 +378,7 @@ class CommentSerializerTest(SerializerTestMixin, SharedModuleStoreTestCase):
         """
         Test correctness of the endorsed_by_label field.
 
-        The label should be "staff", "staff", or "community_ta" for the
+        The label should be "Staff", "Staff", or "Community TA" for the
         Administrator, Moderator, and Community TA roles, respectively.
 
         role_name is the name of the author's role.
@@ -514,9 +530,10 @@ class ThreadSerializerDeserializationTest(CommentsServiceMockMixin, UrlResetMixi
         data = self.minimal_data.copy()
         data.update({field: value for field in ["topic_id", "title", "raw_body"]})
         serializer = ThreadSerializer(data=data, context=get_context(self.course, self.request))
+        self.assertFalse(serializer.is_valid())
         self.assertEqual(
             serializer.errors,
-            {field: ["This field is required."] for field in ["topic_id", "title", "raw_body"]}
+            {field: ["This field may not be blank."] for field in ["topic_id", "title", "raw_body"]}
         )
 
     def test_create_type(self):
@@ -583,9 +600,10 @@ class ThreadSerializerDeserializationTest(CommentsServiceMockMixin, UrlResetMixi
             partial=True,
             context=get_context(self.course, self.request)
         )
+        self.assertFalse(serializer.is_valid())
         self.assertEqual(
             serializer.errors,
-            {field: ["This field is required."] for field in ["topic_id", "title", "raw_body"]}
+            {field: ["This field may not be blank."] for field in ["topic_id", "title", "raw_body"]}
         )
 
     def test_update_course_id(self):
@@ -595,6 +613,7 @@ class ThreadSerializerDeserializationTest(CommentsServiceMockMixin, UrlResetMixi
             partial=True,
             context=get_context(self.course, self.request)
         )
+        self.assertFalse(serializer.is_valid())
         self.assertEqual(
             serializer.errors,
             {"course_id": ["This field is not allowed in an update."]}
@@ -760,7 +779,7 @@ class CommentSerializerDeserializationTest(CommentsServiceMockMixin, SharedModul
                     data["parent_id"] = None
                 serializer = CommentSerializer(data=data, context=context)
                 self.assertFalse(serializer.is_valid())
-                self.assertEqual(serializer.errors, {"parent_id": ["Comment level is too deep."]})
+                self.assertEqual(serializer.errors, {"non_field_errors": ["Comment level is too deep."]})
 
     def test_create_missing_field(self):
         for field in self.minimal_data:
@@ -846,9 +865,10 @@ class CommentSerializerDeserializationTest(CommentsServiceMockMixin, SharedModul
             partial=True,
             context=get_context(self.course, self.request)
         )
+        self.assertFalse(serializer.is_valid())
         self.assertEqual(
             serializer.errors,
-            {"raw_body": ["This field is required."]}
+            {"raw_body": ["This field may not be blank."]}
         )
 
     @ddt.data("thread_id", "parent_id")
@@ -859,6 +879,7 @@ class CommentSerializerDeserializationTest(CommentsServiceMockMixin, SharedModul
             partial=True,
             context=get_context(self.course, self.request)
         )
+        self.assertFalse(serializer.is_valid())
         self.assertEqual(
             serializer.errors,
             {field: ["This field is not allowed in an update."]}
