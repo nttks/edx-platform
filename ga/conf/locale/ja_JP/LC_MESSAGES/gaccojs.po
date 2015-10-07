@@ -100,7 +100,7 @@ msgstr "なし"
 
 #: common/static/js/utils/edx.utils.validate.js
 msgid "The email address you've provided isn't formatted correctly."
-msgstr "正しいメールアドレスが必要です。"
+msgstr "メールアドレスの形式が間違っています。見直してください。"
 
 #: common/static/js/utils/edx.utils.validate.js
 msgid "%(field)s must have at least %(count)d characters."
@@ -206,3 +206,11 @@ msgstr "まだ退会手続きは完了していません。「{email_address}」
 #: lms/templates/student_account/register.underscore
 msgid "If you are under 20 years old, you have to get permission of your parents to regist this site."
 msgstr "※未成年の方がお申し込みをいただく場合は、親権者の同意が必要となります。"
+
+#: lms/static/js/ajax-error.js
+msgid ""
+"You have been logged out of your edX account. "
+"Click Okay to log in again now. "
+"Click Cancel to stay on this page "
+"(you must log in again to save your work)."
+msgstr "ログアウトされています。再度ログインする場合はOKボタンを、このページに留まる場合はキャンセルボタンを押してください。（保存する場合は再度ログインが必要です）"
