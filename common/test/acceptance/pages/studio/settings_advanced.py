@@ -201,5 +201,4 @@ class AdvancedSettingsPage(CoursePage):
             'social_sharing_url',
             'teams_configuration',
             'video_bumper',
-            'is_course_hidden',
         ]

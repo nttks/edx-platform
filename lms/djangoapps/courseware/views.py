@@ -351,7 +351,7 @@ def index(request, course_id, chapter=None, section=None,
         registrationcoderedemption__redeemed_by=request.user
     )
 
-    if course.is_course_hidden and not has_access(request.user, 'staff', course):
+    if course.has_terminated() and not has_access(request.user, 'staff', course):
         return redirect(reverse('dashboard'))
 
     # Redirect to dashboard if the course is blocked due to non-payment.

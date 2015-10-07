@@ -1,6 +1,8 @@
 """
-tests for is_course_hidden.
+tests for has_terminated.
 """
+import datetime
+
 from bok_choy.web_app_test import WebAppTest
 from ..ga_helpers import GaccoTestMixin
 from ...pages.lms.auto_auth import AutoAuthPage
@@ -9,9 +11,9 @@ from ...pages.lms.ga_dashboard import DashboardPage
 from ...fixtures.course import CourseFixture
 
 
-class HiddenCourseTest(WebAppTest, GaccoTestMixin):
+class TerminatedCourseTest(WebAppTest, GaccoTestMixin):
     """
-    Tests that hidden course messages are displayed
+    Tests that terminated course messages are displayed
     """
 
     # Email course is inserted by db_fixture/ga_course_authorization.json.
@@ -23,15 +25,14 @@ class HiddenCourseTest(WebAppTest, GaccoTestMixin):
         """
         Initialize pages and install a course fixture.
         """
-        super(HiddenCourseTest, self).setUp()
+        super(TerminatedCourseTest, self).setUp()
 
         self.course_fixture = CourseFixture(
             self.EMAIL_COURSE_ORG, self._testMethodName,
-            self.EMAIL_COURSE_RUN, self.EMAIL_COURSE_DISPLAY
+            self.EMAIL_COURSE_RUN, self.EMAIL_COURSE_DISPLAY,
+            settings={'terminate_start': datetime.datetime(2000, 1, 1).isoformat()}
         )
 
-        self.course_fixture.add_advanced_settings(
-            {u"is_course_hidden":{"value":True}})
         course = self.course_fixture.install()
 
         self.course_id = course._course_key
@@ -42,8 +43,8 @@ class HiddenCourseTest(WebAppTest, GaccoTestMixin):
 
     def test_dashboard_message_and_link(self):
         """
-         Scenario: 
-            If is_course_hidden is True, then I see requirements message.
+         Scenario:
+            If has_terminated is True, then I see requirements message.
         """
 
         # visit dashboard page and make sure there is not pre-requisite course message
@@ -60,10 +61,10 @@ class HiddenCourseTest(WebAppTest, GaccoTestMixin):
         self.assertEqual(self.dashboard_page.hidden_course_text, "")
         self.assertTrue(self.dashboard_page.is_hidden_course_link_active(self.course_id))
 
-    def test_dashboard_unenroll_when_course_is_closed(self):
+    def test_dashboard_unenroll_when_course_has_terminated(self):
         """
          Scenario:
-            If is_course_hidden is True, then I can click unenroll-modal.
+            If has_terminated is True, then I can click unenroll-modal.
         """
 
         # visit dashboard page and make sure able to click unenroll
@@ -71,10 +72,10 @@ class HiddenCourseTest(WebAppTest, GaccoTestMixin):
         self.assertTrue(self.dashboard_page.show_unenroll_settings(self.EMAIL_COURSE_DISPLAY))
         self.assertTrue(self.dashboard_page.is_available_unenroll_settings())
 
-    def test_dashboard_email_when_course_is_closed(self):
+    def test_dashboard_email_when_course_has_terminated(self):
         """
          Scenario:
-            If is_course_hidden is True, then I can click email-settings-modal.
+            If has_terminated is True, then I can click email-settings-modal.
         """
 
         # visit dashboard page and make sure able to click email_settings

@@ -558,8 +558,11 @@ class ViewsTestCase(ModuleStoreTestCase):
             # Verify that the email opt-in checkbox does not appear
             self.assertNotContains(response, checkbox_html, html=True)
 
-    def test_index_course_is_hidden(self):
-        course = CourseFactory.create(**{"metadata":{"is_course_hidden":True}})
+    def test_course_has_been_terminated(self):
+        course = CourseFactory.create(
+            start=datetime(2013, 9, 16, 7, 17, 28),
+            terminate_start=datetime(2013, 9, 18, 7, 17, 28),
+        )
         admin = AdminFactory()
         enrollment = CourseEnrollment.enroll(self.user, course.id)
         enrollment = CourseEnrollment.enroll(admin, course.id)

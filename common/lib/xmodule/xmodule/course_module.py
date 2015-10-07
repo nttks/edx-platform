@@ -883,7 +883,8 @@ class CourseFields(object):
         help=_(
             "Enter true or false. If true, the course is hidden."
         ),
-        scope=Scope.settings
+        scope=Scope.settings,
+        deprecated=True
     )
     course_category = List(
         display_name=_("Course Category"),

@@ -341,7 +341,7 @@ from student.helpers import (
           </div>
         %endif
 
-        % if course.is_course_hidden and not staff_access:
+        % if course.has_terminated() and not staff_access:
           <p id="block-course-msg" class="course-block">
             ${_("This course has been closed.")}
           </p>
