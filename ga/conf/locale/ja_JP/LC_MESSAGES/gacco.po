@@ -2297,6 +2297,10 @@ msgstr "半角英数{min_length}文字以上、{max_length}文字以下"
 msgid "I agree to the {platform_name} {terms_of_service}."
 msgstr "{terms_of_service}に同意"
 
+#: openedx/core/djangoapps/user_api/views.py
+msgid "Employee Number"
+msgstr "社員番号"
+
 #-#-#-#-#  Original messages in gacco/templates  #-#-#-#-#
 
 #: templates/theme-header.html
