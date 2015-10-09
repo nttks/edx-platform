@@ -2098,6 +2098,14 @@ msgstr ""
 "お手数をお掛けしますが、よくある質問に記載のない内容については、改めてお問合せください。なお、返信には１～３営業日（土日祝日等を除く）を頂いております。また、一般的な端末の操作方法等については、私どもにてご案内できかねますことご承知おきいただけますと幸いです。"
 
 #: lms/templates/help_modal.html
+msgid "Please provide your name."
+msgstr "名前を入力してください"
+
+#: lms/templates/help_modal.html
+msgid "Please provide a valid e-mail."
+msgstr "メールアドレスを入力してください"
+
+#: lms/templates/help_modal.html
 msgid "Please provide a subject."
 msgstr "概要を入力してください"
 
