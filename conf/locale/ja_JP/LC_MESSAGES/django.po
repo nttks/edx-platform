@@ -12272,7 +12272,7 @@ msgstr "右記として受講登録済："
 #: lms/templates/dashboard/_dashboard_course_listing.html
 #: lms/templates/dashboard/_dashboard_course_listing.html
 msgid "View Archived Course"
-msgstr "講座画面へ（修了証発行済）"
+msgstr "講座画面へ"
 
 #: lms/templates/dashboard/_dashboard_course_listing.html
 #: lms/templates/dashboard/_dashboard_course_listing.html
