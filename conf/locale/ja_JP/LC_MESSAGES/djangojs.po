@@ -5413,13 +5413,13 @@ msgstr ""
 
 #: lms/templates/student_account/login.underscore
 msgid "Password Reset Email Sent"
-msgstr "パスワードレセットのメールを送信"
+msgstr "パスワード変更メールを送信しました"
 
 #: lms/templates/student_account/login.underscore
 msgid ""
 "We've sent instructions for resetting your password to the email address you"
 " provided."
-msgstr "入力されたemailアドレスへパスワードリセットの手順を送信しました。"
+msgstr "入力されたメールアドレス宛に、新しいパスワードの設定方法を記載したメールを送信しました。"
 
 #: lms/templates/student_account/login.underscore
 msgid "We couldn't sign you in."
