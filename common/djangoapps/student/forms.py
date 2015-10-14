@@ -6,6 +6,7 @@ from pytz import UTC
 
 from django import forms
 from django.core.exceptions import ValidationError
+from django.core.validators import RegexValidator
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import PasswordResetForm, SetPasswordForm
 from django.contrib.auth.hashers import UNUSABLE_PASSWORD
@@ -26,6 +27,9 @@ from util.password_policy_validators import (
 from django.utils.translation import ugettext_lazy as _
 
 from student.models import UserStanding
+
+from openedx.core.djangoapps.user_api.accounts import EMPLOYEE_NUMBER_LENGTH, EMPLOYEE_NUMBER_REGEX
+
 
 class PasswordResetFormNoActive(PasswordResetForm):
     def clean_email(self):
@@ -254,6 +258,18 @@ class AccountCreationForm(forms.Form):
                                 "required": _("To enroll, you must follow the honor code.")
                             }
                         )
+                elif field_name == "employee_number":  # for employee_number in extended_profile_fields
+                    required = field_value == "required"
+                    self.fields[field_name] = forms.CharField(
+                        required=required,
+                        validators=[RegexValidator(EMPLOYEE_NUMBER_REGEX)],
+                        error_messages={
+                            "required": _("An employee number is required"),
+                            "invalid": _(
+                                "An employee number must be {length} numeric characters"
+                            ).format(length=EMPLOYEE_NUMBER_LENGTH),
+                        }
+                    )
                 else:
                     required = field_value == "required"
                     min_length = 1 if field_name in ("gender", "level_of_education") else 2

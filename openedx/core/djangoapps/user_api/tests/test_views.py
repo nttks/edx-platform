@@ -815,7 +815,7 @@ class RegistrationViewTest(ThirdPartyAuthTestMixin, ApiTestCase):
     CITY = "Springfield"
     COUNTRY = "us"
     GOALS = "Learn all the things!"
-    EMPLOYEE_NUMBER = "A0123456789"
+    EMPLOYEE_NUMBER = "0123456"
 
     def setUp(self):
         super(RegistrationViewTest, self).setUp()
@@ -1100,6 +1100,7 @@ class RegistrationViewTest(ThirdPartyAuthTestMixin, ApiTestCase):
             {
                 "label": "Employee Number",
                 "name": "employee_number",
+                "instructions": "7 numeric characters",
                 "type": "text",
                 "required": True,
             }

@@ -1900,6 +1900,14 @@ msgstr "新パスワードは必須です。"
 msgid "New password confirmation is required."
 msgstr "新パスワード(再入力)は必須です。"
 
+#: common/djangoapps/student/forms.py
+msgid "An employee number is required"
+msgstr "社員番号の入力が必要です。"
+
+#: common/djangoapps/student/forms.py
+msgid "An employee number must be {length} numeric characters"
+msgstr "社員番号は半角数字{length}文字である必要があります。"
+
 #: lms/templates/registration/password_reset_confirm.html
 msgid "The following errors occurred while processing your password reset: "
 msgstr "パスワード変更処理をする際にエラーが発生しました："
@@ -2280,6 +2288,10 @@ msgstr ""
 "良い例：問Xについて、私は〜と解釈し、〜と回答しました。<br/>"
 "悪い例：問Xについて、私は〜と解釈し、〜と回答した結果、正答or誤答でした。<br/>"
 "悪い例：私は全問正解でしたが、問Xについては〜と回答しました。"
+
+#: openedx/core/djangoapps/user_api/views.py
+msgid "{length} numeric characters"
+msgstr "半角数字{length}文字"
 
 #: openedx/core/djangoapps/user_api/views.py
 msgid "{password_min_length} alphanumeric characters or more"

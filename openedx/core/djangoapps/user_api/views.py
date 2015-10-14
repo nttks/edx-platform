@@ -34,7 +34,7 @@ from .helpers import FormDescription, shim_student_view, require_post_params
 from .models import UserPreference, UserProfile
 from .accounts import (
     NAME_MAX_LENGTH, EMAIL_MIN_LENGTH, EMAIL_MAX_LENGTH, PASSWORD_MIN_LENGTH, PASSWORD_MAX_LENGTH,
-    USERNAME_MIN_LENGTH, USERNAME_MAX_LENGTH
+    USERNAME_MIN_LENGTH, USERNAME_MAX_LENGTH, EMPLOYEE_NUMBER_LENGTH
 )
 from .accounts.api import check_account_exists
 from .serializers import UserSerializer, UserPreferenceSerializer
@@ -715,9 +715,11 @@ class RegistrationView(APIView):
 
     def _add_employee_number_field(self, form_desc, required=True):
         label = _(u"Employee Number")
+        instructions = _(u"{length} numeric characters").format(length=EMPLOYEE_NUMBER_LENGTH)
         form_desc.add_field(
             "employee_number",
             label=label,
+            instructions=instructions,
             required=required
         )
 
