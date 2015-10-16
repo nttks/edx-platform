@@ -211,7 +211,7 @@ msgstr "このコンテンツグループは利用中なので、削除するこ
 
 #: cms/djangoapps/contentstore/views/entrance_exam.py:165
 msgid "Entrance Exam - Subsection"
-msgstr "入学試験 - 節"
+msgstr "受講者情報登録"
 
 #: cms/djangoapps/contentstore/views/entrance_exam.py:180
 msgid "Completed Course Entrance Exam"
