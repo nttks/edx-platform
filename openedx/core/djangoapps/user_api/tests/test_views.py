@@ -815,6 +815,7 @@ class RegistrationViewTest(ThirdPartyAuthTestMixin, ApiTestCase):
     CITY = "Springfield"
     COUNTRY = "us"
     GOALS = "Learn all the things!"
+    EMPLOYEE_NUMBER = "0123456"
 
     def setUp(self):
         super(RegistrationViewTest, self).setUp()
@@ -1093,6 +1094,18 @@ class RegistrationViewTest(ThirdPartyAuthTestMixin, ApiTestCase):
             }
         )
 
+    def test_registration_form_employee_number(self):
+        self._assert_reg_field(
+            {"employee_number": "required"},
+            {
+                "label": "Employee Number",
+                "name": "employee_number",
+                "instructions": "7 numeric characters",
+                "type": "text",
+                "required": True,
+            }
+        )
+
     @override_settings(
         MKTG_URLS={"ROOT": "https://www.test.com/", "HONOR": "honor"},
     )
@@ -1226,6 +1239,7 @@ class RegistrationViewTest(ThirdPartyAuthTestMixin, ApiTestCase):
         )
 
     @override_settings(REGISTRATION_EXTRA_FIELDS={
+        "employee_number": "optional",
         "level_of_education": "optional",
         "gender": "optional",
         "year_of_birth": "optional",
@@ -1247,6 +1261,7 @@ class RegistrationViewTest(ThirdPartyAuthTestMixin, ApiTestCase):
             "name",
             "username",
             "password",
+            "employee_number",
             "city",
             "country",
             "gender",
@@ -1277,6 +1292,48 @@ class RegistrationViewTest(ThirdPartyAuthTestMixin, ApiTestCase):
         self.assertEqual(self.EMAIL, account_settings["email"])
         self.assertFalse(account_settings["is_active"])
         self.assertEqual(self.NAME, account_settings["name"])
+
+        # Verify that we've been logged in
+        # by trying to access a page that requires authentication
+        response = self.client.get(reverse("dashboard"))
+        self.assertHttpOK(response)
+
+    @override_settings(
+        MICROSITE_CONFIGURATION={
+            "microsite": {
+                "domain_prefix": "microsite",
+                "extended_profile_fields": ["employee_number"],
+                "REGISTRATION_EXTRA_FIELDS": {
+                    'honor_code': 'required',
+                    'employee_number': 'required',
+                },
+            }
+        }
+    )
+    def test_register_in_microsite(self):
+        # Create a new registration
+        response = self.client.post(self.url, {
+            "email": self.EMAIL,
+            "name": self.NAME,
+            "username": self.USERNAME,
+            "password": self.PASSWORD,
+            "employee_number": self.EMPLOYEE_NUMBER,
+            "honor_code": "true",
+        }, HTTP_HOST="microsite.example.com")
+        self.assertHttpOK(response)
+        self.assertIn(settings.EDXMKTG_LOGGED_IN_COOKIE_NAME, self.client.cookies)
+        self.assertIn(settings.EDXMKTG_USER_INFO_COOKIE_NAME, self.client.cookies)
+
+        user = User.objects.get(username=self.USERNAME)
+        account_settings = get_account_settings(user)
+
+        self.assertEqual(self.USERNAME, account_settings["username"])
+        self.assertEqual(self.EMAIL, account_settings["email"])
+        self.assertFalse(account_settings["is_active"])
+        self.assertEqual(self.NAME, account_settings["name"])
+
+        # Verify extended_profile_fields saved
+        self.assertEqual(self.EMPLOYEE_NUMBER, user.profile.get_meta()['employee_number'])
 
         # Verify that we've been logged in
         # by trying to access a page that requires authentication

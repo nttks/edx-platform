@@ -24,6 +24,7 @@ from openedx.core.lib.api.permissions import ApiKeyHeaderPermission
 import third_party_auth
 from django_comment_common.models import Role
 from edxmako.shortcuts import marketing_link
+from microsite_configuration import microsite
 from student.views import create_account_with_params
 from student.cookies import set_logged_in_cookies
 from openedx.core.lib.api.authentication import SessionAuthenticationAllowInactiveUser
@@ -33,7 +34,7 @@ from .helpers import FormDescription, shim_student_view, require_post_params
 from .models import UserPreference, UserProfile
 from .accounts import (
     NAME_MAX_LENGTH, EMAIL_MIN_LENGTH, EMAIL_MAX_LENGTH, PASSWORD_MIN_LENGTH, PASSWORD_MAX_LENGTH,
-    USERNAME_MIN_LENGTH, USERNAME_MAX_LENGTH
+    USERNAME_MIN_LENGTH, USERNAME_MAX_LENGTH, EMPLOYEE_NUMBER_LENGTH
 )
 from .accounts.api import check_account_exists
 from .serializers import UserSerializer, UserPreferenceSerializer
@@ -157,6 +158,7 @@ class RegistrationView(APIView):
     DEFAULT_FIELDS = ["email", "name", "username", "password"]
 
     EXTRA_FIELDS = [
+        "employee_number",
         "city",
         "country",
         "gender",
@@ -185,7 +187,9 @@ class RegistrationView(APIView):
 
         # Backwards compatibility: Honor code is required by default, unless
         # explicitly set to "optional" in Django settings.
-        self._extra_fields_setting = copy.deepcopy(settings.REGISTRATION_EXTRA_FIELDS)
+        self._extra_fields_setting = copy.deepcopy(
+            microsite.get_value('REGISTRATION_EXTRA_FIELDS', settings.REGISTRATION_EXTRA_FIELDS)
+        )
         self._extra_fields_setting["honor_code"] = self._extra_fields_setting.get("honor_code", "required")
 
         # Check that the setting is configured correctly
@@ -707,6 +711,16 @@ class RegistrationView(APIView):
             error_messages={
                 "required": error_msg
             }
+        )
+
+    def _add_employee_number_field(self, form_desc, required=True):
+        label = _(u"Employee Number")
+        instructions = _(u"{length} numeric characters").format(length=EMPLOYEE_NUMBER_LENGTH)
+        form_desc.add_field(
+            "employee_number",
+            label=label,
+            instructions=instructions,
+            required=required
         )
 
     def _apply_third_party_auth_overrides(self, request, form_desc):

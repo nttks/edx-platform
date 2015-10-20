@@ -448,6 +448,31 @@ class TestCreateAccountValidation(TestCase):
             params["email"] = "another_test_email@example.com"
             self.assert_success(params)
 
+    def test_employee_number(self):
+        params = dict(self.minimal_params)
+
+        def assert_employee_number_error(expected_error):
+            """
+            Assert that requesting account creation results in the expected
+            error
+            """
+            self.assert_error(params, "employee_number", expected_error)
+
+        with override_settings(REGISTRATION_EXTRA_FIELDS={"employee_number": "required"}):
+            # Missing, empty
+            assert_employee_number_error("An employee number is required")
+            params["employee_number"] = ""
+            assert_employee_number_error("An employee number is required")
+
+            # invalid
+            for employee_number in ["123456", "12345678", "A123456", "123-456"]:
+                params["employee_number"] = employee_number
+                assert_employee_number_error("An employee number must be 7 numeric characters")
+
+            # True
+            params["employee_number"] = "1234567"
+            self.assert_success(params)
+
     def test_terms_of_service(self):
         params = dict(self.minimal_params)
 
