@@ -25,3 +25,8 @@ ALL_USERS_VISIBILITY = 'all_users'
 
 # Indicates the user's preference that all their account information be private.
 PRIVATE_VISIBILITY = 'private'
+
+# The constraint for the employee number account field
+# TODO be configurable in the future
+EMPLOYEE_NUMBER_LENGTH = 7
+EMPLOYEE_NUMBER_REGEX = r"^[0-9]{{{length}}}$".format(length=EMPLOYEE_NUMBER_LENGTH)
