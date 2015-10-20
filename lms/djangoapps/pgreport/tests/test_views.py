@@ -343,6 +343,20 @@ class ProblemReportTestCase(ModuleStoreTestCase):
 
     def test_get_student_answers_data(self):
         sum_answers = {}
+
+        # Invalid answers
+        # None, empty
+        student_answers = None
+        return_answers = self.pgreport._get_student_answers_data(
+            sum_answers, student_answers)
+        self.assertEquals(return_answers, {})
+
+        student_answers = {}
+        return_answers = self.pgreport._get_student_answers_data(
+            sum_answers, student_answers)
+        self.assertEquals(return_answers, {})
+
+        # Valid answers
         student_answers = {'1_2_1': 'abcd', '1_2_2': 'abcd', '1_2_3': 'xyz'}
         return_answers = self.pgreport._get_student_answers_data(
             sum_answers, student_answers)
