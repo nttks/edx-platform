@@ -60,7 +60,7 @@ data: |
         </div>
         <!----- アンケートここまで ----->
 
-        <button type="button" id="survey-submit-button" class="action">回答を送信する</button>
+        <button type="button" id="survey-submit-button" class="action blue-button">回答を送信する</button>
       </form>
 
       <style type="text/css">
@@ -97,6 +97,28 @@ data: |
         }
         textarea {
           height: auto;
+        }
+        .blue-button {
+          background-color: #008CBA;
+          background-image: none;
+          border:transparent solid 1px;
+          border-style: none;
+          box-shadow: 0px 0px 0px black;
+          color: #fff;
+          padding: 14px 28px 15px 28px;
+          text-shadow: none;
+          text-transform: none;
+        }
+        .blue-button:hover:not(:disabled) {
+          background-color: #006f94;
+        }
+        .blue-button:active:not(:disabled),
+        .blue-button:focus:not(:disabled) {
+          border: none;
+          box-shadow: none;
+        }
+        .blue-button.disabled {
+          background-color: #666;
         }
       -->
       </style>
