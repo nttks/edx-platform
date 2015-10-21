@@ -330,9 +330,8 @@ def send_mail_to_student(student, param_dict, language=None):
         `is_shib_course`: (a `boolean`)
     ]
 
-    `language` is the language used to render the email. If None the language
-    of the currently-logged in user (that is, the user sending the email) will
-    be used.
+    `language` is the language used to render the email. If None, the platform
+    default language will be used.
 
     Returns a boolean indicating whether the email was sent successfully.
     """
@@ -413,6 +412,10 @@ def render_message_to_string(subject_template, message_template, param_dict, lan
     Returns two strings that correspond to the rendered, translated email
     subject and message.
     """
+    # That is, the user is not registered yet
+    if not language:
+        language = settings.LANGUAGE_CODE
+
     with override_language(language):
         return get_subject_and_message(subject_template, message_template, param_dict)
 
