@@ -189,6 +189,9 @@ class ProblemReport(ProgressReportBase):
 
     def _get_student_answers_data(self, sum_student_answers, student_answers):
 
+        if not student_answers:
+            return sum_student_answers
+
         for key, answers in student_answers.items():
             answers_data = {}
             if isinstance(answers, list):
