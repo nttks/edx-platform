@@ -106,7 +106,7 @@ def get_logger_config(log_dir,
             },
             'django.request': {
                 'handlers': ['mail_admins'],
-                'level': 'ERROR',
+                'level': 'INFO',
                 'propagate': True,
             },
         }
