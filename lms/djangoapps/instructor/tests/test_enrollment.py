@@ -9,6 +9,7 @@ from abc import ABCMeta
 from courseware.models import StudentModule
 from django.conf import settings
 from django.test import TestCase
+from django.test.utils import override_settings
 from django.utils.translation import get_language
 from django.utils.translation import override as override_language
 from nose.plugins.attrib import attr
@@ -656,8 +657,10 @@ class TestRenderMessageToString(ModuleStoreTestCase):
         self.assertIn(you_have_been_invited_in_french, message)
         self.assertEqual(settings.LANGUAGE_CODE, language_after_rendering)
 
+    @override_settings(LANGUAGE_CODE='fr')
     def test_platform_language_is_used_for_logged_in_user(self):
         with override_language('zh_CN'):    # simulate a user login
             subject, message = self.get_subject_and_message(None)
-            self.assertIn("You have been", subject)
-            self.assertIn("You have been", message)
+            you_have_been_invited_in_french = u"Vous avez été invité"
+            self.assertIn(you_have_been_invited_in_french, subject)
+            self.assertIn(you_have_been_invited_in_french, message)
