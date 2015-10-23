@@ -2522,7 +2522,7 @@ msgstr "事前必須講座を設定する"
 
 #: cms/templates/settings.html:385
 msgid "Entrance Exam"
-msgstr "入学試験"
+msgstr ""
 
 #: cms/templates/settings.html:389
 msgid "Require students to pass an exam before beginning the course."

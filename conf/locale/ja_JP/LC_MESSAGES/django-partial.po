@@ -50,7 +50,7 @@ msgstr "詳細設定"
 #: cms/djangoapps/contentstore/views/entrance_exam.py:146
 #: lms/djangoapps/courseware/tabs.py:303
 msgid "Entrance Exam"
-msgstr "入学試験"
+msgstr ""
 
 #: cms/djangoapps/contentstore/views/helpers.py:152
 #: lms/djangoapps/class_dashboard/dashboard_data.py:559
