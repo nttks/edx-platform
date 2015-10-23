@@ -702,6 +702,16 @@ class ProgressPageTests(ModuleStoreTestCase):
         self.section = ItemFactory.create(category='sequential', parent_location=self.chapter.location)
         self.vertical = ItemFactory.create(category='vertical', parent_location=self.section.location)
 
+    @ddt.data('"><script>alert(1)</script>', '<script>alert(1)</script>', '</script><script>alert(1)</script>')
+    def test_progress_page_xss_prevent(self, malicious_code):
+        """
+        Test that XSS attack is prevented
+        """
+        resp = views.progress(self.request, course_id=unicode(self.course.id), student_id=self.user.id)
+        self.assertEqual(resp.status_code, 200)
+        # Test that malicious code does not appear in html
+        self.assertNotIn(malicious_code, resp.content)
+
     def test_pure_ungraded_xblock(self):
         ItemFactory.create(category='acid', parent_location=self.vertical.location)
 
@@ -941,7 +951,7 @@ class GenerateUserCertTests(ModuleStoreTestCase):
         self.assertIn("Your certificate will be available when you pass the course.", resp.content)
 
     @patch('courseware.grades.grade', Mock(return_value={'grade': 'Pass', 'percent': 0.75}))
-    @override_settings(CERT_QUEUE='certificates', SEGMENT_KEY="foobar")
+    @override_settings(CERT_QUEUE='certificates', LMS_SEGMENT_KEY="foobar")
     def test_user_with_passing_grade(self):
         # If user has above passing grading then json will return cert generating message and
         # status valid code
@@ -966,6 +976,7 @@ class GenerateUserCertTests(ModuleStoreTestCase):
                 },
 
                 context={
+                    'ip': '127.0.0.1',
                     'Google Analytics':
                     {'clientId': None}
                 }
@@ -987,7 +998,7 @@ class GenerateUserCertTests(ModuleStoreTestCase):
         self.assertIn("Certificate is being created.", resp.content)
 
     @patch('courseware.grades.grade', Mock(return_value={'grade': 'Pass', 'percent': 0.75}))
-    @override_settings(CERT_QUEUE='certificates', SEGMENT_KEY="foobar")
+    @override_settings(CERT_QUEUE='certificates', LMS_SEGMENT_KEY="foobar")
     def test_user_with_passing_existing_downloadable_cert(self):
         # If user has already downloadable certificate
         # then json will return cert generating message with bad request code

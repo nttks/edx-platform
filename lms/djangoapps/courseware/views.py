@@ -1049,6 +1049,9 @@ def _credit_course_requirements(course_key, student):
     if not (settings.FEATURES.get("ENABLE_CREDIT_ELIGIBILITY", False) and is_credit_course(course_key)):
         return None
 
+    # Credit requirement statuses for which user does not remain eligible to get credit.
+    non_eligible_statuses = ['failed', 'declined']
+
     # Retrieve the status of the user for each eligibility requirement in the course.
     # For each requirement, the user's status is either "satisfied", "failed", or None.
     # In this context, `None` means that we don't know the user's status, either because
@@ -1072,7 +1075,7 @@ def _credit_course_requirements(course_key, student):
 
     # If the user has *failed* any requirements (for example, if a photo verification is denied),
     # then the user is NOT eligible for credit.
-    elif any(requirement['status'] == 'failed' for requirement in requirement_statuses):
+    elif any(requirement['status'] in non_eligible_statuses for requirement in requirement_statuses):
         eligibility_status = "not_eligible"
 
     # Otherwise, the user may be eligible for credit, but the user has not
@@ -1387,7 +1390,7 @@ def _track_successful_certificate_generation(user_id, course_id):  # pylint: dis
         None
 
     """
-    if settings.SEGMENT_KEY:
+    if settings.LMS_SEGMENT_KEY:
         event_name = 'edx.bi.user.certificate.generate'
         tracking_context = tracker.get_tracker().resolve_context()
 
@@ -1399,6 +1402,7 @@ def _track_successful_certificate_generation(user_id, course_id):  # pylint: dis
                 'label': unicode(course_id)
             },
             context={
+                'ip': tracking_context.get('ip'),
                 'Google Analytics': {
                     'clientId': tracking_context.get('client_id')
                 }
