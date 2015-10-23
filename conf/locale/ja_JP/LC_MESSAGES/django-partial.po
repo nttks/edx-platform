@@ -1669,11 +1669,11 @@ msgstr "提出"
 
 #: common/lib/xmodule/xmodule/capa_base.py:416
 msgid "Final Check"
-msgstr "最終確認"
+msgstr "提出"
 
 #: common/lib/xmodule/xmodule/capa_base.py:447
 msgid "Checking..."
-msgstr "確認中..."
+msgstr "提出中..."
 
 #: common/lib/xmodule/xmodule/capa_base.py:569
 msgid "Warning: The problem has been reset to its initial state!"
