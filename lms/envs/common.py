@@ -65,8 +65,6 @@ DISCUSSION_SETTINGS = {
 
 # Features
 FEATURES = {
-    'USE_DJANGO_PIPELINE': True,
-
     'DISPLAY_DEBUG_INFO_TO_STAFF': True,
     'DISPLAY_HISTOGRAMS_TO_STAFF': True,  # For large courses this slows down courseware access for staff.
 
@@ -376,19 +374,6 @@ FEATURES = {
     # Batch-Generated Certificates from Instructor Dashboard
     'CERTIFICATES_INSTRUCTOR_GENERATION': False,
 
-    # Social Media Sharing on Student Dashboard
-    'SOCIAL_SHARING_SETTINGS': {
-        # Note: Ensure 'CUSTOM_COURSE_URLS' has a matching value in cms/envs/common.py
-        'CUSTOM_COURSE_URLS': False,
-        'DASHBOARD_FACEBOOK': False,
-        'CERTIFICATE_FACEBOOK': False,
-        'CERTIFICATE_FACEBOOK_TEXT': None,
-        'CERTIFICATE_TWITTER': False,
-        'CERTIFICATE_TWITTER_TEXT': None,
-        'DASHBOARD_TWITTER': False,
-        'DASHBOARD_TWITTER_TEXT': None
-    },
-
     # Course discovery feature
     'ENABLE_COURSE_DISCOVERY': False,
 
@@ -414,7 +399,7 @@ FEATURES = {
     'ENABLE_OPENBADGES': False,
 
     # Credit course API
-    'ENABLE_CREDIT_API': False,
+    'ENABLE_CREDIT_API': True,
 
     # The block types to disable need to be specified in "x block disable config" in django admin.
     'ENABLE_DISABLING_XBLOCK_TYPES': True,
@@ -623,7 +608,7 @@ USAGE_ID_PATTERN = r'(?P<usage_id>(?:i4x://?[^/]+/[^/]+/[^/]+/[^@]+(?:@[^/]+)?)|
 
 
 ############################## EVENT TRACKING #################################
-SEGMENT_KEY = None
+LMS_SEGMENT_KEY = None
 
 # FIXME: Should we be doing this truncation?
 TRACK_MAX_EVENT = 50000
@@ -1226,20 +1211,21 @@ X_FRAME_OPTIONS = 'ALLOW'
 
 ############################### PIPELINE #######################################
 
+PIPELINE_ENABLED = True
+
 # Process static files using RequireJS Optimizer
 STATICFILES_STORAGE = 'openedx.core.lib.django_require.staticstorage.OptimizedCachedRequireJsStorage'
 
 # List of finder classes that know how to find static files in various locations.
 # Note: the pipeline finder is included to be able to discover optimized files
 STATICFILES_FINDERS = [
-    'staticfiles.finders.FileSystemFinder',
-    'staticfiles.finders.AppDirectoriesFinder',
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
     'pipeline.finders.PipelineFinder',
 ]
 
-# Don't use compression by default
 PIPELINE_CSS_COMPRESSOR = None
-PIPELINE_JS_COMPRESSOR = None
+PIPELINE_JS_COMPRESSOR = 'pipeline.compressors.uglifyjs.UglifyJSCompressor'
 
 # Setting that will only affect the edX version of django-pipeline until our changes are merged upstream
 PIPELINE_COMPILE_INPLACE = True
@@ -1843,7 +1829,7 @@ INSTALLED_APPS = (
     # For asset pipelining
     'edxmako',
     'pipeline',
-    'staticfiles',
+    'django.contrib.staticfiles',
     'static_replace',
 
     # Theming
@@ -2048,6 +2034,20 @@ MKTG_URL_LINK_MAP = {
 }
 MKTG_URL_LINK_MAP_URLS = {}
 
+############################# SOCIAL MEDIA SHARING #############################
+# Social Media Sharing on Student Dashboard
+SOCIAL_SHARING_SETTINGS = {
+    # Note: Ensure 'CUSTOM_COURSE_URLS' has a matching value in cms/envs/common.py
+    'CUSTOM_COURSE_URLS': False,
+    'DASHBOARD_FACEBOOK': False,
+    'CERTIFICATE_FACEBOOK': False,
+    'CERTIFICATE_FACEBOOK_TEXT': None,
+    'CERTIFICATE_TWITTER': False,
+    'CERTIFICATE_TWITTER_TEXT': None,
+    'DASHBOARD_TWITTER': False,
+    'DASHBOARD_TWITTER_TEXT': None
+}
+
 ################# Social Media Footer Links #######################
 # The names list controls the order of social media
 # links in the footer.
@@ -2154,7 +2154,7 @@ if FEATURES.get('CLASS_DASHBOARD'):
     INSTALLED_APPS += ('class_dashboard',)
 
 ################ Enable credit eligibility feature ####################
-ENABLE_CREDIT_ELIGIBILITY = False
+ENABLE_CREDIT_ELIGIBILITY = True
 FEATURES['ENABLE_CREDIT_ELIGIBILITY'] = ENABLE_CREDIT_ELIGIBILITY
 
 ######################## CAS authentication ###########################

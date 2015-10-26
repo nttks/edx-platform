@@ -57,7 +57,7 @@ from verify_student.image import decode_image_data, InvalidImageData
 from util.json_request import JsonResponse
 from util.date_utils import get_default_time_display
 from xmodule.modulestore.django import modulestore
-from staticfiles.storage import staticfiles_storage
+from django.contrib.staticfiles.storage import staticfiles_storage
 
 
 log = logging.getLogger(__name__)
@@ -1102,9 +1102,10 @@ class SubmitPhotosView(View):
         Returns: None
 
         """
-        if settings.SEGMENT_KEY:
+        if settings.LMS_SEGMENT_KEY:
             tracking_context = tracker.get_tracker().resolve_context()
             context = {
+                'ip': tracking_context.get('ip'),
                 'Google Analytics': {
                     'clientId': tracking_context.get('client_id')
                 }
@@ -1439,7 +1440,7 @@ class InCourseReverifyView(View):
             event_name, user_id, course_id, checkpoint
         )
 
-        if settings.SEGMENT_KEY:
+        if settings.LMS_SEGMENT_KEY:
             tracking_context = tracker.get_tracker().resolve_context()
             analytics.track(
                 user_id,
@@ -1450,6 +1451,7 @@ class InCourseReverifyView(View):
                     'checkpoint': checkpoint
                 },
                 context={
+                    'ip': tracking_context.get('ip'),
                     'Google Analytics': {
                         'clientId': tracking_context.get('client_id')
                     }
