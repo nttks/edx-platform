@@ -1427,14 +1427,12 @@ PIPELINE_CSS = {
     'style-course': {
         'source_filenames': [
             'css/lms-course.css',
-            'xmodule/modules.css',
         ],
         'output_filename': 'css/lms-course.css',
     },
     'style-course-rtl': {
         'source_filenames': [
             'css/lms-course-rtl.css',
-            'xmodule/modules.css',
         ],
         'output_filename': 'css/lms-course-rtl.css',
     },
@@ -1813,6 +1811,9 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'djcelery',
     'south',
+
+    # Common views
+    'openedx.core.djangoapps.common_views',
 
     # History tables
     'simple_history',
@@ -2581,12 +2582,14 @@ ACCOUNT_VISIBILITY_CONFIGURATION = {
         'time_zone',
         'language_proficiencies',
         'bio',
+        'account_privacy',
     ],
 
     # The list of account fields that are always public
     "public_fields": [
         'username',
         'profile_image',
+        'account_privacy',
     ],
 
     # The list of account fields that are visible only to staff and users viewing their own profiles
@@ -2606,6 +2609,7 @@ ACCOUNT_VISIBILITY_CONFIGURATION = {
         "level_of_education",
         "mailing_address",
         "requires_parental_consent",
+        "account_privacy",
     ]
 }
 
@@ -2614,6 +2618,7 @@ ECOMMERCE_PUBLIC_URL_ROOT = None
 ECOMMERCE_API_URL = None
 ECOMMERCE_API_SIGNING_KEY = None
 ECOMMERCE_API_TIMEOUT = 5
+ECOMMERCE_SERVICE_WORKER_USERNAME = 'ecommerce_worker'
 
 # Reverification checkpoint name pattern
 CHECKPOINT_PATTERN = r'(?P<checkpoint_name>[^/]+)'
