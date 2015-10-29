@@ -1074,6 +1074,9 @@ PARENTAL_CONSENT_AGE_LIMIT = 13
 JASMINE_TEST_DIRECTORY = PROJECT_ROOT + '/static/coffee'
 
 
+######################### Branded Header ###################################
+HEADER_LOGO_IMAGE = None
+
 ######################### Branded Footer ###################################
 # Constants for the footer used on the site and shared with other sites
 # (such as marketing and the blog) via the branding API.
