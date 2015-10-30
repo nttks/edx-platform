@@ -45,6 +45,12 @@ class ReportTypeTests(ModuleStoreTestCase):
         self.course = CourseFactory.create(org='MITx', number='999', display_name=u'Robot Super Course')
         self.course_key = self.course.id
         settings.COURSE_LISTINGS['default'] = [self.course_key.to_deprecated_string()]
+
+        def delete_default():
+            # delete settings
+            del settings.COURSE_LISTINGS['default']
+
+        self.addCleanup(delete_default)
         course_mode = CourseMode(course_id=self.course_key,
                                  mode_slug="honor",
                                  mode_display_name="honor cert",
