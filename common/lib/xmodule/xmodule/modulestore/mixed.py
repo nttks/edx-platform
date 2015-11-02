@@ -362,13 +362,13 @@ class MixedModuleStore(ModuleStoreDraftAndPublished, ModuleStoreWriteBase):
         store = self._get_modulestore_for_courselike(course_id)
         return store.has_course(course_id, ignore_case, **kwargs)
 
-    def delete_course(self, course_key, user_id):
+    def delete_course(self, course_key, user_id, **kwargs):
         """
         See xmodule.modulestore.__init__.ModuleStoreWrite.delete_course
         """
         assert isinstance(course_key, CourseKey)
         store = self._get_modulestore_for_courselike(course_key)
-        return store.delete_course(course_key, user_id)
+        return store.delete_course(course_key, user_id, **kwargs)
 
     @contract(asset_metadata='AssetMetadata', user_id='int|long', import_only=bool)
     def save_asset_metadata(self, asset_metadata, user_id, import_only=False):
