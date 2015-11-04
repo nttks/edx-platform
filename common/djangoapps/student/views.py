@@ -31,6 +31,7 @@ from django.shortcuts import redirect
 from django.utils.translation import ungettext
 from django.utils.http import base36_to_int
 from django.utils.translation import ugettext as _, get_language
+from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
 from django.views.decorators.debug import sensitive_post_parameters
 from django.views.decorators.http import require_POST, require_GET
