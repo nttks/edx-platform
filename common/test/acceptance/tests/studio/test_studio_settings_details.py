@@ -241,7 +241,7 @@ class CoursePacingTest(StudioSettingsDetailsTest):
         Test that course authors cannot toggle the pacing of their course
         while the course is running.
         """
-        self.course_fixture.add_course_details({'start_date': datetime.now()})
+        self.course_fixture.add_course_details({'start_date': datetime.now() - timedelta(days=1)})
         self.course_fixture.configure_course()
         self.settings_detail.refresh_page()
         self.assertTrue(self.settings_detail.course_pacing_disabled())
