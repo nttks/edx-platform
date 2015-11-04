@@ -6,10 +6,12 @@ import urllib
 from django.test import TestCase
 from django.core.urlresolvers import reverse
 from django.conf import settings
+from django.test.utils import override_settings
 
 import mock
 import ddt
 from config_models.models import cache
+from branding import get_logo_url
 from branding.models import BrandingApiConfig
 
 
@@ -233,3 +235,44 @@ class TestFooter(TestCase):
         """Configure whether this an EdX-controlled domain. """
         with mock.patch.dict(settings.FEATURES, {'IS_EDX_DOMAIN': is_edx_domain}):
             yield
+
+
+def university_microsite_configuration():
+    return {
+        'university': 'test-university'
+    }
+
+
+def logo_image_microsite_configuration():
+    return {
+        'university': 'test-university',
+        'logo_image_url': 'images/test-microsite-logo.png'
+    }
+
+
+class LogoUrlTest(TestCase):
+    """Tests for logo url"""
+
+    def _logo_url(self, path):
+        return settings.STATIC_URL + path
+
+    def test_default_logo(self):
+        self.assertEqual(self._logo_url('images/default-theme/logo.png'), get_logo_url())
+
+    @override_settings(FEATURES={"IS_EDX_DOMAIN":True})
+    def test_default_logo_edx_domain(self):
+        self.assertEqual(self._logo_url('images/edx-theme/edx-logo-77x36.png'), get_logo_url())
+
+    @override_settings(FEATURES={"IS_EDX_DOMAIN":True})
+    @mock.patch("microsite_configuration.microsite.get_configuration", university_microsite_configuration)
+    def test_university_logo(self):
+        self.assertEqual(self._logo_url('images/test-university-on-edx-logo.png'), get_logo_url())
+
+    @override_settings(HEADER_LOGO_IMAGE='images/test-header-logo-image.png')
+    def test_settings_header_logo_image(self):
+        self.assertEqual(self._logo_url('images/test-header-logo-image.png'), get_logo_url())
+
+    @override_settings(HEADER_LOGO_IMAGE='images/test-header-logo-image.png')
+    @mock.patch("microsite_configuration.microsite.get_configuration", logo_image_microsite_configuration)
+    def test_settings_header_logo_image_microsite(self):
+        self.assertEqual(self._logo_url('images/test-microsite-logo.png'), get_logo_url())

@@ -66,7 +66,7 @@ def get_logo_url():
 
     # if the MicrositeConfiguration has a value for the logo_image_url
     # let's use that
-    image_url = microsite.get_value('logo_image_url')
+    image_url = microsite.get_value('logo_image_url', getattr(settings, 'HEADER_LOGO_IMAGE', None))
     if image_url:
         return '{static_url}{image_url}'.format(
             static_url=settings.STATIC_URL,
