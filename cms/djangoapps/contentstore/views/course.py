@@ -15,7 +15,6 @@ from django.views.decorators.http import require_http_methods, require_GET
 from django.core.exceptions import PermissionDenied
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseBadRequest, HttpResponseNotFound, HttpResponse, Http404
-from simplejson.encoder import JSONEncoderForHTML
 from util.json_request import JsonResponse, JsonResponseBadRequest
 from util.date_utils import get_default_time_display
 from edxmako.shortcuts import render_to_response
@@ -29,6 +28,7 @@ from openedx.core.lib.course_tabs import CourseTabPluginManager
 from openedx.core.djangoapps.credit.api import is_credit_course, get_credit_requirements
 from openedx.core.djangoapps.credit.tasks import update_credit_course_requirements
 from openedx.core.djangoapps.content.course_structures.api.v0 import api, errors
+from openedx.core.djangoapps.self_paced.models import SelfPacedConfiguration
 from xmodule.modulestore import EdxJSONEncoder
 from xmodule.modulestore.exceptions import ItemNotFoundError, DuplicateCourseError
 from opaque_keys import InvalidKeyError
@@ -68,8 +68,7 @@ from contentstore.tasks import rerun_course
 from contentstore.views.entrance_exam import (
     create_entrance_exam,
     update_entrance_exam,
-    delete_entrance_exam,
-    is_entrance_exams_enabled
+    delete_entrance_exam
 )
 
 from .library import LIBRARIES_ENABLED
@@ -90,7 +89,8 @@ from student.auth import has_course_author_access
 from util.milestones_helpers import (
     set_prerequisite_courses,
     is_valid_course_key,
-    is_prerequisite_courses_enabled
+    is_prerequisite_courses_enabled,
+    is_entrance_exams_enabled
 )
 from ga_maintenance_cms.models import MaintenanceMessage
 
@@ -917,6 +917,9 @@ def settings_handler(request, course_key_string):
             about_page_editable = not marketing_site_enabled
             enrollment_end_editable = GlobalStaff().has_user(request.user) or not marketing_site_enabled
             short_description_editable = settings.FEATURES.get('EDITABLE_SHORT_DESCRIPTION', True)
+
+            self_paced_enabled = SelfPacedConfiguration.current().enabled
+
             settings_context = {
                 'context_course': course_module,
                 'course_locator': course_key,
@@ -933,7 +936,8 @@ def settings_handler(request, course_key_string):
                 'show_min_grade_warning': False,
                 'enrollment_end_editable': enrollment_end_editable,
                 'is_prerequisite_courses_enabled': is_prerequisite_courses_enabled(),
-                'is_entrance_exams_enabled': is_entrance_exams_enabled()
+                'is_entrance_exams_enabled': is_entrance_exams_enabled(),
+                'self_paced_enabled': self_paced_enabled,
             }
             if is_prerequisite_courses_enabled():
                 courses, in_process_course_actions = get_courses_accessible_to_user(request)
@@ -987,7 +991,7 @@ def settings_handler(request, course_key_string):
                 # feature-specific settings and handle them accordingly
                 # We have to be careful that we're only executing the following logic if we actually
                 # need to create or delete an entrance exam from the specified course
-                if settings.FEATURES.get('ENTRANCE_EXAMS', False):
+                if is_entrance_exams_enabled():
                     course_entrance_exam_present = course_module.entrance_exam_enabled
                     entrance_exam_enabled = request.json.get('entrance_exam_enabled', '') == 'true'
                     ee_min_score_pct = request.json.get('entrance_exam_minimum_score_pct', None)
@@ -1139,7 +1143,7 @@ def advanced_settings_handler(request, course_key_string):
 
             return render_to_response('settings_advanced.html', {
                 'context_course': course_module,
-                'advanced_dict': json.dumps(CourseMetadata.fetch(course_module), cls=JSONEncoderForHTML),
+                'advanced_dict': CourseMetadata.fetch(course_module),
                 'advanced_settings_url': reverse_course_url('advanced_settings_handler', course_key)
             })
         elif 'application/json' in request.META.get('HTTP_ACCEPT', ''):

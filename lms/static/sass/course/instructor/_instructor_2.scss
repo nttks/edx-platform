@@ -1974,17 +1974,21 @@ input[name="subject"] {
         padding-left: $baseline;
       }
       th {
+        @extend %t-action2;
         text-align: left;
         border-bottom: 1px solid $border-color-1;
-        font-size: 16px;
         &.attempt-allowed-time {
             width: 90px;
         }
+        &.attempt-type {
+          width: 90px;
+        }
         &.attempt-started-at {
-          width: 160px;
+          width: 170px;
         }
         &.attempt-completed-at {
           width: 160px;
+          text-align: center;
         }
         &.attempt-status {
           width: 100px;
@@ -2023,7 +2027,7 @@ input[name="subject"] {
         line-height: normal;
         font-size: 14px;
       }
-      td:nth-child(5), td:first-child{
+      td:first-child{
         @include padding-left($baseline);
       }
       td:nth-child(2){
@@ -2031,7 +2035,7 @@ input[name="subject"] {
         @include padding-right(0px);
         word-wrap: break-word;
       }
-      td:nth-child(5), td:nth-child(4){
+      td:nth-child(5), td:nth-child(4), td:nth-child(6){
         @include padding-left(0);
         text-align: center;
       }
@@ -2039,7 +2043,7 @@ input[name="subject"] {
         word-wrap: break-word;
         text-align: center;
       }
-      td:nth-child(6){
+      td:nth-child(7){
         word-wrap: break-word;
         text-align: center;
       }
