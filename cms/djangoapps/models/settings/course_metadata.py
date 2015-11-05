@@ -24,6 +24,8 @@ class CourseMetadata(object):
         'end',
         'enrollment_start',
         'enrollment_end',
+        'deadline_start',
+        'terminate_start',
         'tabs',
         'graceperiod',
         'checklists',
@@ -46,6 +48,12 @@ class CourseMetadata(object):
         'language',
         'certificates',
         'minimum_grade_credit',
+        'course_category',
+        'is_f2f_course',
+        'course_canonical_name',
+        'course_contents_provider',
+        'teacher_name',
+        'course_span',
     ]
 
     @classmethod

@@ -38,6 +38,8 @@ class CourseDetails(object):
         self.end_date = None  # 'end'
         self.enrollment_start = None
         self.enrollment_end = None
+        self.deadline_start = None
+        self.terminate_start= None
         self.syllabus = None  # a pdf file asset
         self.short_description = ""
         self.overview = ""  # html to render as the overview
@@ -53,6 +55,12 @@ class CourseDetails(object):
             'ENTRANCE_EXAM_MIN_SCORE_PCT',
             '50'
         )  # minimum passing score for entrance exam content module/tree
+        self.course_category = []
+        self.is_f2f_course = False
+        self.course_canonical_name = ""
+        self.course_contents_provider = ""
+        self.teacher_name = ""
+        self.course_span = ""
 
     @classmethod
     def _fetch_about_attribute(cls, course_key, attribute):
@@ -78,12 +86,27 @@ class CourseDetails(object):
         course_details.end_date = descriptor.end
         course_details.enrollment_start = descriptor.enrollment_start
         course_details.enrollment_end = descriptor.enrollment_end
+        course_details.deadline_start = descriptor.deadline_start
+        course_details.terminate_start = descriptor.terminate_start
         course_details.pre_requisite_courses = descriptor.pre_requisite_courses
         course_details.course_image_name = descriptor.course_image
         course_details.course_image_asset_path = course_image_url(descriptor)
         course_details.language = descriptor.language
         # Default course license is "All Rights Reserved"
         course_details.license = getattr(descriptor, "license", "all-rights-reserved")
+
+        course_details.course_category = descriptor.course_category
+        course_details.is_f2f_course = descriptor.is_f2f_course
+        course_details.course_canonical_name = descriptor.course_canonical_name
+        # Default course canonical name is display name
+        if not course_details.course_canonical_name:
+            course_details.course_canonical_name = descriptor.display_name
+        course_details.course_contents_provider = descriptor.course_contents_provider
+        course_details.teacher_name = descriptor.teacher_name
+        # Default course teacher name is "Teacher" TODO FIX
+        if not course_details.teacher_name:
+            course_details.teacher_name = "Teacher"
+        course_details.course_span = descriptor.course_span
 
         for attribute in ABOUT_ATTRIBUTES:
             value = cls._fetch_about_attribute(course_key, attribute)
@@ -169,6 +192,24 @@ class CourseDetails(object):
             dirty = True
             descriptor.enrollment_end = converted
 
+        if 'deadline_start' in jsondict:
+            converted = date.from_json(jsondict['deadline_start'])
+        else:
+            converted = None
+
+        if converted != descriptor.deadline_start:
+            dirty = True
+            descriptor.deadline_start = converted
+
+        if 'terminate_start' in jsondict:
+            converted = date.from_json(jsondict['terminate_start'])
+        else:
+            converted = None
+
+        if converted != descriptor.terminate_start:
+            dirty = True
+            descriptor.terminate_start = converted
+
         if 'course_image_name' in jsondict and jsondict['course_image_name'] != descriptor.course_image:
             descriptor.course_image = jsondict['course_image_name']
             dirty = True
@@ -184,6 +225,31 @@ class CourseDetails(object):
 
         if 'language' in jsondict and jsondict['language'] != descriptor.language:
             descriptor.language = jsondict['language']
+            dirty = True
+
+        if 'course_category' in jsondict \
+                and sorted(jsondict['course_category']) != sorted(descriptor.course_category):
+            descriptor.course_category = jsondict['course_category']
+            dirty = True
+
+        if 'is_f2f_course' in jsondict and jsondict['is_f2f_course'] != descriptor.is_f2f_course:
+            descriptor.is_f2f_course = jsondict['is_f2f_course']
+            dirty = True
+
+        if 'course_canonical_name' in jsondict and jsondict['course_canonical_name'] != descriptor.course_canonical_name:
+            descriptor.course_canonical_name = jsondict['course_canonical_name']
+            dirty = True
+
+        if 'course_contents_provider' in jsondict and jsondict['course_contents_provider'] != descriptor.course_contents_provider:
+            descriptor.course_contents_provider = jsondict['course_contents_provider']
+            dirty = True
+
+        if 'teacher_name' in jsondict and jsondict['teacher_name'] != descriptor.teacher_name:
+            descriptor.teacher_name = jsondict['teacher_name']
+            dirty = True
+
+        if 'course_span' in jsondict and jsondict['course_span'] != descriptor.course_span:
+            descriptor.course_span = jsondict['course_span']
             dirty = True
 
         if dirty:

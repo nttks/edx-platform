@@ -17,6 +17,8 @@ define([
                 end_date: "2014-11-05T20:00:00Z",
                 enrollment_start: "2014-10-00T00:00:00Z",
                 enrollment_end: "2014-11-05T00:00:00Z",
+                deadline_start: "2014-11-05T10:00:00Z",
+                terminate_start: "2014-12-05T00:00:00Z",
                 org : '',
                 course_id : '',
                 run : '',
@@ -31,7 +33,13 @@ define([
                 entrance_exam_enabled : '',
                 entrance_exam_minimum_score_pct: '50',
                 license: null,
-                language: ''
+                language: '',
+                course_category: ['gacco'],
+                is_f2f_course: true,
+                course_canonical_name: 'Course_Canonical_Name',
+                course_contents_provider: 'Course_Contents_Provider',
+                teacher_name: 'Teacher_Name',
+                course_span: 'Course_Span'
             },
             mockSettingsPage = readFixtures('mock/mock-settings-page.underscore');
 
@@ -51,6 +59,41 @@ define([
             $("#start_date").datepicker("destroy");
             $("#due_date").datepicker("destroy");
             $('.ui-datepicker').remove();
+        });
+
+        it('Changing course start date after course deadline start date should result in error', function () {
+            this.view.$el.find('#course-start-date')
+                .val('11/06/2014')
+                .trigger('change');
+            expect(this.view.$el.find('span.message-error').text()).toContain("deadline start date cannot be before the course start date");
+        });
+
+        it('Changing course start date after course terminate start date should result in error', function () {
+            this.view.$el.find('#course-start-date')
+                .val('12/06/2014')
+                .trigger('change');
+            expect(this.view.$el.find('span.message-error').text()).toContain("terminate start date cannot be before the course start date");
+        });
+
+        it('Changing course enrollment end date after course terminate start date should result in error', function () {
+            this.view.$el.find('#course-enrollment-end-date')
+                .val('12/06/2014')
+                .trigger('change');
+            expect(this.view.$el.find('span.message-error').text()).toContain("terminate start date cannot be before the enrollment end date");
+        });
+
+        it('Input empty course canonical name should result in error', function () {
+            this.view.$el.find('#course-canonical-name')
+                .val('')
+                .trigger('change');
+            expect(this.view.$el.find('span.message-error').text()).toContain("Course Canonical Name is required input");
+        });
+
+        it('Input empty course teacher name should result in error', function () {
+            this.view.$el.find('#course-teacher-name')
+                .val('')
+                .trigger('change');
+            expect(this.view.$el.find('span.message-error').text()).toContain("Teacher Name is required input");
         });
 
         it('Changing the time field do not affect other time fields', function () {
