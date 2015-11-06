@@ -1,5 +1,5 @@
-define(["backbone", "underscore", "gettext", "js/models/validation_helpers"],
-    function(Backbone, _, gettext, ValidationHelpers) {
+define(["backbone", "underscore", "gettext", "js/models/validation_helpers", "js/utils/date_utils"],
+    function(Backbone, _, gettext, ValidationHelpers, DateUtils) {
 
 var CourseDetails = Backbone.Model.extend({
     defaults: {
@@ -28,6 +28,10 @@ var CourseDetails = Backbone.Model.extend({
         // Returns either nothing (no return call) so that validate works or an object of {field: errorstring} pairs
         // A bit funny in that the video key validation is asynchronous; so, it won't stop the validation.
         var errors = {};
+        newattrs = DateUtils.convertDateStringsToObjects(
+            newattrs, ["start_date", "end_date", "enrollment_start", "enrollment_end"]
+        );
+
         if (newattrs.start_date === null) {
             errors.start_date = gettext("The course must have an assigned start date.");
         }
