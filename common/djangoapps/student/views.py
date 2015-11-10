@@ -200,7 +200,7 @@ def cert_info(user, course_overview, course_mode):
         course_mode (str): The enrollment mode (honor, verified, audit, etc.)
 
     Returns:
-        dict: A dictionary with keys:
+        dict: Empty dict if certificates are disabled or hidden, or a dictionary with keys:
             'status': one of 'generating', 'ready', 'notpassing', 'processing', 'restricted'
             'show_download_url': bool
             'download_url': url, only present if show_download_url is True
@@ -1671,7 +1671,7 @@ def create_account_with_params(request, params):
                 'education': profile.level_of_education_display,
                 'address': profile.mailing_address,
                 'gender': profile.gender_display,
-                'country': profile.country,
+                'country': unicode(profile.country),
             }
         ]
 

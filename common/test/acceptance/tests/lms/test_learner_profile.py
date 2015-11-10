@@ -3,7 +3,6 @@
 End-to-end tests for Student's Profile Page.
 """
 from contextlib import contextmanager
-from flaky import flaky
 
 from datetime import datetime
 from bok_choy.web_app_test import WebAppTest
@@ -76,7 +75,7 @@ class LearnerProfileTestMixin(EventsTestMixin):
 
         # Reset event tracking so that the tests only see events from
         # loading the profile page.
-        self.reset_event_tracking()
+        self.start_time = datetime.now()  # pylint: disable=attribute-defined-outside-init
 
         # Load the page
         profile_page.visit()
@@ -120,7 +119,9 @@ class LearnerProfileTestMixin(EventsTestMixin):
         """
 
         actual_events = self.wait_for_events(
-            event_filter={'event_type': 'edx.user.settings.viewed'}, number_of_matches=1)
+            start_time=self.start_time,
+            event_filter={'event_type': 'edx.user.settings.viewed', 'username': requesting_username},
+            number_of_matches=1)
         self.assert_events_match(
             [
                 {
@@ -151,6 +152,7 @@ class LearnerProfileTestMixin(EventsTestMixin):
 
         event_filter = {
             'event_type': self.USER_SETTINGS_CHANGED_EVENT_NAME,
+            'username': username,
         }
         with self.assert_events_match_during(event_filter=event_filter, expected_events=[expected_event]):
             yield
@@ -730,7 +732,6 @@ class DifferentUserLearnerProfilePageTest(LearnerProfileTestMixin, WebAppTest):
         self.verify_profile_page_is_private(profile_page, is_editable=False)
         self.verify_profile_page_view_event(username, different_user_id, visibility=self.PRIVACY_PRIVATE)
 
-    @flaky  # TODO fix this TNL-3679
     def test_different_user_public_profile(self):
         """
         Scenario: Verify that desired fields are shown when looking at a different user's public profile.
