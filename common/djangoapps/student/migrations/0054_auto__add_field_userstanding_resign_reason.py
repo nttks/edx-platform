@@ -104,6 +104,14 @@ class Migration(SchemaMigration):
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'recent_enrollment_time_delta': ('django.db.models.fields.PositiveIntegerField', [], {'default': '0'})
         },
+        'student.enrollmentrefundconfiguration': {
+            'Meta': {'ordering': "('-change_date',)", 'object_name': 'EnrollmentRefundConfiguration'},
+            'change_date': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
+            'changed_by': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['auth.User']", 'null': 'True', 'on_delete': 'models.PROTECT'}),
+            'enabled': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'refund_window_microseconds': ('django.db.models.fields.BigIntegerField', [], {'default': '1209600000000'})
+        },
         'student.entranceexamconfiguration': {
             'Meta': {'unique_together': "(('user', 'course_id'),)", 'object_name': 'EntranceExamConfiguration'},
             'course_id': ('xmodule_django.models.CourseKeyField', [], {'max_length': '255', 'db_index': 'True'}),
