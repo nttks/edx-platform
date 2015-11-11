@@ -1,4 +1,4 @@
-<div class="post-field">
+<div class="post-field hidden-post-field">
     <div class="field-label">
         <span class="field-label-text">
             <% // Translators: This is the label for a control to select a forum post type %>

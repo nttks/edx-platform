@@ -4,6 +4,7 @@
     <% if (window.courseName) { %>
       <h1 class="home-title"><%- window.courseName %></h1>
     <% } %>
+    <a href="#" class="forum-thread-list-btn">${_("Thread list")}</a>
   </section>
 
   <% if (window.ENABLE_DISCUSSION_HOME_PANEL) { %>
@@ -28,11 +29,15 @@
           <i class="icon fa fa-sort"></i>
           <span class="row-description"><%- gettext("Sort by date, vote, or comments") %></span>
         </td>
+        <td class="row-item">
+          <i class="icon fa fa-filter"></i>
+          <span class="row-description">${_("Filter out topics")}</span>
+        </td>
       </tr>
       <tr class="helpgrid-row helpgrid-row-participation">
         <td class="row-title"><%- gettext("Engage with posts") %></td>
         <td class="row-item">
-          <i class="icon fa fa-plus"></i>
+          <i class="icon fa fa-thumbs-o-up"></i>
           <span class="row-description"><%- gettext("Upvote posts and good responses") %></span>
         </td>
         <td class="row-item">
@@ -43,10 +48,11 @@
           <i class="icon fa fa-star"></i>
           <span class="row-description"><%- gettext("Follow posts for updates") %></span>
         </td>
+        <td class="row-item"></td>
       </tr>
       <tr class="helpgrid-row helpgrid-row-notification">
         <td class="row-title"><%- gettext('Receive updates') %></td>
-        <td class="row-item-full" colspan="3">
+        <td class="row-item-full" colspan="4">
           <label for="email-setting-checkbox">
             <span class="sr"><%- gettext("Toggle Notifications Setting") %></span>
             <span class="notification-checkbox">
@@ -59,4 +65,18 @@
       </tr>
     </table>
   <% } %>
+  <div class="forum-guideline">
+    <span class="label" style="background-color:#b9b9b9; color:#333; margin-top:2.5rem;">${_("Discussion Forum Guidelines")}</span>
+    <p>${_("{platform_name} is a brand new learning community produced by the learners. You can enrich your learning experience through communication with students from all around the world who work toward the same goal and will help you maintain the motivation for learning. Please be sure to read this guidelines and post appropriately.").format(platform_name=settings.PLATFORM_NAME)}</p>
+    <ul>
+      <li>${_("Be polite. {platform_name} is your classroom. Posts that respect your classmate would contribute for constructive discussions.").format(platform_name=settings.PLATFORM_NAME)}</li>
+      <li>${_("Respect classmates. We have learners from all around the world and with different backgrounds. Do not discriminate, slander or defame another students.").format(platform_name=settings.PLATFORM_NAME)}</li>
+      <li>${_("Choose a brief descriptive title to express your opinion. It would help your classmates find your post easily and understand the topic to deepen the discussion.")}</li>
+      <li>${_("Upvote good posts. This applies to questions and answers. Click on the green plus button so that good posts can be found more easily.")}</li>
+      <li>${_("Be specific. Write clearly with simple reasons.")}</li>
+      <li>${_("Before asking a question, use the search feature.")}</li>
+      <li>${_("Use threads appropriately.")}</li>
+      <li>${_("Do not cheat. We encourage discussion but please avoid asking and posting blatant answers. Those caught cheating may have their accounts disabled and their progress erased.")}</li>
+    </ul>
+  </div>
 </div>
