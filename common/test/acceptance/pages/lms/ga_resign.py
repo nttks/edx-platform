@@ -5,7 +5,7 @@ import re
 
 from bok_choy.page_object import PageObject
 from bok_choy.promise import Promise
-from lms.envs.bok_choy import PLATFORM_NAME
+from lms.envs.ga_bok_choy import PLATFORM_NAME
 from . import BASE_URL
 
 

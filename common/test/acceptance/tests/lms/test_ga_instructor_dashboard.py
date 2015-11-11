@@ -12,7 +12,7 @@ from ...pages.lms.ga_dashboard import DashboardPage
 from ...pages.lms.ga_instructor_dashboard import InstructorDashboardPage
 from ...pages.lms.login_and_register import CombinedLoginAndRegisterPage
 from ..ga_helpers import GaccoTestMixin
-from lms.envs.bok_choy import EMAIL_FILE_PATH
+from lms.envs.ga_bok_choy import EMAIL_FILE_PATH
 
 
 class SendEmailTest(WebAppTest, GaccoTestMixin):

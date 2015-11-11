@@ -17,7 +17,7 @@ from ...pages.lms.ga_resign import (
 )
 from ...pages.lms.login_and_register import CombinedLoginAndRegisterPage
 from ..ga_helpers import GaccoTestMixin
-from lms.envs.bok_choy import EMAIL_FILE_PATH
+from lms.envs.ga_bok_choy import EMAIL_FILE_PATH
 
 
 class ResignTest(WebAppTest, GaccoTestMixin):

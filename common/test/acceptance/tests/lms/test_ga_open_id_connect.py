@@ -8,7 +8,7 @@ import requests
 import urlparse
 
 from bok_choy.web_app_test import WebAppTest
-from lms.envs.bok_choy import OAUTH_OIDC_ISSUER, EDXMKTG_LOGGED_IN_COOKIE_NAME
+from lms.envs.ga_bok_choy import OAUTH_OIDC_ISSUER, EDXMKTG_LOGGED_IN_COOKIE_NAME
 from ...fixtures.course import CourseFixture
 from ...fixtures.ga_course_team import CourseTeamFixture
 from ...pages.common.logout import LogoutPage
