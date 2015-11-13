@@ -28,7 +28,8 @@ from django.utils.timezone import UTC
 
 log = logging.getLogger(__name__)
 
-# Make '_' a no-op so we can scrape strings
+# Make '_' a no-op so we can scrape strings. Using lambda instead of
+#  `django.utils.translation.ugettext_noop` because Django cannot be imported in this file
 _ = lambda text: text
 
 CATALOG_VISIBILITY_CATALOG_AND_ABOUT = "both"
@@ -269,12 +270,6 @@ class CourseFields(object):
         default="Studio",
         scope=Scope.settings,
         deprecated=True  # Deprecated because someone would not edit this value within Studio.
-    )
-    show_chat = Boolean(
-        display_name=_("Show Chat Widget"),
-        help=_("Enter true or false. When true, students can see the chat widget in the course."),
-        default=False,
-        scope=Scope.settings
     )
     tabs = CourseTabList(help="List of tabs to enable in this course", scope=Scope.settings, default=[])
     end_of_course_survey_url = String(

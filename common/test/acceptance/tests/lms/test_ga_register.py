@@ -9,7 +9,7 @@ import requests
 import unittest
 
 from bok_choy.web_app_test import WebAppTest
-from lms.envs.bok_choy import EMAIL_FILE_PATH
+from lms.envs.ga_bok_choy import EMAIL_FILE_PATH
 from ...fixtures.course import CourseFixture
 from ...pages.lms import BASE_URL
 from ...pages.lms.ga_dashboard import DashboardPage

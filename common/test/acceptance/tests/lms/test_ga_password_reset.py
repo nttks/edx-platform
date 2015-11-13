@@ -13,7 +13,7 @@ from ...pages.lms.ga_dashboard import DashboardPage
 from ...pages.lms.ga_password_reset import PasswordResetCompletePage, PasswordResetConfirmPage
 from ...pages.lms.login_and_register import CombinedLoginAndRegisterPage
 from ..ga_helpers import GaccoTestMixin
-from lms.envs.bok_choy import (
+from lms.envs.ga_bok_choy import (
     EMAIL_FILE_PATH,
     PASSWORD_COMPLEXITY,
     PASSWORD_DICTIONARY,
