@@ -7,6 +7,7 @@ from contextlib import contextmanager
 from datetime import datetime
 from bok_choy.web_app_test import WebAppTest
 from nose.plugins.attrib import attr
+from django.utils.timezone import UTC
 
 from ...pages.common.logout import LogoutPage
 from ...pages.lms.account_settings import AccountSettingsPage
@@ -75,7 +76,7 @@ class LearnerProfileTestMixin(EventsTestMixin):
 
         # Reset event tracking so that the tests only see events from
         # loading the profile page.
-        self.start_time = datetime.now()  # pylint: disable=attribute-defined-outside-init
+        self.start_time = datetime.now(UTC())  # pylint: disable=attribute-defined-outside-init
 
         # Load the page
         profile_page.visit()
