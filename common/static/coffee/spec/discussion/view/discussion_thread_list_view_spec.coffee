@@ -230,7 +230,7 @@ describe "DiscussionThreadListView", ->
                         view.$el.find(".forum-nav-thread-votes-count"),
                         (element) -> $(element).text().trim()
                     )
-                ).toEqual(["+25 votes", "+20 votes", "+42 votes", "+12 votes"])
+                ).toEqual(["25 votes", "20 votes", "42 votes", "12 votes"])
 
         it "with sort preference date", ->
             checkRender(@threads, "date", ["Thread1", "Thread4", "Thread2", "Thread3"])

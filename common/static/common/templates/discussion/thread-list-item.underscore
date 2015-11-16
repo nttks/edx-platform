@@ -20,7 +20,8 @@
       <span class="sr"><%= sr_text %></span>
       <i class="icon fa <%= icon_class %>"></i>
     </div><div class="forum-nav-thread-wrapper-1">
-      <span class="forum-nav-thread-title"><%- title %></span>
+      <span class="forum-nav-thread-title title"><%- title %></span>
+      <span class="forum-nav-thread-title body"><%- body %></span>
       <% if(typeof(subscribed) === "undefined") { var subscribed = null; } %>
       <% if(pinned || subscribed || staff_authored || community_ta_authored) { %>
         <ul class="forum-nav-thread-labels">
@@ -64,7 +65,7 @@
       );
       %>
       <span class="forum-nav-thread-votes-count">
-      +<%= interpolate(fmt, {
+      <i class="icon fa fa-thumbs-o-up"></i><br/><%= interpolate(fmt, {
                votes_count: votes['up_count'],
                span_start: '<span class="sr">',
                span_end: '</span>'
