@@ -78,6 +78,8 @@ choice for most environments but you may be happy with the trade-offs of the
 
 """
 
+import logging
+
 from django.contrib.auth import SESSION_KEY
 from django.contrib.auth.models import User
 from django.contrib.auth.middleware import AuthenticationMiddleware
@@ -85,14 +87,26 @@ from django.contrib.auth.middleware import AuthenticationMiddleware
 from .model import cache_model
 
 
+log = logging.getLogger(__name__)
+
+
 class CacheBackedAuthenticationMiddleware(AuthenticationMiddleware):
     def __init__(self):
         cache_model(User)
 
     def process_request(self, request):
+        session_id = request.session.session_key
         try:
             # Try and construct a User instance from data stored in the cache
-            request.user = User.get_cached(request.session[SESSION_KEY])
+            #request.user = User.get_cached(request.session[SESSION_KEY])
+            user_id = request.session[SESSION_KEY]
+            log.info(u'CacheBackedAuthenticationMiddleware.before={session_id}:{user_id}:'.format(
+                session_id=session_id, user_id=user_id))
+            request.user = User.get_cached(user_id)
+            log.info(u'CacheBackedAuthenticationMiddleware.after={session_id}:{user_id}:{username}'.format(
+                session_id=session_id, user_id=request.user.id, username=request.user.username))
         except:
             # Fallback to constructing the User from the database.
             super(CacheBackedAuthenticationMiddleware, self).process_request(request)
+            log.warning(u'CacheBackedAuthenticationMiddleware.super={session_id}:{user_id}:{username}'.format(
+                session_id=session_id, user_id=request.user.id, username=request.user.username))
