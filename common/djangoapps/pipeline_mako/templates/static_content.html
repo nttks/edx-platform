@@ -51,8 +51,12 @@ except:
 %></%def>
 
 <%def name="include(path)"><%
-from edxmako.makoloader import _filesystem_loader as _loader
-source, template_path = _loader.load_template_source(path)
+from django.conf import settings
+from django.template.engine import Engine
+from django.template.loaders.filesystem import Loader
+from edxmako.makoloader import MakoFilesystemLoader
+engine = Engine(dirs=settings.DEFAULT_TEMPLATE_ENGINE['DIRS'])
+source, template_path = MakoFilesystemLoader(engine).load_template_source(path)
 %>${source}</%def>
 
 <%def name="require_module(module_name, class_name)">

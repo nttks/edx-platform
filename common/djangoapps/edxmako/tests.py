@@ -5,6 +5,7 @@ import ddt
 
 from django.conf import settings
 from django.http import HttpResponse
+from django.template.engine import Engine
 from django.test import TestCase
 from django.test.utils import override_settings
 from django.test.client import RequestFactory
@@ -130,7 +131,8 @@ class MakoFilesystemLoaderTest(TestCase):
     """
 
     def setUp(self):
-        self.loader = MakoFilesystemLoader()
+        engine = Engine(dirs=settings.DEFAULT_TEMPLATE_ENGINE['DIRS'])
+        self.loader = MakoFilesystemLoader(engine)
 
     def test_load_template_source_not_in_microsite(self):
         _, file_path = self.loader.load_template_source('footer.html')
