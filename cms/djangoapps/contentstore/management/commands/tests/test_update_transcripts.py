@@ -43,15 +43,14 @@ class TestArgParsing(ModuleStoreTestCase):
     """
     def setUp(self):
         super(TestArgParsing, self).setUp()
-        self.command = Command()
 
     def test_too_much_args(self):
         """
         Tests for the case when too much args are specified
         """
-        errstring = "update_transcripts requires one or no arguments"
+        errstring = "Error: unrecognized arguments"
         with self.assertRaisesRegexp(CommandError, errstring):
-            self.command.handle('arg1', 'arg2')
+            call_command('update_transcripts', 'arg1', 'arg2')
 
     def test_invalid_course_id(self):
         """
@@ -59,7 +58,7 @@ class TestArgParsing(ModuleStoreTestCase):
         """
         errstring = "The course_id is not of the right format."
         with self.assertRaisesRegexp(CommandError, errstring):
-            self.command.handle('this_is_not_the_right_format')
+            call_command('update_transcripts', 'this_is_not_the_right_format')
 
     @patch('contentstore.management.commands.update_transcripts.TranscriptS3Store')
     def test_not_found_course_id(self, mock_store_class):
@@ -68,7 +67,7 @@ class TestArgParsing(ModuleStoreTestCase):
         """
         errstring = "The specified course does not exist."
         with self.assertRaisesRegexp(CommandError, errstring):
-            self.command.handle('does/not/exist')
+            call_command('update_transcripts', 'does/not/exist')
 
     @patch('contentstore.management.commands.update_transcripts.TranscriptS3Store')
     def test_when_store_failed_to_connect(self, mock_store_class):
@@ -80,7 +79,7 @@ class TestArgParsing(ModuleStoreTestCase):
 
         errstring = "Could not establish a connection to S3 for transcripts backup."
         with self.assertRaisesRegexp(CommandError, errstring):
-            self.command.handle(course.id.to_deprecated_string())
+            call_command('update_transcripts', course.id.to_deprecated_string())
 
         mock_store_class.assert_called_once_with()
 

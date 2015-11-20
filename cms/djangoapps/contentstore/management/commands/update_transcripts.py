@@ -68,16 +68,16 @@ class Command(BaseCommand):
     """
     help = """Usage: update_transcripts [<course_id>]"""
 
+    def add_arguments(self, parser):
+        parser.add_argument('course_id', nargs='?')
+
     @handle_exception
     def handle(self, *args, **options):
         start_time = time.localtime()
         log.info("Command update_transcripts started at %s." % time.strftime('%Y-%m-%d %H:%M:%S', start_time))
 
-        if len(args) > 1:
-            raise CommandError("update_transcripts requires one or no arguments: |<course_id>|")
-
         # Check args: course_id
-        course_id = args[0] if len(args) > 0 else None
+        course_id = options.get('course_id', None)
         if course_id:
             try:
                 course_id = CourseLocator.from_string(course_id)
