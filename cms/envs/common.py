@@ -48,6 +48,8 @@ from lms.envs.common import (
 
     # Django REST framework configuration
     REST_FRAMEWORK,
+    # The following settings need to load module(lms.djangoapps.instructor.views.instructor_dashboard).
+    BULK_EMAIL_DEFAULT_RETRY_DELAY, BULK_EMAIL_MAX_RETRIES, GRADES_DOWNLOAD_ROUTING_KEY,
 )
 from path import Path as path
 from warnings import simplefilter
