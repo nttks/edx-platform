@@ -30,3 +30,6 @@ class CourseGlobalSetting(models.Model):
         if self.global_enabled:
             not_global_en = ""
         return u"Course '{}': Global {}Enabled".format(self.course_id.to_deprecated_string(), not_global_en)
+
+    class Meta(object):
+        app_label = "course_global"
