@@ -132,6 +132,7 @@ class LoginFromCombinedPageTest(UniqueCourseTest):
             self.login_page.wait_for_errors()
         )
 
+    @skip("Fix memcached problem.")
     def test_third_party_login(self):
         """
         Test that we can login using third party credentials, and that the
@@ -166,6 +167,7 @@ class LoginFromCombinedPageTest(UniqueCourseTest):
 
         self._unlink_dummy_account()
 
+    @skip("Fix memcached problem.")
     def test_hinted_login(self):
         """ Test the login page when coming from course URL that specified which third party provider to use """
         # Create a user account and link it to third party auth with the dummy provider:
@@ -301,6 +303,7 @@ class RegisterFromCombinedPageTest(UniqueCourseTest):
         self.register_page.visit().toggle_form()
         self.assertEqual(self.register_page.current_form, "login")
 
+    @skip("Fix memcached problem.")
     def test_third_party_register(self):
         """
         Test that we can register using third party credentials, and that the

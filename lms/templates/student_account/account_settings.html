@@ -33,25 +33,11 @@ from microsite_configuration import microsite
     </section>
 % endif
 
-<div class="wrapper-account-settings"></div>
+<div class="wrapper-account-settings">
+<div style="margin-bottom:100px;">
+<p>ただいま、「アカウント設定」機能の利用を制限させていただき、メンテナンスを行っております。</p>
+<p>メンテナンスが終了いたしましたら、再開させていただきます。</p>
+<p>ご不便をおかけしますが、何卒よろしくお願いいたします。</p>
+</div>
+</div>
 
-<%block name="headextra">
-    <%static:css group='style-course'/>
-
-    <script>
-          (function (require) {
-            require(['js/student_account/views/account_settings_factory'], function(setupAccountSettingsSection) {
-
-                var fieldsData = ${ json.dumps(fields) };
-                var authData = ${ json.dumps(auth) };
-                var platformName = ${ json.dumps(microsite.get_value('platform_name', settings.PLATFORM_NAME))};
-
-                setupAccountSettingsSection(
-                        fieldsData, authData, '${user_accounts_api_url}', '${user_preferences_api_url}', ${user.id},
-                        platformName
-                );
-            });
-          }).call(this, require || RequireJS.require);
-    </script>
-
-</%block>
