@@ -101,6 +101,7 @@ class DashboardMenuTest(AccountSettingsTestMixin, WebAppTest):
         dashboard_page.click_account_settings_link()
 
 
+@skip("Fix memcached problem.")
 @attr('shard_5')
 class AccountSettingsPageTest(AccountSettingsTestMixin, WebAppTest):
     """

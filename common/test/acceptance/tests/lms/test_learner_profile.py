@@ -4,6 +4,7 @@ End-to-end tests for Student's Profile Page.
 """
 from flaky import flaky
 from contextlib import contextmanager
+import unittest
 
 from datetime import datetime
 from bok_choy.web_app_test import WebAppTest
@@ -399,6 +400,7 @@ class OwnLearnerProfilePageTest(LearnerProfileTestMixin, WebAppTest):
         profile_page.make_field_editable('bio')
         self.assertTrue(profile_page.mode_for_field('bio'), 'edit')
 
+    @unittest.skip("Fix memcached problem.")
     def test_birth_year_not_set(self):
         """
         Verify message if birth year is not set.
@@ -413,6 +415,7 @@ class OwnLearnerProfilePageTest(LearnerProfileTestMixin, WebAppTest):
         self.verify_profile_forced_private_message(username, birth_year=None, message=message)
         self.verify_profile_page_view_event(username, user_id, visibility=self.PRIVACY_PRIVATE)
 
+    @unittest.skip("Fix memcached problem.")
     def test_user_is_under_age(self):
         """
         Verify message if user is under age.
@@ -431,6 +434,7 @@ class OwnLearnerProfilePageTest(LearnerProfileTestMixin, WebAppTest):
         )
         self.verify_profile_page_view_event(username, user_id, visibility=self.PRIVACY_PRIVATE)
 
+    @unittest.skip("Fix memcached problem.")
     def test_user_can_only_see_default_image_for_private_profile(self):
         """
         Scenario: Default profile image behaves correctly for under age user.
@@ -679,6 +683,7 @@ class DifferentUserLearnerProfilePageTest(LearnerProfileTestMixin, WebAppTest):
         self.verify_profile_page_is_private(profile_page, is_editable=False)
         self.verify_profile_page_view_event(username, different_user_id, visibility=self.PRIVACY_PRIVATE)
 
+    @unittest.skip("Fix memcached problem.")
     def test_different_user_under_age(self):
         """
         Scenario: Verify that an under age user's profile is private to others.

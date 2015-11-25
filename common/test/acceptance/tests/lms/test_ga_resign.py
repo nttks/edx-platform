@@ -4,6 +4,7 @@ End-to-end tests for resign feature
 """
 
 import re
+import unittest
 
 import bok_choy.browser
 from bok_choy.web_app_test import WebAppTest
@@ -20,6 +21,7 @@ from ..ga_helpers import GaccoTestMixin
 from lms.envs.bok_choy import EMAIL_FILE_PATH
 
 
+@unittest.skip("Fix memcached problem.")
 class ResignTest(WebAppTest, GaccoTestMixin):
     """
     Tests that the resign functionality works
