@@ -777,6 +777,9 @@ INSTALLED_APPS = (
 
     # custom ratelimit-backend
     'openedx.core.djangoapps.ga_ratelimitbackend',
+
+    # upload course list
+    'ga_upload_course_list',
 )
 
 
