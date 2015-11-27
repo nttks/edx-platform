@@ -44,11 +44,13 @@ def platform_name():
 
 
 @register.simple_tag(name="favicon_path")
-def favicon_path(default=getattr(settings, 'FAVICON_PATH', 'images/favicon.ico')):
+def favicon_path(default=None):
     """
     Django template tag that outputs the configured favicon:
     {% favicon_path %}
     """
+    if not default:
+        default = getattr(settings, 'FAVICON_PATH', 'images/favicon.ico')
     return staticfiles_storage.url(microsite.get_value('favicon_path', default))
 
 
