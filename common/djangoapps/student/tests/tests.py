@@ -400,7 +400,6 @@ class DashboardTest(ModuleStoreTestCase):
 
         self.assertFalse(enrollment.refundable())
 
-    @unittest.skip('TODO Fix how to use course_overview for is_couse_hidden')
     @unittest.skipUnless(settings.ROOT_URLCONF == 'lms.urls', 'Test only valid in lms')
     def test_is_course_hidden(self):
         admin_user = AdminFactory.create(
@@ -504,7 +503,6 @@ class DashboardTest(ModuleStoreTestCase):
         )
         self.assertContains(response, expected_url)
 
-    @unittest.skip('TODO Fix how to use course_overview for is_couse_hidden?')
     @unittest.skipUnless(settings.ROOT_URLCONF == 'lms.urls', 'Test only valid in lms')
     @ddt.data(ModuleStoreEnum.Type.mongo, ModuleStoreEnum.Type.split)
     def test_dashboard_metadata_caching(self, modulestore_type):
