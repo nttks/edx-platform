@@ -672,7 +672,7 @@ def dashboard(request):
                 registrationcoderedemption__redeemed_by=request.user
             ),
             enrollment.course_id
-        )# TODO Fix https://trello.com/c/SCQugfKo/319-dogwood-courseoverview-course-hidden or (enrollment.course.is_course_hidden and not staff_access)
+        ) or (enrollment.course_overview.is_course_hidden and not staff_access)
     )
 
     enrolled_courses_either_paid = frozenset(
