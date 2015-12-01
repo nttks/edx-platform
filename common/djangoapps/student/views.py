@@ -61,7 +61,7 @@ from student.forms import (AccountCreationForm, PasswordResetFormNoActive,
                            SetPasswordFormErrorMessages, ResignForm, SetResignReasonForm)
 
 from lms.djangoapps.verify_student.models import SoftwareSecurePhotoVerification
-from certificates.models import CertificateStatuses, certificate_status_for_student
+from certificates.models import CertificateStatuses, GeneratedCertificate, certificate_status_for_student
 from certificates.api import (  # pylint: disable=import-error
     get_certificate_url,
     has_html_certificates_enabled,
@@ -1418,6 +1418,71 @@ def disabled_account(request):
     Displays an error page if the user's status is 'disabled'
     """
     return render_to_response('disabled_account.html')
+
+
+@require_GET
+@login_required
+@ensure_csrf_cookie
+def manage_user_certificate(request):
+    """
+    Renders the view used to manage user certificate.
+    """
+    if not request.user.is_staff:
+        raise Http404
+
+    return render_to_response("manage_user_certificate.html", {})
+
+
+@require_POST
+@login_required
+@ensure_csrf_cookie
+def show_certificate_info_ajax(request):
+    """
+    Ajax call to show certificate info.
+    """
+    if not request.user.is_staff:
+        raise Http404
+
+    context = {}
+
+    username = request.POST.get('username')
+    if username is None or username.strip() == '':
+        context['message'] = _('Please enter a username')
+        return JsonResponse(context, status=400)
+
+    course_id = request.POST.get('course_id')
+    if course_id is None or course_id.strip() == '':
+        context['message'] = _('Please enter a course_id')
+        return JsonResponse(context, status=400)
+
+    username = username.strip()
+    try:
+        user = User.objects.get(username=username)
+    except User.DoesNotExist:
+        context['message'] = _("User with username {} does not exist").format(username)
+        return JsonResponse(context, status=400)
+
+    course_id = course_id.strip()
+    try:
+        course_key = CourseLocator.from_string(course_id)
+    except InvalidKeyError:
+        context['message'] = _("Course ID is invalid.")
+        return JsonResponse(context, status=400)
+
+    cert_status = certificate_status_for_student(user, course_key)
+    cert = GeneratedCertificate.certificate_for_student(user, course_key)
+
+    context = {
+        'username': user.username,
+        'email': user.email,
+        'name': cert.name if cert is not None else '',
+        'status': cert_status['status'],
+        'grade': cert_status.get('grade', ''),
+        'download_url': cert_status.get('download_url', ''),
+        'message': _("Successfully retrieved {}'s certificate info.").format(user.username),
+    }
+
+    return JsonResponse(context)
 
 
 @login_required
