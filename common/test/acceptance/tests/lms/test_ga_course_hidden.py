@@ -1,8 +1,6 @@
 """
 tests for is_course_hidden.
 """
-import unittest
-
 from bok_choy.web_app_test import WebAppTest
 from ..ga_helpers import GaccoTestMixin
 from ...pages.lms.auto_auth import AutoAuthPage
@@ -11,7 +9,6 @@ from ...pages.lms.ga_dashboard import DashboardPage
 from ...fixtures.course import CourseFixture
 
 
-@unittest.skip("Fix https://trello.com/c/SCQugfKo/319-dogwood-courseoverview-course-hidden")
 class HiddenCourseTest(WebAppTest, GaccoTestMixin):
     """
     Tests that hidden course messages are displayed
