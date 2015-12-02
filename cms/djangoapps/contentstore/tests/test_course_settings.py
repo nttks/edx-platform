@@ -52,12 +52,20 @@ class CourseDetailsTestCase(CourseTestCase):
         self.assertIsNone(details.end_date, "end date somehow initialized " + str(details.end_date))
         self.assertIsNone(details.enrollment_start, "enrollment_start date somehow initialized " + str(details.enrollment_start))
         self.assertIsNone(details.enrollment_end, "enrollment_end date somehow initialized " + str(details.enrollment_end))
+        self.assertIsNone(details.deadline_start, "deadline_start date somehow initialized " + str(details.deadline_start))
+        self.assertIsNone(details.terminate_start, "terminate_start date somehow initialized " + str(details.terminate_start))
         self.assertIsNone(details.syllabus, "syllabus somehow initialized" + str(details.syllabus))
         self.assertIsNone(details.intro_video, "intro_video somehow initialized" + str(details.intro_video))
         self.assertIsNone(details.effort, "effort somehow initialized" + str(details.effort))
         self.assertIsNone(details.language, "language somehow initialized" + str(details.language))
         self.assertIsNone(details.has_cert_config)
         self.assertFalse(details.self_paced)
+        self.assertEqual(details.course_category, [])
+        self.assertFalse(details.is_f2f_course)
+        self.assertEqual(details.course_canonical_name, self.course.display_name)
+        self.assertEqual(details.course_contents_provider, "")
+        self.assertEqual(details.teacher_name, "Teacher")
+        self.assertEqual(details.course_span, "")
 
     def test_encoder(self):
         details = CourseDetails.fetch(self.course.id)
@@ -67,10 +75,18 @@ class CourseDetailsTestCase(CourseTestCase):
         self.assertIsNone(jsondetails['end_date'], "end date somehow initialized ")
         self.assertIsNone(jsondetails['enrollment_start'], "enrollment_start date somehow initialized ")
         self.assertIsNone(jsondetails['enrollment_end'], "enrollment_end date somehow initialized ")
+        self.assertIsNone(jsondetails['deadline_start'], "deadline_start date somehow initialized ")
+        self.assertIsNone(jsondetails['terminate_start'], "terminate_start date somehow initialized ")
         self.assertIsNone(jsondetails['syllabus'], "syllabus somehow initialized")
         self.assertIsNone(jsondetails['intro_video'], "intro_video somehow initialized")
         self.assertIsNone(jsondetails['effort'], "effort somehow initialized")
         self.assertIsNone(jsondetails['language'], "language somehow initialized")
+        self.assertEqual(jsondetails['course_category'], [])
+        self.assertFalse(jsondetails['is_f2f_course'])
+        self.assertEqual(jsondetails['course_canonical_name'], self.course.display_name)
+        self.assertEqual(jsondetails['course_contents_provider'], "")
+        self.assertEqual(jsondetails['teacher_name'], "Teacher")
+        self.assertEqual(jsondetails['course_span'], "")
 
     def test_ooc_encoder(self):
         """
@@ -141,6 +157,36 @@ class CourseDetailsTestCase(CourseTestCase):
             CourseDetails.update_from_json(self.course.id, jsondetails.__dict__, self.user).language,
             jsondetails.language
         )
+        jsondetails.course_category = ["food", "teen"]
+        self.assertEqual(
+            CourseDetails.update_from_json(self.course.id, jsondetails.__dict__, self.user).course_category,
+            jsondetails.course_category
+        )
+        jsondetails.is_f2f_course = True
+        self.assertEqual(
+            CourseDetails.update_from_json(self.course.id, jsondetails.__dict__, self.user).is_f2f_course,
+            jsondetails.is_f2f_course
+        )
+        jsondetails.course_canonical_name = "After Course Canonical Name"
+        self.assertEqual(
+            CourseDetails.update_from_json(self.course.id, jsondetails.__dict__, self.user).course_canonical_name,
+            jsondetails.course_canonical_name
+        )
+        jsondetails.course_contents_provider = "After Course Contents Provider"
+        self.assertEqual(
+            CourseDetails.update_from_json(self.course.id, jsondetails.__dict__, self.user).course_contents_provider,
+            jsondetails.course_contents_provider
+        )
+        jsondetails.teacher_name = "After Teacher Name"
+        self.assertEqual(
+            CourseDetails.update_from_json(self.course.id, jsondetails.__dict__, self.user).teacher_name,
+            jsondetails.teacher_name
+        )
+        jsondetails.course_span = "After Course Span"
+        self.assertEqual(
+            CourseDetails.update_from_json(self.course.id, jsondetails.__dict__, self.user).course_span,
+            jsondetails.course_span
+        )
 
     @override_settings(MKTG_URLS={'ROOT': 'dummy-root'})
     def test_marketing_site_fetch(self):
@@ -168,6 +214,15 @@ class CourseDetailsTestCase(CourseTestCase):
             self.assertNotContains(response, "Course Overview")
             self.assertNotContains(response, "Course Introduction Video")
             self.assertNotContains(response, "Requirements")
+
+            self.assertContains(response, "Course Deadline Date")
+            self.assertContains(response, "Course Terminate Date")
+            self.assertContains(response, "Course Category")
+            self.assertContains(response, "Course Canonical Name")
+            self.assertContains(response, "Course Contents Provider")
+            self.assertContains(response, "Teacher Name")
+            self.assertContains(response, "Course Span")
+            self.assertContains(response, "Face 2 Face Classroom")
 
     @unittest.skipUnless(settings.FEATURES.get('ENTRANCE_EXAMS', False), True)
     def test_entrance_exam_created_updated_and_deleted_successfully(self):
@@ -296,6 +351,15 @@ class CourseDetailsTestCase(CourseTestCase):
             self.assertContains(response, "Course Introduction Video")
             self.assertContains(response, "Requirements")
 
+            self.assertContains(response, "Course Deadline Date")
+            self.assertContains(response, "Course Terminate Date")
+            self.assertContains(response, "Course Category")
+            self.assertContains(response, "Course Canonical Name")
+            self.assertContains(response, "Course Contents Provider")
+            self.assertContains(response, "Teacher Name")
+            self.assertContains(response, "Course Span")
+            self.assertContains(response, "Face 2 Face Classroom")
+
     def test_toggle_pacing_during_course_run(self):
         SelfPacedConfiguration(enabled=True).save()
         self.course.start = datetime.datetime.now()
@@ -329,6 +393,8 @@ class CourseDetailsViewTest(CourseTestCase):
         payload['end_date'] = CourseDetailsViewTest.convert_datetime_to_iso(details.end_date)
         payload['enrollment_start'] = CourseDetailsViewTest.convert_datetime_to_iso(details.enrollment_start)
         payload['enrollment_end'] = CourseDetailsViewTest.convert_datetime_to_iso(details.enrollment_end)
+        payload['deadline_start'] = CourseDetailsViewTest.convert_datetime_to_iso(details.deadline_start)
+        payload['terminate_start'] = CourseDetailsViewTest.convert_datetime_to_iso(details.terminate_start)
         resp = self.client.ajax_post(url, payload)
         self.compare_details_with_encoding(json.loads(resp.content), details.__dict__, field + str(val))
 
@@ -355,6 +421,8 @@ class CourseDetailsViewTest(CourseTestCase):
         self.alter_field(url, details, 'enrollment_start', datetime.datetime(2012, 10, 12, 1, 30, tzinfo=utc))
 
         self.alter_field(url, details, 'enrollment_end', datetime.datetime(2012, 11, 15, 1, 30, tzinfo=utc))
+        self.alter_field(url, details, 'deadline_start', datetime.datetime(2012, 11, 18, 1, 30, tzinfo=utc))
+        self.alter_field(url, details, 'terminate_start', datetime.datetime(2013, 2, 13, 1, 30, tzinfo=utc))
         self.alter_field(url, details, 'short_description', "Short Description")
         self.alter_field(url, details, 'overview', "Overview")
         self.alter_field(url, details, 'intro_video', "intro_video")
@@ -362,6 +430,14 @@ class CourseDetailsViewTest(CourseTestCase):
         self.alter_field(url, details, 'course_image_name', "course_image_name")
         self.alter_field(url, details, 'language', "en")
         self.alter_field(url, details, 'self_paced', "true")
+
+        self.alter_field(url, details, 'course_category', [])
+        self.alter_field(url, details, 'course_category', ["food", "teen"])
+        self.alter_field(url, details, 'is_f2f_course', True)
+        self.alter_field(url, details, 'course_canonical_name', "Course Canonical Name")
+        self.alter_field(url, details, 'course_contents_provider', "Course Contents Provider")
+        self.alter_field(url, details, 'teacher_name', "Teacher Name")
+        self.alter_field(url, details, 'course_span', "Course Span")
 
     def compare_details_with_encoding(self, encoded, details, context):
         """
@@ -371,12 +447,21 @@ class CourseDetailsViewTest(CourseTestCase):
         self.compare_date_fields(details, encoded, context, 'end_date')
         self.compare_date_fields(details, encoded, context, 'enrollment_start')
         self.compare_date_fields(details, encoded, context, 'enrollment_end')
+        self.compare_date_fields(details, encoded, context, 'deadline_start')
+        self.compare_date_fields(details, encoded, context, 'terminate_start')
         self.assertEqual(details['short_description'], encoded['short_description'], context + " short_description not ==")
         self.assertEqual(details['overview'], encoded['overview'], context + " overviews not ==")
         self.assertEqual(details['intro_video'], encoded.get('intro_video', None), context + " intro_video not ==")
         self.assertEqual(details['effort'], encoded['effort'], context + " efforts not ==")
         self.assertEqual(details['course_image_name'], encoded['course_image_name'], context + " images not ==")
         self.assertEqual(details['language'], encoded['language'], context + " languages not ==")
+
+        self.assertEqual(details['course_category'], encoded['course_category'], context + " course_category not ==")
+        self.assertEqual(details['is_f2f_course'], encoded['is_f2f_course'], context + " is_f2f_course not ==")
+        self.assertEqual(details['course_canonical_name'], encoded['course_canonical_name'], context + " course_canonical_name not ==")
+        self.assertEqual(details['course_contents_provider'], encoded['course_contents_provider'], context + " course_contents_provider not ==")
+        self.assertEqual(details['teacher_name'], encoded['teacher_name'], context + " teacher_name not ==")
+        self.assertEqual(details['course_span'], encoded['course_span'], context + " course_span not ==")
 
     def compare_date_fields(self, details, encoded, context, field):
         """

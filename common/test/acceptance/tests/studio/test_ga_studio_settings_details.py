@@ -1,0 +1,170 @@
+"""
+Acceptance tests for Studio's Settings Details pages
+"""
+
+from flaky import flaky
+
+from .base_studio_test import StudioCourseTest
+
+from ...pages.studio.ga_settings import SettingsPage
+
+
+@flaky
+class SettingsDeadlineTerminateTest(StudioCourseTest):
+
+    def setUp(self):
+        super(SettingsDeadlineTerminateTest, self).setUp(True)
+        self.settings_detail = SettingsPage(
+            self.browser,
+            self.course_info['org'],
+            self.course_info['number'],
+            self.course_info['run']
+        )
+
+    def test_course_new_value_and_update_value(self):
+        self.settings_detail.visit()
+        self.assertFalse(self.settings_detail.has_error)
+
+        # input value
+        self.settings_detail.deadline_start_date.fill('01/01/2020')
+        self.settings_detail.deadline_start_time.fill('10:00')
+        self.settings_detail.terminate_start_date.fill('01/01/2025')
+        self.settings_detail.terminate_start_time.fill('20:00')
+        self.settings_detail.course_category.fill('free,secret')
+        self.settings_detail.is_f2f_course.click()
+        self.settings_detail.course_canonical_name.fill('Secret Course')
+        self.settings_detail.course_contents_provider.fill('Secret College')
+        self.settings_detail.teacher_name.fill('Secret T')
+        self.settings_detail.course_span.fill('10S')
+        self.assertFalse(self.settings_detail.has_error)
+
+        self.settings_detail.save_changes()
+        self.assertEqual(
+            'Your changes have been saved.',
+            self.settings_detail.alert_confirmation_title.text
+        )
+        self.assertEquals('01/01/2020', self.settings_detail.deadline_start_date.attrs('value')[0])
+        self.assertEquals('10:00', self.settings_detail.deadline_start_time.attrs('value')[0])
+        self.assertEquals('01/01/2025', self.settings_detail.terminate_start_date.attrs('value')[0])
+        self.assertEquals('20:00', self.settings_detail.terminate_start_time.attrs('value')[0])
+        self.assertEquals('free,secret', self.settings_detail.course_category.attrs('value')[0])
+        self.assertTrue(self.settings_detail.is_f2f_course_checked)
+        self.assertEquals('Secret Course', self.settings_detail.course_canonical_name.attrs('value')[0])
+        self.assertEquals('Secret College', self.settings_detail.course_contents_provider.attrs('value')[0])
+        self.assertEquals('Secret T', self.settings_detail.teacher_name.attrs('value')[0])
+        self.assertEquals('10S', self.settings_detail.course_span.attrs('value')[0])
+
+        # refresh page
+        self.settings_detail.refresh_page()
+        self.assertFalse(self.settings_detail.has_error)
+
+        self.assertEquals('01/01/2020', self.settings_detail.deadline_start_date.attrs('value')[0])
+        self.assertEquals('10:00', self.settings_detail.deadline_start_time.attrs('value')[0])
+        self.assertEquals('01/01/2025', self.settings_detail.terminate_start_date.attrs('value')[0])
+        self.assertEquals('20:00', self.settings_detail.terminate_start_time.attrs('value')[0])
+        self.assertEquals('free,secret', self.settings_detail.course_category.attrs('value')[0])
+        self.assertTrue(self.settings_detail.is_f2f_course_checked)
+        self.assertEquals('Secret Course', self.settings_detail.course_canonical_name.attrs('value')[0])
+        self.assertEquals('Secret College', self.settings_detail.course_contents_provider.attrs('value')[0])
+        self.assertEquals('Secret T', self.settings_detail.teacher_name.attrs('value')[0])
+        self.assertEquals('10S', self.settings_detail.course_span.attrs('value')[0])
+
+        # update value
+        self.settings_detail.deadline_start_date.fill('02/02/2020')
+        self.settings_detail.deadline_start_time.fill('20:00')
+        self.settings_detail.terminate_start_date.fill('03/03/2025')
+        self.settings_detail.terminate_start_time.fill('10:00')
+        self.settings_detail.course_category.fill('free')
+        self.settings_detail.is_f2f_course.click()
+        self.settings_detail.course_canonical_name.fill('Free Course')
+        self.settings_detail.course_contents_provider.fill('Free College')
+        self.settings_detail.teacher_name.fill('Free T')
+        self.settings_detail.course_span.fill('7M')
+        self.assertFalse(self.settings_detail.has_error)
+
+        self.settings_detail.save_changes()
+        self.assertEqual(
+            'Your changes have been saved.',
+            self.settings_detail.alert_confirmation_title.text
+        )
+        self.assertEquals('02/02/2020', self.settings_detail.deadline_start_date.attrs('value')[0])
+        self.assertEquals('20:00', self.settings_detail.deadline_start_time.attrs('value')[0])
+        self.assertEquals('03/03/2025', self.settings_detail.terminate_start_date.attrs('value')[0])
+        self.assertEquals('10:00', self.settings_detail.terminate_start_time.attrs('value')[0])
+        self.assertEquals('free', self.settings_detail.course_category.attrs('value')[0])
+        self.assertFalse(self.settings_detail.is_f2f_course_checked)
+        self.assertEquals('Free Course', self.settings_detail.course_canonical_name.attrs('value')[0])
+        self.assertEquals('Free College', self.settings_detail.course_contents_provider.attrs('value')[0])
+        self.assertEquals('Free T', self.settings_detail.teacher_name.attrs('value')[0])
+        self.assertEquals('7M', self.settings_detail.course_span.attrs('value')[0])
+
+        # refresh page
+        self.settings_detail.refresh_page()
+        self.assertFalse(self.settings_detail.has_error)
+
+        self.assertEquals('02/02/2020', self.settings_detail.deadline_start_date.attrs('value')[0])
+        self.assertEquals('20:00', self.settings_detail.deadline_start_time.attrs('value')[0])
+        self.assertEquals('03/03/2025', self.settings_detail.terminate_start_date.attrs('value')[0])
+        self.assertEquals('10:00', self.settings_detail.terminate_start_time.attrs('value')[0])
+        self.assertEquals('free', self.settings_detail.course_category.attrs('value')[0])
+        self.assertFalse(self.settings_detail.is_f2f_course_checked)
+        self.assertEquals('Free Course', self.settings_detail.course_canonical_name.attrs('value')[0])
+        self.assertEquals('Free College', self.settings_detail.course_contents_provider.attrs('value')[0])
+        self.assertEquals('Free T', self.settings_detail.teacher_name.attrs('value')[0])
+        self.assertEquals('7M', self.settings_detail.course_span.attrs('value')[0])
+
+    def test_course_new_value_only_require(self):
+        self.settings_detail.visit()
+        self.assertFalse(self.settings_detail.has_error)
+
+        # input value
+        self.settings_detail.course_canonical_name.fill('Course')
+        self.settings_detail.teacher_name.fill('Techer')
+        self.assertFalse(self.settings_detail.has_error)
+
+        self.settings_detail.save_changes()
+        self.assertEqual(
+            'Your changes have been saved.',
+            self.settings_detail.alert_confirmation_title.text
+        )
+        self.assertEquals('', self.settings_detail.deadline_start_date.attrs('value')[0])
+        self.assertEquals('', self.settings_detail.deadline_start_time.attrs('value')[0])
+        self.assertEquals('', self.settings_detail.terminate_start_date.attrs('value')[0])
+        self.assertEquals('', self.settings_detail.terminate_start_time.attrs('value')[0])
+        self.assertEquals('', self.settings_detail.course_category.attrs('value')[0])
+        self.assertFalse(self.settings_detail.is_f2f_course_checked)
+        self.assertEquals('Course', self.settings_detail.course_canonical_name.attrs('value')[0])
+        self.assertEquals('', self.settings_detail.course_contents_provider.attrs('value')[0])
+        self.assertEquals('Techer', self.settings_detail.teacher_name.attrs('value')[0])
+        self.assertEquals('', self.settings_detail.course_span.attrs('value')[0])
+
+        # refresh page
+        self.settings_detail.refresh_page()
+        self.assertFalse(self.settings_detail.has_error)
+
+        self.assertEquals('', self.settings_detail.deadline_start_date.attrs('value')[0])
+        self.assertEquals('', self.settings_detail.deadline_start_time.attrs('value')[0])
+        self.assertEquals('', self.settings_detail.terminate_start_date.attrs('value')[0])
+        self.assertEquals('', self.settings_detail.terminate_start_time.attrs('value')[0])
+        self.assertEquals('', self.settings_detail.course_category.attrs('value')[0])
+        self.assertFalse(self.settings_detail.is_f2f_course_checked)
+        self.assertEquals('Course', self.settings_detail.course_canonical_name.attrs('value')[0])
+        self.assertEquals('', self.settings_detail.course_contents_provider.attrs('value')[0])
+        self.assertEquals('Techer', self.settings_detail.teacher_name.attrs('value')[0])
+        self.assertEquals('', self.settings_detail.course_span.attrs('value')[0])
+
+    def test_course_new_value_only_require_empty_course_canonical_name(self):
+        self.settings_detail.visit()
+        self.assertFalse(self.settings_detail.has_error)
+
+        # input value
+        self.settings_detail.course_canonical_name.fill('')
+        self.assertTrue(self.settings_detail.has_error)
+
+    def test_course_new_value_only_require_empty_teacher_name(self):
+        self.settings_detail.visit()
+        self.assertFalse(self.settings_detail.has_error)
+
+        # input value
+        self.settings_detail.teacher_name.fill('')
+        self.assertTrue(self.settings_detail.has_error)
