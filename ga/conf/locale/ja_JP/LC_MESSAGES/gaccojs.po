@@ -232,3 +232,23 @@ msgid ""
 "Click Cancel to stay on this page "
 "(you must log in again to save your work)."
 msgstr "ログアウトされています。再度ログインする場合はOKボタンを、このページに留まる場合はキャンセルボタンを押してください。（保存する場合は再度ログインが必要です）"
+
+#: cms/static/js/models/settings/course_details.js
+msgid "The deadline start date cannot be before the course start date."
+msgstr "講座課題提出締切日は、講座開始日より前に設定することはできません。"
+
+#: cms/static/js/models/settings/course_details.js
+msgid "The terminate start date cannot be before the course start date."
+msgstr "講座閉講日は、講座開始日より前に設定することはできません。"
+
+#: cms/static/js/models/settings/course_details.js
+msgid "The terminate start date cannot be before the enrollment end date."
+msgstr "講座閉講日は、受講登録終了日より前に設定することはできません。"
+
+#: cms/static/js/models/settings/course_details.js
+msgid "Course Canonical Name is required input."
+msgstr "コース略称の入力が必要です。"
+
+#: cms/static/js/models/settings/course_details.js
+msgid "Teacher Name is required input."
+msgstr "講師名の入力が必要です。"

@@ -398,3 +398,20 @@ class CourseDescriptorTestCase(unittest.TestCase):
         Test CourseDescriptor.number.
         """
         self.assertEqual(self.course.number, COURSE)
+
+    def test_has_terminated(self):
+        self.course.terminate_start = None
+        self.assertFalse(self.course.has_terminated())
+        self.course.terminate_start = _LAST_WEEK
+        self.assertTrue(self.course.has_terminated())
+        self.course.terminate_start = _NEXT_WEEK
+        self.assertFalse(self.course.has_terminated())
+
+    def test_is_course_deadline(self):
+        self.course.deadline_start = None
+        self.assertFalse(self.course.is_course_deadline())
+        self.course.deadline_start = _LAST_WEEK
+        self.assertTrue(self.course.is_course_deadline())
+        self.course.deadline_start = _NEXT_WEEK
+        self.assertFalse(self.course.is_course_deadline())
+

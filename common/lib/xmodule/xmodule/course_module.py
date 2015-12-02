@@ -199,6 +199,10 @@ class CourseFields(object):
         default=0,
         scope=Scope.settings,
     )
+
+    deadline_start = Date(help=_("Date that this course is closed, this setting is only affect to course list"), scope=Scope.settings)
+    terminate_start = Date(help=_("Date that this course terminate(course is hidden)"), scope=Scope.settings)
+   
     advertised_start = String(
         display_name=_("Course Advertised Start Date"),
         help=_(
@@ -881,6 +885,42 @@ class CourseFields(object):
         ),
         scope=Scope.settings
     )
+    course_category = List(
+        display_name=_("Course Category"),
+        help=_("Course Category"),
+        default=[],
+        scope=Scope.settings,
+    )
+    is_f2f_course = Boolean(
+        display_name=_("Face 2 Face Classroom"),
+        default=False,
+        help=_("Enter true or false. If true, course is f2f classroom."),
+        scope=Scope.settings,
+    )
+    course_canonical_name = String(
+        display_name=_("Course Canonical Name"),
+        help=_("Course Canonical Name."),
+        default="",
+        scope=Scope.settings,
+    )
+    course_contents_provider= String(
+        display_name=_("Course Contents Provider"),
+        help=_("Course contents provider."),
+        default="",
+        scope=Scope.settings,
+    )
+    teacher_name = String(
+        display_name=_("Teacher Name"),
+        help=_("Teacher name"),
+        default="",
+        scope=Scope.settings,
+    )
+    course_span = String(
+        display_name=_("Course Span"),
+        help=_("Offer period of the course."),
+        default="",
+        scope=Scope.settings,
+    )
 
     social_sharing_url = String(
         display_name=_("Social Media Sharing URL"),
@@ -1097,6 +1137,26 @@ class CourseDescriptor(CourseFields, SequenceDescriptor, LicenseMixin):
         Returns False if there is no end date specified.
         """
         return course_metadata_utils.has_course_ended(self.end)
+
+    def has_terminated(self):
+        """
+        Returns True if the current time is after the specified course terminated date.
+        Returns False if there is no terminated date specified.
+        """
+        if self.terminate_start is None:
+            return False
+
+        return datetime.now(UTC()) > self.terminate_start
+
+    def is_course_deadline(self):
+        """
+        Returns True if the current time is after the specified course terminated date.
+        Returns False if there is no terminated date specified.
+        """
+        if self.deadline_start is None:
+            return False
+
+        return datetime.now(UTC()) > self.deadline_start
 
     def may_certify(self):
         """

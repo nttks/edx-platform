@@ -66,6 +66,8 @@ var DetailsView = ValidatingView.extend({
         this.setupDatePicker('end_date');
         this.setupDatePicker('enrollment_start');
         this.setupDatePicker('enrollment_end');
+        this.setupDatePicker('deadline_start');
+        this.setupDatePicker('terminate_start');
 
         this.$el.find('#' + this.fieldToSelectorMap['overview']).val(this.model.get('overview'));
         this.codeMirrorize(null, $('#course-overview')[0]);
@@ -101,6 +103,18 @@ var DetailsView = ValidatingView.extend({
 
         this.licenseView.render()
 
+        var course_category = this.model.get('course_category');
+        this.$el.find('#' + this.fieldToSelectorMap['course_category']).val(course_category);
+        if (this.model.get('is_f2f_course')) {
+            this.$('#' + this.fieldToSelectorMap['is_f2f_course']).attr('checked', this.model.get('is_f2f_course'));
+        } else {
+            this.$('#' + this.fieldToSelectorMap['is_f2f_course']).removeAttr('checked');
+        }
+        this.$el.find('#' + this.fieldToSelectorMap['course_canonical_name']).val(this.model.get('course_canonical_name'));
+        this.$el.find('#' + this.fieldToSelectorMap['course_contents_provider']).val(this.model.get('course_contents_provider'));
+        this.$el.find('#' + this.fieldToSelectorMap['teacher_name']).val(this.model.get('teacher_name'));
+        this.$el.find('#' + this.fieldToSelectorMap['course_span']).val(this.model.get('course_span'));
+
         return this;
     },
     fieldToSelectorMap : {
@@ -109,6 +123,8 @@ var DetailsView = ValidatingView.extend({
         'end_date' : 'course-end',
         'enrollment_start' : 'enrollment-start',
         'enrollment_end' : 'enrollment-end',
+        'deadline_start' : 'deadline-start',
+        'terminate_start' : 'terminate-start',
         'overview' : 'course-overview',
         'short_description' : 'course-short-description',
         'intro_video' : 'course-introduction-video',
@@ -116,7 +132,13 @@ var DetailsView = ValidatingView.extend({
         'course_image_asset_path': 'course-image-url',
         'pre_requisite_courses': 'pre-requisite-course',
         'entrance_exam_enabled': 'entrance-exam-enabled',
-        'entrance_exam_minimum_score_pct': 'entrance-exam-minimum-score-pct'
+        'entrance_exam_minimum_score_pct': 'entrance-exam-minimum-score-pct',
+        'course_category' : 'course-category',
+        'is_f2f_course' : 'face2face-course',
+        'course_canonical_name' : 'course-canonical-name',
+        'course_contents_provider' : 'course-contents-provider',
+        'teacher_name' : 'course-teacher-name',
+        'course_span' : 'course-span'
     },
 
     updateTime : function(e) {
@@ -235,6 +257,18 @@ var DetailsView = ValidatingView.extend({
                     this.$el.find('.remove-course-introduction-video').hide();
                 }
             }, this), 1000);
+            break;
+        case 'course-category':
+            var value = $(event.currentTarget).val();
+            value = value == "" ? [] : value.split(/\s*,\s*/);
+            this.setAndValidate('course_category', value);
+            break;
+        case 'face2face-course':
+        case 'course-canonical-name':
+        case 'course-contents-provider':
+        case 'course-teacher-name':
+        case 'course-span':
+            this.setField(event);
             break;
         default: // Everything else is handled by datepickers and CodeMirror.
             break;
