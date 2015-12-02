@@ -1,0 +1,123 @@
+<%inherit file="main.html" />
+
+<%!
+from django.core.urlresolvers import reverse
+from django.utils.translation import ugettext as _
+%>
+
+<h2>${_("Retrieve Certificate Info")}</h2>
+<form action="${reverse('show_certificate_info_ajax')}" method="post" data-remote="true" class="manage-certificate-form">
+    <label for="username">${_("Username:")}</label>
+    <input type="text" id="username" name="username" required="true">
+    <br>
+    <br>
+    <label for="course_id">${_("Course ID:")}</label>
+    <input type="text" id="course_id" name="course_id" required="true">
+    <br>
+    <br>
+    <button type="submit">${_("Submit")}</button>
+</form>
+
+<br>
+<br>
+<p class="manage-certificate-status"></p>
+<br>
+<br>
+
+<h2>${_("Certificate Info")}</h2>
+<table id="certificate-info-table" border='1'>
+    <tr>
+        <td>${_("Username:")}</td>
+        <td><span id="res_username"></span></td>
+    </tr>
+    <tr>
+        <td>${_("Email:")}</td>
+        <td><span id="res_email"></span></td>
+    </tr>
+    <tr>
+        <td>${_("Name on Certificate:")}</td>
+        <td><span id="res_name"></span></td>
+    </tr>
+    <tr>
+        <td>${_("Status:")}</td>
+        <td><span id="res_status"></span></td>
+    </tr>
+    <tr>
+        <td>${_("Grade:")}</td>
+        <td><span id="res_grade"></span></td>
+    </tr>
+    <tr>
+        <td>${_("Download URL:")}</td>
+        <td><span id="res_download_url"></span></td>
+    </tr>
+    <tr>
+        <td>${_("Download:")}</td>
+        <td><a id="download_link" href="#" download style="display : none;">${_("Download")}</a></td>
+    </tr>
+</table>
+
+<br>
+<br>
+
+<h2>${_("Status Legend")}</h2>
+<pre>
+unavailable  - No entry for this student--if they are actually in
+               the course, they probably have not been graded for
+               certificate generation yet.
+generating   - A request has been made to generate a certificate,
+               but it has not been generated yet.
+regenerating - A request has been made to regenerate a certificate,
+               but it has not been generated yet.
+deleting     - A request has been made to delete a certificate.
+
+deleted      - The certificate has been deleted.
+downloadable - The certificate is available for download.
+notpassing   - The student was graded but is not passing
+restricted   - The student is on the restricted embargo list and
+               should not be issued a certificate. This will
+               be set if allow_certificate is set to False in
+               the userprofile table
+</pre>
+
+<script type="text/javascript">
+$(function() {
+    var form = $(".manage-certificate-form");
+    form.submit(function(event) {
+        event.preventDefault();
+        var username = $('#username', form).val();
+        $(".manage-certificate-status").text("${_('working')}");
+        $.ajax({
+            type: "POST",
+            url: form.attr('action'),
+            data: form.serialize(),
+            success: function(response) {
+                $("#res_username").text(response["username"]);
+                $("#res_email").text(response["email"]);
+                $("#res_name").text(response["name"]);
+                $("#res_status").text(response["status"]);
+                $("#res_grade").text(response["grade"]);
+                $("#res_download_url").text(response["download_url"]);
+                $("#download_link").attr("href", response["download_url"]);
+                if (response["download_url"] != "") {
+                    $("#download_link").show();
+                } else {
+                    $("#download_link").hide();
+                }
+                $(".manage-certificate-status").html(response.message);
+            },
+            error: function(response, status, error) {
+                $("#res_username").text("");
+                $("#res_email").text("");
+                $("#res_name").text("");
+                $("#res_status").text("");
+                $("#res_grade").text("");
+                $("#res_download_url").text("");
+                $("#download_link").attr("href", "");
+                $("#download_link").hide();
+                var json = $.parseJSON(response.responseText);
+                $(".manage-certificate-status").html(json.message);
+            }
+        });
+    });
+});
+</script>

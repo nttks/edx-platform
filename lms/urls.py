@@ -44,6 +44,10 @@ urlpatterns = (
     url(r'^accounts/disable_account_ajax$', 'student.views.disable_account_ajax',
         name="disable_account_ajax"),
     url(r'^disabled_account$', 'student.views.disabled_account', name="disabled_account"),
+    url(r'^accounts/manage_user_certificate', 'student.views.manage_user_certificate',
+        name='manage_user_certificate'),
+    url(r'^accounts/show_certificate_info_ajax$', 'student.views.show_certificate_info_ajax',
+        name="show_certificate_info_ajax"),
 
     url(r'^logout$', 'student.views.logout_user', name='logout'),
     url(r'^create_account$', 'student.views.create_account', name='create_account'),
