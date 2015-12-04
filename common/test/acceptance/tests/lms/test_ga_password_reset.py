@@ -3,7 +3,6 @@ End-to-end tests for password reset feature
 """
 
 import re
-import unittest
 
 import bok_choy.browser
 from bok_choy.web_app_test import WebAppTest
@@ -22,7 +21,6 @@ from lms.envs.bok_choy import (
 )
 
 
-@unittest.skip("Fix memcached problem.")
 class PasswordResetTest(WebAppTest, GaccoTestMixin):
     """
     Tests that the password reset functionality works

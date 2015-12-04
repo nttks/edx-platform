@@ -56,28 +56,28 @@ else:
             ${_("Your {cert_name_short} is Generating").format(cert_name_short=cert_name_short)}</span></li>
       % elif cert_status['show_download_url'] and cert_status.get('show_cert_web_view', False):
         <li class="action action-certificate">
-        <a class="btn" href="http://gacco.org/cert-maintain.html"
+        <a class="btn" href="${cert_status['cert_web_view_url']}" target="_blank"
            title="${_('This link will open the certificate web view')}">
            ${_("View {cert_name_short}").format(cert_name_short=cert_name_short,)}</a></li>
       % elif cert_status['show_download_url'] and (enrollment.mode == 'honor' or enrollment.mode == 'audit'):
         <li class="action action-certificate">
-        <a class="btn" href="http://gacco.org/cert-maintain.html"
+        <a class="btn" href="${cert_status['download_url']}"
            title="${_('This link will open/download a PDF document')}">
            ${_("Download {cert_name_short} (PDF)").format(cert_name_short=cert_name_short,)}</a></li>
       % elif cert_status['show_download_url'] and enrollment.mode == 'verified' and cert_status['mode'] == 'honor':
         <li class="action">
-        <a class="btn" href="http://gacco.org/cert-maintain.html"
+        <a class="btn" href="${cert_status['download_url']}"
            title="${_('This link will open/download a PDF document')}">
            ${_("Download Your {cert_name_short} (PDF)").format(cert_name_short=cert_name_short)}</a></li>
       % elif cert_status['show_download_url'] and enrollment.mode in CourseMode.VERIFIED_MODES:
         <li class="action">
-        <a class="btn" href="http://gacco.org/cert-maintain.html"
+        <a class="btn" href="${cert_status['download_url']}"
            title="${_('This link will open/download a PDF document of your verified {cert_name_long}.').format(cert_name_long=cert_name_long)}">
            ${_("Download Your ID Verified {cert_name_short} (PDF)").format(cert_name_short=cert_name_short)}</a></li>
       % endif
 
       % if cert_status['show_survey_button']:
-        <li class="action"><a class="cta" href="http://gacco.org/cert-maintain.html">
+        <li class="action"><a class="cta" href="${cert_status['survey_url']}">
                ${_("Complete our course feedback survey")}</a></li>
       % endif
     </ul>
@@ -86,7 +86,7 @@ else:
   % if cert_status['show_download_url'] and cert_status['linked_in_url']:
   <ul class="actions actions-secondary">
       <li class="action action-share">
-        <a class="action-linkedin-profile" href="http://gacco.org/cert-maintain.html"
+        <a class="action-linkedin-profile" target="_blank" href="${cert_status['linked_in_url']}"
          title="${_('Add Certificate to LinkedIn Profile')}"
          data-course-id="${unicode(course.id)}"
          data-certificate-mode="${cert_status['mode']}"
