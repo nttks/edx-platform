@@ -2487,7 +2487,7 @@ class SplitMongoModuleStore(SplitBulkWriteMixin, ModuleStoreWriteBase):
         for block_key in to_delete:
             del blocks[block_key]
 
-    def delete_course(self, course_key, user_id):
+    def delete_course(self, course_key, user_id, **kwargs):
         """
         Remove the given course from the course index.
 
@@ -2501,7 +2501,10 @@ class SplitMongoModuleStore(SplitBulkWriteMixin, ModuleStoreWriteBase):
 
         # We do NOT call the super class here since we need to keep the assets
         # in case the course is later restored.
-        # super(SplitMongoModuleStore, self).delete_course(course_key, user_id)
+        # But if specified purge flag, then delete assets.
+        if kwargs.get('purge', False):
+            log.info(u"deleting assets")
+            super(SplitMongoModuleStore, self).delete_course(course_key, user_id)
 
         self._emit_course_deleted_signal(course_key)
 

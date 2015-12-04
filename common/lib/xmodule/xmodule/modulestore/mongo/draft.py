@@ -152,7 +152,7 @@ class DraftModuleStore(MongoModuleStore):
         else:
             raise UnsupportedRevisionError()
 
-    def delete_course(self, course_key, user_id):
+    def delete_course(self, course_key, user_id, **kwargs):
         """
         :param course_key: which course to delete
         :param user_id: id of the user deleting the course
@@ -160,7 +160,7 @@ class DraftModuleStore(MongoModuleStore):
         # Note: does not need to inform the bulk mechanism since after the course is deleted,
         # it can't calculate inheritance anyway. Nothing is there to be dirty.
         # delete the assets
-        super(DraftModuleStore, self).delete_course(course_key, user_id)
+        super(DraftModuleStore, self).delete_course(course_key, user_id, **kwargs)
 
         # delete all of the db records for the course
         course_query = self._course_key_to_son(course_key)

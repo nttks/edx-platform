@@ -9,6 +9,7 @@
         none
 """
 from django.core.management.base import BaseCommand, CommandError
+from optparse import make_option
 from .prompt import query_yes_no
 from contentstore.utils import delete_course_and_groups
 from opaque_keys.edx.keys import CourseKey
@@ -23,6 +24,13 @@ class Command(BaseCommand):
     Delete a MongoDB backed course
     """
     help = '''Delete a MongoDB backed course'''
+
+    option_list = BaseCommand.option_list + (
+        make_option('', '--purge',
+                    action='store_true',
+                    dest='purge',
+                    default=False),
+    )
 
     def handle(self, *args, **options):
         if len(args) == 0:
@@ -49,8 +57,10 @@ class Command(BaseCommand):
         if not modulestore().get_course(course_key):
             raise CommandError("Course with '%s' key not found." % args[0])
 
+        purge = options['purge']
         print 'Actually going to delete the %s course from DB....' % args[0]
-        if query_yes_no("Deleting course {0}. Confirm?".format(course_key), default="no"):
+        if query_yes_no("Deleting course {course_key}. Purge assets is {purge}. Confirm?".format(
+            course_key=course_key, purge=purge), default="no"):
             if query_yes_no("Are you sure. This action cannot be undone!", default="no"):
-                delete_course_and_groups(course_key, ModuleStoreEnum.UserID.mgmt_command)
+                delete_course_and_groups(course_key, ModuleStoreEnum.UserID.mgmt_command, purge=purge)
                 print "Deleted course {}".format(course_key)
