@@ -2,7 +2,6 @@
 """ Tests for student account views. """
 
 import re
-from unittest import skip
 from unittest import skipUnless
 from urllib import urlencode
 import json
@@ -451,7 +450,6 @@ class AccountSettingsViewTest(ThirdPartyAuthTestMixin, TestCase):
         self.assertEqual(context['auth']['providers'][0]['name'], 'Facebook')
         self.assertEqual(context['auth']['providers'][1]['name'], 'Google')
 
-    @skip("Fix memcached problem.")
     def test_view(self):
 
         view_path = reverse('account_settings')
