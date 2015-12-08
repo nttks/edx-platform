@@ -490,7 +490,7 @@ class BaseDueDateTests(ModuleStoreTestCase):
     """
     __test__ = False
 
-    def get_text(self, course):  # pylint: disable=unused-argument
+    def get_text(self, course):
         """Return the rendered text for the page to be verified"""
         raise NotImplementedError
 
@@ -682,7 +682,6 @@ class ProgressPageTests(ModuleStoreTestCase):
             **options
         )
 
-        # pylint: disable=attribute-defined-outside-init
         self.course = modulestore().get_course(course.id)
         CourseEnrollmentFactory(user=self.user, course_id=self.course.id)
 
