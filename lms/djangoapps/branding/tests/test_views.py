@@ -257,7 +257,7 @@ class LogoUrlTest(TestCase):
         return settings.STATIC_URL + path
 
     def test_default_logo(self):
-        self.assertEqual(self._logo_url('images/default-theme/logo.png'), get_logo_url())
+        self.assertEqual(self._logo_url('images/logo.png'), get_logo_url())
 
     @override_settings(FEATURES={"IS_EDX_DOMAIN":True})
     def test_default_logo_edx_domain(self):
