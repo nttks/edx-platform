@@ -4,6 +4,7 @@
 from mock import patch
 import datetime
 from importlib import import_module
+import mimetypes
 from path import Path as path
 import random
 import re
@@ -36,6 +37,10 @@ from xmodule.modulestore.tests.factories import check_mongo_calls
 from xmodule.modulestore.tests.mongo_connection import MONGO_PORT_NUM, MONGO_HOST
 from xmodule.modulestore.tests.utils import mock_tab_from_json
 from xmodule.modulestore.edit_info import EditInfoMixin
+
+from xmodule.tests import DATA_DIR
+from xmodule.contentstore.mongo import MongoContentStore
+from xmodule.contentstore.content import StaticContent
 
 
 BRANCH_NAME_DRAFT = ModuleStoreEnum.BranchName.draft
@@ -1946,6 +1951,153 @@ class TestCourseCreation(SplitModuleTest):
                     self.assertIn(to_be_created, course_ids)
                     fetched_modified = [course for course in courses if course.id == modified_course_loc][0]
                     self.assertEqual(fetched_modified.advertised_start, modified_course.advertised_start)
+
+
+class TestCourseDeletion(SplitModuleTest):
+    """
+    Test delete_course
+    """
+
+    HOST = MONGO_HOST
+    PORT = MONGO_PORT_NUM
+    DB = 'test_mongo_%s' % uuid.uuid4().hex[:5]
+
+    USER_ID = 'test@example.com'
+
+    FILES = ['picture1.jpg', 'picture2.jpg', 'picture3.jpg']
+
+    def setUp(self):
+        super(SplitModuleTest, self).setUp()
+        # set up contentstore
+        modulestore().contentstore = MongoContentStore(self.HOST, self.DB, port=self.PORT)
+        self.addCleanup(modulestore().contentstore._drop_database)  # pylint: disable=protected-access
+
+        # set up course
+        self.target_course = CourseLocator(org="testx", course="delete_course_{}".format(uuid.uuid4()), run="run", branch=BRANCH_NAME_PUBLISHED)
+        self.other_course = CourseLocator(org="testx", course="delete_course_{}".format(uuid.uuid4()), run="run", branch=BRANCH_NAME_PUBLISHED)
+        self._create_course(self.target_course.org, self.target_course.course, self.target_course.run, self.USER_ID)
+        self._create_assets(self.target_course, self.FILES)
+        self._create_course(self.other_course.org, self.other_course.course, self.other_course.run, self.USER_ID)
+        self._create_assets(self.other_course, self.FILES)
+
+    def tearDown(self):
+        # now, test modulestore has no contentstore. so restore to None
+        modulestore().contentstore = None
+        super(SplitModuleTest, self).tearDown()
+
+    def _save_asset(self, filename, asset_key, displayname, locked):
+        """
+        Load and save the given file.
+        """
+        with open("{}/static/{}".format(DATA_DIR, filename), "rb") as f:
+            content = StaticContent(
+                asset_key, displayname, mimetypes.guess_type(filename)[0], f.read(),
+                locked=locked
+            )
+            modulestore().contentstore.save(content)
+
+    def _create_assets(self, course_key, files):
+        locked = False
+        for filename in files:
+            asset_key = course_key.make_asset_key('asset', filename)
+            self._save_asset(filename, asset_key, filename, locked)
+            locked = not locked
+
+    def _create_course(self, org, course, run, user_id):
+        # create course as draft
+        modulestore().create_course(
+            org,
+            course,
+            run,
+            user_id,
+            master_branch=BRANCH_NAME_DRAFT
+        )
+
+        source_course = CourseLocator(org=org, course=course, run=run, branch=BRANCH_NAME_DRAFT)
+        destination = CourseLocator(org=org, course=course, run=run, branch=BRANCH_NAME_PUBLISHED)
+        to_publish = BlockUsageLocator(
+            source_course,
+            block_type='course',
+            block_id='course'
+        )
+
+        # publish course
+        modulestore().copy(user_id, source_course, destination, [to_publish], None)
+
+    def _assert_course(self, course_key):
+        course = modulestore().get_course(course_key)
+        self.assertEqual(
+            (course_key.org, course_key.course, course_key.run),
+            (course.location.org, course.location.course, course.location.run)
+        )
+
+    def _assert_assets(self, course_key, files, assets):
+        self.assertItemsEqual(
+            [course_key.make_asset_key('asset', file_name) for file_name in files],
+            [asset['asset_key'] for asset in assets]
+        )
+
+    def test_delete_course(self):
+        """
+        Only delete course content
+        """
+
+        # 1. make sure that course and assets exists
+        self._assert_course(self.target_course)
+        assets, _ = modulestore().contentstore.get_all_content_for_course(self.target_course)
+        self._assert_assets(self.target_course, self.FILES, assets)
+
+        self._assert_course(self.other_course)
+        assets, _ = modulestore().contentstore.get_all_content_for_course(self.other_course)
+        self._assert_assets(self.other_course, self.FILES, assets)
+
+        # 2. delete course
+        modulestore().delete_course(self.target_course, self.USER_ID)
+
+        # 3. make sure that target course does not exists
+        with self.assertRaises(ItemNotFoundError):
+            modulestore().get_course(self.target_course)
+
+        # 4. make sure that other course exists
+        self._assert_course(self.other_course)
+
+        # 5. make sure that assets exists
+        assets, _ = modulestore().contentstore.get_all_content_for_course(self.target_course)
+        self._assert_assets(self.target_course, self.FILES, assets)
+        assets, _ = modulestore().contentstore.get_all_content_for_course(self.other_course)
+        self._assert_assets(self.other_course, self.FILES, assets)
+
+    def test_delete_course_with_purge(self):
+        """
+        delete course content and assets
+        """
+
+        # 1. make sure that course and assets exists
+        self._assert_course(self.target_course)
+        assets, _ = modulestore().contentstore.get_all_content_for_course(self.target_course)
+        self._assert_assets(self.target_course, self.FILES, assets)
+
+        self._assert_course(self.other_course)
+        assets, _ = modulestore().contentstore.get_all_content_for_course(self.other_course)
+        self._assert_assets(self.other_course, self.FILES, assets)
+
+        # 2. delete course with purge
+        modulestore().delete_course(self.target_course, self.USER_ID, purge=True)
+
+        # 3. make sure that course does not exists
+        with self.assertRaises(ItemNotFoundError):
+            modulestore().get_course(self.target_course)
+
+        # 4. make sure that other course exists
+        self._assert_course(self.other_course)
+
+        # 5. make sure that assets of target course does not exists
+        assets, _ = modulestore().contentstore.get_all_content_for_course(self.target_course)
+        self.assertEqual(0, len(assets))
+
+        # 6. make sure that assets of other course exists
+        assets, _ = modulestore().contentstore.get_all_content_for_course(self.other_course)
+        self._assert_assets(self.other_course, self.FILES, assets)
 
 
 class TestInheritance(SplitModuleTest):

@@ -62,7 +62,7 @@ def remove_all_instructors(course_key):
     instructor_role.remove_users(*instructor_role.users_with_role())
 
 
-def delete_course_and_groups(course_key, user_id):
+def delete_course_and_groups(course_key, user_id, purge=False):
     """
     This deletes the courseware associated with a course_key as well as cleaning update_item
     the various user table stuff (groups, permissions, etc.)
@@ -70,7 +70,7 @@ def delete_course_and_groups(course_key, user_id):
     module_store = modulestore()
 
     with module_store.bulk_operations(course_key):
-        module_store.delete_course(course_key, user_id)
+        module_store.delete_course(course_key, user_id, purge=purge)
 
         print 'removing User permissions from course....'
         # in the django layer, we need to remove all the user permissions groups associated with this course

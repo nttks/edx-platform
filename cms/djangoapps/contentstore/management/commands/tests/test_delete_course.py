@@ -113,5 +113,5 @@ class DeleteCourseTest(CourseTestCase):
 
         with mock.patch(self.YESNO_PATCH_LOCATION) as patched_yes_no:
             patched_yes_no.return_value = True
-            self.command.handle('TestX/TS01/2015_Q1', "commit")
+            self.command.handle('TestX/TS01/2015_Q1', "commit", **{'purge': False})
             self.assertIsNone(modulestore().get_course(SlashSeparatedCourseKey("TestX", "TS01", "2015_Q1")))
