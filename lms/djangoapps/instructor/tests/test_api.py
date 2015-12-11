@@ -1280,7 +1280,7 @@ class TestInstructorAPIEnrollment(SharedModuleStoreTestCase, LoginEnrollmentTest
         create paid course mode.
         """
         paid_course = CourseFactory.create()
-        CourseModeFactory.create(course_id=paid_course.id, min_price=50)
+        CourseModeFactory.create(course_id=paid_course.id, min_price=50, mode_slug=CourseMode.HONOR)
         CourseInstructorRole(paid_course.id).add_users(self.instructor)
         return paid_course
 
@@ -1410,7 +1410,7 @@ class TestInstructorAPIEnrollment(SharedModuleStoreTestCase, LoginEnrollmentTest
     def test_unenroll_and_enroll_verified(self):
         """
         Test that unenrolling and enrolling a student from a verified track
-        results in that student being in an honor track
+        results in that student being in the default track
         """
         course_enrollment = CourseEnrollment.objects.get(
             user=self.enrolled_student, course_id=self.course.id
@@ -1427,7 +1427,7 @@ class TestInstructorAPIEnrollment(SharedModuleStoreTestCase, LoginEnrollmentTest
         course_enrollment = CourseEnrollment.objects.get(
             user=self.enrolled_student, course_id=self.course.id
         )
-        self.assertEqual(course_enrollment.mode, u'honor')
+        self.assertEqual(course_enrollment.mode, CourseMode.DEFAULT_MODE_SLUG)
 
     def _change_student_enrollment(self, user, course, action):
         """
@@ -2143,7 +2143,11 @@ class TestInstructorAPILevelsDataDump(SharedModuleStoreTestCase, LoginEnrollment
                                       company_contact_email='test@123', recipient_name='R1',
                                       recipient_email='', customer_reference_number='PO#23')
 
-        paid_course_reg_item = PaidCourseRegistration.add_to_order(self.cart, self.course.id)
+        paid_course_reg_item = PaidCourseRegistration.add_to_order(
+            self.cart,
+            self.course.id,
+            mode_slug=CourseMode.HONOR
+        )
         # update the quantity of the cart item paid_course_reg_item
         resp = self.client.post(reverse('shoppingcart.views.update_user_cart'), {'ItemId': paid_course_reg_item.id, 'qty': '4'})
         self.assertEqual(resp.status_code, 200)
