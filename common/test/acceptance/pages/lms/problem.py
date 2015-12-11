@@ -1,6 +1,9 @@
 """
 Problem Page.
 """
+from contextlib import contextmanager
+from textwrap import dedent
+
 from bok_choy.page_object import PageObject
 
 
@@ -84,11 +87,22 @@ class ProblemPage(PageObject):
         self.q(css='div.problem section.inputtype input').fill(text)
         self.wait_for_ajax()
 
-    def click_check(self):
+    def click_check(self, confirm=True, timeout_confirm=True):
         """
         Click the Check button!
         """
-        with self.handle_alert():
+        @contextmanager
+        def _handle_alert():
+            script = dedent("""
+                var confirm_index = 0;
+                var confirm_results = {0};
+                window.confirm = function() {{ return confirm_results[confirm_index++]; }};
+                window.alert = function() {{ return; }};
+            """.format(str(['true' if x else 'false' for x in (confirm, timeout_confirm)]).replace("'", "")))
+            self.browser.execute_script(script)
+            yield
+
+        with _handle_alert():
             self.q(css='div.problem button.check').click()
         self.wait_for_ajax()
 

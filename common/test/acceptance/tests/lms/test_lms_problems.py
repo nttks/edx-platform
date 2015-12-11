@@ -376,8 +376,7 @@ class LogoutDuringAnswering(ProblemsTest):
         problem_page.fill_answer_numerical('1')
 
         self.log_user_out()
-        with problem_page.handle_alert(confirm=True):
-            problem_page.click_check()
+        problem_page.click_check()
 
         login_page = CombinedLoginAndRegisterPage(self.browser)
         login_page.wait_for_page()
@@ -391,8 +390,6 @@ class LogoutDuringAnswering(ProblemsTest):
         problem_page.click_check()
         self.assertTrue(problem_page.simpleprob_is_correct())
 
-    import unittest
-    @unittest.skip("TODO Fix https://trello.com/c/0mS7Avli/721-dogwood-gaccoalert")
     def test_logout_cancel_no_redirect(self):
         """
         1) User goes to a problem page.
@@ -408,8 +405,7 @@ class LogoutDuringAnswering(ProblemsTest):
         self.assertEqual(problem_page.problem_name, 'TEST PROBLEM')
         problem_page.fill_answer_numerical('1')
         self.log_user_out()
-        with problem_page.handle_alert(confirm=False):
-            problem_page.click_check()
+        problem_page.click_check(confirm=True, timeout_confirm=False)
 
         self.assertTrue(problem_page.is_browser_on_page())
         self.assertEqual(problem_page.problem_name, 'TEST PROBLEM')
