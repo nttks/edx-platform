@@ -24,6 +24,8 @@ class CourseMetadata(object):
         'end',
         'enrollment_start',
         'enrollment_end',
+        'deadline_start',
+        'terminate_start',
         'tabs',
         'graceperiod',
         'checklists',
@@ -50,7 +52,13 @@ class CourseMetadata(object):
         'is_proctored_enabled',
         'is_time_limited',
         'is_practice_exam',
-        'self_paced'
+        'self_paced',
+        'course_category',
+        'is_f2f_course',
+        'course_canonical_name',
+        'course_contents_provider',
+        'teacher_name',
+        'course_span',
     ]
 
     @classmethod

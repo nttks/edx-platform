@@ -89,6 +89,36 @@
             </div>
     </li>
   </ol>
+  <ol class="list-input">
+    <li id="deadline-start" class="field-group field-group-deadline-start">
+      <div id="field-deadline-start-date" class="field date">
+        <label for="course-deadline-start-date" class="">Course Deadline Date</label>
+        <input type="text" autocomplete="off" placeholder="MM/DD/YYYY" id="course-deadline-start-date" class="start-date date start hasDatepicker">
+        <span class="tip tip-stacked">First day problems can't submit, this setting is only affect to course list</span>
+      </div>
+
+      <div id="field-deadline-start-time" class="field time">
+        <label for="course-deadline-start-time" class="">Course Deadline Time</label>
+        <input type="text" autocomplete="off" placeholder="HH:MM" value="" id="course-deadline-start-time" class="time start ui-timepicker-input">
+        <span class="tip tip-stacked timezone">(UTC)</span>
+      </div>
+    </li>
+
+    <li id="terminate-start" class="field-group field-group-terminate-start">
+      <div id="field-terminate-start-date" class="field date">
+        <label for="course-terminate-start-date" class="">Course Terminate Date</label>
+        <input type="text" autocomplete="off" placeholder="MM/DD/YYYY" id="course-terminate-start-date" class="end-date date end hasDatepicker">
+        <span class="tip tip-stacked">First day the course is hidden</span>
+      </div>
+
+      <div id="field-terminate-start-time" class="field time">
+        <label for="course-terminate-start-time" class="">Course Terminate Time</label>
+        <input type="text" autocomplete="off" placeholder="HH:MM" value="" id="course-terminate-start-time" class="time end ui-timepicker-input">
+        <span class="tip tip-stacked timezone">(UTC)</span>
+      </div>
+    </li>
+  </ol>
+
 </section>
 
 <section class="group-settings course_details">
@@ -107,4 +137,44 @@
     </li>
   </ol>
 </section>
+
+<section class="group-settings marketing">
+  <header>
+    <h2 class="title-2">Introducing Your Course</h2>
+    <span class="tip">Information for prospective students</span>
+  </header>
+  <ol class="list-input">
+    <li class="field" id="field-course-category">
+      <label for="course-category">Course Category</label>
+      <input type="text" class="placeholder" id="course-category" value="" autocomplete="off" />
+      <span class="tip tip-stacked">Please enter the course category, separated by commas.</span>
+    </li>
+    <li class="field" id="field-course-canonical-name">
+      <label for="course-canonical-name">Course Canonical Name</label>
+      <input type="text" class="placeholder" id="course-canonical-name" value="" autocomplete="off" />
+      <span class="tip tip-stacked">Please enter the course canonical name.</span>
+    </li>
+    <li class="field" id="field-course-contents-provider">
+      <label for="course-contents-provider">Course Contents Provider</label>
+      <input type="text" class="placeholder" id="course-contents-provider" value="" autocomplete="off" />
+      <span class="tip tip-stacked">Please enter the course contents provider.</span>
+    </li>
+    <li class="field" id="field-course-teacher-name">
+      <label for="course-teacher-name">Teacher Name</label>
+      <input type="text" class="placeholder" id="course-teacher-name" value="" autocomplete="off" />
+      <span class="tip tip-stacked">Please enter a teacher name.</span>
+    </li>
+    <li class="field" id="field-course-span">
+      <label for="course-span">Course Span</label>
+      <input type="text" class="placeholder" id="course-span" value="" autocomplete="off" />
+      <span class="tip tip-stacked">Please enter the enrollment period of the course.(Example:4 weeks)</span>
+    </li>
+    <li class="field" id="field-face2face-course">
+      <label for="face2face-course">Face 2 Face Classroom</label>
+      <input type="checkbox" class="placeholder" id="face2face-course" value="true" autocomplete="off" />
+      <span class="tip tip-stacked">Please check if there is a reversal classes.</span>
+    </li>
+  </ol>
+</section>
+
 </form>

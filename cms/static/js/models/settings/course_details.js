@@ -11,6 +11,8 @@ var CourseDetails = Backbone.Model.extend({
         end_date: null,		// maps to 'end'
         enrollment_start: null,
         enrollment_end: null,
+        deadline_start: null,
+        terminate_start: null,
         syllabus: null,
         short_description: "",
         overview: "",
@@ -21,7 +23,13 @@ var CourseDetails = Backbone.Model.extend({
         course_image_asset_path: '', // the full URL (/c4x/org/course/num/asset/filename)
         pre_requisite_courses: [],
         entrance_exam_enabled : '',
-        entrance_exam_minimum_score_pct: '50'
+        entrance_exam_minimum_score_pct: '50',
+        course_category: [],
+        is_f2f_course: false,
+        course_canonical_name: '',
+        course_contents_provider: '',
+        teacher_name: '',
+        course_span: ''
     },
 
     validate: function(newattrs) {
@@ -29,7 +37,7 @@ var CourseDetails = Backbone.Model.extend({
         // A bit funny in that the video key validation is asynchronous; so, it won't stop the validation.
         var errors = {};
         newattrs = DateUtils.convertDateStringsToObjects(
-            newattrs, ["start_date", "end_date", "enrollment_start", "enrollment_end"]
+            newattrs, ["start_date", "end_date", "enrollment_start", "enrollment_end", "deadline_start", "terminate_start"]
         );
 
         if (newattrs.start_date === null) {
@@ -46,6 +54,21 @@ var CourseDetails = Backbone.Model.extend({
         }
         if (newattrs.end_date && newattrs.enrollment_end && newattrs.end_date < newattrs.enrollment_end) {
             errors.enrollment_end = gettext("The enrollment end date cannot be after the course end date.");
+        }
+        if (newattrs.deadline_start && newattrs.start_date && newattrs.deadline_start < newattrs.start_date) {
+            errors.deadline_start = gettext("The deadline start date cannot be before the course start date.");
+        }
+        if (newattrs.terminate_start && newattrs.start_date && newattrs.terminate_start < newattrs.start_date) {
+            errors.terminate_start = gettext("The terminate start date cannot be before the course start date.");
+        }
+        if (newattrs.terminate_start && newattrs.enrollment_end && newattrs.terminate_start < newattrs.enrollment_end) {
+            errors.terminate_start = gettext("The terminate start date cannot be before the enrollment end date.");
+        }
+        if (newattrs.course_canonical_name === '') {
+            errors.course_canonical_name = gettext("Course Canonical Name is required input.");
+        }
+        if (newattrs.teacher_name === '') {
+            errors.teacher_name = gettext("Teacher Name is required input.");
         }
         if (newattrs.intro_video && newattrs.intro_video !== this.get('intro_video')) {
             if (this._videokey_illegal_chars.exec(newattrs.intro_video)) {

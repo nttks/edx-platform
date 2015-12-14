@@ -2297,6 +2297,88 @@ msgstr "半角英数{min_length}文字以上、{max_length}文字以下"
 msgid "I agree to the {platform_name} {terms_of_service}."
 msgstr "{terms_of_service}に同意"
 
+#: openedx/core/djangoapps/user_api/views.py
+msgid "Employee Number"
+msgstr "社員番号"
+
+#: common/lib/xmodule/xmodule/course_module.py
+#: cms/templates/settings.html
+msgid "Course Category"
+msgstr "コースカテゴリ"
+
+#: common/lib/xmodule/xmodule/course_module.py
+#: cms/templates/settings.html
+msgid "Face 2 Face Classroom"
+msgstr "対面授業"
+
+#: common/lib/xmodule/xmodule/course_module.py
+#: cms/templates/settings.html
+msgid "Course Canonical Name"
+msgstr "コース略称"
+
+#: common/lib/xmodule/xmodule/course_module.py
+#: cms/templates/settings.html
+msgid "Course Contents Provider"
+msgstr "コース提供元"
+
+#: common/lib/xmodule/xmodule/course_module.py
+#: cms/templates/settings.html
+msgid "Teacher Name"
+msgstr "講師名"
+
+#: common/lib/xmodule/xmodule/course_module.py
+#: cms/templates/settings.html
+msgid "Course Span"
+msgstr "受講期間"
+
+#: cms/templates/settings.html
+msgid "Course Deadline Date"
+msgstr "課題提出締切日"
+
+#: cms/templates/settings.html
+msgid "Course Deadline Time"
+msgstr "課題提出締切時刻"
+
+#: cms/templates/settings.html
+msgid "First day problems can't submit, this setting is only affect to course list"
+msgstr "講座内最終課題の提出締切日時を指定"
+
+#: cms/templates/settings.html
+msgid "Course Terminate Date"
+msgstr "講座閉講鎖日"
+
+#: cms/templates/settings.html
+msgid "Course Terminate Time"
+msgstr "講座閉講時刻"
+
+#: cms/templates/settings.html
+msgid "First day the course is hidden"
+msgstr "講座が閉講される日時を設定"
+
+#: cms/templates/settings.html
+msgid "Please enter the course category, separated by commas."
+msgstr "コースカテゴリをカンマ区切りで入力してください。"
+
+#: cms/templates/settings.html
+msgid "Please enter the course canonical name."
+msgstr "コース略称を入力してください。"
+
+#: cms/templates/settings.html
+msgid "Please enter the course contents provider."
+msgstr "コースを提供している団体名称を入力してください。"
+
+#: cms/templates/settings.html
+msgid "Please enter a teacher name."
+msgstr "講師名を入力してください。"
+
+#: cms/templates/settings.html
+msgid "Please enter the enrollment period of the course.(Example:4 weeks)"
+msgstr "コースの受講期間を入力してください。（例：4週間）"
+
+#: cms/templates/settings.html
+msgid "Please check if there is a reversal classes."
+msgstr "対面授業がある場合はチェックを入れてください。"
+
 #-#-#-#-#  Original messages in gacco/templates  #-#-#-#-#
 
 #: templates/theme-header.html

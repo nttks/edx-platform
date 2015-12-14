@@ -244,6 +244,36 @@ CMS.URL.UPLOAD_ASSET = '${upload_asset_url}';
             </li>
           </ol>
 
+          <ol class="list-input">
+            <li class="field-group field-group-deadline-start" id="deadline-start">
+              <div class="field date" id="field-deadline-start-date">
+                <label for="course-deadline-start-date">${_("Course Deadline Date")}</label>
+                <input type="text" class="start-date date start" id="course-deadline-start-date" placeholder="MM/DD/YYYY" autocomplete="off" />
+                <span class="tip tip-stacked">${_("First day problems can't submit, this setting is only affect to course list")}</span>
+              </div>
+
+              <div class="field time" id="field-deadline-start-time">
+                <label for="course-deadline-start-time">${_("Course Deadline Time")}</label>
+                <input type="text" class="time start" id="course-deadline-start-time" value="" placeholder="HH:MM" autocomplete="off" />
+                <span class="tip tip-stacked timezone">${_("(UTC)")}</span>
+              </div>
+            </li>
+
+            <li class="field-group field-group-terminate-start" id="terminate-start">
+              <div class="field date" id="field-terminate-start-date">
+                <label for="course-terminate-start-date">${_("Course Terminate Date")}</label>
+                <input type="text" class="end-date date end" id="course-terminate-start-date" placeholder="MM/DD/YYYY" autocomplete="off" />
+                <span class="tip tip-stacked">${_("First day the course is hidden")}</span>
+              </div>
+
+              <div class="field time" id="field-terminate-start-time">
+                <label for="course-terminate-start-time">${_("Course Terminate Time")}</label>
+                <input type="text" class="time end" id="course-terminate-start-time" value="" placeholder="HH:MM" autocomplete="off" />
+                <span class="tip tip-stacked timezone">${_("(UTC)")}</span>
+              </div>
+            </li>
+          </ol>
+
           % if not about_page_editable:
           <div class="notice notice-incontext notice-workflow">
             <h3 class="title">${_("These Dates Are Not Used When Promoting Your Course")}</h3>
@@ -287,6 +317,36 @@ CMS.URL.UPLOAD_ASSET = '${upload_asset_url}';
                 <span class="tip">${_("Information for prospective students")}</span>
               </header>
               <ol class="list-input">
+                <li class="field" id="field-course-category">
+                  <label for="course-category">${_("Course Category")}</label>
+                  <input type="text" class="placeholder" id="course-category" value="" autocomplete="off" />
+                  <span class="tip tip-stacked">${_("Please enter the course category, separated by commas.")}</span>
+                </li>
+                <li class="field required" id="field-course-canonical-name">
+                  <label for="course-canonical-name">${_("Course Canonical Name")}</label>
+                  <input type="text" class="placeholder" id="course-canonical-name" value="" autocomplete="off" />
+                  <span class="tip tip-stacked">${_("Please enter the course canonical name.")}</span>
+                </li>
+                <li class="field" id="field-course-contents-provider">
+                  <label for="course-contents-provider">${_("Course Contents Provider")}</label>
+                  <input type="text" class="placeholder" id="course-contents-provider" value="" autocomplete="off" />
+                  <span class="tip tip-stacked">${_("Please enter the course contents provider.")}</span>
+                </li>
+                <li class="field required" id="field-course-teacher-name">
+                  <label for="course-teacher-name">${_("Teacher Name")}</label>
+                  <input type="text" class="placeholder" id="course-teacher-name" value="" autocomplete="off" />
+                  <span class="tip tip-stacked">${_("Please enter a teacher name.")}</span>
+                </li>
+                <li class="field" id="field-course-span">
+                  <label for="course-span">${_("Course Span")}</label>
+                  <input type="text" class="placeholder" id="course-span" value="" autocomplete="off" />
+                  <span class="tip tip-stacked">${_("Please enter the enrollment period of the course.(Example:4 weeks)")}</span>
+                </li>
+                <li class="field" id="field-face2face-course">
+                  <label for="face2face-course">${_("Face 2 Face Classroom")}</label>
+                  <input type="checkbox" class="placeholder" id="face2face-course" value="true" autocomplete="off" />
+                  <span class="tip tip-stacked">${_("Please check if there is a reversal classes.")}</span>
+                </li>
                 % if short_description_editable:
                 <li class="field text" id="field-course-short-description">
                   <label for="course-overview">${_("Course Short Description")}</label>
