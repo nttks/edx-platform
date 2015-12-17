@@ -206,8 +206,8 @@ def _record_feedback_in_zendesk(
     zendesk_api = _ZendeskApi()
 
     additional_info_string = (
-        "Additional information:\n\n" +
-        "\n".join("%s: %s" % (key, value) for (key, value) in additional_info.items() if value is not None)
+        u"Additional information:\n\n" +
+        u"\n".join(u"%s: %s" % (key, value) for (key, value) in additional_info.items() if value is not None)
     )
 
     # Tag all issues with LMS to distinguish channel in Zendesk; requested by student support team
@@ -234,7 +234,7 @@ def _record_feedback_in_zendesk(
             new_ticket['ticket']['group_id'] = group['id']
     try:
         ticket_id = zendesk_api.create_ticket(new_ticket)
-        if group is None:
+        if group_name is not None and group is None:
             # Support uses Zendesk groups to track tickets. In case we
             # haven't been able to correctly group this ticket, log its ID
             # so it can be found later.

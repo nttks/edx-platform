@@ -34,7 +34,6 @@ define([
                 entrance_exam_minimum_score_pct: '50',
                 license: null,
                 language: '',
-                has_cert_config: false,
                 course_category: ['gacco'],
                 is_f2f_course: true,
                 course_canonical_name: 'Course_Canonical_Name',

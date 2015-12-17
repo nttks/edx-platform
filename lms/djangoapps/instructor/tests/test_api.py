@@ -194,7 +194,7 @@ class TestCommonExceptions400(TestCase):
 
 
 @attr('shard_1')
-@patch('bulk_email.models.html_to_text', Mock(return_value='Mocking CourseEmail.text_message'))
+@patch('bulk_email.models.html_to_text', Mock(return_value='Mocking CourseEmail.text_message', autospec=True))
 @patch.dict(settings.FEATURES, {'ENABLE_INSTRUCTOR_EMAIL': True, 'REQUIRE_COURSE_EMAIL_AUTH': False})
 class TestInstructorAPIDenyLevels(SharedModuleStoreTestCase, LoginEnrollmentTestCase):
     """
@@ -3239,7 +3239,7 @@ class TestEntranceExamInstructorAPIRegradeTask(SharedModuleStoreTestCase, LoginE
 
 
 @attr('shard_1')
-@patch('bulk_email.models.html_to_text', Mock(return_value='Mocking CourseEmail.text_message'))
+@patch('bulk_email.models.html_to_text', Mock(return_value='Mocking CourseEmail.text_message', autospec=True))
 @patch.dict(settings.FEATURES, {'ENABLE_INSTRUCTOR_EMAIL': True, 'REQUIRE_COURSE_EMAIL_AUTH': False})
 class TestInstructorSendEmail(SharedModuleStoreTestCase, LoginEnrollmentTestCase):
     """
@@ -3489,7 +3489,7 @@ class TestInstructorAPITaskLists(SharedModuleStoreTestCase, LoginEnrollmentTestC
 
 
 @attr('shard_1')
-@patch.object(instructor_task.api, 'get_instructor_task_history')
+@patch.object(instructor_task.api, 'get_instructor_task_history', autospec=True)
 class TestInstructorEmailContentList(SharedModuleStoreTestCase, LoginEnrollmentTestCase):
     """
     Test the instructor email content history endpoint.
