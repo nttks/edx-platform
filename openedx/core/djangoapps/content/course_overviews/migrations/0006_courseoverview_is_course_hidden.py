@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('course_overviews', '0001_initial'),
+        ('course_overviews', '0005_delete_courseoverviewgeneratedhistory'),
     ]
 
     operations = [
