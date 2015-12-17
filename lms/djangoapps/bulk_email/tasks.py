@@ -40,7 +40,8 @@ from bulk_email.models import (
     SEND_TO_MYSELF, SEND_TO_ALL, TO_OPTIONS,
     SEND_TO_STAFF, SEND_TO_ALL_INCLUDE_OPTOUT
 )
-from courseware.courses import get_course, course_image_url
+from courseware.courses import get_course
+from openedx.core.lib.courses import course_image_url
 from student.models import UserStanding
 from student.roles import CourseStaffRole, CourseInstructorRole
 from instructor_task.models import InstructorTask

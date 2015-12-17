@@ -13,7 +13,7 @@ from boto.exception import S3ResponseError
 from django.conf import settings
 from django.utils import timezone
 
-from models.settings.course_details import CourseDetails
+from openedx.core.djangoapps.models.course_details import CourseDetails
 
 from xmodule.contentstore.django import contentstore
 from xmodule.contentstore.content import StaticContent

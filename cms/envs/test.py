@@ -173,9 +173,6 @@ CACHES = {
     },
 }
 
-# Add apps to Installed apps for testing
-INSTALLED_APPS += ('openedx.core.djangoapps.call_stack_manager',)
-
 # Add apps to Installed apps for testing with ga
 INSTALLED_APPS += ('openedx.core.djangoapps.course_global',)
 

@@ -28,7 +28,6 @@ class CourseMetadata(object):
         'terminate_start',
         'tabs',
         'graceperiod',
-        'checklists',
         'show_timezone',
         'format',
         'graded',
