@@ -404,10 +404,14 @@ class DashboardTest(ModuleStoreTestCase):
         self.assertFalse(enrollment.refundable())
 
     @unittest.skipUnless(settings.ROOT_URLCONF == 'lms.urls', 'Test only valid in lms')
-    def test_is_course_hidden(self):
+    def test_course_has_been_terminated(self):
         admin_user = AdminFactory.create(
             username='staff', email="staff@fake.edx.org", password='test')
-        course = CourseFactory.create(**{"metadata":{"is_course_hidden":True}})
+        course = CourseFactory.create(
+            start=datetime(2013, 9, 16, 7, 17, 28),
+            terminate_start=datetime.now(pytz.UTC) - timedelta(days=1),
+        )
+
         CourseEnrollment.enroll(self.user, course.location.course_key, mode='honor')
         CourseEnrollment.enroll(admin_user, course.location.course_key, mode='honor')
 

@@ -332,27 +332,27 @@ class S3StoreTestCase(TestCase):
             settings.TOP_PAGE_BUCKET_NAME).list(prefix=CATEGORY_DIR))
 
     def test_save(self):
-        json_response = self.s3store.save(objectpath="path", data="data")
+        self.s3store.save(objectpath="path", data="data")
         self.s3conn.assert_called_once_with()
         self.s3class.get_bucket.assert_called_once_with(settings.TOP_PAGE_BUCKET_NAME)
         self.s3key.assert_called_once_with(self.s3class.get_bucket(settings.TOP_PAGE_BUCKET_NAME))
         self.s3key().set_contents_from_string.assert_called_once_with("data")
         self.s3key().close.assert_called_once_with()
 
-        self.assertEquals(json_response, json.dumps({'error': None}))
-
     def test_save_raise_S3ResponseError(self):
-        s3exception = S3ResponseError(status="dummy", reason="reason")
-        self.s3class.get_bucket.side_effect = s3exception
+        expected_error = S3ResponseError(status="dummy", reason="reason")
+        self.s3class.get_bucket.side_effect = expected_error
         s3store = S3Store()
-        json_response = s3store.save(objectpath="path", data="data")
-        self.assertEquals(json_response, json.dumps({'error': 'S3ResponseError: dummy reason\n'}))
+        with self.assertRaises(S3ResponseError) as cm:
+            s3store.save(objectpath="path", data="data")
+        self.assertEquals(expected_error.status, cm.exception.status)
+        self.assertEquals(expected_error.reason, cm.exception.reason)
 
     def test_save_raise_S3ResponseError_and_404(self):
-        s3exception = S3ResponseError(status=404, reason="reason")
-        self.s3class.get_bucket.side_effect = s3exception
+        expected_error = S3ResponseError(status=404, reason="reason")
+        self.s3class.get_bucket.side_effect = expected_error
         s3store = S3Store()
-        json_response = s3store.save(objectpath="path", data="data")
+        s3store.save(objectpath="path", data="data")
 
         self.s3conn.assert_any_call()
         self.s3class.get_bucket.assert_called_once_with(settings.TOP_PAGE_BUCKET_NAME)
@@ -362,5 +362,3 @@ class S3StoreTestCase(TestCase):
             settings.TOP_PAGE_BUCKET_NAME, Location.APNortheast))
         self.s3key().set_contents_from_string.assert_called_once_with("data")
         self.s3key().close.assert_called_once_with()
-
-        self.assertEquals(json_response, json.dumps({'error': None}))

@@ -253,7 +253,7 @@ class S3Store(object):
                     location=self.location)
                 log.info("Create bucket: %s", self.bucket_name)
             else:
-                return json.dumps({"error": "{}".format(e)})
+                raise
 
         try:
             s3key = Key(bucket)
@@ -264,5 +264,3 @@ class S3Store(object):
 
         finally:
             s3key.close()
-
-        return json.dumps({'error': None})

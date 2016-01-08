@@ -883,7 +883,8 @@ class CourseFields(object):
         help=_(
             "Enter true or false. If true, the course is hidden."
         ),
-        scope=Scope.settings
+        scope=Scope.settings,
+        deprecated=True
     )
     course_category = List(
         display_name=_("Course Category"),
@@ -1143,6 +1144,10 @@ class CourseDescriptor(CourseFields, SequenceDescriptor, LicenseMixin):
         Returns True if the current time is after the specified course terminated date.
         Returns False if there is no terminated date specified.
         """
+        # backward compatibility
+        if self.is_course_hidden:
+            return True
+
         if self.terminate_start is None:
             return False
 

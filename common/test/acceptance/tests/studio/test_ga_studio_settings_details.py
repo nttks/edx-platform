@@ -119,7 +119,7 @@ class SettingsDeadlineTerminateTest(StudioCourseTest):
 
         # input value
         self.settings_detail.course_canonical_name.fill('Course')
-        self.settings_detail.teacher_name.fill('Techer')
+        self.settings_detail.teacher_name.fill('Teacher')
         self.assertFalse(self.settings_detail.has_error)
 
         self.settings_detail.save_changes()
@@ -135,7 +135,7 @@ class SettingsDeadlineTerminateTest(StudioCourseTest):
         self.assertFalse(self.settings_detail.is_f2f_course_checked)
         self.assertEquals('Course', self.settings_detail.course_canonical_name.attrs('value')[0])
         self.assertEquals('', self.settings_detail.course_contents_provider.attrs('value')[0])
-        self.assertEquals('Techer', self.settings_detail.teacher_name.attrs('value')[0])
+        self.assertEquals('Teacher', self.settings_detail.teacher_name.attrs('value')[0])
         self.assertEquals('', self.settings_detail.course_span.attrs('value')[0])
 
         # refresh page
@@ -150,7 +150,7 @@ class SettingsDeadlineTerminateTest(StudioCourseTest):
         self.assertFalse(self.settings_detail.is_f2f_course_checked)
         self.assertEquals('Course', self.settings_detail.course_canonical_name.attrs('value')[0])
         self.assertEquals('', self.settings_detail.course_contents_provider.attrs('value')[0])
-        self.assertEquals('Techer', self.settings_detail.teacher_name.attrs('value')[0])
+        self.assertEquals('Teacher', self.settings_detail.teacher_name.attrs('value')[0])
         self.assertEquals('', self.settings_detail.course_span.attrs('value')[0])
 
     def test_course_new_value_only_require_empty_course_canonical_name(self):
