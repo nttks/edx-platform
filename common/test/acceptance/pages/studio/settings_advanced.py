@@ -217,5 +217,4 @@ class AdvancedSettingsPage(CoursePage):
             'cert_html_view_enabled',
             'enable_proctored_exams',
             'enable_timed_exams',
-            'is_course_hidden',
         ]

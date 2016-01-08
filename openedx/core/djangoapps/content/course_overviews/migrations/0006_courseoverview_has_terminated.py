@@ -13,7 +13,7 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AddField(
             model_name='courseoverview',
-            name='is_course_hidden',
+            name='has_terminated',
             field=models.BooleanField(default=False),
         ),
     ]

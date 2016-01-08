@@ -5,6 +5,7 @@ import re
 import logging
 
 from django.conf import settings
+from django.utils.translation import ugettext as _
 
 from xmodule.fields import Date
 from xmodule.modulestore.exceptions import ItemNotFoundError
@@ -116,9 +117,9 @@ class CourseDetails(object):
             course_details.course_canonical_name = descriptor.display_name
         course_details.course_contents_provider = descriptor.course_contents_provider
         course_details.teacher_name = descriptor.teacher_name
-        # Default course teacher name is "Teacher" TODO FIX
+        # Default course teacher name
         if not course_details.teacher_name:
-            course_details.teacher_name = "Teacher"
+            course_details.teacher_name = _("Teacher Name")
         course_details.course_span = descriptor.course_span
 
         for attribute in ABOUT_ATTRIBUTES:

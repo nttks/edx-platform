@@ -666,7 +666,7 @@ def dashboard(request):
                 registrationcoderedemption__redeemed_by=request.user
             ),
             enrollment.course_id
-        ) or (enrollment.course_overview.is_course_hidden and not staff_access)
+        ) or (enrollment.course_overview.has_terminated and not staff_access)
     )
 
     enrolled_courses_either_paid = frozenset(

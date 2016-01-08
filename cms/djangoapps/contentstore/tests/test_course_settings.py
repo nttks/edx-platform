@@ -58,7 +58,7 @@ class CourseSettingsEncoderTest(CourseTestCase):
         self.assertFalse(jsondetails['is_f2f_course'])
         self.assertEqual(jsondetails['course_canonical_name'], self.course.display_name)
         self.assertEqual(jsondetails['course_contents_provider'], "")
-        self.assertEqual(jsondetails['teacher_name'], "Teacher")
+        self.assertEqual(jsondetails['teacher_name'], "Teacher Name")
         self.assertEqual(jsondetails['course_span'], "")
 
     def test_ooc_encoder(self):
