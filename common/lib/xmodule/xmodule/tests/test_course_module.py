@@ -411,12 +411,23 @@ class CourseDescriptorTestCase(unittest.TestCase):
         self.assertEqual(self.course.number, COURSE)
 
     def test_has_terminated(self):
+        # is_course_hidden:False
+        self.course.is_course_hidden = False
         self.course.terminate_start = None
         self.assertFalse(self.course.has_terminated())
         self.course.terminate_start = _LAST_WEEK
         self.assertTrue(self.course.has_terminated())
         self.course.terminate_start = _NEXT_WEEK
         self.assertFalse(self.course.has_terminated())
+
+        # is_course_hidden:True
+        self.course.is_course_hidden = True
+        self.course.terminate_start = None
+        self.assertTrue(self.course.has_terminated())
+        self.course.terminate_start = _LAST_WEEK
+        self.assertTrue(self.course.has_terminated())
+        self.course.terminate_start = _NEXT_WEEK
+        self.assertTrue(self.course.has_terminated())
 
     def test_is_course_deadline(self):
         self.course.deadline_start = None

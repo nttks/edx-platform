@@ -35,7 +35,7 @@
     "pk": 5,
     "model": "bulk_email.courseauthorization",
     "fields": {
-      "course_id": "course-v1:test_org+test_dashboard_email_when_course_is_closed+test_run",
+      "course_id": "course-v1:test_org+test_dashboard_email_when_course_has_terminated+test_run",
       "email_enabled": true
     }
   }
