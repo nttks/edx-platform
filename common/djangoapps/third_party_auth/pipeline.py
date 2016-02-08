@@ -636,9 +636,11 @@ def login_analytics(strategy, auth_entry, *args, **kwargs):
 
     event_name = None
     if auth_entry == AUTH_ENTRY_LOGIN:
-        event_name = 'edx.bi.user.account.authenticated'
+        event_name = 'edx.bi.user.account.authenticated_social'
     elif auth_entry in [AUTH_ENTRY_ACCOUNT_SETTINGS]:
         event_name = 'edx.bi.user.account.linked'
+    elif auth_entry in [AUTH_ENTRY_REGISTER]:
+        event_name = 'edx.bi.user.account.registered_social'
 
     if event_name is not None and hasattr(settings, 'LMS_SEGMENT_KEY') and settings.LMS_SEGMENT_KEY:
         tracking_context = tracker.get_tracker().resolve_context()
@@ -647,7 +649,7 @@ def login_analytics(strategy, auth_entry, *args, **kwargs):
             event_name,
             {
                 'category': "conversion",
-                'label': None,
+                'label': kwargs['backend'].name,
                 'provider': kwargs['backend'].name
             },
             context={
