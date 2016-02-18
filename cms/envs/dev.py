@@ -160,6 +160,10 @@ DEBUG_TOOLBAR_MONGO_STACKTRACES = False
 # Enable URL that shows information about the status of various services
 FEATURES['ENABLE_SERVICE_STATUS'] = True
 
+# can't test start dates with this True, but on the other hand,
+# can test everything else :)
+FEATURES['DISABLE_START_DATES'] = True
+
 ############################# SEGMENT-IO ##################################
 
 # If there's an environment variable set, grab it and turn on Segment.io
