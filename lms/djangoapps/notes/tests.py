@@ -8,6 +8,7 @@ from opaque_keys.edx.locations import SlashSeparatedCourseKey
 from django.test import TestCase, RequestFactory
 from django.test.client import Client
 from django.core.urlresolvers import reverse
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 
@@ -51,6 +52,10 @@ class CourseTabTest(ModuleStoreTestCase):
     """
     Test that the course tab shows up the way we expect.
     """
+
+    FEATURES_WITH_NO_NOTES = settings.FEATURES.copy()
+    FEATURES_WITH_NO_NOTES['ENABLE_STUDENT_NOTES'] = False
+
     def setUp(self):
         '''
         Setup a dummy course-like object with a tabs field that can be
@@ -77,7 +82,7 @@ class CourseTabTest(ModuleStoreTestCase):
         # module not enabled in the course
         self.assertFalse(self.has_notes_tab(self.course, self.user))
 
-        with self.settings(FEATURES={'ENABLE_STUDENT_NOTES': False}):
+        with self.settings(FEATURES=self.FEATURES_WITH_NO_NOTES):
             # setting not enabled and the module is not enabled
             self.assertFalse(self.has_notes_tab(self.course, self.user))
 
