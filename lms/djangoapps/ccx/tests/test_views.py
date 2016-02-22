@@ -15,6 +15,7 @@ from courseware.field_overrides import OverrideFieldData  # pylint: disable=impo
 from courseware.tests.factories import StudentModuleFactory  # pylint: disable=import-error
 from courseware.tests.helpers import LoginEnrollmentTestCase  # pylint: disable=import-error
 from courseware.tabs import get_course_tab_list
+from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.test.utils import override_settings
 from django.test import RequestFactory
@@ -647,7 +648,11 @@ class CCXCoachTabTestCase(ModuleStoreTestCase):
         """
         Test ccx coach tab state (visible or hidden) depending on the value of enable_ccx flag, ccx feature flag.
         """
-        with self.settings(FEATURES={'CUSTOM_COURSES_EDX': ccx_feature_flag}):
+
+        features_with_ccx = settings.FEATURES.copy()
+        features_with_ccx['CUSTOM_COURSES_EDX'] = ccx_feature_flag
+
+        with self.settings(FEATURES=features_with_ccx):
             self.course.enable_ccx = enable_ccx
             self.assertEquals(
                 expected_result,

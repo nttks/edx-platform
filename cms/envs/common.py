@@ -47,6 +47,8 @@ from lms.envs.common import (
     ENABLE_CREDIT_ELIGIBILITY, YOUTUBE_API_KEY,
     # The following settings need to load module(lms.djangoapps.instructor.views.instructor_dashboard).
     BULK_EMAIL_DEFAULT_RETRY_DELAY, BULK_EMAIL_MAX_RETRIES, GRADES_DOWNLOAD_ROUTING_KEY,
+    # The following settings need to function(lms.djangoapps.courseware.access.py:has_access)
+    PREVIEW_DOMAIN,
 )
 from path import path
 from warnings import simplefilter
@@ -64,6 +66,10 @@ FEATURES = {
     'USE_DJANGO_PIPELINE': True,
 
     'GITHUB_PUSH': False,
+
+    ## DO NOT SET TO True IN THIS FILE
+    ## Doing so will cause all courses to be released on production
+    'DISABLE_START_DATES': False,  # When True, all courses will be active, regardless of start date
 
     # for consistency in user-experience, keep the value of the following 3 settings
     # in sync with the ones in lms/envs/common.py
