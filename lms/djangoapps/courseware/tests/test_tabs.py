@@ -2,9 +2,13 @@
 Test cases for tabs.
 """
 
+from datetime import timedelta
+
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.http import Http404
+from django.test.utils import override_settings
+from django.utils import timezone
 from mock import MagicMock, Mock, patch
 from nose.plugins.attrib import attr
 from opaque_keys.edx.locations import SlashSeparatedCourseKey
@@ -12,7 +16,7 @@ from opaque_keys.edx.locations import SlashSeparatedCourseKey
 from courseware.courses import get_course_by_id
 from courseware.tabs import (
     get_course_tab_list, CoursewareTab, CourseInfoTab, ProgressTab,
-    ExternalDiscussionCourseTab, ExternalLinkCourseTab
+    ExternalDiscussionCourseTab, ExternalLinkCourseTab, EnrolledTab
 )
 from courseware.tests.helpers import get_request_for_user, LoginEnrollmentTestCase
 from courseware.tests.factories import InstructorFactory, StaffFactory
@@ -32,6 +36,10 @@ from xmodule.modulestore.tests.django_utils import (
 )
 from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
 from xmodule.modulestore.tests.factories import CourseFactory, ItemFactory
+
+
+FEATURES_WITH_STARTDATE = settings.FEATURES.copy()
+FEATURES_WITH_STARTDATE['DISABLE_START_DATES'] = False
 
 
 class TabTestCase(ModuleStoreTestCase):
@@ -816,3 +824,58 @@ class DiscussionLinkTestCase(TabTestCase):
             is_enrolled=is_enrolled,
             is_staff=is_staff
         )
+
+
+class EnrolledTabTestCase(TabTestCase):
+
+    @patch('student.models.CourseEnrollment.is_enrolled')
+    def test_is_enabled(self, is_enrolled):
+        is_enrolled.return_value = True
+        user_honor = self.create_mock_user(is_authenticated=True, is_staff=False, is_enrolled=True)
+        self.assertTrue(EnrolledTab.is_enabled(self.course, user_honor))
+
+    @patch('student.models.CourseEnrollment.is_enrolled')
+    def test_is_enabled_no_user(self, is_enrolled):
+        is_enrolled.return_value = True
+        self.assertTrue(EnrolledTab.is_enabled(self.course))
+
+    @patch('student.models.CourseEnrollment.is_enrolled')
+    @override_settings(FEATURES=FEATURES_WITH_STARTDATE)
+    def test_is_enabled_course_not_started(self, is_enrolled):
+        is_enrolled.return_value = True
+        user_staff = self.create_mock_user(is_authenticated=True, is_staff=True, is_enrolled=True)
+        user_honor = self.create_mock_user(is_authenticated=True, is_staff=False, is_enrolled=True)
+        self.course.start = timezone.now() + timedelta(days=1)
+
+        # staff can access
+        self.assertTrue(EnrolledTab.is_enabled(self.course, user_staff))
+        # no staff can not access
+        self.assertFalse(EnrolledTab.is_enabled(self.course, user_honor))
+
+    @patch('student.models.CourseEnrollment.is_enrolled')
+    def test_is_enabled_not_enrolled(self, is_enrolled):
+        is_enrolled.return_value = False
+        user_staff = self.create_mock_user(is_authenticated=True, is_staff=True, is_enrolled=True)
+        user_honor = self.create_mock_user(is_authenticated=True, is_staff=False, is_enrolled=True)
+
+        # staff can access
+        self.assertTrue(EnrolledTab.is_enabled(self.course, user_staff))
+        # no staff can not access
+        self.assertFalse(EnrolledTab.is_enabled(self.course, user_honor))
+
+class CourseInfoTabTestCase(TabTestCase):
+
+    def test_is_enabled(self):
+        user_honor = self.create_mock_user(is_authenticated=True, is_staff=False, is_enrolled=True)
+        self.assertTrue(CourseInfoTab.is_enabled(self.course, user_honor))
+
+    @override_settings(FEATURES=FEATURES_WITH_STARTDATE)
+    def test_is_enabled_not_course_started(self):
+        user_staff = self.create_mock_user(is_authenticated=True, is_staff=True, is_enrolled=True)
+        user_honor = self.create_mock_user(is_authenticated=True, is_staff=False, is_enrolled=True)
+        self.course.start = timezone.now() + timedelta(days=1)
+
+        # staff can access
+        self.assertTrue(CourseInfoTab.is_enabled(self.course, user_staff))
+        # no staff can not access
+        self.assertFalse(CourseInfoTab.is_enabled(self.course, user_honor))
