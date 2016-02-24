@@ -281,3 +281,7 @@ FEATURES['ENABLE_TEAMS'] = True
 
 # Dummy secret key for dev/test
 SECRET_KEY = '85920908f28904ed733fe576320db18cabd7b6cd'
+
+# can't test start dates with this True, but on the other hand,
+# can test everything else :)
+FEATURES['DISABLE_START_DATES'] = True

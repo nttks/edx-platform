@@ -960,7 +960,11 @@ class CCXCoachTabTestCase(SharedModuleStoreTestCase):
         """
         Test ccx coach tab state (visible or hidden) depending on the value of enable_ccx flag, ccx feature flag.
         """
-        with self.settings(FEATURES={'CUSTOM_COURSES_EDX': ccx_feature_flag}):
+
+        features_with_ccx = settings.FEATURES.copy()
+        features_with_ccx['CUSTOM_COURSES_EDX'] = ccx_feature_flag
+
+        with self.settings(FEATURES=features_with_ccx):
             course = self.ccx_enabled_course if enable_ccx else self.ccx_disabled_course
             self.assertEquals(
                 expected_result,

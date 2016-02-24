@@ -6,6 +6,7 @@ from nose.plugins.attrib import attr
 from pytz import UTC
 from django.utils.timezone import UTC as django_utc
 
+from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.test import TestCase, RequestFactory
 from edxmako import add_lookup
@@ -1087,6 +1088,15 @@ class RenderMustacheTests(TestCase):
 class DiscussionTabTestCase(ModuleStoreTestCase):
     """ Test visibility of the discussion tab. """
 
+    FEATURES_WITH_DISCUSSION = settings.FEATURES.copy()
+    FEATURES_WITH_DISCUSSION['ENABLE_DISCUSSION_SERVICE'] = True
+
+    FEATURES_WITH_NO_DISCUSSION = settings.FEATURES.copy()
+    FEATURES_WITH_NO_DISCUSSION['ENABLE_DISCUSSION_SERVICE'] = False
+
+    FEATURES_WITH_CCX = settings.FEATURES.copy()
+    FEATURES_WITH_CCX['CUSTOM_COURSES_EDX'] = True
+
     def setUp(self):
         super(DiscussionTabTestCase, self).setUp()
         self.course = CourseFactory.create()
@@ -1103,7 +1113,7 @@ class DiscussionTabTestCase(ModuleStoreTestCase):
         return any(tab.type == 'discussion' for tab in all_tabs)
 
     def test_tab_access(self):
-        with self.settings(FEATURES={'ENABLE_DISCUSSION_SERVICE': True}):
+        with self.settings(FEATURES=self.FEATURES_WITH_DISCUSSION):
             self.assertTrue(self.discussion_tab_present(self.staff_user))
             self.assertTrue(self.discussion_tab_present(self.enrolled_user))
             self.assertFalse(self.discussion_tab_present(self.unenrolled_user))
@@ -1111,10 +1121,10 @@ class DiscussionTabTestCase(ModuleStoreTestCase):
     @mock.patch('ccx.overrides.get_current_ccx')
     def test_tab_settings(self, mock_get_ccx):
         mock_get_ccx.return_value = True
-        with self.settings(FEATURES={'ENABLE_DISCUSSION_SERVICE': False}):
+        with self.settings(FEATURES=self.FEATURES_WITH_NO_DISCUSSION):
             self.assertFalse(self.discussion_tab_present(self.enrolled_user))
 
-        with self.settings(FEATURES={'CUSTOM_COURSES_EDX': True}):
+        with self.settings(FEATURES=self.FEATURES_WITH_CCX):
             self.assertFalse(self.discussion_tab_present(self.enrolled_user))
 
 
