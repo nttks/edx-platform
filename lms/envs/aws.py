@@ -581,6 +581,10 @@ if FEATURES.get('ENABLE_THIRD_PARTY_AUTH'):
     # The reduced session expiry time during the third party login pipeline. (Value in seconds)
     SOCIAL_AUTH_PIPELINE_TIMEOUT = ENV_TOKENS.get('SOCIAL_AUTH_PIPELINE_TIMEOUT', 600)
 
+    # If True, convert the username obtained from the provider to the slugify username
+    # See python-social-auth/social/pipeline/user.py:get_username
+    SOCIAL_AUTH_SLUGIFY_USERNAMES = ENV_TOKENS.get('SOCIAL_AUTH_SLUGIFY_USERNAMES', False)
+
     # Most provider configuration is done via ConfigurationModels but for a few sensitive values
     # we allow configuration via AUTH_TOKENS instead (optionally).
     # The SAML private/public key values do not need the delimiter lines (such as
