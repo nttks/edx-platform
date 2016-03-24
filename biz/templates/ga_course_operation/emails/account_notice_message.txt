@@ -20,7 +20,7 @@ ${u"""
 
 ===============
 ・{platform_name}に関する「よくあるご質問」はコチラ
-  https://support.gacco.org/
+　https://support.gacco.org/
 
 ・お問い合わせはマイページの「ヘルプ」ボタンよりお願いします
 　https://{site_name}/dashboard
