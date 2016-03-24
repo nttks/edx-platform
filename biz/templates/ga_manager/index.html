@@ -78,6 +78,11 @@ from django.core.urlresolvers import reverse
         }
 
         function modify_permission(elem, identifier, action) {
+            if (!$("#organization").val()) {
+                // don't have org
+                return;
+            }
+
             lock();
             $(".messages").empty();
 

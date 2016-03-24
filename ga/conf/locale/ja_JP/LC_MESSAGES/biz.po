@@ -441,6 +441,10 @@ msgstr "指定されたユーザーは存在しません。"
 
 #: biz/djangoapps/ga_manager/views.py
 msgid "The user is not active."
+msgstr "指定されたユーザーは未アクティベーション状態です。"
+
+#: biz/djangoapps/ga_manager/views.py
+msgid "The user is resigned."
 msgstr "指定されたユーザーは退会済みです。"
 
 #: biz/djangoapps/ga_manager/views.py

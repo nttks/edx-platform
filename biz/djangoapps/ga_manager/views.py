@@ -3,6 +3,7 @@ Views for manager feature
 """
 import logging
 
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
@@ -22,6 +23,7 @@ from biz.djangoapps.ga_organization.models import Organization
 from biz.djangoapps.util.decorators import check_course_selection
 from edxmako.shortcuts import render_to_response
 from instructor.views.tools import get_student_from_identifier
+from student.models import UserStanding
 from util.json_request import JsonResponse
 
 log = logging.getLogger(__name__)
@@ -42,6 +44,10 @@ def index(request):
         'org_list': _create_org_choice_list(manager),
         'permission_list': _create_permission_choice_list(manager),
     }
+
+    if not context['org_list']:
+        messages.error(request, _("You need to create an organization first."))
+
     return render_to_response('ga_manager/index.html', context)
 
 
@@ -104,6 +110,11 @@ def modify_ajax(request):
     # check that user is active
     if not user.is_active:
         return _ajax_fail_response("The user is not active.")
+
+    # check that user is resigned
+    user_standing = UserStanding.objects.filter(user=user)
+    if user_standing and user_standing[0].account_status == UserStanding.ACCOUNT_DISABLED:
+        return _ajax_fail_response("The user is resigned.")
 
     # check that user is not logged in user
     if request.user == user:
