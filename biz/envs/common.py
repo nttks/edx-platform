@@ -19,5 +19,5 @@ Middleware Classes
 """
 MIDDLEWARE_CLASSES += (
     'biz.djangoapps.ga_manager.middleware.BizAccessCheckMiddleware',
-#    'biz.djangoapps.ga_invitation.middleware.SpocStatusMiddleware',
+    'biz.djangoapps.ga_invitation.middleware.SpocStatusMiddleware',
 )
