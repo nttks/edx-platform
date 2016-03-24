@@ -1,0 +1,199 @@
+<%inherit file="../main.html" />
+<%!
+from django.utils.translation import ugettext as _
+from django.core.urlresolvers import reverse
+from courseware.courses import course_image_url
+%>
+<%namespace name='static' file='../static_content.html'/>
+
+<%block name="bodyclass">invitation-code</%block>
+<%block name="pagetitle">${_("Invitation Code")}</%block>
+
+<%block name="headextra">
+<style>
+    body {
+        background-color: #fff;
+        font: 1em "ヒラギノ角ゴ Pro W3", "Hiragino Kaku Gothic Pro", "メイリオ", Meiryo, Osaka, "ＭＳ Ｐゴシック", "MS PGothic", sans-serif;
+    }
+
+    .content-wrapper {
+        min-height: 550px;
+    }
+
+    .content-wrapper a:hover {
+        text-decoration: underline !important;
+        color: #3393C3 !important;
+    }
+
+    hr {
+        margin: 20px 0 30px
+    }
+
+    .op-invitation {
+        padding: 1rem
+    }
+
+    .container h1 {
+        color: #555;
+        text-align: left;
+        font-size: 1.6em;
+        border-left: solid #43AC6A 4px;
+        padding-left: 10px;
+        margin: 30px 0 5px 0;
+    }
+
+    .op-invitation h3 {
+        line-height: 1.3;
+        margin: 0.5rem 0 0.2rem;
+        color: #444;
+        padding-left: 8px;
+        font-size: 1.2rem;
+    }
+
+    /*     Form Style Reset    */
+    input[type="submit"]:active:not(:disabled),
+    input[type="submit"]:focus:not(:disabled),
+    input[type="button"]:active:not(:disabled),
+    input[type="button"]:focus:not(:disabled),
+    button:active:not(:disabled),
+    button:focus:not(:disabled),
+    .button:active:not(:disabled),
+    .button:focus:not(:disabled) {
+        box-shadow: none
+    }
+
+    textarea,
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    input[type="tel"],
+    input[type="hidden"] {
+        font-style: inherit;
+        margin: 5px;
+        vertical-align: middle;
+        font-family: "ヒラギノ角ゴ Pro W3", "Hiragino Kaku Gothic Pro", "メイリオ", Meiryo, Osaka, "ＭＳ Ｐゴシック", "MS PGothic", sans-serif;
+    }
+
+    input[type="submit"],
+    input[type="button"] {
+        font-family: FontAwesome /*For Icon FontAwesome*/;
+        border-radius: 10px !important: opacity: 1;
+        -moz-transition: .3s;
+        -o-transition: .3s;
+        -webkit-transition: .3s;
+        transition: .3s
+    }
+
+    .code-input p,
+    .code-input input {
+        display: inline-block;
+        margin: 0.5rem 0;
+    }
+
+    .code-input {
+        margin: 10px 0 30px
+    }
+
+    .code-input p {
+        vertical-align: middle;
+        padding: 2px 3px 0 8px;
+        font-size: 1.2rem;
+    }
+
+    .op-invitation input[type="submit"] {
+        background-color: #43AC6A;
+        height: 2rem;
+    }
+
+    .cancel input[type="button"],
+    .code-fin input[type="button"] {
+        background-image: none;
+        background-color: #777;
+        height: 2rem;
+        margin: 0 0.5rem 1rem 0;
+    }
+
+    h3.fin {
+        margin: 0 0 20px 0
+    }
+
+    .code-fin .fa {
+        color: # #126F9A
+    }
+
+    .code-fin {
+        padding-left: 1rem;
+        font-size: 1.1rem;
+    }
+
+    .code-fin p,
+    .code-fin input[type="button"] {
+        display: inline-block;
+        margin: 0 4px 13px 0;
+        vertical-align: middle;
+    }
+
+    span#message-invitation-code {
+        margin-left: 5px
+    }
+</style>
+</%block>
+
+<%block name="js_extra">
+<script>
+    $(function () {
+        $('#form-invitation-code').on('submit', function (e) {
+            e.preventDefault();
+            var el = $(this);
+            $.ajax({
+                url: el.attr('action'),
+                type: 'POST',
+                dataType: 'json',
+                data: el.serializeArray()
+            }).done(function (data) {
+                if (data.result) {
+                    window.location.href = data.href;
+                } else {
+                    $('#message-invitation-code').html(data.message);
+                }
+            });
+        });
+        $('#cancel-invitation-code').on('click', function () {
+            window.location.href = $(this).data('url');
+        });
+    });
+</script>
+</%block>
+
+<%block name="content">
+<div id="invitation-code" class="container">
+  <h1>${_("Input Invitation Code")}</h1>
+  <div class="op-invitation">
+    <h3 class="title">${_("Please check the course content by entering the invitation code.")}</h3>
+    <form id="form-invitation-code" action="${reverse('biz:invitation:verify')}" method="post">
+      <div class="code-input" >
+        <p>${_("Invitation Code:")}</p><input type="text" name="invitation_code" placeholder="${_("Input Invitation Code")}" /><span id="message-invitation-code" style="color: rgb(204, 0, 0);"></span>
+      </div>
+      <div class="cancel" >
+        <input type="hidden" name="csrfmiddlewaretoken" value="${csrf_token}">
+        <input id="cancel-invitation-code" type="button" data-url="${reverse('account_settings')}" value="&#xf05e; ${_("Cancel")}" />
+        <input type="submit" value="&#; ${_("To confirm the attendance content.")}" />
+      </div>
+    </form>
+    % if contracts:
+      <hr>
+      <div>
+        <h3 class="fin">${_("Already taking code that registration has been completed.")}</h3>
+        % for c in contracts:
+          <div class="code-fin">
+            <p>
+              <a href="${reverse('biz:invitation:confirm', kwargs={'invitation_code': c.invitation_code})}">${c.contract_name} <i class="fa fa-search fa-fw"></i></a>
+            </p>
+          </div>
+        % endfor
+      </div>
+    % endif
+  </div>
+</div>
+</%block>
+

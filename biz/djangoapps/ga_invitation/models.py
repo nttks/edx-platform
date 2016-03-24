@@ -99,7 +99,7 @@ class ContractRegister(models.Model):
     @classmethod
     def get_by_user_contract(cls, user, contract):
         """
-        Get OntractRegister if exists.
+        Get ContractRegister if exists.
         """
         try:
             return cls.objects.get(user=user, contract=contract)
@@ -109,7 +109,7 @@ class ContractRegister(models.Model):
     @classmethod
     def find_register_by_user(cls, user):
         """
-        Get OntractRegister of registered.
+        Get ContractRegister of registered.
         """
         return cls.objects.filter(user=user, status=REGISTER_INVITATION_CODE)
 

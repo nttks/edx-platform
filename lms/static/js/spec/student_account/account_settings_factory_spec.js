@@ -28,6 +28,8 @@ define(['backbone', 'jquery', 'underscore', 'common/js/spec_helpers/ajax_helpers
                     'options': Helpers.FIELD_OPTIONS
                 }, 'resign': {
                     'url': '/resign'
+                }, 'invitation_code': {
+                    'url': '/biz/invitation/'
                 }
             };
 
@@ -185,7 +187,7 @@ define(['backbone', 'jquery', 'underscore', 'common/js/spec_helpers/ajax_helpers
                     }, requests);
                 });
 
-                expect(sectionsData[2].fields.length).toBe(1);
+                expect(sectionsData[2].fields.length).toBe(2);
 
                 var section3Fields = sectionsData[3].fields;
                 expect(section3Fields.length).toBe(2);

@@ -359,6 +359,8 @@ def account_settings_context(request):
                 'url': reverse('password_reset'),
             }, 'resign': {
                 'url': reverse('resign'),
+            }, 'invitation_code': {
+                'url': reverse('biz:invitation:index'),
             }, 'year_of_birth': {
                 'options': year_of_birth_options,
             }, 'preferred_language': {
