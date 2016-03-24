@@ -8,6 +8,8 @@ plantInterval = (ms, cb) -> setInterval cb, ms
 
 # get jquery element and assert its existance
 find_and_assert = ($root, selector) ->
+  if $root.length == 0
+    return $root
   item = $root.find selector
   if item.length != 1
     console.error "element selection failed for '#{selector}' resulted in length #{item.length}"

@@ -253,7 +253,7 @@ msgid "username1@domain.com,gaccotarou,gacco taro"
 msgstr "username1@domain.com,gaccotarou,学校 太郎"
 
 #: biz/djangoapps/ga_course_operation/views.py
-msgid "Data in row #{row_num} must have exactly four columns: email, username, and full name."
+msgid "Data in row #{row_num} must have exactly three columns: email, username, and full name."
 msgstr "{row_num}行目から次の3項目が見つかりませんでした：メールアドレス、ユーザー名、氏名"
 
 #: biz/templates/ga_course_operation/membership.html
