@@ -158,6 +158,7 @@ from django.core.urlresolvers import reverse
         position: absolute;
         left: -5rem;
         top: 15px;
+        width: 200px;
     }
 
     .w2ui-reset select {
@@ -175,7 +176,7 @@ from django.core.urlresolvers import reverse
     }
 
     .add-info {
-        height: 3.5rem
+        height: 3.5rem;
     }
 
     /*   form   */
@@ -193,9 +194,9 @@ from django.core.urlresolvers import reverse
         padding-top: 15px;
     }
 
-    #add_detail {
+    .add-Plus {
         text-align: right;
-        cursor: pointer
+        cursor: pointer;
     }
 </style>
 
@@ -219,7 +220,7 @@ from django.core.urlresolvers import reverse
                 <div class="w2ui-group height3">
                     % for field in form :
                     <div class="w2ui-field">
-                        <label style="width:200px;">${_(field.label)}：</label>
+                        <label>${_(field.label)}：</label>
                         <div>
                             ${field}
                             % if field.field.required:
@@ -243,19 +244,19 @@ from django.core.urlresolvers import reverse
                 % if form.errors.has_key('contract_detail'):
                 ${form.errors['contract_detail']}
                 % endif
-                <div style="text-align: right;cursor: pointer"><a id="add_detail" >${_('Add Contract Detail Info')}</a></div>
+                <div class="add-Plus"><a id="add_detail">${_('Add Contract Detail Info')}</a></div>
                 <div class="w2ui-group">
                     <div class="w2ui-field" id="detail_template" style="display: none">
-                        <label style="width: 200px;">${_("Course Name")}：</label>
+                        <label>${_("Course Name")}：</label>
                         <div>
                             <select name="detail_course">
                                 % for course in course_list :
                                 <option value="${course[0]}">${course[1] | h}</option>
                                 % endfor
                             </select>
-                            <input type="hidden" name="detail_id" value="" />
+                             <input type="hidden" name="detail_id" value="" />
                             <input type="hidden" name="detail_delete" value="" class="delete" />
-                            <a style="cursor: pointer">${_('Delete')}</a>
+                            <a>${_('Delete')}</a>
                             <span class="err_msg red"></span>
                         </div>
                     </div>
@@ -269,15 +270,15 @@ from django.core.urlresolvers import reverse
                 % if form.errors.has_key('additional_info'):
                 ${form.errors['additional_info']}
                 % endif
-                <div style="text-align: right;cursor: pointer"><a id="add_additional" >${_('Add Additional Info')}</a></div>
+                <div class="add-Plus"><a id="add_additional" >${_('Add Additional Info')}</a></div>
                 <div class="w2ui-group">
                     <div class="w2ui-field add-info" id="additional_info_template" style="display: none">
-                        <label style="width: 200px;">${_("Display Name")}：</label>
+                        <label>${_("Display Name")}：</label>
                         <div>
                             <input type="hidden" name="additional_info_id" value="" />
                             <input type="text" name="additional_info_display_name" value="..." maxlength="255" placeholder="${_('max {0} character').format(255)}"/>
                             <input type="hidden" name="additional_info_delete" value="" />
-                            <a style="cursor: pointer">${_('Delete')}</a>
+                            <a>${_('Delete')}</a>
                             <span class="err_msg red"></span>
                         </div>
                     </div>

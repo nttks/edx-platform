@@ -146,7 +146,7 @@ from django.core.urlresolvers import reverse
 </%block>
 
 <%block name="custom_content">
-<div id="form" style="min-width: 800px;">
+<div id="form" class="fieldArea">
     <div class="w2ui-page page-0">
         <div class="member-header">
             <div class="field">
@@ -182,7 +182,7 @@ from django.core.urlresolvers import reverse
                 <tr id="member_template" style="display: none">
                     <td id="name"></td>
                     <td id="email"></td>
-                    <td><a style="cursor: pointer; color: red;">${_("Revoke")}</a></td>
+                    <td><a class="red">${_("Revoke")}</a></td>
                 </tr>
                 </tbody>
             </table>

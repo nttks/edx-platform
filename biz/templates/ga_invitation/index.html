@@ -26,11 +26,15 @@ from courseware.courses import course_image_url
     }
 
     hr {
-        margin: 20px 0 30px
+        margin: 20px 0 30px;
+    }
+
+    .red {
+        color: #e33;
     }
 
     .op-invitation {
-        padding: 1rem
+        padding: 1rem;
     }
 
     .container h1 {
@@ -81,7 +85,7 @@ from courseware.courses import course_image_url
         -moz-transition: .3s;
         -o-transition: .3s;
         -webkit-transition: .3s;
-        transition: .3s
+        transition: .3s;
     }
 
     .code-input p,
@@ -91,7 +95,7 @@ from courseware.courses import course_image_url
     }
 
     .code-input {
-        margin: 10px 0 30px
+        margin: 10px 0 30px;
     }
 
     .code-input p {
@@ -114,11 +118,11 @@ from courseware.courses import course_image_url
     }
 
     h3.fin {
-        margin: 0 0 20px 0
+        margin: 0 0 20px 0;
     }
 
     .code-fin .fa {
-        color: # #126F9A
+        color: #126F9A;
     }
 
     .code-fin {
@@ -134,7 +138,7 @@ from courseware.courses import course_image_url
     }
 
     span#message-invitation-code {
-        margin-left: 5px
+        margin-left: 5px;
     }
 </style>
 </%block>
@@ -172,12 +176,12 @@ from courseware.courses import course_image_url
     <h3 class="title">${_("Please check the course content by entering the invitation code.")}</h3>
     <form id="form-invitation-code" action="${reverse('biz:invitation:verify')}" method="post">
       <div class="code-input" >
-        <p>${_("Invitation Code:")}</p><input type="text" name="invitation_code" placeholder="${_("Input Invitation Code")}" /><span id="message-invitation-code" style="color: rgb(204, 0, 0);"></span>
+        <p>${_("Invitation Code:")}</p><input type="text" name="invitation_code" placeholder="${_("Input Invitation Code")}" /><span id="message-invitation-code" class="red"></span>
       </div>
       <div class="cancel" >
         <input type="hidden" name="csrfmiddlewaretoken" value="${csrf_token}">
         <input id="cancel-invitation-code" type="button" data-url="${reverse('account_settings')}" value="&#xf05e; ${_("Cancel")}" />
-        <input type="submit" value="&#; ${_("To confirm the attendance content.")}" />
+        <input type="submit" value="&#xf002; ${_("To confirm the attendance content.")}" />
       </div>
     </form>
     % if contracts:

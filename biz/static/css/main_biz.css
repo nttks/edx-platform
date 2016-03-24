@@ -160,8 +160,6 @@ span.err_msg.show-reg {
     color: black;
 }
 
-/* -----------------------------▽2016 02 29 Add------------------------------- */
-
 /* -----------------------------▽ lms or gacco ------------------------------ */
 
 .content-wrapper {
@@ -197,6 +195,10 @@ input:not([type=button]), select, texture {
 input#id_org_name, input#id_org_code {
     width: 28rem;
     margin: -10px 0 10px 5px;
+}
+
+input#add_user {
+    width: 18rem;;
 }
 
 /* ----- Button ----- */
@@ -281,12 +283,6 @@ input#edit_btn {
     background-color: #409206 !important;
 }
 
-/*
-#role-selection-modal .btn:hover {
-	
-}
-*/
-
 /* -----------------------------▽ Biz Style------------------------------ */
 
 .biz-wrap h2 {
@@ -354,14 +350,6 @@ input[type="submit"]:active:not(:disabled), input[type="submit"]:focus:not(:disa
 input[type="radio"] {
     margin: 1px;
 }
-
-/*
-input[type="submit"], form input[type="submit"], .xmodule_display.xmodule_CapaModule div.problem div.action .check{
-    border-bottom: 2px solid #666;
-    transition: background-color 0.15s ease-in-out;
-    margin: 0 5px;
-}
-*/
 
 /* --------------------------- ▽W2UI --------------------------------- */
 
@@ -628,4 +616,17 @@ tr#member_detail {
 w2ui-popup .w2ui-msg-title {
     padding: 8px;
 }
-    
+
+/* ----- organization  manager----- */
+#form.fieldArea {
+    width: 800px;
+}
+
+#form.fieldArea .w2ui-field label {
+    width: 200px;
+}
+
+/* ----- achievement ----- */
+#scoreUpdateDate span.status {
+    margin-left: 10px;
+}
