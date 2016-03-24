@@ -1,0 +1,631 @@
+body, html {
+    background-color: #fff;
+    font-family: "ヒラギノ角ゴ Pro W3", "Hiragino Kaku Gothic Pro", "メイリオ", Meiryo, Osaka, "ＭＳ Ｐゴシック", "MS PGothic", sans-serif;
+    height: 100%;
+}
+
+a:hover {
+    cursor: pointer
+}
+
+/* ボーダー消し */
+input, button, a:focus, *:focus {
+    outline: none;
+}
+
+input, button, a {
+    outline: 0;
+    outline: none;
+}
+
+/* Firefox */
+input::-moz-focus-inner, button::-moz-focus-inner, a {
+    border: 0;
+}
+
+/*** Container ***/
+.view-biz .container {
+    padding: 10px 10px;
+}
+
+/*---------- Side Menu ----------*/
+nav.side-menu ul.menu li {
+    line-height: 1.6 !important;
+    padding: 7px 15px 0;
+    border-left: 3px solid #eee;
+    -moz-transition: .3s;
+    -o-transition: .3s;
+    -webkit-transition: .3s;
+    transition: .3s;
+}
+
+.menu li:hover, .menu li a:hover {
+    text-decoration: none !important;
+    cursor: pointer;
+}
+
+nav.side-menu ul.menu li:hover {
+    background-color: #CEE3EC;
+    color: #333;
+    cursor: pointer;
+    border-left: 3px solid #126F9A;
+}
+
+nav.side-menu ul.menu li:before {
+    font-family: FontAwesome;
+    content: ' \f013 ';
+    margin: 0 5px 0 0;
+    color: #126F9A;
+}
+
+nav.side-menu ul.menu li.current {
+    background-color: #CEE3EC;
+    border-left: #126F9A solid 3px;
+}
+
+.view-biz .container div.main {
+    float: left;
+    padding: 22px 35px;
+    position: absolute;
+    left: 335px;
+    -moz-transition: .3s;
+    -o-transition: .3s;
+    -webkit-transition: .3s;
+    transition: .3s;
+}
+
+.view-biz .container div.main.close {
+    left: 50px;
+}
+
+.change-role a {
+    background-color: #43AC6A;
+    color: #fff;
+    line-height: 1.6;
+    padding: 3px 20px;
+    position: relative;
+    border-bottom: 3px solid;
+    border-color: #2f8a7d;
+    top: 8px;
+    border-radius: 3px;
+    padding: 5px 15px 2px;
+}
+
+.change-role a:before {
+    font-family: FontAwesome;
+    content: ' \f007 ';
+    margin: 0 8px 0 0;
+}
+
+.change-role a:hover {
+    text-decoration: none;
+    background-color: green;
+}
+
+/*** Modal ***/
+.biz-modal {
+    display: none;
+}
+
+.w2ui-popup .w2ui-box1 {
+    bottom: 0px;
+}
+
+.w2ui-popup .w2ui-msg-body {
+    padding: 20px 10px 10px 10px;
+    line-height: 150%;
+}
+
+/*** Dialog ***/
+.btn-left {
+    float: left;
+    margin-left: 100px !important;
+}
+
+.btn-right {
+    float: right;
+    margin-right: 100px !important;
+}
+
+/*** Error ***/
+.red {
+    color: #e00;
+}
+
+ul.errorlist li {
+    color: #e00;
+    font-size: 1.1rem;
+    padding: 1rem;
+    display: block;
+    height: 2.6rem;
+}
+
+span.err_msg {
+    color: #e00;
+    display: block;
+    padding: 1px;
+    position: relative;
+}
+
+span.err_msg.show-reg {
+    left: 74px;
+    top: -8px;
+}
+
+.messages .error {
+    color: #e00;
+}
+
+.messages .info {
+    color: black;
+}
+
+/* -----------------------------▽2016 02 29 Add------------------------------- */
+
+/* -----------------------------▽ lms or gacco ------------------------------ */
+
+.content-wrapper {
+    min-height: 500px;
+}
+
+.wrapper.wrapper-footer {
+    box-shadow: none;
+    position: relative;
+    width: 100%;
+    bottom: -228px;
+    padding: 10px 10px 10px 10px;
+    z-index: -1;
+}
+
+/* ---------- ▽ Form Style ---------- */
+input:not([type=button]), select, texture {
+    font-style: normal;
+    font-family: sans-serif;
+}
+
+.w2ui-field > label {
+    margin-top: 13px;
+}
+
+.w2ui-reset select {
+    /*   padding: 10px; */
+    height: auto;
+    font-size: 1rem;
+    margin: 10px 10px 20px 0;
+}
+
+input#id_org_name, input#id_org_code {
+    width: 28rem;
+    margin: -10px 0 10px 5px;
+}
+
+/* ----- Button ----- */
+button.btn {
+    background-color: #777;
+    background-image: none;
+    color: #FFF;
+    border-bottom: 2px solid #333;
+    font-weight: 900;
+    font-size: 0.9rem !important;
+}
+
+button.btn, input#register_btn, input#delete_btn, input#edit_btn {
+    min-width: 6rem;
+    min-height: 2rem;
+}
+
+input[type="submit"], input[type="button"],
+.btn, button, button.btn, input {
+    font-family: FontAwesome;
+
+    -moz-transition: .3s;
+    -o-transition: .3s;
+    -webkit-transition: .3s;
+    transition: .3s
+}
+
+button.btn:hover:not(:disabled), .btn:hover, button:hover {
+    background-color: #444;
+    border-bottom: 2px solid #222;
+}
+
+input#delete_btn {
+    background: #777;
+    transition: .3s;
+    margin: 0 20px;
+    background-color: #C33;
+}
+
+input#delete_btn:hover {
+    background-color: #C30707;
+}
+
+button.btn.btn-blue {
+    background-color: #126F9A;
+    border-bottom: 2px solid #072B48;
+}
+
+button.btn.btn-blue:hover:not(:disabled) {
+    background-color: #204771;
+}
+
+#role-selection-modal .cancel, button#No {
+    background-color: #777;
+}
+
+input#btnDownload {
+    margin: 1rem 0;
+    padding: 0.3rem 1rem;
+}
+
+input#register_btn, input#delete_btn, input#edit_btn, input#btnDownload {
+    border-bottom: 2px solid #333;
+}
+
+button.biz-modal-close.w2ui-popup-btn.btn.cancel:hover, button#No:hover {
+    background-color: #444 !important;
+}
+
+#role-selection-modal .btn.success, button#Yes, input#register_btn, input#edit_btn, input#btnDownload {
+    background-color: #43AC6A;
+    border-color: #067913;
+}
+
+input#edit_btn {
+    height: 35px;
+    width: 11rem;
+    margin: 2px 5px;
+}
+
+.btn.success:hover, button#Yes:hover, input#register_btn:hover, input#edit_btn:hover {
+    background-color: #409206 !important;
+}
+
+/*
+#role-selection-modal .btn:hover {
+	
+}
+*/
+
+/* -----------------------------▽ Biz Style------------------------------ */
+
+.biz-wrap h2 {
+    font-size: 1.6rem;
+}
+
+.biz-wrap hr {
+    margin: 1rem auto;
+    opacity: 0.8;
+}
+
+#detail_template a, #additional_info_template a {
+    color: #2196F3;
+    font-size: 1rem;
+}
+
+.biz-wrap #grid {
+    min-width: 920px;
+    width: 98%;
+    height: 575px;
+    margin: 0;
+}
+
+.biz-wrap table td {
+    font-size: 0.88rem;
+    letter-spacing: 1px;
+}
+
+.biz-wrap h1 {
+    color: #777;
+    text-align: left;
+    font-size: 2rem;
+    border-left: solid #CF0F31 5px;
+    padding-left: 10px;
+    margin: 0px 0 20px 0;
+    border-bottom: solid #CF0F31 1px;
+}
+
+/* .biz-wrap */
+input[type="button"] {
+    background-color: #999;
+    background-image: none;
+    color: #FFF;
+    border-radius: 5px;
+    margin-top: 15px;
+    padding: 3px 15px;
+    font-size: large;
+}
+
+/* .biz-wrap */
+input[type="button"]#register_btn, #btnDownload {
+    background-color: #43AC6A;
+    /* 	border-bottom: 3px solid #2f8a7d; */
+    transition: background-color 0.15s ease-in-out;
+}
+
+.biz-wrap input[type="button"]#register_btn:hover, #btnDownload:hover {
+    background: #15986C;
+}
+
+input[type="submit"]:active:not(:disabled), input[type="submit"]:focus:not(:disabled), input[type="button"]:active:not(:disabled), input[type="button"]:focus:not(:disabled), button:active:not(:disabled), button:focus:not(:disabled), .button:active:not(:disabled), .button:focus:not(:disabled) {
+    box-shadow: none;
+}
+
+input[type="radio"] {
+    margin: 1px;
+}
+
+/*
+input[type="submit"], form input[type="submit"], .xmodule_display.xmodule_CapaModule div.problem div.action .check{
+    border-bottom: 2px solid #666;
+    transition: background-color 0.15s ease-in-out;
+    margin: 0 5px;
+}
+*/
+
+/* --------------------------- ▽W2UI --------------------------------- */
+
+.w2ui-reset * {
+    /* 	line-height: 1.2; */
+}
+
+.w2ui-field {
+    clear: both;
+}
+
+#grid, #grid a {
+    font-family: "Meiryo", "Hiragino Kaku Gothic ProN", "MS P Gothic", Verdana, Arial, Helvetica, sans-serif !important;
+    text-transform: none;
+    font-size: 13px;
+}
+
+.w2ui-grid .w2ui-grid-body table td.w2ui-grid-data > div {
+    padding: 6px 5px 3px;
+    font-size: 13px;
+}
+
+.w2ui-grid .w2ui-toolbar-search .w2ui-search-down {
+    margin-top: 3px;
+}
+
+.w2ui-grid .w2ui-footer-left {
+    display: none;
+}
+
+.w2ui-group {
+    background-color: #ebecef;
+    margin: 5px 0px 10px 0px;
+    padding: 20px 10px;
+    /* border-top: 1px solid #cedcea; */
+    border: 1px solid #cedcea;
+    max-width: 94%;
+    margin: 0 auto;
+}
+
+.w2ui-group.height3 .w2ui-field {
+    height: 3rem;
+}
+
+a#add_detail, a#add_additional {
+    color: #2196F3;
+    line-height: 1.6;
+    font-size: 1rem;
+}
+
+a#add_detail:before, a#add_additional:before {
+    content: " + ";
+}
+
+.w2ui-form .w2ui-page {
+    padding: 20px;
+}
+
+.w2ui-grid .w2ui-grid-body table .w2ui-col-number div {
+    padding: 6px 6px 0px 3px !important;
+    text-align: right;
+}
+
+.w2ui-overlay .w2ui-grid-searches table td.operator select {
+    /* Add */
+    background-image: none;
+    min-width: 4rem;
+}
+
+/* Chrome Only */
+@media screen and (-webkit-min-device-pixel-ratio: 0) {
+    .w2ui-overlay .w2ui-grid-searches table td.operator select {
+        padding: 9px 3px 7px 5px;
+        min-width: 4rem;
+        min-height: 1.5rem;
+    }
+}
+
+.w2ui-marker {
+    background-color: #FFF59D;
+    color: #0D47A1;
+    padding: 0 1px 4px;
+    border: 1px solid #FFEB3B;
+}
+
+/* ----- Link ----- */
+
+.w2ui-icon-columns:before {
+    cursor: pointer;
+}
+
+/* ----- ▽ Search Style ----- */
+.w2ui-toolbar table.w2ui-button {
+    margin: -2px 5px 0;
+    border-radius: 3px;
+    height: 24px;
+    border: 1px solid transparent;
+    background-color: transparent;
+    box-shadow: 0px 1px 1px 0px #aaa;
+    background-color: #fff;
+}
+
+.w2ui-toolbar table.w2ui-button .w2ui-tb-image {
+    width: 24px;
+    height: 23px;
+    padding: 0px;
+    margin: 2px 2px 2px 3px !important;
+    border: 0px !important;
+    text-align: center;
+}
+
+.w2ui-toolbar table.w2ui-button .w2ui-tb-image > span {
+    font-size: 20px;
+    margin: 0px 1px 1px 1px;
+    color: #008CBA;
+    text-shadow: 1px 1px 2px #aaa;
+}
+
+.w2ui-grid .w2ui-toolbar-search .w2ui-search-all {
+    width: 245px;
+    height: 28px;
+    border-radius: 12px;
+    border: 1px solid #b9b9b9;
+    color: #000;
+    background-color: #fff;
+    padding: 3px 18px 3px 24px;
+    margin: -2px -2px 0px 15px;
+}
+
+w2ui-grid .w2ui-toolbar-search .w2ui-search-down {
+    margin: 3px 3px 3px 20px;
+}
+
+.w2ui-icon.icon-search, .w2ui-icon.icon-search-down {
+    background-size: 25px 25px !important;
+    opacity: 1.0;
+}
+
+.w2ui-icon.icon-search,
+.w2ui-icon.icon-search-down {
+    background: none !important;
+    /*   background-size: 14px 12px !important; */
+    opacity: 0.9;
+}
+
+.w2ui-icon.icon-search,
+.w2ui-icon.icon-search-down:after {
+    content: " \f00e";
+    font-family: FontAwesome;
+    color: #008CBA;
+    font-size: 18px;
+    cursor: pointer;
+    position: absolute;
+    left: 13px;
+    top: 2px;
+}
+
+.w2ui-grid .w2ui-toolbar-search .w2ui-search-clear:before {
+    top: 0px;
+    left: 5px;
+}
+
+.w2ui-icon {
+    width: 30px;
+    height: 30px;
+}
+
+.w2ui-grid .w2ui-toolbar-search .w2ui-search-clear {
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    margin-top: 4px;
+    margin-left: -19px;
+    border-radius: 15px;
+    cursor: default;
+}
+
+.w2ui-grid .w2ui-toolbar-search .w2ui-search-clear:before {
+    top: 1px;
+    left: 4px;
+}
+
+.w2ui-toolbar table.w2ui-button .w2ui-tb-caption {
+    color: #0098B2;
+    padding: 0px 0px 0px 2px;
+    position: relative;
+    left: 90px;
+    top: 5px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    border-bottom: 1px solid #0098B2 !important;
+    /* text-align: center; */
+}
+
+td.w2ui-tb-caption:hover {
+    color: #43b3cf !important;
+}
+
+.w2ui-overlay-searches-achievement_grid:before {
+    margin-left: 60px;
+}
+
+/* ----- △ Search Style ----- */
+
+/*  Tool chip  Overlay*/
+.w2ui-overlay {
+    margin-top: 3px;
+    /* 	opacity: 0.9; */
+    padding: 0 10px 10px;
+}
+
+.w2ui-overlay table td {
+    font-size: 1rem;
+    vertical-align: baseline;
+    line-height: 1.5;
+}
+
+/* Table Style */
+.w2ui-grid .w2ui-grid-body table td.w2ui-grid-data > div {
+    padding: 5px 5px 3px 5px;
+    font-size: 0.88rem;
+}
+
+.w2ui-grid .w2ui-grid-body table .w2ui-head > div {
+    padding: 7px 5px;
+}
+
+.w2ui-grid .w2ui-grid-body .w2ui-grid-records table tr.w2ui-even {
+    color: inherit;
+    background-color: #E3EBF5;
+}
+
+/* --- other ----- */
+.member-list table th {
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: #777;
+    text-align: left;
+}
+
+tr#member_detail {
+    font-size: 1.1rem;
+    color: #43AC6A;
+}
+
+.w2ui-overlay .w2ui-grid-searches table td.value input[type=text] {
+    min-height: 23px;
+    height: auto;
+}
+
+.w2ui-overlay .w2ui-grid-searches table td.close-btn button {
+    min-width: 30px;
+    height: 30px;
+    padding-top: 6px !important;
+}
+
+.w2ui-centered {
+    top: 40%;
+    font-size: 1.2rem !important;
+    color: #C33;
+    font-weight: 900;
+}
+
+w2ui-popup .w2ui-msg-title {
+    padding: 8px;
+}
+    

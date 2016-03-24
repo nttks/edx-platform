@@ -440,6 +440,7 @@ XQUEUE_WAITTIME_BETWEEN_REQUESTS = 5  # seconds
 PROJECT_ROOT = path(__file__).abspath().dirname().dirname()  # /edx-platform/lms
 REPO_ROOT = PROJECT_ROOT.dirname()
 COMMON_ROOT = REPO_ROOT / "common"
+BIZ_ROOT = REPO_ROOT / "biz"
 GACCO_ROOT = REPO_ROOT / "ga"
 ENV_ROOT = REPO_ROOT.dirname()  # virtualenv dir /edx-platform is in
 COURSES_ROOT = ENV_ROOT / "data"
@@ -512,7 +513,8 @@ MAKO_TEMPLATES = {}
 MAKO_TEMPLATES['main'] = [PROJECT_ROOT / 'templates',
                           COMMON_ROOT / 'templates',
                           COMMON_ROOT / 'lib' / 'capa' / 'capa' / 'templates',
-                          COMMON_ROOT / 'djangoapps' / 'pipeline_mako' / 'templates']
+                          COMMON_ROOT / 'djangoapps' / 'pipeline_mako' / 'templates',
+                          BIZ_ROOT / 'templates']
 
 # This is where Django Template lookup is defined. There are a few of these
 # still left lying around.
@@ -522,6 +524,7 @@ TEMPLATE_DIRS = [
     COMMON_ROOT / 'lib' / 'capa' / 'capa' / 'templates',
     COMMON_ROOT / 'djangoapps' / 'pipeline_mako' / 'templates',
     COMMON_ROOT / 'static',  # required to statically include common Underscore templates
+    BIZ_ROOT / 'templates',
 ]
 
 TEMPLATE_CONTEXT_PROCESSORS = (
@@ -845,6 +848,7 @@ STATIC_URL = '/static/'
 STATIC_ROOT = ENV_ROOT / "staticfiles"
 
 STATICFILES_DIRS = [
+    BIZ_ROOT / "static",
     COMMON_ROOT / "static",
     PROJECT_ROOT / "static",
 ]
@@ -1957,6 +1961,15 @@ INSTALLED_APPS = (
 
     # custom ratelimit-backend
     'openedx.core.djangoapps.ga_ratelimitbackend',
+
+    # gacco ASP
+    'biz.djangoapps.ga_achievement',
+    'biz.djangoapps.ga_contract',
+    'biz.djangoapps.ga_course_operation',
+    'biz.djangoapps.ga_course_selection',
+    'biz.djangoapps.ga_manager',
+    'biz.djangoapps.ga_organization',
+    'biz.djangoapps.ga_invitation',
 )
 
 ######################### CSRF #########################################
@@ -2600,3 +2613,6 @@ CREDIT_PROVIDER_TIMESTAMP_EXPIRATION = 15 * 60
 # not expected to be active; this setting simply allows administrators to
 # route any messages intended for LTI users to a common domain.
 LTI_USER_EMAIL_DOMAIN = 'lti.example.com'
+
+##### Settings for Biz #####
+from biz.envs.common import *
