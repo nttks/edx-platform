@@ -5,10 +5,7 @@ import logging
 
 from django.core.exceptions import ValidationError
 
-from biz.djangoapps.ga_contract.models import (
-    Contract, ContractDetail,
-    CONTRACT_TYPE_PF, CONTRACT_TYPE_OWNERS, CONTRACT_TYPE_GACCO_SERVICE, CONTRACT_TYPE_OWNER_SERVICE,
-)
+from biz.djangoapps.ga_contract.models import Contract, ContractDetail
 from biz.djangoapps.ga_manager.models import Manager
 from biz.djangoapps.ga_organization.models import Organization
 from biz.djangoapps.util import course_utils
@@ -55,18 +52,8 @@ def get_valid_contract(manager, contract_id):
     :param contract_id: Contract id
     :return: the valid Contract object, or raises ValidationError if invalid
     """
-    contract_types = []
-    if manager.is_aggregator():
-        contract_types.append(CONTRACT_TYPE_OWNERS[0])
-    if manager.is_director() or manager.is_manager():
-        contract_types.append(CONTRACT_TYPE_PF[0])
-        contract_types.append(CONTRACT_TYPE_GACCO_SERVICE[0])
-        contract_types.append(CONTRACT_TYPE_OWNER_SERVICE[0])
-
     try:
-        contract = Contract.get_enabled_by_contractor_and_contract_id_and_contract_types(
-            manager.org.id, contract_id, contract_types
-        )
+        contract = Contract.get_enabled_by_manager_and_contract_id(manager, contract_id)
     except Contract.DoesNotExist:
         raise ValidationError(
             "Manager(id={}) has no permission to access to the specified contract(id={}).".format(
@@ -90,15 +77,7 @@ def get_valid_course(manager, contract, course_id):
         raise ValidationError("No such course was found in modulestore. course_id={}".format(course_id))
 
     # Check if the course exists in biz database
-    contract_types = []
-    if manager.is_director() or manager.is_manager():
-        contract_types.append(CONTRACT_TYPE_PF[0])
-        contract_types.append(CONTRACT_TYPE_GACCO_SERVICE[0])
-        contract_types.append(CONTRACT_TYPE_OWNER_SERVICE[0])
-
-    contract_details = ContractDetail.find_enabled_by_contractor_and_contract_id_and_contract_types_and_course_id(
-        manager.org.id, contract.id, contract_types, course.id
-    )
+    contract_details = ContractDetail.find_enabled_by_manager_and_contract_and_course(manager, contract, course)
     if len(contract_details) == 0:
         raise ValidationError(
             "Manager(id={}) has no permission to access to the specified course. contract_id={}, course_id={}".format(

@@ -326,7 +326,7 @@ from microsite_configuration import microsite
 
             <ul class="menu">
                 ## Platformer or Aggregator
-                % if current_manager and (current_manager.is_platformer() or (current_manager.is_aggregator() and current_contract)):
+                % if current_manager and (current_manager.is_platformer() or (current_manager.is_aggregator() and current_contract and not current_course)):
                     ## Organization
                     % if current_manager.can_handle_organization():
                     <li class="${'current' if current_feature == 'organization' else ''}"><a href="${reverse('biz:organization:index')}">${_("Organization List")}</a></li>

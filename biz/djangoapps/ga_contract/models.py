@@ -2,6 +2,7 @@ from django.contrib.auth.models import User
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
+from biz.djangoapps.ga_manager.models import Manager
 from biz.djangoapps.ga_organization.models import Organization
 from biz.djangoapps.util import datetime_utils
 from xmodule_django.models import CourseKeyField
@@ -60,11 +61,25 @@ class Contract(models.Model):
         ]
 
     @classmethod
-    def get_enabled_by_contractor_and_contract_id_and_contract_types(
-            cls, contractor_org_id, contract_id, contract_types):
+    def get_enabled_by_manager_and_contract_id(cls, manager, contract_id):
+        """
+        Get by contract types related to manager's permissions and contract id
+
+        :param manager: Manager object
+        :param contract_id: contract id
+        :return: Contract object, or raise DoesNotExist if not exist
+        """
+        contract_types = []
+        if manager.is_aggregator():
+            contract_types.append(CONTRACT_TYPE_OWNERS[0])
+        if manager.is_director() or manager.is_manager():
+            contract_types.append(CONTRACT_TYPE_PF[0])
+            contract_types.append(CONTRACT_TYPE_GACCO_SERVICE[0])
+            contract_types.append(CONTRACT_TYPE_OWNER_SERVICE[0])
+
         return cls.objects.enabled().get(
             pk=contract_id,
-            contractor_organization__id=contractor_org_id,
+            contractor_organization__id=manager.org.id,
             contract_type__in=contract_types,
         )
 
@@ -84,8 +99,47 @@ class Contract(models.Model):
         return cls.objects.enabled().filter(contractor_organization__id=contractor_org_id)
 
     @classmethod
-    def find_enabled_by_contractors(cls, contractor_orgs):
-        return cls.objects.enabled().filter(contractor_organization__in=contractor_orgs).order_by('-created')
+    def find_enabled_by_user(cls, user):
+        """
+        Filter by contract types related to managers' permissions of user
+
+        :param user: User object
+        :return: Contract objects
+        """
+        managers = Manager.get_managers(user)
+        contract_types = []
+        if any([manager.is_aggregator() for manager in managers]):
+            contract_types.append(CONTRACT_TYPE_OWNERS[0])
+        if any([manager.is_director() or manager.is_manager() for manager in managers]):
+            contract_types.append(CONTRACT_TYPE_PF[0])
+            contract_types.append(CONTRACT_TYPE_GACCO_SERVICE[0])
+            contract_types.append(CONTRACT_TYPE_OWNER_SERVICE[0])
+
+        return cls.objects.enabled().filter(
+            contractor_organization__managers__user=user,
+            contract_type__in=contract_types,
+        ).order_by('-created')
+
+    @classmethod
+    def find_enabled_by_manager(cls, manager):
+        """
+        Filter by contract types related to manager's permissions
+
+        :param manager: Manager object
+        :return: Contract objects
+        """
+        contract_types = []
+        if manager.is_aggregator():
+            contract_types.append(CONTRACT_TYPE_OWNERS[0])
+        if manager.is_director() or manager.is_manager():
+            contract_types.append(CONTRACT_TYPE_PF[0])
+            contract_types.append(CONTRACT_TYPE_GACCO_SERVICE[0])
+            contract_types.append(CONTRACT_TYPE_OWNER_SERVICE[0])
+
+        return cls.objects.enabled().filter(
+            contractor_organization__id=manager.org.id,
+            contract_type__in=contract_types,
+        )
 
 
 class ContractDetail(models.Model):
@@ -109,6 +163,28 @@ class ContractDetail(models.Model):
         return cls.objects.enabled().filter(contract__contractor_organization__in=contractor_orgs).order_by('id')
 
     @classmethod
+    def find_enabled_by_user(cls, user):
+        """
+        Filter by contract types related to managers' permissions of user
+
+        :param user: User object
+        :return: ContractDetail objects
+        """
+        managers = Manager.get_managers(user)
+        contract_types = []
+        if any([manager.is_aggregator() for manager in managers]):
+            contract_types.append(CONTRACT_TYPE_OWNERS[0])
+        if any([manager.is_director() or manager.is_manager() for manager in managers]):
+            contract_types.append(CONTRACT_TYPE_PF[0])
+            contract_types.append(CONTRACT_TYPE_GACCO_SERVICE[0])
+            contract_types.append(CONTRACT_TYPE_OWNER_SERVICE[0])
+
+        return cls.objects.enabled().filter(
+            contract__contractor_organization__managers__user=user,
+            contract__contract_type__in=contract_types,
+        ).order_by('id')
+
+    @classmethod
     def find_enabled_by_contractor_and_contract_id(cls, contractor_org_id, contract_id):
         return cls.objects.enabled().filter(
             contract__id=contract_id,
@@ -116,13 +192,47 @@ class ContractDetail(models.Model):
         )
 
     @classmethod
-    def find_enabled_by_contractor_and_contract_id_and_contract_types_and_course_id(
-            cls, contractor_org_id, contract_id, contract_types, course_key):
+    def find_enabled_by_manager_and_contract(cls, manager, contract):
+        """
+        Filter by contract types related to manager's permissions and contract id
+
+        :param manager: Manager object
+        :param contract: Contract object
+        :return: ContractDetail objects
+        """
+        contract_types = []
+        if manager.is_director() or manager.is_manager():
+            contract_types.append(CONTRACT_TYPE_PF[0])
+            contract_types.append(CONTRACT_TYPE_GACCO_SERVICE[0])
+            contract_types.append(CONTRACT_TYPE_OWNER_SERVICE[0])
+
         return cls.objects.enabled().filter(
-            course_id=course_key,
-            contract__id=contract_id,
+            contract__id=contract.id,
             contract__contract_type__in=contract_types,
-            contract__contractor_organization__id=contractor_org_id,
+            contract__contractor_organization__id=manager.org.id,
+        )
+
+    @classmethod
+    def find_enabled_by_manager_and_contract_and_course(cls, manager, contract, course):
+        """
+        Filter by contract types related to manager's permissions and contract id and course key
+
+        :param manager: Manager object
+        :param contract: Contract object
+        :param course: course object
+        :return: ContractDetail objects
+        """
+        contract_types = []
+        if manager.is_director() or manager.is_manager():
+            contract_types.append(CONTRACT_TYPE_PF[0])
+            contract_types.append(CONTRACT_TYPE_GACCO_SERVICE[0])
+            contract_types.append(CONTRACT_TYPE_OWNER_SERVICE[0])
+
+        return cls.objects.enabled().filter(
+            course_id=course.id,
+            contract__id=contract.id,
+            contract__contract_type__in=contract_types,
+            contract__contractor_organization__id=manager.org.id,
         )
 
     @classmethod
