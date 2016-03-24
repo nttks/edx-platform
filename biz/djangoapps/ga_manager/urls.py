@@ -1,5 +1,5 @@
 """
-Views for manager feature
+URLconf for manager views
 """
 from django.conf.urls import patterns, url
 
