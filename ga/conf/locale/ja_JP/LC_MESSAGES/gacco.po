@@ -2267,7 +2267,7 @@ msgstr "わかりやすいタイトルをつけましょう。タイトルで、
 
 #: lms/templates/discussion/_underscore_templates.html
 msgid "Upvote good posts. This applies to questions and answers. Click on the green plus button so that good posts can be found more easily."
-msgstr "良い発言、役立つ発言に <i class="icon fa fa-thumbs-o-up"></i>（いいね！）ボタンを押しましょう。"
+msgstr "良い発言、役立つ発言に <i class=\"icon fa fa-thumbs-o-up\"></i>（いいね！）ボタンを押しましょう。"
 
 #: lms/templates/discussion/_underscore_templates.html
 msgid "Be specific. Write clearly with simple reasons."
@@ -2504,3 +2504,11 @@ msgstr "gaccoにおける権限に関する情報の表示"
 #: templates/dashboard/_dashboard_course_listing.html
 msgid "Course has not yet started"
 msgstr "講座はまだ開始していません"
+
+#: biz/djangoapps/ga_manager/tab.py
+msgid "BizManager"
+msgstr "法人管理"
+
+#: biz/djangoapps/ga_manager/tab.py
+msgid "Biz Manager Dashboard"
+msgstr "法人管理ダッシュボード"

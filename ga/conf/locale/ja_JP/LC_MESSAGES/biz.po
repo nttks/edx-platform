@@ -1,0 +1,547 @@
+# edX translation file.
+# Copyright (C) 2016 edX
+# This file is distributed under the GNU AFFERO GENERAL PUBLIC LICENSE.
+#
+# Translators:
+# yokose-ks <ayokose.gacco@gmail.com>, 2016
+msgid ""
+msgstr ""
+"Project-Id-Version: edx-platform\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Language-Team: Japanese\n"
+"Language: ja_JP\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"Last-Translator: yokose-ks <ayokose.gacco@gmail.com>\n"
+"PO-Revision-Date: 2016-03-01 10:00+0900\n"
+
+##### Main
+#: biz/templates/main_biz.html
+msgid "Organization not specified"
+msgstr "組織未選択"
+
+#: biz/templates/main_biz.html
+msgid "Contract not specified"
+msgstr "契約未選択"
+
+#: biz/templates/main_biz.html
+msgid "Course not specified"
+msgstr "講座未選択"
+
+#: biz/templates/main_biz.html
+msgid "Change Role"
+msgstr "管理対象変更"
+
+#: biz/templates/main_biz.html
+msgid "Please select your role."
+msgstr "管理対象を選択してください。"
+
+#: biz/templates/main_biz.html
+msgid "Save Selection"
+msgstr "決定"
+
+#: biz/templates/main_biz.html
+msgid "Score Status"
+msgstr "受講状況"
+
+#: biz/templates/main_biz.html
+msgid "Course Enrollment Management"
+msgstr "受講者登録"
+
+#: biz/templates/main_biz.html
+msgid "Survey Management"
+msgstr "アンケート"
+
+#: biz/templates/main_biz.html
+msgid "Manager Setting"
+msgstr "管理者設定"
+
+#: templates/theme-header.html
+msgid "Biz"
+msgstr "管理サイト"
+
+##### Achievement
+#: biz/templates/ga_achievement/score.html
+msgid "Score Update Date"
+msgstr "成績更新日時"
+
+#: biz/templates/ga_achievement/score.html
+msgid "Started"
+msgstr "更新中"
+
+#: biz/templates/ga_achievement/score.html
+msgid "All CSV Download"
+msgstr "全件CSVダウンロード"
+
+#: biz/djangoapps/ga_achievement/score_store.py
+msgid "Student Status"
+msgstr "受講ステータス"
+
+#: biz/djangoapps/ga_achievement/score_store.py
+msgid "Not Enrolled"
+msgstr "未受講"
+
+#: biz/djangoapps/ga_achievement/score_store.py
+msgid "Enrolled"
+msgstr "受講中"
+
+#: biz/djangoapps/ga_achievement/score_store.py
+msgid "Unenrolled"
+msgstr "受講解除"
+
+#: biz/djangoapps/ga_achievement/score_store.py
+msgid "Disabled"
+msgstr "退会"
+
+#: biz/djangoapps/ga_achievement/score_store.py
+msgid "Certificate Status"
+msgstr "修了証ステータス"
+
+#: biz/djangoapps/ga_achievement/score_store.py
+msgid "Downloadable"
+msgstr "公開済"
+
+#: biz/djangoapps/ga_achievement/score_store.py
+msgid "Unpublished"
+msgstr "未公開"
+
+#: biz/djangoapps/ga_achievement/score_store.py
+msgid "Enroll Date"
+msgstr "受講登録日"
+
+#: biz/djangoapps/ga_achievement/score_store.py
+msgid "Certificate Issue Date"
+msgstr "修了証発行日"
+
+#: biz/djangoapps/ga_achievement/score_store.py
+msgid "Total Score"
+msgstr "合計スコア"
+
+##### Contract
+#: biz/templates/ga_contract/index.html
+msgid "Contract List"
+msgstr "契約一覧"
+
+#: biz/templates/ga_contract/index.html
+msgid "Contract Name"
+msgstr "契約名"
+
+#: biz/templates/ga_contract/index.html
+msgid "Contract Type"
+msgstr "契約形態名"
+
+#: biz/templates/ga_contract/index.html
+msgid "Invitation Code"
+msgstr "受講コード"
+
+#: biz/templates/ga_contract/index.html
+msgid "Contractor Organization Name"
+msgstr "契約先組織名"
+
+#: biz/templates/ga_contract/index.html
+msgid "Contract Start Date"
+msgstr "契約開始日"
+
+#: biz/templates/ga_contract/index.html
+msgid "Contract End Date"
+msgstr "契約終了日"
+
+#: biz/templates/ga_contract/index.html
+msgid "Total Unique User Count"
+msgstr "合計ユニークユーザー数"
+
+#: biz/templates/ga_contract/index.html
+msgid "Total Course Count"
+msgstr "講座数"
+
+#: biz/templates/ga_contract/index.html
+msgid "Additional Info Count"
+msgstr "追加情報数"
+
+#: biz/templates/ga_contract/index.html
+msgid "Created By Name"
+msgstr "作成者名"
+
+#: biz/templates/ga_contract/index.html
+msgid "New Contract"
+msgstr "新規作成"
+
+#: biz/templates/ga_contract/detail.html
+msgid "Contract Detail"
+msgstr "契約詳細"
+
+#: biz/templates/ga_contract/detail.html
+msgid "Contract Info"
+msgstr "基本情報"
+
+#: biz/templates/ga_contract/detail.html
+msgid "Contract Detail Info"
+msgstr "講座情報"
+
+#: biz/templates/ga_contract/detail.html
+msgid "Additional Info"
+msgstr "追加情報"
+
+#: biz/templates/ga_contract/detail.html
+msgid "Add Contract Detail Info"
+msgstr "新しい講座情報を追加"
+
+#: biz/templates/ga_contract/detail.html
+msgid "Add Additional Info"
+msgstr "新しい追加情報を追加"
+
+#: biz/templates/ga_contract/detail.html
+msgid "Save Contract"
+msgstr "登録"
+
+#: biz/djangoapps/ga_contract/views.py
+msgid "You need to create an organization first."
+msgstr "組織を先に作成する必要があります。"
+
+msgid "The new contract has been added."
+msgstr "新しい契約が追加されました。"
+
+#: biz/djangoapps/ga_contract/views.py
+msgid "The contract has been deleted."
+msgstr "契約が削除されました。"
+
+#: biz/djangoapps/ga_contract/views.py
+msgid "The contract changes have been saved."
+msgstr "契約の内容が変更されました。"
+
+#: biz/djangoapps/ga_contract/views.py
+msgid "The contract cannot be deleted, because invitation code has been registered."
+msgstr "受講コードが既に登録されたため、契約を削除できません。"
+
+#: biz/djangoapps/ga_contract/models.py
+msgid "PF Contract"
+msgstr "PF契約"
+
+#: biz/djangoapps/ga_contract/models.py
+msgid "Owners Contract"
+msgstr "オーナー契約"
+
+#: biz/djangoapps/ga_contract/models.py
+msgid "Gacco Service Contract"
+msgstr "gaccoサービス契約"
+
+#: biz/djangoapps/ga_contract/models.py
+msgid "Owner Service Contract"
+msgstr "オーナーサービス契約"
+
+#: biz/djangoapps/ga_contract/forms.py
+msgid "The invitation code has been used."
+msgstr "受講コードが既に使われています。"
+
+#: biz/djangoapps/ga_contract/forms.py
+msgid "Contract end date is before contract start date."
+msgstr "契約終了日が契約開始日よりも前です。"
+
+#: biz/djangoapps/ga_contract/forms.py
+msgid "You can not enter duplicate values in {0}."
+msgstr "{0}には重複した値を入力できません。"
+
+##### Course Operation
+#: biz/templates/ga_course_operation/membership.html
+msgid "To register a list of users in this course, contains the following columns in this exact order: email, username, name, and country. Please include one student per row and do not include any headers, footers, or blank lines."
+msgstr "区切り文字カンマ(,)で、次に示す項目の順序に従い値を指定してください。なお、1受講者につき1行で記載し、ヘッダー、フッターや空行を含んではいけません。<br/>"
+"・メールアドレス：半角英数字、ハイフン(-)、アンダーバー(_)、ピリオド(.)。<br/>"
+"・ユーザー名：半角英数2文字以上、30文字以下。ディスカッションの際に表示されるユーザー名となります。(一度、登録すると変更できません)<br/>"
+"・氏名：修了証に表示するために用いる情報です。"
+
+#: biz/templates/ga_course_operation/membership.html
+msgid "username1@domain.com,gaccotarou,gacco taro"
+msgstr "username1@domain.com,gaccotarou,学校 太郎"
+
+#: biz/djangoapps/ga_course_operation/views.py
+msgid "Data in row #{row_num} must have exactly four columns: email, username, and full name."
+msgstr "{row_num}行目から次の3項目が見つかりませんでした：メールアドレス、ユーザー名、氏名"
+
+#: biz/templates/ga_course_operation/membership.html
+msgid "Register Students"
+msgstr "受講者を新規登録"
+
+#: biz/templates/ga_course_operation/membership.html
+msgid "Register Signup"
+msgstr "新規登録を実施する"
+
+#: biz/templates/ga_course_operation/membership.html
+msgid "The survey result can be downloaded as a CSV file. When you try to open a CSV file as it is in Excel, because that would garbled in the case that contains the Japanese, once you save the file, please re- open it in a text editor that corresponds to the 'UTF-8'. In addition, data on the date and time in the CSV file all UTC we (the world standard time, from Japan Standard Time minus 9 hours) are listed in the."
+msgstr "アンケート結果がCSVファイルでダウンロードできます。<br/>"
+"CSVファイルをそのままExcelで開こうとすると、日本語が含まれている場合に文字化けしてしまいますので、一旦ファイルを保存した後、「UTF-8」に対応したテキストエディタで開き直してください。また、CSVファイル内の日時に関するデータは全てUTC(世界標準時、日本標準時からマイナス9時間)で記載されています。"
+
+#: biz/djangoapps/ga_course_operation/views.py
+msgid ""
+"An account with email {email} exists but the registered username {username} is different."
+msgstr "メールアドレス「{email}」は登録されているユーザー名「{username}」と一致しませんでしたので、念のため登録・入力内容をご確認ください。"
+
+#: biz/djangoapps/ga_course_operation/views.py
+msgid "Could not find student list."
+msgstr "受講者のリストが見つかりません。"
+
+#: biz/djangoapps/ga_course_operation/views.py
+msgid "Current course is changed. Please reload this page."
+msgstr "現在のコースが変更されました。ブラウザを更新してください。"
+
+##### Course Selection
+#: biz/djangoapps/util/decorators.py
+msgid "Organization is not specified."
+msgstr "組織が選択されていません。"
+
+#: biz/djangoapps/util/decorators.py
+msgid "Contract is not specified."
+msgstr "契約が選択されていません。"
+
+#: biz/djangoapps/util/decorators.py
+msgid "Course is not specified."
+msgstr "講座が選択されていません。"
+
+#: biz/templates/ga_course_selection/course_not_specified.html
+msgid "Course Not Specified"
+msgstr "講座未選択"
+
+#: biz/templates/ga_course_selection/contract_not_specified.html
+msgid "Contract Not Specified"
+msgstr "契約未選択"
+
+#: biz/templates/ga_course_selection/org_not_specified.html
+msgid "Organization Not Specified"
+msgstr "組織未選択"
+
+#: biz/templates/static_templates/403.html
+msgid "Not Authorized"
+msgstr "権限エラー"
+
+#: biz/templates/static_templates/403.html
+msgid ""
+"You are not authorized to access this page. Go back to the "
+"{link_start}homepage{link_end} or let us know about any pages that may have "
+"been moved at {email}."
+msgstr ""
+"このページにアクセスする権限がありません。 {link_start}ホームページ{link_end} "
+"に戻るか、どのページにアクセス出来ないかを{email}でお知らせください。"
+
+##### Invitation
+#: lms/templates/courseware/course_about.html
+msgid "Please be enrolled from the invitation code registration page."
+msgstr "受講コード登録画面から受講登録してください。"
+
+#: biz/djangoapps/ga_invitation/views.py
+msgid "Invitation code is required."
+msgstr "受講コードが必要です。"
+
+#: biz/djangoapps/ga_invitation/views.py
+msgid "Invitation code is invalid."
+msgstr "受講コードが無効です。"
+
+#: biz/djangoapps/ga_invitation/views.py
+msgid "Invitation code is invalid. Please operate again from <a href=\"{index_url}\">here</a>."
+msgstr "受講コードが無効となりました。<a href=\"{index_url}\">ここから</a>再度操作してください。"
+
+#: biz/djangoapps/ga_invitation/views.py
+msgid "{display_name} could not be confirmed. Please operate again from <a href=\"{confirm_url}\">here</a>."
+msgstr "{display_name}が確認できませんでした。<a href=\"{confirm_url}\">ここから</a>再度操作してください。"
+
+#: biz/djangoapps/ga_invitation/views.py
+msgid "{display_name} is required."
+msgstr "{display_name}が必要です。"
+
+#: biz/djangoapps/ga_invitation/views.py
+msgid "Failed to register the invitation code. Please operate again from <a href=\"{index_url}\">here</a>."
+msgstr "受講コードの登録に失敗しました。<a href=\"{index_url}\">ここから</a>再度操作してください。"
+
+#: biz/djangoapps/ga_invitation/views.py
+msgid "Failed to remove the invitation code. Please operate again from <a href=\"{index_url}\">here</a>."
+msgstr "受講コードの削除に失敗しました。<a href=\"{index_url}\">ここから</a>再度操作してください。"
+
+#: biz/templates/ga_invitation/index.html
+msgid "Please check the course content by entering the invitation code."
+msgstr "受講コードを入力して受講内容を確認してください"
+
+#: biz/templates/ga_invitation/index.html
+msgid "To confirm the attendance content."
+msgstr "受講内容を確認する"
+
+#: biz/templates/ga_invitation/index.html
+msgid "Already taking code that registration has been completed."
+msgstr "既に登録が完了している受講コード"
+
+#: biz/templates/ga_invitation/index.html
+msgid "Although invitation code will be removed, the course of the following can be students continue, Are you sure you want?"
+msgstr "受講コードは削除されますが、下記のコースは引き続き受講できます、よろしいですか？"
+
+#: biz/templates/ga_invitation/index.html
+msgid "Delete the invitation code at the same time, but the course of the following will be students revocation, Are you sure you want?"
+msgstr "受講コードの削除と同時に、下記のコースが受講取消しされますが、よろしいですか？"
+
+#: biz/templates/ga_invitation/index.html
+msgid "Invitation code delete confirmation."
+msgstr "受講コード削除確認"
+
+#: biz/templates/ga_invitation/index.html
+msgid "Input Invitation Code"
+msgstr "受講コード入力"
+
+#: biz/templates/ga_invitation/index.html
+#: biz/templates/ga_invitation/confirm.html
+msgid "Invitation Code:"
+msgstr "受講コード："
+
+#: biz/templates/ga_invitation/index.html
+msgid "Delete invitation code."
+msgstr "削除する"
+
+#: biz/templates/ga_invitation/confirm.html
+msgid "Confirm Invitation Code"
+msgstr "受講内容確認"
+
+#: biz/templates/ga_invitation/confirm.html
+msgid "{contract_name} contains the course of the following. Please check the course content."
+msgstr "{contract_name}には下記のコースが含まれています。受講内容を確認してください。"
+
+#: biz/templates/ga_invitation/confirm.html
+msgid "Confirm Course"
+msgstr "コース内容を確認する"
+
+#: biz/templates/ga_invitation/confirm.html
+msgid "To take {contract_name} are required to enter the additional information below."
+msgstr "{contract_name}を受講するには下記の追加情報の入力が必要です。"
+
+#: biz/templates/ga_invitation/confirm.html
+msgid "Register invitation code."
+msgstr "受講コードを登録する"
+
+#: biz/templates/ga_invitation/confirm.html
+msgid "Invitation Code:{invitation_code}({contract_name})"
+msgstr "受講コード：{invitation_code}（{contract_name}）"
+
+#: biz/templates/ga_invitation/confirm.html
+msgid "{display_name}:"
+msgstr "{display_name}："
+
+##### Manager
+#: biz/djangoapps/ga_manager/models.py
+msgid "platformer"
+msgstr "プラットフォーマー"
+
+#: biz/djangoapps/ga_manager/models.py
+msgid "aggregator"
+msgstr "オーナー契約担当者"
+
+#: biz/djangoapps/ga_manager/models.py
+msgid "director"
+msgstr "ディレクター"
+
+#: biz/djangoapps/ga_manager/models.py
+msgid "manager"
+msgstr "マネージャー"
+
+#: biz/djangoapps/ga_manager/views.py
+msgid "The user does not exist."
+msgstr "指定されたユーザーは存在しません。"
+
+#: biz/djangoapps/ga_manager/views.py
+msgid "The user is not active."
+msgstr "指定されたユーザーは退会済みです。"
+
+#: biz/djangoapps/ga_manager/views.py
+msgid "You can not change permissions of yourself."
+msgstr "自分自身の管理者権限は操作できません。"
+
+#: biz/djangoapps/ga_manager/views.py
+msgid "The user have not registered course."
+msgstr "契約登録済みユーザーの管理者権限しか操作できません。"
+
+#: biz/djangoapps/ga_manager/views.py
+msgid "The user already has the same permission."
+msgstr "指定されたユーザーは既に同じ管理者権限を持っています。"
+
+#: biz/djangoapps/ga_manager/views.py
+msgid "The user does not have permission."
+msgstr "指定されたユーザーは管理者権限を持っていません。"
+
+#: biz/templates/ga_manager/index.html
+msgid "Select Organization"
+msgstr "組織を選択"
+
+#: biz/templates/ga_manager/index.html
+msgid "Select Manager Permission"
+msgstr "管理者権限を選択"
+
+#: biz/templates/ga_manager/index.html
+msgid "Revoke Manager Permission"
+msgstr "管理者権限を削除"
+
+#: biz/templates/ga_manager/index.html
+msgid "Revoke"
+msgstr "削除"
+
+#: biz/templates/ga_manager/index.html
+msgid "Enter username or email"
+msgstr "ユーザー名またはメールアドレス"
+
+##### Organization
+#: biz/templates/ga_organization/index.html
+msgid "Organization List"
+msgstr "組織一覧"
+
+#: biz/templates/ga_organization/index.html
+msgid "Organization Name"
+msgstr "組織名"
+
+#: biz/templates/ga_organization/index.html
+msgid "Organization Code"
+msgstr "組織コード"
+
+#: biz/templates/ga_organization/index.html
+msgid "Contract Count"
+msgstr "契約数"
+
+#: biz/templates/ga_organization/index.html
+msgid "Manager Count"
+msgstr "管理者数"
+
+#: biz/templates/ga_organization/index.html
+msgid "Created Date"
+msgstr "作成日"
+
+#: biz/templates/ga_organization/index.html
+msgid "New Organization"
+msgstr "新規作成"
+
+#: biz/templates/ga_organization/detail.html
+msgid "Organization Detail"
+msgstr "組織詳細"
+
+#: biz/templates/ga_organization/detail.html
+msgid "Save Organization"
+msgstr "登録"
+
+#: biz/djangoapps/ga_organization/views.py
+msgid "The new organization has been added."
+msgstr "新しい組織が追加されました。"
+
+#: biz/djangoapps/ga_organization/views.py
+msgid "The organization has been deleted."
+msgstr "組織が削除されました。"
+
+#: biz/djangoapps/ga_organization/views.py
+msgid "The organization changes have been saved."
+msgstr "組織の内容が変更されました。"
+
+#: biz/djangoapps/ga_organization/views.py
+msgid "The organization cannot be deleted, because it have contracts."
+msgstr "登録済の契約が存在するため、組織を削除できません。"
+
+##### Common
+#: */forms.py
+msgid "max {0} character"
+msgstr "{0}文字以下"
+
+msgid "max {0} character harf-width alphanumeric or _-"
+msgstr "{0}文字以下半角英数もしくは「_-」"
+
+msgid "min {0} max {1} character harf-width alphanumeric"
+msgstr "{0}～{1}文字半角英数"
+
+msgid "The field is required."
+msgstr "入力必須項目です。"
