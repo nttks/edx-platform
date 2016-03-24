@@ -51,7 +51,7 @@ class ContractForm(forms.ModelForm):
 
         # overwrite django default messages
         for field in self.fields.values():
-            field.error_messages = {'required': _('The field is required.')}
+            field.error_messages = {'required': _("The field is required."), 'invalid': _("Enter a valid value.")}
 
     def clean_invitation_code(self):
         """
