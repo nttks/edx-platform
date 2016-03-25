@@ -245,7 +245,7 @@ from microsite_configuration import microsite
                                 <hr/>
                             </header>
 
-                            <form class="preventDoubleClick" action="" method="post">
+                            <form class="preventDoubleClick" action="${reverse('biz:course_selection:change')}" method="post">
                                 <input type="hidden" name="csrfmiddlewaretoken" value="${csrf_token}" />
                                 <div class="error-message"></div>
                                 <div class="w2ui-field">
