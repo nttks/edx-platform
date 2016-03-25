@@ -1,0 +1,82 @@
+<%inherit file="../main_biz.html" />
+<%namespace name="static" file="../static_content.html" />
+<%!
+from django.utils.translation import ugettext as _
+from django.core.urlresolvers import reverse
+%>
+
+<%block name="pagetitle">${_("Organization Detail")}</%block>
+
+<%block name="js_extra">
+<script type="text/javascript">
+    $(function () {
+        $(document).on("keypress", "input:not(.allow_submit)", function (event) {
+            return event.which !== 13;
+        });
+        $("#form").w2form({
+            name: 'form'
+        });
+        $("#delete_btn").click(function () {
+            w2confirm({
+                msg: gettext("Are you sure you want to remove this?"),
+                yes_class: 'btn-right',
+                no_class: 'btn-left'
+            }).yes(function () {
+                $("#action_name").val("delete");
+                $("#org_form").submit();
+            });
+            return false;
+        });
+        $("#register_btn").click(function () {
+            /* validate fields */
+            var submit = true;
+            $('#form input[type=text]').each(function () {
+                if (!$.trim($(this).val())) {
+                    $(this).parent().find(".err_msg").text(gettext("The field is required."));
+                    submit = false;
+                } else {
+                    $(this).parent().find(".err_msg").text("");
+                }
+            });
+            return submit;
+        });
+    });
+</script>
+</%block>
+
+<%block name="custom_content">
+% if selected_id:
+<form id="org_form" class="preventDoubleClick" action="${reverse('biz:organization:edit', kwargs={'selected_id': selected_id})}" method="post">
+% else:
+<form id="org_form" class="preventDoubleClick" action="${reverse('biz:organization:register')}" method="post">
+% endif
+    <input type="hidden" name="csrfmiddlewaretoken" value="${csrf_token}" />
+    <div id="form" style="width: 800px;">
+        <div class="w2ui-page page-0">
+            % for field in form :
+            <div class="w2ui-field">
+                <label style="width: 200px;">${_(field.label)}：</label>
+                <div>
+                    ${field}
+                    % if field.field.required:
+                    <span style="color: red;">* ${_('Required')}</span>
+                    % endif
+                    <span class="err_msg show-reg">
+                    % if field.errors:
+                    ${field.errors[0]}
+                    % endif
+                    </span>
+                </div>
+            </div>
+            % endfor
+        </div>
+        <div class="w2ui-buttons">
+            % if selected_id:
+            <input type="submit" id="delete_btn" value="&#xf1f8; ${_('Delete')}" />
+            <input type="hidden" id="action_name" name="action_name" value="register" />
+            % endif
+            <input type="submit" id="register_btn" name="register" value="&#xf044 ${_('Save Organization')}" />
+        </div>
+    </div>
+</form>
+</%block>
