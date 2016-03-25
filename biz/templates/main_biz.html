@@ -346,7 +346,7 @@ from microsite_configuration import microsite
                 % elif current_manager and (current_manager.is_director() or current_manager.is_manager()):
                     ## Achievement
                     % if current_manager.can_handle_achievement() and current_course:
-                    <li class="${'current' if current_feature == 'achievement' else ''}"><a href="">${_("Score Status")}</a></li>
+                    <li class="${'current' if current_feature == 'achievement' else ''}"><a href="${reverse('biz:achievement:index')}">${_("Score Status")}</a></li>
                     % endif
 
                     ## Course Operation
