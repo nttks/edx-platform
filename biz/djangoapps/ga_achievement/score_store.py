@@ -82,8 +82,8 @@ class ScoreStore(BizStore):
             column['attr'] = 'align=center'
             column['field'] = field
             column['caption'] = field
-            column['sortable'] = 'true'
-            column['hidden'] = 'false'
+            column['sortable'] = True
+            column['hidden'] = False
             column['size'] = '{}%'.format(100 / len(fields))
             if isinstance(items[0][field], numbers.Number):
                 column['style'] = 'text-align: right'
