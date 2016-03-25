@@ -358,7 +358,7 @@ class ManagerViewTest(BizViewTestBase):
                                         data={'selected_org_id': self.org_tac.id,
                                               'permission_name': PERMISSION_AGGREGATOR[0],
                                               'unique_student_identifier': resigned_user.username,
-                                              'action': 'revoke'})
+                                              'action': 'allow'})
 
             content = json.loads(response.content)
             self.assertEqual(200, response.status_code)

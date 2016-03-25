@@ -111,11 +111,6 @@ def modify_ajax(request):
     if not user.is_active:
         return _ajax_fail_response("The user is not active.")
 
-    # check that user is resigned
-    user_standing = UserStanding.objects.filter(user=user)
-    if user_standing and user_standing[0].account_status == UserStanding.ACCOUNT_DISABLED:
-        return _ajax_fail_response("The user is resigned.")
-
     # check that user is not logged in user
     if request.user == user:
         return _ajax_fail_response("You can not change permissions of yourself.")
@@ -123,6 +118,11 @@ def modify_ajax(request):
     action = request.POST.get('action')
     user_manager = Manager.get_manager(user, selected_org)
     if action == 'allow':
+        # check that user is resigned
+        user_standing = UserStanding.objects.filter(user=user)
+        if user_standing and user_standing[0].account_status == UserStanding.ACCOUNT_DISABLED:
+            return _ajax_fail_response("The user is resigned.")
+
         current_manager = request.current_manager
         if current_manager.is_director() and selected_org == current_manager.org:
             # check course registration status
