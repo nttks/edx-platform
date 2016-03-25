@@ -339,7 +339,7 @@ from microsite_configuration import microsite
 
                     ## Manager
                     % if current_manager.can_handle_manager():
-                    <li class="${'current' if current_feature == 'manager' else ''}"><a href="">${_("Manager Setting")}</a></li>
+                    <li class="${'current' if current_feature == 'manager' else ''}"><a href="${reverse('biz:manager:index')}">${_("Manager Setting")}</a></li>
                     % endif
 
                 ## Director or Manager
@@ -359,7 +359,7 @@ from microsite_configuration import microsite
 
                     ## Manager
                     % if current_manager.can_handle_manager():
-                    <li class="${'current' if current_feature == 'manager' else ''}"><a href="">${_("Manager Setting")}</a></li>
+                    <li class="${'current' if current_feature == 'manager' else ''}"><a href="${reverse('biz:manager:index')}">${_("Manager Setting")}</a></li>
                     % endif
                 % endif
             </ul>
