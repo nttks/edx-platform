@@ -20,7 +20,7 @@ from biz.djangoapps.ga_achievement.score_store import (
     SCORE_STORE_FIELD_CERTIFICATE_STATUS_UNPUBLISHED, SCORE_STORE_FIELD_ENROLL_DATE,
     SCORE_STORE_FIELD_CERTIFICATE_ISSUE_DATE, SCORE_STORE_FIELD_TOTAL_SCORE,
 )
-from biz.djangoapps.ga_contract.models import ContractDetail
+from biz.djangoapps.ga_contract.models import ContractDetail, AdditionalInfo
 from biz.djangoapps.ga_invitation.models import ContractRegister, AdditionalInfoSetting
 from biz.djangoapps.util.decorators import handle_command_exception
 from biz.djangoapps.util.mongo_utils import DEFAULT_DATETIME
@@ -56,8 +56,10 @@ class Command(BaseCommand):
                 contract_id = contract_detail.contract_id
                 course_id = contract_detail.course_id
                 score_store = ScoreStore(contract_id, unicode(course_id))
+                additional_info_list = AdditionalInfo.find_by_contract_id(contract_id)
 
                 ScoreBatchStatus.save_for_started(contract_id, course_id)
+
                 for contract_register in contract_register_list:
                     user = contract_register.user
                     try:
@@ -70,7 +72,6 @@ class Command(BaseCommand):
                         user_standing = None
                     course_enrollment = CourseEnrollment.get_enrollment(user, course_id)
                     generated_certificate = GeneratedCertificate.certificate_for_student(user, course_id)
-                    additional_info_setting_list = AdditionalInfoSetting.find_by_user_and_contract(user, contract_id)
                     grade = get_grade(course_id, user)
 
                     # Student Status
@@ -94,8 +95,9 @@ class Command(BaseCommand):
                     score[_(SCORE_STORE_FIELD_NAME)] = user_profile.name if user_profile else None
                     score[_(SCORE_STORE_FIELD_USERNAME)] = user.username
                     score[_(SCORE_STORE_FIELD_EMAIL)] = user.email
-                    for additional_info_setting in additional_info_setting_list:
-                        score[additional_info_setting.display_name] = additional_info_setting.value
+                    for additional_info in additional_info_list:
+                        score[additional_info.display_name] = AdditionalInfoSetting.get_value_by_display_name(
+                            user, contract_id, additional_info.display_name)
                     score[_(SCORE_STORE_FIELD_STUDENT_STATUS)] = student_status
                     score[_(SCORE_STORE_FIELD_CERTIFICATE_STATUS)] = certificate_status
                     score[_(SCORE_STORE_FIELD_ENROLL_DATE)] = course_enrollment.created \

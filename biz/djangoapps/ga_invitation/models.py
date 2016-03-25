@@ -53,10 +53,15 @@ class AdditionalInfoSetting(models.Model):
         return setting.value
 
     @classmethod
-    def find_by_user_and_contract(cls, user, contract):
+    def get_value_by_display_name(cls, user, contract, display_name):
         """
+        Get value by User and Contract and display_name of AdditionalInfo
+        - If not exists, return None
         """
-        return cls.objects.filter(user=user, contract=contract).order_by('id')
+        try:
+            return cls.objects.get(user=user, contract=contract, display_name=display_name).value
+        except cls.DoesNotExist:
+            return None
 
 
 class ContractRegister(models.Model):

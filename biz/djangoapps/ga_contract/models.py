@@ -266,4 +266,4 @@ class AdditionalInfo(models.Model):
         :param contract_id: contract id
         :return: AdditionalInfo objects
         """
-        return cls.objects.filter(contract_id=contract_id)
+        return cls.objects.filter(contract_id=contract_id).order_by('id')
