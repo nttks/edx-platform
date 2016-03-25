@@ -334,7 +334,7 @@ from microsite_configuration import microsite
 
                     ## Contract
                     % if current_manager.can_handle_contract():
-                    <li class="${'current' if current_feature == 'contract' else ''}"><a href="">${_("Contract List")}</a></li>
+                    <li class="${'current' if current_feature == 'contract' else ''}"><a href="${reverse('biz:contract:index')}">${_("Contract List")}</a></li>
                     % endif
 
                     ## Manager
