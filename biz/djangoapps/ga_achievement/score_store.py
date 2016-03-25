@@ -3,7 +3,6 @@ Get a course situation data from the MongoDB.
 Processed into w2ui data and csv data.
 """
 from datetime import datetime
-import numbers
 
 from django.conf import settings
 from django.utils.translation import ugettext as _
@@ -85,8 +84,9 @@ class ScoreStore(BizStore):
             column['sortable'] = True
             column['hidden'] = False
             column['size'] = '{}%'.format(100 / len(fields))
-            if isinstance(items[0][field], numbers.Number):
+            if isinstance(items[0][field], float):
                 column['style'] = 'text-align: right'
+                column['render'] = 'percent'
             elif isinstance(items[0][field], datetime):
                 column['style'] = 'text-align: right'
                 column['render'] = 'date:yyyy/mm/dd'
@@ -121,7 +121,7 @@ class ScoreStore(BizStore):
             record = {}
             for key, val in item.iteritems():
                 if isinstance(val, float):
-                    val = str(val * 100) + '%'
+                    val *= 100
                 elif isinstance(val, datetime):
                     if val == DEFAULT_DATETIME:
                         val = None
