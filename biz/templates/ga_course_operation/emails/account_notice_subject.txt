@@ -1,0 +1,3 @@
+${u"オンライン研修「{platform_name}」の受講予定者の方へ".format(
+    platform_name=settings.PLATFORM_NAME
+)}

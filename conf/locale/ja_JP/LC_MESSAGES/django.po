@@ -11031,7 +11031,7 @@ msgstr "自動受講登録"
 msgid ""
 "If this option is <em>checked</em>, users who have not yet registered for "
 "{platform_name} will be automatically enrolled."
-msgstr "もし、このオプションが<em>有効</em>の場合、edXに未登録のユーザも自動的に{platform_name}に履修登録されます。"
+msgstr "もし、このオプションが<em>有効</em>の場合、{platform_name}に未登録のユーザも自動的に履修登録されます。"
 
 #: lms/templates/ccx/enrollment.html
 #: lms/templates/instructor/instructor_dashboard_2/membership.html

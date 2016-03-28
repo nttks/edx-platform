@@ -97,6 +97,9 @@ class ContractDetail(models.Model):
 
     objects = ContractDetailManager()
 
+    class Meta:
+        ordering = ['id']
+
     @classmethod
     def find_enabled(cls):
         return cls.objects.enabled().all().order_by('id')
@@ -142,6 +145,7 @@ class AdditionalInfo(models.Model):
     display_name = models.CharField(max_length=255)
 
     class Meta:
+        ordering = ['id']
         unique_together = ("contract", "display_name")
 
     @classmethod

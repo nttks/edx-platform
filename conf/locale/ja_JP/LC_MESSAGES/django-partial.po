@@ -5170,7 +5170,7 @@ msgstr "#{row_num}のデータには次のちょうど４つのカラムが必�
 
 #: lms/djangoapps/instructor/views/api.py:394
 msgid "Invalid email {email_address}."
-msgstr "不正なemail{email_address}"
+msgstr "メールアドレスの形式が間違っています。{email_address}"
 
 #: lms/djangoapps/instructor/views/api.py:405
 msgid ""

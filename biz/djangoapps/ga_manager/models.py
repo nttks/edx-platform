@@ -150,4 +150,4 @@ class Manager(models.Model):
         :param user: logged-in user object
         :return: Manager objects
         """
-        return cls.objects.filter(user=user.id)
+        return cls.objects.filter(user=user.id).select_related('org')
