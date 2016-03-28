@@ -338,3 +338,156 @@ class CourseAboutTest(SpocStatusTestBase):
         url = reverse('about_course', args=[self.course.id.to_deprecated_string()])
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
+
+
+@ddt.ddt
+class CourseInfoTest(SpocStatusTestBase):
+    """
+    Tests for secret course info
+    """
+    def setUp(self):
+        super(CourseInfoTest, self).setUp()
+        self.course = CourseFactory.create(org='org', number='course', run='run')
+        self.info = ItemFactory.create(
+            category='course_info', parent_location=self.course.location,
+            data="Test Secret Course Info", display_name='overview'
+        )
+
+    def test_spoc_course_with_not_logged_in(self):
+        self.setup_user()
+
+        # Create Contract as SPOC
+        contract_detail = self._create_contract(
+            user=self.user,
+            course_id=self.course.id,
+            contract_type=CONTRACT_TYPE_PF[0]
+        )
+        # Create ContractRegister as having SPOC access
+        self._create_contract_register(self.user, contract_detail.contract, REGISTER_INVITATION_CODE)
+
+        self.logout()
+
+        url = reverse('info', args=[self.course.id.to_deprecated_string()])
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 404)
+
+    def test_not_spoc_course_with_not_logged_in(self):
+        self.setup_user()
+
+        # Create Contract as SPOC
+        contract_detail = self._create_contract(
+            user=self.user,
+            course_id=self.course.id,
+            contract_type=CONTRACT_TYPE_GACCO_SERVICE[0]
+        )
+
+        self.logout()
+
+        url = reverse('info', args=[self.course.id.to_deprecated_string()])
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn("Course Updates &amp; News", resp.content)
+
+    @ddt.unpack
+    @ddt.data(
+        (CONTRACT_TYPE_PF[0], INPUT_INVITATION_CODE),
+        (CONTRACT_TYPE_PF[0], REGISTER_INVITATION_CODE),
+        (CONTRACT_TYPE_OWNERS[0], INPUT_INVITATION_CODE),
+        (CONTRACT_TYPE_OWNERS[0], REGISTER_INVITATION_CODE),
+        (CONTRACT_TYPE_OWNER_SERVICE[0], INPUT_INVITATION_CODE),
+        (CONTRACT_TYPE_OWNER_SERVICE[0], REGISTER_INVITATION_CODE),
+    )
+    def test_spoc_course_with_has_access(self, contract_type, status):
+        self.setup_user()
+
+        # Create Contract as SPOC
+        contract_detail = self._create_contract(
+            user=self.user,
+            course_id=self.course.id,
+            contract_type=contract_type
+        )
+        # Create ContractRegister as having SPOC access
+        self._create_contract_register(self.user, contract_detail.contract, status)
+
+        url = reverse('info', args=[self.course.id.to_deprecated_string()])
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn("Course Updates &amp; News", resp.content)
+
+    def test_not_spoc_with_not_has_access(self):
+        self.setup_user()
+
+        # Create Contract as not SPOC
+        contract_detail = self._create_contract(
+            user=self.user,
+            course_id=self.course.id,
+            contract_type=CONTRACT_TYPE_GACCO_SERVICE[0]
+        )
+
+        url = reverse('info', args=[self.course.id.to_deprecated_string()])
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn("Course Updates &amp; News", resp.content)
+
+    @ddt.data(
+        CONTRACT_TYPE_PF[0],
+        CONTRACT_TYPE_OWNERS[0],
+        CONTRACT_TYPE_OWNER_SERVICE[0],
+    )
+    def test_spoc_course_with_not_has_access(self, contract_type):
+        self.setup_user()
+
+        # Create Contract but not SPOC
+        contract_detail = self._create_contract(
+            user=self.user,
+            course_id=self.course.id,
+            contract_type=contract_type
+        )
+        # Not Create ContractRegister
+
+        url = reverse('info', args=[self.course.id.to_deprecated_string()])
+        with patch('courseware.views.log.warning') as warning_log:
+            resp = self.client.get(url)
+            self.assertEqual(resp.status_code, 404)
+            warning_log.assert_called_with(
+                'User(id={}) has no permission to access spoc course(course_id={}).'.format(
+                    self.user.id, unicode(self.course.id)
+                )
+            )
+
+    def test_spoc_course_with_global_staff(self):
+        self.setup_user()
+
+        # Make user to global_staff
+        self.user.is_staff = True
+        self.user.save()
+
+        # Create Contract but not SPOC
+        contract_detail = self._create_contract(
+            user=self.user,
+            course_id=self.course.id,
+            contract_type=CONTRACT_TYPE_PF[0]
+        )
+        # Not Create ContractRegister
+
+        url = reverse('info', args=[self.course.id.to_deprecated_string()])
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+
+    def test_spoc_course_with_course_staff(self):
+        self.setup_user()
+
+        # Make user to course staff
+        CourseStaffRole(self.course.id).add_users(User.objects.get(pk=self.user.id))
+
+        # Create Contract but not SPOC
+        contract_detail = self._create_contract(
+            user=self.user,
+            course_id=self.course.id,
+            contract_type=CONTRACT_TYPE_PF[0]
+        )
+        # Not Create ContractRegister
+
+        url = reverse('info', args=[self.course.id.to_deprecated_string()])
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
