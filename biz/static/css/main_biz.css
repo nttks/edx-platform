@@ -376,6 +376,9 @@ input[type="radio"] {
     margin-top: 3px;
 }
 
+.w2ui-col-on-off tr:nth-last-child(1),
+.w2ui-col-on-off tr:nth-last-child(2),
+.w2ui-col-on-off tr:nth-last-child(3),
 .w2ui-grid .w2ui-footer-left {
     display: none;
 }
