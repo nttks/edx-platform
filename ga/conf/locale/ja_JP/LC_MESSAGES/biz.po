@@ -522,7 +522,7 @@ msgid "max {0} character"
 msgstr "{0}文字以下"
 
 msgid "max {0} character harf-width alphanumeric or _-"
-msgstr "{0}文字以下半角英数もしくは「_-」"
+msgstr "{0}文字以下の半角英数、記号（_-）"
 
 msgid "min {0} max {1} character harf-width alphanumeric"
 msgstr "{0}～{1}文字半角英数"
