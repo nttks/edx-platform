@@ -178,7 +178,7 @@ span.err_msg.show-reg {
 /* ---------- ▽ Form Style ---------- */
 input:not([type=button]), select, texture {
     font-style: normal;
-    font-family: sans-serif;
+    font-family: "ヒラギノ角ゴ Pro W3", "Hiragino Kaku Gothic Pro", "メイリオ", Meiryo, Osaka, "ＭＳ Ｐゴシック", "MS PGothic", sans-serif;
 }
 
 .w2ui-field > label {
