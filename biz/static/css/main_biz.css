@@ -160,8 +160,6 @@ span.err_msg.show-reg {
     color: black;
 }
 
-/* -----------------------------▽2016 02 29 Add------------------------------- */
-
 /* -----------------------------▽ lms or gacco ------------------------------ */
 
 .content-wrapper {
@@ -180,7 +178,7 @@ span.err_msg.show-reg {
 /* ---------- ▽ Form Style ---------- */
 input:not([type=button]), select, texture {
     font-style: normal;
-    font-family: sans-serif;
+    font-family: "ヒラギノ角ゴ Pro W3", "Hiragino Kaku Gothic Pro", "メイリオ", Meiryo, Osaka, "ＭＳ Ｐゴシック", "MS PGothic", sans-serif;
 }
 
 .w2ui-field > label {
@@ -197,6 +195,10 @@ input:not([type=button]), select, texture {
 input#id_org_name, input#id_org_code {
     width: 28rem;
     margin: -10px 0 10px 5px;
+}
+
+input#add_user {
+    width: 18rem;;
 }
 
 /* ----- Button ----- */
@@ -281,12 +283,6 @@ input#edit_btn {
     background-color: #409206 !important;
 }
 
-/*
-#role-selection-modal .btn:hover {
-	
-}
-*/
-
 /* -----------------------------▽ Biz Style------------------------------ */
 
 .biz-wrap h2 {
@@ -355,14 +351,6 @@ input[type="radio"] {
     margin: 1px;
 }
 
-/*
-input[type="submit"], form input[type="submit"], .xmodule_display.xmodule_CapaModule div.problem div.action .check{
-    border-bottom: 2px solid #666;
-    transition: background-color 0.15s ease-in-out;
-    margin: 0 5px;
-}
-*/
-
 /* --------------------------- ▽W2UI --------------------------------- */
 
 .w2ui-reset * {
@@ -388,6 +376,9 @@ input[type="submit"], form input[type="submit"], .xmodule_display.xmodule_CapaMo
     margin-top: 3px;
 }
 
+.w2ui-col-on-off tr:nth-last-child(1),
+.w2ui-col-on-off tr:nth-last-child(2),
+.w2ui-col-on-off tr:nth-last-child(3),
 .w2ui-grid .w2ui-footer-left {
     display: none;
 }
@@ -628,4 +619,17 @@ tr#member_detail {
 w2ui-popup .w2ui-msg-title {
     padding: 8px;
 }
-    
+
+/* ----- organization  manager----- */
+#form.fieldArea {
+    width: 800px;
+}
+
+#form.fieldArea .w2ui-field label {
+    width: 200px;
+}
+
+/* ----- achievement ----- */
+#scoreUpdateDate span.status {
+    margin-left: 10px;
+}

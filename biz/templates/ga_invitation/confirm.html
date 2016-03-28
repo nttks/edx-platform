@@ -17,11 +17,11 @@ from courseware.courses import course_image_url
     }
 
     hr {
-        margin: 20rem
+        margin: 20rem;
     }
 
     .content-wrapper {
-        min-height: 550px
+        min-height: 550px;
     }
 
     .content-wrapper a:hover {
@@ -30,17 +30,17 @@ from courseware.courses import course_image_url
     }
 
     .container {
-        line-height: 1.3
+        line-height: 1.3;
     }
 
     .container a {
-        color: #0078b0 !important
+        color: #0078b0 !important;
     }
 
     /* .container a:hover{text-decoration: none; opacity: 0.8; } _NO__DOTCOMMA__AFTER__*/
     /*     Form Style Reset    */
     input[type="submit"]:active:not(:disabled), input[type="submit"]:focus:not(:disabled), input[type="button"]:active:not(:disabled), input[type="button"]:focus:not(:disabled), button:active:not(:disabled), button:focus:not(:disabled), .button:active:not(:disabled), .button:focus:not(:disabled) {
-        box-shadow: none
+        box-shadow: none;
     }
 
     textarea, input[type="text"], input[type="email"], input[type="password"], input[type="tel"], input[type="hidden"] {
@@ -78,7 +78,11 @@ from courseware.courses import course_image_url
     }
 
     .container h3 {
-        line-height: 2
+        line-height: 2;
+    }
+
+    .red {
+        color: #e33;
     }
 
     h3.code {
@@ -108,7 +112,7 @@ from courseware.courses import course_image_url
     }
 
     .error-message {
-        display: inline-block
+        display: inline-block;
     }
 
     .fa-external-link {
@@ -153,7 +157,7 @@ from courseware.courses import course_image_url
     }
 
     .course-title {
-        font-size: 1.2rem
+        font-size: 1.2rem;
     }
 
     .course-board, .course-title {
@@ -175,6 +179,11 @@ from courseware.courses import course_image_url
 
     input.additional-input {
         width: 24rem;
+    }
+
+    .buttonArea {
+        margin: 10px auto 20px;
+        text-align: center;
     }
 </style>
 </%block>
@@ -234,15 +243,15 @@ from courseware.courses import course_image_url
   <form id="form-invitation-code" class="add-form" action="${reverse('biz:invitation:register')}" method="post">
     % if additionals:
       <h3 class="add-info">${_("To take {contract_name} are required to enter the additional information below.").format(contract_name=contract.contract_name) | h}</h3>
-      <div id="message-invitation-code" class="error-message" style="color: rgb(204, 0, 0);"></div>
+      <div id="message-invitation-code" class="error-message" class="red"></div>
       % for additional in additionals:
         <div class="additional">
-          <span class="additional-text">${_("{display_name}:").format(display_name=additional['display_name']) | h}</span><input class="additional-input" type="text" name="${additional['name'] | h}" value="${additional['value'] | h}"><span id="additional-${additional['name'] | h}" class="error-message" style="color: rgb(204, 0, 0);"></span>
+          <span class="additional-text">${_("{display_name}:").format(display_name=additional['display_name']) | h}</span><input class="additional-input" type="text" name="${additional['name'] | h}" value="${additional['value'] | h}"><span id="additional-${additional['name'] | h}" class="error-message"  class="red"></span>
         </div>
       % endfor
     % endif
 
-    <div style="margin: 10px auto 20px; text-align: center;">
+    <div class="buttonArea">
       <input type="hidden" name="invitation_code" value="${contract.invitation_code}">
       <input type="hidden" name="csrfmiddlewaretoken" value="${csrf_token}">
       <br>

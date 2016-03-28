@@ -1,4 +1,5 @@
 """
+URLconf for organization views
 """
 from django.conf.urls import patterns, url
 

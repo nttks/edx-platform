@@ -25,8 +25,22 @@ from microsite_configuration import microsite
         width: 60%;
     }
 
+    .biz-modal {
+        width: 400px;
+    }
+
+    .biz-modal .w2ui-field > label {
+        left: -8.5rem;
+        top: 2px;
+    }
+
     .w2ui-field > label {
         margin: 0 0 10px 0;
+    }
+
+    .w2ui-overlay .w2ui-col-on-off table td label, .w2ui-overlay .w2ui-grid-searches table td.close-btn button {
+        font-style: normal;
+        font-family: sans-serif;
     }
 
     .w2ui-overlay {
@@ -326,7 +340,7 @@ from microsite_configuration import microsite
 
             <ul class="menu">
                 ## Platformer or Aggregator
-                % if current_manager and (current_manager.is_platformer() or (current_manager.is_aggregator() and current_contract)):
+                % if current_manager and (current_manager.is_platformer() or (current_manager.is_aggregator() and current_contract and not current_course)):
                     ## Organization
                     % if current_manager.can_handle_organization():
                     <li class="${'current' if current_feature == 'organization' else ''}"><a href="${reverse('biz:organization:index')}">${_("Organization List")}</a></li>
@@ -388,7 +402,16 @@ from microsite_configuration import microsite
             $('.menu-icon').toggleClass('close');
             $('.side').toggleClass('close');
             $('.main').toggleClass('close');
+
+            if (typeof grid != "undefined") toggleGridWidth();
         });
+
+        var grid_toggle_width = 250;
+        function toggleGridWidth() {
+            $('.w2ui-grid').width($('.w2ui-grid').width() + grid_toggle_width);
+            grid.refresh();
+            grid_toggle_width *= -1;
+        }
     });
 </script>
 </%block>

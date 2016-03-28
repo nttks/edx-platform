@@ -1,4 +1,5 @@
 """
+URLconf for contract views
 """
 from django.conf.urls import patterns, url
 

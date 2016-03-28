@@ -20,7 +20,7 @@ from biz.djangoapps.ga_achievement.score_store import (
     SCORE_STORE_FIELD_CERTIFICATE_STATUS_UNPUBLISHED, SCORE_STORE_FIELD_ENROLL_DATE,
     SCORE_STORE_FIELD_CERTIFICATE_ISSUE_DATE
 )
-from biz.djangoapps.ga_contract.tests.factories import ContractFactory, ContractDetailFactory
+from biz.djangoapps.ga_contract.tests.factories import ContractFactory, ContractDetailFactory, AdditionalInfoFactory
 from biz.djangoapps.ga_invitation.tests.factories import AdditionalInfoSettingFactory, ContractRegisterFactory
 from biz.djangoapps.ga_invitation.models import INPUT_INVITATION_CODE, REGISTER_INVITATION_CODE
 from biz.djangoapps.util.tests.testcase import BizStoreTestBase
@@ -314,6 +314,8 @@ class UpdateBizScoreStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEnrol
                                               self.user, 'invitation_code_a')
         self._create_contract_detail(self.contract, self.course.id)
         self._create_contract_register(self.user, self.contract)
+
+        AdditionalInfoFactory.create(contract=self.contract, display_name='test_display')
 
         AdditionalInfoSettingFactory.create(
             user=self.user,

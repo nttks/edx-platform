@@ -34,93 +34,85 @@ def check_course_selection(func):
 
     @wraps(func)
     def wrapper(request, *args, **kwargs):
+        log.debug("request.path={}".format(request.path))
         user = request.user
         if not Manager.get_managers(user):
-            log.error("User(id={}) has no manager model.".format(user.id))
+            log.warning("User(id={}) has no manager model.".format(user.id))
             return _render_403(request)
 
-        log.debug("request.path={}".format(request.path))
-        org_id, contract_id, course_id = cache_utils.get_course_selection(user)
-
-        # Identify organization, contract and course, if possible
-        if not org_id:
-            # First, try to get the only-one manager
-            managers = Manager.get_managers(user)
-            if len(managers) == 1:
-                org_id = managers[0].org.id
-
-        if org_id and not contract_id:
-            # Next, try to get the only-one contract
-            contracts = Contract.find_enabled_by_contractor(org_id)
-            if len(contracts) == 1:
-                contract_id = contracts[0].id
-
-        if org_id and contract_id and not course_id:
-            # Finally, try to get the only-one course
-            contract_details = ContractDetail.find_enabled_by_contractor_and_contract_id(org_id, contract_id)
-            if len(contract_details) == 1:
-                course_id = unicode(contract_details[0].course_id)
-
-        # Set for course selection
+        # Collect organization, contract and course selection
         selection_organizations = Organization.find_by_user(user)
-        selection_contracts = Contract.find_enabled_by_contractors(selection_organizations)
-        selection_contract_details = []
-        for contract_detail in ContractDetail.find_enabled_by_contractors(selection_organizations):
-            course = course_utils.get_course(contract_detail.course_id)
-            # Exclude non-existent course
-            if course is not None:
-                contract_detail.course_name = course.course_canonical_name or course.display_name
-                selection_contract_details.append(contract_detail)
+        selection_contracts = Contract.find_enabled_by_user(user)
+        selection_contract_details = ContractDetail.find_enabled_by_user(user)
         request.selection_organizations = selection_organizations
         request.selection_contracts = selection_contracts
-        request.selection_contract_details = selection_contract_details
-        log.debug("request.selection_organizations={}".format(getattr(request, 'selection_organizations', None)))
-        log.debug("request.selection_contracts={}".format(getattr(request, 'selection_contracts', None)))
-        log.debug("request.selection_contract_details={}".format(getattr(request, 'selection_contract_details', None)))
+        request.selection_contract_details = _set_course_name_to_contract_details(selection_contract_details)
 
-        # Validate access permission for org_id, contract_id and course_id
         request.current_organization = None
         request.current_manager = None
         request.current_contract = None
         request.current_course = None
+
+        # Get from cache
+        org_id, contract_id, course_id = cache_utils.get_course_selection(user)
+
+        # Try to get the only-one organization
+        if not org_id and len(selection_organizations) == 1:
+            org_id = selection_organizations[0].id
         if not org_id:
             log.info("Redirect to org_not_specified page because org_id is not specified.")
             return _render_org_not_specified(request)
 
+        # Validate access permission for organization
         try:
             org = validators.get_valid_organization(org_id)
         except ValidationError as e:
-            log.error(e.messages[0])
+            log.warning(e.messages[0])
             return _render_403(request)
         request.current_organization = org
 
+        # Validate access permission for manager
         try:
             manager = validators.get_valid_manager(user, org_id)
         except ValidationError as e:
-            log.error(e.messages[0])
+            log.warning(e.messages[0])
             return _render_403(request)
         request.current_manager = manager
 
+        # Try to get the only-one contract
+        if not contract_id:
+            contracts = Contract.find_enabled_by_manager(manager)
+            if len(contracts) == 1:
+                contract_id = contracts[0].id
+
+        # Validate access permission for contract
         if contract_id:
             try:
                 contract = validators.get_valid_contract(manager, contract_id)
             except ValidationError as e:
-                log.error(e.messages[0])
+                log.warning(e.messages[0])
                 return _render_403(request)
             request.current_contract = contract
 
+            # Try to get the only-one course
+            if not course_id:
+                contract_details = ContractDetail.find_enabled_by_manager_and_contract(manager, contract)
+                if len(contract_details) == 1:
+                    course_id = unicode(contract_details[0].course_id)
+
+            # Validate access permission for course
             if course_id:
                 try:
                     course = validators.get_valid_course(manager, contract, course_id)
                 except ValidationError as e:
-                    log.error(e.messages[0])
+                    log.warning(e.messages[0])
                     return _render_403(request)
                 request.current_course = course
 
         # Validate feature permission
         if re.match('^/biz/organization/', request.path):
             if not manager.can_handle_organization():
-                log.error(
+                log.warning(
                     "Manager(id={}) has no permission to handle '{}' feature.".format(
                         manager.id, 'organization')
                 )
@@ -131,7 +123,7 @@ def check_course_selection(func):
 
         elif re.match('^/biz/contract/', request.path):
             if not manager.can_handle_contract():
-                log.error(
+                log.warning(
                     "Manager(id={}) has no permission to handle '{}' feature.".format(
                         manager.id, 'contract')
                 )
@@ -142,7 +134,7 @@ def check_course_selection(func):
 
         elif re.match('^/biz/manager/', request.path):
             if not manager.can_handle_manager():
-                log.error(
+                log.warning(
                     "Manager(id={}) has no permission to handle '{}' feature.".format(
                         manager.id, 'manager')
                 )
@@ -153,7 +145,7 @@ def check_course_selection(func):
 
         elif re.match('^/biz/course_operation/', request.path):
             if not manager.can_handle_course_operation():
-                log.error(
+                log.warning(
                     "Manager(id={}) has no permission to handle '{}' feature.".format(
                         manager.id, 'course_operation')
                 )
@@ -164,7 +156,7 @@ def check_course_selection(func):
 
         elif re.match('^/biz/achievement/', request.path):
             if not manager.can_handle_achievement():
-                log.error(
+                log.warning(
                     "Manager(id={}) has no permission to handle '{}' feature.".format(
                         manager.id, 'achievement')
                 )
@@ -267,6 +259,25 @@ def _output_command_status(output_file, status, msg=''):
             f.write(u"{}\n{}".format(status, msg))
     except Exception:
         raise CommandError("Error occurred while writing output file. output_file={}".format(output_file))
+
+
+def _set_course_name_to_contract_details(contract_details):
+    """
+    Exclude a ContractDetail object if the related course does not exist in modulestore,
+    or set course name to the object
+
+    :param contract_details: list of ContractDetail object
+    :return: list of ContractDetail object
+    """
+    selection_contract_details = []
+    for contract_detail in contract_details:
+        course = course_utils.get_course(contract_detail.course_id)
+        # Exclude non-existent course
+        if course is not None:
+            contract_detail.course_name = course.course_canonical_name or course.display_name
+            selection_contract_details.append(contract_detail)
+
+    return selection_contract_details
 
 
 def _render_403(request):

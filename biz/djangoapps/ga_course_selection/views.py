@@ -24,14 +24,16 @@ def index(request):
     :param request: HttpRequest
     :return: HttpResponse
     """
-    manager = request.current_manager
+    current_manager = request.current_manager
+    current_contract = request.current_contract
+    current_course = request.current_course
 
     # Platformer or Aggregator
-    if manager.is_platformer() or manager.is_aggregator():
+    if current_manager.is_platformer() or (current_manager.is_aggregator() and current_contract and not current_course):
         return redirect(reverse('biz:contract:index'))
 
     # Director or Manager
-    else:
+    elif current_manager.is_director() or current_manager.is_manager():
         return redirect(reverse('biz:achievement:index'))
 
 

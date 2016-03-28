@@ -41,7 +41,7 @@ msgstr "決定"
 
 #: biz/templates/main_biz.html
 msgid "Score Status"
-msgstr "受講状況"
+msgstr "スコア状況"
 
 #: biz/templates/main_biz.html
 msgid "Course Enrollment Management"
@@ -349,10 +349,6 @@ msgstr "{display_name}が必要です。"
 msgid "Failed to register the invitation code. Please operate again from <a href=\"{index_url}\">here</a>."
 msgstr "受講コードの登録に失敗しました。<a href=\"{index_url}\">ここから</a>再度操作してください。"
 
-#: biz/djangoapps/ga_invitation/views.py
-msgid "Failed to remove the invitation code. Please operate again from <a href=\"{index_url}\">here</a>."
-msgstr "受講コードの削除に失敗しました。<a href=\"{index_url}\">ここから</a>再度操作してください。"
-
 #: biz/templates/ga_invitation/index.html
 msgid "Please check the course content by entering the invitation code."
 msgstr "受講コードを入力して受講内容を確認してください"
@@ -366,18 +362,6 @@ msgid "Already taking code that registration has been completed."
 msgstr "既に登録が完了している受講コード"
 
 #: biz/templates/ga_invitation/index.html
-msgid "Although invitation code will be removed, the course of the following can be students continue, Are you sure you want?"
-msgstr "受講コードは削除されますが、下記のコースは引き続き受講できます、よろしいですか？"
-
-#: biz/templates/ga_invitation/index.html
-msgid "Delete the invitation code at the same time, but the course of the following will be students revocation, Are you sure you want?"
-msgstr "受講コードの削除と同時に、下記のコースが受講取消しされますが、よろしいですか？"
-
-#: biz/templates/ga_invitation/index.html
-msgid "Invitation code delete confirmation."
-msgstr "受講コード削除確認"
-
-#: biz/templates/ga_invitation/index.html
 msgid "Input Invitation Code"
 msgstr "受講コード入力"
 
@@ -385,10 +369,6 @@ msgstr "受講コード入力"
 #: biz/templates/ga_invitation/confirm.html
 msgid "Invitation Code:"
 msgstr "受講コード："
-
-#: biz/templates/ga_invitation/index.html
-msgid "Delete invitation code."
-msgstr "削除する"
 
 #: biz/templates/ga_invitation/confirm.html
 msgid "Confirm Invitation Code"
@@ -441,6 +421,10 @@ msgstr "指定されたユーザーは存在しません。"
 
 #: biz/djangoapps/ga_manager/views.py
 msgid "The user is not active."
+msgstr "指定されたユーザーは未アクティベーション状態です。"
+
+#: biz/djangoapps/ga_manager/views.py
+msgid "The user is resigned."
 msgstr "指定されたユーザーは退会済みです。"
 
 #: biz/djangoapps/ga_manager/views.py
@@ -538,7 +522,7 @@ msgid "max {0} character"
 msgstr "{0}文字以下"
 
 msgid "max {0} character harf-width alphanumeric or _-"
-msgstr "{0}文字以下半角英数もしくは「_-」"
+msgstr "{0}文字以下の半角英数、記号（_-）"
 
 msgid "min {0} max {1} character harf-width alphanumeric"
 msgstr "{0}～{1}文字半角英数"

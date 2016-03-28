@@ -42,11 +42,21 @@ class CourseSelectionViewTest(BizViewTestBase):
         self.assertEqual(302, response.status_code)
         self.assertEqual('http://testserver{}'.format(reverse('biz:contract:index')), response['Location'])
 
-    def test_index_aggregator(self):
-        response = self._access_index(self.aggregator_permission)
+    def test_index_aggregator_with_current_contract(self):
+        manager = self._create_manager([self.aggregator_permission])
+        with self.skip_check_course_selection(current_manager=manager, current_contract=True):
+            return self.client.get(self._index_view())
 
         self.assertEqual(302, response.status_code)
         self.assertEqual('http://testserver{}'.format(reverse('biz:contract:index')), response['Location'])
+
+    def test_index_aggregator_and_director_with_current_contract_and_current_course(self):
+        manager = self._create_manager([self.aggregator_permission, self.director_permission])
+        with self.skip_check_course_selection(current_manager=manager, current_contract=True, current_course=True):
+            return self.client.get(self._index_view())
+
+        self.assertEqual(302, response.status_code)
+        self.assertEqual('http://testserver{}'.format(reverse('biz:achievement:index')), response['Location'])
 
     def test_index_director(self):
         response = self._access_index(self.director_permission)

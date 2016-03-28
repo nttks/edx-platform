@@ -11,7 +11,8 @@ from biz.djangoapps.ga_invitation.tests.factories import ContractRegisterFactory
 from biz.djangoapps.ga_manager.models import PERMISSION_AGGREGATOR, PERMISSION_DIRECTOR, PERMISSION_MANAGER, Manager
 from biz.djangoapps.ga_manager.tests.factories import ManagerFactory
 from biz.djangoapps.util.tests.testcase import BizViewTestBase
-from student.tests.factories import UserFactory
+from student.models import UserStanding
+from student.tests.factories import UserFactory, UserStandingFactory
 
 
 class ManagerViewTest(BizViewTestBase):
@@ -121,6 +122,22 @@ class ManagerViewTest(BizViewTestBase):
                       response.content)
         self.assertIn('<option value="{}">{}</option>'.format(PERMISSION_MANAGER[0], PERMISSION_MANAGER[0]),
                       response.content)
+
+    def test_index_have_no_org(self):
+        # Create account and logged in.
+        self.setup_user()
+
+        self._setup_test_data()
+        self.org_e.delete()
+
+        with self.skip_check_course_selection(current_organization=self.org_tac,
+                                              current_manager=self.manager_aggregator):
+            response = self.client.get(self._index_view())
+
+        self.assertEqual(200, response.status_code)
+        # assert organization select list
+        self.assertIn('Manager Setting', response.content)
+        self.assertIn('You need to create an organization first.', response.content)
 
     def test_list_ajax_not_exists_org(self):
         # Create account and logged in.
@@ -325,6 +342,28 @@ class ManagerViewTest(BizViewTestBase):
             self.assertEqual(200, response.status_code)
             self.assertEqual(False, content['success'])
             self.assertEqual('The user is not active.', content['message'])
+
+    def test_modify_ajax_user_resigned(self):
+        # Create account and logged in.
+        self.setup_user()
+        self._setup_test_data()
+
+        resigned_user = UserFactory()
+        UserStandingFactory(user=resigned_user, account_status=UserStanding.ACCOUNT_DISABLED,
+                            changed_by=self.user_gacco_staff)
+
+        with self.skip_check_course_selection(current_organization=self.gacco_organization,
+                                              current_manager=self.manager_platfomer):
+            response = self.client.post(self._modify_ajax_view(),
+                                        data={'selected_org_id': self.org_tac.id,
+                                              'permission_name': PERMISSION_AGGREGATOR[0],
+                                              'unique_student_identifier': resigned_user.username,
+                                              'action': 'allow'})
+
+            content = json.loads(response.content)
+            self.assertEqual(200, response.status_code)
+            self.assertEqual(False, content['success'])
+            self.assertEqual('The user is resigned.', content['message'])
 
     def test_modify_ajax_own_self(self):
         # Create account and logged in.
