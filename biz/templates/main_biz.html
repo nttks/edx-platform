@@ -393,7 +393,16 @@ from microsite_configuration import microsite
             $('.menu-icon').toggleClass('close');
             $('.side').toggleClass('close');
             $('.main').toggleClass('close');
+
+            if (typeof grid != "undefined") toggleGridWidth();
         });
+
+        var grid_toggle_width = 250;
+        function toggleGridWidth() {
+            $('.w2ui-grid').width($('.w2ui-grid').width() + grid_toggle_width);
+            grid.refresh();
+            grid_toggle_width *= -1;
+        }
     });
 </script>
 </%block>

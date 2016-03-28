@@ -9,11 +9,12 @@ from django.core.urlresolvers import reverse
 
 <%block name="js_extra">
 <script type="text/javascript">
+    var grid;
     $(function () {
         $("#register_btn").click(function () {
             window.location.href = "${reverse('biz:contract:show_register')}";
         });
-        var grid = $('#grid').w2grid({
+        grid = $('#grid').w2grid({
             name: 'contract_grid',
             fixedBody: true,
             selectType : 'cell',

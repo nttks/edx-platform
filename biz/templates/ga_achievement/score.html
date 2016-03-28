@@ -9,8 +9,9 @@ from django.utils.translation import ugettext as _
 
 <%block name="js_extra">
 <script type="text/javascript">
+    var grid;
     $(function () {
-        var grid = $('#grid').w2grid({
+        grid = $('#grid').w2grid({
             name: 'score_grid',
             header: 'List of Names',
             columns: ${columns},
