@@ -351,9 +351,9 @@ from microsite_configuration import microsite
 
                     ## Course Operation
                     % if current_manager.can_handle_course_operation() and current_course:
-                    <li><a href="">${_("Course Enrollment Management")}</a></li>
+                    <li><a href="${reverse('biz:course_operation:dashboard', kwargs={'course_id': current_course.id})}#view-membership">${_("Course Enrollment Management")}</a></li>
                     % if current_contract.is_spoc_available:
-                    <li><a href="">${_("Survey Management")}</a></li>
+                    <li><a href="${reverse('biz:course_operation:dashboard', kwargs={'course_id': current_course.id})}#view-survey">${_("Survey Management")}</a></li>
                     % endif
                     % endif
 
