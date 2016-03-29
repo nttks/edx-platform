@@ -49,6 +49,22 @@ class Contract(models.Model):
         today = datetime_utils.timezone_today()
         return self.start_date <= today <= self.end_date
 
+    def is_available_for_aggregator(self):
+        """
+        Returns whether Aggregator can use this contract.
+        """
+        return self.contract_type == CONTRACT_TYPE_OWNERS[0]
+
+    def is_available_for_director_or_manager(self):
+        """
+        Returns whether Director or Manager can use this contract.
+        """
+        return self.contract_type in [
+            CONTRACT_TYPE_PF[0],
+            CONTRACT_TYPE_GACCO_SERVICE[0],
+            CONTRACT_TYPE_OWNER_SERVICE[0],
+        ]
+
     @property
     def is_spoc_available(self):
         """
@@ -61,13 +77,12 @@ class Contract(models.Model):
         ]
 
     @classmethod
-    def get_enabled_by_manager_and_contract_id(cls, manager, contract_id):
+    def get_contract_types(cls, manager):
         """
-        Get by contract types related to manager's permissions and contract id
+        Get contract types related to manager's permissions
 
         :param manager: Manager object
-        :param contract_id: contract id
-        :return: Contract object, or raise DoesNotExist if not exist
+        :return: list of contract types
         """
         contract_types = []
         if manager.is_aggregator():
@@ -76,7 +91,35 @@ class Contract(models.Model):
             contract_types.append(CONTRACT_TYPE_PF[0])
             contract_types.append(CONTRACT_TYPE_GACCO_SERVICE[0])
             contract_types.append(CONTRACT_TYPE_OWNER_SERVICE[0])
+        return contract_types
 
+    @classmethod
+    def get_contract_types_by_managers(cls, managers):
+        """
+        Get contract types related to managers' permissions
+
+        :param managers: list of Manager
+        :return: list of contract types
+        """
+        contract_types = []
+        if any([manager.is_aggregator() for manager in managers]):
+            contract_types.append(CONTRACT_TYPE_OWNERS[0])
+        if any([manager.is_director() or manager.is_manager() for manager in managers]):
+            contract_types.append(CONTRACT_TYPE_PF[0])
+            contract_types.append(CONTRACT_TYPE_GACCO_SERVICE[0])
+            contract_types.append(CONTRACT_TYPE_OWNER_SERVICE[0])
+        return contract_types
+
+    @classmethod
+    def get_enabled_by_manager_and_contract_id(cls, manager, contract_id):
+        """
+        Get by contract types related to manager's permissions and contract id
+
+        :param manager: Manager object
+        :param contract_id: contract id
+        :return: Contract object, or raise DoesNotExist if not exist
+        """
+        contract_types = cls.get_contract_types(manager)
         return cls.objects.enabled().get(
             pk=contract_id,
             contractor_organization__id=manager.org.id,
@@ -107,14 +150,7 @@ class Contract(models.Model):
         :return: Contract objects
         """
         managers = Manager.get_managers(user)
-        contract_types = []
-        if any([manager.is_aggregator() for manager in managers]):
-            contract_types.append(CONTRACT_TYPE_OWNERS[0])
-        if any([manager.is_director() or manager.is_manager() for manager in managers]):
-            contract_types.append(CONTRACT_TYPE_PF[0])
-            contract_types.append(CONTRACT_TYPE_GACCO_SERVICE[0])
-            contract_types.append(CONTRACT_TYPE_OWNER_SERVICE[0])
-
+        contract_types = cls.get_contract_types_by_managers(managers)
         return cls.objects.enabled().filter(
             contractor_organization__managers__user=user,
             contract_type__in=contract_types,
@@ -128,14 +164,7 @@ class Contract(models.Model):
         :param manager: Manager object
         :return: Contract objects
         """
-        contract_types = []
-        if manager.is_aggregator():
-            contract_types.append(CONTRACT_TYPE_OWNERS[0])
-        if manager.is_director() or manager.is_manager():
-            contract_types.append(CONTRACT_TYPE_PF[0])
-            contract_types.append(CONTRACT_TYPE_GACCO_SERVICE[0])
-            contract_types.append(CONTRACT_TYPE_OWNER_SERVICE[0])
-
+        contract_types = cls.get_contract_types(manager)
         return cls.objects.enabled().filter(
             contractor_organization__id=manager.org.id,
             contract_type__in=contract_types,
@@ -171,14 +200,7 @@ class ContractDetail(models.Model):
         :return: ContractDetail objects
         """
         managers = Manager.get_managers(user)
-        contract_types = []
-        if any([manager.is_aggregator() for manager in managers]):
-            contract_types.append(CONTRACT_TYPE_OWNERS[0])
-        if any([manager.is_director() or manager.is_manager() for manager in managers]):
-            contract_types.append(CONTRACT_TYPE_PF[0])
-            contract_types.append(CONTRACT_TYPE_GACCO_SERVICE[0])
-            contract_types.append(CONTRACT_TYPE_OWNER_SERVICE[0])
-
+        contract_types = Contract.get_contract_types_by_managers(managers)
         return cls.objects.enabled().filter(
             contract__contractor_organization__managers__user=user,
             contract__contract_type__in=contract_types,
@@ -200,12 +222,7 @@ class ContractDetail(models.Model):
         :param contract: Contract object
         :return: ContractDetail objects
         """
-        contract_types = []
-        if manager.is_director() or manager.is_manager():
-            contract_types.append(CONTRACT_TYPE_PF[0])
-            contract_types.append(CONTRACT_TYPE_GACCO_SERVICE[0])
-            contract_types.append(CONTRACT_TYPE_OWNER_SERVICE[0])
-
+        contract_types = Contract.get_contract_types(manager)
         return cls.objects.enabled().filter(
             contract__id=contract.id,
             contract__contract_type__in=contract_types,
@@ -222,12 +239,7 @@ class ContractDetail(models.Model):
         :param course: course object
         :return: ContractDetail objects
         """
-        contract_types = []
-        if manager.is_director() or manager.is_manager():
-            contract_types.append(CONTRACT_TYPE_PF[0])
-            contract_types.append(CONTRACT_TYPE_GACCO_SERVICE[0])
-            contract_types.append(CONTRACT_TYPE_OWNER_SERVICE[0])
-
+        contract_types = Contract.get_contract_types(manager)
         return cls.objects.enabled().filter(
             course_id=course.id,
             contract__id=contract.id,

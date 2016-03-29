@@ -84,6 +84,10 @@ def check_course_selection(func):
             contracts = Contract.find_enabled_by_manager(manager)
             if len(contracts) == 1:
                 contract_id = contracts[0].id
+        # If you're not Platformer, contract_id must be specified
+        if not manager.is_platformer() and not contract_id:
+            log.info("Redirect to contract_not_specified page because contract_id is not specified.")
+            return _render_contract_not_specified(request)
 
         # Validate access permission for contract
         if contract_id:
@@ -117,9 +121,6 @@ def check_course_selection(func):
                         manager.id, 'organization')
                 )
                 return _render_403(request)
-            elif manager.is_aggregator() and not contract_id:
-                log.info("Redirect to contract_not_specified page because contract_id is not specified.")
-                return _render_contract_not_specified(request)
 
         elif re.match('^/biz/contract/', request.path):
             if not manager.can_handle_contract():
@@ -128,9 +129,6 @@ def check_course_selection(func):
                         manager.id, 'contract')
                 )
                 return _render_403(request)
-            elif manager.is_aggregator() and not contract_id:
-                log.info("Redirect to contract_not_specified page because contract_id is not specified.")
-                return _render_contract_not_specified(request)
 
         elif re.match('^/biz/manager/', request.path):
             if not manager.can_handle_manager():
@@ -139,9 +137,6 @@ def check_course_selection(func):
                         manager.id, 'manager')
                 )
                 return _render_403(request)
-            elif manager.is_aggregator() and not contract_id:
-                log.info("Redirect to contract_not_specified page because contract_id is not specified.")
-                return _render_contract_not_specified(request)
 
         elif re.match('^/biz/course_operation/', request.path):
             if not manager.can_handle_course_operation():

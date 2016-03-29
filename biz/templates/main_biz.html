@@ -341,7 +341,7 @@ from microsite_configuration import microsite
 
             <ul class="menu">
                 ## Platformer or Aggregator
-                % if current_manager and (current_manager.is_platformer() or (current_manager.is_aggregator() and current_contract and not current_course)):
+                % if current_manager and (current_manager.is_platformer() or (current_manager.is_aggregator() and current_contract and current_contract.is_available_for_aggregator())):
                     ## Organization
                     % if current_manager.can_handle_organization():
                     <li class="${'current' if current_feature == 'organization' else ''}"><a href="${reverse('biz:organization:index')}">${_("Organization List")}</a></li>
@@ -358,7 +358,7 @@ from microsite_configuration import microsite
                     % endif
 
                 ## Director or Manager
-                % elif current_manager and (current_manager.is_director() or current_manager.is_manager()):
+                % elif current_manager and (current_manager.is_director() or current_manager.is_manager()) and current_contract and current_contract.is_available_for_director_or_manager():
                     ## Achievement
                     % if current_manager.can_handle_achievement() and current_course:
                     <li class="${'current' if current_feature == 'achievement' else ''}"><a href="${reverse('biz:achievement:index')}">${_("Score Status")}</a></li>
