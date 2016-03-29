@@ -37,7 +37,7 @@ def index(request):
             'org_code': org.org_code,
             'created_by': org.created_by.profile.name,
             'created': format_for_w2ui(org.created),
-            'contract_count': org.org_owner_contracts.count(),
+            'contract_count': org.org_contractor_contracts.count(),
             'manager_count': org.managers.count(),
             'detail_url': reverse('biz:organization:detail', kwargs={'selected_id': org.id}),
         })
