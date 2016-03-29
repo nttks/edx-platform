@@ -7,6 +7,8 @@ from django.core.urlresolvers import reverse
 
 from opaque_keys.edx.keys import CourseKey
 
+from biz.djangoapps.ga_contract.models import CONTRACT_TYPE_PF, CONTRACT_TYPE_OWNERS
+from biz.djangoapps.ga_contract.tests.factories import ContractFactory
 from biz.djangoapps.ga_manager.tests.factories import ManagerFactory
 from biz.djangoapps.util import cache_utils
 from biz.djangoapps.util.tests.testcase import BizViewTestBase
@@ -31,6 +33,22 @@ class CourseSelectionViewTest(BizViewTestBase):
             permissions=permissions
         )
 
+    def _create_contract_for_pf(self):
+        return self._create_contract(CONTRACT_TYPE_PF[0])
+
+    def _create_contract_for_owners(self):
+        return self._create_contract(CONTRACT_TYPE_OWNERS[0])
+
+    def _create_contract(self, contract_type):
+        return ContractFactory.create(
+            contract_name='test',
+            contract_type=contract_type,
+            invitation_code='testtest',
+            contractor_organization=self.gacco_organization,
+            owner_organization=self.gacco_organization,
+            created_by=self.user,
+        )
+
     def _access_index(self, permission):
         manager = self._create_manager([permission])
         with self.skip_check_course_selection(current_manager=manager):
@@ -42,30 +60,71 @@ class CourseSelectionViewTest(BizViewTestBase):
         self.assertEqual(302, response.status_code)
         self.assertEqual('http://testserver{}'.format(reverse('biz:contract:index')), response['Location'])
 
-    def test_index_aggregator_with_current_contract(self):
+    def test_index_aggregator_with_owner_contract(self):
         manager = self._create_manager([self.aggregator_permission])
-        with self.skip_check_course_selection(current_manager=manager, current_contract=True):
+        contract = self._create_contract_for_owners()
+        with self.skip_check_course_selection(current_manager=manager, current_contract=contract):
             return self.client.get(self._index_view())
 
         self.assertEqual(302, response.status_code)
         self.assertEqual('http://testserver{}'.format(reverse('biz:contract:index')), response['Location'])
 
-    def test_index_aggregator_and_director_with_current_contract_and_current_course(self):
-        manager = self._create_manager([self.aggregator_permission, self.director_permission])
-        with self.skip_check_course_selection(current_manager=manager, current_contract=True, current_course=True):
+    def test_index_aggregator_with_pf_contract(self):
+        manager = self._create_manager([self.aggregator_permission])
+        contract = self._create_contract_for_pf()
+        with self.skip_check_course_selection(current_manager=manager, current_contract=contract):
+            return self.client.get(self._index_view())
+
+        self.assertEqual(403, response.status_code)
+
+    def test_index_director_with_pf_contract(self):
+        manager = self._create_manager([self.director_permission])
+        contract = self._create_contract_for_pf()
+        with self.skip_check_course_selection(current_manager=manager, current_contract=contract):
             return self.client.get(self._index_view())
 
         self.assertEqual(302, response.status_code)
         self.assertEqual('http://testserver{}'.format(reverse('biz:achievement:index')), response['Location'])
 
-    def test_index_director(self):
-        response = self._access_index(self.director_permission)
+    def test_index_director_with_owner_contract(self):
+        manager = self._create_manager([self.director_permission])
+        contract = self._create_contract_for_owners()
+        with self.skip_check_course_selection(current_manager=manager, current_contract=contract):
+            return self.client.get(self._index_view())
+
+        self.assertEqual(403, response.status_code)
+
+    def test_index_manager_with_pf_contract(self):
+        manager = self._create_manager([self.manager_permission])
+        contract = self._create_contract_for_pf()
+        with self.skip_check_course_selection(current_manager=manager, current_contract=contract):
+            return self.client.get(self._index_view())
 
         self.assertEqual(302, response.status_code)
         self.assertEqual('http://testserver{}'.format(reverse('biz:achievement:index')), response['Location'])
 
-    def test_index_manager(self):
-        response = self._access_index(self.manager_permission)
+    def test_index_manager_with_owner_contract(self):
+        manager = self._create_manager([self.manager_permission])
+        contract = self._create_contract_for_owners()
+        with self.skip_check_course_selection(current_manager=manager, current_contract=contract):
+            return self.client.get(self._index_view())
+
+        self.assertEqual(403, response.status_code)
+
+    def test_index_aggregator_and_director_with_owner_contract(self):
+        manager = self._create_manager([self.aggregator_permission, self.director_permission])
+        contract = self._create_contract_for_owners()
+        with self.skip_check_course_selection(current_manager=manager, current_contract=contract):
+            return self.client.get(self._index_view())
+
+        self.assertEqual(302, response.status_code)
+        self.assertEqual('http://testserver{}'.format(reverse('biz:contract:index')), response['Location'])
+
+    def test_index_aggregator_and_director_with_pf_contract(self):
+        manager = self._create_manager([self.aggregator_permission, self.director_permission])
+        contract = self._create_contract_for_pf()
+        with self.skip_check_course_selection(current_manager=manager, current_contract=contract):
+            return self.client.get(self._index_view())
 
         self.assertEqual(302, response.status_code)
         self.assertEqual('http://testserver{}'.format(reverse('biz:achievement:index')), response['Location'])

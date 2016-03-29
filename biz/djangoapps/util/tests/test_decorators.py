@@ -295,8 +295,11 @@ class CheckCourseSelectionForAggregatorTest(CheckCourseSelectionTestBase):
         self._setup_default()
         contract2 = self._save_default_contract(self.org, self.org2)
         # Call test target
-        self.assertEqual('success', check_course_selection_target(self.request))
-        self.assertEqual((self.org.id, None, None), cache_utils.get_course_selection(self.request.user))
+        check_course_selection_target(self.request)
+        self.mock_log.info.assert_called_with(
+            "Redirect to contract_not_specified page because contract_id is not specified.")
+        self.mock_messages.error.assert_called_with(self.request, "Contract is not specified.")
+        self.mock_render_to_response.assert_called_with('ga_course_selection/contract_not_specified.html')
 
     def test_with_two_orgs_and_contracts_if_cache_exists(self):
         self.path = self._index_view()
@@ -478,8 +481,11 @@ class CheckCourseSelectionForDirectorTest(CheckCourseSelectionTestBase):
         self._setup_default()
         contract2 = self._save_default_contract(self.org, self.org2)
         # Call test target
-        self.assertEqual('success', check_course_selection_target(self.request))
-        self.assertEqual((self.org.id, None, None), cache_utils.get_course_selection(self.request.user))
+        check_course_selection_target(self.request)
+        self.mock_log.info.assert_called_with(
+            "Redirect to contract_not_specified page because contract_id is not specified.")
+        self.mock_messages.error.assert_called_with(self.request, "Contract is not specified.")
+        self.mock_render_to_response.assert_called_with('ga_course_selection/contract_not_specified.html')
 
     def test_with_two_courses(self):
         self.path = self._index_view()
