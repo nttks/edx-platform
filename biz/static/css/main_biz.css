@@ -463,6 +463,7 @@ a#add_detail:before, a#add_additional:before {
     margin: 2px 2px 2px 3px !important;
     border: 0px !important;
     text-align: center;
+    cursor: pointer;
 }
 
 .w2ui-toolbar table.w2ui-button .w2ui-tb-image > span {
@@ -481,6 +482,7 @@ a#add_detail:before, a#add_additional:before {
     background-color: #fff;
     padding: 3px 18px 3px 24px;
     margin: -2px -2px 0px 15px;
+    cursor: pointer;
 }
 
 w2ui-grid .w2ui-toolbar-search .w2ui-search-down {
@@ -490,6 +492,7 @@ w2ui-grid .w2ui-toolbar-search .w2ui-search-down {
 .w2ui-icon.icon-search, .w2ui-icon.icon-search-down {
     background-size: 25px 25px !important;
     opacity: 1.0;
+    cursor: pointer;
 }
 
 .w2ui-icon.icon-search,
