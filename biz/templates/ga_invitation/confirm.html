@@ -1,0 +1,263 @@
+<%inherit file="../main.html" />
+<%!
+from django.utils.translation import ugettext as _
+from django.core.urlresolvers import reverse
+from courseware.courses import course_image_url
+%>
+<%namespace name='static' file='../static_content.html'/>
+
+<%block name="bodyclass">confirm-invitation-code</%block>
+<%block name="pagetitle">${_("Confirm Invitation Code")}</%block>
+
+<%block name="headextra">
+<style>
+    body {
+        background-color: #fff;
+        font: 1em "ヒラギノ角ゴ Pro W3", "Hiragino Kaku Gothic Pro", "メイリオ", Meiryo, Osaka, "ＭＳ Ｐゴシック", "MS PGothic", sans-serif;
+    }
+
+    hr {
+        margin: 20rem;
+    }
+
+    .content-wrapper {
+        min-height: 550px;
+    }
+
+    .content-wrapper a:hover {
+        text-decoration: underline !important;
+        color: #3393C3 !important;
+    }
+
+    .container {
+        line-height: 1.3;
+    }
+
+    .container a {
+        color: #0078b0 !important;
+    }
+
+    /* .container a:hover{text-decoration: none; opacity: 0.8; } _NO__DOTCOMMA__AFTER__*/
+    /*     Form Style Reset    */
+    input[type="submit"]:active:not(:disabled), input[type="submit"]:focus:not(:disabled), input[type="button"]:active:not(:disabled), input[type="button"]:focus:not(:disabled), button:active:not(:disabled), button:focus:not(:disabled), .button:active:not(:disabled), .button:focus:not(:disabled) {
+        box-shadow: none;
+    }
+
+    textarea, input[type="text"], input[type="email"], input[type="password"], input[type="tel"], input[type="hidden"] {
+        font-style: inherit;
+        margin: 5px;
+        vertical-align: middle;
+        font-family: "ヒラギノ角ゴ Pro W3", "Hiragino Kaku Gothic Pro", "メイリオ", Meiryo, Osaka, "ＭＳ Ｐゴシック", "MS PGothic", sans-serif;
+    }
+
+    input[type="button"], input[type="submit"] {
+        background-image: none;
+        background-color: #777;
+        height: 2rem;
+        margin: 0 0.5rem 1rem 0;
+        font-family: FontAwesome;
+        border-radius: 10px !important: opacity: 1;
+        -moz-transition: .3s;
+        -o-transition: .3s;
+        -webkit-transition: .3s;
+        transition: .3s;
+    }
+
+    input[type="submit"] {
+        background-color: #43AC6A;
+        height: 2rem;
+    }
+
+    .container h1 {
+        color: #555;
+        text-align: left;
+        font-size: 1.6em;
+        border-left: solid #43AC6A 4px;
+        padding-left: 10px;
+        margin: 30px 0 20px 0;
+    }
+
+    .container h3 {
+        line-height: 2;
+    }
+
+    .red {
+        color: #e33;
+    }
+
+    h3.code {
+        border-bottom: dashed 1px #aaa;
+        margin: 6px auto 30px;
+        width: 97%;
+        color: #444;
+        font-size: 1.35rem;
+    }
+
+    h4.att {
+        text-align: center;
+        font-size: 1.15rem;
+    }
+
+    .add-form {
+        margin: 0 auto;
+        width: 90%;
+    }
+
+    /* form#form-invitation-code  */
+    h3.add-info {
+        border-bottom: 1px solid #ccc;
+        margin: 45px 0 15px;
+        font-size: 1.2rem;
+        text-align: center;
+    }
+
+    .error-message {
+        display: inline-block;
+    }
+
+    .fa-external-link {
+        font-size: 1.2rem;
+        vertical-align: middle;
+    }
+
+    /* ----- Course Area ----- */
+    .course-area {
+        background-color: #f3f3f3;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        margin: 20px auto;
+        padding: 20px;
+        max-width: 500px;
+        width: auto;
+    }
+
+    .course-area img {
+        max-width: 320px;
+        width: auto;
+        border: 1px solid #ccc;
+        box-shadow: 2px 2px 2px #ccc;
+        background-color: #fff;
+        padding: 2px;
+        transition: .3s;
+    }
+
+    .course-area img:hover {
+        background-color: #126F9A;
+        box-shadow: none;
+    }
+
+    .course-area .course-title p {
+        line-height: 1.2;
+        margin: 4px 0;
+    }
+
+    .course-area figcaption {
+        margin-top: 8px;
+        font-size: 1.2rem;
+    }
+
+    .course-title {
+        font-size: 1.2rem;
+    }
+
+    .course-board, .course-title {
+        width: auto;
+        margin: 0 auto;
+        text-align: center;
+    }
+
+    .additional {
+        text-align: center;
+    }
+
+    span.additional-text {
+        display: inline-block;
+        width: 18rem;
+        text-align: right;
+        margin-left: -14rem;
+    }
+
+    input.additional-input {
+        width: 24rem;
+    }
+
+    .buttonArea {
+        margin: 10px auto 20px;
+        text-align: center;
+    }
+</style>
+</%block>
+
+<%block name="js_extra">
+<script>
+    $(function () {
+        $('#form-invitation-code').on('submit', function (e) {
+            e.preventDefault();
+            $('.error-message').text('');
+            var el = $(this);
+            $.ajax({
+                url: el.attr('action'),
+                type: 'POST',
+                dataType: 'json',
+                data: el.serializeArray()
+            }).done(function (data) {
+                if (data.result) {
+                    window.location.href = data.href;
+                } else {
+                    $('#message-invitation-code').html(data.message);
+                    for (i in data.additional_errors) {
+                        $('#additional-' + data.additional_errors[i].name).html(data.additional_errors[i].message);
+                    }
+                }
+            });
+        });
+        $('#cancel-invitation-code').on('click', function () {
+            window.location.href = $(this).data('url');
+        });
+    });
+</script>
+</%block>
+
+<%block name="content">
+<div class="container">
+  <h1>${_("Confirm Invitation Code")}</h1>
+  <h3 class="code">${_("Invitation Code:{invitation_code}({contract_name})").format(invitation_code=contract.invitation_code, contract_name=contract.contract_name) | h}</h3>
+  <h4 class="att">${_("{contract_name} contains the course of the following. Please check the course content.").format(contract_name=contract.contract_name) | h}</h4>
+  % for course in courses:
+    <section class="course-area">
+      <div class="course-title">
+        <p>${course.id | h}</p>
+        <p>${course.display_name | h}</p>
+      </div>
+
+      <figure class="course-board">
+        <a href="${reverse('about_course', args=[course.id.to_deprecated_string()])}" target="_blank">
+          <img src="${course_image_url(course)}" class="course-image" alt="${_('{course_number} {course_name} Cover Image').format(course_number=course.number, course_name=course.display_name_with_default) |h}" />
+        </a>
+        <figcaption>
+          <a href="${reverse('about_course', args=[course.id.to_deprecated_string()])}" target="_blank">${_("Confirm Course")}<i class="fa fa-external-link fa-fw"></i></a>
+        </figcaption>
+      </figure>
+    </section>
+  % endfor
+  <form id="form-invitation-code" class="add-form" action="${reverse('biz:invitation:register')}" method="post">
+    % if additionals:
+      <h3 class="add-info">${_("To take {contract_name} are required to enter the additional information below.").format(contract_name=contract.contract_name) | h}</h3>
+      <div id="message-invitation-code" class="error-message" class="red"></div>
+      % for additional in additionals:
+        <div class="additional">
+          <span class="additional-text">${_("{display_name}:").format(display_name=additional['display_name']) | h}</span><input class="additional-input" type="text" name="${additional['name'] | h}" value="${additional['value'] | h}"><span id="additional-${additional['name'] | h}" class="error-message"  class="red"></span>
+        </div>
+      % endfor
+    % endif
+
+    <div class="buttonArea">
+      <input type="hidden" name="invitation_code" value="${contract.invitation_code}">
+      <input type="hidden" name="csrfmiddlewaretoken" value="${csrf_token}">
+      <br>
+      <input id="cancel-invitation-code" type="button" data-url="${reverse('account_settings')}" value="&#xf05e; ${_("Cancel")}" />
+      <input type="submit" value="&#xf044; ${_("Register invitation code.")}" />
+    </div>
+  </form>
+</div>
+</%block>

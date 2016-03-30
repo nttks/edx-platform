@@ -116,6 +116,7 @@ from opaque_keys.edx.locations import SlashSeparatedCourseKey
 from opaque_keys import InvalidKeyError
 from openedx.core.djangoapps.course_groups.cohorts import is_course_cohorted
 
+
 log = logging.getLogger(__name__)
 
 
@@ -2657,6 +2658,10 @@ def get_survey(request, course_id):  # pylint: disable=W0613
     """
     Gets survey result as a CSV file.
     """
+    return create_survey_response(request, course_id)
+
+
+def create_survey_response(request, course_id):
     def csv_response(filename, header, rows):
         """Returns a CSV http response for the given header and rows (excel/cp932)."""
         import unicodecsv as csv
@@ -2670,9 +2675,6 @@ def get_survey(request, course_id):  # pylint: disable=W0613
             writer.writerow(encoded)
         return response
 
-    #Note(#EDX-501): Modified temporarily.
-    #header = ['Unit ID', 'Survey Name', 'Created', 'User Name', 'Gender', 'Year of Birth',
-    #          'Level of Education', 'Disabled']
     header = ['Unit ID', 'Survey Name', 'Created', 'User Name', 'Resigned', 'Unenrolled']
     rows = []
 
@@ -2715,10 +2717,6 @@ def get_survey(request, course_id):  # pylint: disable=W0613
                     course_id, s.unit_id, s.username)
                 log.warning(msg)
             row = [s.unit_id, s.survey_name, s.created, s.username]
-            #Note(EDX-501): Modified temporarily.
-            #row.append(dict(UserProfile.GENDER_CHOICES).get(s.gender, s.gender) or '')
-            #row.append(s.year_of_birth or '')
-            #row.append(dict(UserProfile.LEVEL_OF_EDUCATION_CHOICES).get(s.level_of_education, s.level_of_education) or '')
             row.append('1' if s.account_status == UserStanding.ACCOUNT_DISABLED else '')
             row.append('1' if not s.is_active else '')
             for key in keys:

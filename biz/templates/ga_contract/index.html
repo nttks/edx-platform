@@ -1,0 +1,71 @@
+<%inherit file="../main_biz.html" />
+<%namespace name="static" file="../static_content.html" />
+<%!
+from django.utils.translation import ugettext as _
+from django.core.urlresolvers import reverse
+%>
+
+<%block name="pagetitle">${_("Contract List")}</%block>
+
+<%block name="js_extra">
+<script type="text/javascript">
+    var grid;
+    $(function () {
+        $("#register_btn").click(function () {
+            window.location.href = "${reverse('biz:contract:show_register')}";
+        });
+        grid = $('#grid').w2grid({
+            name: 'contract_grid',
+            fixedBody: true,
+            selectType : 'cell',
+            show: {
+                toolbar: true,
+                footer: true,
+                toolbarReload: false
+            },
+            multiSearch: false,
+            searches: [
+                {field: 'contract_name', caption: '${_("Contract Name")} ', type: 'text'},
+                {field: 'contract_type', caption: '${_("Contract Type")}', type: 'text'},
+                {field: 'invitation_code', caption: '${_("Invitation Code")}', type: 'text'},
+                {field: 'contractor_organization', caption: '${_("Contractor Organization Name")}', type: 'text'},
+                {field: 'start_date', caption: '${_("Contract Start Date")}', type: 'date', options: {format: 'yyyy/mm/dd'}},
+                {field: 'end_date', caption: '${_("Contract End Date")}', type: 'date', options: {format: 'yyyy/mm/dd'}},
+                {field: 'created_by', caption: '${_("Created By Name")} ', type: 'text'},
+                {field: 'created', caption: '${_("Created Date")}', type: 'date', options: {format: 'yyyy/mm/dd'}},
+            ],
+            columns: [
+                {
+                    field: 'contract_name', caption: '${_("Contract Name")}', size: '30%', sortable: true, hidden: false,
+                    render: function (record) {
+                        return "<a href='" + record.detail_url + "'>" + _.escape(record.contract_name) + "</a>";
+                    }
+                },
+                {field: 'contract_type', caption: '${_("Contract Type")}', size: '20%', sortable: true, hidden: false},
+                {field: 'invitation_code', caption: '${_("Invitation Code")}', size: '20%', sortable: true, hidden: false},
+                {
+                    field: 'contractor_organization', caption: '${_("Contractor Organization Name")}', size: '20%', sortable: true, hidden: false,
+                    render: function (record) {
+                        return _.escape(record.contractor_organization);
+                    }
+                },
+                {field: 'start_date', caption: '${_("Contract Start Date")}', size: '20%', sortable: true, hidden: false, render: 'date:yyyy/mm/dd'},
+                {field: 'end_date', caption: '${_("Contract End Date")}', size: '20%', sortable: true, hidden: false, render: 'date:yyyy/mm/dd'},
+                {field: 'user_count', caption: '${_("Total Unique User Count")}', size: '20%', sortable: true, hidden: true, attr: 'align=right'},
+                {field: 'course_count', caption: '${_("Total Course Count")}', size: '20%', sortable: true, hidden: true, attr: 'align=right'},
+                {field: 'additional_info_count', caption: '${_("Additional Info Count")}', size: '20%', sortable: true, hidden: true, attr: 'align=right'},
+                {field: 'created_by', caption: '${_("Created By Name")}', size: '20%', sortable: true, hidden: true},
+                {field: 'created', caption: '${_("Created Date")}', size: '20%', sortable: true, hidden: true, render: 'date:yyyy/mm/dd'}
+            ],
+            records: ${contract_show_list}
+        });
+
+    });
+</script>
+</%block>
+
+<%block name="custom_content">
+<div id="grid"></div>
+
+<input type="button" id="register_btn" value="&#xf044 ${_('New Contract')}" />
+</%block>

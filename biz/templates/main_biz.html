@@ -1,0 +1,418 @@
+<%inherit file="main.html" />
+<%namespace name="static" file="static_content.html" />
+<%!
+import re
+from django.core.urlresolvers import reverse
+from django.utils.translation import ugettext as _
+from django.conf import settings
+from microsite_configuration import microsite
+%>
+
+<%block name="bodyclass">view-biz</%block>
+
+<%block name="headextra">
+<link rel="stylesheet" type="text/css" href="${static.url('css/vendor/w2ui/w2ui.min.css')}" />
+<link rel="stylesheet" type="text/css" href="${static.url('css/main_biz.css')}" />
+<script type="text/javascript" src="${static.url('js/vendor/w2ui/w2ui.min.js')}"></script>
+<script type="text/javascript" src="${static.url('js/vendor/jquery_chained/jquery.chained.min.js')}"></script>
+<script type="text/javascript" src="${static.url('js/vendor/jquery.fileDownload/jquery.fileDownload.js')}"></script>
+<script type="text/javascript" src="${static.url('js/main_biz.js')}"></script>
+<style>
+    /* Modal */
+    .role-selection-modal {
+        min-width: 42rem;
+        min-height: 330px;
+        height: auto;
+        width: 60%;
+    }
+
+    .biz-modal {
+        width: 400px;
+    }
+
+    .biz-modal .w2ui-field > label {
+        left: -8.5rem;
+        top: 2px;
+    }
+
+    .w2ui-field > label {
+        margin: 0 0 10px 0;
+    }
+
+    .w2ui-overlay .w2ui-col-on-off table td label, .w2ui-overlay .w2ui-grid-searches table td.close-btn button {
+        font-style: normal;
+        font-family: sans-serif;
+    }
+
+    .w2ui-overlay {
+        min-width: 80%;
+        margin-left: -15px;
+    }
+
+    .w2ui-overlay:after {
+        margin: 3px 0 0 30px;
+    }
+
+    .w2ui-page.page-0 {
+        overflow: hidden;
+    }
+
+    select#course_id {
+        max-width: 30rem;
+    }
+
+    .arrow-down {
+        display: none;
+    }
+
+    div#w2ui-overlay-searches-achievement_grid {
+        left: 50%;
+    }
+
+    /* Drop down menu */
+    .w2ui-overlay table.w2ui-drop-menu {
+        width: 95%;
+        color: #000000;
+        background-color: #ffffff;
+        padding: 5px 0px;
+        cursor: default;
+    }
+
+    #w2ui-overlay-searches-achievement_grid:before {
+        display: block;
+        margin-left: 30px;
+        top: -1px;
+    }
+
+    #role-selection-modal .error-message {
+        color: red;
+        font-size: 1.2em;
+        height: 30px;
+        margin-left: 120px;
+    }
+
+    /* ▽ Side Navi Remote */
+    #panel-btn {
+        display: inline-block;
+        position: absolute;
+        top: 4px;
+        left: 473px;
+        width: 1.2rem;
+        height: 3rem;
+        margin: 0 0 3px;
+        border-radius: 3px;
+        background: #666;
+        padding: 0 0.5rem;
+        box-shadow: 1px 1px 1px #999;
+        -moz-transition: .5s;
+        -o-transition: .5s;
+        -webkit-transition: .5s;
+        transition: .5s;
+    }
+
+    #panel-btn:hover {
+        background: #699;
+    }
+
+    #panel-btn-icon:before {
+        content: "＜";
+        position: absolute;
+        top: 43%;
+        left: 0.2rem;
+        color: #FFF;
+        font-size: 1.5rem;
+        text-align: center;
+        transition: .3s;
+        text-decoration: none;
+    }
+
+    #panel-btn-icon:before {
+        margin-top: -8px;
+    }
+
+    #panel-btn-icon:after {
+        margin-top: 6px;
+    }
+
+    /* Close */
+    #panel-btn .close {
+        background: transparent;
+    }
+
+    #panel-btn .close:before, #panel-btn .close:after {
+        /* margin-top: 0; */
+    }
+
+    #panel-btn .close:before {
+        content: "＞";
+        left: 0.55rem;
+        text-decoration: none;
+    }
+
+    #panel-btn .close:after {
+    }
+
+    .menu-icon {
+        position: absolute;
+        left: -13.5rem;
+        top: 34px;
+        -moz-transition: .3s;
+        -o-transition: .3s;
+        -webkit-transition: .3s;
+        transition: .3s;
+    }
+
+    .side {
+        width: 230px;
+        margin: 22px 30px 0 0;
+        padding: 20px 10px;
+
+        border: 1px solid #333;
+        background-color: #eee;
+        padding: 20px;
+        display: block;
+
+        float: left;
+        /*text-align: center;*/
+        position: absolute;
+        left: 2rem;
+
+        -moz-transition: .3s;
+        -o-transition: .3s;
+        -webkit-transition: .3s;
+        transition: .3s;
+    }
+
+    .side.close {
+        left: -250px !important;
+    }
+
+    .side li {
+        display: block;
+        height: 30px;
+        border-bottom: 1px solid #fff;
+        padding-top: 10px;
+    }
+</style>
+</%block>
+
+<%block name="bodyextra">
+<div id="container" class="container">
+    <div class="side">
+        <!-- Remote -->
+        <div class="menu-icon">
+            <a href="#" id="panel-btn"><span id="panel-btn-icon"></span></a>
+        </div>
+       <%
+            if re.match('^/biz/achievement/', request.path):
+                current_feature = 'achievement'
+            elif re.match('^/biz/organization/', request.path):
+                current_feature = 'organization'
+            elif re.match('^/biz/contract/', request.path):
+                current_feature = 'contract'
+            elif re.match('^/biz/manager/', request.path):
+                current_feature = 'manager'
+            else:
+                current_feature = None
+            current_organization = getattr(request, 'current_organization', None)
+            current_manager = getattr(request, 'current_manager', None)
+            current_contract = getattr(request, 'current_contract', None)
+            current_course = getattr(request, 'current_course', None)
+
+            selection_organizations = getattr(request, 'selection_organizations', [])
+            selection_contracts = getattr(request, 'selection_contracts', [])
+            selection_contract_details = getattr(request, 'selection_contract_details', [])
+        %>
+        <div class="course-selection">
+            <div class="current-role">
+                % if not current_manager:
+                <div class="message">
+                    <p>${_("Organization not specified")}</p>
+                </div>
+                % elif current_manager.is_director() or current_manager.is_manager():
+                    % if not current_course:
+                    <div class="message">
+                        <p>${_("Course not specified")}</p>
+                    </div>
+                    % else:
+                    <div class="">
+                        <label>${_("Contract Name")}：</label>
+                        <div>${current_contract.contract_name | h}</div>
+                    </div>
+                    <div class="">
+                        <label>${_("Course Name")}：</label>
+                        <div>${current_course.course_canonical_name or current_course.display_name | h}</div>
+                    </div>
+                    % endif
+                % endif
+            </div>
+            <div class="change-role">
+                <a class="change-role-button" href="#role-selection-modal" rel="biz-modal">${_("Change Role")}</a>
+
+                <section id="role-selection-modal" class="biz-modal role-selection-modal w2ui-popup">
+                    <div class="w2ui-msg-title">
+                        <div class="biz-modal-close w2ui-msg-button w2ui-msg-close">Close</div>
+                    </div>
+                    <div class="w2ui-box1">
+                        <div class="w2ui-msg-body">
+                            <header>
+                                <h2 id="role-selection-title">${_("Please select your role.")}</h2>
+                                <hr/>
+                            </header>
+
+                            <form class="preventDoubleClick" action="${reverse('biz:course_selection:change')}" method="post">
+                                <input type="hidden" name="csrfmiddlewaretoken" value="${csrf_token}" />
+                                <div class="error-message"></div>
+                                <div class="w2ui-field">
+                                    <label>${_("Organization Name")}：</label>
+                                    <select id="org_id" name="org_id" class="org_id">
+                                        <option value="">--</option>
+                                        % for selection_organization in selection_organizations:
+                                        <option value="${selection_organization.id}">${selection_organization.org_name | h}</option>
+                                        % endfor
+                                    </select>
+                                </div>
+                                <div class="w2ui-field">
+                                    <label>${_("Contract Name")}：</label>
+                                    <select id="contract_id" name="contract_id" class="contract_id">
+                                        <option value="">--</option>
+                                        % for selection_contract in selection_contracts:
+                                        <option value="${selection_contract.id}" class="${selection_contract.contractor_organization.id}">${selection_contract.contract_name | h}</option>
+                                        % endfor
+                                    </select>
+                                </div>
+                                <div class="w2ui-field">
+                                    <label>${_("Course Name")}：</label>
+                                    <select id="course_id" name="course_id" class="course_id">
+                                        <option value="">--</option>
+                                        % for selection_contract_detail in selection_contract_details:
+                                        <option value="${selection_contract_detail.course_id}" class="${selection_contract_detail.contract.id}">
+                                            ${u'{} ({})'.format(selection_contract_detail.course_name, selection_contract_detail.course_id) | h}
+                                        </option>
+                                        % endfor
+                                    </select>
+                                </div>
+                                <div class="w2ui-msg-buttons">
+                                    <button type="cancel" class="biz-modal-close w2ui-popup-btn btn cancel"><i class="fa fa-ban fa-fw"></i>${_('Cancel')}</button>
+                                    <button type="submit" id="save-selection" class="w2ui-popup-btn btn success"><i class="fa fa-check-square-o fa-fw"></i>${_('Save Selection')}</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </section>
+                <script type="text/javascript">
+                    $(function () {
+                        // Set up for course selection
+                        $('#contract_id').chained('#org_id');
+                        $('#course_id').chained('#contract_id');
+                        $('#org_id').val('${current_organization.id if current_organization else ''}').trigger('change');
+                        $('#contract_id').val('${current_contract.id if current_contract else ''}').trigger('change');
+                        $('#course_id').val('${current_course.id if current_course else ''}');
+
+                        // Compulsory check for course selection
+                        function displayModalErrorMessage(msg) {
+                            $('#role-selection-modal .error-message').text(msg);
+                        }
+                        function resetModalErrorMessage() {
+                            displayModalErrorMessage('');
+                        }
+                        $('#save-selection').click(function () {
+                            if ($('#org_id').prop('disabled') === false && $('#org_id').val() == '') {
+                                displayModalErrorMessage(gettext("Organization name is not specified."));
+                                return false;
+                            } else if ($('#contract_id').prop('disabled') === false && $('#contract_id').val() == '') {
+                                displayModalErrorMessage(gettext("Contract name is not specified."));
+                                return false;
+                            } else if ($('#course_id').prop('disabled') === false && $('#course_id').val() == '') {
+                                displayModalErrorMessage(gettext("Course name is not specified."));
+                                return false;
+                            }
+                            w2utils.lock($('body, #role-selection-modal'), '', true);
+                        });
+                        $('#org_id').change(resetModalErrorMessage);
+                        $('#contract_id').change(resetModalErrorMessage);
+                        $('#course_id').change(resetModalErrorMessage);
+                    });
+                </script>
+            </div>
+        </div>
+        <hr/>
+        <nav class="side-menu">
+
+            <ul class="menu">
+                ## Platformer or Aggregator
+                % if current_manager and (current_manager.is_platformer() or (current_manager.is_aggregator() and current_contract and current_contract.is_available_for_aggregator())):
+                    ## Organization
+                    % if current_manager.can_handle_organization():
+                    <li class="${'current' if current_feature == 'organization' else ''}"><a href="${reverse('biz:organization:index')}">${_("Organization List")}</a></li>
+                    % endif
+
+                    ## Contract
+                    % if current_manager.can_handle_contract():
+                    <li class="${'current' if current_feature == 'contract' else ''}"><a href="${reverse('biz:contract:index')}">${_("Contract List")}</a></li>
+                    % endif
+
+                    ## Manager
+                    % if current_manager.can_handle_manager():
+                    <li class="${'current' if current_feature == 'manager' else ''}"><a href="${reverse('biz:manager:index')}">${_("Manager Setting")}</a></li>
+                    % endif
+
+                ## Director or Manager
+                % elif current_manager and (current_manager.is_director() or current_manager.is_manager()) and current_contract and current_contract.is_available_for_director_or_manager():
+                    ## Achievement
+                    % if current_manager.can_handle_achievement() and current_course:
+                    <li class="${'current' if current_feature == 'achievement' else ''}"><a href="${reverse('biz:achievement:index')}">${_("Score Status")}</a></li>
+                    % endif
+
+                    ## Course Operation
+                    % if current_manager.can_handle_course_operation() and current_course:
+                    <li><a href="${reverse('biz:course_operation:dashboard', kwargs={'course_id': current_course.id})}#view-membership">${_("Course Enrollment Management")}</a></li>
+                    % if current_contract.is_spoc_available:
+                    <li><a href="${reverse('biz:course_operation:dashboard', kwargs={'course_id': current_course.id})}#view-survey">${_("Survey Management")}</a></li>
+                    % endif
+                    % endif
+
+                    ## Manager
+                    % if current_manager.can_handle_manager():
+                    <li class="${'current' if current_feature == 'manager' else ''}"><a href="${reverse('biz:manager:index')}">${_("Manager Setting")}</a></li>
+                    % endif
+                % endif
+            </ul>
+        </nav>
+    </div>
+    <div class="main">
+        <div class="biz-wrap">
+            <h1>${self.pagetitle()}</h1>
+
+            <ul class="messages">
+                % for message in messages:
+                <li class="${message.tags if message.tags else ''}">${message}</li>
+                % endfor
+            </ul>
+
+            <%block name="custom_content" />
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    $(function () {
+        w2utils.locale('${static.url('js/vendor/w2ui/locale/ja-jp.txt')}');
+
+        $('#panel-btn').click(function () {
+            $('#panel-btn-icon').toggleClass('close');
+            $('.menu-icon').toggleClass('close');
+            $('.side').toggleClass('close');
+            $('.main').toggleClass('close');
+
+            if (typeof grid != "undefined") toggleGridWidth();
+        });
+
+        var grid_toggle_width = 250;
+        function toggleGridWidth() {
+            $('.w2ui-grid').width($('.w2ui-grid').width() + grid_toggle_width);
+            grid.refresh();
+            grid_toggle_width *= -1;
+        }
+    });
+</script>
+</%block>

@@ -421,6 +421,7 @@ XQUEUE_WAITTIME_BETWEEN_REQUESTS = 5  # seconds
 PROJECT_ROOT = path(__file__).abspath().dirname().dirname()  # /edx-platform/lms
 REPO_ROOT = PROJECT_ROOT.dirname()
 COMMON_ROOT = REPO_ROOT / "common"
+BIZ_ROOT = REPO_ROOT / "biz"
 GACCO_ROOT = REPO_ROOT / "ga"
 ENV_ROOT = REPO_ROOT.dirname()  # virtualenv dir /edx-platform is in
 COURSES_ROOT = ENV_ROOT / "data"
@@ -496,7 +497,8 @@ MAKO_TEMPLATES = {}
 MAKO_TEMPLATES['main'] = [PROJECT_ROOT / 'templates',
                           COMMON_ROOT / 'templates',
                           COMMON_ROOT / 'lib' / 'capa' / 'capa' / 'templates',
-                          COMMON_ROOT / 'djangoapps' / 'pipeline_mako' / 'templates']
+                          COMMON_ROOT / 'djangoapps' / 'pipeline_mako' / 'templates',
+                          BIZ_ROOT / 'templates']
 
 # Django templating
 TEMPLATES = [
@@ -511,6 +513,7 @@ TEMPLATES = [
             COMMON_ROOT / 'lib' / 'capa' / 'capa' / 'templates',
             COMMON_ROOT / 'djangoapps' / 'pipeline_mako' / 'templates',
             COMMON_ROOT / 'static',  # required to statically include common Underscore templates
+            BIZ_ROOT / 'templates',
         ],
         # Options specific to this backend.
         'OPTIONS': {
@@ -853,6 +856,7 @@ STATIC_URL = '/static/'
 STATIC_ROOT = ENV_ROOT / "staticfiles"
 
 STATICFILES_DIRS = [
+    BIZ_ROOT / "static",
     COMMON_ROOT / "static",
     PROJECT_ROOT / "static",
 ]
@@ -1976,6 +1980,15 @@ INSTALLED_APPS = (
 
     # custom ratelimit-backend
     'openedx.core.djangoapps.ga_ratelimitbackend',
+
+    # gacco ASP
+    'biz.djangoapps.ga_achievement',
+    'biz.djangoapps.ga_contract',
+    'biz.djangoapps.ga_course_operation',
+    'biz.djangoapps.ga_course_selection',
+    'biz.djangoapps.ga_manager',
+    'biz.djangoapps.ga_organization',
+    'biz.djangoapps.ga_invitation',
 )
 
 # Migrations which are not in the standard module "migrations"
@@ -2720,3 +2733,6 @@ CCX_MAX_STUDENTS_ALLOWED = 200
 # financial assistance form
 FINANCIAL_ASSISTANCE_MIN_LENGTH = 800
 FINANCIAL_ASSISTANCE_MAX_LENGTH = 2500
+
+##### Settings for Biz #####
+from biz.envs.common import *

@@ -129,6 +129,15 @@
 
         });
 
+        AccountSettingsFieldViews.InvitationCodeFieldView = FieldViews.LinkFieldView.extend({
+
+            linkClicked: function(event){
+                event.preventDefault();
+                window.location.href = this.options.linkHref;
+            },
+
+        });
+
         AccountSettingsFieldViews.LanguageProficienciesFieldView = FieldViews.DropdownFieldView.extend({
 
             modelValue: function () {

@@ -10,6 +10,7 @@ source =
     lms
     openedx/core/djangoapps
     pavelib
+    biz
 
 omit =
     cms/envs/*
@@ -22,6 +23,9 @@ omit =
     common/djangoapps/terrain/*
     common/djangoapps/*/migrations/*
     openedx/core/djangoapps/*/migrations/*
+    biz/envs/*
+    biz/djangoapps/*/migrations/*
+    biz/djangoapps/*/features/*
 
 [report]
 ignore_errors = True

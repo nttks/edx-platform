@@ -1,0 +1,315 @@
+<%inherit file="../main_biz.html" />
+<%namespace name="static" file="../static_content.html" />
+<%!
+from django.utils.translation import ugettext as _
+from django.core.urlresolvers import reverse
+%>
+
+<%block name="pagetitle">${_("Contract Detail")}</%block>
+
+<%block name="js_extra">
+<script type="text/javascript">
+    $(function () {
+        $(document).on("keypress", "input:not(.allow_submit)", function (event) {
+            return event.which !== 13;
+        });
+
+        $('#form').w2form({
+            name: 'form'
+        });
+
+        function show_detail(items) {
+            $.each(items, function (i, item) {
+                var clone = $("#detail_template").clone();
+                clone.find("a").on('click', delete_detail);
+                clone.find("select[name=detail_course]").val(item.course_id);
+                clone.find("input[name=detail_id]").val(item.id);
+                clone.find("input[name=detail_delete]").val(item.delete_flg);
+                clone.find(".err_msg").text(item.error);
+                $('#detail-container .w2ui-group').append(clone);
+                clone.show();
+            });
+        }
+
+        function show_additional_info(items) {
+            $.each(items, function (i, item) {
+                var clone = $("#additional_info_template").clone();
+                clone.find("a").on('click', delete_additional_info);
+                clone.find("input[name=additional_info_display_name]").val(item.display_name);
+                clone.find("input[name=additional_info_id]").val(item.id);
+                clone.find("input[name=additional_info_delete]").val(item.delete_flg);
+                clone.find(".err_msg").text(item.error);
+                $('#additional-container .w2ui-group').append(clone);
+                clone.show();
+            });
+        }
+
+        function delete_detail() {
+            var height_before = $("#detail-container").height();
+            var detail = $(this).parent().parent();
+            if (detail.find("[name^='detail_id']").val() != '') {
+                detail.hide();
+                detail.find("[name^='detail_delete']").val(1);
+            } else {
+                detail.remove();
+            }
+            resize_form($("#detail-container").height() - height_before);
+        }
+
+        function delete_additional_info() {
+            var height_before = $("#additional-container").height();
+            var additional_info = $(this).parent().parent();
+            if (additional_info.find("[name^='additional_info_id']").val() != '') {
+                additional_info.hide();
+                additional_info.find("[name^='additional_info_delete']").val(1);
+            } else {
+                additional_info.remove();
+            }
+            resize_form($("#additional-container").height() - height_before);
+        }
+
+        function resize_form(height) {
+            $("#form").height($("#form").outerHeight() + height);
+            $("#form").children("div").height($("#form").children("div").height() + height);
+        }
+
+        $('#add_detail').on('click', function () {
+            var height_before = $("#detail-container").height();
+            var clone = $("#detail_template").clone();
+            clone.find("a").on('click', delete_detail);
+            $('#detail-container .w2ui-group').append(clone);
+            clone.show();
+            resize_form($("#detail-container").height() - height_before);
+        });
+        $("#detail-container .w2ui-group a").on('click', delete_detail);
+
+        $('#add_additional').on('click', function () {
+            var height_before = $("#additional-container").height();
+            var clone = $("#additional_info_template").clone();
+            clone.find("a").on('click', delete_additional_info);
+            clone.find("input[name=additional_info_display_name]").val("");
+            $('#additional-container .w2ui-group').append(clone);
+            clone.show();
+            resize_form($("#additional-container").height() - height_before);
+        });
+        $("#additional-container .w2ui-group a").on('click', delete_additional_info);
+
+        $('#register_btn').on('click', function () {
+            // validate fields
+            var has_err = false;
+            $('#form input[type=text]').each(function () {
+                if (!$.trim($(this).val())) {
+                    $(this).parent().find(".err_msg").text(gettext("The field is required."));
+                    has_err = true;
+                } else {
+                    $(this).parent().find(".err_msg").text("");
+                }
+            })
+            if (has_err) {
+                $("body").scrollTop(0);
+                return false;
+            }
+
+            // remove template input value
+            $("#detail_template").remove();
+            $("#additional_info_template").remove();
+        });
+
+        $("#delete_btn").click(function () {
+            w2confirm({
+                msg: gettext("Are you sure you want to remove this?"),
+                yes_class: 'btn-right',
+                no_class: 'btn-left'
+            }).yes(function () {
+                // remove template input value
+                $("#detail_template").remove();
+                $("#additional_info_template").remove();
+                $("#action_name").val("delete");
+                $("#contract_form").submit();
+            });
+            return false;
+        });
+
+        $('#id_start_date').w2field('date', {format: 'yyyy/mm/dd'});
+        $('#id_end_date').w2field('date', {format: 'yyyy/mm/dd'});
+
+        show_detail(${detail_list});
+        show_additional_info(${additional_info_list});
+    });
+</script>
+
+<style>
+    .content-wrapper {
+        min-height: 1500px;
+        height: 100%;
+    }
+
+    .w2ui-field {
+        clear: both;
+        position: relative;
+        left: 20px;
+        display: block;
+        width: auto;
+        height: 2.4rem;
+    }
+
+    .w2ui-field > label {
+        margin: 0 0;
+        position: absolute;
+        left: -4.5rem;
+        top: 9px;
+        line-height: 21px;
+        width: 200px;
+    }
+
+    .biz-modal {
+        width: 400px;
+    }
+
+    .biz-modal .w2ui-field > label {
+        left: -8.5rem;
+        top: 2px;
+    }
+
+    .biz-modal select {
+        position: relative;
+        left: 70px;
+    }
+
+    .w2ui-reset select {
+        max-width: 28rem;
+        margin: 0;
+        min-height: 26px;
+    }
+
+    h2 {
+        padding: 3px;
+        font-weight: bold;
+        color: #777;
+    }
+
+    h2.first {
+        margin: 20px 0 3px;
+    }
+
+    .add-info {
+        height: 3.5rem;
+    }
+
+    /*   form   */
+    #form {
+        width: 800px;
+        height: auto;
+    }
+
+    .w2ui-group {
+        height: auto;
+    }
+
+    #detail-container {
+        clear: both;
+        padding-top: 15px;
+    }
+
+    .add-Plus {
+        text-align: right;
+        cursor: pointer;
+    }
+</style>
+
+</%block>
+
+<%block name="custom_content">
+% if selected_contract_id:
+<form id="contract_form" class="preventDoubleClick" action="${reverse('biz:contract:edit', kwargs={'selected_contract_id': selected_contract_id})}" method="post">
+% else:
+<form id="contract_form" class="preventDoubleClick" action="${reverse('biz:contract:register')}" method="post">
+% endif
+    <input type="hidden" name="csrfmiddlewaretoken" value="${csrf_token}" />
+
+    <div id="form">
+        <div class="w2ui-page page-0">
+            <div id="main_info">
+                <h2 class="first">${_('Contract Info')}</h2>
+                % if form.errors.has_key('contract'):
+                ${form.errors['contract']}
+                % endif
+                <div class="w2ui-group height3">
+                    % for field in form :
+                    <div class="w2ui-field">
+                        <label>${_(field.label)}：</label>
+                        <div>
+                            ${field}
+                            % if field.field.required:
+                            <span class="red">* ${_('Required')}</span>
+                            % endif
+                            <span class="err_msg">
+                            % if field.errors:
+                            ${field.errors[0]}
+                            % endif
+                            </span>
+                        </div>
+                    </div>
+                    % endfor
+                </div>
+            </div>
+            <br>
+            <hr>
+            <br>
+            <div id="detail-container">
+                <h2>${_('Contract Detail Info')}</h2>
+                % if form.errors.has_key('contract_detail'):
+                ${form.errors['contract_detail']}
+                % endif
+                <div class="add-Plus"><a id="add_detail">${_('Add Contract Detail Info')}</a></div>
+                <div class="w2ui-group">
+                    <div class="w2ui-field" id="detail_template" style="display: none">
+                        <label>${_("Course Name")}：</label>
+                        <div>
+                            <select name="detail_course">
+                                % for course in course_list :
+                                <option value="${course[0]}">${course[1] | h}</option>
+                                % endfor
+                            </select>
+                             <input type="hidden" name="detail_id" value="" />
+                            <input type="hidden" name="detail_delete" value="" class="delete" />
+                            <a>${_('Delete')}</a>
+                            <span class="err_msg red"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <br>
+            <hr>
+            <br>
+            <div id="additional-container">
+                <h2>${_('Additional Info')}</h2>
+                % if form.errors.has_key('additional_info'):
+                ${form.errors['additional_info']}
+                % endif
+                <div class="add-Plus"><a id="add_additional" >${_('Add Additional Info')}</a></div>
+                <div class="w2ui-group">
+                    <div class="w2ui-field add-info" id="additional_info_template" style="display: none">
+                        <label>${_("Display Name")}：</label>
+                        <div>
+                            <input type="hidden" name="additional_info_id" value="" />
+                            <input type="text" name="additional_info_display_name" value="..." maxlength="255" placeholder="${_('max {0} character').format(255)}"/>
+                            <input type="hidden" name="additional_info_delete" value="" />
+                            <a>${_('Delete')}</a>
+                            <span class="err_msg red"></span>
+                        </div>
+                    </div>
+                </div>
+             </div>
+        </div>
+
+        <div class="w2ui-buttons">
+            % if selected_contract_id:
+            <input type="submit" id="delete_btn" name="delete" value="&#xf014 ${_('Delete')}" />
+            <input type="hidden" id="action_name" name="action_name" value="register" />
+            % endif
+            <input type="submit" id="register_btn" value="&#xf044 ${_('Save Contract')}" />
+        </div>
+    </div>
+</form>
+</%block>

@@ -4604,15 +4604,18 @@ class TestBulkCohorting(SharedModuleStoreTestCase):
             'username,email,cohort\r\nfoo_username,bar_email,baz_cohort', mock_store_upload, mock_cohort_task
         )
 
-class TestInstructorAPISurveyDownload(SharedModuleStoreTestCase, LoginEnrollmentTestCase):
+class InstructorAPISurveyDownloadTestMixin(object):
     """
-    Test instructor survey endpoint.
+    Test instructor survey mix-in.
     """
+
+    url = None
+
     def setUp(self):
         class _UserProfileFactory(UserProfileFactory):
             year_of_birth = None
 
-	super(TestInstructorAPISurveyDownload, self).setUp()
+        super(InstructorAPISurveyDownloadTestMixin, self).setUp()
         self.course = CourseFactory.create()
         self.instructor = InstructorFactory(course_key=self.course.id)
         self.client.login(username=self.instructor.username, password='test')
@@ -4693,29 +4696,12 @@ class TestInstructorAPISurveyDownload(SharedModuleStoreTestCase, LoginEnrollment
         submission3 = SurveySubmissionFactory.create(**self.submission3)
         submission4 = SurveySubmissionFactory.create(**self.submission4)
 
-        url = reverse('get_survey', kwargs={'course_id': self.course.id.to_deprecated_string()})
+        url = reverse(self.url, kwargs={'course_id': self.course.id.to_deprecated_string()})
         response = self.client.get(url, {})
         self.assertEqual(response['Content-Type'], 'text/csv')
         body = response.content.rstrip('\n').replace('\r', '')
         rows = body.split('\n')
         self.assertEqual(4, len(rows))
-        #Note(EDX-501): Modified temporarily.
-        #self.assertEqual(rows[0], '"Unit ID","Survey Name","Created","User Name","Gender","Year of Birth","Level of Education","Disabled","Q1","Q2","Q3","Q4"')
-        #self.assertEqual(
-        #    rows[1],
-        #    '"11111111111111111111111111111111","survey #1","%s","%s","Male","1980","Doctorate","","1","1,2","submission #1",""'
-        #    % (submission1.created, submission1.user.username)
-        #)
-        #self.assertEqual(
-        #    rows[2],
-        #    '"11111111111111111111111111111111","survey #1","%s","%s","foo","","bar","disabled","1","2","submission #2",""'
-        #    % (submission2.created, submission2.user.username)
-        #)
-        #self.assertEqual(
-        #    rows[3],
-        #    '"22222222222222222222222222222222","survey #2","%s","%s","","","","","","","","extra"'
-        #    % (submission3.created, submission3.user.username)
-        #)
         self.assertEqual(rows[0], '"Unit ID","Survey Name","Created","User Name","Resigned","Unenrolled","Q1","Q2","Q3","Q4"')
         self.assertEqual(
             rows[1],
@@ -4734,21 +4720,19 @@ class TestInstructorAPISurveyDownload(SharedModuleStoreTestCase, LoginEnrollment
         )
 
     def test_get_survey_when_data_is_empty(self):
-        url = reverse('get_survey', kwargs={'course_id': self.course.id.to_deprecated_string()})
+        url = reverse(self.url, kwargs={'course_id': self.course.id.to_deprecated_string()})
         response = self.client.get(url, {})
         self.assertEqual(response['Content-Type'], 'text/csv')
         body = response.content.rstrip('\n').replace('\r', '')
         rows = body.split('\n')
         self.assertEqual(1, len(rows))
-        #Note(EDX-501): Modified temporarily.
-        #self.assertEqual(rows[0], '"Unit ID","Survey Name","Created","User Name","Gender","Year of Birth","Level of Education","Disabled"')
         self.assertEqual(rows[0], '"Unit ID","Survey Name","Created","User Name","Resigned","Unenrolled"')
 
     def test_get_survey_when_data_is_broken(self):
         submission1 = SurveySubmissionFactory.create(**self.submission1)
         submission5 = SurveySubmissionFactory.create(**self.submission5)
 
-        url = reverse('get_survey', kwargs={'course_id': self.course.id.to_deprecated_string()})
+        url = reverse(self.url, kwargs={'course_id': self.course.id.to_deprecated_string()})
         response = self.client.get(url, {})
         self.assertEqual(response['Content-Type'], 'text/csv')
         body = response.content.rstrip('\n').replace('\r', '')
@@ -4765,3 +4749,10 @@ class TestInstructorAPISurveyDownload(SharedModuleStoreTestCase, LoginEnrollment
             '"22222222222222222222222222222222","survey #5","%s","%s","","","N/A","N/A","N/A"'
             % (submission5.created, submission5.user.username)
         )
+
+
+class TestInstructorAPISurveyDownload(InstructorAPISurveyDownloadTestMixin, SharedModuleStoreTestCase, LoginEnrollmentTestCase):
+    """
+    Test instructor survey endpoint.
+    """
+    url = 'get_survey'

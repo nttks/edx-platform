@@ -176,6 +176,7 @@ class AccountSettingsPageTest(AccountSettingsTestMixin, WebAppTest):
             {
                 'title': 'Other procedures',
                 'fields': [
+                    'Invitation Code',
                     'Resign',
                 ]
             },
