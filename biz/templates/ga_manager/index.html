@@ -1,0 +1,196 @@
+<%inherit file="../main_biz.html" />
+<%namespace name="static" file="../static_content.html" />
+<%!
+from django.utils.translation import ugettext as _
+from django.core.urlresolvers import reverse
+%>
+
+<%block name="pagetitle">${_("Manager Setting")}</%block>
+
+<%block name="js_extra">
+<script type="text/javascript">
+    $(function () {
+        $('#form').w2form({
+            name: 'form'
+        });
+        $("#edit_btn").on('click', function () {
+            if ($("#add_user").val() == "") {
+                return;
+            }
+            modify_permission(this, $("#add_user").val(), 'allow');
+        });
+        $("#organization, #permission").change(get_manager_list);
+        var form_outer_height = $("#form").outerHeight();
+        var form_height = $("#form").height();
+        get_manager_list();
+
+        function get_manager_list() {
+            if (!$("#organization").val()) {
+                return;
+            }
+
+            lock();
+            $(".messages").empty();
+
+            $.ajax({
+                url: $(".member-list").data('endpoint'),
+                type: 'POST',
+                dataType: 'json',
+                data: {
+                    selected_org_id: $("#organization").val(),
+                    permission_name: $("#permission").val()
+                }
+            }).done(function (data) {
+                if (data.success) {
+                    $.each($("[id=member_detail]"), function () {
+                        $(this).remove();
+                    });
+                    reset_form_size();
+                    $.each(data.show_list, function (index, user) {
+                        add_manager(user);
+                    });
+                    unlock();
+                } else {
+                    show_message("error", data.message);
+                }
+            }).fail(function (data) {
+                if (data.status == 400) {
+                    show_message("error", gettext("Unauthorized access."));
+                } else {
+                    show_message("error", gettext("An error occurred. Please reload the page."));
+                }
+            }).always(function () {
+                unlock();
+            });
+        }
+
+        function add_manager(user) {
+            var clone = $("#member_template").clone();
+            clone.find("#name").text(user.name);
+            clone.find("#email").text(user.email);
+            clone.attr("id", "member_detail");
+            clone.find("a").on('click', function () {
+                modify_permission($(this).parents("tr"), $(this).parents("tr").find("#name").text(), "revoke");
+            });
+            $(".member-list").find("tbody").append(clone);
+            clone.show();
+            resize_form(clone.height());
+        }
+
+        function modify_permission(elem, identifier, action) {
+            if (!$("#organization").val()) {
+                // don't have org
+                return;
+            }
+
+            lock();
+            $(".messages").empty();
+
+            $.ajax({
+                url: $("#edit_btn").data('endpoint'),
+                type: 'POST',
+                dataType: 'json',
+                data: {
+                    unique_student_identifier: identifier,
+                    selected_org_id: $("#organization").val(),
+                    permission_name: $("#permission").val(),
+                    action: action
+                }
+            }).done(function (data) {
+                if (data.success) {
+                    if (action == "allow") {
+                        add_manager(data);
+                    } else {
+                        resize_form(-elem.height());
+                        elem.remove();
+                    }
+                } else {
+                    show_message("error", data.message);
+                }
+
+            }).fail(function (data) {
+                if (data.status == 400) {
+                    show_message("error", gettext("Unauthorized access."));
+                } else {
+                    show_message("error", gettext("An error occurred. Please reload the page."));
+                }
+            }).always(function () {
+                unlock();
+            });
+        }
+
+        function resize_form(height) {
+            $("#form").height($("#form").outerHeight() + height);
+            $("#form").children("div").height($("#form").height());
+        }
+
+        function reset_form_size() {
+            $("#form").height(form_outer_height);
+            $("#form").children("div").height(form_height);
+        }
+
+        function lock() {
+            w2utils.lock($("#form"), '', true);
+        }
+
+        function unlock() {
+            w2utils.unlock($("#form"));
+        }
+
+        function show_message(level, message) {
+            $(".messages").append('<li class="' + level + '">' + message + '</li>');
+        }
+
+    });
+</script>
+</%block>
+
+<%block name="custom_content">
+<div id="form" class="fieldArea">
+    <div class="w2ui-page page-0">
+        <div class="member-header">
+            <div class="field">
+                <label>${_('Select Organization')}：</label>
+
+                <select id="organization">
+                    % for option in org_list:
+                    <option value="${option[0]}">${option[1] | h}</option>
+                    % endfor
+                </select>
+            </div>
+            <div class="field">
+                <label>${_('Select Manager Permission')}：</label>
+
+                <select id="permission">
+                    % for option in permission_list:
+                    <option value="${option[0]}">${option[1]}</option>
+                    % endfor
+                </select>
+            </div>
+        </div>
+
+        <div class="member-list" data-endpoint="${reverse('biz:manager:list_ajax')}">
+            <table width="100%">
+                <thead align="left">
+                <tr>
+                    <th width="20%">${_("Username")}</th>
+                    <th width="50%">${_("Email Address")}</th>
+                    <th width="30%">${_("Revoke Manager Permission")}</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr id="member_template" style="display: none">
+                    <td id="name"></td>
+                    <td id="email"></td>
+                    <td><a class="red">${_("Revoke")}</a></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="w2ui-buttons">
+        <input type="text" id="add_user" placeholder="${_('Enter username or email')}"/>
+        <input type="submit" id="edit_btn" data-endpoint="${reverse('biz:manager:modify_ajax')}" value="&#xf044 ${_('Add User')}"/>
+    </div>
+</div>
+</%block>

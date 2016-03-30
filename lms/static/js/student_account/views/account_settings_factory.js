@@ -112,6 +112,16 @@
                     title: gettext('Other procedures'),
                     fields: [
                         {
+                            view: new AccountSettingsFieldViews.InvitationCodeFieldView({
+                                model: userAccountModel,
+                                title: gettext('Invitation Code'),
+                                valueAttribute: 'invitation_code',
+                                linkTitle: gettext('Manage invitation code.'),
+                                linkHref: fieldsData.invitation_code.url,
+                                helpMessage: gettext('If you have invitation code, click the link and manage invitation code.')
+                            })
+                        },
+                        {
                             view: new AccountSettingsFieldViews.ResignFieldView({
                                 model: userAccountModel,
                                 title: gettext('Resign'),

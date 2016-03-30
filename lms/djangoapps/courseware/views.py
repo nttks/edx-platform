@@ -687,6 +687,13 @@ def course_info(request, course_id):
     with modulestore().bulk_operations(course_key):
         course = get_course_with_access(request.user, 'load', course_key)
 
+        spoc_status = getattr(request, 'spoc_status', None)
+        if spoc_status and spoc_status.is_spoc_course and not spoc_status.has_spoc_access:
+            log.warning('User(id={user_id}) has no permission to access spoc course(course_id={course_id}).'.format(
+                user_id=request.user.id, course_id=unicode(course_key)
+            ))
+            raise Http404()
+
         # If the user needs to take an entrance exam to access this course, then we'll need
         # to send them to that specific course module before allowing them into other areas
         if user_must_complete_entrance_exam(request, request.user, course):
@@ -832,6 +839,13 @@ def course_about(request, course_id):
         )
         course = get_course_with_access(request.user, permission_name, course_key)
 
+        spoc_status = getattr(request, 'spoc_status', None)
+        if spoc_status and spoc_status.is_spoc_course and not spoc_status.has_spoc_access:
+            log.warning('User(id={user_id}) has no permission to access spoc course(course_id={course_id}).'.format(
+                user_id=request.user.id, course_id=unicode(course_key)
+            ))
+            raise Http404()
+
         if microsite.get_value('ENABLE_MKTG_SITE', settings.FEATURES.get('ENABLE_MKTG_SITE', False)):
             return redirect(reverse('info', args=[course.id.to_deprecated_string()]))
 
@@ -910,7 +924,8 @@ def course_about(request, course_id):
             'disable_courseware_header': True,
             'can_add_course_to_cart': can_add_course_to_cart,
             'cart_link': reverse('shoppingcart.views.show_cart'),
-            'pre_requisite_courses': pre_requisite_courses
+            'pre_requisite_courses': pre_requisite_courses,
+            'is_spoc_course': spoc_status.is_spoc_course if spoc_status else False,
         })
 
 
