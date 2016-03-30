@@ -657,7 +657,7 @@ def _has_access_to_course(user, access_level, course_key):
         debug("Deny: no user or anon user")
         return False
 
-    if is_masquerading_as_student(user, course_key):
+    if not in_preview_mode() and is_masquerading_as_student(user, course_key):
         return False
 
     if GlobalStaff().has_user(user):

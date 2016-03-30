@@ -452,6 +452,16 @@ class AccessTestCase(LoginEnrollmentTestCase, ModuleStoreTestCase):
         self.assertFalse(bool(access.has_access(self.student, 'staff', self.course, course_key=self.course.id)))
         self.assertFalse(bool(access.has_access(self.student, 'load', self.course, course_key=self.course.id)))
 
+        # User should be able to preview when masquerade.
+        with patch('courseware.access.is_masquerading_as_student') as mock_masquerade:
+            mock_masquerade.return_value = True
+            self.assertTrue(
+                bool(access.has_access(self.global_staff, 'staff', self.course, course_key=self.course.id))
+            )
+            self.assertFalse(
+                bool(access.has_access(self.student, 'staff', self.course, course_key=self.course.id))
+            )
+
 
 @attr('shard_1')
 class UserRoleTestCase(TestCase):
