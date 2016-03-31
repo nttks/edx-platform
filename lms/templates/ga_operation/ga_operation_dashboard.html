@@ -1,0 +1,148 @@
+<%inherit file="/main.html" />
+<%block name="pagetitle">簡易ツール</%block>
+<%namespace name='static' file='/static_content.html'/>
+<%! from django.utils.translation import ugettext as _ %>
+<%block name="headextra">
+<script type="text/javascript" src="${static.url('js/ga_operation/main.js')}"></script>
+</%block>
+<div class="main_content">
+    <div class="left_content panel">
+        <div class="side-nav">
+            <h1>Menu</h1>
+            <ul id="nav">
+##                 <li> <p><strong>集計</strong></p> </li>
+##                 <li>
+##                     <ul>
+##                         <li><a href="#"><i class="fa fa-file-text-o"></i>相互採点レポート</a></li>
+##                         <li><a href="#"><i class="fa fa-file-text-o"></i>ディスカッションデータ</a></li>
+##                         <li><a href="#"><i class="fa fa-file-text-o"></i>過去修了者情報</a></li>
+##                         <li><a href="#"><i class="fa fa-file-text-o"></i>最終ログイン情報</a></li>
+##                     </ul>
+##                 </li>
+                <li> <p><strong>修了証</strong></p> </li>
+                <li>
+                    <ul>
+                        <li><a href="#create_certs"><i class="fa fa-file-text-o"></i>修了証</a></li>
+                    </ul>
+                </li>
+##                 <li> <p><strong>特別集計</strong></p> </li>
+##                 <li>
+##                     <ul>
+##                         <li><a href="#"><i class="fa fa-file-text-o"></i>Company1</a></li>
+##                         <li><a href="#"><i class="fa fa-file-text-o"></i>Company2</a></li>
+##                     </ul>
+##                 </li>
+                <li> <p><strong>動画移動</strong></p> </li>
+                <li>
+                    <ul>
+                        <li><a href="#move_videos"><i class="fa fa-file-text-o"></i>動画移動</a></li>
+                    </ul>
+                </li>
+##                 <li> <p><strong>解析集計</strong></p> </li>
+##                 <li>
+##                     <ul>
+##                         <li><a href="#"><i class="fa fa-file-text-o"></i>初回受講講座</a></li>
+##                         <li><a href="#"><i class="fa fa-file-text-o"></i>ディスカッションデータ</a></li>
+##                     </ul>
+##                 </li>
+            </ul>
+        </div>
+    </div> <!-- left_content -->
+
+    <div class="right_content panel">
+        <form id="input_form">
+            <div id="right_content_main"></div>
+        </form>
+        <div id="right_content_response"></div>
+    </div>
+
+</div> <!-- main_content -->
+
+<script id="create_certs_tmpl" type="text/template">
+    <h3>◎修了証発行</h3>
+    <ul>
+        <li>
+            <label for="text">対象講座ID</label>
+            <input type="text" name="course_id" placeholder="placeholder">
+        </li>
+        <li>
+            <label for="file">修了証テンプレート</label>
+            <input type="file" name="cert_pdf_tmpl">
+        </li>
+        <li>
+            <label for="file">対面学習 修了証テンプレート</label>
+            <input type="file" name="cert_pdf_meeting_tmpl">
+        </li>
+        <li>
+            <label for="file">対面学習 対象者リスト</label>
+            <input type="file" name="cert_lists">
+        </li>
+        <li>
+            <button class="button" name="create_certs">発行</button>
+            <button class="button" name="publish_certs">公開</button>
+        </li>
+    </ul>
+</script>
+
+<script id="move_videos_tmpl" type="text/template">
+    <h3>◎動画移動</h3>
+    <ul>
+        <li>
+            <label for="text">対象講座ID</label>
+            <input type="text" name="course_id" placeholder="placeholder">
+            <label id="course_id" for="text" class="error"></label>
+        </li>
+        <li>
+            <ul>
+                <li>
+                    <label> 動かす方向を指定してください。 </label>
+                </li>
+                <li>
+                    <label>
+                        <input type="radio" name="select_bucket" value="log_to_org" checked>
+                        退避先→本番へ移動
+                    </label>
+                </li>
+                <li>
+                    <label>
+                        <input type="radio" name="select_bucket" value="org_to_log">
+                        本番→退避先へ移動
+                    </label>
+                </li>
+            </ul>
+        </li>
+        <li>
+            <button id="move_videos" class="button" name="move_videos">実行</button>
+            <img id="indicator" src="${static.url('images/spinner.gif')}" alt="実行中..." hidden>
+        </li>
+    </ul>
+</script>
+
+<style type="text/css">
+    .side-nav>h1 {
+        font-size: 20px;
+    }
+    .main_content {
+        max-width: 980px;
+        min-width: 300px;
+        padding-bottom: 150px;
+        margin-top: 15px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    .left_content {
+        float: left;
+        width: 300px;
+        max-width: 660px;
+        margin: 0;
+    }
+    .right_content {
+        float: left;
+        max-width: 660px;
+        margin: 0;
+    }
+    .error {
+        color: red;
+    }
+</style>
+
