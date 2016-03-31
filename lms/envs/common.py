@@ -1970,6 +1970,9 @@ INSTALLED_APPS = (
     'biz.djangoapps.ga_manager',
     'biz.djangoapps.ga_organization',
     'biz.djangoapps.ga_invitation',
+
+    # Several operations for a gacco.org's staff
+    'ga_operation',
 )
 
 ######################### CSRF #########################################

@@ -726,3 +726,7 @@ if FEATURES.get('ENABLE_LTI_PROVIDER'):
 
 ##### Settings for Biz #####
 from biz.envs.aws import *
+
+##### Gacco.org's Operation ######
+GA_OPERATION_VIDEO_BUCKET_NAME_ORG = ENV_TOKENS.get('GA_OPERATION_VIDEO_BUCKET_NAME_ORG', None)
+GA_OPERATION_VIDEO_BUCKET_NAME_LOG = ENV_TOKENS.get('GA_OPERATION_VIDEO_BUCKET_NAME_LOG', None)
