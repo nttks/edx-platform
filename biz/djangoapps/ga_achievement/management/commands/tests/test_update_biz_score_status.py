@@ -301,7 +301,7 @@ class UpdateBizScoreStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEnrol
 
         for score_order_dict in score_list:
             self.assertEqual(SCORE_STORE_FIELD_STUDENT_STATUS_DISABLED,
-                          score_order_dict[SCORE_STORE_FIELD_STUDENT_STATUS])
+                             score_order_dict[SCORE_STORE_FIELD_STUDENT_STATUS])
             break
 
     @override_settings(BIZ_SET_SCORE_COMMAND_OUTPUT=command_output_file.name)
