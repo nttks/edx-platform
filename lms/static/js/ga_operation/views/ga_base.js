@@ -20,23 +20,31 @@
 
                 event.preventDefault();
 
-                $.ajax({
-                    url: 'ga_operation/api/' + url,
-                    type: 'POST',
-                    data: $('#input_form').serialize(),
-                    beforeSend: function () {
-                        $('#right_content_response').text('');
-                        $('#indicator').show();
-                        $('.button').hide();
-                    }
-                }).success(function (response) {
-                    _setMsg(response);
-                }).error(function (response) {
-                    _setMsg(response.responseText);
-                }).always(function () {
-                    $('#indicator').hide();
-                    $('.button').show();
-                });
+                if (!window.FormData) {
+                    alert('Sorry, this browser does not support!\nPlease use modern browser.');
+                } else {
+                    var form = $('#input_form').get(0);
+                    var formData = new FormData(form);
+                    $.ajax({
+                        url: 'ga_operation/api/' + url,
+                        type: 'POST',
+                        data: formData,
+                        contentType: false,
+                        processData: false,
+                        beforeSend: function () {
+                            $('#right_content_response').text('');
+                            $('#indicator').show();
+                            $('.button').hide();
+                        }
+                    }).done(function (response) {
+                        _setMsg(response);
+                    }).fail(function (response) {
+                        _setMsg(response.responseText);
+                    }).always(function () {
+                        $('#indicator').hide();
+                        $('.button').show();
+                    });
+                }
             }
         });
     });

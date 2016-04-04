@@ -22,7 +22,9 @@
                 <li> <p><strong>修了証</strong></p> </li>
                 <li>
                     <ul>
-                        <li><a href="#create_certs"><i class="fa fa-file-text-o"></i>修了証</a></li>
+                        <li><a href="#create_certs"><i class="fa fa-file-text-o"></i>修了証発行(対面なし)</a></li>
+                        <li><a href="#create_certs_meeting"><i class="fa fa-file-text-o"></i>修了証発行(対面あり)</a></li>
+                        <li><a href="#publish_certs"><i class="fa fa-file-text-o"></i>修了証公開</a></li>
                     </ul>
                 </li>
 ##                 <li> <p><strong>特別集計</strong></p> </li>
@@ -59,27 +61,76 @@
 </div> <!-- main_content -->
 
 <script id="create_certs_tmpl" type="text/template">
-    <h3>◎修了証発行</h3>
+    <h3>◎修了証発行（対面なし）</h3>
     <ul>
         <li>
             <label for="text">対象講座ID</label>
             <input type="text" name="course_id" placeholder="placeholder">
+            <label id="course_id" for="text" class="error"></label>
         </li>
         <li>
             <label for="file">修了証テンプレート</label>
             <input type="file" name="cert_pdf_tmpl">
+            <label id="cert_pdf_tmpl" for="text" class="error"></label>
+        </li>
+        <li>
+            <label for="email">結果返却用Eメールアドレス</label>
+            <input type="email" name="email" placeholder="example@gacco.co.jp">
+            <label id="email" for="text" class="error"></label>
+        </li>
+        <li>
+            <button  id="create_certs" class="button" name="create_certs">発行</button>
+            <img id="indicator" src="${static.url('images/spinner.gif')}" alt="実行中..." hidden>
+        </li>
+    </ul>
+</script>
+
+<script id="create_certs_meeting_tmpl" type="text/template">
+    <h3>◎修了証発行（対面あり）</h3>
+    <ul>
+        <li>
+            <label for="text">対象講座ID</label>
+            <input type="text" name="course_id" placeholder="placeholder">
+            <label id="course_id" for="text" class="error"></label>
+        </li>
+        <li>
+            <label for="file">修了証テンプレート</label>
+            <input type="file" name="cert_pdf_tmpl">
+            <label id="cert_pdf_tmpl" for="text" class="error"></label>
         </li>
         <li>
             <label for="file">対面学習 修了証テンプレート</label>
             <input type="file" name="cert_pdf_meeting_tmpl">
+            <label id="cert_pdf_meeting_tmpl" for="text" class="error"></label>
         </li>
         <li>
             <label for="file">対面学習 対象者リスト</label>
             <input type="file" name="cert_lists">
+            <label id="cert_lists" for="text" class="error"></label>
         </li>
         <li>
-            <button class="button" name="create_certs">発行</button>
-            <button class="button" name="publish_certs">公開</button>
+            <label for="email">結果返却用Eメールアドレス</label>
+            <input type="email" name="email" placeholder="example@gacco.co.jp">
+            <label id="email" for="text" class="error"></label>
+        </li>
+        <li>
+            <button id="create_certs_meeting" class="button" name="create_certs_meeting">発行</button>
+            <img id="indicator" src="${static.url('images/spinner.gif')}" alt="実行中..." hidden>
+        </li>
+    </ul>
+</script>
+
+<script id="publish_certs_tmpl" type="text/template">
+    <h3>◎修了証公開</h3>
+    <ul>
+        <li>
+            <label for="text">対象講座ID</label>
+            <input type="text" name="course_id" placeholder="placeholder">
+            <label id="course_id" for="text" class="error"></label>
+        </li>
+        <li>
+            <button id="publish_certs" class="button" name="publish_certs">公開</button>
+            <img id="indicator" src="${static.url('images/spinner.gif')}" alt="実行中..." hidden>
         </li>
     </ul>
 </script>
