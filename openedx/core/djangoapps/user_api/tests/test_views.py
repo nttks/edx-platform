@@ -987,12 +987,13 @@ class RegistrationViewTest(ThirdPartyAuthTestMixin, ApiTestCase):
                 }
             )
 
-            # Username should be filled in
+            # Username should `NOT` be filled in
+            # It has been changed by #618
             self._assert_reg_field(
                 no_extra_fields_setting,
                 {
                     u"name": u"username",
-                    u"defaultValue": u"Bob123",
+                    u"defaultValue": u"",
                     u"type": u"text",
                     u"required": True,
                     u"label": u"Public username",

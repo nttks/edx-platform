@@ -73,7 +73,8 @@ class IntegrationTestMixin(object):
         form_fields = {field['name']: field for field in form_data['fields']}
         self.assertEqual(form_fields['email']['defaultValue'], self.USER_EMAIL)
         self.assertEqual(form_fields['name']['defaultValue'], self.USER_NAME)
-        self.assertEqual(form_fields['username']['defaultValue'], self.USER_USERNAME)
+        # Username should `NOT` be filled in. It has been changed by #618
+        self.assertEqual(form_fields['username']['defaultValue'], '')
         # Now complete the form:
         ajax_register_response = self.client.post(
             reverse('user_api_registration'),
