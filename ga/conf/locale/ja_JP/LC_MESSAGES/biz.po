@@ -210,7 +210,11 @@ msgstr "契約の内容が変更されました。"
 
 #: biz/djangoapps/ga_contract/views.py
 msgid "The contract cannot be deleted, because invitation code has been registered."
-msgstr "受講コードが既に登録されたため、契約を削除できません。"
+msgstr "本契約の受講コードを登録したユーザーが存在するため、契約を削除することはできません。"
+
+#: biz/djangoapps/ga_contract/views.py
+msgid "The invitation code cannot be changed, because invitation code has been registered."
+msgstr "本契約の受講コードを登録したユーザーが存在するため、受講コードを変更することはできません。"
 
 #: biz/djangoapps/ga_contract/models.py
 msgid "PF Contract"
