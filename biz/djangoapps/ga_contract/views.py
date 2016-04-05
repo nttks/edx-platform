@@ -228,6 +228,11 @@ def edit(request, selected_contract_id):
     # do update
     if form.is_valid():
         # validation successful
+        # check invitation code has changed
+        if 'invitation_code' in form.changed_data and selected_contract.contract_register.count() > 0:
+            messages.error(request, _("The invitation code cannot be changed, because invitation code has been registered."))
+            return render_to_response("ga_contract/detail.html", context)
+
         # Update contract info
         form.save()
         # Update contract detail info
