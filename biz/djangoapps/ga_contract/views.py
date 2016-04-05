@@ -17,7 +17,6 @@ from biz.djangoapps.ga_organization.models import Organization
 from biz.djangoapps.util.datetime_utils import format_for_w2ui
 from biz.djangoapps.util.decorators import check_course_selection
 from biz.djangoapps.util.json_utils import LazyEncoder
-from courseware.courses import get_course_about_section
 from edxmako.shortcuts import render_to_response
 from openedx.core.lib.json_utils import EscapedEdxJSONEncoder
 
@@ -308,6 +307,6 @@ def _get_course_name_list(org_code):
     courses = modulestore().get_courses(org=org_code)
     # courses = sorted(courses, key=lambda c: c.id)
     for course in courses:
-        name = course.course_canonical_name or get_course_about_section(course, 'title')
+        name = course.course_canonical_name or course.display_name_with_default
         course_list.append((unicode(course.id), u'{} ({})'.format(name, unicode(course.id))))
     return course_list
