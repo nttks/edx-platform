@@ -18,7 +18,10 @@ from django.core.urlresolvers import reverse
             name: 'form'
         });
 
+        $("#content").height($("#form").height());
+
         function show_detail(items) {
+            var height_before = $("#detail-container").height();
             $.each(items, function (i, item) {
                 var clone = $("#detail_template").clone();
                 clone.find("a").on('click', delete_detail);
@@ -29,9 +32,11 @@ from django.core.urlresolvers import reverse
                 $('#detail-container .w2ui-group').append(clone);
                 clone.show();
             });
+            resize_form($("#detail-container").height() - height_before);
         }
 
         function show_additional_info(items) {
+            var height_before = $("#additional-container").height();
             $.each(items, function (i, item) {
                 var clone = $("#additional_info_template").clone();
                 clone.find("a").on('click', delete_additional_info);
@@ -42,6 +47,7 @@ from django.core.urlresolvers import reverse
                 $('#additional-container .w2ui-group').append(clone);
                 clone.show();
             });
+            resize_form($("#additional-container").height() - height_before);
         }
 
         function delete_detail() {
@@ -71,6 +77,7 @@ from django.core.urlresolvers import reverse
         function resize_form(height) {
             $("#form").height($("#form").outerHeight() + height);
             $("#form").children("div").height($("#form").children("div").height() + height);
+            $("#content").height($("#content").height() + height);
         }
 
         $('#add_detail').on('click', function () {
@@ -97,16 +104,18 @@ from django.core.urlresolvers import reverse
         $('#register_btn').on('click', function () {
             // validate fields
             var has_err = false;
+            var offset_top;
             $('#form input[type=text]').each(function () {
                 if (!$.trim($(this).val())) {
                     $(this).parent().find(".err_msg").text(gettext("The field is required."));
+                    if (!offset_top) offset_top = $(this).offset().top;
                     has_err = true;
                 } else {
                     $(this).parent().find(".err_msg").text("");
                 }
             })
             if (has_err) {
-                $("body").scrollTop(0);
+                $("body,html").animate({scrollTop: offset_top}, 300);
                 return false;
             }
 
@@ -139,10 +148,6 @@ from django.core.urlresolvers import reverse
 </script>
 
 <style>
-    .content-wrapper {
-        min-height: 1500px;
-        height: 100%;
-    }
 
     .w2ui-field {
         clear: both;
