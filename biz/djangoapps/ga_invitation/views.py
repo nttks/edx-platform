@@ -84,7 +84,7 @@ def verify(request):
 @login_required
 @require_GET
 @cache_control(no_cache=True, no_store=True, must_revalidate=True)
-@transaction.commit_on_success
+@transaction.atomic
 def confirm(request, invitation_code):
     """
     Display for confirm course of contract and input additionalinfo of contract.
@@ -197,7 +197,7 @@ def register(request):
         return JsonResponse({'result': False, 'message': '', 'additional_errors': additional_errors})
 
     try:
-        with transaction.commit_on_success():
+        with transaction.atomic():
             # ContractRegister
             contract_register = ContractRegister.get_by_user_contract(request.user, contract)
             contract_register.status = REGISTER_INVITATION_CODE
