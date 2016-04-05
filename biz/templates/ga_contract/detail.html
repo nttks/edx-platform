@@ -115,7 +115,8 @@ from django.core.urlresolvers import reverse
                 }
             })
             if (has_err) {
-                $("body,html").animate({scrollTop: offset_top}, 300);
+                // move scroll to the first error field position in 300 millisecond
+                $("body, html").animate({scrollTop: offset_top}, 300);
                 return false;
             }
 
