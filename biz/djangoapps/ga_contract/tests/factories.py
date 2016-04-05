@@ -9,7 +9,8 @@ from biz.djangoapps.util.datetime_utils import timezone_today
 
 class ContractFactory(DjangoModelFactory):
     """Factory for the Contract model"""
-    FACTORY_FOR = Contract
+    class Meta(object):
+        model = Contract
 
     contract_name = 'test contract'
     contract_type = CONTRACT_TYPE_PF[0]
@@ -20,9 +21,11 @@ class ContractFactory(DjangoModelFactory):
 
 class ContractDetailFactory(DjangoModelFactory):
     """Factory for the ContractDetail model"""
-    FACTORY_FOR = ContractDetail
+    class Meta(object):
+        model = ContractDetail
 
 
 class AdditionalInfoFactory(DjangoModelFactory):
     """Factory for the AdditionalInfo model"""
-    FACTORY_FOR = AdditionalInfo
+    class Meta(object):
+        model = AdditionalInfo

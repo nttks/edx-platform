@@ -7,11 +7,13 @@ from biz.djangoapps.ga_invitation.models import AdditionalInfoSetting, ContractR
 
 class ContractRegisterFactory(DjangoModelFactory):
     """Factory for the ContractRegister model"""
-    FACTORY_FOR = ContractRegister
+    class Meta(object):
+        model = ContractRegister
 
 
 class AdditionalInfoSettingFactory(DjangoModelFactory):
     """Factory for the AdditionalInfoSetting model"""
-    FACTORY_FOR = AdditionalInfoSetting
+    class Meta(object):
+        model = AdditionalInfoSetting
 
     value = factory.Sequence(lambda n: 'value{0}'.format(n))

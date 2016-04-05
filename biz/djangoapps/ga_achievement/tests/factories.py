@@ -7,12 +7,14 @@ from biz.djangoapps.util.tests.factories import BizMongoFactory
 
 
 class ScoreFactory(BizMongoFactory):
-
-    FACTORY_FOR = ScoreStore
+    """Factory for the ScoreStore model"""
+    class Meta(object):
+        model = ScoreStore
 
     init_args = ['contract_id', 'course_id']
 
 
 class ScoreBatchStatusFactory(DjangoModelFactory):
-    """Factory for the ContractDetail model"""
-    FACTORY_FOR = ScoreBatchStatus
+    """Factory for the ScoreBatchStatus model"""
+    class Meta(object):
+        model = ScoreBatchStatus
