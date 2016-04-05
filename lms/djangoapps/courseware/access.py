@@ -95,6 +95,10 @@ def has_access(user, action, obj, course_key=None):
     if isinstance(course_key, CCXLocator):
         course_key = course_key.to_course_locator()
 
+    if in_preview_mode():
+        if not has_staff_access_to_preview_mode(user=user, obj=obj, course_key=course_key):
+            return False
+
     # delegate the work to type-specific functions.
     # (start with more specific types, then get more general)
     if isinstance(obj, CourseDescriptor):
@@ -129,6 +133,48 @@ def has_access(user, action, obj, course_key=None):
 
 
 # ================ Implementation helpers ================================
+def has_staff_access_to_preview_mode(user, obj, course_key=None):
+    """
+    Returns whether user has staff access to specified modules or not.
+
+    Arguments:
+
+        user: a Django user object.
+
+        obj: The object to check access for.
+
+        course_key: A course_key specifying which course this access is for.
+
+    Returns an AccessResponse object.
+    """
+    if course_key is None:
+        if isinstance(obj, CourseDescriptor):
+            course_key = obj.id
+
+        elif isinstance(obj, ErrorDescriptor):
+            course_key = obj.location.course_key
+
+        elif isinstance(obj, XModule):
+            course_key = obj.descriptor.course_key
+
+        elif isinstance(obj, XBlock):
+            course_key = obj.location.course_key
+
+        elif isinstance(obj, CCXLocator):
+            course_key = obj.to_course_locator()
+
+        elif isinstance(obj, CourseKey):
+            course_key = obj
+
+        elif isinstance(obj, UsageKey):
+            course_key = obj.course_key
+
+    if course_key is None:
+        return GlobalStaff().has_user(user)
+
+    return _has_access_to_course(user, 'staff', course_key=course_key)
+
+
 def _has_access_course_desc(user, action, course):
     """
     Check if user has access to a course descriptor.
