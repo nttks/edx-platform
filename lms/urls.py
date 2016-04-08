@@ -835,6 +835,11 @@ urlpatterns += (
     url(r'^survey/', include('survey.urls')),
 )
 
+# Biz
+urlpatterns += (
+    url(r'^biz/', include('biz.urls', namespace='biz')),
+)
+
 if settings.FEATURES.get('AUTH_USE_OPENID_PROVIDER'):
     urlpatterns += (
         url(r'^openid/provider/login/$', 'external_auth.views.provider_login', name='openid-provider-login'),

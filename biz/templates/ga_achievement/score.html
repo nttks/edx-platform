@@ -1,0 +1,53 @@
+<%inherit file="../main_biz.html" />
+<%namespace name="static" file="../static_content.html" />
+<%!
+from django.core.urlresolvers import reverse
+from django.utils.translation import ugettext as _
+%>
+
+<%block name="pagetitle">${_('Score Status')}</%block>
+
+<%block name="js_extra">
+<script type="text/javascript">
+    var grid;
+    $(function () {
+        grid = $('#grid').w2grid({
+            name: 'score_grid',
+            header: 'List of Names',
+            columns: ${columns},
+            records: ${records},
+            fixedBody: true,
+            selectType : 'cell',
+            show: {
+                toolbar: true,
+                footer: true,
+                toolbarReload: false
+            },
+            searches: ${searches}
+        });
+    });
+
+    // Prevent double click
+    $('form#formDownload').submit(function () {
+        $('#btnDownload').attr('disabled', true);
+        // Using jquery.fileDownload.js
+        $.fileDownload("${reverse('biz:achievement:download_csv')}")
+            .always(function () {
+                $('#btnDownload').attr('disabled', false);
+            });
+        return false;
+    });
+</script>
+</%block>
+
+<%block name="custom_content">
+<div id="scoreUpdateDate">
+    <label>${_('Score Update Date')}：</label><span class="date">${score_update_date}</span><span class="status">${score_update_status}</span>
+</div>
+
+<div id="grid"></div>
+
+<form id="formDownload" method="get">
+    <input type="submit" id="btnDownload" value="&#xf1c3 ${_('All CSV Download')}" />
+</form>
+</%block>

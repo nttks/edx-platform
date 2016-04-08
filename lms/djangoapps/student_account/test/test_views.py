@@ -425,6 +425,7 @@ class AccountSettingsViewTest(ThirdPartyAuthTestMixin, TestCase):
         'language',
         'level_of_education',
         'password',
+        'invitation_code',
         'year_of_birth',
         'preferred_language',
     ]

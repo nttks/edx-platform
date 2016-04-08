@@ -181,7 +181,7 @@
     border-bottom: 0;
   }
 
-  input[type="button"] {
+  input[type="button"], button[type="submit"] {
     @include idashbutton(#eee);
   }
 

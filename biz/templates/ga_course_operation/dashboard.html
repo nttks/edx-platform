@@ -1,0 +1,90 @@
+<%inherit file="/main.html" />
+<%namespace name='static' file='/static_content.html'/>
+<%!
+from django.utils.translation import ugettext as _
+%>
+<%block name="bodyclass">view-incourse view-instructordash</%block>
+<%block name="pagetitle">${_("Biz Manager Dashboard")}</%block>
+<%block name="nav_skip">#instructor-dashboard-content</%block>
+
+<%block name="headextra">
+  <%static:css group='style-course-vendor'/>
+  <%static:css group='style-vendor-tinymce-content'/>
+  <%static:css group='style-vendor-tinymce-skin'/>
+  <%static:css group='style-course'/>
+
+  <script type="text/javascript">
+    // This is a hack to get tinymce to work correctly in Firefox until the annotator tool is refactored to not include
+    // tinymce globally.
+    if(typeof window.Range.prototype === "undefined") {
+        window.Range.prototype = { };
+    }
+  </script>
+  <script type="text/javascript" src="${static.url('js/vendor/backbone-min.js')}"></script>
+  <script type="text/javascript" src="${static.url('js/vendor/mustache.js')}"></script>
+  <script type="text/javascript" src="${static.url('js/vendor/flot/jquery.flot.js')}"></script>
+  <script type="text/javascript" src="${static.url('js/vendor/flot/jquery.flot.axislabels.js')}"></script>
+  <script type="text/javascript" src="${static.url('js/vendor/flot/jquery.flot.pie.min.js')}"></script>
+  <script type="text/javascript" src="${static.url('js/vendor/jquery-jvectormap-1.1.1/jquery-jvectormap-1.1.1.min.js')}"></script>
+  <script type="text/javascript" src="${static.url('js/vendor/jquery-jvectormap-1.1.1/jquery-jvectormap-world-mill-en.js')}"></script>
+  <script type="text/javascript" src="${static.url('js/vendor/jquery.event.drag-2.2.js')}"></script>
+  <script type="text/javascript" src="${static.url('js/vendor/jquery.event.drop-2.2.js')}"></script>
+  <script type="text/javascript" src="${static.url('js/vendor/slick.core.js')}"></script>
+  <script type="text/javascript" src="${static.url('js/vendor/slick.grid.js')}"></script>
+  <script type="text/javascript" src="${static.url('js/vendor/slick.dataview.js')}"></script>
+  <script type="text/javascript" src="${static.url('js/vendor/slick.formatters.js')}"></script>
+  <link rel="stylesheet" href="${static.url('css/vendor/slickgrid/smoothness/jquery-ui-1.8.16.custom.css')}">
+  <link rel="stylesheet" href="${static.url('css/vendor/slickgrid/slick.grid.css')}">
+  <script type="text/javascript" src="${static.url('js/vendor/codemirror-compressed.js')}"></script>
+  <script type="text/javascript" src="${static.url('js/vendor/tinymce/js/tinymce/tinymce.full.min.js')}"></script>
+  <script type="text/javascript" src="${static.url('js/vendor/tinymce/js/tinymce/jquery.tinymce.min.js')}"></script>
+  <script type="text/javascript" src="${static.url('js/vendor/jQuery-File-Upload/js/jquery.fileupload.js')}"></script>
+  <script type="text/javascript" src="${static.url('js/vendor/jquery.qubit.js')}"></script>
+
+  <%static:js group='module-descriptor-js'/>
+  <%static:js group='instructor_dash'/>
+  <%static:js group='application'/>
+
+  <script type="text/javascript" src="${static.url('js/models/notification.js')}"></script>
+  <script type="text/javascript" src="${static.url('js/views/notification.js')}"></script>
+</%block>
+
+<%block name="header_extras">
+<script type="text/template" id="notification-tpl">
+  <%static:include path="instructor/instructor_dashboard_2/notification.underscore" />
+</script>
+</%block>
+
+<%include file="/courseware/course_navigation.html" args="active_page='biz_manager'" />
+
+<style type="text/css">
+.hint {
+  z-index: 10;
+}
+</style>
+
+<%
+    current_contract = request.current_contract if hasattr(request, 'current_contract') else None
+%>
+<section class="container">
+  <div class="instructor-dashboard-wrapper-2">
+    <section class="instructor-dashboard-content-2" id="instructor-dashboard-content">
+      <h1>${_("Biz Manager Dashboard")}</h1>
+      <ul class="instructor-nav">
+        <li class="nav-item"><a href="" data-section="membership">${_("Membership")}</a></li>
+        % if current_contract and current_contract.is_spoc_available:
+        <li class="nav-item"><a href="" data-section="survey">${_("Survey")}</a></li>
+        % endif
+      </ul>
+      <section id="membership" class="idash-section">
+        <%include file="/ga_course_operation/membership.html" args="section_data=section_membership" />
+      </section>
+      % if current_contract and current_contract.is_spoc_available:
+      <section id="survey" class="idash-section">
+        <%include file="/ga_course_operation/survey.html" args="section_data=section_survey" />
+      </section>
+      % endif
+    </section>
+  </div>
+</section>
+
