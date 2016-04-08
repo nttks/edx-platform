@@ -29,6 +29,7 @@ from lms.djangoapps.instructor.views.api import (
 )
 
 from biz.djangoapps.util.decorators import check_course_selection, require_survey, _render_403
+from biz.djangoapps.ga_invitation.models import ContractRegister
 
 
 log = logging.getLogger(__name__)
@@ -142,6 +143,9 @@ def register_students(request, course_id):
                     })
                     log.warning(u'email %s already exist', email)
 
+                # Create contract register if not created.
+                ContractRegister.objects.get_or_create(user=user, contract=request.current_contract)
+
                 email_params['message'] = 'biz_account_notice'
                 email_params['username'] = user.username
                 send_mail_to_student(email, email_params)
@@ -174,6 +178,9 @@ def register_students(request, course_id):
                     row_errors.append({
                         'username': username, 'email': email, 'response': type(ex).__name__})
                 else:
+                    # Create contract register if not created.
+                    ContractRegister.objects.get_or_create(user=user, contract=request.current_contract)
+
                     email_params['message'] = 'biz_account_creation'
                     email_params['password'] = password
                     send_mail_to_student(email, email_params)
