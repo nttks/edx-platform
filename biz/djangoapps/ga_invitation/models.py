@@ -119,8 +119,8 @@ class ContractRegister(models.Model):
         return cls.objects.filter(user=user, status=REGISTER_INVITATION_CODE)
 
     @classmethod
-    def find_registered_by_contract(cls, contract):
-        return cls.objects.filter(contract=contract, status=REGISTER_INVITATION_CODE).order_by('id')
+    def find_by_contract(cls, contract):
+        return cls.objects.filter(contract=contract).order_by('id')
 
     @classmethod
     def has_input_and_register_by_user_and_contract_ids(cls, user, contract_ids):
