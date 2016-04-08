@@ -72,7 +72,8 @@ def download_csv(request):
     else:
         score_update_date = 'no-timestamp'
 
-    response = HttpResponse(content_type='text/csv')
+    response = HttpResponse(content_type='application/octet-stream')
+    response['X-Content-Type-Options'] = 'nosniff'
     filename = u'{course_prefix}_{csv_name}_{timestamp_str}.csv'.format(
         course_prefix=course_filename_prefix_generator(request.current_course.id),
         csv_name='score_status',
