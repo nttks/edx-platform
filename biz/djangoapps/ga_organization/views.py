@@ -14,8 +14,8 @@ from biz.djangoapps.ga_organization.forms import OrganizationForm
 from biz.djangoapps.ga_organization.models import Organization
 from biz.djangoapps.util.datetime_utils import format_for_w2ui
 from biz.djangoapps.util.decorators import check_course_selection
+from biz.djangoapps.util.json_utils import EscapedEdxJSONEncoder
 from edxmako.shortcuts import render_to_response
-from openedx.core.lib.json_utils import EscapedEdxJSONEncoder
 
 
 @require_GET
