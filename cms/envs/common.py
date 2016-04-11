@@ -194,6 +194,9 @@ FEATURES = {
 
     # Can the visibility of the discussion tab be configured on a per-course basis?
     'ALLOW_HIDING_DISCUSSION_TAB': False,
+
+    # Enable secure token feature to playback video in JWPlayer XBlock
+    'ENABLE_JWPLAYER_SECURE_TOKEN': True,
 }
 
 ENABLE_JASMINE = False
@@ -968,6 +971,7 @@ ADVANCED_COMPONENT_TYPES = [
     'schoolyourself_review',
     'schoolyourself_lesson',
     'pollxblock',
+    'jwplayerxblock',
 
     # Google Drive embedded components. These XBlocks allow one to
     # embed public google drive documents and calendars within edX units
@@ -1045,3 +1049,9 @@ CREDIT_PROVIDER_TIMESTAMP_EXPIRATION = 15 * 60
 ################################ Deprecated Blocks Info ################################
 
 DEPRECATED_BLOCK_TYPES = ['peergrading', 'combinedopenended']
+
+##### JWPLAYER XBLOCK #####
+JWPLAYER_TRANSCRIPT_BUCKET_NAME = ''
+JWPLAYER_TRANSCRIPT_PREFIX = 'jwplayer_transcripts'
+JWPLAYER_SHARED_SECRET = ''
+JWPLAYER_SECURE_TOKEN_EXPIRE = 24 * 60 * 60
