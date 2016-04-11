@@ -114,6 +114,11 @@ urlpatterns = (
 
     url(r'^api/commerce/', include('commerce.api.urls', namespace='commerce_api')),
     url(r'^api/credit/', include('openedx.core.djangoapps.credit.urls', app_name="credit", namespace='credit')),
+
+    # Several operations for a gacco.org's staff
+    url(r'^ga_operation$',
+        'ga_operation.views.ga_operation_dashboard.ga_operation_dashboard', name="ga_operation_dashboard"),
+    url(r'^ga_operation/api/', include('ga_operation.views.api_urls', namespace="ga_operation_api")),
 )
 
 if settings.FEATURES["ENABLE_COMBINED_LOGIN_REGISTRATION"]:
