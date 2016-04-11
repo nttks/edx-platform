@@ -80,13 +80,13 @@ class CreateCerts(object):
             if err_msg is None:
                 send_mail("create_certs was completed",
                           "create_certs({}) was success{}".format(self.operation, self._get_download_urls_text()),
-                          self.email,
+                          settings.GA_OPERATION_EMAIL_SENDER,
                           [self.email],
                           fail_silently=False)
             else:
                 send_mail("create_certs was failure",
                           err_msg,
-                          self.email,
+                          settings.GA_OPERATION_EMAIL_SENDER,
                           [self.email],
                           fail_silently=False)
         except SMTPException:
