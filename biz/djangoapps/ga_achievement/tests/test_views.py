@@ -109,6 +109,7 @@ class AchievementViewTest(BizStoreTestBase, BizViewTestBase, ModuleStoreTestCase
         self.assertIn(SCORE_STORE_FIELD_CERTIFICATE_STATUS, response.content)
         self.assertIn(SCORE_STORE_FIELD_CERTIFICATE_ISSUE_DATE, response.content)
         self.assertIn(SCORE_STORE_FIELD_TOTAL_SCORE, response.content)
+        self.assertIn('"field": "Certificate Status", "hidden": true', response.content)
 
     def test_index_is_score_batch_status(self):
         status = 'Finished'
@@ -133,6 +134,7 @@ class AchievementViewTest(BizStoreTestBase, BizViewTestBase, ModuleStoreTestCase
         self.assertIn(self.str_jst_datetime_score_update, response.content)
         self.assertIn(self.str_jst_date, response.content)
         self.assertIn(status, response.content)
+        self.assertIn('"field": "Certificate Status", "hidden": true', response.content)
 
     def test_index_default_datetime_batch_status(self):
         status = 'Finished'
@@ -158,6 +160,7 @@ class AchievementViewTest(BizStoreTestBase, BizViewTestBase, ModuleStoreTestCase
         self.assertNotIn(self.str_jst_date, response.content)
         self.assertNotIn(datetime_utils.to_jst(DEFAULT_DATETIME).strftime('%Y/%m/%d %H:%M'), response.content)
         self.assertIn(status, response.content)
+        self.assertIn('"field": "Certificate Status", "hidden": true', response.content)
 
     def test_download_csv_no_score_batch_status(self):
         self._setup()
