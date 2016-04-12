@@ -32,6 +32,7 @@
                         contentType: false,
                         processData: false,
                         beforeSend: function () {
+                            $('.error').text('');
                             $('#right_content_response').text('');
                             $('#indicator').show();
                             $('.button').hide();
