@@ -10,7 +10,7 @@ import tempfile
 from django.test.utils import override_settings
 from django.core.management import call_command
 
-from biz.djangoapps.ga_achievement.models import ScoreBatchStatus, SCORE_BATCH_STATUS_ERROR
+from biz.djangoapps.ga_achievement.models import ScoreBatchStatus, SCORE_BATCH_STATUS_STARTED, SCORE_BATCH_STATUS_FINISHED, SCORE_BATCH_STATUS_ERROR
 from biz.djangoapps.ga_achievement.score_store import (
     ScoreStore, SCORE_STORE_FIELD_CONTRACT_ID, SCORE_STORE_FIELD_COURSE_ID,
     SCORE_STORE_FIELD_NAME, SCORE_STORE_FIELD_USERNAME, SCORE_STORE_FIELD_EMAIL, SCORE_STORE_FIELD_STUDENT_STATUS,
@@ -18,348 +18,312 @@ from biz.djangoapps.ga_achievement.score_store import (
     SCORE_STORE_FIELD_STUDENT_STATUS_UNENROLLED, SCORE_STORE_FIELD_STUDENT_STATUS_DISABLED,
     SCORE_STORE_FIELD_CERTIFICATE_STATUS, SCORE_STORE_FIELD_CERTIFICATE_STATUS_DOWNLOADABLE,
     SCORE_STORE_FIELD_CERTIFICATE_STATUS_UNPUBLISHED, SCORE_STORE_FIELD_ENROLL_DATE,
-    SCORE_STORE_FIELD_CERTIFICATE_ISSUE_DATE
+    SCORE_STORE_FIELD_CERTIFICATE_ISSUE_DATE, SCORE_STORE_FIELD_TOTAL_SCORE
 )
-from biz.djangoapps.ga_contract.tests.factories import ContractFactory, ContractDetailFactory, AdditionalInfoFactory
+from biz.djangoapps.ga_contract.tests.factories import AdditionalInfoFactory, ContractFactory, ContractDetailFactory
 from biz.djangoapps.ga_invitation.tests.factories import AdditionalInfoSettingFactory, ContractRegisterFactory
 from biz.djangoapps.ga_invitation.models import INPUT_INVITATION_CODE, REGISTER_INVITATION_CODE
+from biz.djangoapps.util.mongo_utils import DEFAULT_DATETIME
 from biz.djangoapps.util.tests.testcase import BizStoreTestBase
-from certificates.models import CertificateStatuses
+from certificates.models import CertificateStatuses, GeneratedCertificate
 from certificates.tests.factories import GeneratedCertificateFactory
 from courseware.tests.helpers import LoginEnrollmentTestCase
-from lms.djangoapps.courseware.courses import get_course_by_id
-from student.models import UserStanding
-from student.tests.factories import CourseEnrollmentFactory, UserProfileFactory, UserStandingFactory
+from courseware.courses import get_course_by_id
+from student.models import CourseEnrollment, UserStanding
+from student.tests.factories import UserFactory, UserProfileFactory, UserStandingFactory
 from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
 from xmodule.modulestore.tests.factories import CourseFactory
 
 
+COMMAND_OUTPUT_FILE = tempfile.NamedTemporaryFile()
+ADDITIONAL_DISPLAY_NAME1 = 'test_number'
+ADDITIONAL_DISPLAY_NAME2 = 'test_section'
+ADDITIONAL_SETTINGS_VALUE = 'test_value'
+DEFAULT_KEY = [
+    SCORE_STORE_FIELD_CONTRACT_ID,
+    SCORE_STORE_FIELD_COURSE_ID,
+    SCORE_STORE_FIELD_NAME,
+    SCORE_STORE_FIELD_USERNAME,
+    SCORE_STORE_FIELD_EMAIL,
+    SCORE_STORE_FIELD_STUDENT_STATUS,
+    SCORE_STORE_FIELD_CERTIFICATE_STATUS,
+    SCORE_STORE_FIELD_ENROLL_DATE,
+    SCORE_STORE_FIELD_CERTIFICATE_ISSUE_DATE,
+    SCORE_STORE_FIELD_TOTAL_SCORE,
+    ADDITIONAL_DISPLAY_NAME1,
+    ADDITIONAL_DISPLAY_NAME2,
+]
+
+
 class UpdateBizScoreStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEnrollmentTestCase):
 
-    def _create_contract(self, name, contractor, owner, created_by, invitation_code):
-        return ContractFactory.create(contract_name=name, contractor_organization=contractor, owner_organization=owner,
-                                      created_by=created_by, invitation_code=invitation_code)
+    def _input_contract(self, user):
+        ContractRegisterFactory.create(user=user, contract=self.contract, status=INPUT_INVITATION_CODE)
 
-    def _create_course(self):
-        self.course = CourseFactory.create(org='gacco', number='course', run='run1')
-
-    def _create_contract_register(self, user, contract, status=REGISTER_INVITATION_CODE):
-        ContractRegisterFactory.create(user=user, contract=contract, status=status)
-
-    def _create_additional_info(self, user, contract):
-        for additional_info in contract.additional_info.all():
+    def _register_contract(self, user):
+        ContractRegisterFactory.create(user=user, contract=self.contract, status=REGISTER_INVITATION_CODE)
+        for additional_info in self.contract.additional_info.all():
             AdditionalInfoSettingFactory.create(
                 user=user,
-                contract=contract,
+                contract=self.contract,
                 display_name=additional_info.display_name,
+                value='{}_{}'.format(additional_info.display_name, ADDITIONAL_SETTINGS_VALUE)
             )
+        for detail in self.contract.details.all():
+            CourseEnrollment.enroll(user, get_course_by_id(detail.course_id).id)
 
-    def _create_course_enrollment(self, user, contract):
-        for detail in contract.details.all():
-            try:
-                course = get_course_by_id(detail.course_id)
-                CourseEnrollmentFactory.create(user=user, course_id=course.id)
-            except:
-                pass
+    def _certificate(self, user, course):
+        GeneratedCertificateFactory.create(
+            user=user,
+            course_id=course.id,
+            status=CertificateStatuses.downloadable,
+            mode='verified',
+            download_url='http://test_certificate_url',
+        )
 
-    def _create_inactive_course_enrollment(self, user, contract):
-        for detail in contract.details.all():
-            try:
-                course = get_course_by_id(detail.course_id)
-                CourseEnrollmentFactory.create(user=user, course_id=course.id, is_active=False)
-            except:
-                pass
+    def _profile(self, user):
+        UserProfileFactory.create(user=user, name='profile_name')
 
-    def _create_contract_detail(self, contract, course_id):
-        return ContractDetailFactory.create(course_id=course_id, contract=contract)
+    def _unenroll(self, user, course):
+        CourseEnrollment.unenroll(user, course.id)
 
-    def _create_user(self):
-        self.setup_user()
+    def _account_disable(self, user):
+        UserStandingFactory.create(user=user, account_status=UserStanding.ACCOUNT_DISABLED, changed_by=self.user)
 
-    def _create_org_data(self):
+    def setUp(self):
+        super(UpdateBizScoreStatusTest, self).setUp()
+        self.course1 = CourseFactory.create(org='gacco', number='course1', run='run')
+        self.course2 = CourseFactory.create(org='gacco', number='course2', run='run')
         self.org_a = self._create_organization(org_name='a', org_code='a', creator_org=self.gacco_organization)
+        self.contract = ContractFactory.create(contractor_organization=self.org_a,
+                                               owner_organization=self.gacco_organization,
+                                               created_by=UserFactory.create())
+        ContractDetailFactory.create(contract=self.contract, course_id=self.course1.id)
+        ContractDetailFactory.create(contract=self.contract, course_id=self.course2.id)
+        AdditionalInfoFactory.create(contract=self.contract, display_name=ADDITIONAL_DISPLAY_NAME1)
+        AdditionalInfoFactory.create(contract=self.contract, display_name=ADDITIONAL_DISPLAY_NAME2)
 
-    def set_normal(self):
-        self._create_user()
-        self.user_standing = UserStandingFactory.create(
-            user=self.user,
-            account_status=UserStanding.ACCOUNT_ENABLED,
-            changed_by=self.user
-        )
-        self._create_course()
-        self.user_profile = UserProfileFactory(user=self.user)
-        self._create_org_data()
-        self.contract = self._create_contract('contract_a', self.org_a, self.gacco_organization,
-                                              self.user, 'invitation_code_a')
-        self._create_contract_detail(self.contract, self.course.id)
-        self._create_contract_register(self.user, self.contract)
-        self._create_additional_info(self.user, self.contract)
-        self._create_course_enrollment(self.user, self.contract)
-        for additional_info in self.contract.additional_info.all():
-            AdditionalInfoSettingFactory.create(
-                user=self.user,
-                contract=self.contract,
-                display_name=additional_info.display_name,
-            )
-        certificate_url = "http://test_certificate_url"
-        self.genrated_certificate = GeneratedCertificateFactory.create(
-            user=self.user,
-            course_id=self.course.id,
-            status=CertificateStatuses.downloadable,
-            mode='verified',
-            download_url=certificate_url,
-        )
+    def assert_finished(self, count, course):
+        ScoreBatchStatus.objects.get(contract=self.contract, course_id=course.id, status=SCORE_BATCH_STATUS_STARTED)
+        ScoreBatchStatus.objects.get(contract=self.contract, course_id=course.id, status=SCORE_BATCH_STATUS_FINISHED, student_count=count)
 
-    def set_user_standing_account_disabled(self):
-        self._create_user()
-        self.user_standing = UserStandingFactory.create(
-            user=self.user,
-            account_status=UserStanding.ACCOUNT_DISABLED,
-            changed_by=self.user
-        )
-        self._create_course()
-        self.user_profile = UserProfileFactory(user=self.user)
-        self._create_org_data()
-        self.contract = self._create_contract('contract_a', self.org_a, self.gacco_organization,
-                                              self.user, 'invitation_code_a')
-        self._create_contract_detail(self.contract, self.course.id)
-        self._create_contract_register(self.user, self.contract, INPUT_INVITATION_CODE)
-        self._create_additional_info(self.user, self.contract)
-        self._create_course_enrollment(self.user, self.contract)
-        for additional_info in self.contract.additional_info.all():
-            AdditionalInfoSettingFactory.create(
-                user=self.user,
-                contract=self.contract,
-                display_name=additional_info.display_name
-            )
-        certificate_url = "http://test_certificate_url"
-        self.genrated_certificate = GeneratedCertificateFactory.create(
-            user=self.user,
-            course_id=self.course.id,
-            status=CertificateStatuses.downloadable,
-            mode='verified',
-            download_url=certificate_url,
-        )
+        score_list = ScoreStore(self.contract.id, unicode(course.id)).get_documents()
+        self.assertEquals(len(score_list), count)
+        return score_list
 
-    def tearDown(self):
-        pass
+    def assert_error(self, course):
+        ScoreBatchStatus.objects.get(contract=self.contract, course_id=course.id, status=SCORE_BATCH_STATUS_STARTED)
+        ScoreBatchStatus.objects.get(contract=self.contract, course_id=course.id, status=SCORE_BATCH_STATUS_ERROR, student_count=None)
 
-    command_output_file = tempfile.NamedTemporaryFile()
+        score_list = ScoreStore(self.contract.id, unicode(course.id)).get_documents()
+        self.assertEquals(len(score_list), 0)
+        return score_list
 
-    @override_settings(BIZ_SET_SCORE_COMMAND_OUTPUT=command_output_file.name)
-    def test_update_biz_score_status(self):
-        self.set_normal()
+    def assert_datetime(self, first, second):
+        _format = '%Y%m%d%H%M%S%Z'
+        self.assertEquals(first.strftime(_format), second.strftime(_format))
+
+    @override_settings(BIZ_SET_SCORE_COMMAND_OUTPUT=COMMAND_OUTPUT_FILE.name)
+    def test_non_register(self):
+        call_command('update_biz_score_status')
+
+        self.assert_finished(0, self.course1)
+        self.assert_finished(0, self.course2)
+
+    @override_settings(BIZ_SET_SCORE_COMMAND_OUTPUT=COMMAND_OUTPUT_FILE.name)
+    def test_input_contract(self):
+        self._input_contract(self.user)
 
         call_command('update_biz_score_status')
-        score_store = ScoreStore(self.contract.id, unicode(self.course.id))
-        score_list = score_store.get_documents()
 
-        check_list = [
-            SCORE_STORE_FIELD_CONTRACT_ID, SCORE_STORE_FIELD_COURSE_ID,
-            SCORE_STORE_FIELD_NAME, SCORE_STORE_FIELD_USERNAME, SCORE_STORE_FIELD_EMAIL,
-            SCORE_STORE_FIELD_STUDENT_STATUS, SCORE_STORE_FIELD_STUDENT_STATUS_NOT_ENROLLED,
-            SCORE_STORE_FIELD_STUDENT_STATUS_ENROLLED, SCORE_STORE_FIELD_STUDENT_STATUS_UNENROLLED,
-            SCORE_STORE_FIELD_STUDENT_STATUS_DISABLED, SCORE_STORE_FIELD_CERTIFICATE_STATUS,
-            SCORE_STORE_FIELD_CERTIFICATE_STATUS_DOWNLOADABLE, SCORE_STORE_FIELD_CERTIFICATE_STATUS_UNPUBLISHED,
-            SCORE_STORE_FIELD_ENROLL_DATE, SCORE_STORE_FIELD_CERTIFICATE_ISSUE_DATE
-        ]
+        def assert_score(course):
+            score_list = self.assert_finished(1, course)
 
-        for score_order_dict in score_list:
-            for score in score_order_dict:
-                self.assertIn(score, check_list)
-                if score == SCORE_STORE_FIELD_CERTIFICATE_ISSUE_DATE:
-                    break
+            score_dict = score_list[0]
+            self.assertEquals(score_dict[SCORE_STORE_FIELD_CONTRACT_ID], self.contract.id)
+            self.assertEquals(score_dict[SCORE_STORE_FIELD_COURSE_ID], unicode(course.id))
+            self.assertIsNone(score_dict[SCORE_STORE_FIELD_NAME])
+            self.assertEquals(score_dict[SCORE_STORE_FIELD_USERNAME], self.user.username)
+            self.assertEquals(score_dict[SCORE_STORE_FIELD_EMAIL], self.user.email)
+            self.assertEquals(score_dict[SCORE_STORE_FIELD_STUDENT_STATUS], SCORE_STORE_FIELD_STUDENT_STATUS_NOT_ENROLLED)
+            self.assertEquals(score_dict[SCORE_STORE_FIELD_CERTIFICATE_STATUS], SCORE_STORE_FIELD_CERTIFICATE_STATUS_UNPUBLISHED)
+            self.assertEquals(score_dict[SCORE_STORE_FIELD_ENROLL_DATE], DEFAULT_DATETIME)
+            self.assertEquals(score_dict[SCORE_STORE_FIELD_CERTIFICATE_ISSUE_DATE], DEFAULT_DATETIME)
+            self.assertEquals(score_dict[SCORE_STORE_FIELD_TOTAL_SCORE], 0)
+            self.assertIsNone(score_dict[ADDITIONAL_DISPLAY_NAME1])
+            self.assertIsNone(score_dict[ADDITIONAL_DISPLAY_NAME2])
+            for k, v in score_dict.items():
+                if k not in DEFAULT_KEY:
+                    self.assertEquals(v, 0)
 
-    @override_settings(BIZ_SET_SCORE_COMMAND_OUTPUT=command_output_file.name)
-    def test_user_standing_account_disabled_update_biz_score_status(self):
-        self.set_user_standing_account_disabled()
+        assert_score(self.course1)
+        assert_score(self.course2)
 
-        call_command('update_biz_score_status')
-        score_store = ScoreStore(self.contract.id, unicode(self.course.id))
-        score_list = score_store.get_documents()
-
-        check_list = [
-            SCORE_STORE_FIELD_CONTRACT_ID, SCORE_STORE_FIELD_COURSE_ID,
-            SCORE_STORE_FIELD_NAME, SCORE_STORE_FIELD_USERNAME, SCORE_STORE_FIELD_EMAIL,
-            SCORE_STORE_FIELD_STUDENT_STATUS, SCORE_STORE_FIELD_STUDENT_STATUS_NOT_ENROLLED,
-            SCORE_STORE_FIELD_STUDENT_STATUS_ENROLLED, SCORE_STORE_FIELD_STUDENT_STATUS_UNENROLLED,
-            SCORE_STORE_FIELD_STUDENT_STATUS_DISABLED, SCORE_STORE_FIELD_CERTIFICATE_STATUS,
-            SCORE_STORE_FIELD_CERTIFICATE_STATUS_DOWNLOADABLE, SCORE_STORE_FIELD_CERTIFICATE_STATUS_UNPUBLISHED,
-            SCORE_STORE_FIELD_ENROLL_DATE, SCORE_STORE_FIELD_CERTIFICATE_ISSUE_DATE
-        ]
-
-        for score_order_dict in score_list:
-            for score in score_order_dict:
-                self.assertIn(score, check_list)
-                if score == SCORE_STORE_FIELD_CERTIFICATE_ISSUE_DATE:
-                    break
-
-    @override_settings(BIZ_SET_SCORE_COMMAND_OUTPUT=command_output_file.name)
-    def test_none_contract_register_update_biz_score_status(self):
-        self.user_standing = None
-        self.user_profile = None
-        self._create_course()
-        self._create_org_data()
-        self.contract = self._create_contract('contract_a', self.org_a, self.gacco_organization,
-                                              self.user, 'invitation_code_a')
-        self._create_contract_detail(self.contract, self.course.id)
-        self._create_contract_register(self.user, self.contract)
-
-        for additional_info in self.contract.additional_info.all():
-            AdditionalInfoSettingFactory.create(
-                user=self.user,
-                contract=self.contract,
-                display_name=additional_info.display_name
-            )
-        certificate_url = "http://test_certificate_url"
-        self.genrated_certificate = GeneratedCertificateFactory.create(
-            user=self.user,
-            course_id=self.course.id,
-            status=CertificateStatuses.downloadable,
-            mode='verified',
-            download_url=certificate_url,
-        )
+    @override_settings(BIZ_SET_SCORE_COMMAND_OUTPUT=COMMAND_OUTPUT_FILE.name)
+    def test_register_contract(self):
+        self._profile(self.user)
+        self._register_contract(self.user)
+        self._certificate(self.user, self.course1)
+        self._certificate(self.user, self.course2)
 
         call_command('update_biz_score_status')
-        score_store = ScoreStore(self.contract.id, unicode(self.course.id))
-        score_list = score_store.get_documents()
 
-        for score_order_dict in score_list:
-            self.assertEqual(SCORE_STORE_FIELD_STUDENT_STATUS_NOT_ENROLLED,
-                             score_order_dict[SCORE_STORE_FIELD_STUDENT_STATUS])
-            break
+        def assert_score(course):
+            score_list = self.assert_finished(1, course)
 
-    @override_settings(BIZ_SET_SCORE_COMMAND_OUTPUT=command_output_file.name)
-    def test_none_user_standing_and_none_user_profile_update_biz_score_status(self):
-        self.user_standing = None
-        self.user_profile = None
-        self._create_course()
-        self._create_org_data()
-        self.contract = self._create_contract('contract_a', self.org_a, self.gacco_organization,
-                                              self.user, 'invitation_code_a')
-        self._create_contract_detail(self.contract, self.course.id)
-        self._create_contract_register(self.user, self.contract)
+            score_dict = score_list[0]
+            self.assertEquals(score_dict[SCORE_STORE_FIELD_CONTRACT_ID], self.contract.id)
+            self.assertEquals(score_dict[SCORE_STORE_FIELD_COURSE_ID], unicode(course.id))
+            self.assertEquals(score_dict[SCORE_STORE_FIELD_NAME], self.user.profile.name)
+            self.assertEquals(score_dict[SCORE_STORE_FIELD_USERNAME], self.user.username)
+            self.assertEquals(score_dict[SCORE_STORE_FIELD_EMAIL], self.user.email)
+            self.assertEquals(score_dict[SCORE_STORE_FIELD_STUDENT_STATUS], SCORE_STORE_FIELD_STUDENT_STATUS_ENROLLED)
+            self.assertEquals(score_dict[SCORE_STORE_FIELD_CERTIFICATE_STATUS], SCORE_STORE_FIELD_CERTIFICATE_STATUS_DOWNLOADABLE)
+            self.assert_datetime(score_dict[SCORE_STORE_FIELD_ENROLL_DATE], CourseEnrollment.get_enrollment(self.user, course.id).created)
+            self.assert_datetime(score_dict[SCORE_STORE_FIELD_CERTIFICATE_ISSUE_DATE], GeneratedCertificate.certificate_for_student(self.user, course.id).created_date)
+            self.assertEquals(score_dict[SCORE_STORE_FIELD_TOTAL_SCORE], 0)
+            self.assertEquals(score_dict[ADDITIONAL_DISPLAY_NAME1], '{}_{}'.format(ADDITIONAL_DISPLAY_NAME1, ADDITIONAL_SETTINGS_VALUE))
+            self.assertEquals(score_dict[ADDITIONAL_DISPLAY_NAME2], '{}_{}'.format(ADDITIONAL_DISPLAY_NAME2, ADDITIONAL_SETTINGS_VALUE))
+            for k, v in score_dict.items():
+                if k not in DEFAULT_KEY:
+                    self.assertEquals(v, 0)
 
-        for additional_info in self.contract.additional_info.all():
-            AdditionalInfoSettingFactory.create(
-                user=self.user,
-                contract=self.contract,
-                display_name=additional_info.display_name
-            )
-        certificate_url = "http://test_certificate_url"
-        self.genrated_certificate = GeneratedCertificateFactory.create(
-            user=self.user,
-            course_id=self.course.id,
-            status=CertificateStatuses.downloadable,
-            mode='verified',
-            download_url=certificate_url,
-        )
+        assert_score(self.course1)
+        assert_score(self.course2)
 
-        call_command('update_biz_score_status')
-        score_store = ScoreStore(self.contract.id, unicode(self.course.id))
-        score_list = score_store.get_documents()
+    @override_settings(BIZ_SET_SCORE_COMMAND_OUTPUT=COMMAND_OUTPUT_FILE.name)
+    def test_register_contract_rate(self):
+        self._profile(self.user)
+        self._register_contract(self.user)
+        self._certificate(self.user, self.course1)
+        self._certificate(self.user, self.course2)
 
-        for score_order_dict in score_list:
-            self.assertIsNone(score_order_dict[SCORE_STORE_FIELD_NAME])
-            break
-
-    @override_settings(BIZ_SET_SCORE_COMMAND_OUTPUT=command_output_file.name)
-    def test_none_user_profile_and_user_standing_contract_disabled_update_biz_score_status(self):
-        self._create_user()
-        self.user_profile = None
-        self._create_course()
-        self._create_org_data()
-        self.contract = self._create_contract('contract_a', self.org_a, self.gacco_organization,
-                                              self.user, 'invitation_code_a')
-        self._create_contract_detail(self.contract, self.course.id)
-        self._create_contract_register(self.user, self.contract)
-
-        for additional_info in self.contract.additional_info.all():
-            AdditionalInfoSettingFactory.create(
-                user=self.user,
-                contract=self.contract,
-                display_name=additional_info.display_name,
-                value='test'
-            )
-        certificate_url = "http://test_certificate_url"
-        self.genrated_certificate = GeneratedCertificateFactory.create(
-            user=self.user,
-            course_id=self.course.id,
-            status=CertificateStatuses.generating,
-            mode='verified',
-            download_url=certificate_url,
-        )
-        self.user_standing = UserStandingFactory.create(
-            user=self.user,
-            account_status=UserStanding.ACCOUNT_DISABLED,
-            changed_by=self.user
-        )
-
-        call_command('update_biz_score_status')
-        score_store = ScoreStore(self.contract.id, unicode(self.course.id))
-        score_list = score_store.get_documents()
-
-        for score_order_dict in score_list:
-            self.assertEqual(SCORE_STORE_FIELD_STUDENT_STATUS_DISABLED,
-                          score_order_dict[SCORE_STORE_FIELD_STUDENT_STATUS])
-            break
-
-    @override_settings(BIZ_SET_SCORE_COMMAND_OUTPUT=command_output_file.name)
-    def test_none_user_profile_and_user_standing_account_enable_in_display_name_update_biz_score_status(self):
-        self._create_user()
-        self.user_profile = None
-        self._create_course()
-        self._create_org_data()
-        self.contract = self._create_contract('contract_a', self.org_a, self.gacco_organization,
-                                              self.user, 'invitation_code_a')
-        self._create_contract_detail(self.contract, self.course.id)
-        self._create_contract_register(self.user, self.contract)
-
-        AdditionalInfoFactory.create(contract=self.contract, display_name='test_display')
-
-        AdditionalInfoSettingFactory.create(
-            user=self.user,
-            contract=self.contract,
-            display_name='test_display',
-            value='test_value'
-        )
-
-        certificate_url = "http://test_certificate_url"
-        self.genrated_certificate = GeneratedCertificateFactory.create(
-            user=self.user,
-            course_id=self.course.id,
-            status=CertificateStatuses.generating,
-            mode='verified',
-            download_url=certificate_url,
-        )
-        self.user_standing = UserStandingFactory.create(
-            user=self.user,
-            account_status=UserStanding.ACCOUNT_ENABLED,
-            changed_by=self.user
-        )
-        self._create_inactive_course_enrollment(self.user, self.contract)
-
-        call_command('update_biz_score_status')
-        score_store = ScoreStore(self.contract.id, unicode(self.course.id))
-        score_list = score_store.get_documents()
-
-        for score_order_dict in score_list:
-            self.assertEqual('test_value', score_order_dict['test_display'])
-            self.assertEqual(SCORE_STORE_FIELD_STUDENT_STATUS_UNENROLLED,
-                             score_order_dict[SCORE_STORE_FIELD_STUDENT_STATUS])
-            break
-
-    @override_settings(BIZ_SET_SCORE_COMMAND_OUTPUT=command_output_file.name)
-    def test_update_biz_score_status_error(self):
-        self.set_normal()
-        contract_id = self.contract.id
-        course_id = self.course.id
-
-        with patch('courseware.grades.grade') as mock_grade:
-            mock_grade.side_effect = TypeError()
+        get_grade_return_value = {
+            'section_breakdown': [
+                {'label': 'First', 'percent': 11.11111111},
+                {'label': 'Second', 'percent': 22.22222222},
+                {'label': 'Third', 'percent': 33.33333333},
+                {'label': 'Fourth', 'percent': 44.44444444},
+                {'label': 'Fifth', 'percent': 55.55555555},
+                {'label': 'Sixth', 'percent': 66.66666666},
+            ],
+            'percent': 88.8888888888
+        }
+        with patch('biz.djangoapps.ga_achievement.management.commands.update_biz_score_status.get_grade', return_value=get_grade_return_value):
             call_command('update_biz_score_status')
-            score_batch_status = ScoreBatchStatus.get_last_status(contract_id, course_id)
 
-            self.assertEqual(SCORE_BATCH_STATUS_ERROR, score_batch_status.status)
-            self.assertEqual(contract_id, score_batch_status.contract_id)
-            self.assertEqual(course_id, score_batch_status.course_id)
+        def assert_score(course):
+            score_list = self.assert_finished(1, course)
+
+            score_dict = score_list[0]
+            self.assertEquals(score_dict[SCORE_STORE_FIELD_CONTRACT_ID], self.contract.id)
+            self.assertEquals(score_dict[SCORE_STORE_FIELD_COURSE_ID], unicode(course.id))
+            self.assertEquals(score_dict[SCORE_STORE_FIELD_NAME], self.user.profile.name)
+            self.assertEquals(score_dict[SCORE_STORE_FIELD_USERNAME], self.user.username)
+            self.assertEquals(score_dict[SCORE_STORE_FIELD_EMAIL], self.user.email)
+            self.assertEquals(score_dict[SCORE_STORE_FIELD_STUDENT_STATUS], SCORE_STORE_FIELD_STUDENT_STATUS_ENROLLED)
+            self.assertEquals(score_dict[SCORE_STORE_FIELD_CERTIFICATE_STATUS], SCORE_STORE_FIELD_CERTIFICATE_STATUS_DOWNLOADABLE)
+            self.assert_datetime(score_dict[SCORE_STORE_FIELD_ENROLL_DATE], CourseEnrollment.get_enrollment(self.user, course.id).created)
+            self.assert_datetime(score_dict[SCORE_STORE_FIELD_CERTIFICATE_ISSUE_DATE], GeneratedCertificate.certificate_for_student(self.user, course.id).created_date)
+            self.assertEquals(score_dict[SCORE_STORE_FIELD_TOTAL_SCORE], 88.89)
+            self.assertEquals(score_dict[ADDITIONAL_DISPLAY_NAME1], '{}_{}'.format(ADDITIONAL_DISPLAY_NAME1, ADDITIONAL_SETTINGS_VALUE))
+            self.assertEquals(score_dict[ADDITIONAL_DISPLAY_NAME2], '{}_{}'.format(ADDITIONAL_DISPLAY_NAME2, ADDITIONAL_SETTINGS_VALUE))
+
+            self.assertEquals(score_dict['First'], 11.11)
+            self.assertEquals(score_dict['Second'], 22.22)
+            self.assertEquals(score_dict['Third'], 33.33)
+            self.assertEquals(score_dict['Fourth'], 44.44)
+            self.assertEquals(score_dict['Fifth'], 55.56)
+            self.assertEquals(score_dict['Sixth'], 66.67)
+
+        assert_score(self.course1)
+        assert_score(self.course2)
+
+    @override_settings(BIZ_SET_SCORE_COMMAND_OUTPUT=COMMAND_OUTPUT_FILE.name)
+    def test_register_contract_unenroll(self):
+        self._profile(self.user)
+        self._register_contract(self.user)
+        self._certificate(self.user, self.course1)
+        self._certificate(self.user, self.course2)
+        self._unenroll(self.user, self.course1)
+        self._unenroll(self.user, self.course2)
+
+        call_command('update_biz_score_status')
+
+        def assert_score(course):
+            score_list = self.assert_finished(1, course)
+
+            score_dict = score_list[0]
+            self.assertEquals(score_dict[SCORE_STORE_FIELD_CONTRACT_ID], self.contract.id)
+            self.assertEquals(score_dict[SCORE_STORE_FIELD_COURSE_ID], unicode(course.id))
+            self.assertEquals(score_dict[SCORE_STORE_FIELD_NAME], self.user.profile.name)
+            self.assertEquals(score_dict[SCORE_STORE_FIELD_USERNAME], self.user.username)
+            self.assertEquals(score_dict[SCORE_STORE_FIELD_EMAIL], self.user.email)
+            self.assertEquals(score_dict[SCORE_STORE_FIELD_STUDENT_STATUS], SCORE_STORE_FIELD_STUDENT_STATUS_UNENROLLED)
+            self.assertEquals(score_dict[SCORE_STORE_FIELD_CERTIFICATE_STATUS], SCORE_STORE_FIELD_CERTIFICATE_STATUS_DOWNLOADABLE)
+            self.assert_datetime(score_dict[SCORE_STORE_FIELD_ENROLL_DATE], CourseEnrollment.get_enrollment(self.user, course.id).created)
+            self.assert_datetime(score_dict[SCORE_STORE_FIELD_CERTIFICATE_ISSUE_DATE], GeneratedCertificate.certificate_for_student(self.user, course.id).created_date)
+            self.assertEquals(score_dict[SCORE_STORE_FIELD_TOTAL_SCORE], 0)
+            self.assertEquals(score_dict[ADDITIONAL_DISPLAY_NAME1], '{}_{}'.format(ADDITIONAL_DISPLAY_NAME1, ADDITIONAL_SETTINGS_VALUE))
+            self.assertEquals(score_dict[ADDITIONAL_DISPLAY_NAME2], '{}_{}'.format(ADDITIONAL_DISPLAY_NAME2, ADDITIONAL_SETTINGS_VALUE))
+            for k, v in score_dict.items():
+                if k not in DEFAULT_KEY:
+                    self.assertEquals(v, 0)
+
+        assert_score(self.course1)
+        assert_score(self.course2)
+
+    @override_settings(BIZ_SET_SCORE_COMMAND_OUTPUT=COMMAND_OUTPUT_FILE.name)
+    def test_register_contract_account_disable(self):
+        self._profile(self.user)
+        self._register_contract(self.user)
+        self._certificate(self.user, self.course1)
+        self._certificate(self.user, self.course2)
+        self._account_disable(self.user)
+
+        call_command('update_biz_score_status')
+
+        def assert_score(course):
+            score_list = self.assert_finished(1, course)
+
+            score_dict = score_list[0]
+            self.assertEquals(score_dict[SCORE_STORE_FIELD_CONTRACT_ID], self.contract.id)
+            self.assertEquals(score_dict[SCORE_STORE_FIELD_COURSE_ID], unicode(course.id))
+            self.assertEquals(score_dict[SCORE_STORE_FIELD_NAME], self.user.profile.name)
+            self.assertEquals(score_dict[SCORE_STORE_FIELD_USERNAME], self.user.username)
+            self.assertEquals(score_dict[SCORE_STORE_FIELD_EMAIL], self.user.email)
+            self.assertEquals(score_dict[SCORE_STORE_FIELD_STUDENT_STATUS], SCORE_STORE_FIELD_STUDENT_STATUS_DISABLED)
+            self.assertEquals(score_dict[SCORE_STORE_FIELD_CERTIFICATE_STATUS], SCORE_STORE_FIELD_CERTIFICATE_STATUS_DOWNLOADABLE)
+            self.assert_datetime(score_dict[SCORE_STORE_FIELD_ENROLL_DATE], CourseEnrollment.get_enrollment(self.user, course.id).created)
+            self.assert_datetime(score_dict[SCORE_STORE_FIELD_CERTIFICATE_ISSUE_DATE], GeneratedCertificate.certificate_for_student(self.user, course.id).created_date)
+            self.assertEquals(score_dict[SCORE_STORE_FIELD_TOTAL_SCORE], 0)
+            self.assertEquals(score_dict[ADDITIONAL_DISPLAY_NAME1], '{}_{}'.format(ADDITIONAL_DISPLAY_NAME1, ADDITIONAL_SETTINGS_VALUE))
+            self.assertEquals(score_dict[ADDITIONAL_DISPLAY_NAME2], '{}_{}'.format(ADDITIONAL_DISPLAY_NAME2, ADDITIONAL_SETTINGS_VALUE))
+            for k, v in score_dict.items():
+                if k not in DEFAULT_KEY:
+                    self.assertEquals(v, 0)
+
+        assert_score(self.course1)
+        assert_score(self.course2)
+
+    @override_settings(BIZ_SET_SCORE_COMMAND_OUTPUT=COMMAND_OUTPUT_FILE.name)
+    def test_input_and_register(self):
+        for var in range(0, 50):
+            user = UserFactory.create()
+            self._input_contract(user)
+        for var in range(0, 50):
+            user = UserFactory.create()
+            self._register_contract(user)
+
+        call_command('update_biz_score_status')
+
+        self.assert_finished(100, self.course1)
+        self.assert_finished(100, self.course2)
+
+    @override_settings(BIZ_SET_SCORE_COMMAND_OUTPUT=COMMAND_OUTPUT_FILE.name)
+    def test_update_biz_score_status_error(self):
+        with patch('biz.djangoapps.ga_achievement.models.ScoreBatchStatus.save_for_finished', side_effect=Exception()):
+            call_command('update_biz_score_status')
+
+        self.assert_error(self.course1)
+        self.assert_error(self.course2)
