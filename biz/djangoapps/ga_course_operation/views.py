@@ -4,15 +4,13 @@ This module is view of course_operation.
 import logging
 
 from django.conf import settings
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
-from django.core.urlresolvers import reverse
 from django.core.validators import validate_email
 from django.db import IntegrityError
-from django.shortcuts import redirect
 from django.utils.translation import ugettext as _
-from django.views.decorators.cache import cache_control
-from django.views.decorators.csrf import ensure_csrf_cookie
+from django.views.decorators.http import require_GET, require_POST
 
 from edxmako.shortcuts import render_to_response
 from microsite_configuration import microsite
@@ -28,44 +26,28 @@ from lms.djangoapps.instructor.views.api import (
     EMAIL_INDEX, NAME_INDEX, USERNAME_INDEX
 )
 
-from biz.djangoapps.util.decorators import check_course_selection, require_survey, _render_403
+from biz.djangoapps.util.decorators import check_course_selection, require_survey
 from biz.djangoapps.ga_invitation.models import ContractRegister
 
 
 log = logging.getLogger(__name__)
 
 
-@cache_control(no_cache=True, no_store=True, must_revalidate=True)
+@require_GET
+@login_required
 @check_course_selection
-def dashboard(request, course_id):
-    """
-    Displays the biz management dashboard.
-    Requires biz course_operation access and equal current course_id and course_id of argument.
-    """
-
-    if unicode(request.current_course.id) != course_id:
-        return _render_403(request)
-
-    return render_to_response('ga_course_operation/dashboard.html', {
-        'course': request.current_course,
-        'section_membership': {
-            'upload_student_button_url': reverse('biz:course_operation:register_students', kwargs={'course_id': course_id}),
-        },
-        'section_survey': {
-            'get_survey_url': reverse('biz:course_operation:get_survey', kwargs={'course_id': course_id}),
-        },
-    })
+def register_students(request):
+    return render_to_response('ga_course_operation/register_students.html')
 
 
-@ensure_csrf_cookie
-@cache_control(no_cache=True, no_store=True, must_revalidate=True)
+@require_POST
+@login_required
 @check_course_selection
-def register_students(request, course_id):
+def register_students_ajax(request):
     """
     Create new accounts.
     Passing a list of students.
     Order in list should be the following email = 0; username = 1; name = 2.
-    Requires biz course_operation access and equal current course_id and course_id of argument.
 
     -If the email address already exists,
     do nothing (including no email gets sent out)
@@ -92,11 +74,11 @@ def register_students(request, course_id):
             'warnings': warnings
         })
 
-    if unicode(request.current_course.id) != course_id:
-        return _make_response(_('Current course is changed. Please reload this page.'))
+    if 'students_list' not in request.POST or 'contract_id' not in request.POST:
+        return _make_response(_('Unauthorized access.'))
 
-    if 'students_list' not in request.POST:
-        return _make_response(_('Could not find student list.'))
+    if str(request.current_contract.id) != request.POST['contract_id']:
+        return _make_response(_('Current contract is changed. Please reload this page.'))
 
     students = [row.split(',') if row else [] for row in request.POST['students_list'].splitlines()]
     if not students:
@@ -189,9 +171,17 @@ def register_students(request, course_id):
     return _make_response()
 
 
-@ensure_csrf_cookie
-@cache_control(no_cache=True, no_store=True, must_revalidate=True)
+@require_GET
+@login_required
 @check_course_selection
 @require_survey
-def get_survey(request, course_id):
-    return create_survey_response(request, course_id)
+def survey(request):
+    return render_to_response('ga_course_operation/survey.html')
+
+
+@require_GET
+@login_required
+@check_course_selection
+@require_survey
+def survey_download(request):
+    return create_survey_response(request, unicode(request.current_course.id))

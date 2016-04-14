@@ -245,14 +245,14 @@ msgid "You can not enter duplicate values in {0}."
 msgstr "{0}には重複した値を入力できません。"
 
 ##### Course Operation
-#: biz/templates/ga_course_operation/membership.html
+#: biz/templates/ga_course_operation/register_students.html
 msgid "To register a list of users in this course, contains the following columns in this exact order: email, username, name, and country. Please include one student per row and do not include any headers, footers, or blank lines."
 msgstr "区切り文字カンマ(,)で、次に示す項目の順序に従い値を指定してください。なお、1受講者につき1行で記載し、ヘッダー、フッターや空行を含んではいけません。<br/>"
 "・メールアドレス：半角英数字、ハイフン(-)、アンダーバー(_)、ピリオド(.)。<br/>"
 "・ユーザー名：半角英数2文字以上、30文字以下。ディスカッションの際に表示されるユーザー名となります。(一度、登録すると変更できません)<br/>"
 "・氏名：修了証に表示するために用いる情報です。"
 
-#: biz/templates/ga_course_operation/membership.html
+#: biz/templates/ga_course_operation/register_students.html
 msgid "username1@domain.com,gaccotarou,gacco taro"
 msgstr "username1@domain.com,gaccotarou,学校 太郎"
 
@@ -260,15 +260,15 @@ msgstr "username1@domain.com,gaccotarou,学校 太郎"
 msgid "Data in row #{row_num} must have exactly three columns: email, username, and full name."
 msgstr "{row_num}行目から次の3項目が見つかりませんでした：メールアドレス、ユーザー名、氏名"
 
-#: biz/templates/ga_course_operation/membership.html
+#: biz/templates/ga_course_operation/register_students.html
 msgid "Register Students"
 msgstr "受講者を新規登録"
 
-#: biz/templates/ga_course_operation/membership.html
+#: biz/templates/ga_course_operation/register_students.html
 msgid "Register Signup"
 msgstr "新規登録を実施する"
 
-#: biz/templates/ga_course_operation/membership.html
+#: biz/templates/ga_course_operation/survey.html
 msgid "The survey result can be downloaded as a CSV file. When you try to open a CSV file as it is in Excel, because that would garbled in the case that contains the Japanese, once you save the file, please re- open it in a text editor that corresponds to the 'UTF-8'. In addition, data on the date and time in the CSV file all UTC we (the world standard time, from Japan Standard Time minus 9 hours) are listed in the."
 msgstr "アンケート結果がCSVファイルでダウンロードできます。<br/>"
 "CSVファイルをそのままExcelで開こうとすると、日本語が含まれている場合に文字化けしてしまいますので、一旦ファイルを保存した後、「UTF-8」に対応したテキストエディタで開き直してください。また、CSVファイル内の日時に関するデータは全てUTC(世界標準時、日本標準時からマイナス9時間)で記載されています。"
@@ -283,8 +283,12 @@ msgid "Could not find student list."
 msgstr "受講者のリストが見つかりません。"
 
 #: biz/djangoapps/ga_course_operation/views.py
-msgid "Current course is changed. Please reload this page."
-msgstr "現在のコースが変更されました。ブラウザを更新してください。"
+msgid "Current contract is changed. Please reload this page."
+msgstr "管理対象の契約が変更されました。ブラウザを更新してください。"
+
+#: biz/djangoapps/ga_course_operation/views.py
+msgid "Unauthorized access."
+msgstr "不正アクセスです。"
 
 ##### Course Selection
 #: biz/djangoapps/util/decorators.py

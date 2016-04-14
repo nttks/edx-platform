@@ -182,7 +182,6 @@ def require_survey(func):
 
     @wraps(func)
     def wrapper(request, *args, **kwargs):
-        course_id = kwargs.get('course_id')
         current_manager = getattr(request, 'current_manager', None)
         current_contract = getattr(request, 'current_contract', None)
         current_course = getattr(request, 'current_course', None)
@@ -190,8 +189,7 @@ def require_survey(func):
         if (
             current_manager and current_contract and current_course and
             current_manager.can_handle_course_operation() and
-            current_contract.is_spoc_available and
-            unicode(current_course.id) == course_id
+            current_contract.is_spoc_available
         ):
             return func(request, *args, **kwargs)
         else:

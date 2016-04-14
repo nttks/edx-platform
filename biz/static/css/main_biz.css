@@ -157,6 +157,10 @@ span.err-msg.show-reg {
     color: #e00;
 }
 
+.messages .warning {
+    color: #eb3;
+}
+
 .messages .info {
     color: black;
 }
@@ -177,7 +181,7 @@ span.err-msg.show-reg {
 }
 
 /* ---------- ▽ Form Style ---------- */
-input:not([type=button]), select, texture {
+input:not([type=button]), select, textarea {
     font-style: normal;
     font-family: "ヒラギノ角ゴ Pro W3", "Hiragino Kaku Gothic Pro", "メイリオ", Meiryo, Osaka, "ＭＳ Ｐゴシック", "MS PGothic", sans-serif;
 }
@@ -636,4 +640,18 @@ w2ui-popup .w2ui-msg-title {
 /* ----- achievement ----- */
 #score-update-date span.status {
     margin-left: 10px;
+}
+
+/* ----- course_operation ----- */
+#list-students {
+    margin: 1rem;
+    width: 90%;
+}
+
+#register-btn {
+    padding: 0.3rem 1rem;
+}
+
+#form span.operation {
+    font-size: 1rem;
 }

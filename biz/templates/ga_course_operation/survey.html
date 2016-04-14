@@ -1,8 +1,32 @@
-<%! from django.utils.translation import ugettext as _ %>
-<%page args="section_data"/>
+<%inherit file="../main_biz.html" />
+<%!
+from django.utils.translation import ugettext as _
+from django.core.urlresolvers import reverse
+%>
 
-<div class="survey-download-container action-type-container">
-  <h2>${_("Survey Download")}</h2>
-  <p>${_("The survey result can be downloaded as a CSV file. When you try to open a CSV file as it is in Excel, because that would garbled in the case that contains the Japanese, once you save the file, please re- open it in a text editor that corresponds to the 'UTF-8'. In addition, data on the date and time in the CSV file all UTC we (the world standard time, from Japan Standard Time minus 9 hours) are listed in the.")}</p>
-  <p><input type="button" name="list-survey" value="${_("Get Survey CSV")}" data-csv="true" class="csv" data-endpoint="${ section_data['get_survey_url'] }"></p>
+<%block name="pagetitle">${_("Survey Download")}</%block>
+
+<%block name="js_extra">
+<script type="text/javascript">
+    $(function () {
+        var _w2form = $('#form').w2form({ name: 'form' }), surveyForm = $('#form'),
+            downloadButton = $('#download-btn');
+        downloadButton.on('click', function() {
+            location.href = downloadButton.data('endpoint');
+        });
+    });
+</script>
+</%block>
+
+<%block name="custom_content">
+<div id="form" class="field-area">
+    <div class="w2ui-page page-0">
+        <div class="field">
+            <span class="operation">${_("The survey result can be downloaded as a CSV file. When you try to open a CSV file as it is in Excel, because that would garbled in the case that contains the Japanese, once you save the file, please re- open it in a text editor that corresponds to the 'UTF-8'. In addition, data on the date and time in the CSV file all UTC we (the world standard time, from Japan Standard Time minus 9 hours) are listed in the.")}</span>
+        </div>
+    </div>
+    <div class="w2ui-buttons">
+        <input type="button" id="download-btn" data-endpoint="${reverse('biz:course_operation:survey_download')}" value="&#xf1c3 ${_('Get Survey CSV')}"/>
+    </div>
 </div>
+</%block>

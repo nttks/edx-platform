@@ -5,10 +5,6 @@ from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 
 from instructor.tests.test_api import InstructorAPISurveyDownloadTestMixin
-from student.models import NonExistentCourseError
-from student.tests.factories import UserFactory
-from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
-from xmodule.modulestore.tests.factories import CourseFactory
 
 from biz.djangoapps.ga_invitation.models import ContractRegister, INPUT_INVITATION_CODE, REGISTER_INVITATION_CODE
 from biz.djangoapps.ga_invitation.tests.factories import ContractRegisterFactory
@@ -16,37 +12,27 @@ from biz.djangoapps.ga_invitation.tests.test_views import BizContractTestBase
 from biz.djangoapps.util.tests.testcase import BizViewTestBase
 
 
-class CourseOperationViewsTest(BizContractTestBase, ModuleStoreTestCase):
+class CourseOperationViewsTest(BizContractTestBase):
 
-    def _url_dashboard(self, course):
-        return reverse('biz:course_operation:dashboard', kwargs={'course_id': course.id})
-
-    def _url_register_students(self, course):
-        return reverse('biz:course_operation:register_students', kwargs={'course_id': course.id})
-
-
-class CourseOperationDashboardTest(CourseOperationViewsTest):
-
-    def test_403(self):
-        self.setup_user()
-        with self.skip_check_course_selection(current_course=self.course_spoc1):
-            response = self.assert_request_status_code(403, self._url_dashboard(self.course_spoc2))
-
-    def test_success(self):
-        self.setup_user()
-        with self.skip_check_course_selection(current_course=self.course_spoc1):
-            response = self.assert_request_status_code(200, self._url_dashboard(self.course_spoc1))
-
-
-class CourseOperationRegisterTest(CourseOperationViewsTest):
-
-    def test_course_unmatch(self):
+    def test_register_students(self):
         self.setup_user()
         with self.skip_check_course_selection(current_contract=self.contract, current_course=self.course_spoc1):
-            response = self.assert_request_status_code(200, self._url_register_students(self.course_spoc2))
+            response = self.assert_request_status_code(200, reverse('biz:course_operation:register_students'))
+
+    def _url_register_students_ajax(self):
+        return reverse('biz:course_operation:register_students_ajax')
+
+    def test_contract_unmatch(self):
+        self.setup_user()
+        csv_content = "test_student1@example.com,test_student_1,tester1\n" \
+                      "test_student2@example.com,test_student_1,tester2"
+
+        with self.skip_check_course_selection(current_contract=self.contract, current_course=self.course_spoc1):
+            response = self.client.post(self._url_register_students_ajax(), {'contract_id': self.contract_mooc.id, 'students_list': csv_content})
+        self.assertEqual(response.status_code, 200)
         data = json.loads(response.content)
         self.assertNotEqual(len(data['general_errors']), 0)
-        self.assertEqual(data['general_errors'][0]['response'], 'Current course is changed. Please reload this page.')
+        self.assertEqual(data['general_errors'][0]['response'], 'Current contract is changed. Please reload this page.')
 
         self.assertFalse(ContractRegister.objects.filter(contract=self.contract).exists())
 
@@ -56,11 +42,39 @@ class CourseOperationRegisterTest(CourseOperationViewsTest):
                       "test_student2@example.com,test_student_1,tester2"
 
         with self.skip_check_course_selection(current_contract=self.contract, current_course=self.course_spoc1):
-            response = self.client.post(self._url_register_students(self.course_spoc1), {'file_not_found': csv_content})
+            response = self.client.post(self._url_register_students_ajax(), {})
         self.assertEqual(response.status_code, 200)
         data = json.loads(response.content)
         self.assertNotEquals(len(data['general_errors']), 0)
-        self.assertEquals(data['general_errors'][0]['response'], 'Could not find student list.')
+        self.assertEquals(data['general_errors'][0]['response'], 'Unauthorized access.')
+
+        self.assertFalse(ContractRegister.objects.filter(contract=self.contract).exists())
+
+    def test_no_param_students_list(self):
+        self.setup_user()
+        csv_content = "test_student1@example.com,test_student_1,tester1\n" \
+                      "test_student2@example.com,test_student_1,tester2"
+
+        with self.skip_check_course_selection(current_contract=self.contract, current_course=self.course_spoc1):
+            response = self.client.post(self._url_register_students_ajax(), {'contract_id': self.contract_mooc.id})
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.content)
+        self.assertNotEquals(len(data['general_errors']), 0)
+        self.assertEquals(data['general_errors'][0]['response'], 'Unauthorized access.')
+
+        self.assertFalse(ContractRegister.objects.filter(contract=self.contract).exists())
+
+    def test_no_param_contract_id(self):
+        self.setup_user()
+        csv_content = "test_student1@example.com,test_student_1,tester1\n" \
+                      "test_student2@example.com,test_student_1,tester2"
+
+        with self.skip_check_course_selection(current_contract=self.contract, current_course=self.course_spoc1):
+            response = self.client.post(self._url_register_students_ajax(), {'students_list': csv_content})
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.content)
+        self.assertNotEquals(len(data['general_errors']), 0)
+        self.assertEquals(data['general_errors'][0]['response'], 'Unauthorized access.')
 
         self.assertFalse(ContractRegister.objects.filter(contract=self.contract).exists())
 
@@ -69,7 +83,7 @@ class CourseOperationRegisterTest(CourseOperationViewsTest):
         csv_content = ""
 
         with self.skip_check_course_selection(current_contract=self.contract, current_course=self.course_spoc1):
-            response = self.client.post(self._url_register_students(self.course_spoc1), {'students_list': csv_content})
+            response = self.client.post(self._url_register_students_ajax(), {'contract_id': self.contract.id, 'students_list': csv_content})
         self.assertEqual(response.status_code, 200)
         data = json.loads(response.content)
         self.assertNotEquals(len(data['general_errors']), 0)
@@ -82,7 +96,7 @@ class CourseOperationRegisterTest(CourseOperationViewsTest):
         csv_content = "test_student1@example.com,t,t"
 
         with self.skip_check_course_selection(current_contract=self.contract, current_course=self.course_spoc1):
-            response = self.client.post(self._url_register_students(self.course_spoc1), {'students_list': csv_content})
+            response = self.client.post(self._url_register_students_ajax(), {'contract_id': self.contract.id, 'students_list': csv_content})
         self.assertEqual(response.status_code, 200)
         data = json.loads(response.content)
         self.assertNotEquals(len(data['row_errors']), 0)
@@ -98,7 +112,7 @@ class CourseOperationRegisterTest(CourseOperationViewsTest):
         csv_content = "test_student@example.com,test_student_1,tester1"
 
         with self.skip_check_course_selection(current_contract=self.contract, current_course=self.course_spoc1):
-            response = self.client.post(self._url_register_students(self.course_spoc1), {'students_list': csv_content})
+            response = self.client.post(self._url_register_students_ajax(), {'contract_id': self.contract.id, 'students_list': csv_content})
         self.assertEqual(response.status_code, 200)
         data = json.loads(response.content)
         self.assertEquals(len(data['row_errors']), 0)
@@ -118,7 +132,7 @@ class CourseOperationRegisterTest(CourseOperationViewsTest):
         csv_content = "\ntest_student@example.com,test_student_1,tester1\n\n"
 
         with self.skip_check_course_selection(current_contract=self.contract, current_course=self.course_spoc1):
-            response = self.client.post(self._url_register_students(self.course_spoc1), {'students_list': csv_content})
+            response = self.client.post(self._url_register_students_ajax(), {'contract_id': self.contract.id, 'students_list': csv_content})
         self.assertEqual(response.status_code, 200)
         data = json.loads(response.content)
         self.assertEquals(len(data['row_errors']), 0)
@@ -139,7 +153,7 @@ class CourseOperationRegisterTest(CourseOperationViewsTest):
                       "test_student@example.com,test_student_1,tester2"
 
         with self.skip_check_course_selection(current_contract=self.contract, current_course=self.course_spoc1):
-            response = self.client.post(self._url_register_students(self.course_spoc1), {'students_list': csv_content})
+            response = self.client.post(self._url_register_students_ajax(), {'contract_id': self.contract.id, 'students_list': csv_content})
         self.assertEqual(response.status_code, 200)
         data = json.loads(response.content)
         self.assertEquals(len(data['row_errors']), 0)
@@ -161,7 +175,7 @@ class CourseOperationRegisterTest(CourseOperationViewsTest):
         csv_content = "test_student@example.com,test_student_1\n"
 
         with self.skip_check_course_selection(current_contract=self.contract, current_course=self.course_spoc1):
-            response = self.client.post(self._url_register_students(self.course_spoc1), {'students_list': csv_content})
+            response = self.client.post(self._url_register_students_ajax(), {'contract_id': self.contract.id, 'students_list': csv_content})
         self.assertEqual(response.status_code, 200)
         data = json.loads(response.content)
         self.assertEquals(len(data['row_errors']), 0)
@@ -176,9 +190,9 @@ class CourseOperationRegisterTest(CourseOperationViewsTest):
         csv_content = "test_student.example.com,test_student_1,tester1"
 
         with self.skip_check_course_selection(current_contract=self.contract, current_course=self.course_spoc1):
-            response = self.client.post(self._url_register_students(self.course_spoc1), {'students_list': csv_content})
-        data = json.loads(response.content)
+            response = self.client.post(self._url_register_students_ajax(), {'contract_id': self.contract.id, 'students_list': csv_content})
         self.assertEqual(response.status_code, 200)
+        data = json.loads(response.content)
         self.assertNotEquals(len(data['row_errors']), 0)
         self.assertEquals(len(data['warnings']), 0)
         self.assertEquals(len(data['general_errors']), 0)
@@ -191,7 +205,7 @@ class CourseOperationRegisterTest(CourseOperationViewsTest):
         csv_content = "{email},test_student_1,tester1\n".format(email=self.email)
 
         with self.skip_check_course_selection(current_contract=self.contract, current_course=self.course_spoc1):
-            response = self.client.post(self._url_register_students(self.course_spoc1), {'students_list': csv_content})
+            response = self.client.post(self._url_register_students_ajax(), {'contract_id': self.contract.id, 'students_list': csv_content})
         self.assertEqual(response.status_code, 200)
         data = json.loads(response.content)
         warning_message = 'An account with email {email} exists but the registered username {username} is different.'.format(
@@ -210,7 +224,7 @@ class CourseOperationRegisterTest(CourseOperationViewsTest):
         self.assertTrue(ContractRegister.objects.filter(user__email=self.email, contract=self.contract).exists())
         self.assertEquals(ContractRegister.objects.get(user__email=self.email, contract=self.contract).status, INPUT_INVITATION_CODE)
         with self.skip_check_course_selection(current_contract=self.contract, current_course=self.course_spoc1):
-            response = self.client.post(self._url_register_students(self.course_spoc1), {'students_list': csv_content})
+            response = self.client.post(self._url_register_students_ajax(), {'contract_id': self.contract.id, 'students_list': csv_content})
         self.assertEqual(response.status_code, 200)
         data = json.loads(response.content)
         warning_message = 'An account with email {email} exists but the registered username {username} is different.'.format(
@@ -229,7 +243,7 @@ class CourseOperationRegisterTest(CourseOperationViewsTest):
         self.assertTrue(ContractRegister.objects.filter(user__email=self.email, contract=self.contract).exists())
         self.assertEquals(ContractRegister.objects.get(user__email=self.email, contract=self.contract).status, REGISTER_INVITATION_CODE)
         with self.skip_check_course_selection(current_contract=self.contract, current_course=self.course_spoc1):
-            response = self.client.post(self._url_register_students(self.course_spoc1), {'students_list': csv_content})
+            response = self.client.post(self._url_register_students_ajax(), {'contract_id': self.contract.id, 'students_list': csv_content})
         self.assertEqual(response.status_code, 200)
         data = json.loads(response.content)
         warning_message = 'An account with email {email} exists but the registered username {username} is different.'.format(
@@ -246,7 +260,7 @@ class CourseOperationRegisterTest(CourseOperationViewsTest):
                       "test_student2@example.com,test_student_1,tester2"
 
         with self.skip_check_course_selection(current_contract=self.contract, current_course=self.course_spoc1):
-            response = self.client.post(self._url_register_students(self.course_spoc1), {'students_list': csv_content})
+            response = self.client.post(self._url_register_students_ajax(), {'contract_id': self.contract.id, 'students_list': csv_content})
         self.assertEqual(response.status_code, 200)
         data = json.loads(response.content)
         self.assertNotEquals(len(data['row_errors']), 0)
@@ -262,7 +276,7 @@ class CourseOperationRegisterTest(CourseOperationViewsTest):
                       "test_student2@example.com,test_student_1,tester2"
 
         with self.skip_check_course_selection(current_contract=self.contract, current_course=self.course_spoc1), patch('biz.djangoapps.ga_course_operation.views._do_create_account', side_effect=Exception()):
-            response = self.client.post(self._url_register_students(self.course_spoc1), {'students_list': csv_content})
+            response = self.client.post(self._url_register_students_ajax(), {'contract_id': self.contract.id, 'students_list': csv_content})
 
         self.assertEqual(response.status_code, 200)
         data = json.loads(response.content)
@@ -279,7 +293,7 @@ class CourseOperationRegisterTest(CourseOperationViewsTest):
                       "test_student2@example.com,test_student_2,tester2"
 
         with self.skip_check_course_selection(current_contract=self.contract, current_course=self.course_spoc1):
-            response = self.client.post(self._url_register_students(self.course_spoc1), {'students_list': csv_content})
+            response = self.client.post(self._url_register_students_ajax(), {'contract_id': self.contract.id, 'students_list': csv_content})
         self.assertEqual(response.status_code, 200)
         data = json.loads(response.content)
         self.assertNotEquals(len(data['row_errors']), 0)
@@ -294,22 +308,28 @@ class CourseOperationRegisterTest(CourseOperationViewsTest):
         self.assertEquals(ContractRegister.objects.get(user__email='test_student2@example.com', contract=self.contract).status, INPUT_INVITATION_CODE)
         self.assertFalse(ContractRegister.objects.filter(user__email='test_student3@example.com', contract=self.contract).exists())
 
+    def test_survey(self):
+        self.setup_user()
+        with self.skip_check_course_selection(current_contract=self.contract, current_course=self.course_spoc1):
+            response = self.assert_request_status_code(200, reverse('biz:course_operation:survey'))
 
-class CourseOperationSurveyTest(InstructorAPISurveyDownloadTestMixin, CourseOperationViewsTest):
+
+class CourseOperationSurveyDownloadTest(InstructorAPISurveyDownloadTestMixin, BizContractTestBase):
     """
     Test instructor survey for biz endpoint.
     """
 
-    url = 'biz:course_operation:get_survey'
+    def get_url(self):
+        return reverse('biz:course_operation:survey_download')
 
     def test_get_survey(self):
-        with self.skip_check_course_selection():
-            super(CourseOperationSurveyTest, self).test_get_survey()
+        with self.skip_check_course_selection(current_contract=self.contract, current_course=self.course):
+            super(CourseOperationSurveyDownloadTest, self).test_get_survey()
 
     def test_get_survey_when_data_is_empty(self):
-        with self.skip_check_course_selection():
-            super(CourseOperationSurveyTest, self).test_get_survey_when_data_is_empty()
+        with self.skip_check_course_selection(current_contract=self.contract, current_course=self.course):
+            super(CourseOperationSurveyDownloadTest, self).test_get_survey_when_data_is_empty()
 
     def test_get_survey_when_data_is_broken(self):
-        with self.skip_check_course_selection():
-            super(CourseOperationSurveyTest, self).test_get_survey_when_data_is_broken()
+        with self.skip_check_course_selection(current_contract=self.contract, current_course=self.course):
+            super(CourseOperationSurveyDownloadTest, self).test_get_survey_when_data_is_broken()
