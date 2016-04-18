@@ -28,12 +28,12 @@ from django.utils.translation import ugettext as _
     });
 
     // Prevent double click
-    $('form#formDownload').submit(function () {
-        $('#btnDownload').attr('disabled', true);
+    $('form#download-form').submit(function () {
+        $('#download-btn').attr('disabled', true);
         // Using jquery.fileDownload.js
         $.fileDownload("${reverse('biz:achievement:download_csv')}")
             .always(function () {
-                $('#btnDownload').attr('disabled', false);
+                $('#download-btn').attr('disabled', false);
             });
         return false;
     });
@@ -41,13 +41,13 @@ from django.utils.translation import ugettext as _
 </%block>
 
 <%block name="custom_content">
-<div id="scoreUpdateDate">
+<div id="score-update-date">
     <label>${_('Score Update Date')}：</label><span class="date">${score_update_date}</span><span class="status">${score_update_status}</span>
 </div>
 
 <div id="grid"></div>
 
-<form id="formDownload" method="get">
-    <input type="submit" id="btnDownload" value="&#xf1c3 ${_('All CSV Download')}" />
+<form id="download-form" method="get">
+    <input type="submit" id="download-btn" value="&#xf1c3 ${_('All CSV Download')}" />
 </form>
 </%block>

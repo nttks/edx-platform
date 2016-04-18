@@ -11,7 +11,7 @@ from django.core.urlresolvers import reverse
 <script type="text/javascript">
     var grid;
     $(function () {
-        $("#register_btn").click(function () {
+        $("#register-btn").click(function () {
             window.location.href = "${reverse('biz:organization:show_register')}";
         });
 
@@ -54,5 +54,5 @@ from django.core.urlresolvers import reverse
 <%block name="custom_content">
 <div id="grid"></div>
 
-<input type="button" class="button" id="register_btn" value="&#xf044 ${_('New Organization')}" />
+<input type="button" class="button" id="register-btn" value="&#xf044 ${_('New Organization')}" />
 </%block>
