@@ -421,6 +421,9 @@ FEATURES = {
     # Optional security feature for ORA2 file upload
     'ENABLE_ORA2_WAF_PROXY': False,
     'ENABLE_ORA2_FILE_TYPE_STRICT_CHECK': False,
+
+    # Enable secure token feature to playback video in JWPlayer XBlock
+    'ENABLE_JWPLAYER_SECURE_TOKEN': True,
 }
 
 # Ignore static asset files on import which match this pattern
@@ -2616,6 +2619,12 @@ CREDIT_PROVIDER_TIMESTAMP_EXPIRATION = 15 * 60
 # not expected to be active; this setting simply allows administrators to
 # route any messages intended for LTI users to a common domain.
 LTI_USER_EMAIL_DOMAIN = 'lti.example.com'
+
+##### JWPLAYER XBLOCK #####
+JWPLAYER_TRANSCRIPT_BUCKET_NAME = ''
+JWPLAYER_TRANSCRIPT_PREFIX = 'jwplayer_transcripts'
+JWPLAYER_SHARED_SECRET = ''
+JWPLAYER_SECURE_TOKEN_EXPIRE = 24 * 60 * 60
 
 ##### Settings for Biz #####
 from biz.envs.common import *
