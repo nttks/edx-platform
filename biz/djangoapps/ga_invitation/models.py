@@ -6,6 +6,7 @@ from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
 from biz.djangoapps.ga_contract.models import Contract
+from biz.djangoapps.util import datetime_utils
 
 
 INPUT_INVITATION_CODE = 'Input'
@@ -112,11 +113,17 @@ class ContractRegister(models.Model):
             return None
 
     @classmethod
-    def find_register_by_user(cls, user):
+    def find_enabled_register_by_user(cls, user):
         """
-        Get ContractRegister of registered.
+        Get ContractRegister of registered and Contract enabled.
         """
-        return cls.objects.filter(user=user, status=REGISTER_INVITATION_CODE)
+        today = datetime_utils.timezone_today()
+        return cls.objects.filter(
+            user=user,
+            status=REGISTER_INVITATION_CODE,
+            contract__start_date__lte=today,
+            contract__end_date__gte=today
+        )
 
     @classmethod
     def find_by_contract(cls, contract):
