@@ -132,12 +132,15 @@ class ContractRegister(models.Model):
     @classmethod
     def has_input_and_register_by_user_and_contract_ids(cls, user, contract_ids):
         """
-        Check user has status of input or register, and contract ids.
+        Check user has status of input or register, contract ids and enabled.
         """
+        today = datetime_utils.timezone_today()
         return cls.objects.filter(
             user=user.id,
             status__in=[INPUT_INVITATION_CODE, REGISTER_INVITATION_CODE],
-            contract__id__in=contract_ids
+            contract__id__in=contract_ids,
+            contract__start_date__lte=today,
+            contract__end_date__gte=today
         ).exists()
 
 

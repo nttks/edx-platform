@@ -2,6 +2,7 @@
 Tests for ga_invitation middleware.
 """
 from contextlib import nested
+from datetime import timedelta
 import ddt
 from mock import patch
 
@@ -27,17 +28,19 @@ from biz.djangoapps.ga_invitation.models import (
     ContractRegister, INPUT_INVITATION_CODE, REGISTER_INVITATION_CODE,
 )
 from biz.djangoapps.ga_invitation.tests.factories import ContractRegisterFactory
+from biz.djangoapps.util.datetime_utils import timezone_today
 from biz.djangoapps.util.tests.testcase import BizViewTestBase
 
 
 class SpocStatusTestBase(BizViewTestBase, ModuleStoreTestCase):
 
-    def _create_contract(self, user, course_id, contract_type='PF'):
+    def _create_contract(self, user, course_id, contract_type='PF', end_date=None):
         contract = ContractFactory.create(
             contract_type=contract_type,
             contractor_organization=self.gacco_organization,
             owner_organization=self.gacco_organization,
-            created_by=user
+            created_by=user,
+            end_date=end_date if end_date else (timezone_today() + timedelta(days=1)),
         )
         contract_detail = ContractDetailFactory.create(contract=contract, course_id=course_id)
         return contract_detail
@@ -126,6 +129,26 @@ class SpocStatusMiddlewareTest(SpocStatusTestBase):
 
         # If course is not SPOC, has_access is False regardless of the status of ContractRegister
         self.assertEqual((False, False), self.request.spoc_status)
+
+    def test_process_request_spoc_disabled_and_has_access_input(self):
+        course_id = CourseKey.from_string('course-v1:org+course+run')
+
+        # Create Contract but disabled
+        contract_detail = self._create_contract(
+            user=self.user,
+            course_id=course_id,
+            contract_type=CONTRACT_TYPE_PF[0],
+            end_date=(timezone_today() - timedelta(days=1)),
+        )
+        # Create ContractRegister as INPUT_INVITATION_CODE.
+        self._create_contract_register(self.user, contract_detail.contract, INPUT_INVITATION_CODE)
+
+        self.request.path = '/courses/{}/'.format(course_id)
+
+        SpocStatusMiddleware().process_request(self.request)
+
+        # If contract is disabled, has_access is False regardless of the status of ContractRegister
+        self.assertEqual((True, False), self.request.spoc_status)
 
     def test_process_request_spoc_course(self):
         course_id = CourseKey.from_string('course-v1:org+course+run')
@@ -302,6 +325,34 @@ class CourseAboutTest(SpocStatusTestBase):
                 )
             )
 
+    @ddt.data(
+        CONTRACT_TYPE_PF[0],
+        CONTRACT_TYPE_OWNERS[0],
+        CONTRACT_TYPE_OWNER_SERVICE[0],
+    )
+    def test_spoc_course_with_disabled_contract(self, contract_type):
+        self.setup_user()
+
+        # Create Contract but disabled
+        contract_detail = self._create_contract(
+            user=self.user,
+            course_id=self.course.id,
+            contract_type=contract_type,
+            end_date=(timezone_today() - timedelta(days=1)),
+        )
+        # Create ContractRegister as having SPOC access
+        self._create_contract_register(self.user, contract_detail.contract, INPUT_INVITATION_CODE)
+
+        url = reverse('about_course', args=[self.course.id.to_deprecated_string()])
+        with patch('courseware.views.log.warning') as warning_log:
+            resp = self.client.get(url)
+            self.assertEqual(resp.status_code, 404)
+            warning_log.assert_called_with(
+                'User(id={}) has no permission to access spoc course(course_id={}).'.format(
+                    self.user.id, unicode(self.course.id)
+                )
+            )
+
     def test_spoc_course_with_global_staff(self):
         self.setup_user()
 
@@ -444,6 +495,34 @@ class CourseInfoTest(SpocStatusTestBase):
             contract_type=contract_type
         )
         # Not Create ContractRegister
+
+        url = reverse('info', args=[self.course.id.to_deprecated_string()])
+        with patch('courseware.views.log.warning') as warning_log:
+            resp = self.client.get(url)
+            self.assertEqual(resp.status_code, 404)
+            warning_log.assert_called_with(
+                'User(id={}) has no permission to access spoc course(course_id={}).'.format(
+                    self.user.id, unicode(self.course.id)
+                )
+            )
+
+    @ddt.data(
+        CONTRACT_TYPE_PF[0],
+        CONTRACT_TYPE_OWNERS[0],
+        CONTRACT_TYPE_OWNER_SERVICE[0],
+    )
+    def test_spoc_course_with_disabled_contract(self, contract_type):
+        self.setup_user()
+
+        # Create Contract but disabled
+        contract_detail = self._create_contract(
+            user=self.user,
+            course_id=self.course.id,
+            contract_type=contract_type,
+            end_date=(timezone_today() - timedelta(days=1)),
+        )
+        # Create ContractRegister as having SPOC access
+        self._create_contract_register(self.user, contract_detail.contract, INPUT_INVITATION_CODE)
 
         url = reverse('info', args=[self.course.id.to_deprecated_string()])
         with patch('courseware.views.log.warning') as warning_log:

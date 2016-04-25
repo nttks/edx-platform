@@ -248,8 +248,8 @@ class ContractDetail(models.Model):
         )
 
     @classmethod
-    def find_enabled_spoc_by_course_key(cls, course_key):
-        return cls.objects.enabled().filter(
+    def find_spoc_by_course_key(cls, course_key):
+        return cls.objects.filter(
             course_id=course_key,
             contract__contract_type__in=[
                 CONTRACT_TYPE_PF[0],
