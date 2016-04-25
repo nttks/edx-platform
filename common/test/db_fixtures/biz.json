@@ -1,0 +1,590 @@
+[
+  {
+    "pk": 9000,
+    "model": "auth.user",
+    "fields": {
+      "date_joined": "2015-06-12 11:02:13",
+      "username": "superuser",
+      "first_name": "sp",
+      "last_name": "us",
+      "email":"superuser@example.com",
+      "password": "SuperUser3",
+      "is_staff": true,
+      "is_active": true,
+      "is_superuser": true
+    }
+  },
+  {
+    "pk": 9000,
+    "model": "student.userprofile",
+    "fields": {
+      "user": 9000,
+      "name": "super user",
+      "courseware": "course.xml",
+      "allow_certificate": true
+    }
+  },
+  {
+    "pk": 9000,
+    "model": "student.registration",
+    "fields": {
+      "user": 9000,
+      "activation_key": "IbRhlWddkdj65Z09VrLKjIVppstZSS4n"
+    }
+  },
+  {
+    "pk": 1,
+    "model": "ga_organization.organization",
+    "fields": {
+      "org_name": "plat org",
+      "created_by": 9000,
+      "creator_org": 1,
+      "org_code": "plat",
+      "created": "2016-03-01T12:00:53Z"
+    }
+  },
+  {
+    "pk": 9011,
+    "model": "auth.user",
+    "fields": {
+      "date_joined": "2015-06-12 11:02:13",
+      "username": "plat_platformer",
+      "first_name": "plat",
+      "last_name": "platformer",
+      "email":"plat_platformer@example.com",
+      "password": "platPlatformer3",
+      "is_staff": false,
+      "is_active": true
+    }
+  },
+  {
+    "pk": 9011,
+    "model": "student.userprofile",
+    "fields": {
+      "user": 9011,
+      "name": "plat platformer",
+      "courseware": "course.xml",
+      "allow_certificate": true
+    }
+  },
+  {
+    "pk": 9011,
+    "model": "student.registration",
+    "fields": {
+      "user": 9011,
+      "activation_key": "COSpHEJ9cLgPu6V9mGZ2h7gutShnIc6E"
+    }
+  },
+  {
+    "pk": 11,
+    "model": "ga_manager.manager",
+    "fields": {
+      "org": 1,
+      "manager_permissions": [
+        1
+      ],
+      "user": 9011,
+      "created": "2016-03-01T04:14:29Z"
+    }
+  },
+  {
+    "pk": 2,
+    "model": "ga_organization.organization",
+    "fields": {
+      "org_name": "owner company",
+      "created_by": 9011,
+      "creator_org": 1,
+      "org_code": "owner",
+      "created": "2016-03-01T12:00:53Z"
+    }
+  },
+  {
+    "pk": 3,
+    "model": "ga_organization.organization",
+    "fields": {
+      "org_name": "A company",
+      "created_by": 9011,
+      "creator_org": 1,
+      "org_code": "acom",
+      "created": "2016-03-01T12:00:53Z"
+    }
+  },
+  {
+    "pk": 4,
+    "model": "ga_organization.organization",
+    "fields": {
+      "org_name": "B company",
+      "created_by": 9011,
+      "creator_org": 1,
+      "org_code": "bcom",
+      "created": "2016-03-01T12:00:53Z"
+    }
+  },
+  {
+    "pk": 9021,
+    "model": "auth.user",
+    "fields": {
+      "date_joined": "2015-06-12 11:02:13",
+      "username": "owner_aggregator",
+      "first_name": "owner",
+      "last_name": "aggregator",
+      "email":"owner_aggregator@example.com",
+      "password": "ownerAggregator3",
+      "is_staff": false,
+      "is_active": true
+    }
+  },
+  {
+    "pk": 9021,
+    "model": "student.userprofile",
+    "fields": {
+      "user": 9021,
+      "name": "owner aggregator",
+      "courseware": "course.xml",
+      "allow_certificate": true
+    }
+  },
+  {
+    "pk": 9021,
+    "model": "student.registration",
+    "fields": {
+      "user": 9021,
+      "activation_key": "ge3n1arFCNx9payibsBgbXLxZRkwlhGj"
+    }
+  },
+  {
+    "pk": 21,
+    "model": "ga_manager.manager",
+    "fields": {
+      "org": 2,
+      "manager_permissions": [
+        2
+      ],
+      "user": 9021,
+      "created": "2016-03-11T07:12:12Z"
+    }
+  },
+  {
+    "pk": 5,
+    "model": "ga_organization.organization",
+    "fields": {
+      "org_name": "C company",
+      "created_by": 9021,
+      "creator_org": 2,
+      "org_code": "ccom",
+      "created": "2016-03-01T12:00:53Z"
+    }
+  },
+  {
+    "pk": 9022,
+    "model": "auth.user",
+    "fields": {
+      "date_joined": "2015-06-12 11:02:13",
+      "username": "owner_director",
+      "first_name": "owner",
+      "last_name": "director",
+      "email":"owner_director@example.com",
+      "password": "ownerDirector3",
+      "is_staff": false,
+      "is_active": true
+    }
+  },
+  {
+    "pk": 9022,
+    "model": "student.userprofile",
+    "fields": {
+      "user": 9022,
+      "name": "owner director",
+      "courseware": "course.xml",
+      "allow_certificate": true
+    }
+  },
+  {
+    "pk": 9022,
+    "model": "student.registration",
+    "fields": {
+      "user": 9022,
+      "activation_key": "RmXlMiTMpoy52xNkxlw3gQi6TB4JXlQo"
+    }
+  },
+  {
+    "pk": 22,
+    "model": "ga_manager.manager",
+    "fields": {
+      "org": 2,
+      "manager_permissions": [
+        3
+      ],
+      "user": 9022,
+      "created": "2016-03-11T07:12:12Z"
+    }
+  },
+  {
+    "pk": 9023,
+    "model": "auth.user",
+    "fields": {
+      "date_joined": "2015-06-12 11:02:13",
+      "username": "owner_manager",
+      "first_name": "owner",
+      "last_name": "manager",
+      "email":"owner_manager@example.com",
+      "password": "ownerManager3",
+      "is_staff": false,
+      "is_active": true
+    }
+  },
+  {
+    "pk": 9023,
+    "model": "student.userprofile",
+    "fields": {
+      "user": 9023,
+      "name": "owner manager",
+      "courseware": "course.xml",
+      "allow_certificate": true
+    }
+  },
+  {
+    "pk": 9023,
+    "model": "student.registration",
+    "fields": {
+      "user": 9023,
+      "activation_key": "vFxjlKrmQwgaNOaM1J6C0bo4l09IXv1q"
+    }
+  },
+  {
+    "pk": 23,
+    "model": "ga_manager.manager",
+    "fields": {
+      "org": 2,
+      "manager_permissions": [
+        4
+      ],
+      "user": 9023,
+      "created": "2016-03-11T07:12:12Z"
+    }
+  },
+  {
+    "pk": 9031,
+    "model": "auth.user",
+    "fields": {
+      "date_joined": "2015-06-12 11:02:13",
+      "username": "acom_director",
+      "first_name": "acom",
+      "last_name": "director",
+      "email":"acom_director@example.com",
+      "password": "acomDirector3",
+      "is_staff": false,
+      "is_active": true
+    }
+  },
+  {
+    "pk": 9024,
+    "model": "auth.user",
+    "fields": {
+      "date_joined": "2015-06-12 11:02:13",
+      "username": "owner_aggregator_director",
+      "first_name": "owner",
+      "last_name": "aggregator-director",
+      "email":"owner_aggregator_director@example.com",
+      "password": "ownerAggregatorDirector3",
+      "is_staff": false,
+      "is_active": true
+    }
+  },
+  {
+    "pk": 9024,
+    "model": "student.userprofile",
+    "fields": {
+      "user": 9024,
+      "name": "owner aggregator director",
+      "courseware": "course.xml",
+      "allow_certificate": true
+    }
+  },
+  {
+    "pk": 9024,
+    "model": "student.registration",
+    "fields": {
+      "user": 9024,
+      "activation_key": "oq2H7oAbziQzYTWnegzFAiR4fdJfcvti"
+    }
+  },
+  {
+    "pk": 24,
+    "model": "ga_manager.manager",
+    "fields": {
+      "org": 2,
+      "manager_permissions": [
+        2,
+        3
+      ],
+      "user": 9024,
+      "created": "2016-03-11T07:12:12Z"
+    }
+  },
+  {
+    "pk": 9031,
+    "model": "student.userprofile",
+    "fields": {
+      "user": 9031,
+      "name": "acom director",
+      "courseware": "course.xml",
+      "allow_certificate": true
+    }
+  },
+  {
+    "pk": 9031,
+    "model": "student.registration",
+    "fields": {
+      "user": 9031,
+      "activation_key": "oBKLEzarJk26sxd2v6gXp1QhBGXiHNha"
+    }
+  },
+  {
+    "pk": 31,
+    "model": "ga_manager.manager",
+    "fields": {
+      "org": 3,
+      "manager_permissions": [
+        3
+      ],
+      "user": 9031,
+      "created": "2016-03-11T07:12:12Z"
+    }
+  },
+  {
+    "pk": 9032,
+    "model": "auth.user",
+    "fields": {
+      "date_joined": "2015-06-12 11:02:13",
+      "username": "acom_manager",
+      "first_name": "acom",
+      "last_name": "manager",
+      "email":"acom_manager@example.com",
+      "password": "acomManager3",
+      "is_staff": false,
+      "is_active": true
+    }
+  },
+  {
+    "pk": 9032,
+    "model": "student.userprofile",
+    "fields": {
+      "user": 9032,
+      "name": "acom manager",
+      "courseware": "course.xml",
+      "allow_certificate": true
+    }
+  },
+  {
+    "pk": 9032,
+    "model": "student.registration",
+    "fields": {
+      "user": 9032,
+      "activation_key": "Rz6RUt8YkdxP2y5Ytc7jKzATOQ1uPrlu"
+    }
+  },
+  {
+    "pk": 32,
+    "model": "ga_manager.manager",
+    "fields": {
+      "org": 3,
+      "manager_permissions": [
+        4
+      ],
+      "user": 9032,
+      "created": "2016-03-11T07:12:12Z"
+    }
+  },
+  {
+    "pk": 9041,
+    "model": "auth.user",
+    "fields": {
+      "date_joined": "2015-06-12 11:02:13",
+      "username": "bcom_director",
+      "first_name": "bcom",
+      "last_name": "director",
+      "email":"bcom_director@example.com",
+      "password": "bcomDirector3",
+      "is_staff": false,
+      "is_active": true
+    }
+  },
+  {
+    "pk": 9041,
+    "model": "student.userprofile",
+    "fields": {
+      "user": 9041,
+      "name": "bcom director",
+      "courseware": "course.xml",
+      "allow_certificate": true
+    }
+  },
+  {
+    "pk": 9041,
+    "model": "student.registration",
+    "fields": {
+      "user": 9041,
+      "activation_key": "unrKSqT50b6gLbO1mxTwaAerD5SEXKna"
+    }
+  },
+  {
+    "pk": 41,
+    "model": "ga_manager.manager",
+    "fields": {
+      "org": 4,
+      "manager_permissions": [
+        3
+      ],
+      "user": 9041,
+      "created": "2016-03-11T07:12:12Z"
+    }
+  },
+  {
+    "pk": 9042,
+    "model": "auth.user",
+    "fields": {
+      "date_joined": "2015-06-12 11:02:13",
+      "username": "bcom_manager",
+      "first_name": "bcom",
+      "last_name": "manager",
+      "email":"bcom_manager@example.com",
+      "password": "tManager3",
+      "is_staff": false,
+      "is_active": true
+    }
+  },
+  {
+    "pk": 9042,
+    "model": "student.userprofile",
+    "fields": {
+      "user": 9042,
+      "name": "bcom manager",
+      "courseware": "course.xml",
+      "allow_certificate": true
+    }
+  },
+  {
+    "pk": 9042,
+    "model": "student.registration",
+    "fields": {
+      "user": 9042,
+      "activation_key": "qICjGQdbyaipFCBK9LkXkKNezwScSGzP"
+    }
+  },
+  {
+    "pk": 42,
+    "model": "ga_manager.manager",
+    "fields": {
+      "org": 4,
+      "manager_permissions": [
+        4
+      ],
+      "user": 9042,
+      "created": "2016-03-11T07:12:12Z"
+    }
+  },
+  {
+    "pk": 9051,
+    "model": "auth.user",
+    "fields": {
+      "date_joined": "2015-06-12 11:02:13",
+      "username": "ccom_director",
+      "first_name": "ccom",
+      "last_name": "director",
+      "email":"ccom_director@example.com",
+      "password": "ccomDirector3",
+      "is_staff": false,
+      "is_active": true
+    }
+  },
+  {
+    "pk": 9051,
+    "model": "student.userprofile",
+    "fields": {
+      "user": 9051,
+      "name": "ccom director",
+      "courseware": "course.xml",
+      "allow_certificate": true
+    }
+  },
+  {
+    "pk": 9051,
+    "model": "student.registration",
+    "fields": {
+      "user": 9051,
+      "activation_key": "Yyq0RfhDsciPuqDdRdCShIXFuzhvOKAI"
+    }
+  },
+  {
+    "pk": 51,
+    "model": "ga_manager.manager",
+    "fields": {
+      "org": 5,
+      "manager_permissions": [
+        3
+      ],
+      "user": 9051,
+      "created": "2016-03-11T07:12:12Z"
+    }
+  },
+  {
+    "pk": 9052,
+    "model": "auth.user",
+    "fields": {
+      "date_joined": "2015-06-12 11:02:13",
+      "username": "ccom_manager",
+      "first_name": "ccom",
+      "last_name": "manager",
+      "email":"ccom_manager@example.com",
+      "password": "tManager3",
+      "is_staff": false,
+      "is_active": true
+    }
+  },
+  {
+    "pk": 9052,
+    "model": "student.userprofile",
+    "fields": {
+      "user": 9052,
+      "name": "ccom manager",
+      "courseware": "course.xml",
+      "allow_certificate": true
+    }
+  },
+  {
+    "pk": 9052,
+    "model": "student.registration",
+    "fields": {
+      "user": 9052,
+      "activation_key": "pECC53sBOVwynQ4ILEUxEHkafQy90REL"
+    }
+  },
+  {
+    "pk": 52,
+    "model": "ga_manager.manager",
+    "fields": {
+      "org": 5,
+      "manager_permissions": [
+        4
+      ],
+      "user": 9052,
+      "created": "2016-03-11T07:12:12Z"
+    }
+  },
+  {
+    "pk": 1,
+    "model": "ga_contract.contract",
+    "fields": {
+      "contract_name": "owner company contract",
+      "end_date": "2025-12-31",
+      "created": "2016-03-11T05:28:26Z",
+      "created_by": 9011,
+      "invitation_code": "O0000000000",
+      "contractor_organization": 2,
+      "contract_type": "O",
+      "start_date": "2010-01-01",
+      "owner_organization": 1
+    }
+  }
+]
