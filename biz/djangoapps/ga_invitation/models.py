@@ -6,6 +6,7 @@ from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
 from biz.djangoapps.ga_contract.models import Contract
+from biz.djangoapps.util import datetime_utils
 
 
 INPUT_INVITATION_CODE = 'Input'
@@ -15,6 +16,12 @@ STATUS = (
     (INPUT_INVITATION_CODE, _('Input Invitation')),
     (REGISTER_INVITATION_CODE, _('Register Invitation'))
 )
+
+
+class ContractRegisterManager(models.Manager):
+    def enabled(self, **kwargs):
+        today = datetime_utils.timezone_today()
+        return self.filter(contract__start_date__lte=today, contract__end_date__gte=today)
 
 
 class AdditionalInfoSetting(models.Model):
@@ -81,6 +88,8 @@ class ContractRegister(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
 
+    objects = ContractRegisterManager()
+
     def save(self, *args, **kwargs):
         """
         Add history when saving.
@@ -112,11 +121,14 @@ class ContractRegister(models.Model):
             return None
 
     @classmethod
-    def find_register_by_user(cls, user):
+    def find_enabled_register_by_user(cls, user):
         """
-        Get ContractRegister of registered.
+        Get ContractRegister of registered and Contract enabled.
         """
-        return cls.objects.filter(user=user, status=REGISTER_INVITATION_CODE)
+        return cls.objects.enabled().filter(
+            user=user,
+            status=REGISTER_INVITATION_CODE
+        )
 
     @classmethod
     def find_by_contract(cls, contract):
@@ -125,9 +137,9 @@ class ContractRegister(models.Model):
     @classmethod
     def has_input_and_register_by_user_and_contract_ids(cls, user, contract_ids):
         """
-        Check user has status of input or register, and contract ids.
+        Check user has status of input or register, contract ids and enabled.
         """
-        return cls.objects.filter(
+        return cls.objects.enabled().filter(
             user=user.id,
             status__in=[INPUT_INVITATION_CODE, REGISTER_INVITATION_CODE],
             contract__id__in=contract_ids
