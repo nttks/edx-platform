@@ -22,7 +22,7 @@ def _get_spoc_status(user, course_id):
     def _get_spoc_contract_ids(course_key):
         return [
             contract_detail.contract.id
-            for contract_detail in ContractDetail.find_enabled_spoc_by_course_key(
+            for contract_detail in ContractDetail.find_spoc_by_course_key(
                 course_key=course_key
             )
         ]

@@ -30,8 +30,9 @@ from biz.djangoapps.util.tests.testcase import BizTestBase, BizViewTestBase
 
 class BizContractTestBase(BizViewTestBase, ModuleStoreTestCase):
 
-    def _create_contract(self, contract_type=CONTRACT_TYPE_PF[0], contractor_organization=None, end_date=None, course_ids=[], display_names=[]):
+    def _create_contract(self, contract_name='test contract', contract_type=CONTRACT_TYPE_PF[0], contractor_organization=None, end_date=None, course_ids=[], display_names=[]):
         contract = ContractFactory.create(
+            contract_name=contract_name,
             contract_type=contract_type,
             contractor_organization=contractor_organization if contractor_organization else self.gacco_organization,
             owner_organization=self.gacco_organization,
@@ -74,18 +75,22 @@ class BizContractTestBase(BizViewTestBase, ModuleStoreTestCase):
             course_ids=[self.course_spoc1.id, self.course_spoc2.id],
             display_names=['country', 'dept'])
         self.contract_disabled = self._create_contract(
+            contract_name='test contract disabled',
             contractor_organization=self.contract_org_other,
             end_date=(timezone_today() - timedelta(days=1)),
             course_ids=[self.course_spoc3.id, self.course_spoc4.id],
             display_names=['country', 'dept'])
         self.contract_nodetail = self._create_contract(
+            contract_name='test contract nodetail',
             contractor_organization=self.contract_org,
             display_names=['country', 'dept'])
         self.contract_nocourse = self._create_contract(
+            contract_name='test contract nocourse',
             contractor_organization=self.contract_org,
             course_ids=[self.no_course_id],
             display_names=['country', 'dept'])
         self.contract_mooc = self._create_contract(
+            contract_name='test contract mooc',
             contract_type=CONTRACT_TYPE_GACCO_SERVICE[0],
             contractor_organization=self.contract_org,
             course_ids=[self.course_mooc1.id],
@@ -127,13 +132,16 @@ class InvitationViewsIndexTest(InvitationViewsTest):
     def test_contract_register(self):
         self.setup_user()
         self.create_contract_register(self.user, self.contract)
+        self.create_contract_register(self.user, self.contract_disabled)
         response = self.assert_request_status_code(200, self._url_index())
         self.assertIn(self.contract.contract_name, response.content)
+        self.assertNotIn(self.contract_disabled.contract_name, response.content)
 
     def test_no_contract_register(self):
         self.setup_user()
         response = self.assert_request_status_code(200, self._url_index())
         self.assertNotIn(self.contract.contract_name, response.content)
+        self.assertNotIn(self.contract_disabled.contract_name, response.content)
 
     def test_no_login(self):
         response = self.assert_request_status_code(302, self._url_index())
