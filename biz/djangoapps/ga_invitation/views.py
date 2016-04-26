@@ -41,7 +41,7 @@ def index(request):
     """
 
     contracts = []
-    for contract in [contract_register.contract for contract_register in ContractRegister.find_register_by_user(request.user)]:
+    for contract in [contract_register.contract for contract_register in ContractRegister.find_enabled_register_by_user(request.user)]:
         contract.courses = [get_course_by_id(detail.course_id) for detail in contract.details.all()]
         contracts.append(contract)
 
