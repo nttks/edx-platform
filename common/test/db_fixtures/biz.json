@@ -586,5 +586,75 @@
       "start_date": "2010-01-01",
       "owner_organization": 1
     }
+  },
+  {
+    "pk": 9091,
+    "model": "auth.user",
+    "fields": {
+      "date_joined": "2015-06-12 11:02:13",
+      "username": "towner",
+      "first_name": "owner",
+      "last_name": "test",
+      "email": "towner@example.com",
+      "password": "edx",
+      "is_staff": false,
+      "is_active": true
+    }
+  },
+  {
+    "pk": 9091,
+    "model": "student.userprofile",
+    "fields": {
+      "user": 9091,
+      "name": "towner",
+      "courseware": "course.xml",
+      "allow_certificate": true
+    }
+  },
+  {
+    "pk": 9091,
+    "model": "student.registration",
+    "fields": {
+      "user": 9091,
+      "activation_key": "IbRhlWddkdj65Z09VrLKjIVppstZ9091"
+    }
+  },
+  {
+    "pk": 9091,
+    "model": "ga_organization.organization",
+    "fields": {
+      "org_name": "owner2 company",
+      "created_by": 9011,
+      "creator_org": 1,
+      "org_code": "owner2",
+      "created": "2016-03-01T12:00:53Z"
+    }
+  },
+  {
+    "pk": 9091,
+    "model": "ga_contract.contract",
+    "fields": {
+      "contract_name": "owner service contract",
+      "created": "2016-03-11T05:28:26Z",
+      "created_by": 9011,
+      "invitation_code": "T0000000000",
+      "contractor_organization": 9091,
+      "contract_type": "O",
+      "start_date": "2016-02-01",
+      "end_date": "2116-03-31",
+      "owner_organization": 1
+    }
+  },
+  {
+    "pk": 9091,
+    "model": "ga_manager.manager",
+    "fields": {
+      "org": 9091,
+      "manager_permissions": [
+        2
+      ],
+      "user": 9091,
+      "created": "2016-03-01T04:15:37Z"
+    }
   }
 ]

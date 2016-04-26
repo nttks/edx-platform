@@ -30,3 +30,8 @@ class BizNavPage(PageObject):
 
         self.q(css='nav.side-menu>ul.menu>li>a[href="/biz/organization/"]').first.click()
         return BizOrganizationPage(self.browser).wait_for_page()
+
+    def click_contract(self):
+        self.q(css='nav.side-menu>ul.menu>li>a[href="/biz/contract/"]').first.click()
+        from .ga_contract import BizContractPage
+        return BizContractPage(self.browser).wait_for_page()
