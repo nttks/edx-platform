@@ -27,6 +27,9 @@ SCORE_STORE_FIELD_CERTIFICATE_STATUS_UNPUBLISHED = 'Unpublished'
 SCORE_STORE_FIELD_ENROLL_DATE = 'Enroll Date'
 SCORE_STORE_FIELD_CERTIFICATE_ISSUE_DATE = 'Certificate Issue Date'
 SCORE_STORE_FIELD_TOTAL_SCORE = 'Total Score'
+SCORE_STORE_HIDDEN_FIELDS = [
+    _(SCORE_STORE_FIELD_CERTIFICATE_STATUS),
+]
 
 
 class ScoreStore(BizStore):
@@ -82,7 +85,7 @@ class ScoreStore(BizStore):
             column['field'] = field
             column['caption'] = field
             column['sortable'] = True
-            column['hidden'] = False
+            column['hidden'] = field in SCORE_STORE_HIDDEN_FIELDS
             column['size'] = '{}%'.format(100 / len(fields))
             if isinstance(items[0][field], float):
                 column['style'] = 'text-align: right'
