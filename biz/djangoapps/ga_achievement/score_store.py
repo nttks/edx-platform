@@ -105,14 +105,26 @@ class ScoreStore(BizStore):
                         'field': _(SCORE_STORE_FIELD_STUDENT_STATUS),
                         'caption': _(SCORE_STORE_FIELD_STUDENT_STATUS),
                         'type': 'list',
-                        'options': {'items': [_('Enrolled'), _('Unenrolled'), _('Disabled')]},
+                        'options': {
+                            'items': [
+                                _(SCORE_STORE_FIELD_STUDENT_STATUS_NOT_ENROLLED),
+                                _(SCORE_STORE_FIELD_STUDENT_STATUS_ENROLLED),
+                                _(SCORE_STORE_FIELD_STUDENT_STATUS_UNENROLLED),
+                                _(SCORE_STORE_FIELD_STUDENT_STATUS_DISABLED)
+                            ]
+                        },
                     })
                 elif field == _(SCORE_STORE_FIELD_CERTIFICATE_STATUS):
                     searches.append({
                         'field': _(SCORE_STORE_FIELD_CERTIFICATE_STATUS),
                         'caption': _(SCORE_STORE_FIELD_CERTIFICATE_STATUS),
                         'type': 'list',
-                        'options': {'items': [_('Downloadable'), _('Unpublished')]},
+                        'options': {
+                            'items': [
+                                _(SCORE_STORE_FIELD_CERTIFICATE_STATUS_DOWNLOADABLE),
+                                _(SCORE_STORE_FIELD_CERTIFICATE_STATUS_UNPUBLISHED)
+                            ]
+                        },
                     })
                 else:
                     searches.append({'field': _(field), 'caption': _(field), 'type': 'text'})
