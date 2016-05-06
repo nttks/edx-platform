@@ -139,4 +139,8 @@ urlpatterns = patterns(
     url(r'^start_certificate_generation',
         'instructor.views.api.start_certificate_generation',
         name='start_certificate_generation'),
+
+    # CourseEvent
+    url(r'^get_students_advanced_course(?P<csv>/csv)?$',
+        'instructor.views.api.get_students_advanced_course', name="get_students_advanced_course"),
 )

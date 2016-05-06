@@ -19,6 +19,18 @@
           %else:
       <option value="all">${_("All (students, staff and instructors)")}</option>
       %endif
+        % if section_data['advanced_courses']:
+          % if to_option == "advanced_course":
+            <option value="advanced_course" selected="selected">${_("Students that purchased a advanced course")}</option>
+          % else:
+            <option value="advanced_course">${_("Students that purchased an advanced course")}</option>
+          % endif
+        % endif
+      </select>
+      <select name="advanced_course">
+        % for advanced_course in section_data['advanced_courses']:
+        <option value="${advanced_course.id}">${advanced_course.display_name}</option>
+        % endfor
       </select>
     </li>
   <br/>

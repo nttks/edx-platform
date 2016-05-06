@@ -32,7 +32,7 @@ from django.core.management import call_command
 
 from xmodule.modulestore.tests.factories import CourseFactory
 
-from bulk_email.models import CourseEmail, Optout, SEND_TO_ALL, SEND_TO_ALL_INCLUDE_OPTOUT
+from bulk_email.models import CourseEmail, Optout, SEND_TO_ALL, SEND_TO_ALL_INCLUDE_OPTOUT, SEND_TO_ADVANCED_COURSE
 
 from instructor_task.tasks import send_bulk_course_email
 from instructor_task.subtasks import update_subtask_status, SubtaskStatus
@@ -41,6 +41,10 @@ from instructor_task.tests.test_base import InstructorTaskCourseTestCase
 from instructor_task.tests.factories import InstructorTaskFactory
 from opaque_keys.edx.locations import SlashSeparatedCourseKey
 from student.models import UserStanding
+
+from shoppingcart.models import Order
+
+from ga_advanced_course.tests.factories import AdvancedF2FCourseFactory, AdvancedCourseTicketFactory
 
 
 class TestTaskFailure(Exception):
@@ -89,7 +93,7 @@ class TestBulkEmailInstructorTask(InstructorTaskCourseTestCase):
         # load initial content (since we don't run migrations as part of tests):
         call_command("loaddata", "course_email_template.json")
 
-    def _create_input_entry(self, course_id=None, to_option=None):
+    def _create_input_entry(self, course_id=None, to_option=None, extra_task_input=None):
         """
         Creates a InstructorTask entry for testing.
 
@@ -99,6 +103,8 @@ class TestBulkEmailInstructorTask(InstructorTaskCourseTestCase):
         course_id = course_id or self.course.id
         course_email = CourseEmail.create(course_id, self.instructor, to_option, "Test Subject", "<p>This is a test message</p>")
         task_input = {'email_id': course_email.id}  # pylint: disable=no-member
+        if extra_task_input:
+            task_input.update(extra_task_input)
         task_id = str(uuid4())
         instructor_task = InstructorTaskFactory.create(
             course_id=course_id,
@@ -475,3 +481,71 @@ class TestBulkEmailInstructorTask(InstructorTaskCourseTestCase):
         with patch('bulk_email.tasks.get_connection', autospec=True) as get_conn:
             get_conn.return_value.send_messages.side_effect = cycle([None])
             self._test_run_with_task(send_bulk_course_email, 'emailed', num_emails, num_emails)
+
+    def test_advanced_course_user(self):
+        """
+        Tests send email to user that purchased a AdvancedCourseTicket.
+        """
+        from bulk_email.tasks import _get_advanced_course_recipient_querysets
+        from student.models import CourseEnrollment
+        from ga_advanced_course.tests.utils import purchase_ticket, start_purchase_ticket
+
+        def _create_students(num):
+            students = self._create_students(num)
+            # student0 to be inactive
+            students[0].is_active = False
+            students[0].save()
+            # student 1 to be unenroll
+            CourseEnrollment.unenroll(students[1], self.course.id)
+            # student 2 to be disabled
+            UserStanding.objects.create(
+                user=students[2], account_status=UserStanding.ACCOUNT_DISABLED, changed_by=students[3]
+            )
+            return students
+
+        def _create_advanced_courses():
+            advanced_course_1 = AdvancedF2FCourseFactory.create()
+            advanced_course_2 = AdvancedF2FCourseFactory.create()
+            return {
+                'ticket_1_1': AdvancedCourseTicketFactory.create(advanced_course=advanced_course_1),
+                'ticket_1_2': AdvancedCourseTicketFactory.create(advanced_course=advanced_course_1),
+                'ticket_2_1': AdvancedCourseTicketFactory.create(advanced_course=advanced_course_2),
+                'ticket_2_2': AdvancedCourseTicketFactory.create(advanced_course=advanced_course_2),
+            }
+
+        def _create_shoppingcart_item(students, _advanced_course_tickets):
+            # student0 - 3 purchased ticket_1_1
+            purchase_ticket(students[0], _advanced_course_tickets['ticket_1_1'])
+            purchase_ticket(students[1], _advanced_course_tickets['ticket_1_1'])
+            purchase_ticket(students[2], _advanced_course_tickets['ticket_1_1'])
+            purchase_ticket(students[3], _advanced_course_tickets['ticket_1_1'])
+            # student4 order ticket_1_1 (not purchased)
+            start_purchase_ticket(students[4], _advanced_course_tickets['ticket_1_1'])
+            # student5 purchased ticket_1_2
+            purchase_ticket(students[5], _advanced_course_tickets['ticket_1_2'])
+            # student6 purchased ticket_2_1
+            purchase_ticket(students[6], _advanced_course_tickets['ticket_2_1'])
+
+        # Select number of emails to fit into a single subtask.
+        num_emails = settings.BULK_EMAIL_EMAILS_PER_TASK
+        # We also send email to the instructor:
+        students = _create_students(num_emails - 1)
+
+        # Setup shoppingcart and advanced_course item.
+        advanced_course_tickets = _create_advanced_courses()
+        _create_shoppingcart_item(students, advanced_course_tickets)
+
+        # check recipients. expected student0 and student2 are purchased the target course and should be sent mail.
+        expected_succeeds = [students[3], students[5]]
+        recipients = _get_advanced_course_recipient_querysets(
+            self.course.id, advanced_course_tickets['ticket_1_1'].advanced_course.id
+        )[1]
+        self.assertItemsEqual(expected_succeeds, recipients)
+
+        with patch('bulk_email.tasks.get_connection', autospec=True) as get_conn:
+            get_conn.return_value.send_messages.side_effect = cycle([None])
+            task_entry = self._create_input_entry(
+                to_option=SEND_TO_ADVANCED_COURSE,
+                extra_task_input={'advanced_course_id': advanced_course_tickets['ticket_1_1'].advanced_course.id}
+            )
+            self._test_run_with_entry(send_bulk_course_email, task_entry, 'emailed', len(expected_succeeds), len(expected_succeeds))
