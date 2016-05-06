@@ -50,6 +50,7 @@ class CourseMetadata(object):
         'minimum_grade_credit',
         'course_category',
         'is_f2f_course',
+        'is_f2f_course_sell',
         'course_canonical_name',
         'course_contents_provider',
         'teacher_name',

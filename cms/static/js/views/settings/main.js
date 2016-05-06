@@ -110,6 +110,11 @@ var DetailsView = ValidatingView.extend({
         } else {
             this.$('#' + this.fieldToSelectorMap['is_f2f_course']).removeAttr('checked');
         }
+        if (this.model.get('is_f2f_course_sell')) {
+            this.$('#' + this.fieldToSelectorMap['is_f2f_course_sell']).attr('checked', this.model.get('is_f2f_course_sell'));
+        } else {
+            this.$('#' + this.fieldToSelectorMap['is_f2f_course_sell']).removeAttr('checked');
+        }
         this.$el.find('#' + this.fieldToSelectorMap['course_canonical_name']).val(this.model.get('course_canonical_name'));
         this.$el.find('#' + this.fieldToSelectorMap['course_contents_provider']).val(this.model.get('course_contents_provider'));
         this.$el.find('#' + this.fieldToSelectorMap['teacher_name']).val(this.model.get('teacher_name'));
@@ -135,6 +140,7 @@ var DetailsView = ValidatingView.extend({
         'entrance_exam_minimum_score_pct': 'entrance-exam-minimum-score-pct',
         'course_category' : 'course-category',
         'is_f2f_course' : 'face2face-course',
+        'is_f2f_course_sell' : 'face2face-course-sell',
         'course_canonical_name' : 'course-canonical-name',
         'course_contents_provider' : 'course-contents-provider',
         'teacher_name' : 'course-teacher-name',
@@ -264,6 +270,7 @@ var DetailsView = ValidatingView.extend({
             this.setAndValidate('course_category', value);
             break;
         case 'face2face-course':
+        case 'face2face-course-sell':
         case 'course-canonical-name':
         case 'course-contents-provider':
         case 'course-teacher-name':

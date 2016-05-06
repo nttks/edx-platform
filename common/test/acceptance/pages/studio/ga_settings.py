@@ -84,8 +84,23 @@ class SettingsPage(EdXSettingsPage):
         return self.get_elements('#face2face-course')
 
     @property
+    def is_f2f_course_sell(self):
+        """
+        Returns the is_f2f_course_sell.
+        """
+        self.wait_for_element_visibility(
+            '#face2face-course-sell',
+            'Face2face course sell element is available'
+        )
+        return self.get_elements('#face2face-course-sell')
+
+    @property
     def is_f2f_course_checked(self):
         return self.q(css='#face2face-course:checked').present
+
+    @property
+    def is_f2f_course_sell_checked(self):
+        return self.q(css='#face2face-course-sell:checked').present
 
     @property
     def course_canonical_name(self):

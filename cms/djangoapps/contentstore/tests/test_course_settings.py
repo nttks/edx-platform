@@ -56,6 +56,7 @@ class CourseDetailsTestCase(CourseTestCase):
         self.assertIsNone(details.language, "language somehow initialized" + str(details.language))
         self.assertEqual(details.course_category, [])
         self.assertFalse(details.is_f2f_course)
+        self.assertFalse(details.is_f2f_course_sell)
         self.assertEqual(details.course_canonical_name, self.course.display_name)
         self.assertEqual(details.course_contents_provider, "")
         self.assertEqual(details.teacher_name, "Teacher Name")
@@ -77,6 +78,7 @@ class CourseDetailsTestCase(CourseTestCase):
         self.assertIsNone(jsondetails['language'], "language somehow initialized")
         self.assertEqual(jsondetails['course_category'], [])
         self.assertFalse(jsondetails['is_f2f_course'])
+        self.assertFalse(jsondetails['is_f2f_course_sell'])
         self.assertEqual(jsondetails['course_canonical_name'], self.course.display_name)
         self.assertEqual(jsondetails['course_contents_provider'], "")
         self.assertEqual(jsondetails['teacher_name'], "Teacher Name")
@@ -150,6 +152,11 @@ class CourseDetailsTestCase(CourseTestCase):
             CourseDetails.update_from_json(self.course.id, jsondetails.__dict__, self.user).is_f2f_course,
             jsondetails.is_f2f_course
         )
+        jsondetails.is_f2f_course_sell = True
+        self.assertEqual(
+            CourseDetails.update_from_json(self.course.id, jsondetails.__dict__, self.user).is_f2f_course_sell,
+            jsondetails.is_f2f_course_sell
+        )
         jsondetails.course_canonical_name = "After Course Canonical Name"
         self.assertEqual(
             CourseDetails.update_from_json(self.course.id, jsondetails.__dict__, self.user).course_canonical_name,
@@ -202,6 +209,7 @@ class CourseDetailsTestCase(CourseTestCase):
             self.assertContains(response, "Teacher Name")
             self.assertContains(response, "Course Span")
             self.assertContains(response, "Face 2 Face Classroom")
+            self.assertContains(response, "Sell Face 2 Face Classroom")
 
     @unittest.skipUnless(settings.FEATURES.get('ENTRANCE_EXAMS', False), True)
     def test_entrance_exam_created_updated_and_deleted_successfully(self):
@@ -338,6 +346,7 @@ class CourseDetailsTestCase(CourseTestCase):
             self.assertContains(response, "Teacher Name")
             self.assertContains(response, "Course Span")
             self.assertContains(response, "Face 2 Face Classroom")
+            self.assertContains(response, "Sell Face 2 Face Classroom")
 
 
 class CourseDetailsViewTest(CourseTestCase):
@@ -397,6 +406,7 @@ class CourseDetailsViewTest(CourseTestCase):
         self.alter_field(url, details, 'course_category', [])
         self.alter_field(url, details, 'course_category', ["food", "teen"])
         self.alter_field(url, details, 'is_f2f_course', True)
+        self.alter_field(url, details, 'is_f2f_course_sell', True)
         self.alter_field(url, details, 'course_canonical_name', "Course Canonical Name")
         self.alter_field(url, details, 'course_contents_provider', "Course Contents Provider")
         self.alter_field(url, details, 'teacher_name', "Teacher Name")
@@ -421,6 +431,7 @@ class CourseDetailsViewTest(CourseTestCase):
 
         self.assertEqual(details['course_category'], encoded['course_category'], context + " course_category not ==")
         self.assertEqual(details['is_f2f_course'], encoded['is_f2f_course'], context + " is_f2f_course not ==")
+        self.assertEqual(details['is_f2f_course_sell'], encoded['is_f2f_course_sell'], context + " is_f2f_course_sell not ==")
         self.assertEqual(details['course_canonical_name'], encoded['course_canonical_name'], context + " course_canonical_name not ==")
         self.assertEqual(details['course_contents_provider'], encoded['course_contents_provider'], context + " course_contents_provider not ==")
         self.assertEqual(details['teacher_name'], encoded['teacher_name'], context + " teacher_name not ==")

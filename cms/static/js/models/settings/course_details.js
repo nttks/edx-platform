@@ -26,6 +26,7 @@ var CourseDetails = Backbone.Model.extend({
         entrance_exam_minimum_score_pct: '50',
         course_category: [],
         is_f2f_course: false,
+        is_f2f_course_sell: false,
         course_canonical_name: '',
         course_contents_provider: '',
         teacher_name: '',
