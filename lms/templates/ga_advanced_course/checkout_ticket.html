@@ -1,0 +1,24 @@
+<%!
+from django.core.urlresolvers import reverse
+from django.utils.translation import ugettext as _
+%>
+<%namespace name='static' file='../static_content.html'/>
+
+<%inherit file="../main.html" />
+
+<%block name="pagetitle">${_("Checkout Advanced Course Ticket")}</%block>
+
+<%block name="js_extra">
+  <script src="${static.url('js/vendor/underscore-min.js')}"></script>
+  <script src="${static.url('js/vendor/underscore.string.min.js')}"></script>
+  <script src="${static.url('js/vendor/backbone-min.js')}"></script>
+  <script src="${static.url('js/ga_advanced_course/views/checkout_ticket_view.js')}"></script>
+</%block>
+
+<%block name="content">
+  <div class="container">
+    <p class="loading"><i class="icon fa fa-spinner fa-spin fa-large"></i>${_("Processing")}</p>
+    <input type="hidden" id="order-id" value="${order_id}"/>
+  </div>
+  <form id="payment-processor-form"></form>
+</%block>

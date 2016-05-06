@@ -1610,6 +1610,14 @@ msgid ""
 "access previously generated reports from this page."
 msgstr "以下に一覧表示されている評価レポートは<b>「評価レポートを生成」</b>をクリックする都度生成されます。入手可能な評価レポートのリンクは、それぞれ生成日時（世界標準時表記）によって特定されます。評価レポートは削除されないので、このページから先に作成しれたものでも、常時入手することができます。"
 
+#: lms/templates/instructor/instructor_dashboard_2/data_download.html
+msgid "Click to download a CSV file that lists learners who purchased an advanced course (ex. face-to-face course)."
+msgstr "上級講座（例：対面学習コース）を購入している受講者情報のCSVファイルを生成するにはクリックしてください。"
+
+#: lms/templates/instructor/instructor_dashboard_2/data_download.html
+msgid "Download purchaser information of advanced courses as a CSV"
+msgstr "上級講座購入者情報をCSVとしてダウンロードする"
+
 #: lms/templates/instructor/instructor_dashboard_2/e-commerce.html
 msgid "Transactions"
 msgstr ""
@@ -2237,6 +2245,10 @@ msgstr "受信拒否者に送信するべき内容かどうかを慎重に確認
 msgid "e.g. About change of membership agreement"
 msgstr "例: ユーザーサービス利用規約の変更について"
 
+#: lms/templates/instructor/instructor_dashboard_2/send_mail.html
+msgid "Students that purchased an advanced course"
+msgstr "上級講座購入者（例：対面学習コース）"
+
 #: lms/djangoapps/courseware/module_render.py
 msgid "Submission aborted! Maximum %d files may be submitted at once"
 msgstr "一度にアップロードできるファイルは%d個までです"
@@ -2321,7 +2333,12 @@ msgstr "コースカテゴリ"
 #: common/lib/xmodule/xmodule/course_module.py
 #: cms/templates/settings.html
 msgid "Face 2 Face Classroom"
-msgstr "対面授業"
+msgstr "対面学習コース"
+
+#: common/lib/xmodule/xmodule/course_module.py
+#: cms/templates/settings.html
+msgid "Sell Face 2 Face Classroom"
+msgstr "対面学習コースの販売"
 
 #: common/lib/xmodule/xmodule/course_module.py
 #: cms/templates/settings.html
@@ -2389,7 +2406,11 @@ msgstr "コースの受講期間を入力してください。（例：4週間�
 
 #: cms/templates/settings.html
 msgid "Please check if there is a reversal classes."
-msgstr "対面授業がある場合はチェックを入れてください。"
+msgstr "対面学習コースがある場合はチェックを入れてください。"
+
+#: cms/templates/settings.html
+msgid "Please check if sell a reversal classes."
+msgstr "対面学習コースをgacco上で販売する場合はチェックを入れてください。"
 
 #-#-#-#-#  Original messages in gacco/templates  #-#-#-#-#
 
@@ -2502,6 +2523,10 @@ msgid "Display of information about the permission in gacco"
 msgstr "gaccoにおける権限に関する情報の表示"
 
 #: templates/dashboard/_dashboard_course_listing.html
+msgid "If you unenroll, ticket, such as face-to-face classroom you have purchased will not be canceled. Please contact us through the Help If you would like to cancel the ticket."
+msgstr "受講を取り消した場合でも、購入した対面学習コースなどのチケットはキャンセルされません。チケットのキャンセルを希望される場合は画面下部にあるヘルプから別途お問い合わせください。"
+
+#: templates/dashboard/_dashboard_course_listing.html
 msgid "Course has not yet started"
 msgstr "講座はまだ開始していません"
 
@@ -2512,3 +2537,279 @@ msgstr "法人管理"
 #: biz/djangoapps/ga_manager/tab.py
 msgid "Biz Manager Dashboard"
 msgstr "法人管理ダッシュボード"
+
+#: templates/dashboard/_dashboard_course_listing.html
+msgid "This course has face-to-face (fee-charging) course."
+msgstr "この講座には対面学習コース（有料）があります"
+
+#: templates/dashboard/_dashboard_course_listing.html
+msgid "Information of face-to-face course"
+msgstr "対面学習コースのお知らせ"
+
+#: templates/dashboard/_dashboard_course_listing.html
+msgid "View Details and Receipt"
+msgstr "詳細＆レシート表示"
+
+#: templates/dashboard/_dashboard_course_listing.html
+msgid "Realistic lectures by teachers, is a learning course of gacco recommended that you can get a special certificate of completion."
+msgstr "講師陣によるリアル講義、特別な修了証を 入手できるgaccoおすすめの学習コースです。"
+
+#: templates/ga_advanced_course/choose.html
+msgid "Enroll mode selection"
+msgstr "受講モード選択"
+
+#: templates/ga_advanced_course/choose.html
+msgid "Thank you for an enroll. This course has {course_count} courses."
+msgstr "受講登録ありがとうございます。この講座には{course_count}つのコースがあります。"
+
+#: templates/ga_advanced_course/choose.html
+msgid "Fee-charging"
+msgstr "有料"
+
+#: templates/ga_advanced_course/choose.html
+msgid "Free of charge"
+msgstr "無料"
+
+#: templates/ga_advanced_course/choose.html
+msgid "Online course with high-quality video recording class"
+msgstr "高品質な録画授業によるオンライン講座"
+
+#: templates/ga_advanced_course/choose.html
+msgid "equivalent to the online course"
+msgstr "オンラインコースと同等"
+
+#: templates/ga_advanced_course/choose.html
+msgid "Challenge, discussion, etc."
+msgstr "課題、ディスカッション等"
+
+#: templates/ga_advanced_course/choose.html
+msgid "Realistic lectures by teachers, place to use the learned knowledge in practice"
+msgstr "講師陣によるリアル講義、学んだ知を実際に使う場"
+
+#: templates/ga_advanced_course/choose.html
+msgid "Development challenges and supplemental lectures and knowledge level of the well-equipped student"
+msgstr "知識レベルの整った受講者との発展的な課題や補足講義"
+
+#: templates/ga_advanced_course/choose.html
+msgid "Identification of students at the venue"
+msgstr "会場での受講者の本人確認"
+
+#: templates/ga_advanced_course/choose.html
+msgid "Issued / awarded a special Certificate of Completion is to successful applicants"
+msgstr "合格者へは特別な修了証が発行/授与"
+
+#: templates/ga_advanced_course/choose.html
+msgid "High learning effect (proven by the Educational Technology)"
+msgstr "高い学習効果（教育工学によって立証済）"
+
+#: templates/ga_advanced_course/choose.html
+msgid "New learning style of gacco Recommended"
+msgstr "gaccoおすすめの新しい学習スタイル"
+
+#: templates/ga_advanced_course/choose.html
+msgid "View the details of the face-to-face course"
+msgstr "対面学習コースの詳細を見る"
+
+#: templates/ga_advanced_course/choose.html
+msgid "Online Course"
+msgstr "オンラインコース"
+
+#: templates/ga_advanced_course/choose.html
+msgid "Recommend <a href=\"{face_to_face_page_link}\">face-to-face learning</a> for those who want to advance a more expansive learning"
+msgstr "より発展的な学習を進めたい方には、<a href=\"{face_to_face_page_link}\">対面学習コース</a>がおすすめ"
+
+#: templates/ga_advanced_course/choose.html
+msgid "To take the start of an online course"
+msgstr "オンラインコースで受講"
+
+#: templates/ga_advanced_course/courses.html
+msgid "Close details"
+msgstr "詳細を閉じる"
+
+#: templates/ga_advanced_course/courses.html
+msgid "See next"
+msgstr "続きを見る"
+
+#: templates/ga_advanced_course/courses.html
+msgid "List of Face to face classroom"
+msgstr "対面学習コース一覧"
+
+#: templates/ga_advanced_course/courses.html
+msgid "Details of Face to face classroom"
+msgstr "対面学習コース詳細"
+
+#: templates/ga_advanced_course/courses.html
+msgid "Subscribe"
+msgstr "申し込む"
+
+#: templates/ga_advanced_course/courses.html
+msgid "End of sale"
+msgstr "販売終了"
+
+#: templates/ga_advanced_course/courses.html
+msgid "Sold out"
+msgstr "完売"
+
+#: templates/ga_advanced_course/courses.html
+msgid "Description"
+msgstr "概要"
+
+#: templates/ga_advanced_course/courses.html
+msgid "Opening Time"
+msgstr "開催日時"
+
+#: templates/ga_advanced_course/courses.html
+msgid "Meeting Place"
+msgstr "会場"
+
+#: templates/ga_advanced_course/courses.html
+msgid "Meeting Place Url"
+msgstr "会場URL"
+
+#: templates/ga_advanced_course/courses.html
+msgid "Address"
+msgstr "住所"
+
+#: templates/ga_advanced_course/courses.html
+msgid "Access"
+msgstr "アクセス"
+
+#: templates/ga_advanced_course/courses.html
+msgid "Other information"
+msgstr "その他情報"
+
+#: templates/ga_advanced_course/courses.html
+msgid "Purchased"
+msgstr "購入済み"
+
+#: templates/ga_advanced_course/choose_ticket.html
+msgid "Ticket Option"
+msgstr "チケットオプション"
+
+#: templates/ga_advanced_course/choose_ticket.html
+msgid "Sell-by date"
+msgstr "販売期限"
+
+#: templates/ga_advanced_course/choose_ticket.html
+msgid "* Display price will be tax included."
+msgstr "※表示価格は税込となります。"
+
+#: templates/ga_advanced_course/choose_ticket.html
+msgid "When you select a purchase ticket from below, and go to the settlement site (credit card, corresponding to DoCoMo Mobile Payment)"
+msgstr "下記から購入チケットを選択すると、決済サイトへ移動します(クレジットカード、ドコモケータイ払いに対応)"
+
+#: templates/ga_advanced_course/receipt.html
+msgid "Purchase of the ticket has been completed. To the email address in your registration to {platform_name}, I was sent a receipt."
+msgstr "チケットの購入が完了しました。{platform_name}へご登録中のメールアドレス宛に、レシートを送付しました。"
+
+#: templates/ga_advanced_course/receipt.html
+msgid "Purchase Receipt"
+msgstr "購入レシート"
+
+#: templates/ga_advanced_course/receipt.html
+msgid "Purchase completion"
+msgstr "購入完了"
+
+#: templates/ga_advanced_course/receipt.html
+msgid "{course_name} course"
+msgstr "「{course_name}」講座"
+
+#: templates/ga_advanced_course/receipt.html
+msgid "Receipt Number"
+msgstr "レシート番号"
+
+#: templates/ga_advanced_course/courses.html
+msgid "Purchase"
+msgstr "購入"
+
+#: templates/ga_advanced_course/receipt.html
+msgid "Datetime of purchase"
+msgstr "購入日時"
+
+#: templates/ga_advanced_course/receipt.html
+msgid "Purchase Information"
+msgstr "購入情報"
+
+#: templates/ga_advanced_course/receipt.html
+msgid "Request Details"
+msgstr "申し込み詳細"
+
+#: templates/ga_advanced_course/receipt.html
+msgid "Payment method"
+msgstr "お支払方法"
+
+#: templates/ga_advanced_course/receipt.html
+msgid "Credit Card"
+msgstr "クレジットカード"
+
+#: templates/ga_advanced_course/receipt.html
+msgid "Docomo Mobile Payment"
+msgstr "ドコモケータイ払い"
+
+#: templates/ga_advanced_course/receipt.html
+msgid "Payment amount"
+msgstr "お支払金額"
+
+#: templates/ga_advanced_course/receipt.html
+msgid "Buy the ticket"
+msgstr "購入チケット"
+
+#: templates/ga_advanced_course/receipt.html
+msgid "Price of ticket"
+msgstr "チケット料金"
+
+#: templates/ga_advanced_course/receipt.html
+msgid "Including tax"
+msgstr "税込"
+
+#: templates/ga_advanced_course/receipt.html
+msgid "View Details"
+msgstr "詳細を見る"
+
+#: templates/ga_advanced_course/receipt.html
+msgid "This ticket has been cancelled."
+msgstr "このチケットはキャンセルされました。"
+
+#: templates/ga_advanced_course/checkout_ticket.html
+msgid "Processing"
+msgstr "処理中"
+
+#: lms/djangoapps/ga_advanced_course/views.py
+msgid "Tickets are already purchased."
+msgstr "チケットは既に購入済みです。"
+
+#: lms/djangoapps/ga_advanced_course/views.py
+msgid "Sorry, could not buy a ticket because it reached a capacity."
+msgstr "申し訳ございません。定員に達したためチケットが購入できませんでした。"
+
+#: lms/djangoapps/ga_advanced_course/views.py
+msgid "Sorry, could not buy a ticket because all of tickets are end of sale."
+msgstr "申し訳ございません。チケットが販売終了したため購入できませんでした。"
+
+#: lms/djangoapps/shoppingcart/processors/GMO.py
+msgid "Sorry! Your payment could not be processed because an unexpected exception occurred. Please contact us through the Help."
+msgstr "申し訳ありません。購入手続き中にエラーが発生したため、正常に手続きが完了できませんでした。画面下部にあるヘルプからお問い合わせください。"
+
+#: lms/djangoapps/shoppingcart/processors/GMO.py
+msgid "Please click <a href=\"{item_page_link}\">here</a> if you go back to the purchase page."
+msgstr "購入画面へ戻る場合は<a href=\"{item_page_link}\">こちら</a>からお進みください。"
+
+#: lms/djangoapps/ga_advanced_course/models.py
+msgid "Ticket"
+msgstr "チケット"
+
+#: lms/djangoapps/ga_advanced_course/models.py
+msgid "Display Order"
+msgstr "表示順"
+
+#: lms/djangoapps/ga_advanced_course/models.py
+msgid "Start Time"
+msgstr "開始時間"
+
+#: lms/djangoapps/ga_advanced_course/models.py
+msgid "End Time"
+msgstr "終了時間"
+
+#: lms/djangoapps/ga_advanced_course/models.py
+msgid "Capacity"
+msgstr "定員"

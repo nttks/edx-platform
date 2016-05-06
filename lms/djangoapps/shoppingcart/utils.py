@@ -30,6 +30,16 @@ def is_shopping_cart_enabled():
     return (enable_paid_course_registration and enable_shopping_cart)
 
 
+def is_pdf_receipt_enabled():
+    """
+    Utility method to check whether pdf receipt enabled.
+    """
+    return microsite.get_value(
+        'ENABLE_PDF_RECEIPT',
+        settings.FEATURES.get('ENABLE_PDF_RECEIPT', True)
+    )
+
+
 def parse_pages(pdf_buffer, password):
     """
     With an PDF buffer object, get the pages, parse each one, and return the entire pdf text

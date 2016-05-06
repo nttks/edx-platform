@@ -88,6 +88,9 @@ class DashboardPage(EdXDashboardPage):
         except NoSuchElementException:
             return False
 
+    def close_unenroll_modal(self):
+        self.q(css='#unenroll-modal button.close-modal').click()
+
     def show_email_settings(self, course_name):
         """
         Show available change email settings on dashboard
@@ -110,4 +113,3 @@ class DashboardPage(EdXDashboardPage):
         Is available change email settings on dashboard
         """
         return self.q(css='#email-settings-modal').visible
-

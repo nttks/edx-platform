@@ -1,0 +1,32 @@
+<%! from shoppingcart.processors.GMO import create_order_id %>
+
+${recipient_name} 様
+
+gaccoをご利用いただき、ありがとうございます。チケットの購入が完了したことをお知らせいたします。
+
+------------------------------------
+お申し込み詳細
+------------------------------------
+
+購入チケット: ${item.line_desc}
+購入枚数: 1
+お支払い金額: ¥ ${"{:,d}".format(int(item.unit_cost + item.tax))}
+お支払い方法: ${item.payment_method}
+レシート番号: #${create_order_id(order)}
+購入日時: ${purchased_datetime.strftime('%Y/%m/%d %H:%M:%S')}
+
+詳細はこちらからご確認ください。
+https://${site_name}/shoppingcart/receipt/${order.id}/
+
+
+このメールは自動送信しています。ご返信いただいてもお答えできかね
+ますのでご了承ください。
+==================
+・gaccoに関する「よくある質問」はコチラ
+https://support.gacco.org/
+
+・お問い合わせはマイページの「ヘルプ」ボタンよりお願いします
+https://lms.gacco.org/dashboard
+
+
+gacco運営チーム

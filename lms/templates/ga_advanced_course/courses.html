@@ -1,0 +1,136 @@
+<%!
+from django.core.urlresolvers import reverse
+from django.utils.translation import ugettext as _
+from util.date_utils import strftime_localized
+from ga_advanced_course.models import AdvancedCourseTypes
+from openedx.core.lib.ga_datetime_utils import to_timezone
+%>
+<%inherit file="../main.html" />
+<%namespace name='static' file='../static_content.html'/>
+
+<%block name="pagetitle">
+% if advanced_course_type == AdvancedCourseTypes.F2F:
+${_("List of Face to face classroom")}
+% else:
+${_("Advanced Course List")}
+% endif
+</%block>
+
+<%block name="headextra">
+<style>
+  ## This style is need for toggle
+  .course_info_inner_opened:after {
+    height: 0;
+  }
+</style>
+<script>
+$(function(){
+    $(".show_more").prev(".toggleArea").hide();
+    $(".toggleArea").prev(".course_info_inner").addClass("bg_linear");
+    $(".show_more").click(function(){
+        if ($(this).prev(".toggleArea").is(':hidden')) {
+            $(this).prev(".toggleArea").slideDown();
+            $(this).prev(".toggleArea").prev(".course_info_inner").removeClass("bg_linear");
+            $(this).prev(".toggleArea").prev(".course_info_inner").addClass("course_info_inner_opened");
+            $(this).html('<span>-</span>${_("Close details")}');
+        } else {
+            $(this).prev(".toggleArea").slideUp();
+            $(this).prev(".toggleArea").prev(".course_info_inner").addClass("bg_linear");
+            $(this).prev(".toggleArea").prev(".course_info_inner").removeClass("course_info_inner_opened");
+            $(this).html('<span>+</span>${_("See next")}');
+        }
+    });
+});
+</script>
+</%block>
+
+<%block name="bodyclass">ticket list</%block>
+
+<div class="ticket_page_wrap">
+  % if advanced_course_type == AdvancedCourseTypes.F2F:
+  <h2>${_("Face 2 Face Classroom")}</h2>
+  % endif
+
+  % if messages:
+  <div class="purchase_error">
+    % for message in messages:
+    <p>${message}</p>
+    % endfor
+  </div>
+  % endif
+
+  % if advanced_course_type == AdvancedCourseTypes.F2F:
+  <h3>${_("List of Face to face classroom")}</h3>
+  % endif
+  <div class="section clear">
+    <ul class="course_list course_name">
+      % for status in advanced_courses_with_status.advanced_courses.values():
+      <li>
+        <%
+            advanced_course = status['advanced_course']
+        %>
+        <span class="title">${advanced_course.display_name | h}</span>
+        <a href="#advanced-course-detail-${advanced_course.id}" class="t_btn info">${_("Detail")}</a>
+        % if status['is_purchased']:
+        <span class="t_btn disabled">${_("Purchased")}</span>
+        % elif status['is_full']:
+        <span class="t_btn disabled">${_("Sold out")}</span>
+        % elif status['is_end_of_sale']:
+        <span class="t_btn disabled">${_("End of sale")}</span>
+        % else:
+        <a href="${reverse('advanced_course:choose_ticket', args=[advanced_course.course_id, advanced_course.id])}" class="t_btn apply">${_("Subscribe")}</a>
+        % endif
+      </li>
+      % endfor
+    </ul>
+  </div>
+
+  % if advanced_course_type == AdvancedCourseTypes.F2F:
+  <h3>${_("Details of Face to face classroom")}</h3>
+  % endif
+
+  % for i, status in enumerate(advanced_courses_with_status.advanced_courses.values(), start=1):
+  <%
+      advanced_course = status['advanced_course']
+  %>
+  <div class="section course_info clear">
+    <h4 id="advanced-course-detail-${advanced_course.id}">${i}. ${advanced_course.display_name | h}</h4>
+    <img class="img course_img" src="${course_image}" alt="" />
+    <div class="course_info_inner">
+      <h5>${_("Description")}</h5>
+      <p class="course-description">${advanced_course.description | h}</p>
+      <h5>${_("Opening Time")}</h5>
+      <p class="course-opening-time">${strftime_localized(advanced_course.start_date, '%Y/%m/%d (%a)')} ${strftime_localized(advanced_course.start_time, '%H:%M')} - ${strftime_localized(advanced_course.end_time, '%H:%M')}</p>
+      <h5>${_("Meeting Place")}</h5>
+      <p class="course-place"><a href="${advanced_course.place_link}" target="_blank">${advanced_course.place_name}</a></p>
+      <h5>${_("Ticket")}</h5>
+      % for ticket in advanced_course.tickets:
+      <p class="course-ticket">
+        ${ticket.display_name | h} ¥${'{:,d}'.format(ticket.price_with_tax)} (${_("Including tax")})<br>
+        <span class="sell_by_date">${_("Sell-by date")} ${strftime_localized(to_timezone(ticket.sell_by_date), '%Y/%m/%d %H:%M')}</span>
+      </p>
+      % endfor
+    </div>
+    <div class="toggleArea">
+      <h6>${_("Address")}</h6>
+      <p class="course-address">${advanced_course.place_address | h}</p>
+      <h6>${_("Access")}</h6>
+      <p class="course-access">${advanced_course.place_access | h}</p>
+      % if advanced_course.content:
+      <h6>${_("Other information")}</h6>
+      <p class="course-other-content">${advanced_course.content}</p>
+      % endif
+    </div>
+    <div class="show_more"><span>+</span>${_("See next")}</div>
+    % if status['is_purchased']:
+    <div class="t_btn big disabled">${_("Purchased")}</div>
+    % elif status['is_full']:
+    <div class="t_btn big disabled">${_("Sold out")}</div>
+    % elif status['is_end_of_sale']:
+    <div class="t_btn big disabled">${_("End of sale")}</div>
+    % else:
+    <a href="${reverse('advanced_course:choose_ticket', args=[advanced_course.course_id, advanced_course.id])}" class="t_btn big apply">${_("Subscribe")}</a>
+    % endif
+  </div>
+  % endfor
+</div>

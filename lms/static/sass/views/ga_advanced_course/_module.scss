@@ -1,0 +1,217 @@
+%btn-disabled {
+  @extend %btn-primary-disabled;
+}
+
+.ticket_page_wrap {
+  .t_btn {
+    display: inline-block;
+    min-height: 35px;
+    width: 6rem;
+    margin-bottom: 5px;
+    text-align: center;
+    letter-spacing: 1.8px;
+    background-color: #4293d5;
+    border-radius: 6px;
+    color: #fff;
+    border-bottom: 3px solid #144168;
+    position: relative;
+    bottom: 3px;
+    line-height: 2.0;
+    outline: rgb(255, 255, 255) none 0px;
+
+    a {
+      text-decoration: none;
+    }
+  }
+
+  .t_btn.apply {
+    background-color: #ffa300;
+    color: #fff;
+    border-color: #c4721a;
+  }
+
+  .t_btn.disabled {
+    @extend %btn-disabled;
+    border-color: #8a8d8f;
+  }
+
+  .t_btn.big {
+    float: right;
+    margin: 0  1rem 0  0;
+    min-width: 11rem;
+    width: auto;
+    padding: 0.3rem 1rem;
+    line-height: 2.4rem;
+    border-radius: 8px;
+    min-height: 2.4rem;
+  }
+
+  .show_more {
+    text-align: center;
+    /* color: #fff; */
+    font-size: 1.2rem;
+    border: 2px solid #666;
+    width: 10rem;
+    margin: 0.8rem auto 0.5rem;
+    padding: 0rem 0.5rem 0.3rem;
+    border-radius: 8px;
+    line-height: 1.6;
+
+    span {
+      font-size: 1.8rem;
+      margin-right:10px;
+    }
+
+    &:hover {
+      background-color:#ddd;
+    }
+  }
+
+  .course_img {
+    max-width: 470px;
+    width: 90%;
+    height: auto;
+    margin: 1rem auto;
+    padding: 4px;
+    border: 1px solid #eee;
+    box-shadow: 2px 2px 1px #ccc;
+  }
+
+  .course_list.course_name {
+    width:99%;
+    line-height: 2;
+
+    span {
+      line-height: 2;
+    }
+  }
+
+  .course_list.course_name li {
+    font-size: 1.1rem;
+    list-style: decimal inside;
+    list-style-position: inside;
+    border-bottom: 1px dotted #bbb;
+    /* position: relative; left:2rem; */
+    margin-bottom: 1rem;
+    margin-left: 1%;
+  }
+
+  .purchase_error {
+    box-shadow: inset 0 -1px 2px 0 #f3d9db;
+    border-bottom: 3px solid #a0050e;
+    background: #fbf2f3;
+    padding: 25px;
+  }
+
+  .purchase_annotation {
+    margin-top: 10px;
+    color: #c0c0c0;
+    text-align: right;
+  }
+
+  .sell_by_date {
+    color: #c0c0c0;
+    font-size: 0.9rem;
+  }
+
+  .triangle {
+    position: absolute;
+    top: 0px;
+    right: 25px;
+    height: 0px;
+    width: 0px;
+    font-size: 14px;
+    border-top: #999 80px solid;
+    border-left: 80px solid transparent;
+    border-right: 80px solid transparent;
+    border-bottom: 80px solid transparent;
+
+    &:before {
+      content: '';
+      height: 0;
+      position: absolute;
+      width: 0;
+      right: -65px;
+      top: -80px;
+      border: 80px solid transparent;
+      border-top-color: #CF0F31;
+    }
+
+    &:after {
+      content: "Verified \A Certificate";
+      white-space: pre;
+      text-align: center;
+      position: absolute;
+      right: -22px;
+      top: -76px;
+      color: #fff;
+    }
+
+    /* free */
+    &.free:before{
+      border-top-color: #666;
+    }
+
+    &.free:after{
+      content: "Free \A Edition";
+      white-space: pre ;
+      right: -10px;
+    }
+  }
+
+  @media only screen and (max-width: 1080px) {
+    .course_name .title {
+      width: 60%;
+      padding-left: 0.2rem;
+    }
+  }
+
+  @media only screen and (max-width: 960px) {
+    .course_name {
+      padding: 0;
+    }
+
+    .course_name .title {
+      display: block;
+      width: 100%;
+      padding-left: 0.2rem;
+    }
+  }
+
+  @media only screen and (max-width: 800px) {
+    .course_list.course_name .title {
+      display: inline;
+    }
+
+    .course_list.course_name li {
+      list-style: decimal inside;
+      list-style-position: inside;
+      margin-bottom: 2rem;
+      margin-left: 1%;
+    }
+
+    .t_btn {
+      width: 60%;
+      min-height: 2.2rem;
+      padding: 0.5rem 0 0.2rem;
+      display: block;
+      margin: 8px auto 8px;
+      font-size: 1.2rem;
+    }
+
+    .t_btn.big {
+      float: none;
+      display: block;
+      min-height: 2rem;
+      margin: 1.5rem auto 2rem;
+      width: 80%;
+      padding: 0.5rem 0.5rem 0.2rem;
+    }
+  }
+
+  @media only screen and (max-width:640px) {
+    .triangle{
+      display: none;
+    }
+  }
+} /* //.ticket_page_wrap */

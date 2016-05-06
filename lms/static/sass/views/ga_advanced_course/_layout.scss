@@ -1,0 +1,261 @@
+.section.course_info {
+  padding-bottom: 1rem;
+  border: 2px dashed #CCC;
+  margin-bottom: 3rem;
+
+  h4{
+    font-size: 1.6rem; color: #43AC6A;
+  }
+}
+
+.course_info:not(:first-child) {
+  margin-top: 1rem;
+}
+
+.course_info h6 {
+  margin: 1rem 0 0;
+  font-size: 1.0rem;
+}
+
+.course_info p {
+  margin: 1rem 0;
+}
+
+.course_info_inner {
+  position: relative;
+}
+
+.course_info_inner:after {
+  content: '';
+  display: block;
+  height: 80px;
+  width: 100%;
+  position: absolute;
+  bottom: 0;
+}
+
+.bg_linear:after {
+  background-image: -ms-linear-gradient(rgba(255,255,255,0),#ffffff);
+  background-image: -moz-linear-gradient(rgba(255,255,255,0),#ffffff);
+  background-image: -webkit-linear-gradient(rgba(255,255,255,0),#ffffff);
+  background-image: linear-gradient(rgba(255,255,255,0),#ffffff);
+  background-color: transparent;
+}
+
+.bg_linear_none:after {
+  background-image: none;
+}
+
+/* ----- select Page-----*/
+.course_select_area {
+  position: relative;
+  background-color: #FFFDE7;
+  border: 1px solid #ccc;
+  padding: 0.1rem 2rem 2rem;
+  margin: 1rem 0 4rem;
+  box-shadow: 5px 5px 0px #bbb;
+  border-radius: 6px;
+
+  p {
+    font-size: 1.2rem;
+    line-height: 1.6;
+  }
+
+  ul {
+    margin: 1rem 0 0 2rem;
+  }
+
+  li {
+    list-style: disc;
+    line-height: 2.0;
+  }
+
+  .catch {
+    border: 3px solid #CF0F31;
+    padding: 1.4rem 1rem;
+    background-color: #FBE9E7;
+    border-radius: 10px;
+    letter-spacing: 1.8px;
+  }
+
+  .plus {
+    color: #CF0F31;
+    font-size: 2rem;
+    margin: 5px 0;
+    text-align: center;
+  }
+
+  .middle {
+    font-size: 1.6rem;
+    margin-top: 0;
+  }
+
+  &.offline {
+    background-color: #f3f3f3;
+  }
+}
+
+@media only screen and (max-width:480px) {
+  .course_select_area {
+    padding: 0 1rem 1rem;
+
+    p {
+      font-size: 1rem;
+    }
+
+    ul {
+      margin: 1rem 0 0 0;
+      padding: 0 0 0 30px;
+    }
+  }
+}
+
+.option, .receipt {
+  .course_select_area {
+    padding: 0.5rem;
+    background-color: #f9f9f9;
+    border-radius: 2px;
+  }
+
+  h3 {
+    border: none;
+    color: #43AC6A;
+  }
+
+  .ticket_page_wrap .t_btn {
+    float: right;
+    margin-top: 0.5rem;
+    bottom: 0;
+  }
+}
+
+.item_area {
+  padding-left: 16px;
+  width: 100%;
+  margin: 0 -24px 0 0;
+  overflow: hidden;
+
+  .items {
+    display:block;
+    float: left;
+    box-sizing:border-box;
+    width: 31.5%;
+    background-color: #fffce5;
+    padding:0 1rem 0.5rem;
+    margin:0 12px 2rem 0px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    box-shadow: 1px 1px #999;
+    position: relative;
+
+    &:first-child {
+      margin-left: 0;
+    }
+  }
+
+  h4 {
+    border-left: 3px solid #CF0F31;
+    padding-left: 0.6rem;
+  }
+
+  p {
+    line-height: 1.4;
+    margin-top: 1.0rem;
+    margin-bottom: 0.4rem;
+  }
+}
+
+@media only screen and (min-width: 569px) {
+  .option .items {
+    min-height: 180px;
+
+    .t_btn {
+      min-width: 8rem;
+      line-height: 2.4;
+    }
+
+    .sell_by_date {
+      float: right;
+    }
+  }
+}
+
+@media only screen and (max-width: 800px) {
+  .ticket_page_wrap {
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  .item_area .items {
+    width: 47%;
+  }
+}
+
+@media only screen and (max-width: 568px) {
+  .item_area {
+    .items {
+      display: block;
+      width: 90%;
+      text-align: center;
+
+      h3 {
+        border-left: none;
+        border-bottom: dotted 2px #CF0F31;
+      }
+
+      .t_btn {
+        width: 90%;
+        float: none;
+      }
+    }
+  }
+}
+
+/* receipt page */
+.receipt_area {
+  background-color: #fcfcfc;
+  border: 1px solid #ccc;
+  padding: 0.5rem 1rem 2rem 0.8rem;
+  box-shadow: 7px 7px 0px #bbb;
+}
+
+.receipt {
+  .items{
+    background-color: #ffffeb;
+    min-height: 120px;
+
+    p {
+      margin-top: 0.4rem;
+    }
+  }
+
+  .t_btn.center.clear {
+    float: none;
+    display: block;
+    margin: 0 auto;
+    width: 70%;
+    max-width: 15rem;
+  }
+
+  .t_btn.big.mapege {
+    background-color: #999;
+    border-color: #444;
+    margin-top: 2.0rem
+  }
+}
+
+@media only screen and (max-width: 568px) {
+  .receipt, .option {
+    .items {
+      h4 {
+        border: none;
+        padding-left: 0;
+      }
+
+      p {
+        margin-top: 1.0rem;
+      }
+    }
+  }
+}

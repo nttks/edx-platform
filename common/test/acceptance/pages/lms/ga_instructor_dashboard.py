@@ -50,3 +50,9 @@ class SendEmailPage(PageObject):
 
     def send(self):
         self.q(css="input[name='send']").click()
+
+    def is_visible_advanced_course(self):
+        return self.q(css="select[name='advanced_course']").visible
+
+    def select_advanced_course(self, advanced_course_name):
+        self.q(css="select[name='advanced_course'] option").filter(lambda el: el.text == advanced_course_name).first.click()
