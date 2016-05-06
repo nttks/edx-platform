@@ -1,0 +1,28 @@
+<html>
+<head><title>GMO Payment Form</title>
+</head>
+<body>
+<p>GMO Payment page</p>
+
+## form for Credit Card
+<form name="input" action="${callback_url}" method="post">
+    % for name, value in post_params_success.items():
+        <input type="hidden" name="${name}" value="${value}">
+    % endfor
+    <input type="hidden" name="p015" value="${post_params_success.get('signature_card')}">
+    <input type="hidden" name="p022" value="0">
+    <input type="submit" value="Submit card">
+</form>
+
+## form for Docomo Mobile Payment
+<form name="input" action="${callback_url}" method="post">
+    % for name, value in post_params_success.items():
+        <input type="hidden" name="${name}" value="${value}">
+    % endfor
+    <input type="hidden" name="p015" value="${post_params_success.get('signature_docomo')}">
+    <input type="hidden" name="p022" value="9">
+    <input type="submit" value="Submit docomo">
+</form>
+
+</body>
+</html>
