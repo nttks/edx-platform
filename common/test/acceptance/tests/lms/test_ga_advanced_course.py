@@ -10,7 +10,7 @@ from lms.envs.bok_choy import EMAIL_FILE_PATH
 
 from ..ga_helpers import GaccoTestMixin
 from ...pages.lms.ga_advanced_course import (
-    AdvancedF2FCoursesPage, CourseAboutPage, DashboardPage,
+    AdvancedCourseChoosePage, AdvancedF2FCoursesPage, CourseAboutPage, DashboardPage,
 )
 
 
@@ -231,7 +231,7 @@ class AdvancedCourseTest(WebAppTest, GaccoTestMixin):
     def test_purchase_flow_from_dashboard(self):
         """
         Scenario:
-        Course has only onw advanced course.
+        Course has only one advanced course.
 
         1. Visit dashboard and go to list page
         2. Show advanced course list page and go to ticket option page
@@ -304,3 +304,101 @@ class AdvancedCourseTest(WebAppTest, GaccoTestMixin):
             u"If you unenroll, ticket, such as face-to-face classroom you have purchased will not be canceled. Please contact us through the Help If you would like to cancel the ticket.",
             dashboard_page.get_refund_info_message()
         )
+
+    def test_not_logged_in_and_register(self):
+        """
+        Scenario:
+        To enroll in not logged-in state.
+
+        1. Visit course about page and enroll
+        2. Show register page and register
+        3. Show advanced course choose page
+        """
+        course_about_page = CourseAboutPage(self.browser, self.course_id).visit()
+        register_page = course_about_page.enroll(login=False)
+
+        username = self.unique_id[0:6]
+        register_page.register(
+            email='{}@example.com'.format(username), password='abcdefG1', username=username,
+            full_name=username, terms_of_service=True
+        )
+
+        # Verify course choose page is shown
+        AdvancedCourseChoosePage(self.browser, self.course_id).wait_for_page()
+
+    def test_not_logged_in_and_register_with_not_advanced_course(self):
+        """
+        Scenario:
+        Course has not advanced course.
+        To enroll in not logged-in state.
+
+        1. Visit course about page and enroll
+        2. Show register page and register
+        3. Show dashboard page
+        """
+        _course_id = CourseFixture(
+            self.COURSE_ORG, '{}_2'.format(self._testMethodName), self.COURSE_RUN, self.COURSE_DISPLAY
+        ).install()._course_key
+
+        course_about_page = CourseAboutPage(self.browser, _course_id).visit()
+        register_page = course_about_page.enroll(login=False)
+
+        username = self.unique_id[0:6]
+        register_page.register(
+            email='{}@example.com'.format(username), password='abcdefG1', username=username,
+            full_name=username, terms_of_service=True
+        )
+
+        # Verify dashboard page is shown
+        DashboardPage(self.browser).wait_for_page()
+
+    def test_not_logged_in_and_login(self):
+        """
+        Scenario:
+        To enroll in not logged-in state.
+
+        1. Visit course about page and enroll
+        2. Show register page
+        3. Toggle form and login
+        4. Show advanced course choose page
+        """
+        # Create user and logout
+        user = self._auto_auth()
+        self._logout()
+
+        course_about_page = CourseAboutPage(self.browser, self.course_id).visit()
+        register_page = course_about_page.enroll(login=False)
+
+        register_page.toggle_form()
+        register_page.login(email=user['email'], password=user['username'])
+
+        # Verify course choose page is shown
+        AdvancedCourseChoosePage(self.browser, self.course_id).wait_for_page()
+
+    def test_not_logged_in_and_login_with_not_advanced_course(self):
+        """
+        Scenario:
+        Course has not advanced course.
+        To enroll in not logged-in state.
+
+        1. Visit course about page and enroll
+        2. Show register page
+        3. Toggle form and login
+        4. Show dashboard page
+        """
+        # Create user and logout
+        user = self._auto_auth()
+        self._logout()
+
+        _course_id = CourseFixture(
+            self.COURSE_ORG, '{}_2'.format(self._testMethodName), self.COURSE_RUN, self.COURSE_DISPLAY
+        ).install()._course_key
+
+        course_about_page = CourseAboutPage(self.browser, _course_id).visit()
+        register_page = course_about_page.enroll(login=False)
+
+        register_page.toggle_form()
+        register_page.login(email=user['email'], password=user['username'])
+
+        # Verify dashboard page is shown
+        DashboardPage(self.browser).wait_for_page()

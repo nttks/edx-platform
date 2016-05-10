@@ -7,6 +7,7 @@ from bok_choy.page_object import PageObject
 
 from . import BASE_URL
 from .course_about import CourseAboutPage as EdXCourseAboutPage
+from .login_and_register import CombinedLoginAndRegisterPage
 from .pay_and_verify import FakePaymentPage as EdXFakePaymentPage
 
 from .ga_dashboard import DashboardPage as GaDashboradPage
@@ -276,12 +277,17 @@ class FakePaymentPage(EdXFakePaymentPage):
 
 class CourseAboutPage(EdXCourseAboutPage):
 
-    def enroll(self):
+    def enroll(self, login=True):
         self.q(css='a.register').first.click()
 
-        advanced_course_choose_page = AdvancedCourseChoosePage(self.browser, self.course_id)
-        advanced_course_choose_page.wait_for_page()
-        return advanced_course_choose_page
+        if login:
+            advanced_course_choose_page = AdvancedCourseChoosePage(self.browser, self.course_id)
+            advanced_course_choose_page.wait_for_page()
+            return advanced_course_choose_page
+        else:
+            register_page = CombinedLoginAndRegisterPage(self.browser)
+            register_page.wait_for_page()
+            return register_page
 
 
 class DashboardPage(GaDashboradPage):
