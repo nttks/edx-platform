@@ -75,6 +75,10 @@ class BizContractDetailPage(BizNavPage, W2uiMixin):
         self.q(css='select#contractor_organization>option[value="{}"]'.format(contractor_organization)).first.click()
         return self
 
+    def select_contractor_organization(self, name):
+        self.q(css='select#contractor_organization>option').filter(lambda el: el.text.strip == name).first.click()
+        return self
+
     def add_detail_info(self, value, index):
         """
         Click add contract details link and input value for it

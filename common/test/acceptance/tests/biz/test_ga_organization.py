@@ -137,8 +137,36 @@ class BizOrganizationTest(WebAppTest, GaccoBizTestMixin):
         Test can not delete organization, that has a contract.
         - Case 22
         """
-        # TODO after contract test
-        pass
+        org_code = 'test_org_' + self.unique_id[0:8]
+        org_name = 'org name ' + org_code
+
+        # register organization
+        self.switch_to_user(AGGREGATOR_USER_INFO)
+        biz_organization_page = DashboardPage(self.browser).visit().click_biz().click_organization()
+        biz_organization_page.click_add().input(org_name, org_code).click_register()
+        self.assertIsNotNone(biz_organization_page.get_row({
+            'Organization Name': org_name,
+            'Organization Code': org_code,
+        }))
+
+        # register contract
+        self.create_contract(
+            DashboardPage(self.browser).visit().click_biz().click_contract(),
+            'O',
+            '2016/01/01',
+            '2100/01/01',
+            contractor_organization_name=org_name,
+        )
+
+        # delete organization
+        biz_organization_page = DashboardPage(self.browser).visit().click_biz().click_organization()
+
+        biz_organization_detail_page = biz_organization_page.click_grid_row(
+            {'Organization Code': org_code},
+            BizOrganizationDetailPage
+        ).click_delete().click_popup_yes().wait_for_page()
+
+        self.assertIn('The organization cannot be deleted, because it have contracts.', biz_organization_detail_page.messages)
 
     def test_register_same_name(self):
         """

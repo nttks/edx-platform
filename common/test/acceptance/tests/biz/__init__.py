@@ -92,7 +92,7 @@ class GaccoBizTestMixin(GaccoTestMixin):
             [remove_grid_row_index(r) for r in grid_rows_b]
         )
 
-    def create_contract(self, biz_contract_page, contract_type, start_date, end_date, contractor_organization='',
+    def create_contract(self, biz_contract_page, contract_type, start_date, end_date, contractor_organization='', contractor_organization_name=None,
                         detail_info=None,
                         additional_info=None):
         """
@@ -105,6 +105,8 @@ class GaccoBizTestMixin(GaccoTestMixin):
         biz_contract_detail_page.input(contract_name=contract_name, contract_type=contract_type,
                                        invitation_code=invitation_code, start_date=start_date,
                                        end_date=end_date, contractor_organization=contractor_organization)
+        if contractor_organization_name:
+            biz_contract_detail_page.select_contractor_organization(contractor_organization_name)
 
         if detail_info:
             for i, course_id in enumerate(detail_info):
