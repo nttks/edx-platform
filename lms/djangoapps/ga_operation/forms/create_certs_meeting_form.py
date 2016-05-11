@@ -10,3 +10,7 @@ class CreateCertsMeetingForm(GaOperationBaseForm):
     cert_lists = forms.FileField(required=True)
     email = GaOperationEmailField(required=True)
 
+    def clean_cert_lists(self):
+        val = self.cleaned_data.get('cert_lists')
+        val.name = 'verified-course-v1:' + val.name
+        return val

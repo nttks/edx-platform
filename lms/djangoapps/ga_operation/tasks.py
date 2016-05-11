@@ -72,7 +72,7 @@ class CreateCerts(object):
         result = ""
         for gc in GeneratedCertificate.objects.filter(course_id=CourseKey.from_string(self.course_id),
                                                       status="generating"):
-            result += "\n" + urllib.unquote(gc.download_url)
+            result += "\n" + gc.download_url
         return result
 
     def _send_email(self, err_msg):
