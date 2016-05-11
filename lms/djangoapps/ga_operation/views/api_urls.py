@@ -15,4 +15,19 @@ urlpatterns = patterns(
 
     url(r'^move_videos$',
         'ga_operation.views.api.move_videos', name="move_videos"),
+
+    url(r'^mutual_grading_report$',
+        'ga_operation.views.api.mutual_grading_report', name="mutual_grading_report"),
+
+    url(r'^discussion_data$',
+        'ga_operation.views.api.discussion_data', name="discussion_data"),
+
+    url(r'^discussion_data_download/?$',
+        'ga_operation.views.api.discussion_data_download', name="discussion_data_download"),
+
+    url(r'^past_graduates_info/?$',
+        'ga_operation.views.api.past_graduates_info', name="past_graduates_info"),
+
+    url(r'^last_login_info/?$',
+        'ga_operation.views.api.last_login_info', name="last_login_info"),
 )
