@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import urllib
 import logging
 from smtplib import SMTPException
 
@@ -13,7 +12,7 @@ from opaque_keys.edx.keys import CourseKey
 from certificates.models import GeneratedCertificate
 from xmodule.modulestore.django import modulestore
 from ga_operation.utils import (handle_downloaded_file_from_s3, delete_files, change_behavior_sys,
-                                get_std_info_from_local_storage)
+                                get_std_info_from_local_storage, handle_uploaded_generated_file_to_s3)
 
 log = logging.getLogger(__name__)
 
@@ -42,13 +41,13 @@ class TaskBase(object):
             log.exception('Caught the exception: ' + type(e).__name__)
 
     def _get_email_subject(self):
-        if len(self.err_msg):
+        if self.err_msg:
             return "{} was failure".format(self.get_command_name())
         else:
             return "{} was completed.".format(self.get_command_name())
 
     def _get_email_body(self):
-        if len(self.err_msg):
+        if self.err_msg:
             return self.err_msg
         else:
             return "{} was succeeded.\n\n{}".format(self.get_command_name(), self.out_msg)
@@ -93,7 +92,7 @@ class CreateCerts(TaskBase):
             log.exception('Caught the exception: ' + type(e).__name__)
             self.err_msg = "{}".format(e)
         finally:
-            if not len(self.err_msg):
+            if not self.err_msg:
                 self.out_msg = self._get_download_urls_text()
             self._send_email()
             delete_files(self.file_name_list, settings.PDFGEN_BASE_PDF_DIR)
@@ -119,7 +118,7 @@ class CreateCerts(TaskBase):
         return result
 
     def _get_email_body(self):
-        if len(self.err_msg):
+        if self.err_msg:
             return "{}({}) was failed.\n\n{}".format(self.get_command_name(),
                                                      self.operation,
                                                      self.err_msg)
@@ -170,3 +169,49 @@ class DumpOaScores(TaskBase):
     @staticmethod
     def get_command_name():
         return "dump_oa_scores"
+
+
+@CELERY_APP.task
+def ga_get_grades_g1528_task(course_list, email):
+    """ga_get_grades_g1528_task main."""
+    GaGetGradesG1528(course_list, email).run()
+
+
+class GaGetGradesG1528(TaskBase):
+    """GaGetGradesG1528 class."""
+    def __init__(self, course_list, email):
+        super(GaGetGradesG1528, self).__init__(email)
+        self.course_list = course_list
+
+    def run(self):
+        file_path_list = []
+        try:
+            file_path = self._get_output_file_path()
+            with change_behavior_sys():
+                call_command(self.get_command_name(), *self.course_list,
+                             output=file_path,
+                             sitename=self._get_company_key()["site_name"])
+            file_path_list = handle_uploaded_generated_file_to_s3(
+                [file_path],
+                self._get_company_key()["bucket_name"]
+            )
+        except Exception as e:
+            log.exception('Caught the exception: ' + type(e).__name__)
+            self.err_msg = "{}".format(e)
+        finally:
+            if not self.err_msg:
+                self.err_msg, self.out_msg = get_std_info_from_local_storage()
+            self.out_msg += '\n'.join(file_path_list)
+            self._send_email()
+            delete_files([self._get_company_key()["output_file_name"]], settings.GA_OPERATION_WORK_DIR)
+
+    def _get_output_file_path(self):
+        return settings.GA_OPERATION_WORK_DIR + '/' + self._get_company_key()["output_file_name"]
+
+    @staticmethod
+    def _get_company_key():
+        return settings.GA_OPERATION_SPECIFIC_COMPANY_KEYS["g1528"]
+
+    @staticmethod
+    def get_command_name():
+        return "ga_get_grades"

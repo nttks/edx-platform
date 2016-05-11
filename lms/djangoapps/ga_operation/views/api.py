@@ -11,9 +11,10 @@ from django.contrib.auth.models import User
 from django.http import HttpResponseForbidden, HttpResponseBadRequest
 
 from opaque_keys.edx.keys import CourseKey
+from opaque_keys import InvalidKeyError
 from util.json_request import JsonResponse
 from pdfgen.certificate import CertPDFException
-from certificates.models import GeneratedCertificate, CertificateStatuses
+from certificates.models import GeneratedCertificate
 from ga_operation.forms.move_videos_form import MoveVideosForm
 from ga_operation.forms.create_certs_form import CreateCertsForm
 from ga_operation.forms.create_certs_meeting_form import CreateCertsMeetingForm
@@ -22,8 +23,9 @@ from ga_operation.forms.mutual_grading_report import MutualGradingReportForm
 from ga_operation.forms.last_login_info_form import LastLoginInfoForm
 from ga_operation.forms.discussion_data_form import DiscussionDataForm
 from ga_operation.forms.past_graduates_info_form import PastGraduatesInfoForm
-from ga_operation.tasks import (CreateCerts, create_certs_task, dump_oa_scores_task)
-from ga_operation.utils import (handle_uploaded_file_to_s3, get_s3_bucket,
+from ga_operation.forms.aggregate_g1528_form import AggregateG1528Form
+from ga_operation.tasks import (CreateCerts, create_certs_task, dump_oa_scores_task, ga_get_grades_g1528_task)
+from ga_operation.utils import (handle_uploaded_received_file_to_s3, get_s3_bucket,
                                 get_s3_connection, CSVResponse, JSONFileResponse)
 from ga_operation.mongo_utils import CommentStore
 
@@ -53,10 +55,10 @@ def create_certs(request):
         return JsonResponse(f.errors, status=400)
     email = f.cleaned_data['email']
     course_id = f.cleaned_data['course_id']
-    file_name_list = handle_uploaded_file_to_s3(form=f,
-                                                file_name_keys=['cert_pdf_tmpl'],
-                                                bucket_name=settings.GA_OPERATION_CERTIFICATE_BUCKET_NAME)
     try:
+        file_name_list = handle_uploaded_received_file_to_s3(form=f,
+                                                             file_name_keys=['cert_pdf_tmpl'],
+                                                             bucket_name=settings.GA_OPERATION_CERTIFICATE_BUCKET_NAME)
         create_certs_task.delay(course_id=course_id,
                                 email=email,
                                 file_name_list=file_name_list)
@@ -86,10 +88,11 @@ def create_certs_meeting(request):
         return JsonResponse(f.errors, status=400)
     email = f.cleaned_data['email']
     course_id = f.cleaned_data['course_id']
-    file_name_list = handle_uploaded_file_to_s3(form=f,
-                                                file_name_keys=['cert_pdf_tmpl', 'cert_pdf_meeting_tmpl', 'cert_lists'],
-                                                bucket_name=settings.GA_OPERATION_CERTIFICATE_BUCKET_NAME)
     try:
+        tmpl_list = ['cert_pdf_tmpl', 'cert_pdf_meeting_tmpl', 'cert_lists']
+        file_name_list = handle_uploaded_received_file_to_s3(form=f,
+                                                             file_name_keys=tmpl_list,
+                                                             bucket_name=settings.GA_OPERATION_CERTIFICATE_BUCKET_NAME)
         create_certs_task.delay(course_id=course_id,
                                 email=email,
                                 file_name_list=file_name_list,
@@ -344,3 +347,44 @@ def last_login_info(request):
     finally:
         log.info('path:{}, user.id:{} End.'.format(request.path, request.user.id))
     return response
+
+
+@staff_only
+@login_required
+@require_POST
+@ensure_csrf_cookie
+def aggregate_g1528(request):
+    """Ajax call to aggregate g1528."""
+    f = AggregateG1528Form(request.POST, files=request.FILES)
+    if not f.is_valid():
+        log.info(f.errors)
+        f.errors[RESPONSE_FIELD_ID] = u'入力したフォームの内容が不正です。'
+        return JsonResponse(f.errors, status=400)
+    email = f.cleaned_data['email']
+    course_list = []
+    line_count = 0
+    try:
+        for line in f.cleaned_data['course_lists_file'].readlines():
+            course_id = line.strip('\n')
+            course_list.append(course_id)
+            line_count += 1
+            CourseKey.from_string(course_id)
+        ga_get_grades_g1528_task.delay(course_list=course_list, email=email)
+    except InvalidKeyError as e:
+        err_msg = 'Course ID format error. Line:{}, {}'.format(line_count, e)
+        log.exception(err_msg)
+        return JsonResponse({
+            RESPONSE_FIELD_ID: err_msg
+        }, status=400)
+    except Exception as e:
+        log.exception('Caught the exception: ' + type(e).__name__)
+        return JsonResponse({
+            RESPONSE_FIELD_ID: "{}".format(e)
+        }, status=500)
+    else:
+        return JsonResponse({
+            RESPONSE_FIELD_ID: u'処理を開始しました。\n処理が終了次第、{}のアドレスに完了通知が届きます。'.format(email)
+        })
+    finally:
+        log.info('path:{}, user.id:{} End.'.format(request.path, request.user.id))
+
