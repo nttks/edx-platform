@@ -12,11 +12,10 @@ from common.test.acceptance.pages.biz.ga_contract import BizContractPage, BizCon
 from common.test.acceptance.pages.biz.ga_navigation import BizNavPage
 from common.test.acceptance.pages.common.logout import LogoutPage
 from common.test.acceptance.pages.lms.auto_auth import AutoAuthPage
-from common.test.acceptance.tests.biz import AGGREGATOR_USER_INFO
-from common.test.acceptance.tests.ga_helpers import GaccoTestMixin
+from common.test.acceptance.tests.biz import AGGREGATOR_USER_INFO, GaccoBizTestMixin
 
 
-class BizContractTest(WebAppTest, GaccoTestMixin):
+class BizContractTest(WebAppTest, GaccoBizTestMixin):
     """
     Tests that the contract functionality works
     """
@@ -38,11 +37,6 @@ class BizContractTest(WebAppTest, GaccoTestMixin):
         self.assertIn(u'Contractor Organization Name', grid_columns)
         self.assertIn(u'Contract Start Date', grid_columns)
         self.assertIn(u'Contract End Date', grid_columns)
-
-    def assert_grid_row(self, grid_row, assert_dict):
-        for assert_key, assert_value in assert_dict.items():
-            self.assertIn(assert_key, grid_row)
-            self.assertEqual(assert_value, grid_row[assert_key])
 
     def setUp(self):
         super(BizContractTest, self).setUp()
