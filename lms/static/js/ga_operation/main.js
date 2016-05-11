@@ -6,7 +6,11 @@ RequireJS.require([
     'js/ga_operation/views/move_videos',
     'js/ga_operation/views/create_certs',
     'js/ga_operation/views/create_certs_meeting',
-    'js/ga_operation/views/publish_certs'
+    'js/ga_operation/views/publish_certs',
+    'js/ga_operation/views/mutual_grading_report',
+    'js/ga_operation/views/discussion_data',
+    'js/ga_operation/views/past_graduates_info',
+    'js/ga_operation/views/last_login_info'
 ], function (
     Backbone,
     GaOperationApp,
@@ -15,7 +19,11 @@ RequireJS.require([
     MoveVideos,
     CreateCerts,
     CreateCertsMeeting,
-    PublishCerts
+    PublishCerts,
+    MutualGradingReport,
+    DiscussionData,
+    PastGraduatesInfo,
+    LastLoginInfo
 ) {
     'use strict';
 
@@ -25,7 +33,11 @@ RequireJS.require([
         MoveVideos,
         CreateCerts,
         CreateCertsMeeting,
-        PublishCerts
+        PublishCerts,
+        MutualGradingReport,
+        DiscussionData,
+        PastGraduatesInfo,
+        LastLoginInfo
     );
     Backbone.history.start();
 });

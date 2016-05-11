@@ -14,7 +14,11 @@
                         response_dict = responseText;
                     }
                     _.each(response_dict, function (value, key) {
-                        $('#' + key).text(value)
+                        if (_.isFunction(value.replace)) {
+                            $('#' + key).html(value.replace(/\r?\n/g, '<br>'));
+                        } else {
+                            $('#' + key).text(value);
+                        }
                     });
                 }
 
@@ -46,6 +50,11 @@
                         $('.button').show();
                     });
                 }
+            },
+            downloadFileWithCourseId: function (url) {
+                event.preventDefault();
+                var course_id = $('input[name="course_id"]').val();
+                window.open('/ga_operation/api/' + url + '/?course_id=' + encodeURIComponent(course_id), '_blank');
             }
         });
     });

@@ -1,11 +1,21 @@
 # -*- coding: utf-8 -*-
 import os
+import logging
+import json
+from datetime import datetime
+from contextlib import contextmanager
+from exceptions import OSError
 
 from django.conf import settings
+from django.http import HttpResponse
 
+from util.json_request import JsonResponse
 from boto.s3.connection import S3Connection
 from boto.exception import S3ResponseError
 from boto.s3.key import Key
+from bson import ObjectId
+
+log = logging.getLogger(__name__)
 
 
 def get_s3_bucket(conn, bucket_name):
@@ -60,8 +70,79 @@ def handle_uploaded_file_to_s3(form, file_name_keys, bucket_name):
     return file_name_list
 
 
-def delete_files(file_name_list):
+def delete_files(file_name_list, base_dir):
     """Delete files from local storage."""
     for file_name in file_name_list:
-        os.remove(settings.PDFGEN_BASE_PDF_DIR + "/" + file_name)
+        try:
+            os.remove(base_dir + "/" + file_name)
+        except OSError:
+            log.exception('File remove was failed')
+
+
+@contextmanager
+def change_behavior_sys():
+    import sys
+    import __builtin__
+
+    def exit_dummy(_):
+        pass
+    tmp_exit = tmp_stderr = tmp_stdout = tmp_raw_input = None
+    try:
+        with open(settings.GA_OPERATION_STD_ERR, 'w') as err, open(settings.GA_OPERATION_STD_OUT, 'w') as out:
+            tmp_exit = sys.exit
+            sys.exit = exit_dummy
+            tmp_stderr = sys.stderr
+            sys.stderr = err
+            tmp_stdout = sys.stdout
+            sys.stdout = out
+            tmp_raw_input = __builtin__.raw_input
+            __builtin__.raw_input = get_dummy_raw_input()
+            yield
+    finally:
+        if tmp_exit:
+            sys.exit = tmp_exit
+        if tmp_stderr:
+            sys.stderr = tmp_stderr
+        if tmp_stdout:
+            sys.stdout = tmp_stdout
+        if tmp_raw_input:
+            __builtin__.raw_input = tmp_raw_input
+
+
+def get_dummy_raw_input():
+    x = [-1]
+
+    def counter(_):
+        x[0] += 1
+        return x[0]
+    return counter
+
+
+def get_std_info_from_local_storage():
+    with open(settings.GA_OPERATION_STD_ERR, 'r') as err, open(settings.GA_OPERATION_STD_OUT, 'r') as out:
+        err_msg, out_msg = err.read(), out.read()
+    return err_msg, out_msg
+
+
+class CSVResponse(HttpResponse):
+    """ Return to csv response. """
+    def __init__(self, filename, *args, **kwargs):
+        super(CSVResponse, self).__init__(content_type='text/csv', *args, **kwargs)
+        self['Content-Disposition'] = 'attachment; filename={}'.format(filename)
+
+
+class JSONEncoder(json.JSONEncoder):
+    def default(self, o):
+        if isinstance(o, ObjectId):
+            return str(o)
+        if isinstance(o, datetime):
+            return o.isoformat()
+        return json.JSONEncoder.default(self, o)
+
+
+class JSONFileResponse(JsonResponse):
+    """ Return to json file response. """
+    def __init__(self, object=None, filename=None, encoder=JSONEncoder, *args, **kwargs):
+        super(JSONFileResponse, self).__init__(object=object, content_type='text/json', encoder=encoder, *args, **kwargs)
+        self['Content-Disposition'] = 'attachment; filename={}'.format(filename)
 
