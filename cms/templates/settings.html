@@ -308,11 +308,13 @@ CMS.URL.UPLOAD_ASSET = '${upload_asset_url}';
                 <span class="tip">${_("Information for prospective students")}</span>
               </header>
               <ol class="list-input">
+                % if user.is_staff:
                 <li class="field" id="field-course-category">
                   <label for="course-category">${_("Course Category")}</label>
                   <input type="text" class="placeholder" id="course-category" value="" autocomplete="off" />
                   <span class="tip tip-stacked">${_("Please enter the course category, separated by commas.")}</span>
                 </li>
+                % endif
                 <li class="field required" id="field-course-canonical-name">
                   <label for="course-canonical-name">${_("Course Canonical Name")}</label>
                   <input type="text" class="placeholder" id="course-canonical-name" value="" autocomplete="off" />

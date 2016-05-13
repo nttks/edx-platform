@@ -168,3 +168,29 @@ class SettingsDeadlineTerminateTest(StudioCourseTest):
         # input value
         self.settings_detail.teacher_name.fill('')
         self.assertTrue(self.settings_detail.has_error)
+
+
+@flaky
+class SettingsNotStaffTest(StudioCourseTest):
+    """
+    Tests for settings page by not staff user.
+    """
+
+    def setUp(self):
+        super(SettingsNotStaffTest, self).setUp()
+        self.settings_detail = SettingsPage(
+            self.browser,
+            self.course_info['org'],
+            self.course_info['number'],
+            self.course_info['run']
+        )
+
+    def test_course_category_not_displayed(self):
+        self.settings_detail.visit()
+        # First, verify canonical name has displayed, since canonical name is rendered after course category.
+        self.assertEqual(
+            self.course_info['display_name'],
+            self.settings_detail.course_canonical_name.attrs('value')[0]
+        )
+        # Second, verify course category has not displayed.
+        self.assertFalse(self.settings_detail.is_course_category_displayed)

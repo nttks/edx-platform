@@ -27,6 +27,7 @@ from contentstore.views.component import ADVANCED_COMPONENT_POLICY_KEY
 import ddt
 from xmodule.modulestore import ModuleStoreEnum
 
+from student.tests.factories import UserFactory
 from util.milestones_helpers import seed_milestone_relationship_types
 
 
@@ -169,6 +170,22 @@ class CourseDetailsTestCase(CourseTestCase):
         self.assertEqual(
             CourseDetails.update_from_json(self.course.id, jsondetails.__dict__, self.user).course_span,
             jsondetails.course_span
+        )
+
+    def test_course_category_update_and_fetch(self):
+        jsondetails = CourseDetails.fetch(self.course.id)
+        jsondetails.course_category = ["food", "teen"]
+        # update by staff user
+        self.assertEqual(
+            CourseDetails.update_from_json(self.course.id, jsondetails.__dict__, self.user).course_category,
+            jsondetails.course_category
+        )
+        # update by not staff user
+        jsondetails.course_category = ["drink"]
+        not_staff = UserFactory.create()
+        self.assertEqual(
+            CourseDetails.update_from_json(self.course.id, jsondetails.__dict__, not_staff).course_category,
+            ["food", "teen"]
         )
 
     @override_settings(MKTG_URLS={'ROOT': 'dummy-root'})
