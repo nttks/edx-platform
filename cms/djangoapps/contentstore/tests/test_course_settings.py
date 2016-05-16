@@ -251,6 +251,22 @@ class CourseDetailsViewTest(CourseTestCase):
                 '<h3 id="heading-entrance-exam">' in resp.content
             )
 
+    def test_course_category_update_and_fetch(self):
+        jsondetails = CourseDetails.fetch(self.course.id)
+        jsondetails.course_category = ["food", "teen"]
+        # update by staff user
+        self.assertEqual(
+            CourseDetails.update_from_json(self.course.id, jsondetails.__dict__, self.user).course_category,
+            jsondetails.course_category
+        )
+        # update by not staff user
+        jsondetails.course_category = ["drink"]
+        not_staff = UserFactory.create()
+        self.assertEqual(
+            CourseDetails.update_from_json(self.course.id, jsondetails.__dict__, not_staff).course_category,
+            ["food", "teen"]
+        )
+
     @override_settings(MKTG_URLS={'ROOT': 'dummy-root'})
     def test_marketing_site_fetch(self):
         settings_details_url = get_url(self.course.id)

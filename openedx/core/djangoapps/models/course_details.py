@@ -272,7 +272,9 @@ class CourseDetails(object):
             dirty = True
 
         if 'course_category' in jsondict \
+                and user.is_staff \
                 and sorted(jsondict['course_category']) != sorted(descriptor.course_category):
+            # course_category can be updated by only staff user
             descriptor.course_category = jsondict['course_category']
             dirty = True
 
