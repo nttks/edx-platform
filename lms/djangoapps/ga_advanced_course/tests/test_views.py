@@ -404,6 +404,26 @@ class AdvancedCourseChooseTicketViewTest(CourseCheckMixin, TicketCheckMixin, Adv
 
         self.assertEqual(404, response.status_code)
 
+    def test_choose_ticket_bad_course_id(self):
+        advanced_courses = self._create_advanced_courses(self.course, 2)
+        self._create_ticket(advanced_courses[0], 2)
+
+        bad_course = CourseFactory.create(
+            metadata={
+                'is_f2f_course': True,
+                'is_f2f_course_sell': True,
+            }
+        )
+        bad_advanced_courses = self._create_advanced_courses(bad_course, 2)
+        self._create_ticket(bad_advanced_courses[0], 2)
+
+        self.setup_user()
+        self.enroll(self.course)
+
+        response = self._get_choose_ticket(self.course, bad_advanced_courses[0].id)
+
+        self.assertEqual(404, response.status_code)
+
 
 class AdvancedCoursePurchaseTicketViewTest(CourseCheckMixin, TicketCheckMixin, AdvancedCourseViewTest):
     """
@@ -457,6 +477,26 @@ class AdvancedCoursePurchaseTicketViewTest(CourseCheckMixin, TicketCheckMixin, A
         self.enroll(self.course)
 
         response = self._get_purchase_ticket(self.course, ticket.id)
+
+        self.assertEqual(404, response.status_code)
+
+    def test_purchaseticket_bad_course_id(self):
+        advanced_courses = self._create_advanced_courses(self.course, 2)
+        self._create_ticket(advanced_courses[0], 2)
+
+        bad_course = CourseFactory.create(
+            metadata={
+                'is_f2f_course': True,
+                'is_f2f_course_sell': True,
+            }
+        )
+        bad_advanced_courses = self._create_advanced_courses(bad_course, 2)
+        ticket = self._create_ticket(bad_advanced_courses[0], 2)[0]
+
+        self.setup_user()
+        self.enroll(self.course)
+
+        response = self._get_purchase_ticket(self.course, bad_advanced_courses[0].id)
 
         self.assertEqual(404, response.status_code)
 

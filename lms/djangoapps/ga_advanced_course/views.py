@@ -147,6 +147,18 @@ def _check_for_purchase(request, advanced_course, tickets):
         return True
 
 
+def _verify_course_integrity(course, advanced_course):
+    if advanced_course.course_id != course.id:
+        log.warning(
+            "Advanced course {advanced_course_id} is related with {correct_course_id}. But {bad_course_id} is specified.".format(
+                advanced_course_id=advanced_course.id,
+                correct_course_id=advanced_course.course_id,
+                bad_course_id=unicode(course.id)
+            )
+        )
+        raise Http404()
+
+
 def require_enroll(is_f2f=False, use_course=True):
     """
     View decorator that whether the course is present and user is enrolled.
@@ -232,6 +244,7 @@ def advanced_courses_face_to_face(request, course):
 def choose_ticket(request, course, advanced_course_id):
 
     advanced_course = _get_advanced_course(advanced_course_id)
+    _verify_course_integrity(course, advanced_course)
 
     tickets = AdvancedCourseTicket.find_by_advanced_course(advanced_course)
 
@@ -305,11 +318,12 @@ def checkout_with_shoppingcart(request, user, order):
 
 @require_GET
 @login_required
-@require_enroll(is_f2f=True, use_course=False)
-def purchase_ticket(request, ticket_id):
+@require_enroll(is_f2f=True)
+def purchase_ticket(request, course, ticket_id):
 
     ticket = _get_advanced_course_ticket(ticket_id)
     advanced_course = _get_advanced_course(ticket.advanced_course.id)
+    _verify_course_integrity(course, advanced_course)
 
     # check status of target ticket
     if ticket.is_end_of_sale():
