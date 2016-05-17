@@ -73,6 +73,13 @@ class SettingsPage(EdXSettingsPage):
         return self.get_elements('#course-category')
 
     @property
+    def is_course_category_displayed(self):
+        """
+        Returns whether the course_category has displayed.
+        """
+        return self.q(css='#course-category').present
+
+    @property
     def is_f2f_course(self):
         """
         Returns the is_f2f_course.
