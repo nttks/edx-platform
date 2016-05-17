@@ -2786,6 +2786,10 @@ msgstr "申し訳ございません。定員に達したためチケットが購
 msgid "Sorry, could not buy a ticket because all of tickets are end of sale."
 msgstr "申し訳ございません。チケットが販売終了したため購入できませんでした。"
 
+#: lms/djangoapps/ga_advanced_course/views.py
+msgid "Sorry, could not buy a ticket because the selected ticket was end of sale."
+msgstr "申し訳ございません。選択したチケットが販売終了したため購入できませんでした。"
+
 #: lms/djangoapps/shoppingcart/processors/GMO.py
 msgid "Sorry! Your payment could not be processed because an unexpected exception occurred. Please contact us through the Help."
 msgstr "申し訳ありません。購入手続き中にエラーが発生したため、正常に手続きが完了できませんでした。画面下部にあるヘルプからお問い合わせください。"

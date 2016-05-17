@@ -248,6 +248,9 @@ def choose_ticket(request, course, advanced_course_id):
 
     tickets = AdvancedCourseTicket.find_by_advanced_course(advanced_course)
 
+    # workaround for deleting existance messages
+    list(messages.get_messages(request))
+
     if not _check_for_purchase(request, advanced_course, tickets):
         return _redirect_to_advanced_courses(advanced_course.course_id, advanced_course.course_type)
 
