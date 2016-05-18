@@ -34,6 +34,8 @@ from ga_shoppingcart.models import AdvancedCourseItem
                 'p017': 'param_error_code',
                 'p018': 'param_error_detail_code',
                 'p019': 'param_payment_type',
+                'p913': 'param_docomo_cancel_amount',
+                'p914': 'param_docomo_cancel_tax',
             }
         }
     }
@@ -65,6 +67,8 @@ class NotificationViewTest(TestCase):
             'param_error_code': '',
             'param_error_detail_code': '',
             'param_payment_type': '0',
+            'param_docomo_cancel_amount': str(self.order.total_cost),
+            'param_docomo_cancel_tax': str(self.order.total_tax),
         })
 
     def _access_notify(self, data):
@@ -194,6 +198,17 @@ class NotificationViewTest(TestCase):
             'param_status': status,
             'param_job': job,
         })
+        # For assertion, to override the amount of do not use
+        if payment_type == '0':
+            self.params.update({
+                'param_docomo_cancel_amount': '0',
+                'param_docomo_cancel_tax': '0',
+            })
+        elif payment_type == '9':
+            self.params.update({
+                'param_amount': '0',
+                'param_tax': '0',
+            })
 
         response = self._access_notify(self.params)
 

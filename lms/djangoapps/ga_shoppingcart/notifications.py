@@ -112,14 +112,22 @@ def _process_cancel(params):
 
 
 def _payment_accepted(params):
+    _amount = params.amount
+    _tax = params.tax
     _currency = params.currency
+
+    if params.is_docomo() and params.is_cancel():
+        _amount = params.docomo_cancel_amount
+        _tax = params.docomo_cancel_tax
+
     if _currency == 'JPN':
         # GMO notification programs returns JPN the currency code of the Japanese Yen.
         _currency = 'JPY'
+
     return payment_accepted(
         parse_order_id(params.order_id),
-        params.amount,
-        params.tax,
+        _amount,
+        _tax,
         _currency
     )
 
@@ -138,7 +146,9 @@ class _NotificationParams(AbstractReadParams):
         'p010': 'currency',
         'p017': 'error_code',
         'p018': 'error_detail_code',
-        'p019': 'payment_type'
+        'p019': 'payment_type',
+        'p913': 'docomo_cancel_amount',
+        'p914': 'docomo_cancel_tax',
     }
 
     def has_error(self):
@@ -176,7 +186,11 @@ class _NotificationParams(AbstractReadParams):
         """
         Validate that we have the paramters we expect and can convert them to the appropriate types.
         """
-        required_params = [('amount', int), ('tax', int), ('currency', str), ]
+        if self.is_docomo() and self.is_cancel():
+            required_params = [('docomo_cancel_amount', int), ('docomo_cancel_tax', int), ('currency', str), ]
+        else:
+            required_params = [('amount', int), ('tax', int), ('currency', str), ]
+
         for key, key_type in required_params:
             if not hasattr(self, key) or getattr(self, key) is None:
                 raise CCProcessorDataException(
