@@ -133,7 +133,7 @@ $(function () {
     series: {stack: true,
               lines: {show: false, steps: false },
               bars: {show: true, barWidth: 0.8, horizontal: true, align: 'center', lineWidth: 0, fill: .8 },},
-    xaxis: {ticks: grade_cutoff_ticks, min: 0.0, max: 1.0, labelAngle: 90},
+    xaxis: {ticks: grade_cutoff_ticks, min: 0.0, max: 1.0, labelAngle: 90, labelWidth: 0, labelHeight: 70, origWidth: 75, origHeight: 20},
     yaxis: {tickLength: 0, min: 0.0, max: ${tickIndex - sectionSpacer}, ticks: ticks, labelWidth: 100},
     grid: { hoverable: true, clickable: true, borderWidth: 1, markings: markings },
     legend: {show: false},
