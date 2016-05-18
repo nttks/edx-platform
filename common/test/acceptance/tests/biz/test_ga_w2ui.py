@@ -7,6 +7,7 @@ import pytz
 
 from bok_choy.web_app_test import WebAppTest
 
+from common.test.acceptance.pages.biz.ga_contract import BizContractDetailPage, BizContractPage
 from . import AGGREGATOR_USER_INFO, GaccoBizTestMixin
 from ...pages.biz.ga_dashboard import DashboardPage
 
@@ -182,3 +183,173 @@ class BizW2uiTest(WebAppTest, GaccoBizTestMixin):
         biz_organization_page.click_sort(u'Organization Name')
         grid_rows.sort(key=lambda x: x[u'Organization Name'], reverse=True)
         self.assert_grid_row_equal(grid_rows, biz_organization_page.grid_rows)
+
+    def _create_contract(self, biz_contract_page, contract_type, start_date, end_date):
+        biz_contract_page.click_register_button()
+        biz_contract_detail_page = BizContractDetailPage(self.browser).wait_for_page()
+        contract_name = 'test_contract_' + self.unique_id[0:8]
+        invitation_code = self.unique_id[0:8]
+        biz_contract_detail_page.input(contract_name=contract_name, contract_type=contract_type,
+                                       invitation_code=invitation_code, start_date=start_date,
+                                       end_date=end_date).click_register_button()
+        BizContractPage(self.browser).wait_for_page()
+        self.assertIn("The new contract has been added.", biz_contract_page.messages)
+        self.assert_grid_row(
+                biz_contract_page.get_row({'Contract Name': contract_name}),
+                {
+                    'Contract Name': contract_name,
+                    'Invitation Code': invitation_code,
+                    'Contract Start Date': start_date,
+                    'Contract End Date': end_date
+                }
+        )
+        return biz_contract_page.get_row({'Contract Name': contract_name})
+
+    def test_contract_grid_sort(self):
+        """
+        Test organization grid sort
+        """
+        self.switch_to_user(AGGREGATOR_USER_INFO)
+
+        biz_contract_page = DashboardPage(self.browser).visit().click_biz().click_contract()
+
+        # create test data
+        for _ in range(10):
+            self._create_contract(biz_contract_page, 'OS', '2016/01/{0:02d}'.format(_ + 1),
+                                  '2116/01/{0:02d}'.format(_ + 1))
+
+        # initial grid-rows
+        grid_rows = biz_contract_page.grid_rows
+
+        # sort by name
+        biz_contract_page.click_sort(u'Contract Name')
+        grid_rows.sort(key=lambda x: x[u'Contract Name'])
+        self.assert_grid_row_equal(grid_rows, biz_contract_page.grid_rows)
+
+        # sort by name reverse
+        biz_contract_page.click_sort(u'Contract Name')
+        grid_rows.sort(key=lambda x: x[u'Contract Name'], reverse=True)
+        self.assert_grid_row_equal(grid_rows, biz_contract_page.grid_rows)
+
+    def test_contract_grid_icon_columns(self):
+        """
+        Test contract grid columns
+        """
+        self.switch_to_user(AGGREGATOR_USER_INFO)
+
+        # view contract grid
+        biz_contract_page = DashboardPage(self.browser).visit().click_biz().click_contract()
+        self._create_contract(biz_contract_page, 'OS', '2016/01/01', '2116/01/01')
+
+        # all columns of grid
+        biz_contract_page.click_grid_icon_columns()
+        grid_icon_columns = biz_contract_page.grid_icon_columns
+
+        # visibility columns of grid
+        grid_columns = biz_contract_page.grid_columns
+
+        self.assertIn(u'Contract Name', grid_columns)
+        self.assertNotIn(u'Created By Name', grid_columns)
+
+        self.assert_grid_icon_columns_checked(biz_contract_page, grid_columns, grid_icon_columns)
+
+        # click grid-icon-columns checkbox.
+        biz_contract_page.click_grid_icon_columns_checkbox(u'Created By Name')
+        grid_columns = biz_contract_page.grid_columns
+        self.assertIn(u'Contract Name', grid_columns)
+        self.assertIn(u'Created By Name', grid_columns)
+
+        # click grid-icon-columns label.
+        biz_contract_page.click_grid_icon_columns_label(u'Contract Name')
+        grid_columns = biz_contract_page.grid_columns
+        self.assertNotIn(u'Contract Name', grid_columns)
+        self.assertIn(u'Created By Name', grid_columns)
+
+    def test_contract_grid_search(self):
+        """
+        Test organization grid search
+        """
+        self.switch_to_user(AGGREGATOR_USER_INFO)
+
+        searchable_fields = [u'Contract Name', u'Contract Type', u'Invitation Code', u'Contractor Organization Name',
+                             u'Contract Start Date', u'Contract End Date', u'Created By Name', u'Created Date']
+
+        # view contract grid
+        biz_contract_page = DashboardPage(self.browser).visit().click_biz().click_contract()
+        # create test data
+        contract1 = self._create_contract(biz_contract_page, 'OS', '2016/01/01', '2116/01/01')
+        contract2 = self._create_contract(biz_contract_page, 'OS', '2016/01/01', '2116/01/01')
+        contract3 = self._create_contract(biz_contract_page, 'OS', '2016/01/01', '2116/01/01')
+        contract4 = self._create_contract(biz_contract_page, 'OS', '2016/01/01', '2116/01/01')
+
+        self.assertEqual(u'Contract Name', biz_contract_page.search_placeholder)
+
+        # columns of grid for search
+        biz_contract_page.click_grid_icon_search()
+        grid_icon_search = biz_contract_page.grid_icon_search
+        self.assertEqual(searchable_fields, grid_icon_search)
+        self.assertTrue(biz_contract_page.is_checked_grid_icon_search(u'Contract Name'))
+
+        # search text
+        biz_contract_page.click_grid_icon_search_label(u'Invitation Code')
+        self.assertEqual(u'Invitation Code', biz_contract_page.search_placeholder)
+
+        # 0 result
+        biz_contract_page.search('hoge')
+        self.assert_grid_row_not_in(contract1, biz_contract_page.grid_rows)
+        self.assert_grid_row_not_in(contract2, biz_contract_page.grid_rows)
+        self.assert_grid_row_not_in(contract3, biz_contract_page.grid_rows)
+        self.assert_grid_row_not_in(contract4, biz_contract_page.grid_rows)
+
+        # 1 result
+        biz_contract_page.search(contract1['Invitation Code'])
+        self.assert_grid_row_in(contract1, biz_contract_page.grid_rows)
+        self.assert_grid_row_not_in(contract2, biz_contract_page.grid_rows)
+        self.assert_grid_row_not_in(contract3, biz_contract_page.grid_rows)
+        self.assert_grid_row_not_in(contract4, biz_contract_page.grid_rows)
+
+        # clear search
+        biz_contract_page.clear_search()
+        self.assertLess(4, len(biz_contract_page.grid_rows))
+
+        # columns of grid for search
+        biz_contract_page.click_grid_icon_search()
+        grid_icon_search = biz_contract_page.grid_icon_search
+        self.assertEqual(searchable_fields, grid_icon_search)
+        self.assertTrue(biz_contract_page.is_checked_grid_icon_search(u'Invitation Code'))
+
+        # search date
+        now_ymd = datetime.now(pytz.timezone('Asia/Tokyo')).strftime('%Y/%m/%d')
+        biz_contract_page.click_grid_icon_search_label(u'Created Date').wait_for_calendar_visibility()
+        self.assertEqual(u'Created Date', biz_contract_page.search_placeholder)
+        self.assertIn(now_ymd, biz_contract_page.calendar_date)
+
+        # previous month calendar
+        biz_contract_page.click_calendar_prev()
+        self.assertNotIn(now_ymd, biz_contract_page.calendar_date)
+
+        # next month calendar
+        biz_contract_page.click_calendar_next()
+        self.assertIn(now_ymd, biz_contract_page.calendar_date)
+
+        # choice calendar ymd
+        biz_contract_page.click_calendar(now_ymd)
+        self.assert_grid_row_in(contract1, biz_contract_page.grid_rows)
+        self.assert_grid_row_in(contract2, biz_contract_page.grid_rows)
+        self.assert_grid_row_in(contract3, biz_contract_page.grid_rows)
+        self.assert_grid_row_in(contract4, biz_contract_page.grid_rows)
+
+        # clear search
+        biz_contract_page.clear_search()
+        self.assertLess(4, len(biz_contract_page.grid_rows))
+
+        # choice calendar y & m & ymd
+        biz_contract_page.click_search().wait_for_calendar_visibility()
+        biz_contract_page.click_calendar_title().click_calendar_jump(2000, 2).wait_for_calendar_visibility()
+        self.assertIn('2000/02/29', biz_contract_page.calendar_date)
+
+        biz_contract_page.click_calendar('2000/02/29')
+        self.assert_grid_row_not_in(contract1, biz_contract_page.grid_rows)
+        self.assert_grid_row_not_in(contract2, biz_contract_page.grid_rows)
+        self.assert_grid_row_not_in(contract3, biz_contract_page.grid_rows)
+        self.assert_grid_row_not_in(contract4, biz_contract_page.grid_rows)
