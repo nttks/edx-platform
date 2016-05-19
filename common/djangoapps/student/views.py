@@ -243,7 +243,7 @@ def reverification_info(statuses):
     return reverifications
 
 
-def get_course_enrollments(user, org_to_include, orgs_to_exclude, sort_order="default"):
+def get_course_enrollments(user, org_to_include, orgs_to_exclude, sort_order=None):
     """
     Given a user, return a filtered set of his or her course enrollments.
 
@@ -253,16 +253,16 @@ def get_course_enrollments(user, org_to_include, orgs_to_exclude, sort_order="de
             of this org will be returned.
         orgs_to_exclude (list[str]): If org_to_include is not None, this
             argument is ignored. Else, courses of this org will be excluded.
+        sort_order (tuple): order of course on dashboard
 
     Returns:
         generator[CourseEnrollment]: a sequence of enrollments to be displayed
         on the user's dashboard.
     """
-    if sort_order == "-created":
-        enrollments = CourseEnrollment.enrollments_for_user(user).order_by('-created')
-    else:
-        enrollments = CourseEnrollment.enrollments_for_user(user)
-        
+    enrollments = CourseEnrollment.enrollments_for_user(user)
+    if sort_order:
+        enrollments = enrollments.order_by(*sort_order)
+
     for enrollment in enrollments:
 
         # If the course is missing or broken, log an error and skip it.
@@ -545,7 +545,7 @@ def dashboard(request):
     # Build our (course, enrollment) list for the user, but ignore any courses that no
     # longer exist (because the course IDs have changed). Still, we don't delete those
     # enrollments, because it could have been a data push snafu.
-    course_enrollments = list(get_course_enrollments(user, course_org_filter, org_filter_out_set, sort_order="-created"))
+    course_enrollments = list(get_course_enrollments(user, course_org_filter, org_filter_out_set, sort_order=('-created', '-id')))
 
     # sort the enrollment pairs by the enrollment date
     course_enrollments.sort(key=lambda x: x.created, reverse=True)

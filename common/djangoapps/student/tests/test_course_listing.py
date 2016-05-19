@@ -2,6 +2,7 @@
 Unit tests for getting the list of courses for a user through iterating all courses and
 by reversing group name formats.
 """
+from datetime import timedelta
 import unittest
 
 from django.conf import settings
@@ -82,6 +83,52 @@ class TestCourseListing(ModuleStoreTestCase):
         # get dashboard
         courses_list = list(get_course_enrollments(self.student, None, []))
         self.assertEqual(len(courses_list), 0)
+
+    @unittest.skipUnless(settings.ROOT_URLCONF == 'lms.urls', 'Test only valid in lms')
+    def test_get_course_list_order(self):
+        """
+        Test getting courses order
+        """
+        course_location1 = self.store.make_course_key('Org1', 'Course1', 'Run2')
+        self._create_course_with_access_groups(course_location1)
+        course_location2 = self.store.make_course_key('Org1', 'Course2', 'Run1')
+        self._create_course_with_access_groups(course_location2)
+
+        # enrollment value
+        enrollment1 = CourseEnrollment.get_enrollment(self.student, course_location1)
+        enrollment2 = CourseEnrollment.get_enrollment(self.student, course_location2)
+
+        # mod created of enrollment same value
+        enrollment1.created = enrollment2.created
+        enrollment1.save()
+
+        # non order
+        enrollments_list = list(get_course_enrollments(self.student, None, []))
+        self.assertEqual([e.course_id for e in enrollments_list], [course_location1, course_location2])
+
+        # order created
+        enrollments_list = list(get_course_enrollments(self.student, None, [], ('-created',)))
+        self.assertEqual([e.course_id for e in enrollments_list], [course_location1, course_location2])
+
+        # order -created,-id
+        enrollments_list = list(get_course_enrollments(self.student, None, [], ('-created', '-id')))
+        self.assertEqual([e.course_id for e in enrollments_list], [course_location2, course_location1])
+
+        # mod created of enrollment different value
+        enrollment2.created = enrollment1.created + timedelta(seconds=1)
+        enrollment2.save()
+
+        # non order
+        enrollments_list = list(get_course_enrollments(self.student, None, []))
+        self.assertEqual([e.course_id for e in enrollments_list], [course_location1, course_location2])
+
+        # order created
+        enrollments_list = list(get_course_enrollments(self.student, None, [], ('-created',)))
+        self.assertEqual([e.course_id for e in enrollments_list], [course_location2, course_location1])
+
+        # order -created,-id
+        enrollments_list = list(get_course_enrollments(self.student, None, [], ('-created', '-id')))
+        self.assertEqual([e.course_id for e in enrollments_list], [course_location2, course_location1])
 
     def test_errored_course_regular_access(self):
         """
