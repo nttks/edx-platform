@@ -30,4 +30,7 @@ urlpatterns = patterns(
 
     url(r'^last_login_info/?$',
         'ga_operation.views.api.last_login_info', name="last_login_info"),
+
+    url(r'^aggregate_g1528$',
+        'ga_operation.views.api.aggregate_g1528', name="aggregate_g1528"),
 )
