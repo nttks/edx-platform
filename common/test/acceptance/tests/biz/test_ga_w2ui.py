@@ -184,27 +184,6 @@ class BizW2uiTest(WebAppTest, GaccoBizTestMixin):
         grid_rows.sort(key=lambda x: x[u'Organization Name'], reverse=True)
         self.assert_grid_row_equal(grid_rows, biz_organization_page.grid_rows)
 
-    def _create_contract(self, biz_contract_page, contract_type, start_date, end_date):
-        biz_contract_page.click_register_button()
-        biz_contract_detail_page = BizContractDetailPage(self.browser).wait_for_page()
-        contract_name = 'test_contract_' + self.unique_id[0:8]
-        invitation_code = self.unique_id[0:8]
-        biz_contract_detail_page.input(contract_name=contract_name, contract_type=contract_type,
-                                       invitation_code=invitation_code, start_date=start_date,
-                                       end_date=end_date).click_register_button()
-        BizContractPage(self.browser).wait_for_page()
-        self.assertIn("The new contract has been added.", biz_contract_page.messages)
-        self.assert_grid_row(
-                biz_contract_page.get_row({'Contract Name': contract_name}),
-                {
-                    'Contract Name': contract_name,
-                    'Invitation Code': invitation_code,
-                    'Contract Start Date': start_date,
-                    'Contract End Date': end_date
-                }
-        )
-        return biz_contract_page.get_row({'Contract Name': contract_name})
-
     def test_contract_grid_sort(self):
         """
         Test organization grid sort
@@ -215,8 +194,8 @@ class BizW2uiTest(WebAppTest, GaccoBizTestMixin):
 
         # create test data
         for _ in range(10):
-            self._create_contract(biz_contract_page, 'OS', '2016/01/{0:02d}'.format(_ + 1),
-                                  '2116/01/{0:02d}'.format(_ + 1))
+            self.create_contract(biz_contract_page,
+                                      'OS', '2016/01/{0:02d}'.format(_ + 1), '2116/01/{0:02d}'.format(_ + 1))
 
         # initial grid-rows
         grid_rows = biz_contract_page.grid_rows
@@ -239,7 +218,7 @@ class BizW2uiTest(WebAppTest, GaccoBizTestMixin):
 
         # view contract grid
         biz_contract_page = DashboardPage(self.browser).visit().click_biz().click_contract()
-        self._create_contract(biz_contract_page, 'OS', '2016/01/01', '2116/01/01')
+        self.create_contract(biz_contract_page, 'OS', '2016/01/01', '2116/01/01')
 
         # all columns of grid
         biz_contract_page.click_grid_icon_columns()
@@ -277,10 +256,10 @@ class BizW2uiTest(WebAppTest, GaccoBizTestMixin):
         # view contract grid
         biz_contract_page = DashboardPage(self.browser).visit().click_biz().click_contract()
         # create test data
-        contract1 = self._create_contract(biz_contract_page, 'OS', '2016/01/01', '2116/01/01')
-        contract2 = self._create_contract(biz_contract_page, 'OS', '2016/01/01', '2116/01/01')
-        contract3 = self._create_contract(biz_contract_page, 'OS', '2016/01/01', '2116/01/01')
-        contract4 = self._create_contract(biz_contract_page, 'OS', '2016/01/01', '2116/01/01')
+        contract1 = self.create_contract(biz_contract_page, 'OS', '2016/01/01', '2116/01/01')
+        contract2 = self.create_contract(biz_contract_page, 'OS', '2016/01/01', '2116/01/01')
+        contract3 = self.create_contract(biz_contract_page, 'OS', '2016/01/01', '2116/01/01')
+        contract4 = self.create_contract(biz_contract_page, 'OS', '2016/01/01', '2116/01/01')
 
         self.assertEqual(u'Contract Name', biz_contract_page.search_placeholder)
 

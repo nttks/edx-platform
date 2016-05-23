@@ -1,3 +1,4 @@
+from common.test.acceptance.pages.biz.ga_contract import BizContractDetailPage, BizContractPage
 from ..ga_helpers import GaccoTestMixin
 
 from ...pages.biz.ga_w2ui import remove_grid_row_index
@@ -90,3 +91,40 @@ class GaccoBizTestMixin(GaccoTestMixin):
             [remove_grid_row_index(r) for r in grid_rows_a],
             [remove_grid_row_index(r) for r in grid_rows_b]
         )
+
+    def create_contract(self, biz_contract_page, contract_type, start_date, end_date, contractor_organization='',
+                        detail_info=None,
+                        additional_info=None):
+        """
+        Register a contract.
+        """
+        biz_contract_page.click_register_button()
+        biz_contract_detail_page = BizContractDetailPage(self.browser).wait_for_page()
+        contract_name = 'test_contract_' + self.unique_id[0:8]
+        invitation_code = self.unique_id[0:8]
+        biz_contract_detail_page.input(contract_name=contract_name, contract_type=contract_type,
+                                       invitation_code=invitation_code, start_date=start_date,
+                                       end_date=end_date, contractor_organization=contractor_organization)
+
+        if detail_info:
+            for i, course_id in enumerate(detail_info):
+                biz_contract_detail_page.add_detail_info(course_id, i + 1)
+
+        if additional_info:
+            for i, additional_name in enumerate(additional_info):
+                biz_contract_detail_page.add_additional_info(additional_name, i + 1)
+
+        biz_contract_detail_page.click_register_button()
+        BizContractPage(self.browser).wait_for_page()
+
+        self.assertIn("The new contract has been added.", biz_contract_page.messages)
+        self.assert_grid_row(
+                biz_contract_page.get_row({'Contract Name': contract_name}),
+                {
+                    'Contract Name': contract_name,
+                    'Invitation Code': invitation_code,
+                    'Contract Start Date': start_date,
+                    'Contract End Date': end_date
+                }
+        )
+        return biz_contract_page.get_row({'Contract Name': contract_name})
