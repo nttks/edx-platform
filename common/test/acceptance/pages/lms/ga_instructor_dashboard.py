@@ -3,7 +3,8 @@ Instructor (2) dashboard page.
 """
 
 from bok_choy.page_object import PageObject
-from .instructor_dashboard import InstructorDashboardPage as EdXInstructorDashboardPage
+from .instructor_dashboard import InstructorDashboardPage as EdXInstructorDashboardPage, \
+    MembershipPage as EdXMembershipPage
 
 
 class InstructorDashboardPage(EdXInstructorDashboardPage):
@@ -56,3 +57,20 @@ class SendEmailPage(PageObject):
 
     def select_advanced_course(self, advanced_course_name):
         self.q(css="select[name='advanced_course'] option").filter(lambda el: el.text == advanced_course_name).first.click()
+
+class MembershipPageMemberListSection(EdXMembershipPage):
+    """
+    Member list management section of the Membership tab of the Instructor dashboard.
+    """
+    url = None
+
+    def select_role(self, role_name):
+        for option in self.q(css='#member-lists-selector option').results:
+            if role_name == option.text:
+                option.click()
+
+    def add_role(self, role_name, member):
+        self.select_role(role_name)
+        self.q(css='div[data-rolename="{}"] input.add-field'.format(role_name)).fill(member)
+        self.q(css='div[data-rolename="{}"] input.add'.format(role_name)).click()
+        self.wait_for_ajax()

@@ -7,7 +7,7 @@
       "username": "superuser",
       "first_name": "sp",
       "last_name": "us",
-      "email":"superuser@example.com",
+      "email": "superuser@example.com",
       "password": "SuperUser3",
       "is_staff": true,
       "is_active": true,
@@ -51,7 +51,7 @@
       "username": "plat_platformer",
       "first_name": "plat",
       "last_name": "platformer",
-      "email":"plat_platformer@example.com",
+      "email": "plat_platformer@example.com",
       "password": "platPlatformer3",
       "is_staff": false,
       "is_active": true
@@ -128,7 +128,7 @@
       "username": "owner_aggregator",
       "first_name": "owner",
       "last_name": "aggregator",
-      "email":"owner_aggregator@example.com",
+      "email": "owner_aggregator@example.com",
       "password": "ownerAggregator3",
       "is_staff": false,
       "is_active": true
@@ -183,7 +183,7 @@
       "username": "owner_director",
       "first_name": "owner",
       "last_name": "director",
-      "email":"owner_director@example.com",
+      "email": "owner_director@example.com",
       "password": "ownerDirector3",
       "is_staff": false,
       "is_active": true
@@ -227,7 +227,7 @@
       "username": "owner_manager",
       "first_name": "owner",
       "last_name": "manager",
-      "email":"owner_manager@example.com",
+      "email": "owner_manager@example.com",
       "password": "ownerManager3",
       "is_staff": false,
       "is_active": true
@@ -271,7 +271,7 @@
       "username": "acom_director",
       "first_name": "acom",
       "last_name": "director",
-      "email":"acom_director@example.com",
+      "email": "acom_director@example.com",
       "password": "acomDirector3",
       "is_staff": false,
       "is_active": true
@@ -285,7 +285,7 @@
       "username": "owner_aggregator_director",
       "first_name": "owner",
       "last_name": "aggregator-director",
-      "email":"owner_aggregator_director@example.com",
+      "email": "owner_aggregator_director@example.com",
       "password": "ownerAggregatorDirector3",
       "is_staff": false,
       "is_active": true
@@ -360,7 +360,7 @@
       "username": "acom_manager",
       "first_name": "acom",
       "last_name": "manager",
-      "email":"acom_manager@example.com",
+      "email": "acom_manager@example.com",
       "password": "acomManager3",
       "is_staff": false,
       "is_active": true
@@ -404,7 +404,7 @@
       "username": "bcom_director",
       "first_name": "bcom",
       "last_name": "director",
-      "email":"bcom_director@example.com",
+      "email": "bcom_director@example.com",
       "password": "bcomDirector3",
       "is_staff": false,
       "is_active": true
@@ -448,7 +448,7 @@
       "username": "bcom_manager",
       "first_name": "bcom",
       "last_name": "manager",
-      "email":"bcom_manager@example.com",
+      "email": "bcom_manager@example.com",
       "password": "tManager3",
       "is_staff": false,
       "is_active": true
@@ -492,7 +492,7 @@
       "username": "ccom_director",
       "first_name": "ccom",
       "last_name": "director",
-      "email":"ccom_director@example.com",
+      "email": "ccom_director@example.com",
       "password": "ccomDirector3",
       "is_staff": false,
       "is_active": true
@@ -536,7 +536,7 @@
       "username": "ccom_manager",
       "first_name": "ccom",
       "last_name": "manager",
-      "email":"ccom_manager@example.com",
+      "email": "ccom_manager@example.com",
       "password": "tManager3",
       "is_staff": false,
       "is_active": true
