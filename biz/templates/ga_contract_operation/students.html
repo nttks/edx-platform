@@ -1,0 +1,40 @@
+<%inherit file="../main_biz.html" />
+<%!
+from django.utils.translation import ugettext as _
+%>
+
+<%block name="pagetitle">${_("Students List")}</%block>
+
+<%block name="js_extra">
+<script type="text/javascript">
+    $(function () {
+        var grid = $('#grid').w2grid({
+            name: 'unregister_student_grid',
+            fixedBody: true,
+            selectType : 'cell',
+            show: {
+                toolbar: true,
+                footer: true,
+                selectColumn: true,
+                toolbarReload: false
+            },
+            multiSearch: false,
+            searches: [
+                {field: 'contract_register_status', caption: '${_("Contract Register Status")}', type: 'list', options: {items: ${status_list}}},
+                {field: 'user_name', caption: '${_("Username")}', type: 'text'},
+                {field: 'user_email', caption: '${_("Email Address")} ', type: 'text'},
+            ],
+            columns: [
+                {field: 'contract_register_status', caption: '${_("Contract Register Status")}', size: '20%', sortable: true, hidden: false},
+                {field: 'user_name', caption: '${_("Username")}', size: '30%', sortable: true, hidden: false},
+                {field: 'user_email', caption: '${_("Email Address")}', size: '40%', sortable: true, hidden: false},
+            ],
+            records: ${show_list}
+        });
+    });
+</script>
+</%block>
+
+<%block name="custom_content">
+<div id="grid"></div>
+</%block>

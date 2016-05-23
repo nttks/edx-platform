@@ -29,10 +29,10 @@ class BizTestBase(TestCase):
         )
         self.gacco_organization.save()
 
-        self.platformer_permission = self._create_permission('platformer', 1, 1, 1, 0, 0)
-        self.aggregator_permission = self._create_permission('aggregator', 1, 1, 1, 0, 0)
-        self.director_permission = self._create_permission('director', 0, 0, 1, 1, 1)
-        self.manager_permission = self._create_permission('manager', 0, 0, 0, 0, 1)
+        self.platformer_permission = self._create_permission('platformer', 1, 1, 1, 0, 0, 0)
+        self.aggregator_permission = self._create_permission('aggregator', 1, 1, 1, 0, 0, 0)
+        self.director_permission = self._create_permission('director', 0, 0, 1, 1, 1, 1)
+        self.manager_permission = self._create_permission('manager', 0, 0, 0, 0, 1, 0)
 
         self.addCleanup(self._clear_cache)
 
@@ -43,6 +43,7 @@ class BizTestBase(TestCase):
     def _create_permission(
         self, permission_name, can_handle_organization, can_handle_contract,
         can_handle_manager, can_handle_course_operation, can_handle_achievement,
+        can_handle_contract_operation,
     ):
         return ManagerPermissionFactory.create(
             permission_name=permission_name,
@@ -51,6 +52,7 @@ class BizTestBase(TestCase):
             can_handle_manager=can_handle_manager,
             can_handle_course_operation=can_handle_course_operation,
             can_handle_achievement=can_handle_achievement,
+            can_handle_contract_operation=can_handle_contract_operation,
         )
 
     def _create_manager(self, org, user, created, permissions):

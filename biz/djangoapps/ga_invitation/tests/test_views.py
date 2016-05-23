@@ -96,9 +96,6 @@ class BizContractTestBase(BizViewTestBase, ModuleStoreTestCase):
             course_ids=[self.course_mooc1.id],
             display_names=['country', 'dept'])
 
-
-class InvitationViewsTest(BizContractTestBase):
-
     def create_contract_register(self, user, contract, status=REGISTER_INVITATION_CODE):
         ContractRegisterFactory.create(user=user, contract=contract, status=status)
         for additional_info in contract.additional_info.all():
@@ -113,6 +110,9 @@ class InvitationViewsTest(BizContractTestBase):
                 CourseEnrollmentFactory.create(user=user, course_id=course.id)
             except:
                 pass
+
+
+class InvitationViewsTest(BizContractTestBase):
 
     def _url_index(self):
         return reverse('biz:invitation:index')

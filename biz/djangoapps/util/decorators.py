@@ -160,6 +160,15 @@ def check_course_selection(func):
                 log.info("Redirect to course_not_specified page because course_id is not specified.")
                 return _render_course_not_specified(request)
 
+        elif re.match('^/biz/contract_operation/', request.path):
+            if not manager.can_handle_contract_operation():
+                log.warning(
+                    "Manager(id={}) has no permission to handle '{}' feature.".format(
+                        manager.id, 'contract_operation')
+                )
+                return _render_403(request)
+
+
         log.debug("request.current_organization={}".format(getattr(request, 'current_organization', None)))
         log.debug("request.current_manager={}".format(getattr(request, 'current_manager', None)))
         log.debug("request.current_contract={}".format(getattr(request, 'current_contract', None)))
