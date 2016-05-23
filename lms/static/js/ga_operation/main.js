@@ -10,7 +10,8 @@ RequireJS.require([
     'js/ga_operation/views/mutual_grading_report',
     'js/ga_operation/views/discussion_data',
     'js/ga_operation/views/past_graduates_info',
-    'js/ga_operation/views/last_login_info'
+    'js/ga_operation/views/last_login_info',
+    'js/ga_operation/views/aggregate_g1528'
 ], function (
     Backbone,
     GaOperationApp,
@@ -23,7 +24,8 @@ RequireJS.require([
     MutualGradingReport,
     DiscussionData,
     PastGraduatesInfo,
-    LastLoginInfo
+    LastLoginInfo,
+    AggregateG1528
 ) {
     'use strict';
 
@@ -37,7 +39,8 @@ RequireJS.require([
         MutualGradingReport,
         DiscussionData,
         PastGraduatesInfo,
-        LastLoginInfo
+        LastLoginInfo,
+        AggregateG1528
     );
     Backbone.history.start();
 });
