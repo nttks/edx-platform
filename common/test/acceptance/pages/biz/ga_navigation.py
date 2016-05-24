@@ -24,6 +24,10 @@ class BizNavPage(PageObject):
     def messages(self):
         return [t.strip() for t in self.q(css='div.main>div.biz-wrap>ul.messages>li').text]
 
+    def wait_for_message(self, message):
+        self.wait_for(lambda: message in self.messages, 'Found message({}) on page'.format(message))
+        return self
+
     def click_organization(self):
         # Import in func for cross reference
         from .ga_organization import BizOrganizationPage
@@ -35,3 +39,12 @@ class BizNavPage(PageObject):
         self.q(css='nav.side-menu>ul.menu>li>a[href="/biz/contract/"]').first.click()
         from .ga_contract import BizContractPage
         return BizContractPage(self.browser).wait_for_page()
+
+    def click_manager(self):
+        # Import in func for cross reference
+        from .ga_manager import BizManagerPage
+
+        self.q(css='nav.side-menu>ul.menu>li>a[href="/biz/manager/"]').first.click()
+        manager_page = BizManagerPage(self.browser).wait_for_page()
+        manager_page.wait_for_ajax()
+        return manager_page.wait_for_lock_absence()

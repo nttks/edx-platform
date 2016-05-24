@@ -2,8 +2,6 @@
 Organization page of biz.
 """
 
-from bok_choy.page_object import PageObject
-
 from . import BASE_URL
 from .ga_navigation import BizNavPage
 from .ga_w2ui import W2uiMixin

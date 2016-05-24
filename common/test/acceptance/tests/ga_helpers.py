@@ -1,8 +1,11 @@
+# -*- coding: utf-8 -*-
 """
 Test helper functions and base classes.
 """
 import os
 import os.path
+import re
+import subprocess
 import time
 import unittest
 from itertools import chain
@@ -20,6 +23,9 @@ class GaccoTestMixin(unittest.TestCase):
     WINDOW_WIDTH_PC = 1280
     WINDOW_HEIGHT_PC = 800
 
+    RESIGN_CONFIRM_MAIL_SUBJECT = u'■gacco 退会のご案内'
+    RESIGN_CONFIRM_MAIL_URL_PATTERN = r'/resign_confirm/(?P<uidb36>[0-9A-Za-z]+)-(?P<token>.+)/'
+
     def setup_email_client(self, email_file_path):
         """
         Set up an email client
@@ -33,6 +39,17 @@ class GaccoTestMixin(unittest.TestCase):
         Set up window size for PC
         """
         self.browser.set_window_size(self.WINDOW_WIDTH_PC, self.WINDOW_HEIGHT_PC)
+
+    def assert_email_resign(self):
+        """
+        Assert email of resign.
+        - return uidb36 and token in email body.
+        """
+        email_message = self.email_client.get_latest_message()
+        self.assertEqual(email_message['subject'], self.RESIGN_CONFIRM_MAIL_SUBJECT)
+        matches = re.search(self.RESIGN_CONFIRM_MAIL_URL_PATTERN, email_message['body'], re.MULTILINE)
+        self.assertIsNotNone(matches)
+        return (matches.groupdict()['uidb36'], matches.groupdict()['token'])
 
 
 class FilebasedEmailClient(object):

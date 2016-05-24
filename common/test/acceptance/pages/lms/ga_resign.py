@@ -37,6 +37,7 @@ class ResignConfirmPage(PageObject):
         Fill in the resign reason
         """
         self.q(css='textarea#id_resign_reason').fill(text)
+        return self
 
     def submit(self):
         """

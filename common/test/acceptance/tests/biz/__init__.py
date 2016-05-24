@@ -1,6 +1,9 @@
+from contextlib import contextmanager
+
 from common.test.acceptance.pages.biz.ga_contract import BizContractDetailPage, BizContractPage
 from ..ga_helpers import GaccoTestMixin
 
+from ...pages.biz.ga_dashboard import DashboardPage
 from ...pages.biz.ga_w2ui import remove_grid_row_index
 from ...pages.common.logout import LogoutPage
 from ...pages.lms.auto_auth import AutoAuthPage
@@ -53,10 +56,31 @@ C_MANAGER_USER_INFO = {
 }
 
 PLAT_COMPANY = 1
+PLAT_COMPANY_NAME = 'plat org'
+
 OWNER_COMPANY = 2
+OWNER_COMPANY_NAME = 'owner company'
+
 A_COMPANY = 3
+A_COMPANY_NAME = 'A company'
+
 B_COMPANY = 4
+B_COMPANY_NAME = 'B company'
+
 C_COMPANY = 5
+C_COMPANY_NAME = 'C company'
+
+
+@contextmanager
+def visit_page_on_new_window(page_object):
+    current_handle = page_object.browser.current_window_handle
+    page_object.browser.execute_script('''
+                           window.open("{}", "_blank");
+                           '''.format(page_object.url))
+    page_object.browser.switch_to_window(page_object.browser.window_handles[-1])
+    yield page_object.wait_for_page()
+    page_object.browser.close()
+    page_object.browser.switch_to_window(current_handle)
 
 
 class GaccoBizTestMixin(GaccoTestMixin):
@@ -130,3 +154,41 @@ class GaccoBizTestMixin(GaccoTestMixin):
                 }
         )
         return biz_contract_page.get_row({'Contract Name': contract_name})
+
+    def register_user(self):
+        username = 'test_' + self.unique_id[0:8]
+        return self.switch_to_user({
+            'username': username,
+            'password': 'Password123',
+            'email': username + '@example.com',
+        })
+
+    def register_contract(self, operator, contractor_organization_name, contract_type='PF',
+                          start_date='2000/01/01', end_date='2100/12/31', detail_info=None, additional_info=None):
+        self.switch_to_user(operator)
+        return self.create_contract(
+            DashboardPage(self.browser).visit().click_biz().click_contract(),
+            contract_type,
+            start_date,
+            end_date,
+            contractor_organization_name=contractor_organization_name,
+            detail_info=detail_info,
+            additional_info=additional_info,
+        )
+
+    def register_organization(self, operator):
+        self.switch_to_user(operator)
+        biz_organization_page = DashboardPage(self.browser).visit().click_biz().click_organization()
+
+        org_code = 'test_' + self.unique_id[0:4]
+        org_name = 'org name ' + org_code
+        biz_organization_page.click_add().input(org_name, org_code).click_register()
+        self.assertIn('The new organization has been added.', biz_organization_page.messages)
+
+        new_organization = biz_organization_page.get_row({
+            'Organization Name': org_name,
+            'Organization Code': org_code,
+        })
+        self.assertIsNotNone(new_organization)
+
+        return new_organization

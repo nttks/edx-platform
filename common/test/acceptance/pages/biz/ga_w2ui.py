@@ -70,6 +70,10 @@ class W2uiMixin(object):
             'W2ui popup is transformed')
         return self
 
+    def wait_for_lock_absence(self):
+        self.wait_for_element_absence('div.w2ui-lock,div.w2ui-lock-msg', 'W2ui lock is absence')
+        return self
+
     def wait_for_popup_absence(self):
         self.wait_for_element_absence('div#w2ui-popup', 'W2ui popup is absence')
         return self
