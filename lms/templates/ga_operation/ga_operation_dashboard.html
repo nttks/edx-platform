@@ -27,13 +27,14 @@
                         <li><a href="#publish_certs"><i class="fa fa-file-text-o"></i>修了証公開</a></li>
                     </ul>
                 </li>
-##                 <li> <p><strong>特別集計</strong></p> </li>
-##                 <li>
-##                     <ul>
-##                         <li><a href="#"><i class="fa fa-file-text-o"></i>Company1</a></li>
-##                         <li><a href="#"><i class="fa fa-file-text-o"></i>Company2</a></li>
-##                     </ul>
-##                 </li>
+                <li> <p><strong>特別集計</strong></p> </li>
+                <li>
+                    <ul>
+                        % for key, value in sorted(company_keys.iteritems()):
+                        <li><a href="#aggregate_${key}"><i class="fa fa-file-text-o"></i>${value['name']}</a></li>
+                        % endfor
+                    </ul>
+                </li>
                 <li> <p><strong>動画移動</strong></p> </li>
                 <li>
                     <ul>
@@ -70,7 +71,7 @@
         </li>
         <li>
             <label for="email">結果返却用Eメールアドレス</label>
-            <input type="email" name="email" placeholder="example@gacco.co.jp">
+            <input type="email" name="email" value="${callback_email}">
             <label id="email" for="text" class="error"></label>
         </li>
         <li>
@@ -149,7 +150,7 @@
         </li>
         <li>
             <label for="email">結果返却用Eメールアドレス</label>
-            <input type="email" name="email" placeholder="example@gacco.co.jp">
+            <input type="email" name="email" value="${callback_email}">
             <label id="email" for="text" class="error"></label>
         </li>
         <li>
@@ -186,7 +187,7 @@
         </li>
         <li>
             <label for="email">結果返却用Eメールアドレス</label>
-            <input type="email" name="email" placeholder="example@gacco.co.jp">
+            <input type="email" name="email" value="${callback_email}">
             <label id="email" for="text" class="error"></label>
         </li>
         <li>
@@ -251,6 +252,28 @@
     </ul>
 </script>
 
+<script id="aggregate_g1528_tmpl" type="text/template">
+    <h3>◎特別集計</h3>
+    <ul>
+        <li>
+            <label for="file">対象講座リスト</label>
+            <input type="file" name="course_lists_file">
+            <label id="course_lists_file" for="text" class="error"></label>
+        </li>
+        <li>
+            <label for="email">結果返却用Eメールアドレス</label>
+            <input type="email" name="email" value="${callback_email}">
+            <label id="email" for="text" class="error"></label>
+        </li>
+        <li>
+            <div class="form_action">
+                <button id="aggregate_g1528" class="button" name="aggregate_g1528">実行</button>
+                <img id="indicator" src="${static.url('images/spinner.gif')}" alt="実行中..." hidden>
+            </div>
+        </li>
+    </ul>
+</script>
+
 <style type="text/css">
     li {
         list-style: none;
@@ -261,7 +284,6 @@
     .main_content {
         max-width: 980px;
         min-width: 300px;
-        min-height: 300px;
         padding-bottom: 100px;
         margin: 30px auto 0;
     }
@@ -269,14 +291,14 @@
         float: left;
         width: 300px;
         max-width: 660px;
-        height: 500px;
+        min-height: 520px;
         margin: 0;
         border: 1px solid;
         border-radius: 10px;
     }
     .right_content {
         max-width: 660px;
-        height: 500px;
+        min-height: 520px;
         margin-top: 20px;
         margin-left: 320px;
         border: 1px solid;
@@ -291,4 +313,3 @@
         min-width: 200px;
     }
 </style>
-

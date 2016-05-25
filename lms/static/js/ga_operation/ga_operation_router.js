@@ -13,7 +13,8 @@
                 "mutual_grading_report": "mutualGradingReport",
                 "discussion_data": "discussionData",
                 "past_graduates_info": "pastGraduatesInfo",
-                "last_login_info": "lastLoginInfo"
+                "last_login_info": "lastLoginInfo",
+                "aggregate_g1528": "aggregateG1528"
             },
             createCerts: function() {
                 this._render('create_certs_tmpl')
@@ -38,6 +39,9 @@
             },
             lastLoginInfo: function () {
                 this._render("last_login_info_tmpl")
+            },
+            aggregateG1528: function () {
+                this._render("aggregate_g1528_tmpl")
             },
             _render: function(id_name) {
                 $('#right_content_response').text('');
