@@ -159,7 +159,7 @@ def _verify_course_integrity(course, advanced_course):
         raise Http404()
 
 
-def require_enroll(is_f2f=False, use_course=True):
+def require_enroll(is_f2f=False):
     """
     View decorator that whether the course is present and user is enrolled.
     """
@@ -174,9 +174,7 @@ def require_enroll(is_f2f=False, use_course=True):
                 course = _get_course_with_access(request.user, 'enroll', course_id)
             if registered_for_course(course, request.user):
                 del kwargs['course_id']
-                # course adds only if is necessary in view
-                if use_course:
-                    kwargs['course'] = course
+                kwargs['course'] = course
                 return func(request, *args, **kwargs)
             else:
                 return redirect(reverse('about_course', args=[unicode(course.id)]))
@@ -190,9 +188,10 @@ def require_enroll(is_f2f=False, use_course=True):
 def choose_advanced_course(request, course):
 
     _is_f2f_course = course.is_f2f_course and course.is_f2f_course_sell
+    # this list represents the course type to be displayed on the page
     _course_types = [c for c in [
         AdvancedCourseTypes.F2F if _is_f2f_course else None,
-        'free',  # free must be last
+        'online',  # online must be last
     ] if c is not None]
 
     context = {

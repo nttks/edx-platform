@@ -40,7 +40,7 @@ from openedx.core.lib.ga_html_utils import get_circle_number
   </section>
   <section class="section">
     <div class="course_select_area offline clear">
-      <h3>${get_circle_number(course_types.index('free') + 1)} ${_("Online Course")} (${_("Free of charge")})</h3>
+      <h3>${get_circle_number(course_types.index('online') + 1)} ${_("Online Course")} (${_("Free of charge")})</h3>
       <ul>
         <li>${_("Online course with high-quality video recording class")} (${_("Challenge, discussion, etc.")})</li>
         % if is_f2f_course:

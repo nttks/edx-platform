@@ -69,7 +69,8 @@ class AdvancedCourseStatus(object):
             return any([not status['is_full'] and not status['is_end_of_sale'] for status in statuses])
 
         _key_func = lambda d: d['advanced_course'].__class__.__name__
-        _courses_group = itertools.groupby(self.advanced_courses.values(), _key_func)
+        _advanced_courses = sorted(self.advanced_courses.values(), key=_key_func)
+        _courses_group = itertools.groupby(_advanced_courses, _key_func)
 
         return [cls_name for cls_name, _dicts in _courses_group if _is_purchase_available(list(_dicts))]
 

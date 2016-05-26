@@ -92,8 +92,7 @@ class AdvancedCoursesPage(PageObject):
             raise NoSuchElementException("No course named {} was found on the advanced course details".format(course_name))
 
     def get_error_message(self):
-        elements = self.q(css='.purchase_error p')
-        return ' '.join([element.text for element in elements])
+        return ' '.join(self.q(css='.purchase_error p').text)
 
     def check_course_name(self, course_name):
         try:
