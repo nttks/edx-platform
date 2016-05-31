@@ -9,10 +9,9 @@ from django.core.urlresolvers import reverse
 <%block name="js_extra">
 <script type="text/javascript">
     $(function () {
-        var _w2form = $('#form').w2form({ name: 'form' }), surveyForm = $('#form'),
-            downloadButton = $('#download-btn');
-        downloadButton.on('click', function() {
-            location.href = downloadButton.data('endpoint');
+        $('#form').w2form({name: 'form'});
+        $('.w2ui-buttons').on('click', '#download-btn', function () {
+            location.href = $(this).data('endpoint');
         });
     });
 </script>
