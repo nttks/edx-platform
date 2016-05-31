@@ -72,7 +72,7 @@ class BizContractDetailPage(BizNavPage, W2uiMixin):
         self.q(css='input#id_start_date').fill(start_date)
         self.q(css='input#id_end_date').fill(end_date)
         self.q(css='input#id_invitation_code').fill(invitation_code)
-        self.q(css='select#contractor_organization>option[value="{}"]'.format(contractor_organization)).first.click()
+        self.q(css='select#id_contractor_organization>option[value="{}"]'.format(contractor_organization)).first.click()
         return self
 
     def select_contractor_organization(self, name):

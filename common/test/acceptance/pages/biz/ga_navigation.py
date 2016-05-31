@@ -48,3 +48,21 @@ class BizNavPage(PageObject):
         manager_page = BizManagerPage(self.browser).wait_for_page()
         manager_page.wait_for_ajax()
         return manager_page.wait_for_lock_absence()
+
+    def click_survey(self):
+        self.q(css='nav.side-menu>ul.menu>li>a[href="/biz/course_operation/survey"]').first.click()
+        from common.test.acceptance.pages.biz.ga_survey import BizSurveyPage
+        return BizSurveyPage(self.browser).wait_for_page()
+
+    def change_role(self, org_id, contract_name, course_id):
+        # Show role selection modal
+        self.q(css='.change-role-button').first.click()
+        self.wait_for_element_visibility('#role-selection-modal', 'visit biz change role dialog')
+        # Choice options
+        self.q(css='select#org-id>option[value="{}"]'.format(org_id)).first.click()
+        for option in self.q(css='select#contract-id option').results:
+            if contract_name == option.text:
+                option.click()
+        self.q(css='select#course-id>option[value="{}"]'.format(course_id)).first.click()
+        self.q(css='button#save-selection').first.click()
+        return self.wait_for_page()

@@ -77,7 +77,7 @@ class BizCourseAboutTest(WebAppTest, GaccoBizTestMixin):
         """
         # Create a platfomer service courses
         now_date = datetime.datetime.now()
-        start_date = now_date.replace(now_date.day + 1)
+        start_date = now_date + datetime.timedelta(days=1)
         course = CourseFixture('plat', self._testMethodName, 'biz_test_run',
                                'Biz Test Course ' + self._testMethodName, start_date=start_date)
         course.install()
@@ -106,7 +106,7 @@ class BizCourseAboutTest(WebAppTest, GaccoBizTestMixin):
         """
         # Create platfomer service courses
         now_date = datetime.datetime.now()
-        end_date = now_date.replace(now_date.day - 1)
+        end_date = now_date + datetime.timedelta(days=-1)
         course = CourseFixture('plat', self._testMethodName, 'biz_test_run',
                                'Biz Test Course ' + self._testMethodName, end_date=end_date)
         course.install()

@@ -1,8 +1,9 @@
 from contextlib import contextmanager
 
 from common.test.acceptance.pages.biz.ga_contract import BizContractDetailPage, BizContractPage
+from common.test.acceptance.pages.biz.ga_invitation import BizInvitationPage, BizInvitationConfirmPage
+from common.test.acceptance.pages.lms.ga_dashboard import DashboardPage as GaDashboardPage
 from ..ga_helpers import GaccoTestMixin
-
 from ...pages.biz.ga_dashboard import DashboardPage
 from ...pages.biz.ga_w2ui import remove_grid_row_index
 from ...pages.common.logout import LogoutPage
@@ -192,3 +193,15 @@ class GaccoBizTestMixin(GaccoTestMixin):
         self.assertIsNotNone(new_organization)
 
         return new_organization
+
+    def register_invitation(self, invitation_code, additional_info):
+        """
+        Register invitation code
+        """
+        BizInvitationPage(self.browser).visit().input_invitation_code(invitation_code).click_register_button()
+        invitation_confirm_page = BizInvitationConfirmPage(self.browser).wait_for_page()
+        if additional_info:
+            for i, additional_name in enumerate(additional_info):
+                invitation_confirm_page.input_additional_info(additional_name, i)
+        invitation_confirm_page.click_register_button()
+        return GaDashboardPage(self.browser).wait_for_page()

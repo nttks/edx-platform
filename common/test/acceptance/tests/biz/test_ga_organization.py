@@ -3,6 +3,7 @@ End-to-end tests for organization of biz feature
 """
 
 from bok_choy.web_app_test import WebAppTest
+from flaky import flaky
 
 from . import AGGREGATOR_USER_INFO, PLATFORMER_USER_INFO, GaccoBizTestMixin
 from ...pages.biz.ga_dashboard import DashboardPage
@@ -132,6 +133,7 @@ class BizOrganizationTest(WebAppTest, GaccoBizTestMixin):
         self.assert_initial_columns(biz_organization_page.grid_columns)
         self.assertEqual(biz_organization_page.find_rows({'Organization Name': org_name_edit}), [])
 
+    @flaky
     def test_can_not_delete_has_contract(self):
         """
         Test can not delete organization, that has a contract.

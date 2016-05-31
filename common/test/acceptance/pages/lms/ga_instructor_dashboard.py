@@ -21,6 +21,33 @@ class InstructorDashboardPage(EdXInstructorDashboardPage):
         send_email_section.wait_for_page()
         return send_email_section
 
+    def select_survey(self):
+        """
+        Selects the survey tab and returns the SurveySection
+        """
+        self.q(css='a[data-section=survey]').first.click()
+        survey_section = SurveyPageSection(self.browser)
+        survey_section.wait_for_page()
+        return survey_section
+
+
+class SurveyPageSection(PageObject):
+    """
+    Survey section of the Instructor dashboard.
+    """
+    url = None
+
+    def is_browser_on_page(self):
+        return self.q(css='a[data-section=survey].active-section').present
+
+    def click_download_button(self):
+        """
+        Click the download csv button
+        """
+        self.q(css="input[name='list-survey']").click()
+        self.wait_for_ajax()
+        return self
+
 
 class SendEmailPage(PageObject):
     """
