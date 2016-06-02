@@ -734,6 +734,7 @@ if FEATURES.get('ENABLE_JWPLAYER_SECURE_TOKEN'):
 
 ##################### shoppingcart #####################
 PAYMENT_TAX = ENV_TOKENS.get('PAYMENT_TAX', PAYMENT_TAX)
+PAYMENT_CURRENCY = ENV_TOKENS.get('PAYMENT_CURRENCY', PAYMENT_CURRENCY)
 
 ##### Settings for Biz #####
 from biz.envs.aws import *

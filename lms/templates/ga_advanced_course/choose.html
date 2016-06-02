@@ -7,13 +7,13 @@ from openedx.core.lib.ga_html_utils import get_circle_number
 <%namespace name='static' file='../static_content.html'/>
 
 <%block name="pagetitle">
-    ${_("Enroll mode selection")} | course_name
+    ${_("Enroll course selection")} | course_name
 </%block>
 
 <%block name="bodyclass">ticket select</%block>
 
 <div class="ticket_page_wrap">
-  <h2>${_("Enroll mode selection")}</h2>
+  <h2>${_("Enroll course selection")}</h2>
   <section class="section">
     <p class="catch middle center">${_("Thank you for an enroll. This course has {course_count} courses.").format(course_count=len(course_types))}</p>
     <br>
@@ -22,33 +22,21 @@ from openedx.core.lib.ga_html_utils import get_circle_number
     <div class="course_select_area clear">
       <h3>${get_circle_number(course_types.index('face_to_face') + 1)} ${_("Face 2 Face Classroom")} (${_("Fee-charging")})</h3>
       <div class="catch">
-        <p class="center">${_("Online course with high-quality video recording class")} (${_("equivalent to the online course")})</p>
-        <p class="plus">+</p>
-        <p class="center logo_color middle">${_("Realistic lectures by teachers, place to use the learned knowledge in practice")}</p>
+        <p class="logo_color">${_("Recommended: Online and Face-to-face course")}</p>
       </div>
-      <ul>
-        <li>${_("Development challenges and supplemental lectures and knowledge level of the well-equipped student")}</li>
-        <li>${_("Identification of students at the venue")}</li>
-        <li>${_("Issued / awarded a special Certificate of Completion is to successful applicants")}</li>
-        <li>${_("High learning effect (proven by the Educational Technology)")}</li>
-        <li>${_("New learning style of gacco Recommended")}</li>
-      </ul>
-      <a href="${reverse('advanced_course:courses_face_to_face', args=[course_id])}" class="t_btn big apply">${_("View the details of the face-to-face course")}</a>
-      <div class="triangle"></div>
+      <p class="description">${_("After learning the basic content in the online course, it is a course to learn the further development of thing in the face-to-face class.")}</p>
+      <a href="${reverse('advanced_course:courses_face_to_face', args=[course_id])}" class="t_btn big apply">${_("View Details")}</a>
     </div>
     % endif
   </section>
   <section class="section">
-    <div class="course_select_area offline clear">
+    <div class="course_select_area online clear">
       <h3>${get_circle_number(course_types.index('online') + 1)} ${_("Online Course")} (${_("Free of charge")})</h3>
-      <ul>
-        <li>${_("Online course with high-quality video recording class")} (${_("Challenge, discussion, etc.")})</li>
-        % if is_f2f_course:
-        <li>${_("Recommend <a href=\"{face_to_face_page_link}\">face-to-face learning</a> for those who want to advance a more expansive learning").format(face_to_face_page_link=reverse('advanced_course:courses_face_to_face', args=[course_id]))}</li>
-        % endif
-      </ul>
+      <div class="catch">
+        <p>${_("Only online course")}</p>
+      </div>
+      <p class="description">${_("This course of online learning only. You can learn the basic content.")}</p>
       <a href="${reverse('dashboard')}" class="t_btn big">${_("To take the start of an online course")}</a>
-      <div class="triangle free"></div>
     </div>
   </section>
 </div>

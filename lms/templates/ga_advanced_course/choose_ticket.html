@@ -7,12 +7,18 @@ from django.utils.translation import ugettext as _
 from openedx.core.lib.ga_datetime_utils import to_timezone
 %>
 
-<%block name="pagetitle">${_("Ticket Option")}</%block>
+<%block name="pagetitle">${_("Ticket Selection")}</%block>
 
 <%block name="bodyclass">ticket option</%block>
 
 <div class="ticket_page_wrap">
-  <h2>${_("Ticket Option")}</h2>
+  <ul id="breadcrumb">
+    <li class="active"><span><i class="fa fa-shopping-cart"></i><span class="text">${_("Ticket Selection")}</span></span></li>
+    <li><span><i class="fa fa-credit-card"></i><span class="text">${_("Payment Method Selection")}</span></span></li>
+    <li><span><i class="fa fa-eye"></i><span class="text">${_("Content Confirmation")}</span></span></li>
+    <li><span><i class="fa fa-check"></i><span class="text">${_("Payment Completion")}</span></span></li>
+  </ul>
+  <h2>${_("Ticket Selection")}</h2>
 
   % if messages:
   <div class="purchase_error">
@@ -25,7 +31,7 @@ from openedx.core.lib.ga_datetime_utils import to_timezone
   <h3>${advanced_course.display_name | h}</h3>
   <section class="section">
     <div class="course_select_area clear">
-      <p>${_("When you select a purchase ticket from below, and go to the settlement site (credit card, corresponding to DoCoMo Mobile Payment)")}</p>
+      <p>${_("Select a purchase ticket from blow.")}</p>
     </div>
     <div class="item_area clear">
       % for ticket in tickets:

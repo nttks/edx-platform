@@ -8,7 +8,7 @@ var edx = edx || {};
 
     edx.ga_advanced_course = edx.ga_advanced_course || {};
 
-    edx.ga_advanced_course.AdvancedF2fCourseCheckoutView = Backbone.View.extend({
+    edx.ga_advanced_course.AdvancedF2FCourseCheckoutView = Backbone.View.extend({
 
         getOrderId: function() {
             return $('#order-id').val();
@@ -21,14 +21,14 @@ var edx = edx || {};
 
             // Create the order for the amount
             $.ajax({
-              url: '/advanced_course/checkout/',
-              type: 'POST',
-              headers: {
-                  'X-CSRFToken': $.cookie('csrftoken')
-              },
-              data: postData,
-              context: this,
-              success: this.handleCreateOrderResponse,
+                url: '/advanced_course/checkout/',
+                type: 'POST',
+                headers: {
+                    'X-CSRFToken': $.cookie('csrftoken')
+                },
+                data: postData,
+                context: this,
+                success: this.handleCreateOrderResponse,
             });
         },
 
@@ -52,6 +52,6 @@ var edx = edx || {};
         },
     });
 
-    new edx.ga_advanced_course.AdvancedF2fCourseCheckoutView().checkout();
+    new edx.ga_advanced_course.AdvancedF2FCourseCheckoutView().checkout();
 
 })(jQuery, _, Backbone);

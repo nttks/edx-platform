@@ -1612,11 +1612,11 @@ msgstr "以下に一覧表示されている評価レポートは<b>「評価レ
 
 #: lms/templates/instructor/instructor_dashboard_2/data_download.html
 msgid "Click to download a CSV file that lists learners who purchased an advanced course (ex. face-to-face course)."
-msgstr "上級講座（例：対面学習コース）を購入している受講者情報のCSVファイルを生成するにはクリックしてください。"
+msgstr "発展的講座（例：対面学習コース）を購入している受講者情報のCSVファイルを生成するにはクリックしてください。"
 
 #: lms/templates/instructor/instructor_dashboard_2/data_download.html
 msgid "Download purchaser information of advanced courses as a CSV"
-msgstr "上級講座購入者情報をCSVとしてダウンロードする"
+msgstr "発展的講座購入者情報をCSVとしてダウンロードする"
 
 #: lms/templates/instructor/instructor_dashboard_2/e-commerce.html
 msgid "Transactions"
@@ -2247,7 +2247,7 @@ msgstr "例: ユーザーサービス利用規約の変更について"
 
 #: lms/templates/instructor/instructor_dashboard_2/send_mail.html
 msgid "Students that purchased an advanced course"
-msgstr "上級講座購入者（例：対面学習コース）"
+msgstr "発展的講座購入者（例：対面学習コース）"
 
 #: lms/djangoapps/courseware/module_render.py
 msgid "Submission aborted! Maximum %d files may be submitted at once"
@@ -2539,24 +2539,48 @@ msgid "Biz Manager Dashboard"
 msgstr "法人管理ダッシュボード"
 
 #: templates/dashboard/_dashboard_course_listing.html
-msgid "This course has face-to-face (fee-charging) course."
-msgstr "この講座には対面学習コース（有料）があります"
+msgid "This course, we recommend face-to-face course. Please consider all means."
+msgstr "この講座は、対面学習をお奨めしています。ぜひご検討ください。"
 
 #: templates/dashboard/_dashboard_course_listing.html
-msgid "Information of face-to-face course"
-msgstr "対面学習コースのお知らせ"
+msgid "What is face-to-face course?"
+msgstr "※対面学習とは？"
 
 #: templates/dashboard/_dashboard_course_listing.html
-msgid "View Details and Receipt"
-msgstr "詳細＆レシート表示"
+msgid "here"
+msgstr "こちら"
 
 #: templates/dashboard/_dashboard_course_listing.html
-msgid "Realistic lectures by teachers, is a learning course of gacco recommended that you can get a special certificate of completion."
-msgstr "講師陣によるリアル講義、特別な修了証を 入手できるgaccoおすすめの学習コースです。"
+msgid "Subscription"
+msgstr "申込"
+
+#: templates/dashboard/_dashboard_course_listing.html
+msgid "There is face-to-face course"
+msgstr "対面学習コースあり"
+
+#: templates/dashboard/_dashboard_course_listing.html
+msgid "View Subscription Details"
+msgstr "申込内容確認"
 
 #: templates/ga_advanced_course/choose.html
-msgid "Enroll mode selection"
-msgstr "受講モード選択"
+msgid "Recommended: Online and Face-to-face course"
+msgstr "＜推奨＞ オンライン学習 + 対面学習"
+
+#: templates/ga_advanced_course/choose.html
+msgid "After learning the basic content in the online course, it is a course to learn the further development of thing in the face-to-face class."
+msgstr "オンライン講座で基本的な内容を学んだ後、対面授業でさらに発展的な事を学べるコースです。"
+
+#: templates/ga_advanced_course/choose.html
+msgid "Only online course"
+msgstr "オンライン学習のみ"
+
+#: templates/ga_advanced_course/choose.html
+msgid "This course of online learning only. You can learn the basic content."
+msgstr "オンライン学習のみのコースです。基本的な内容を学べます。"
+
+#: templates/ga_advanced_course/choose.html
+msgid "Enroll course selection"
+msgstr "受講コース選択"
 
 #: templates/ga_advanced_course/choose.html
 msgid "Thank you for an enroll. This course has {course_count} courses."
@@ -2571,56 +2595,16 @@ msgid "Free of charge"
 msgstr "無料"
 
 #: templates/ga_advanced_course/choose.html
-msgid "Online course with high-quality video recording class"
-msgstr "高品質な録画授業によるオンライン講座"
-
-#: templates/ga_advanced_course/choose.html
-msgid "equivalent to the online course"
-msgstr "オンラインコースと同等"
-
-#: templates/ga_advanced_course/choose.html
-msgid "Challenge, discussion, etc."
-msgstr "課題、ディスカッション等"
-
-#: templates/ga_advanced_course/choose.html
-msgid "Realistic lectures by teachers, place to use the learned knowledge in practice"
-msgstr "講師陣によるリアル講義、学んだ知を実際に使う場"
-
-#: templates/ga_advanced_course/choose.html
-msgid "Development challenges and supplemental lectures and knowledge level of the well-equipped student"
-msgstr "知識レベルの整った受講者との発展的な課題や補足講義"
-
-#: templates/ga_advanced_course/choose.html
-msgid "Identification of students at the venue"
-msgstr "会場での受講者の本人確認"
-
-#: templates/ga_advanced_course/choose.html
-msgid "Issued / awarded a special Certificate of Completion is to successful applicants"
-msgstr "合格者へは特別な修了証が発行/授与"
-
-#: templates/ga_advanced_course/choose.html
-msgid "High learning effect (proven by the Educational Technology)"
-msgstr "高い学習効果（教育工学によって立証済）"
-
-#: templates/ga_advanced_course/choose.html
-msgid "New learning style of gacco Recommended"
-msgstr "gaccoおすすめの新しい学習スタイル"
-
-#: templates/ga_advanced_course/choose.html
-msgid "View the details of the face-to-face course"
-msgstr "対面学習コースの詳細を見る"
-
-#: templates/ga_advanced_course/choose.html
 msgid "Online Course"
-msgstr "オンラインコース"
-
-#: templates/ga_advanced_course/choose.html
-msgid "Recommend <a href=\"{face_to_face_page_link}\">face-to-face learning</a> for those who want to advance a more expansive learning"
-msgstr "より発展的な学習を進めたい方には、<a href=\"{face_to_face_page_link}\">対面学習コース</a>がおすすめ"
+msgstr "オンライン学習コース"
 
 #: templates/ga_advanced_course/choose.html
 msgid "To take the start of an online course"
-msgstr "オンラインコースで受講"
+msgstr "オンライン学習コースで受講"
+
+#: templates/ga_advanced_course/courses.html
+msgid "Back to choose course page"
+msgstr "受講コース選択に戻る"
 
 #: templates/ga_advanced_course/courses.html
 msgid "Close details"
@@ -2631,12 +2615,16 @@ msgid "See next"
 msgstr "続きを見る"
 
 #: templates/ga_advanced_course/courses.html
+msgid "Details of Face to face course"
+msgstr "対面学習コース詳細"
+
+#: templates/ga_advanced_course/courses.html
 msgid "List of Face to face classroom"
-msgstr "対面学習コース一覧"
+msgstr "対面授業一覧"
 
 #: templates/ga_advanced_course/courses.html
 msgid "Details of Face to face classroom"
-msgstr "対面学習コース詳細"
+msgstr "対面授業詳細"
 
 #: templates/ga_advanced_course/courses.html
 msgid "Subscribe"
@@ -2683,8 +2671,20 @@ msgid "Purchased"
 msgstr "購入済み"
 
 #: templates/ga_advanced_course/choose_ticket.html
-msgid "Ticket Option"
-msgstr "チケットオプション"
+msgid "Ticket Selection"
+msgstr "チケット選択"
+
+#: templates/ga_advanced_course/choose_ticket.html
+msgid "Payment Method Selection"
+msgstr "支払方法選択"
+
+#: templates/ga_advanced_course/choose_ticket.html
+msgid "Content Confirmation"
+msgstr "内容確認"
+
+#: templates/ga_advanced_course/choose_ticket.html
+msgid "Payment Completion"
+msgstr "購入完了"
 
 #: templates/ga_advanced_course/choose_ticket.html
 msgid "Sell-by date"
@@ -2695,28 +2695,32 @@ msgid "* Display price will be tax included."
 msgstr "※表示価格は税込となります。"
 
 #: templates/ga_advanced_course/choose_ticket.html
-msgid "When you select a purchase ticket from below, and go to the settlement site (credit card, corresponding to DoCoMo Mobile Payment)"
-msgstr "下記から購入チケットを選択すると、決済サイトへ移動します(クレジットカード、ドコモケータイ払いに対応)"
+msgid "Select a purchase ticket from blow."
+msgstr "下記から購入チケットを選択してください。"
 
 #: templates/ga_advanced_course/receipt.html
-msgid "Purchase of the ticket has been completed. To the email address in your registration to {platform_name}, I was sent a receipt."
-msgstr "チケットの購入が完了しました。{platform_name}へご登録中のメールアドレス宛に、レシートを送付しました。"
+msgid "Purchase tickets at the following content was completed."
+msgstr "下記内容にてチケットの購入が完了いたしました。"
 
 #: templates/ga_advanced_course/receipt.html
-msgid "Purchase Receipt"
-msgstr "購入レシート"
+msgid "To the email address that you registered, we automatically send a confirmation e-mail of the ticket purchase is complete."
+msgstr "ご登録いただいているメールアドレス宛てに、チケット購入完了の確認メールを自動送信いたしました。"
 
 #: templates/ga_advanced_course/receipt.html
-msgid "Purchase completion"
-msgstr "購入完了"
+msgid "On the day, Please present this ticket screen (printable) or e-mail screen at the time of acceptance."
+msgstr "当日は、受付時に本チケット画面（印刷可）またはメール画面をご提示ください。"
+
+#: templates/ga_advanced_course/receipt.html
+msgid "Subscription Details"
+msgstr "お申し込み内容"
 
 #: templates/ga_advanced_course/receipt.html
 msgid "{course_name} course"
 msgstr "「{course_name}」講座"
 
 #: templates/ga_advanced_course/receipt.html
-msgid "Receipt Number"
-msgstr "レシート番号"
+msgid "Ticket Number"
+msgstr "チケット番号"
 
 #: templates/ga_advanced_course/courses.html
 msgid "Purchase"
@@ -2727,16 +2731,12 @@ msgid "Datetime of purchase"
 msgstr "購入日時"
 
 #: templates/ga_advanced_course/receipt.html
-msgid "Purchase Information"
-msgstr "購入情報"
-
-#: templates/ga_advanced_course/receipt.html
 msgid "Request Details"
 msgstr "申し込み詳細"
 
 #: templates/ga_advanced_course/receipt.html
 msgid "Payment method"
-msgstr "お支払方法"
+msgstr "お支払い方法"
 
 #: templates/ga_advanced_course/receipt.html
 msgid "Credit Card"
@@ -2748,7 +2748,7 @@ msgstr "ドコモケータイ払い"
 
 #: templates/ga_advanced_course/receipt.html
 msgid "Payment amount"
-msgstr "お支払金額"
+msgstr "お支い払金額"
 
 #: templates/ga_advanced_course/receipt.html
 msgid "Buy the ticket"
@@ -2769,6 +2769,10 @@ msgstr "詳細を見る"
 #: templates/ga_advanced_course/receipt.html
 msgid "This ticket has been cancelled."
 msgstr "このチケットはキャンセルされました。"
+
+#: templates/ga_advanced_course/receipt.html
+msgid "Cancellation is <a href=\"{cancel_page_link}\">here</a>"
+msgstr "※キャンセルは<a href=\"{cancel_page_link}\">こちら</a>"
 
 #: templates/ga_advanced_course/checkout_ticket.html
 msgid "Processing"

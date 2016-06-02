@@ -152,7 +152,7 @@ def _get_advanced_course_recipient_querysets(course_id, advanced_course_id):
         item.user.id
         for item in AdvancedCourseItem.find_purchased_by_advanced_course_id(advanced_course_id)
     ])
-    enrollment_qset = User.objects.filter(
+    enrollment_and_purchased_qset = User.objects.filter(
         id__in=purchased_user_ids,
         is_active=True,
         courseenrollment__course_id=course_id,
@@ -173,7 +173,7 @@ def _get_advanced_course_recipient_querysets(course_id, advanced_course_id):
     # use read_replica if available
     recipient_qsets = [
         use_read_replica_if_available(unpurchased_staff_qset),
-        use_read_replica_if_available(enrollment_qset),
+        use_read_replica_if_available(enrollment_and_purchased_qset),
     ]
     return recipient_qsets
 

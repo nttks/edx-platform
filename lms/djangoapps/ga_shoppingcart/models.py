@@ -1,6 +1,5 @@
 """ Models for the shopping cart and assorted purchase types """
 
-from datetime import timedelta
 import json
 import pytz
 
@@ -8,11 +7,10 @@ from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.db import models, transaction
 from django.db.models import Q
-from django.utils import timezone
 from django.utils.translation import ugettext as _
 from model_utils.managers import InheritanceManager
 
-from courseware.courses import course_image_url, get_course_by_id
+from courseware.courses import get_course_by_id
 from shoppingcart.models import OrderItem
 from xmodule_django.models import CourseKeyField
 
@@ -57,12 +55,9 @@ class AdvancedCourseItem(OrderItem):
         return {
             'platform_name': settings.PLATFORM_NAME,
             'course_name': course.display_name_with_default,
-            'course_image': course_image_url(course),
             'advanced_course': AdvancedCourse.get_advanced_course(self.advanced_course_ticket.advanced_course_id),
             'advanced_course_ticket': self.advanced_course_ticket,
             'order_purchase_datetime': to_timezone(self.order.purchase_time),
-            # Thanks message will show only one minute
-            'show_thanks_msg': self.order.purchase_time + timedelta(seconds=60) > timezone.now(),
         }
 
     @property
@@ -74,7 +69,7 @@ class AdvancedCourseItem(OrderItem):
 
     @classmethod
     @transaction.commit_on_success
-    def add_to_order(cls, order, advanced_course_ticket, currency='jpy'):
+    def add_to_order(cls, order, advanced_course_ticket, currency=None):
         """
         Add a AdvancedCourseItem to an order
 
@@ -83,6 +78,9 @@ class AdvancedCourseItem(OrderItem):
         `order` - an order that this item should be added to, generally the cart order
         `advanced_course_ticket` - an advanced_course_ticket that we would like to purchase as a AdvancedCourseItem
         """
+        if currency is None:
+            currency = settings.PAYMENT_CURRENCY
+
         super(AdvancedCourseItem, cls).add_to_order(order, currency=currency)
 
         item, _created = cls.objects.get_or_create(
@@ -96,7 +94,7 @@ class AdvancedCourseItem(OrderItem):
         item.unit_cost = advanced_course_ticket.price
         item.list_price = advanced_course_ticket.price
         item.tax = advanced_course_ticket.tax
-        item.line_desc = _(u"{advanced_course_name} {advanced_course_ticket_name}").format(
+        item.line_desc = u"{advanced_course_name} {advanced_course_ticket_name}".format(
             advanced_course_name=advanced_course_ticket.advanced_course.display_name,
             advanced_course_ticket_name=advanced_course_ticket.display_name,
         )

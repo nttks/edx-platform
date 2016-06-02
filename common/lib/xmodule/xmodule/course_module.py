@@ -901,7 +901,7 @@ class CourseFields(object):
     is_f2f_course_sell = Boolean(
         display_name=_("Sell Face 2 Face Classroom"),
         default=False,
-        help=_("Enter true or false. If true, f2f classroom is sold."),
+        help=_("Enter true or false. If true, f2f classroom is for sale."),
         scope=Scope.settings,
     )
     course_canonical_name = String(

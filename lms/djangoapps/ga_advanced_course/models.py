@@ -1,7 +1,6 @@
 """
 Models for advanced course.
 """
-import math
 
 from django.conf import settings
 from django.db import models
@@ -9,6 +8,7 @@ from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 from model_utils.managers import InheritanceManager
 
+from util.date_utils import strftime_localized
 from xmodule_django.models import CourseKeyField
 
 
@@ -71,6 +71,14 @@ class AdvancedCourse(models.Model):
     def tickets(self):
         return self.advancedcourseticket_set.all()
 
+    @property
+    def opening_datetime_str(self):
+        return u'{start_date} {start_time} - {end_time}'.format(
+            start_date=strftime_localized(self.start_date, '%Y/%m/%d (%a)'),
+            start_time=strftime_localized(self.start_time, '%H:%M'),
+            end_time=strftime_localized(self.end_time, '%H:%M')
+        )
+
     def __unicode__(self):
         return u'{course_id} {display_name}'.format(course_id=self.course_id, display_name=self.display_name)
 
@@ -95,7 +103,7 @@ class AdvancedCourseTicket(models.Model):
 
     @property
     def tax(self):
-        return int(math.floor(self.price * settings.PAYMENT_TAX / 100))
+        return int(self.price * settings.PAYMENT_TAX / 100)
 
     @property
     def price_with_tax(self):
@@ -103,10 +111,6 @@ class AdvancedCourseTicket(models.Model):
 
     def is_end_of_sale(self):
         return self.sell_by_date < timezone.now()
-
-    @classmethod
-    def get_by_id(cls, ticket_id):
-        return cls.objects.get(pk=ticket_id)
 
     @classmethod
     def find_by_advanced_course(cls, advanced_course):

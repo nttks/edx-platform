@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 tests for advanced course
 """
@@ -51,7 +52,7 @@ class AdvancedCourseTest(WebAppTest, GaccoTestMixin):
 
     def _assert_purchase_email(self, ticket_name, price, payment_method):
         email_message = self.email_client.get_latest_message()
-        self.assertEqual(email_message['subject'], 'Order Payment Confirmation')
+        self.assertEqual(email_message['subject'], u'【gacco】チケットご購入完了のお知らせ')
         self.assertIn(ticket_name, email_message['body'])
         self.assertIn('{:,d}'.format(price), email_message['body'])
         self.assertIn(payment_method, email_message['body'])
@@ -73,7 +74,6 @@ class AdvancedCourseTest(WebAppTest, GaccoTestMixin):
         self.assertEqual(start_time, content['start_time'])
         self.assertEqual(end_time, content['end_time'])
         self.assertEqual(place_name, content['place_name'])
-        print content['tickets']
         self.assertEqual(len(ticket_names), len(content['tickets']))
         for i, ticket_name in enumerate(ticket_names):
             self.assertTrue(content['tickets'][i].startswith(ticket_name))
@@ -103,11 +103,9 @@ class AdvancedCourseTest(WebAppTest, GaccoTestMixin):
     ):
         content = receipt_page.get_receipt_content()
         self.assertTrue(content['course_name'].startswith(course_name))
-        self.assertTrue(content['course_name'].endswith(advanced_course_name))
-        self.assertEqual(ticket_name, content['ticket_name'])
-        self.assertEqual(start_date, content['start_date'])
-        self.assertEqual(start_time, content['start_time'])
-        self.assertEqual(end_time, content['end_time'])
+        self.assertIn(advanced_course_name, content['course_name'])
+        self.assertTrue(content['course_name'].endswith(ticket_name))
+        self.assertEqual('{} {} - {}'.format(start_date, start_time, end_time), content['openning_time'])
         self.assertEqual(place_name, content['place_name'])
         self.assertEqual('{:,d}'.format(price), content['price'])
         self.assertEqual(payment_method, content['payment_method'])
@@ -123,9 +121,8 @@ class AdvancedCourseTest(WebAppTest, GaccoTestMixin):
         4. Show advanced course ticket option page and purchase (use fake_processor)
         5. Show advanced course receipt page and go to dashboard
         6. Show dashboard and visit receipt page
-        7. Show advanced course receipt page and go to list page
-        8. Logout and logged-in by another user
-        9. Show advanced course list page and check course full
+        7. Logout and logged-in by another user
+        8. Show advanced course list page and check course full
         """
 
         # Initialize (not enroll)
@@ -198,8 +195,6 @@ class AdvancedCourseTest(WebAppTest, GaccoTestMixin):
             '2026/01/01 (Thu)', '11:11', '22:22', 'test place 1', 1080, 'Credit Card'
         )
 
-        # Verify that receipt page has thanks page
-        self.assertTrue(receipt_page.has_thanks_message())
         self._assert_purchase_email('Test Advance Course 1 test ticket name 1', 1080, 'Credit Card')
 
         dashboard_page = receipt_page.show_dashboard_page()
@@ -207,9 +202,11 @@ class AdvancedCourseTest(WebAppTest, GaccoTestMixin):
         # Verify not shown upsell message on the dashboard
         self.assertFalse(dashboard_page.has_advanced_course_upsell_message(self.COURSE_DISPLAY))
 
-        receipt_page = dashboard_page.show_receipt_page(self.COURSE_DISPLAY)
+        # Verify receipt page
+        dashboard_page.show_receipt_page(self.COURSE_DISPLAY)
 
-        f2f_courses_page = receipt_page.show_courses_page()
+        #f2f_courses_page = receipt_page.show_courses_page()
+        f2f_courses_page.visit()
 
         ## Verify two advanced course exists and one of those is purchased
         ## Although capacity this course is sold out for one person, it has been purchased is priority
@@ -252,25 +249,7 @@ class AdvancedCourseTest(WebAppTest, GaccoTestMixin):
         dashboard_page.close_unenroll_modal()
 
         ## click button in upsell message
-        f2f_courses_page = dashboard_page.show_advanced_courses_page_by_upsell(self.COURSE_DISPLAY)
-
-        # Verify advanced course list page is shown
-        self.assertFalse(f2f_courses_page.get_error_message())
-        ## Verify advanced course exists
-        self._assert_course_name_and_button(f2f_courses_page, 'Test Advance Course 11')
-
-        # back to dashboard
-        dashboard_page.visit()
-        self.assertTrue(dashboard_page.has_advanced_course_upsell_message(self.COURSE_DISPLAY))
-        ## close upsell
-        dashboard_page.close_upsell(self.COURSE_DISPLAY)
-        dashboard_page.wait_for_upsell_invisibility(self.COURSE_DISPLAY)
-        ## refresh page and verify still upsell does not shown
-        dashboard_page.visit()
-        self.assertFalse(dashboard_page.has_advanced_course_upsell_message(self.COURSE_DISPLAY))
-
-        ## click button in information message
-        f2f_courses_page = dashboard_page.show_advanced_courses_page_by_information(self.COURSE_DISPLAY)
+        f2f_courses_page = dashboard_page.show_advanced_courses_page(self.COURSE_DISPLAY)
 
         # Verify advanced course list page is shown
         self.assertFalse(f2f_courses_page.get_error_message())
@@ -289,8 +268,6 @@ class AdvancedCourseTest(WebAppTest, GaccoTestMixin):
             '2026/01/01 (Thu)', '00:00', '12:00', 'test place 11', 4320, 'Docomo Mobile Payment'
         )
 
-        # Verify receipt page is shown
-        self.assertTrue(receipt_page.has_thanks_message())
         self._assert_purchase_email('Test Advance Course 11 test ticket name 11', 4320, 'Docomo Mobile Payment')
 
         dashboard_page = receipt_page.show_dashboard_page()

@@ -10,12 +10,9 @@ from ga_advanced_course.exceptions import InvalidOrder
 log = logging.getLogger(__name__)
 
 
-PREFIX_ADVANCED_COURSE_UPSELL = '_ga_advanced_course_disabled_upsell'
-
-
 def check_order_can_purchase(order):
     """
-    Check whther available for purchase processing of the specified Order.
+    Check whether available for purchase processing of the specified Order.
 
     - Order status must be `paying`
     - Within SC_SESSION_TIMEOUT from all of the OrderItem has been created
@@ -28,7 +25,7 @@ def check_order_can_purchase(order):
 
     order_items = order.orderitem_set.all()
 
-    is_paying = order.status == 'paying' and all([item.status == 'paying' for item in order_items])
+    is_paying = (order.status == 'paying') and all([item.status == 'paying' for item in order_items])
 
     if not is_paying:
         log.warn("Order status is not paying. user_id={user_id}, order_id={order_id}".format(
@@ -77,17 +74,3 @@ def is_advanced_course_end_of_sale(advanced_course, tickets=None):
     if tickets is None:
         tickets = advanced_course.tickets
     return all([ticket.is_end_of_sale() for ticket in tickets])
-
-
-def disable_upsell(request, course_key):
-    """
-    Disable the display of upsell. State will be saved in the session.
-    """
-    request.session['{}_{}'.format(PREFIX_ADVANCED_COURSE_UPSELL, unicode(course_key))] = True
-
-
-def is_upsell_disabled(request, course_key):
-    """
-    Check whether upsell message has been disabled.
-    """
-    return request.session.get('{}_{}'.format(PREFIX_ADVANCED_COURSE_UPSELL, unicode(course_key)), False)

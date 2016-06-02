@@ -384,6 +384,9 @@ class Order(models.Model):
                 # if item is advanced course, it must be only one.
                 if isinstance(orderitems[0], AdvancedCourseItem):
                     _item = orderitems[0]
+                    _course_name = get_course_by_id(_item.course_id).display_name_with_default
+                    subject = render_to_string('emails/advanced_course_order_confirmation_email_subject.txt', None)
+                    subject = ''.join(subject.splitlines())
                     message = render_to_string(
                         'emails/advanced_course_order_confirmation_email.txt',
                         {
@@ -391,6 +394,7 @@ class Order(models.Model):
                             'purchased_datetime': to_timezone(self.purchase_time),
                             'recipient_name': recipient[0],
                             'item': _item,
+                            'course_name': _course_name,
                             'advanced_course': AdvancedCourse.get_advanced_course(
                                 _item.advanced_course_ticket.advanced_course_id
                             ),

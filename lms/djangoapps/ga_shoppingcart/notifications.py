@@ -1,7 +1,6 @@
 """
 Implementation of the GMO notification
 """
-import json
 import logging
 
 from shoppingcart.processors.GMO import parse_order_id, payment_accepted, AbstractReadParams
@@ -59,7 +58,7 @@ def process_notification(_params):
 
     if params.has_error():
         raise CCProcessorException(
-            "error has occured at GMO error_code={error_code}, error_detail_code={error_detail_code}".format(
+            "error has occurred at GMO error_code={error_code}, error_detail_code={error_detail_code}".format(
                 error_code=params.error_code, error_detail_code=params.error_detail_code
             )
         )
@@ -193,13 +192,13 @@ class _NotificationParams(AbstractReadParams):
 
         for key, key_type in required_params:
             if not hasattr(self, key) or getattr(self, key) is None:
-                raise CCProcessorDataException(
+                raise CCProcessorException(
                     u"The payment processor did not return a required parameter: {}".format(key)
                 )
             try:
                 setattr(self, key, key_type(getattr(self, key)))
             except (ValueError, TypeError):
-                raise CCProcessorDataException(
+                raise CCProcessorException(
                     u"The payment processor returned a badly-typed value {value} for parameter {parameter}.".format(
                         value=getattr(self, key), parameter=key
                     )

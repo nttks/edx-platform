@@ -1023,6 +1023,7 @@ EMBARGO_SITE_REDIRECT_URL = None
 ##### shoppingcart Payment #####
 PAYMENT_SUPPORT_EMAIL = 'payment@example.com'
 PAYMENT_TAX = 8
+PAYMENT_CURRENCY = 'jpy'
 
 ##### Using cybersource by default #####
 

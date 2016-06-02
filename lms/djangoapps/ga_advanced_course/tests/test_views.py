@@ -18,7 +18,6 @@ from ga_shoppingcart.models import AdvancedCourseItem
 from ga_shoppingcart.utils import SC_SESSION_TIMEOUT
 
 from ..models import AdvancedCourseTypes
-from ..utils import is_upsell_disabled
 from .factories import AdvancedF2FCourseFactory, AdvancedCourseTicketFactory
 from .utils import purchase_ticket, start_purchase_ticket, make_ticket_to_out_of_sale
 
@@ -297,15 +296,12 @@ class AdvancedCourseChooseViewTest(AdvancedCourseViewTest):
         expected_count = 1 + (1 if is_f2f_course and is_f2f_course_sell else 0)
 
         self.assertEqual(200, response.status_code)
-        self.assertIn("Enroll mode selection", response.content)
+        self.assertIn("Enroll course selection", response.content)
         self.assertIn("Thank you for an enroll. This course has {} courses.".format(expected_count), response.content)
         if is_f2f_course and is_f2f_course_sell:
             self.assertIn("Face 2 Face Classroom", response.content)
-            # recommend message
-            self.assertIn("for those who want to advance a more expansive learning", response.content)
         else:
             self.assertNotIn("Face 2 Face Classroom", response.content)
-            self.assertNotIn("for those who want to advance a more expansive learning", response.content)
         self.assertIn("Online Course (Free of charge)", response.content)
 
     def test_choose_advanced_course_not_enrolled(self):
@@ -348,7 +344,7 @@ class AdvancedCourseF2FCoursesViewTest(CourseCheckMixin, AdvancedCourseViewTest)
         response = self._get_advanced_courses(self.course)
 
         self.assertEqual(200, response.status_code)
-        self.assertIn("Face 2 Face Classroom", response.content)
+        self.assertIn("Details of Face to face course", response.content)
         self.assertNotIn("purchase_error", response.content)
 
         for course in advanced_courses:
@@ -389,7 +385,7 @@ class AdvancedCourseChooseTicketViewTest(CourseCheckMixin, TicketCheckMixin, Adv
         response = self._get_choose_ticket(self.course, advanced_courses[0].id)
 
         self.assertEqual(200, response.status_code)
-        self.assertIn("Ticket Option", response.content)
+        self.assertIn("Ticket Selection", response.content)
         self.assertIn(advanced_courses[0].display_name, response.content)
         self.assertNotIn('purchase_error', response.content)
 
@@ -613,32 +609,3 @@ class AdvancedCourseCheckoutViewTest(OrderCheckMixin, AdvancedCourseViewTest):
         response = self._access_checkout(order.id, method='GET')
 
         self.assertEqual(405, response.status_code)
-
-
-class AdvancedCourseCloseUpsellViewTest(AdvancedCourseViewTest):
-
-    def _access_close_upsell(self, course_id, method='POST'):
-        return self._access_page(
-            reverse('advanced_course:close_upsell'), method, data={'course_id': course_id}
-        )
-
-    def test_close_upsell(self):
-        course_2 = CourseFactory.create()
-
-        self.setup_user()
-
-        self.assertFalse(is_upsell_disabled(self.client, self.course.id))
-        self.assertFalse(is_upsell_disabled(self.client, course_2.id))
-
-        response = self._access_close_upsell(unicode(self.course.id))
-
-        self.assertEqual(204, response.status_code)
-        self.assertTrue(is_upsell_disabled(self.client, self.course.id))
-        self.assertFalse(is_upsell_disabled(self.client, course_2.id))
-
-    def test_close_upsell_invalid_course_id(self):
-        self.setup_user()
-
-        response = self._access_close_upsell('invalid_course_id')
-
-        self.assertEqual(400, response.status_code)

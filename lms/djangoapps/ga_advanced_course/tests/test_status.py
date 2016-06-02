@@ -176,28 +176,3 @@ class AdvancedCourseStatusTest(ModuleStoreTestCase):
         # purchased more
         order2 = purchase_ticket(self.client.user, self.advanced_course_tickets_2[0])
         self.assertEqual([order1, order2], AdvancedCourseStatus(self.client, course).get_purchased_orders())
-
-    def test_show_upsell_message_purchased(self):
-        course = self.course_1
-        self.client.user = self.users[0]
-
-        # Verify shown default
-        self.assertTrue(AdvancedCourseStatus(self.client, course).show_upsell_message())
-
-        # after purchased of another course
-        purchase_ticket(self.client.user, self.advanced_course_tickets_3[0])
-        self.assertTrue(AdvancedCourseStatus(self.client, course).show_upsell_message())
-
-        # after purchased
-        purchase_ticket(self.client.user, self.advanced_course_tickets_1[0])
-        self.assertFalse(AdvancedCourseStatus(self.client, course).show_upsell_message())
-
-    def test_show_upsell_message_disabled_upsell(self):
-        course = self.course_1
-        self.client.user = self.users[0]
-
-        # Verify shown default
-        self.assertTrue(AdvancedCourseStatus(self.client, course).show_upsell_message())
-
-        with patch('ga_advanced_course.status.is_upsell_disabled', return_value=True):
-            self.assertFalse(AdvancedCourseStatus(self.client, course).show_upsell_message())

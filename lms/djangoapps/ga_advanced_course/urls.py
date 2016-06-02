@@ -15,5 +15,4 @@ urlpatterns = patterns('ga_advanced_course.views',  # nopep8
         'choose_ticket', name='choose_ticket'),
     url(r'^{}/purchase_ticket/(?P<ticket_id>.+)$'.format(settings.COURSE_ID_PATTERN),
         'purchase_ticket', name='purchase_ticket'),
-    url(r'close_upsell', 'close_upsell', name='close_upsell'),
 )

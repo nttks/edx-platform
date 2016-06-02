@@ -6,7 +6,6 @@ from ga_advanced_course.utils import (
     is_advanced_course_full,
     is_advanced_course_end_of_sale,
     get_advanced_course_purchased_order,
-    is_upsell_disabled,
 )
 
 
@@ -16,9 +15,8 @@ class AdvancedCourseStatus(object):
     """
     def __init__(self, request, course, advanced_courses=None):
         self.course = course
-        self.disabled_upsell = is_upsell_disabled(request, course.id)
         # The methods in this class is the assumption, which is also used from the view templates.
-        # Therefore, we get at the beggining of the advanced courses and status.
+        # Therefore, we get at the beginning of the advanced courses and status.
         self.advanced_courses = self._get_advanced_courses_with_status(request.user, course.id, advanced_courses)
         self.available_types = self._get_available_types()
 
@@ -79,7 +77,7 @@ class AdvancedCourseStatus(object):
 
     def is_purchased(self, advanced_course_id=None):
         """
-        Check whether user is purchased.
+        Check whether user purchased.
 
         If advanced_course_id is not specified, then check all of advanced course.
         """
@@ -96,9 +94,3 @@ class AdvancedCourseStatus(object):
 
     def get_purchased_orders(self):
         return [status['order'] for status in self.advanced_courses.values() if status['is_purchased']]
-
-    def show_upsell_message(self):
-        """
-        Returns whether to show upsell.
-        """
-        return not (self.is_purchased() or self.disabled_upsell)

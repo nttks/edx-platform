@@ -14,7 +14,7 @@ from django.shortcuts import redirect
 from django.utils.translation import ugettext as _
 from django.views.decorators.http import require_GET, require_POST
 
-from courseware.courses import course_image_url, get_course_with_access
+from courseware.courses import get_course_with_access
 from courseware.views import registered_for_course
 from edxmako.shortcuts import render_to_response
 from opaque_keys import InvalidKeyError
@@ -23,7 +23,7 @@ from shoppingcart.models import Order
 from shoppingcart.processors import (
     get_signed_purchase_params, get_purchase_endpoint
 )
-from util.json_request import JsonResponse, JsonResponseBadRequest
+from util.json_request import JsonResponse
 
 from ga_advanced_course.exceptions import InvalidOrder
 from ga_advanced_course.status import AdvancedCourseStatus
@@ -33,14 +33,13 @@ from ga_advanced_course.utils import (
     is_advanced_course_full,
     is_advanced_course_end_of_sale,
     check_order_can_purchase,
-    disable_upsell,
 )
 from ga_shoppingcart.models import AdvancedCourseItem
 
 log = logging.getLogger(__name__)
 
 
-def _get_course_with_access(user, action, course_key, depth=0, check_if_enrolled=False):
+def _get_course_with_access(user, action, course_key):
     """
     Get modulestore's course by course_id (not only str but also CourseKey)
 
@@ -53,11 +52,11 @@ def _get_course_with_access(user, action, course_key, depth=0, check_if_enrolled
         except InvalidKeyError:
             raise Http404("Invalid course_id({})".format(unicode(course_key)))
 
-    return get_course_with_access(user, action, course_key, depth, check_if_enrolled)
+    return get_course_with_access(user, action, course_key)
 
 
-def _get_f2f_course_with_access(user, action, course_key, depth=0, check_if_enrolled=False):
-    course = _get_course_with_access(user, action, course_key, depth, check_if_enrolled)
+def _get_f2f_course_with_access(user, action, course_key):
+    course = _get_course_with_access(user, action, course_key)
     if not (course.is_f2f_course and course.is_f2f_course_sell):
         raise Http404()
     return course
@@ -72,12 +71,12 @@ def _get_advanced_course(advanced_course_id):
         return AdvancedCourse.get_advanced_course(advanced_course_id)
     except AdvancedCourse.DoesNotExist:
         log.warning("No advanced course. advanced_course_id={}".format(advanced_course_id))
-        raise Http404
+        raise Http404()
 
 
 def _get_advanced_course_ticket(ticket_id):
     try:
-        return AdvancedCourseTicket.get_by_id(ticket_id)
+        return AdvancedCourseTicket.objects.get(pk=ticket_id)
     except AdvancedCourseTicket.DoesNotExist:
         log.warning("No advanced course ticket. ticket_id={ticket_id}".format(ticket_id=ticket_id))
         raise Http404()
@@ -117,7 +116,7 @@ def _get_user_paying_cart(user, order_id):
 
 
 def _check_for_purchase(request, advanced_course, tickets):
-    # If the following conditions are true, user can not press the subscribe button on ths list page.
+    # If the following conditions are true, user can not press the subscribe button on this list page.
     # But there is likely to be executed in the time difference.
     if is_advanced_course_purchased(request.user, advanced_course):
         log.warning(
@@ -129,7 +128,7 @@ def _check_for_purchase(request, advanced_course, tickets):
         return False
     elif is_advanced_course_full(advanced_course):
         log.warning(
-            'User ({user_id}) try to choose tickets of advanced course ({advanced_course_id}), but aleady full.'.format(
+            'User ({user_id}) try to choose tickets of advanced course ({advanced_course_id}), but already full.'.format(
                 user_id=request.user.id, advanced_course_id=advanced_course.id
             )
         )
@@ -222,7 +221,6 @@ def _advanced_courses_view(request, course, advanced_course_type):
 
     context = {
         'course_name': course.display_name_with_default,
-        'course_image': course_image_url(course),
         'advanced_courses_with_status': AdvancedCourseStatus(request, course, _advanced_courses),
         'advanced_course_type': advanced_course_type,
     }
@@ -262,7 +260,7 @@ def choose_ticket(request, course, advanced_course_id):
     return render_to_response('ga_advanced_course/choose_ticket.html', context)
 
 
-def purchase_with_shoppingcart(user, ticket):
+def _purchase_with_shoppingcart(user, ticket):
     """
     Create an order using shoppingcart.
     """
@@ -282,7 +280,7 @@ def purchase_with_shoppingcart(user, ticket):
     return cart
 
 
-def checkout_with_shoppingcart(request, user, order):
+def _checkout_with_shoppingcart(request, user, order):
     """
     Trigger checkout using shoppingcart.
 
@@ -302,7 +300,7 @@ def checkout_with_shoppingcart(request, user, order):
 
     extra_data = [
         item.line_desc,
-        str(item.course_id),
+        unicode(item.course_id),
         user.id,
     ]
 
@@ -345,7 +343,7 @@ def purchase_ticket(request, course, ticket_id):
         return _redirect_to_advanced_courses(advanced_course.course_id, advanced_course.course_type)
 
     # Now, only use shoppingcart. it may switch ecommerce-service in the future.
-    order = purchase_with_shoppingcart(request.user, ticket)
+    order = _purchase_with_shoppingcart(request.user, ticket)
 
     return redirect(reverse('advanced_course:checkout_ticket', args=[order.id]))
 
@@ -376,22 +374,6 @@ def checkout(request):
     order = _get_user_paying_cart(request.user, order_id)
 
     # Now, only use shoppingcart. it may switch ecommerce-service in the future.
-    payment_data = checkout_with_shoppingcart(request, request.user, order)
+    payment_data = _checkout_with_shoppingcart(request, request.user, order)
 
     return JsonResponse(payment_data)
-
-
-@require_POST
-@login_required
-def close_upsell(request):
-    """
-    The endpoint to keep the closed state of upsell message
-    """
-    course_id = request.POST.get('course_id')
-    try:
-        course_key = CourseKey.from_string(course_id)
-        disable_upsell(request, course_key)
-        return JsonResponse()
-    except InvalidKeyError:
-        log.warning("Invalid course_id({})".format(course_id))
-        return JsonResponseBadRequest()

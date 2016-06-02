@@ -2,31 +2,34 @@
 
 ${recipient_name} 様
 
-gaccoをご利用いただき、ありがとうございます。チケットの購入が完了したことをお知らせいたします。
+gaccoをご利用いただき、ありがとうございます。
+チケットの購入が完了したことをお知らせいたします。
 
 ------------------------------------
-お申し込み詳細
+お申込み詳細
 ------------------------------------
+「${course_name}」講座
 
 購入チケット: ${item.line_desc}
+チケット番号: #${create_order_id(order)}
+開催日時: ${advanced_course.opening_datetime_str}
+会場: ${advanced_course.place_name}
 購入枚数: 1
-お支払い金額: ¥ ${"{:,d}".format(int(item.unit_cost + item.tax))}
 お支払い方法: ${item.payment_method}
-レシート番号: #${create_order_id(order)}
+お支払い金額: ¥${"{:,d}".format(int(item.unit_cost + item.tax))}
 購入日時: ${purchased_datetime.strftime('%Y/%m/%d %H:%M:%S')}
 
-詳細はこちらからご確認ください。
+チケットはこちらからご確認ください。
 https://${site_name}/shoppingcart/receipt/${order.id}/
 
+当日は、受付時にチケット画面または本メール画面をご提示ください。
 
-このメールは自動送信しています。ご返信いただいてもお答えできかね
-ますのでご了承ください。
+
+このメールは自動送信しています。ご返信いただいても
+お答えできかねますのでご了承ください。
 ==================
-・gaccoに関する「よくある質問」はコチラ
-https://support.gacco.org/
-
-・お問い合わせはマイページの「ヘルプ」ボタンよりお願いします
-https://lms.gacco.org/dashboard
+・お問い合わせやキャンセルはこちらから
+https://support.gacco.org/hc/ja/requests/new
 
 
 gacco運営チーム

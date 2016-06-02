@@ -11,8 +11,6 @@ from django.conf import settings
 from django.utils import timezone
 from django.utils.translation import ugettext as _
 
-from microsite_configuration import microsite
-
 from .exceptions import *
 from .helpers import get_processor_config
 from ..models import Order, OrderItem
@@ -44,11 +42,11 @@ def process_postpay_callback(_params):
     """
     try:
         params = ResultParams(_params)
-        # First we need to check whther an error has occured at GMO.
-        # If an error has occured, the after processing can not be purformed.
+        # First we need to check whether an error has occurred at GMO.
+        # If an error has occurred, the after processing can not be performed.
         if params.has_error():
             raise CCProcessorException(
-                "error has occured at GMO error_code={error_code}, error_detail_code={error_detail_code}".format(
+                "error has occurred at GMO error_code={error_code}, error_detail_code={error_detail_code}".format(
                     error_code=params.error_code, error_detail_code=params.error_detail_code
                 )
             )
@@ -138,7 +136,7 @@ def get_purchase_params(cart, callback_url=None, extra_data=None):
 
     """
 
-    if type(callback_url) == tuple:
+    if isinstance(callback_url, tuple):
         callback_url1 = callback_url[0]
         callback_url2 = callback_url[1] if len(callback_url) >= 2 else callback_url[0]
     else:
@@ -408,7 +406,7 @@ class ResultParams(AbstractReadParams):
 
     def verify_params(self):
         """
-        Validate that we have the paramters we expect and can convert them to the appropriate types.
+        Validate that we have the parameters we expect and can convert them to the appropriate types.
         Usually validating the signature is sufficient to validate that these fields exist,
         but we need to check an additional several parameters.
         """

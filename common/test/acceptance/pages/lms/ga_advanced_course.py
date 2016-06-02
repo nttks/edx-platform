@@ -26,7 +26,7 @@ class AdvancedCourseChoosePage(PageObject):
         )
 
     def is_browser_on_page(self):
-        return self.browser.title.startswith("Enroll mode selection")
+        return self.browser.title.startswith("Enroll course selection")
 
     def _get_face_to_face_element(self, selector):
         elements = self.q(css='.course_select_area').results
@@ -227,30 +227,15 @@ class AdvancedCourseReceiptPage(PageObject):
     def is_browser_on_page(self):
         return self.q(css='.ticket_page_wrap .receipt_area').present
 
-    def has_thanks_message(self):
-        return self.q(css='#thanks-msg').present
-
-    def show_courses_page(self):
-        btn = self.q(css='.t_btn')[0]
-        course_id = btn.get_attribute('href').split('/')[-2]
-        btn.click()
-
-        # Now, only returns f2f page
-        return AdvancedF2FCoursesPage(self.browser, course_id).wait_for_page()
-
     def show_dashboard_page(self):
-        self.q(css='.t_btn')[1].click()
+        self.q(css='.t_btn.mypage').click()
 
         return DashboardPage(self.browser).wait_for_page()
 
     def get_receipt_content(self):
-        openning_time = self.q(css='#course-opening-time')[0].text
         return {
-            'course_name': self.q(css='h3')[0].text,
-            'ticket_name': self.q(css='#ticket-name')[0].text,
-            'start_date': openning_time.splitlines()[0],
-            'start_time': openning_time.splitlines()[1].split('-')[0].strip(),
-            'end_time': openning_time.splitlines()[1].split('-')[1].strip(),
+            'course_name': self.q(css='h4')[0].text,
+            'openning_time': self.q(css='#course-opening-time')[0].text,
             'place_name': self.q(css='#course-place')[0].text,
             'price': self.q(css='#ticket-price')[0].text.split()[0][1:],
             'payment_method': self.q(css="#payment-method")[0].text,
@@ -293,41 +278,28 @@ class DashboardPage(GaDashboradPage):
 
     def has_advanced_course_upsell_message(self, course_name):
         try:
-            element = self._get_element_in_course(course_name, ".advanced-course-message")
-            return element.is_displayed()
+            element = self._get_element_in_course(course_name, ".messages-list .message")
+            return 'face-to-face course' in element.text
         except NoSuchElementException:
             return False
 
-    def wait_for_upsell_invisibility(self, course_name):
-        _check_func = lambda: not self.has_advanced_course_upsell_message(course_name)
-        self.wait_for(_check_func, 'Upsell message did not close')
-
     def has_advanced_course_purchased_message(self, course_name):
         try:
-            self._get_element_in_course(course_name, ".advanced-course-information-label.purchased")
+            self._get_element_in_course(course_name, ".advanced-course-information.purchased")
             return True
         except NoSuchElementException:
             return False
 
-    def show_advanced_courses_page_by_upsell(self, course_name):
-        btn = self._get_element_in_course(course_name, ".advanced-course-message .btn")
-        course_id = btn.get_attribute('href').split('/')[-2]
-        btn.click()
-        return AdvancedF2FCoursesPage(self.browser, course_id).wait_for_page()
-
-    def show_advanced_courses_page_by_information(self, course_name):
-        btn = self._get_element_in_course(course_name, '.advanced-course-information-action')
+    def show_advanced_courses_page(self, course_name):
+        btn = self._get_element_in_course(course_name, '.advanced-course-information.apply .btn')
         course_id = btn.get_attribute('href').split('/')[-2]
         btn.click()
         return AdvancedF2FCoursesPage(self.browser, course_id).wait_for_page()
 
     def show_receipt_page(self, course_name):
-        self._get_element_in_course(course_name, '.advanced-course-information-action').click()
+        self._get_element_in_course(course_name, '.advanced-course-information.purchased .btn').click()
 
         return AdvancedCourseReceiptPage(self.browser).wait_for_page()
-
-    def close_upsell(self, course_name):
-        self._get_element_in_course(course_name, '.advanced-course-message-close').click()
 
     def get_refund_info_message(self):
         return self.q(css='#refund-info')[0].text

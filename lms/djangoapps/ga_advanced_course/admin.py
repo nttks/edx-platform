@@ -11,10 +11,10 @@ class AdvancedF2FCourseAdmin(admin.ModelAdmin):
 
     fieldsets = (
         (None, {
-          'fields': (
-              'course_id', 'display_name', 'start_date', 'start_time', 'end_time', 'capacity', 'description',
-              'place_name', 'place_link', 'place_address', 'place_access', 'content', 'is_active',
-          )
+            'fields': (
+                'course_id', 'display_name', 'start_date', 'start_time', 'end_time', 'capacity', 'description',
+                'place_name', 'place_link', 'place_address', 'place_access', 'content', 'is_active',
+            )
         }),
     )
 

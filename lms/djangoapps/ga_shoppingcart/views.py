@@ -7,8 +7,6 @@ from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
-from shoppingcart.processors.exceptions import CCProcessorException
-
 from ga_shoppingcart.notifications import process_notification
 
 NOTIFICATION_RESULT_SUCCESS = '0'
@@ -26,8 +24,8 @@ def notify(request):
     except:
         # if Exception occur, record the log for monitoring but no longer need to be notified from GMO.
         # GMO is to retransmit up to a maximum 5 times, every hour if they can not receive a normal status.
-        # But we always returns a normal status to them if we recieved a notification even once.
+        # But we always returns a normal status to them if we received a notification even once.
         # In this case, the notification data is an invalid or a DB and inconsistencies.
-        # operation suppoer is required.
+        # operation support is required.
         log.exception('Failed to process of notification from GMO.')
     return HttpResponse(NOTIFICATION_RESULT_SUCCESS)
