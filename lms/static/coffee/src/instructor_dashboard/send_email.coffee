@@ -20,6 +20,7 @@ class SendEmail
     # gather elements
     @$emailEditor = XBlock.initializeBlock($('.xblock-studio_view'));
     @$send_to = @$container.find("select[name='send_to']'")
+    @$advanced_course = @$container.find("select[name='advanced_course']")
     @$subject = @$container.find("input[name='subject']'")
     @$checkbox_include_optout = @$container.find("input[name='include-optout']")
     @$btn_send = @$container.find("input[name='send']'")
@@ -42,6 +43,11 @@ class SendEmail
       else
         @$checkbox_include_optout.attr('checked', false)
         @$optout_container.hide()
+
+      if @$send_to.val() is 'advanced_course'
+        @$advanced_course.show()
+      else
+        @$advanced_course.hide()
 
     # attach click handlers
 
@@ -71,6 +77,8 @@ class SendEmail
           confirm_message = gettext("You are about to send an email titled '<%= subject %>' to yourself. Is this OK?")
         else if send_to == "staff"
           confirm_message = gettext("You are about to send an email titled '<%= subject %>' to everyone who is staff or instructor on this course. Is this OK?")
+        else if send_to == "advanced_course"
+          confirm_message = gettext("You are about to send an email titled '<%= subject %>' to everyone who is purchased an advanced course. Is this OK?")
         else
           confirm_message = gettext("You are about to send an email titled '<%= subject %>' to ALL (everyone who is enrolled in this course as student, staff, or instructor). Is this OK?")
           success_message = gettext("Your email was successfully queued for sending. Please note that for large classes, it may take up to an hour (or more, if other courses are simultaneously sending email) to send all emails.")
@@ -86,6 +94,7 @@ class SendEmail
             subject: @$subject.val()
             message: @$emailEditor.save()['data']
             include_optout: @$checkbox_include_optout.is(':checked')
+            advanced_course: @$advanced_course.val()
 
           $.ajax
             type: 'POST'

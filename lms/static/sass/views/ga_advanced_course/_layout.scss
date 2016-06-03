@@ -1,0 +1,348 @@
+.section.course_info {
+  position: relative;
+  padding-bottom: 1rem;
+  border: 2px dashed #CCC;
+  margin-bottom: 3rem;
+
+  h4 {
+    width: 70%;
+    font-size: 1.6rem;
+  }
+
+  .ticket-action {
+    position: absolute;
+    top: 23px;
+    right: 0;
+
+    .t_btn.big {
+      float: none;
+    }
+  }
+}
+
+.course_info:not(:first-child) {
+  margin-top: 1rem;
+}
+
+.course_info h6 {
+  margin: 1rem 0 0;
+  font-size: 1.0rem;
+}
+
+.course_info p {
+  margin: 1rem 0;
+}
+
+.course_info_inner {
+  position: relative;
+}
+
+.course_info_inner:after {
+  content: '';
+  display: block;
+  height: 80px;
+  width: 100%;
+  position: absolute;
+  bottom: 0;
+}
+
+.bg_linear:after {
+  background-image: -ms-linear-gradient(rgba(255,255,255,0),#ffffff);
+  background-image: -moz-linear-gradient(rgba(255,255,255,0),#ffffff);
+  background-image: -webkit-linear-gradient(rgba(255,255,255,0),#ffffff);
+  background-image: linear-gradient(rgba(255,255,255,0),#ffffff);
+  background-color: transparent;
+}
+
+.bg_linear_none:after {
+  background-image: none;
+}
+
+/* ----- select Page-----*/
+.course_select_area {
+  position: relative;
+  background-color: #FFFDE7;
+  border: 1px solid #ccc;
+  padding: 0.1rem 2rem 2rem;
+  margin: 1rem 0;
+  border-radius: 4px;
+
+  p {
+    font-size: 1.2rem;
+    line-height: 1.6;
+  }
+
+  ul {
+    margin: 1rem 0 0 2rem;
+  }
+
+  li {
+    list-style: disc;
+    line-height: 2.0;
+  }
+
+  .catch {
+    border: 3px solid #CF0F31;
+    padding: 1.4rem 1rem;
+    background-color: #FBE9E7;
+    border-radius: 10px;
+    letter-spacing: 1.8px;
+  }
+
+  .description {
+    margin: 1rem 0;
+  }
+
+  .middle {
+    font-size: 1.6rem;
+    margin-top: 0;
+  }
+
+  &.online {
+    background-color: #f3f3f3;
+
+    .catch {
+      background-color: #e3e3e3;
+      border: 3px solid #999;
+    }
+  }
+}
+
+@media only screen and (max-width:480px) {
+  .course_select_area {
+    padding: 0 1rem 1rem;
+
+    p {
+      font-size: 1rem;
+    }
+
+    ul {
+      margin: 1rem 0 0 0;
+      padding: 0 0 0 30px;
+    }
+  }
+}
+
+.option, .receipt {
+  .course_select_area {
+    padding: 0.5rem;
+    background-color: #f9f9f9;
+    border-radius: 2px;
+  }
+}
+
+.option {
+  h3 {
+    border: none;
+  }
+
+  .ticket_page_wrap .t_btn {
+    float: right;
+    margin-top: 0.5rem;
+    bottom: 0;
+  }
+}
+
+.item_area {
+  padding-left: 16px;
+  width: 100%;
+  margin: 10px -24px 0 0;
+  overflow: hidden;
+
+  .items {
+    display:block;
+    float: left;
+    box-sizing:border-box;
+    width: 31.5%;
+    background-color: #fffce5;
+    padding:0 1rem 0.5rem;
+    margin:0 12px 2rem 0px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    position: relative;
+
+    &:first-child {
+      margin-left: 0;
+    }
+  }
+
+  h4 {
+    border-left: 3px solid #CF0F31;
+    padding-left: 0.6rem;
+  }
+
+  p {
+    line-height: 1.4;
+    margin-top: 1.0rem;
+    margin-bottom: 0.4rem;
+  }
+}
+
+@media only screen and (min-width: 569px) {
+  .option .items {
+    min-height: 180px;
+
+    .t_btn {
+      min-width: 8rem;
+      line-height: 2.4;
+    }
+
+    .sell_by_date {
+      float: right;
+    }
+  }
+}
+
+@media only screen and (max-width: 800px) {
+  .ticket_page_wrap {
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  .item_area .items {
+    width: 47%;
+  }
+}
+
+@media only screen and (max-width: 568px) {
+  .item_area {
+    .items {
+      display: block;
+      width: 90%;
+      text-align: center;
+
+      h3 {
+        border-left: none;
+        border-bottom: dotted 2px #CF0F31;
+      }
+
+      .t_btn {
+        width: 90%;
+        float: none;
+      }
+    }
+  }
+}
+
+/* receipt page */
+.receipt {
+  .receipt_area {
+    margin-top: 2rem;
+    border-top: 1px solid;
+    border-bottom: 1px solid;
+
+    .ticket-detail {
+      margin: 3rem auto;
+
+      dl {
+        dt {
+          font-weight: 700;
+        }
+        dd {
+          margin: 0.5rem 0;
+        }
+      }
+    }
+
+    @media print, screen and (min-width: 1074px) {
+      h4 {
+        margin-left: 2rem;
+      }
+
+      .ticket-detail {
+        width: 80%;
+
+        dl dt {
+          width: 250px;
+        }
+      }
+    }
+
+    @media only screen and (min-width: 800px) {
+      .ticket-detail {
+        dl {
+          dt, dd {
+            font-size: 1.2rem;
+          }
+        }
+      }
+    }
+
+    @media print, screen and (min-width:480px) {
+      .ticket-detail {
+        dl {
+          display: table-row;
+          margin: 0;
+
+          dt, dd {
+            display: table-cell;
+            padding: 0.5rem;
+          }
+        }
+      }
+    }
+  }
+
+  .t_btn.big.mypage {
+    background-color: #999;
+    border-color: #444;
+    margin-top: 2.0rem
+  }
+
+  @media print {
+    .ticket_page_wrap {
+      min-height: 600px;
+
+      h2 {
+        margin: 0;
+        font-size: 24px;
+      }
+
+      .course_select_area, .ticket-cancel, .mypage {
+        display: none;
+      }
+
+      .receipt_area {
+        h3 {
+          font-size: 18px;
+        }
+
+        h4 {
+          font-size: 16px;
+        }
+
+        .ticket-detail {
+          dl {
+            dt {
+              width: 150px;
+            }
+
+            dt, dd {
+              font-size: 12px;
+            }
+          }
+        }
+      }
+    }
+
+    .wrapper-footer {
+      display: none;
+    }
+  }
+}
+
+@media only screen and (max-width: 568px) {
+  .option {
+    .items {
+      h4 {
+        border: none;
+        padding-left: 0;
+      }
+
+      p {
+        margin-top: 1.0rem;
+      }
+    }
+  }
+}

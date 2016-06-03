@@ -4563,7 +4563,7 @@ msgstr "{username} ({email}) の払い戻し請求が開始されました。こ
 
 #: lms/djangoapps/commerce/views.py:166 lms/djangoapps/shoppingcart/pdf.py:227
 msgid "Receipt"
-msgstr "領収証"
+msgstr "レシート"
 
 #: lms/djangoapps/commerce/views.py:176
 msgid "Payment Failed"
@@ -6221,7 +6221,7 @@ msgstr "\n相互採点の初期化に失敗しました。\nこの講座では�
 
 #: lms/djangoapps/shoppingcart/models.py:357
 msgid "Order Payment Confirmation"
-msgstr "注文支払い確認"
+msgstr "ご注文の確認"
 
 #: lms/djangoapps/shoppingcart/models.py:359
 msgid ""

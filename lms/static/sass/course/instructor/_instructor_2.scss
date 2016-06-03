@@ -426,6 +426,10 @@
     display: none;
   }
 
+  select[name="advanced_course"] {
+    display: none;
+  }
+
   .mail-option {
     margin: ($baseline/2) 0;
     position: relative;

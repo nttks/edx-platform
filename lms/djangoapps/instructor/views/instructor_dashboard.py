@@ -44,6 +44,7 @@ from class_dashboard.dashboard_data import get_section_display_name, get_array_s
 from .tools import get_units_with_due_date, title_or_url, bulk_email_is_enabled_for_course
 from opaque_keys.edx.locations import SlashSeparatedCourseKey
 from pgreport.views import ProblemReport
+from ga_advanced_course.models import AdvancedCourse
 
 log = logging.getLogger(__name__)
 
@@ -473,6 +474,7 @@ def _section_data_download(course, access):
         'list_report_downloads_url': reverse('list_report_downloads', kwargs={'course_id': unicode(course_key)}),
         'calculate_grades_csv_url': reverse('calculate_grades_csv', kwargs={'course_id': unicode(course_key)}),
         'problem_grade_report_url': reverse('problem_grade_report', kwargs={'course_id': unicode(course_key)}),
+        'get_students_advanced_course_url': reverse('get_students_advanced_course', kwargs={'course_id': unicode(course_key)}),
     }
     return section_data
 
@@ -508,6 +510,7 @@ def _section_send_email(course, access):
         request_token=uuid.uuid1().get_hex()
     )
     email_editor = fragment.content
+    advanced_courses = AdvancedCourse.get_advanced_courses_by_course_key(course_key)
     section_data = {
         'section_key': 'send_email',
         'section_display_name': _('Email'),
@@ -523,6 +526,7 @@ def _section_send_email(course, access):
         'email_content_history_url': reverse(
             'list_email_content', kwargs={'course_id': unicode(course_key)}
         ),
+        'advanced_courses': advanced_courses,
     }
     return section_data
 

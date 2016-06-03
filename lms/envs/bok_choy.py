@@ -206,6 +206,11 @@ if os.environ.get('ENABLE_BOKCHOY_GA'):
     # OAuth2
     FEATURES['ENABLE_OAUTH2_PROVIDER'] = True
 
+    # Shoppingcart
+    CC_PROCESSOR_NAME = 'GMO'
+    FEATURES['ENABLE_PDF_RECEIPT'] = False
+    FEATURES['STORE_BILLING_INFO'] = True
+
 #####################################################################
 # Lastly, see if the developer has any local overrides.
 try:

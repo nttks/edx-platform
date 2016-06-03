@@ -1,0 +1,317 @@
+%btn-disabled {
+  @extend %btn-primary-disabled;
+}
+
+.ticket_page_wrap {
+  .t_btn {
+    display: inline-block;
+    min-height: 35px;
+    width: 6rem;
+    margin-bottom: 5px;
+    text-align: center;
+    letter-spacing: 1.8px;
+    background-color: #4293d5;
+    border-radius: 6px;
+    color: #fff;
+    border-bottom: 3px solid #144168;
+    position: relative;
+    bottom: 3px;
+    line-height: 2.0;
+    outline: rgb(255, 255, 255) none 0px;
+    font-weight: 600;
+
+    a {
+      text-decoration: none;
+    }
+  }
+
+  .t_btn.apply {
+    background-color: #ff5233;
+    color: #fff;
+    border-color: #c4721a;
+
+    &:hover {
+      opacity: 1;
+      background-color: #f52d2f;
+    }
+  }
+
+  .t_btn.disabled {
+    @extend %btn-disabled;
+    border-color: #8a8d8f;
+  }
+
+  .t_btn.big {
+    float: right;
+    margin: 0  1rem 0  0;
+    min-width: 11rem;
+    width: auto;
+    padding: 0.3rem 1rem;
+    line-height: 2.4rem;
+    border-radius: 8px;
+    min-height: 2.4rem;
+  }
+
+  .show_more {
+    text-align: center;
+    /* color: #fff; */
+    font-size: 1.2rem;
+    border: 2px solid #666;
+    width: 10rem;
+    margin: 0.8rem auto 0.5rem;
+    padding: 0rem 0.5rem 0.3rem;
+    border-radius: 8px;
+    line-height: 1.6;
+
+    span {
+      font-size: 1.8rem;
+      margin-right:10px;
+    }
+
+    &:hover {
+      background-color:#ddd;
+    }
+  }
+
+  .course_list.course_name {
+    width:99%;
+    line-height: 2;
+
+    span {
+      line-height: 2;
+    }
+  }
+
+  .course_list.course_name li {
+    font-size: 1.1rem;
+    list-style: decimal inside;
+    list-style-position: inside;
+    border-bottom: 1px dotted #bbb;
+    /* position: relative; left:2rem; */
+    margin-bottom: 1rem;
+    margin-left: 1%;
+  }
+
+  .purchase_error {
+    box-shadow: inset 0 -1px 2px 0 #f3d9db;
+    border-bottom: 3px solid #a0050e;
+    background: #fbf2f3;
+    padding: 25px;
+  }
+
+  .purchase_annotation {
+    margin-top: 10px;
+    color: #c0c0c0;
+    text-align: right;
+  }
+
+  .sell_by_date {
+    color: #c0c0c0;
+    font-size: 0.9rem;
+  }
+
+  @media only screen and (max-width: 1080px) {
+    .course_name .title {
+      width: 60%;
+      padding-left: 0.2rem;
+    }
+  }
+
+  @media only screen and (max-width: 960px) {
+    .course_name {
+      padding: 0;
+    }
+
+    .course_name .title {
+      display: block;
+      width: 100%;
+      padding-left: 0.2rem;
+    }
+  }
+
+  @media only screen and (max-width: 800px) {
+    .course_list.course_name .title {
+      display: inline;
+    }
+
+    .course_list.course_name li {
+      list-style: decimal inside;
+      list-style-position: inside;
+      margin-bottom: 2rem;
+      margin-left: 1%;
+    }
+
+    .course_info {
+      h4 {
+        width: 100%;
+      }
+
+      .ticket-action {
+        position: static;
+      }
+    }
+
+    .t_btn {
+      width: 60%;
+      min-height: 2.2rem;
+      padding: 0.5rem 0 0.2rem;
+      display: block;
+      margin: 8px auto 8px;
+      font-size: 1.2rem;
+    }
+
+    .t_btn.big {
+      float: none;
+      display: block;
+      min-height: 2rem;
+      margin: 1.5rem auto 2rem;
+      width: 80%;
+      padding: 0.5rem 0.5rem 0.2rem;
+    }
+  }
+
+  @media only screen and (max-width: 640px) {
+    #breadcrumb {
+      .text {
+        display: none;
+      }
+    }
+  }
+
+  #breadcrumb {
+    margin-top: 10px;
+    padding: 0;
+    list-style: none;
+    display: inline-block;
+    width: 100%;
+
+    .text {
+      padding-left: 5px;
+      color: #3c3c3c;
+      font-size: 14px;
+    }
+
+    li {
+      float: left;
+      width: 25%;
+
+      > span {
+        color: #fff;
+        display: block;
+        background: #e5e5e5;
+        position: relative;
+        padding: 0 10px 0 5px;
+        text-align: center;
+        height: 40px;
+        line-height: 40px;
+        margin-right: 23px;
+
+        &:before, &:after {
+          content: "";
+          position: absolute;
+          top: 0;
+          border: 0 solid #e5e5e5;
+          border-width: 20px 10px;
+          width: 0;
+          height: 0;
+        }
+
+        &:before {
+          left: -20px;
+          border-left-color: transparent;
+        }
+
+        &:after {
+          left: 100%;
+          border-color: transparent;
+          border-left-color: #e5e5e5;
+        }
+
+        i {
+          color: #3c3c3c;
+        }
+      }
+
+      &:nth-child(even) {
+        > span {
+          background-color: #e5e5e5;
+
+          &:before {
+            border-color: #e5e5e5;
+            border-left-color: transparent;
+          }
+
+          &:after {
+            border-left-color: #e5e5e5;
+          }
+        }
+      }
+
+      &:first-child {
+        > span {
+          padding-left: 15px;
+          border-radius: 4px 0 0 4px;
+
+          &:before {
+            border: none;
+          }
+        }
+      }
+
+      &:last-child {
+        > span {
+          padding-right: 15px;
+          border-radius: 0 4px 4px 0;
+
+          &:after {
+            border: none;
+          }
+        }
+      }
+
+      &:not(:first-child).active {
+        > span {
+          &:before {
+            border: 0 solid #6d6d6d;
+            border-width: 20px 10px;
+            border-left-color: transparent;
+          }
+        }
+      }
+
+      &.active {
+        .text {
+          color: #fff;
+        }
+
+        > span {
+          background: #6d6d6d;
+
+          &:after {
+            border-left-color: #6d6d6d;
+          }
+
+          i {
+            color: #fff;
+          }
+        }
+
+        &:nth-child(even) {
+          > span {
+            background-color: #6d6d6d;
+
+            &:before {
+              border-color: #6d6d6d;
+              border-left-color: transparent;
+            }
+
+            &:after {
+              border-left-color: #6d6d6d;
+            }
+          }
+        }
+      }
+    }
+  }
+
+} /* //.ticket_page_wrap */

@@ -38,7 +38,7 @@ from django.utils.translation import ugettext as _
 from bulk_email.models import (
     CourseEmail, Optout,
     SEND_TO_MYSELF, SEND_TO_ALL, TO_OPTIONS,
-    SEND_TO_STAFF, SEND_TO_ALL_INCLUDE_OPTOUT
+    SEND_TO_STAFF, SEND_TO_ALL_INCLUDE_OPTOUT, SEND_TO_ADVANCED_COURSE
 )
 from courseware.courses import get_course, course_image_url
 from student.models import UserStanding
@@ -52,6 +52,8 @@ from instructor_task.subtasks import (
 )
 from util.query import use_read_replica_if_available
 from util.date_utils import get_default_time_display
+
+from ga_shoppingcart.models import AdvancedCourseItem
 
 log = logging.getLogger('edx.celery.task')
 
@@ -144,6 +146,38 @@ def _get_recipient_querysets(user_id, to_option, course_id):
             return recipient_qsets
 
 
+def _get_advanced_course_recipient_querysets(course_id, advanced_course_id):
+    # use set because AdvancedCourseItem should be only one per user, but it is not ensured.
+    purchased_user_ids = set([
+        item.user.id
+        for item in AdvancedCourseItem.find_purchased_by_advanced_course_id(advanced_course_id)
+    ])
+    enrollment_and_purchased_qset = User.objects.filter(
+        id__in=purchased_user_ids,
+        is_active=True,
+        courseenrollment__course_id=course_id,
+        courseenrollment__is_active=True
+    ).exclude(standing__account_status=UserStanding.ACCOUNT_DISABLED)
+
+    # to avoid duplicates, we only want to email unenrolled and unpurchased course staff
+    # members here
+    staff_qset = CourseStaffRole(course_id).users_with_role()
+    instructor_qset = CourseInstructorRole(course_id).users_with_role()
+    staff_instructor_qset = (staff_qset | instructor_qset).distinct()
+
+    unpurchased_staff_qset = staff_instructor_qset.exclude(
+        id__in=purchased_user_ids,
+        courseenrollment__course_id=course_id, courseenrollment__is_active=True
+    )
+
+    # use read_replica if available
+    recipient_qsets = [
+        use_read_replica_if_available(unpurchased_staff_qset),
+        use_read_replica_if_available(enrollment_and_purchased_qset),
+    ]
+    return recipient_qsets
+
+
 def _get_course_email_context(course):
     """
     Returns context arguments to apply to all emails, independent of recipient.
@@ -225,7 +259,16 @@ def perform_delegate_email_batches(entry_id, course_id, task_input, action_name)
     to_option = email_obj.to_option
     global_email_context = _get_course_email_context(course)
 
-    recipient_qsets = _get_recipient_querysets(user_id, to_option, course_id)
+    if to_option == SEND_TO_ADVANCED_COURSE:
+        if 'advanced_course_id' not in task_input:
+            msg = u"Task %s: advanced_course_id not found: %s"
+            log.error(msg, task_id, course_id)
+            raise ValueError(msg % (task_id, course_id))
+        advanced_course_id = task_input['advanced_course_id']
+        recipient_qsets = _get_advanced_course_recipient_querysets(course_id, advanced_course_id)
+    else:
+        recipient_qsets = _get_recipient_querysets(user_id, to_option, course_id)
+
     recipient_fields = ['profile__name', 'email']
 
     log.info(u"Task %s: Preparing to queue subtasks for sending emails for course %s, email %s, to_option %s",

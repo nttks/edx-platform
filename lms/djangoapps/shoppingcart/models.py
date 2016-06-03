@@ -50,8 +50,11 @@ from .exceptions import (
     UnexpectedOrderItemStatus,
     ItemNotFoundInCartException
 )
+from .utils import is_pdf_receipt_enabled
 from microsite_configuration import microsite
 from shoppingcart.pdf import PDFInvoice
+
+from openedx.core.lib.ga_datetime_utils import to_timezone
 
 
 log = logging.getLogger("shoppingcart")
@@ -201,6 +204,10 @@ class Order(models.Model):
         """
         return sum(i.line_cost for i in self.orderitem_set.filter(status=self.status))  # pylint: disable=no-member
 
+    @property
+    def total_tax(self):
+        return sum(i.tax for i in self.orderitem_set.filter(status=self.status).select_subclasses() if hasattr(i, 'tax'))
+
     def has_items(self, item_type=None):
         """
         Does the cart have any items in it?
@@ -344,6 +351,9 @@ class Order(models.Model):
         """
         send confirmation e-mail
         """
+        from ga_advanced_course.models import AdvancedCourse
+        from ga_shoppingcart.models import AdvancedCourseItem
+
         recipient_list = [(self.user.username, getattr(self.user, 'email'), 'user')]  # pylint: disable=no-member
         if self.company_contact_email:
             recipient_list.append((self.company_contact_name, self.company_contact_email, 'company_contact'))
@@ -371,24 +381,45 @@ class Order(models.Model):
             )
             # Send a unique email for each recipient. Don't put all email addresses in a single email.
             for recipient in recipient_list:
-                message = render_to_string(
-                    'emails/business_order_confirmation_email.txt' if is_order_type_business else 'emails/order_confirmation_email.txt',
-                    {
-                        'order': self,
-                        'recipient_name': recipient[0],
-                        'recipient_type': recipient[2],
-                        'site_name': site_name,
-                        'order_items': orderitems,
-                        'course_names': ", ".join([course_info[0] for course_info in courses_info]),
-                        'dashboard_url': dashboard_url,
-                        'currency_symbol': settings.PAID_COURSE_REGISTRATION_CURRENCY[1],
-                        'order_placed_by': '{username} ({email})'.format(username=self.user.username, email=getattr(self.user, 'email')),  # pylint: disable=no-member
-                        'has_billing_info': settings.FEATURES['STORE_BILLING_INFO'],
-                        'platform_name': microsite.get_value('platform_name', settings.PLATFORM_NAME),
-                        'payment_support_email': microsite.get_value('payment_support_email', settings.PAYMENT_SUPPORT_EMAIL),
-                        'payment_email_signature': microsite.get_value('payment_email_signature'),
-                    }
-                )
+                # if item is advanced course, it must be only one.
+                if isinstance(orderitems[0], AdvancedCourseItem):
+                    _item = orderitems[0]
+                    _course_name = get_course_by_id(_item.course_id).display_name_with_default
+                    subject = render_to_string('emails/advanced_course_order_confirmation_email_subject.txt', None)
+                    subject = ''.join(subject.splitlines())
+                    message = render_to_string(
+                        'emails/advanced_course_order_confirmation_email.txt',
+                        {
+                            'order': self,
+                            'purchased_datetime': to_timezone(self.purchase_time),
+                            'recipient_name': recipient[0],
+                            'item': _item,
+                            'course_name': _course_name,
+                            'advanced_course': AdvancedCourse.get_advanced_course(
+                                _item.advanced_course_ticket.advanced_course_id
+                            ),
+                            'site_name': site_name,
+                        }
+                    )
+                else:
+                    message = render_to_string(
+                        'emails/business_order_confirmation_email.txt' if is_order_type_business else 'emails/order_confirmation_email.txt',
+                        {
+                            'order': self,
+                            'recipient_name': recipient[0],
+                            'recipient_type': recipient[2],
+                            'site_name': site_name,
+                            'order_items': orderitems,
+                            'course_names': ", ".join([course_info[0] for course_info in courses_info]),
+                            'dashboard_url': dashboard_url,
+                            'currency_symbol': settings.PAID_COURSE_REGISTRATION_CURRENCY[1],
+                            'order_placed_by': '{username} ({email})'.format(username=self.user.username, email=getattr(self.user, 'email')),  # pylint: disable=no-member
+                            'has_billing_info': settings.FEATURES['STORE_BILLING_INFO'],
+                            'platform_name': microsite.get_value('platform_name', settings.PLATFORM_NAME),
+                            'payment_support_email': microsite.get_value('payment_support_email', settings.PAYMENT_SUPPORT_EMAIL),
+                            'payment_email_signature': microsite.get_value('payment_email_signature'),
+                        }
+                    )
                 email = EmailMessage(
                     subject=subject,
                     body=message,
@@ -402,11 +433,12 @@ class Order(models.Model):
 
                 if csv_file:
                     email.attach(u'RegistrationCodesRedemptionUrls.csv', csv_file.getvalue(), 'text/csv')
-                if pdf_file is not None:
-                    email.attach(u'Receipt.pdf', pdf_file.getvalue(), 'application/pdf')
-                else:
-                    file_buffer = StringIO.StringIO(_('pdf download unavailable right now, please contact support.'))
-                    email.attach(u'pdf_not_available.txt', file_buffer.getvalue(), 'text/plain')
+                if is_pdf_receipt_enabled():
+                    if pdf_file is not None:
+                        email.attach(u'Receipt.pdf', pdf_file.getvalue(), 'application/pdf')
+                    else:
+                        file_buffer = StringIO.StringIO(_('pdf download unavailable right now, please contact support.'))
+                        email.attach(u'pdf_not_available.txt', file_buffer.getvalue(), 'text/plain')
                 email.send()
         except (smtplib.SMTPException, BotoServerError):  # sadly need to handle diff. mail backends individually
             log.error('Failed sending confirmation e-mail for order %d', self.id)  # pylint: disable=no-member
@@ -474,7 +506,7 @@ class Order(models.Model):
             csv_file, courses_info = self.generate_registration_codes_csv(orderitems, site_name)
 
         try:
-            pdf_file = self.generate_pdf_receipt(orderitems)
+            pdf_file = self.generate_pdf_receipt(orderitems) if is_pdf_receipt_enabled() else None
         except Exception:  # pylint: disable=broad-except
             log.exception('Exception at creating pdf file.')
             pdf_file = None
@@ -741,6 +773,10 @@ class OrderItem(TimeStampedModel):
         `single_item_receipt_template`
         """
         return {}
+
+    @property
+    def item_page(self):
+        return None
 
     def additional_instruction_text(self, **kwargs):  # pylint: disable=unused-argument
         """

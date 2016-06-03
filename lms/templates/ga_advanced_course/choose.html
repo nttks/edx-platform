@@ -1,0 +1,42 @@
+<%inherit file="../main.html" />
+<%!
+from django.utils.translation import ugettext as _
+from django.core.urlresolvers import reverse
+from openedx.core.lib.ga_html_utils import get_circle_number
+%>
+<%namespace name='static' file='../static_content.html'/>
+
+<%block name="pagetitle">
+    ${_("Enroll course selection")} | course_name
+</%block>
+
+<%block name="bodyclass">ticket select</%block>
+
+<div class="ticket_page_wrap">
+  <h2>${_("Enroll course selection")}</h2>
+  <section class="section">
+    <p class="catch middle center">${_("Thank you for an enroll. This course has {course_count} courses.").format(course_count=len(course_types))}</p>
+    <br>
+
+    % if is_f2f_course:
+    <div class="course_select_area clear">
+      <h3>${get_circle_number(course_types.index('face_to_face') + 1)} ${_("Face 2 Face Classroom")} (${_("Fee-charging")})</h3>
+      <div class="catch">
+        <p class="logo_color">${_("Recommended: Online and Face-to-face course")}</p>
+      </div>
+      <p class="description">${_("After learning the basic content in the online course, it is a course to learn the further development of thing in the face-to-face class.")}</p>
+      <a href="${reverse('advanced_course:courses_face_to_face', args=[course_id])}" class="t_btn big apply">${_("View Details")}</a>
+    </div>
+    % endif
+  </section>
+  <section class="section">
+    <div class="course_select_area online clear">
+      <h3>${get_circle_number(course_types.index('online') + 1)} ${_("Online Course")} (${_("Free of charge")})</h3>
+      <div class="catch">
+        <p>${_("Only online course")}</p>
+      </div>
+      <p class="description">${_("This course of online learning only. You can learn the basic content.")}</p>
+      <a href="${reverse('dashboard')}" class="t_btn big">${_("To take the start of an online course")}</a>
+    </div>
+  </section>
+</div>

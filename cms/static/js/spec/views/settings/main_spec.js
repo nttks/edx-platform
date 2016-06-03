@@ -36,6 +36,7 @@ define([
                 language: '',
                 course_category: ['gacco'],
                 is_f2f_course: true,
+                is_f2f_course_sell: true,
                 course_canonical_name: 'Course_Canonical_Name',
                 course_contents_provider: 'Course_Contents_Provider',
                 teacher_name: 'Teacher_Name',

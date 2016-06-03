@@ -6854,7 +6854,7 @@ msgstr "支払いエラー"
 
 #: lms/templates/shoppingcart/error.html:9
 msgid "There was an error processing your order!"
-msgstr "受注処理中にエラーが発生しました！"
+msgstr "購入手続き中にエラーが発生しました！"
 
 #: lms/templates/shoppingcart/receipt.html:25
 msgid "Thank you for your purchase!"

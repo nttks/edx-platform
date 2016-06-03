@@ -4802,7 +4802,7 @@ msgstr "{username} ({email}) の払い戻し請求が開始されました。こ
 
 #: lms/djangoapps/commerce/views.py lms/djangoapps/shoppingcart/pdf.py
 msgid "Receipt"
-msgstr "領収証"
+msgstr "レシート"
 
 #: lms/djangoapps/commerce/views.py
 msgid "Payment Failed"
@@ -6533,7 +6533,7 @@ msgstr ""
 
 #: lms/djangoapps/shoppingcart/models.py
 msgid "Order Payment Confirmation"
-msgstr "注文支払い確認"
+msgstr "ご注文の確認"
 
 #: lms/djangoapps/shoppingcart/models.py
 msgid ""
@@ -15621,7 +15621,7 @@ msgstr "支払いエラー"
 
 #: lms/templates/shoppingcart/error.html
 msgid "There was an error processing your order!"
-msgstr "受注処理中にエラーが発生しました！"
+msgstr "購入手続き中にエラーが発生しました！"
 
 #: lms/templates/shoppingcart/receipt.html
 msgid "Thank you for your purchase!"

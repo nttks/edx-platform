@@ -23,6 +23,11 @@ urlpatterns = patterns(
 
 if settings.FEATURES.get('ENABLE_PAYMENT_FAKE'):
     from shoppingcart.tests.payment_fake import PaymentFakeView
+    from shoppingcart.tests.payment_fake_gmo import PaymentFakeView as GMOPaymentFakeView
+    urlpatterns += patterns(
+        'shoppingcart.tests.payment_fake_gmo',
+        url(r'^payment_fake_gmo', GMOPaymentFakeView.as_view()),
+    )
     urlpatterns += patterns(
         'shoppingcart.tests.payment_fake',
         url(r'^payment_fake', PaymentFakeView.as_view()),
