@@ -175,7 +175,7 @@ class AccessTestCase(LoginEnrollmentTestCase, ModuleStoreTestCase):
         self.verify_access(mock_unit, False)
 
     @patch.dict('django.conf.settings.FEATURES', {'DISABLE_START_DATES': False})
-    @patch('courseware.access.get_current_request_hostname', Mock(return_value='preview.localhost'))
+    @patch('courseware.access.get_current_request_hostname', Mock(return_value='preview-lms.localhost'))
     def test__has_access_descriptor_in_preview_mode(self):
         """
         Tests that descriptor has access in preview mode.
