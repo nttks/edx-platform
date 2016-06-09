@@ -3,7 +3,9 @@ from contextlib import contextmanager
 from common.test.acceptance.pages.biz.ga_contract import BizContractDetailPage, BizContractPage
 from common.test.acceptance.pages.biz.ga_invitation import BizInvitationPage, BizInvitationConfirmPage
 from common.test.acceptance.pages.lms.ga_dashboard import DashboardPage as GaDashboardPage
+
 from ..ga_helpers import GaccoTestMixin
+from ...fixtures.course import CourseFixture
 from ...pages.biz.ga_dashboard import DashboardPage
 from ...pages.biz.ga_w2ui import remove_grid_row_index
 from ...pages.common.logout import LogoutPage
@@ -58,18 +60,23 @@ C_MANAGER_USER_INFO = {
 
 PLAT_COMPANY = 1
 PLAT_COMPANY_NAME = 'plat org'
+PLAT_COMPANY_CODE = 'plat'
 
 OWNER_COMPANY = 2
 OWNER_COMPANY_NAME = 'owner company'
+OWNER_COMPANY_CODE = 'owner'
 
 A_COMPANY = 3
 A_COMPANY_NAME = 'A company'
+A_COMPANY_CODE = 'acom'
 
 B_COMPANY = 4
 B_COMPANY_NAME = 'B company'
+B_COMPANY_CODE = 'bcom'
 
 C_COMPANY = 5
 C_COMPANY_NAME = 'C company'
+C_COMPANY_CODE = 'ccom'
 
 
 @contextmanager
@@ -163,6 +170,29 @@ class GaccoBizTestMixin(GaccoTestMixin):
             'password': 'Password123',
             'email': username + '@example.com',
         })
+
+    def grant(self, operator, organization_name, permission, grant_to_user_info):
+        self.switch_to_user(operator)
+
+        biz_manager_page = DashboardPage(self.browser).visit().click_biz().click_manager().select(organization_name, permission)
+        self.assertNotIn(grant_to_user_info['username'], biz_manager_page.names)
+        self.assertNotIn(grant_to_user_info['email'], biz_manager_page.emails)
+
+        biz_manager_page.input_user(grant_to_user_info['username']).click_grant()
+        self.assertIn(grant_to_user_info['username'], biz_manager_page.names)
+        self.assertIn(grant_to_user_info['email'], biz_manager_page.emails)
+
+        biz_manager_page.refresh_page().select(organization_name, permission)
+        self.assertIn(grant_to_user_info['username'], biz_manager_page.names)
+        self.assertIn(grant_to_user_info['email'], biz_manager_page.emails)
+
+    def install_course(self, org):
+        unique_value = self.unique_id
+        course_name = 'Test Course ' + unique_value
+        return (
+            CourseFixture(org, unique_value, 'test_run', course_name).install()._course_key,
+            course_name,
+        )
 
     def register_contract(self, operator, contractor_organization_name, contract_type='PF',
                           start_date='2000/01/01', end_date='2100/12/31', detail_info=None, additional_info=None):

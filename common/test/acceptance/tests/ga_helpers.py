@@ -51,6 +51,12 @@ class GaccoTestMixin(unittest.TestCase):
         self.assertIsNotNone(matches)
         return (matches.groupdict()['uidb36'], matches.groupdict()['token'])
 
+    def restart_memcached(self):
+        """
+        Restart memcached for clear of selected-info on biz.
+        """
+        self.assertEqual(0, subprocess.call(['sudo', 'service', 'memcached', 'restart']))
+
 
 class FilebasedEmailClient(object):
 
