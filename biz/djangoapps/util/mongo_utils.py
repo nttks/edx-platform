@@ -99,7 +99,7 @@ class BizStore(object):
         :return: _id
         """
         try:
-            return self._collection.insert(posts)
+            return self._collection.insert(posts, check_keys=False)
         except Exception as e:
             log.error("Error occurred while insert MongoDB: %s" % e)
             raise
