@@ -286,6 +286,7 @@ class @PendingInstructorTasks
   reload_running_tasks_list: =>
     list_endpoint = @$table_running_tasks.data 'endpoint'
     $.ajax
+      type: 'POST'
       dataType: 'json'
       url: list_endpoint
       success: (data) =>
@@ -342,6 +343,7 @@ class ReportDownloads
   reload_report_downloads: ->
     endpoint = @$report_downloads_table.data 'endpoint'
     $.ajax
+      type: 'POST'
       dataType: 'json'
       url: endpoint
       success: (data) =>
