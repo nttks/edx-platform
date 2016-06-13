@@ -195,6 +195,9 @@ FEATURES = {
     'ENABLE_SPECIAL_EXAMS': False,
 
     'ORGANIZATIONS_APP': False,
+
+    # Enable secure token feature to playback video in JWPlayer XBlock
+    'ENABLE_JWPLAYER_SECURE_TOKEN': True,
 }
 
 ENABLE_JASMINE = False
@@ -1050,6 +1053,7 @@ ADVANCED_COMPONENT_TYPES = [
     'officemix',
 
     'pollxblock',
+    'jwplayerxblock',
 
     # Google Drive embedded components. These XBlocks allow one to
     # embed public google drive documents and calendars within edX units
@@ -1157,3 +1161,9 @@ PROCTORING_SETTINGS = {}
 
 # OpenID Connect issuer ID. Normally the URL of the authentication endpoint.
 OAUTH_OIDC_ISSUER = 'https://www.example.com/oauth2'
+
+##### JWPLAYER XBLOCK #####
+JWPLAYER_TRANSCRIPT_BUCKET_NAME = ''
+JWPLAYER_TRANSCRIPT_PREFIX = 'jwplayer_transcripts'
+JWPLAYER_SHARED_SECRET = ''
+JWPLAYER_SECURE_TOKEN_EXPIRE = 24 * 60 * 60
