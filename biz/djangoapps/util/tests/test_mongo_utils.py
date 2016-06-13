@@ -34,7 +34,7 @@ class BizStoreTest(BizStoreTestBase):
         od1 = OrderedDict()
         od1[SCORE_STORE_FIELD_CONTRACT_ID] = 1
         od1[SCORE_STORE_FIELD_COURSE_ID] = 'test'
-        od1[SCORE_STORE_FIELD_NAME] = 'test1'
+        od1[SCORE_STORE_FIELD_NAME] = 'test.1'
         od1[SCORE_STORE_FIELD_USERNAME] = 'user_test1'
         od1[SCORE_STORE_FIELD_EMAIL] = 'test1@example.com'
 
