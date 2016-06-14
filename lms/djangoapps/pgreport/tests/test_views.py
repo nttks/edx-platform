@@ -678,23 +678,23 @@ class AjaxRequestTestCase(ModuleStoreTestCase):
         self.client.login(username=self.instructor.username, password='test')
 
     def test_ajax_get_progress_list(self):
-        response = self.client.get(self.progress_list_url, {})
+        response = self.client.post(self.progress_list_url, {})
         self.assertIn("X-Cache-Date", response)
         self.assertEquals(response.status_code, 200)
 
     def test_ajax_get_oa_rubric_scores(self):
-        response = self.client.get(self.oa_rubric_scores_url, {})
+        response = self.client.post(self.oa_rubric_scores_url, {})
         self.assertIn("X-Cache-Date", response)
         self.assertEquals(response.status_code, 200)
 
     def test_ajax_get_submission_scores(self):
-        response = self.client.get(self.submission_scores_url, {})
+        response = self.client.post(self.submission_scores_url, {})
         self.assertIn("X-Cache-Date", response)
         self.assertEquals(response.status_code, 200)
 
     @patch('pgreport.views.cache')
     def test_in_progress(self, cache_mock):
         cache_mock.get.return_value = (None, "date", True)
-        response = self.client.get(self.progress_list_url, {})
+        response = self.client.post(self.progress_list_url, {})
         self.assertEquals(response["X-Cache-Date"], "date")
         self.assertEquals(response.status_code, 202)

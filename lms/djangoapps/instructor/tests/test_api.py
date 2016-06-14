@@ -127,9 +127,6 @@ INSTRUCTOR_GET_ENDPOINTS = set([
     'get_sale_records',
     'get_distribution',
     'proxy_legacy_analytics',
-    'get_progress_list',
-    'get_submission_scores',
-    'get_oa_rubric_scores',
     'get_survey',
     'biz:course_operation:get_survey',
 ])
@@ -171,6 +168,9 @@ INSTRUCTOR_POST_ENDPOINTS = set([
     'spent_registration_codes',
     'students_update_enrollment',
     'update_forum_role_membership',
+    'get_progress_list',
+    'get_submission_scores',
+    'get_oa_rubric_scores',
 ])
 
 
