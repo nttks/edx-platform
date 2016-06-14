@@ -167,6 +167,10 @@ def check_course_selection(func):
                         manager.id, 'contract_operation')
                 )
                 return _render_403(request)
+            elif not contract_id:
+                # if user has role(platformer and director:can_handle_contract_operation).
+                log.info("Redirect to contract_not_specified page because contract_id is not specified.")
+                return _render_contract_not_specified(request)
 
 
         log.debug("request.current_organization={}".format(getattr(request, 'current_organization', None)))

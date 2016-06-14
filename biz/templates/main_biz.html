@@ -329,9 +329,6 @@ from microsite_configuration import microsite
                             } else if ($('#contract-id').prop('disabled') === false && $('#contract-id').val() == '') {
                                 displayModalErrorMessage(gettext("Contract name is not specified."));
                                 return false;
-                            } else if ($('#course-id').prop('disabled') === false && $('#course-id').val() == '') {
-                                displayModalErrorMessage(gettext("Course name is not specified."));
-                                return false;
                             }
                             w2utils.lock($('body, #role-selection-modal'), '', true);
                         });
@@ -370,15 +367,15 @@ from microsite_configuration import microsite
                     <li class="${'current' if current_feature == 'achievement' else ''}"><a href="${reverse('biz:achievement:index')}">${_("Score Status")}</a></li>
                     % endif
 
+                    ## Course Operation
+                    % if current_manager.can_handle_course_operation() and current_course and current_contract.is_spoc_available:
+                    <li class="${'current' if current_feature == 'course_operation/survey' else ''}"><a href="${reverse('biz:course_operation:survey')}">${_("Survey Management")}</a></li>
+                    % endif
+
                     ## Student
                     % if current_manager.can_handle_contract_operation():
                     <li class="${'current' if current_feature == 'contract_operation/register_students' else ''}"><a href="${reverse('biz:contract_operation:register_students')}">${_("Register User Management")}</a></li>
                     <li class="${'current' if current_feature == 'contract_operation/students' else ''}"><a href="${reverse('biz:contract_operation:students')}">${_("Contract Register Management")}</a></li>
-                    % endif
-
-                    ## Course Operation
-                    % if current_manager.can_handle_course_operation() and current_course and current_contract.is_spoc_available:
-                    <li class="${'current' if current_feature == 'course_operation/survey' else ''}"><a href="${reverse('biz:course_operation:survey')}">${_("Survey Management")}</a></li>
                     % endif
 
                     ## Manager

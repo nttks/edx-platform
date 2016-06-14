@@ -10,6 +10,7 @@ from . import (
 )
 from ...pages.biz.ga_achievement import BizAchievementPage
 from ...pages.biz.ga_contract import BizContractPage
+from ...pages.biz.ga_contract_operation import BizStudentsPage
 from ...pages.biz.ga_dashboard import DashboardPage
 from ...pages.biz.ga_navigation import NO_SELECTED
 from ...pages.lms.ga_django_admin import DjangoAdminPage
@@ -41,7 +42,7 @@ class BizSetManageTargetTest(WebAppTest, GaccoBizTestMixin):
         self.restart_memcached()
         self.switch_to_user(new_director)
         biz_nav = DashboardPage(self.browser).visit().click_biz()
-
+        biz_nav.wait_for_contract_not_specified()
         self.assertEqual([u'Contract is not specified.'], biz_nav.messages)
 
     def test_change_manage_target_no_select(self):
@@ -54,15 +55,18 @@ class BizSetManageTargetTest(WebAppTest, GaccoBizTestMixin):
         new_course_key_plat_2, new_course_name_plat_2 = self.install_course(PLAT_COMPANY_CODE)
 
         new_director = self.register_user()
+        new_manager = self.register_user()
 
         # test data, org contract permission
         new_org_info_1 = self.register_organization(PLATFORMER_USER_INFO)
         new_contract = self.register_contract(PLATFORMER_USER_INFO, new_org_info_1['Organization Name'], detail_info=[new_course_key_plat_1, new_course_key_plat_2])
         self.register_contract(PLATFORMER_USER_INFO, new_org_info_1['Organization Name'])
         self.grant(PLATFORMER_USER_INFO, new_org_info_1['Organization Name'], 'director', new_director)
+        self.grant(PLATFORMER_USER_INFO, new_org_info_1['Organization Name'], 'manager', new_manager)
 
         new_org_info_2 = self.register_organization(PLATFORMER_USER_INFO)
         self.grant(PLATFORMER_USER_INFO, new_org_info_2['Organization Name'], 'director', new_director)
+        self.grant(PLATFORMER_USER_INFO, new_org_info_2['Organization Name'], 'manager', new_manager)
 
         # Test Case 2
         self.switch_to_user(new_director)
@@ -83,7 +87,29 @@ class BizSetManageTargetTest(WebAppTest, GaccoBizTestMixin):
 
         biz_nav = DashboardPage(self.browser).visit().click_biz()
         biz_nav.change_manage_target(new_org_info_1['Organization Name'], new_contract['Contract Name'], NO_SELECTED, close=False)
-        self.assertEqual(biz_nav.modal_message, u'Course name is not specified.')
+        BizStudentsPage(self.browser).wait_for_page()
+
+        # Test Case 2:manager
+        self.switch_to_user(new_manager)
+        biz_nav = DashboardPage(self.browser).visit().click_biz()
+        biz_nav.change_manage_target(new_org_info_1['Organization Name'], new_contract['Contract Name'], new_course_name_plat_2)
+        BizAchievementPage(self.browser).wait_for_page()
+        self.assertEqual(biz_nav.contract_name, new_contract['Contract Name'])
+        self.assertEqual(biz_nav.course_name, new_course_name_plat_2)
+
+        # Test Case 3:manager
+        biz_nav = DashboardPage(self.browser).visit().click_biz()
+        biz_nav.change_manage_target(NO_SELECTED, close=False)
+        self.assertEqual(biz_nav.modal_message, u'Organization name is not specified.')
+
+        biz_nav = DashboardPage(self.browser).visit().click_biz()
+        biz_nav.change_manage_target(new_org_info_1['Organization Name'], NO_SELECTED, close=False)
+        self.assertEqual(biz_nav.modal_message, u'Contract name is not specified.')
+
+        biz_nav = DashboardPage(self.browser).visit().click_biz()
+        biz_nav.change_manage_target(new_org_info_1['Organization Name'], new_contract['Contract Name'], NO_SELECTED, close=False)
+        biz_nav.wait_for_page().wait_for_course_not_specified()
+        self.assertEqual(biz_nav.messages, [u'Course is not specified.'])
 
     def test_no_contract_no_course(self):
         """
@@ -95,13 +121,23 @@ class BizSetManageTargetTest(WebAppTest, GaccoBizTestMixin):
 
         # test data, org permission for director
         new_director = self.register_user()
+        new_manager = self.register_user()
         new_org_info = self.register_organization(new_aggregator)
         self.grant(new_aggregator, new_org_info['Organization Name'], 'director', new_director)
+        self.grant(new_aggregator, new_org_info['Organization Name'], 'manager', new_manager)
 
         # Test Case 85
         self.restart_memcached()
         self.switch_to_user(new_director)
         biz_nav = DashboardPage(self.browser).visit().click_biz()
+        biz_nav.wait_for_contract_not_specified()
+        self.assertEqual(biz_nav.messages, [u'Contract is not specified.'])
+
+        # Test Case 85:manager
+        self.restart_memcached()
+        self.switch_to_user(new_manager)
+        biz_nav = DashboardPage(self.browser).visit().click_biz()
+        biz_nav.wait_for_contract_not_specified()
         self.assertEqual(biz_nav.messages, [u'Contract is not specified.'])
 
         # test data contract for director
@@ -111,6 +147,13 @@ class BizSetManageTargetTest(WebAppTest, GaccoBizTestMixin):
         self.restart_memcached()
         self.switch_to_user(new_director)
         biz_nav = DashboardPage(self.browser).visit().click_biz()
+        BizStudentsPage(self.browser).wait_for_page()
+
+        # Test Case 86:manager
+        self.restart_memcached()
+        self.switch_to_user(new_manager)
+        biz_nav = DashboardPage(self.browser).visit().click_biz()
+        biz_nav.wait_for_course_not_specified()
         self.assertEqual(biz_nav.messages, [u'Course is not specified.'])
 
     def test_just_1(self):
@@ -160,7 +203,7 @@ class BizSetManageTargetTest(WebAppTest, GaccoBizTestMixin):
         self.restart_memcached()
         self.switch_to_user(new_director)
         biz_nav = DashboardPage(self.browser).visit().click_biz()
-        self.assertEqual(biz_nav.messages, [u'Course is not specified.'])
+        BizStudentsPage(self.browser).wait_for_page()
 
         biz_nav.change_manage_target(new_org_info_2['Organization Name'], new_contract['Contract Name'], new_course_name_2)
         BizAchievementPage(self.browser).wait_for_page()
@@ -194,6 +237,7 @@ class BizSetManageTargetTest(WebAppTest, GaccoBizTestMixin):
         self.restart_memcached()
         self.switch_to_user(new_director)
         biz_nav = DashboardPage(self.browser).visit().click_biz()
+        biz_nav.wait_for_contract_not_specified()
         self.assertEqual(biz_nav.messages, [u'Contract is not specified.'])
 
         biz_nav.change_manage_target(new_org_info_2['Organization Name'], new_contract['Contract Name'], new_course_name_1)
@@ -218,7 +262,7 @@ class BizSetManageTargetTest(WebAppTest, GaccoBizTestMixin):
         self.restart_memcached()
         self.switch_to_user(new_aggregator)
         biz_nav = DashboardPage(self.browser).visit().click_biz()
-
+        biz_nav.wait_for_contract_not_specified()
         self.assertEqual([u'Contract is not specified.'], biz_nav.messages)
 
         # test data, contract for aggregator
@@ -244,6 +288,7 @@ class BizSetManageTargetTest(WebAppTest, GaccoBizTestMixin):
         self.restart_memcached()
         self.switch_to_user(new_aggregator)
         biz_nav = DashboardPage(self.browser).visit().click_biz()
+        biz_nav.wait_for_contract_not_specified()
         self.assertEqual(biz_nav.messages, [u'Contract is not specified.'])
 
         biz_nav.change_manage_target(new_org_info['Organization Name'], new_contracts[1]['Contract Name'])

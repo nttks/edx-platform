@@ -143,3 +143,17 @@ class BizNavPage(PageObject):
         self.q(css='select#course-id>option[value="{}"]'.format(course_id)).first.click()
         self.q(css='button#save-selection').first.click()
         return self.wait_for_page()
+
+    def wait_for_contract_not_specified(self):
+        self.wait_for(
+            lambda: self.pagetitle == u'Contract Not Specified',
+            'ContractNotSpecifiedPage is visible.'
+        )
+        return self
+
+    def wait_for_course_not_specified(self):
+        self.wait_for(
+            lambda: self.pagetitle == u'Course Not Specified',
+            'CourseNotSpecifiedPage is visible.'
+        )
+        return self
