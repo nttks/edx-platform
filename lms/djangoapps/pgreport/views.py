@@ -1,7 +1,7 @@
 """
 Function to grasp the progress of the course.
 """
-from django.views.decorators.http import require_GET
+from django.views.decorators.http import require_POST
 from django.views.decorators.cache import cache_control
 from django.core.cache import cache
 from instructor.views.api import require_level
@@ -21,7 +21,6 @@ from openassessment.assessment.models import (
 from xmodule.modulestore.django import modulestore
 from courseware.courses import get_course
 
-from urlparse import urlparse, parse_qs
 from datetime import datetime
 import pytz
 import logging
@@ -370,11 +369,10 @@ class SubmissionReport(ProgressReportBase):
 
 
 @require_level('staff')
-@require_GET
+@require_POST
 @cache_control(no_cache=True, no_store=True, must_revalidate=True)
 def ajax_get_pgreport(request, course_id, pgreport):
-    query = parse_qs(urlparse(request.get_full_path()).query)
-    force = query.get("force", "false")[0] in ['true', 'True', 'TRUE']
+    force = request.POST.get('force', 'false') in ['true', 'True', 'TRUE']
     progress = pgreport(course_id)
     result, cache_date, in_progress = progress.get_pgreport(force=force)
 

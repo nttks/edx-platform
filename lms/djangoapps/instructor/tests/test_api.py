@@ -182,6 +182,9 @@ INSTRUCTOR_POST_ENDPOINTS = set([
     'spent_registration_codes',
     'students_update_enrollment',
     'update_forum_role_membership',
+    'get_progress_list',
+    'get_submission_scores',
+    'get_oa_rubric_scores',
 ])
 
 
