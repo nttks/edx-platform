@@ -397,6 +397,38 @@
     }
   },
   {
+    "pk": 9033,
+    "model": "auth.user",
+    "fields": {
+      "date_joined": "2015-06-12 11:02:13",
+      "username": "acom_student1",
+      "first_name": "acom",
+      "last_name": "student1",
+      "email": "acom_student1@example.com",
+      "password": "pbkdf2_sha256$10000$edL4xnaLYz9h$zI30dCMf/kvfeH9AWXdZsltlhMdCZmtV9jpqOFw50eY=",
+      "is_staff": false,
+      "is_active": false
+    }
+  },
+  {
+    "pk": 9033,
+    "model": "student.userprofile",
+    "fields": {
+      "user": 9033,
+      "name": "acom student1",
+      "courseware": "course.xml",
+      "allow_certificate": true
+    }
+  },
+  {
+    "pk": 9033,
+    "model": "student.registration",
+    "fields": {
+      "user": 9033,
+      "activation_key": "Rz6RUt8YkdxP2y5Ytc7jKzATOQ1uPr33"
+    }
+  },
+  {
     "pk": 9041,
     "model": "auth.user",
     "fields": {
