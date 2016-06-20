@@ -372,11 +372,15 @@ msgstr "{display_name}："
 
 #: biz/djangoapps/ga_invitation/models.py
 msgid "Input Invitation"
-msgstr "受講コード未登録"
+msgstr "未登録"
 
 #: biz/djangoapps/ga_invitation/models.py
 msgid "Register Invitation"
-msgstr "受講コード登録済"
+msgstr "登録済み"
+
+#: biz/djangoapps/ga_invitation/models.py
+msgid "Unregister Invitation"
+msgstr "解除済み"
 
 ##### Manager
 #: biz/djangoapps/ga_manager/models.py
@@ -544,6 +548,26 @@ msgstr "受講者一覧"
 #: biz/templates/ga_contract_operation/students.html
 msgid "Contract Register Status"
 msgstr "登録状況"
+
+#: biz/djangoapps/ga_contract_operation/views.py
+msgid "Failed to batch unregister. Please operation again after a time delay."
+msgstr "一括解除に失敗しました。時間を空けて再度、操作してください。"
+
+#: biz/djangoapps/ga_contract_operation/views.py
+msgid "Succeed to unregister {user_count} users."
+msgstr "{user_count}名の登録解除を実施しました。"
+
+#: biz/djangoapps/ga_contract_operation/views.py
+msgid "Already unregisterd {user_count} users."
+msgstr "{user_count}名は既に解除済みです。"
+
+#: biz/templates/ga_contract_operation/students.html
+msgid "After the batch unregister, it can not be undone. Are you sure?"
+msgstr "一括解除後、元に戻すことはできません。本当によろしいですか？"
+
+#: biz/templates/ga_contract_operation/students.html
+msgid "Unregister Student"
+msgstr "受講解除"
 
 ##### Common
 #: */forms.py

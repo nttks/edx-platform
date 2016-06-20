@@ -6,10 +6,12 @@ from mock import patch
 
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
+from django.db import IntegrityError
 
-from biz.djangoapps.ga_invitation.models import ContractRegister, INPUT_INVITATION_CODE, REGISTER_INVITATION_CODE
+from biz.djangoapps.ga_invitation.models import ContractRegister, INPUT_INVITATION_CODE, REGISTER_INVITATION_CODE, UNREGISTER_INVITATION_CODE
 from biz.djangoapps.ga_invitation.tests.factories import ContractRegisterFactory
 from biz.djangoapps.ga_invitation.tests.test_views import BizContractTestBase
+from student.models import CourseEnrollment
 
 
 class ContractOperationViewTest(BizContractTestBase):
@@ -22,7 +24,7 @@ class ContractOperationViewTest(BizContractTestBase):
     def _url_register_students_ajax(self):
         return reverse('biz:contract_operation:register_students_ajax')
 
-    def test_contract_unmatch(self):
+    def test_register_contract_unmatch(self):
         self.setup_user()
         csv_content = "test_student1@example.com,test_student_1,tester1\n" \
                       "test_student2@example.com,test_student_1,tester2"
@@ -36,7 +38,7 @@ class ContractOperationViewTest(BizContractTestBase):
 
         self.assertFalse(ContractRegister.objects.filter(contract=self.contract).exists())
 
-    def test_no_param(self):
+    def test_register_no_param(self):
         self.setup_user()
         csv_content = "test_student1@example.com,test_student_1,tester1\n" \
                       "test_student2@example.com,test_student_1,tester2"
@@ -50,7 +52,7 @@ class ContractOperationViewTest(BizContractTestBase):
 
         self.assertFalse(ContractRegister.objects.filter(contract=self.contract).exists())
 
-    def test_no_param_students_list(self):
+    def test_register_no_param_students_list(self):
         self.setup_user()
         csv_content = "test_student1@example.com,test_student_1,tester1\n" \
                       "test_student2@example.com,test_student_1,tester2"
@@ -64,7 +66,7 @@ class ContractOperationViewTest(BizContractTestBase):
 
         self.assertFalse(ContractRegister.objects.filter(contract=self.contract).exists())
 
-    def test_no_param_contract_id(self):
+    def test_register_no_param_contract_id(self):
         self.setup_user()
         csv_content = "test_student1@example.com,test_student_1,tester1\n" \
                       "test_student2@example.com,test_student_1,tester2"
@@ -78,7 +80,7 @@ class ContractOperationViewTest(BizContractTestBase):
 
         self.assertFalse(ContractRegister.objects.filter(contract=self.contract).exists())
 
-    def test_no_student(self):
+    def test_register_no_student(self):
         self.setup_user()
         csv_content = ""
 
@@ -91,7 +93,7 @@ class ContractOperationViewTest(BizContractTestBase):
 
         self.assertFalse(ContractRegister.objects.filter(contract=self.contract).exists())
 
-    def test_validation(self):
+    def test_register_validation(self):
         self.setup_user()
         csv_content = "test_student1@example.com,t,t"
 
@@ -106,7 +108,7 @@ class ContractOperationViewTest(BizContractTestBase):
 
         self.assertFalse(ContractRegister.objects.filter(contract=self.contract).exists())
 
-    def test_account_creation(self):
+    def test_register_account_creation(self):
         self.setup_user()
         csv_content = "test_student@example.com,test_student_1,tester1"
 
@@ -125,7 +127,7 @@ class ContractOperationViewTest(BizContractTestBase):
         self.assertTrue(ContractRegister.objects.filter(user__email='test_student@example.com', contract=self.contract).exists())
         self.assertEquals(ContractRegister.objects.get(user__email='test_student@example.com', contract=self.contract).status, INPUT_INVITATION_CODE)
 
-    def test_account_creation_with_blank_lines(self):
+    def test_register_account_creation_with_blank_lines(self):
         self.setup_user()
         csv_content = "\ntest_student@example.com,test_student_1,tester1\n\n"
 
@@ -144,7 +146,7 @@ class ContractOperationViewTest(BizContractTestBase):
         self.assertTrue(ContractRegister.objects.filter(user__email='test_student@example.com', contract=self.contract).exists())
         self.assertEquals(ContractRegister.objects.get(user__email='test_student@example.com', contract=self.contract).status, INPUT_INVITATION_CODE)
 
-    def test_email_and_username_already_exist(self):
+    def test_register_email_and_username_already_exist(self):
         self.setup_user()
         csv_content = "test_student@example.com,test_student_1,tester1\n" \
                       "test_student@example.com,test_student_1,tester2"
@@ -167,7 +169,7 @@ class ContractOperationViewTest(BizContractTestBase):
         self.assertTrue(ContractRegister.objects.filter(user__email='test_student@example.com', contract=self.contract).exists())
         self.assertEquals(ContractRegister.objects.get(user__email='test_student@example.com', contract=self.contract).status, INPUT_INVITATION_CODE)
 
-    def test_insufficient_data(self):
+    def test_register_insufficient_data(self):
         self.setup_user()
         csv_content = "test_student@example.com,test_student_1\n"
 
@@ -182,7 +184,7 @@ class ContractOperationViewTest(BizContractTestBase):
 
         self.assertFalse(ContractRegister.objects.filter(contract=self.contract).exists())
 
-    def test_invalid_email(self):
+    def test_register_invalid_email(self):
         self.setup_user()
         csv_content = "test_student.example.com,test_student_1,tester1"
 
@@ -197,7 +199,7 @@ class ContractOperationViewTest(BizContractTestBase):
 
         self.assertFalse(ContractRegister.objects.filter(contract=self.contract).exists())
 
-    def test_user_with_already_existing_email(self):
+    def test_register_user_with_already_existing_email(self):
         self.setup_user()
         csv_content = "{email},test_student_1,tester1\n".format(email=self.email)
 
@@ -213,7 +215,7 @@ class ContractOperationViewTest(BizContractTestBase):
         self.assertTrue(ContractRegister.objects.filter(user__email=self.email, contract=self.contract).exists())
         self.assertEquals(ContractRegister.objects.get(user__email=self.email, contract=self.contract).status, INPUT_INVITATION_CODE)
 
-    def test_user_with_already_existing_contract_register_input(self):
+    def test_register_user_with_already_existing_contract_register_input(self):
         self.setup_user()
         ContractRegisterFactory.create(user=self.user, contract=self.contract, status=INPUT_INVITATION_CODE)
         csv_content = "{email},test_student_1,tester1\n".format(email=self.email)
@@ -232,7 +234,7 @@ class ContractOperationViewTest(BizContractTestBase):
         self.assertTrue(ContractRegister.objects.filter(user__email=self.email, contract=self.contract).exists())
         self.assertEquals(ContractRegister.objects.get(user__email=self.email, contract=self.contract).status, INPUT_INVITATION_CODE)
 
-    def test_user_with_already_existing_contract_register_register(self):
+    def test_register_user_with_already_existing_contract_register_register(self):
         self.setup_user()
         ContractRegisterFactory.create(user=self.user, contract=self.contract, status=REGISTER_INVITATION_CODE)
         csv_content = "{email},test_student_1,tester1\n".format(email=self.email)
@@ -251,7 +253,7 @@ class ContractOperationViewTest(BizContractTestBase):
         self.assertTrue(ContractRegister.objects.filter(user__email=self.email, contract=self.contract).exists())
         self.assertEquals(ContractRegister.objects.get(user__email=self.email, contract=self.contract).status, REGISTER_INVITATION_CODE)
 
-    def test_user_with_already_existing_username(self):
+    def test_register_user_with_already_existing_username(self):
         self.setup_user()
         csv_content = "test_student1@example.com,test_student_1,tester1\n" \
                       "test_student2@example.com,test_student_1,tester2"
@@ -267,7 +269,7 @@ class ContractOperationViewTest(BizContractTestBase):
         self.assertEquals(ContractRegister.objects.get(user__email='test_student1@example.com', contract=self.contract).status, INPUT_INVITATION_CODE)
         self.assertFalse(ContractRegister.objects.filter(user__email='test_student2@example.com', contract=self.contract).exists())
 
-    def test_raising_exception_in_auto_registration_case(self):
+    def test_register_raising_exception_in_auto_registration_case(self):
         self.setup_user()
         csv_content = "test_student1@example.com,test_student_1,tester1\n" \
                       "test_student2@example.com,test_student_1,tester2"
@@ -282,7 +284,7 @@ class ContractOperationViewTest(BizContractTestBase):
 
         self.assertFalse(ContractRegister.objects.filter(contract=self.contract).exists())
 
-    def test_users_created_successfully_if_others_fail(self):
+    def test_register_users_created_successfully_if_others_fail(self):
 
         self.setup_user()
         csv_content = "test_student1@example.com,test_student_1,tester1\n" \
@@ -320,3 +322,147 @@ class ContractOperationViewTest(BizContractTestBase):
             response = self.assert_request_status_code(200, reverse('biz:contract_operation:students'))
         self.assertIn(str(self.user.email), response.content)
 
+    def _url_unregister_students_ajax(self):
+        return reverse('biz:contract_operation:unregister_students_ajax')
+
+    def test_unregister_get(self):
+        self.setup_user()
+        register = ContractRegisterFactory.create(user=self.user, contract=self.contract, status=INPUT_INVITATION_CODE)
+
+        with self.skip_check_course_selection(current_contract=self.contract):
+            response = self.client.get(self._url_unregister_students_ajax(), {'contract_id': self.contract.id, 'target_list': [register.id]})
+
+        self.assertEqual(response.status_code, 405)
+
+    def test_unregister_no_param(self):
+        self.setup_user()
+
+        with self.skip_check_course_selection(current_contract=self.contract):
+            response = self.client.post(self._url_unregister_students_ajax(), {})
+
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.content)
+        self.assertEquals(data['error'], 'Unauthorized access.')
+
+    def test_unregister_contract_unmatch(self):
+        self.setup_user()
+        register = ContractRegisterFactory.create(user=self.user, contract=self.contract, status=INPUT_INVITATION_CODE)
+
+        with self.skip_check_course_selection(current_contract=self.contract):
+            response = self.client.post(self._url_unregister_students_ajax(), {'contract_id': self.contract_mooc.id, 'target_list': [register.id]})
+
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.content)
+        self.assertEquals(data['error'], 'Current contract is changed. Please reload this page.')
+
+    def test_unregister_validate_not_found_register(self):
+        self.setup_user()
+        register_mooc = ContractRegisterFactory.create(user=self.user, contract=self.contract_mooc, status=INPUT_INVITATION_CODE)
+
+        with self.skip_check_course_selection(current_contract=self.contract), patch('biz.djangoapps.ga_contract_operation.views.log.warning') as warning_log:
+            response = self.client.post(self._url_unregister_students_ajax(), {'contract_id': self.contract.id, 'target_list': [register_mooc.id]})
+            warning_log.assert_called_with('Not found register in contract_id({}) contract_register_id({}), user_id({})'.format(self.contract.id, register_mooc.id, self.user.id))
+
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.content)
+        self.assertEquals(data['error'], 'Unauthorized access.')
+
+    def test_unregister_validate_warning(self):
+        self.setup_user()
+        register = ContractRegisterFactory.create(user=self.user, contract=self.contract, status=UNREGISTER_INVITATION_CODE)
+
+        with self.skip_check_course_selection(current_contract=self.contract):
+            response = self.client.post(self._url_unregister_students_ajax(), {'contract_id': self.contract.id, 'target_list': [register.id]})
+
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.content)
+        self.assertEquals(data['info'], 'Succeed to unregister 0 users.Already unregisterd 1 users.')
+
+    def test_unregister_spoc(self):
+        self.setup_user()
+        register = ContractRegisterFactory.create(user=self.user, contract=self.contract, status=REGISTER_INVITATION_CODE)
+        CourseEnrollment.enroll(self.user, self.course_spoc1.id)
+        CourseEnrollment.enroll(self.user, self.course_spoc2.id)
+
+        with self.skip_check_course_selection(current_contract=self.contract):
+            response = self.client.post(self._url_unregister_students_ajax(), {'contract_id': self.contract.id, 'target_list': [register.id]})
+
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.content)
+        self.assertEquals(data['info'], 'Succeed to unregister 1 users.')
+
+        self.assertEquals(ContractRegister.objects.get(user=self.user, contract=self.contract).status, UNREGISTER_INVITATION_CODE)
+        self.assertFalse(CourseEnrollment.is_enrolled(self.user, self.course_spoc1.id))
+        self.assertFalse(CourseEnrollment.is_enrolled(self.user, self.course_spoc2.id))
+
+    def test_unregister_mooc(self):
+        self.setup_user()
+        register_mooc = ContractRegisterFactory.create(user=self.user, contract=self.contract_mooc, status=REGISTER_INVITATION_CODE)
+        CourseEnrollment.enroll(self.user, self.course_mooc1.id)
+
+        with self.skip_check_course_selection(current_contract=self.contract_mooc):
+            response = self.client.post(self._url_unregister_students_ajax(), {'contract_id': self.contract_mooc.id, 'target_list': [register_mooc.id]})
+
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.content)
+        self.assertEquals(data['info'], 'Succeed to unregister 1 users.')
+
+        self.assertEquals(ContractRegister.objects.get(user=self.user, contract=self.contract_mooc).status, UNREGISTER_INVITATION_CODE)
+        self.assertTrue(CourseEnrollment.is_enrolled(self.user, self.course_mooc1.id))
+
+    def test_unregister_spoc_staff(self):
+        self.setup_user()
+        register = ContractRegisterFactory.create(user=self.user, contract=self.contract, status=REGISTER_INVITATION_CODE)
+        CourseEnrollment.enroll(self.user, self.course_spoc1.id)
+        CourseEnrollment.enroll(self.user, self.course_spoc2.id)
+
+        with self.skip_check_course_selection(current_contract=self.contract):
+            response = self.client.post(self._url_unregister_students_ajax(), {'contract_id': self.contract.id, 'target_list': [register.id]})
+
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.content)
+        self.assertEquals(data['info'], 'Succeed to unregister 1 users.')
+
+        self.assertEquals(ContractRegister.objects.get(user=self.user, contract=self.contract).status, UNREGISTER_INVITATION_CODE)
+        self.assertTrue(CourseEnrollment.is_enrolled(self.user, self.course_spoc1.id))
+        self.assertTrue(CourseEnrollment.is_enrolled(self.user, self.course_spoc2.id))
+
+    def test_unregister_spoc_staff(self):
+        self.setup_user()
+        # to be staff
+        self.user.is_staff = True
+        self.user.save()
+        register = ContractRegisterFactory.create(user=self.user, contract=self.contract, status=REGISTER_INVITATION_CODE)
+        CourseEnrollment.enroll(self.user, self.course_spoc1.id)
+        CourseEnrollment.enroll(self.user, self.course_spoc2.id)
+
+        with self.skip_check_course_selection(current_contract=self.contract):
+            response = self.client.post(self._url_unregister_students_ajax(), {'contract_id': self.contract.id, 'target_list': [register.id]})
+
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.content)
+        self.assertEquals(data['info'], 'Succeed to unregister 1 users.')
+
+        self.assertEquals(ContractRegister.objects.get(user=self.user, contract=self.contract).status, UNREGISTER_INVITATION_CODE)
+        self.assertTrue(CourseEnrollment.is_enrolled(self.user, self.course_spoc1.id))
+        self.assertTrue(CourseEnrollment.is_enrolled(self.user, self.course_spoc2.id))
+
+    def test_unregister_db_error(self):
+        self.setup_user()
+        register = ContractRegisterFactory.create(user=self.user, contract=self.contract, status=REGISTER_INVITATION_CODE)
+        CourseEnrollment.enroll(self.user, self.course_spoc1.id)
+        CourseEnrollment.enroll(self.user, self.course_spoc2.id)
+
+        with self.skip_check_course_selection(current_contract=self.contract), \
+            patch('biz.djangoapps.ga_contract_operation.views.log.exception') as exception_log, \
+            patch('biz.djangoapps.ga_contract_operation.views.ContractRegister.save', side_effect=IntegrityError()):
+            response = self.client.post(self._url_unregister_students_ajax(), {'contract_id': self.contract.id, 'target_list': [register.id]})
+            exception_log.assert_called_with('Can not unregister. contract_id({}), unregister_list({})'.format(self.contract.id, [unicode(register.id)]))
+
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.content)
+        self.assertEquals(data['error'], 'Failed to batch unregister. Please operation again after a time delay.')
+
+        self.assertEquals(ContractRegister.objects.get(user=self.user, contract=self.contract).status, REGISTER_INVITATION_CODE)
+        self.assertTrue(CourseEnrollment.is_enrolled(self.user, self.course_spoc1.id))
+        self.assertTrue(CourseEnrollment.is_enrolled(self.user, self.course_spoc2.id))

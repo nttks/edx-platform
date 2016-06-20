@@ -22,7 +22,7 @@ from biz.djangoapps.ga_achievement.score_store import (
 )
 from biz.djangoapps.ga_contract.tests.factories import AdditionalInfoFactory, ContractFactory, ContractDetailFactory
 from biz.djangoapps.ga_invitation.tests.factories import AdditionalInfoSettingFactory, ContractRegisterFactory
-from biz.djangoapps.ga_invitation.models import INPUT_INVITATION_CODE, REGISTER_INVITATION_CODE
+from biz.djangoapps.ga_invitation.models import INPUT_INVITATION_CODE, REGISTER_INVITATION_CODE, UNREGISTER_INVITATION_CODE
 from biz.djangoapps.util.mongo_utils import DEFAULT_DATETIME
 from biz.djangoapps.util.tests.testcase import BizStoreTestBase
 from lms.djangoapps.certificates.models import CertificateStatuses, GeneratedCertificate
@@ -59,6 +59,9 @@ class UpdateBizScoreStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEnrol
 
     def _input_contract(self, user):
         ContractRegisterFactory.create(user=user, contract=self.contract, status=INPUT_INVITATION_CODE)
+
+    def _unregister_contract(self, user):
+        ContractRegisterFactory.create(user=user, contract=self.contract, status=UNREGISTER_INVITATION_CODE)
 
     def _register_contract(self, user):
         ContractRegisterFactory.create(user=user, contract=self.contract, status=REGISTER_INVITATION_CODE)
@@ -314,6 +317,9 @@ class UpdateBizScoreStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEnrol
         for var in range(0, 50):
             user = UserFactory.create()
             self._register_contract(user)
+        for var in range(0, 50):
+            user = UserFactory.create()
+            self._unregister_contract(user)
 
         call_command('update_biz_score_status')
 

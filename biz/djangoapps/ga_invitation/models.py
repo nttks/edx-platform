@@ -11,10 +11,12 @@ from biz.djangoapps.util import datetime_utils
 
 INPUT_INVITATION_CODE = 'Input'
 REGISTER_INVITATION_CODE = 'Register'
+UNREGISTER_INVITATION_CODE = 'Unregister'
 
 STATUS = (
     (INPUT_INVITATION_CODE, _('Input Invitation')),
-    (REGISTER_INVITATION_CODE, _('Register Invitation'))
+    (REGISTER_INVITATION_CODE, _('Register Invitation')),
+    (UNREGISTER_INVITATION_CODE, _('Unregister Invitation'))
 )
 
 
@@ -133,6 +135,13 @@ class ContractRegister(models.Model):
     @classmethod
     def find_by_contract(cls, contract):
         return cls.objects.filter(contract=contract).order_by('id')
+
+    @classmethod
+    def find_input_and_register_by_contract(cls, contract):
+        return cls.objects.filter(
+            contract=contract,
+            status__in=[INPUT_INVITATION_CODE, REGISTER_INVITATION_CODE]
+        ).order_by('id')
 
     @classmethod
     def has_input_and_register_by_user_and_contract_ids(cls, user, contract_ids):

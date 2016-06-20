@@ -1,6 +1,7 @@
 <%inherit file="../main_biz.html" />
 <%!
 from django.utils.translation import ugettext as _
+from django.core.urlresolvers import reverse
 %>
 
 <%block name="pagetitle">${_("Students List")}</%block>
@@ -11,7 +12,7 @@ from django.utils.translation import ugettext as _
         var grid = $('#grid').w2grid({
             name: 'unregister_student_grid',
             fixedBody: true,
-            selectType : 'cell',
+            selectType : 'row',
             show: {
                 toolbar: true,
                 footer: true,
@@ -21,15 +22,71 @@ from django.utils.translation import ugettext as _
             multiSearch: false,
             searches: [
                 {field: 'contract_register_status', caption: '${_("Contract Register Status")}', type: 'list', options: {items: ${status_list}}},
+                {field: 'full_name', caption: '${_("Full Name")}', type: 'text'},
                 {field: 'user_name', caption: '${_("Username")}', type: 'text'},
                 {field: 'user_email', caption: '${_("Email Address")} ', type: 'text'},
             ],
             columns: [
-                {field: 'contract_register_status', caption: '${_("Contract Register Status")}', size: '20%', sortable: true, hidden: false},
-                {field: 'user_name', caption: '${_("Username")}', size: '30%', sortable: true, hidden: false},
-                {field: 'user_email', caption: '${_("Email Address")}', size: '40%', sortable: true, hidden: false},
+                {field: 'contract_register_status', caption: '${_("Contract Register Status")}', size: 1, sortable: true, hidden: false},
+                {field: 'full_name', caption: '${_("Full Name")}', size: 2, sortable: true, hidden: false},
+                {field: 'user_name', caption: '${_("Username")}', size: 2, sortable: true, hidden: false},
+                {field: 'user_email', caption: '${_("Email Address")}', size: 3, sortable: true, hidden: false},
             ],
-            records: ${show_list}
+            records: ${show_list},
+            getSelectionRecords: function() {
+                var gridSelection = this.getSelection(), returnRows = [];
+                $.each(this.records, function(index, value) {
+                    if (gridSelection.indexOf(value.recid) != -1) {
+                        returnRows.push(value);
+                    }
+                });
+                return returnRows;
+            }
+        });
+        grid.searches = grid.searches.concat(${additional_searches});
+        grid.columns = grid.columns.concat(${additional_columns});
+        grid.refresh();
+        $('.grid-operation').click(function () {
+            var clickButton = $(this), gridSelectionRecords = grid.getSelectionRecords(), messages = $('.messages');
+            messages.empty();
+            if (gridSelectionRecords.length === 0) {
+                messages.append('<li class="error">' + gettext("Please select a target.") + '</li>');
+                return;
+            }
+            w2confirm({
+                msg: clickButton.data('confirm-message'),
+                yes_class: 'btn-right',
+                no_class: 'btn-left'
+            }).yes(function () {
+                var lockTarget = $('div.main'), targetList = [];
+                $.each(gridSelectionRecords, function(i, row) {
+                    targetList.push(row.contract_register_id);
+                });
+                w2utils.lock(lockTarget, '', true);
+                $.ajax({
+                    url: clickButton.data('endpoint'),
+                    type: 'post',
+                    traditional: true,
+                    data: {
+                        target_list: targetList,
+                        contract_id: ${request.current_contract.id},
+                    },
+                    dataType: 'json',
+                }).done(function(data) {
+                    if (data.error !== undefined) {
+                        messages.append('<li class="error">' + data.error + '</li>');
+                    } else {
+                        grid.records = data.show_list;
+                        grid.refresh();
+                        messages.append('<li class="info">' + data.info + '</li>');
+                        if (data.warning != null) {
+                            messages.append('<li class="warning">' + data.warning + '</li>');
+                        }
+                    }
+                }).complete(function() {
+                    w2utils.unlock(lockTarget);
+                });
+            });
         });
     });
 </script>
@@ -37,4 +94,6 @@ from django.utils.translation import ugettext as _
 
 <%block name="custom_content">
 <div id="grid"></div>
+
+<input type="button" id="unregister-btn" class="grid-operation" data-confirm-message="${_("After the batch unregister, it can not be undone. Are you sure?")}" data-endpoint="${reverse('biz:contract_operation:unregister_students_ajax')}" value="&#xf014 ${_('Unregister Student')}" />
 </%block>
