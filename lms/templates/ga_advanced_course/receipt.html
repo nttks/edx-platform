@@ -1,0 +1,82 @@
+<%inherit file="../main.html" />
+<%namespace name='static' file='/static_content.html'/>
+
+<%!
+from django.core.urlresolvers import reverse
+from django.utils.translation import ugettext as _
+from courseware.courses import get_course_about_section, get_course_by_id
+from shoppingcart.processors.GMO import create_order_id
+from ga_advanced_course.models import AdvancedCourseTypes
+%>
+
+<%block name="pagetitle">${_("Buy the ticket")}</%block>
+
+<%block name="bodyclass">ticket receipt</%block>
+
+<div class="ticket_page_wrap">
+  % if advanced_course.course_type == AdvancedCourseTypes.F2F:
+  <h2>${_("Buy the ticket")}</h2>
+  % endif
+  <section class="section">
+    % if order.status == 'refunded':
+    <div class="course_select_area clear">
+      <p class="red">${_("This ticket has been cancelled.")}</p>
+    </div>
+    % endif
+    <div class="course_select_area clear">
+      <p>
+        ${_("Purchase tickets at the following content was completed.")}<br>
+        ${_("To the email address that you registered, we automatically send a confirmation e-mail of the ticket purchase is complete.")}<br>
+        ${_("On the day, Please present this ticket screen (printable) or e-mail screen at the time of acceptance.")}
+      </p>
+    </div>
+    <h3>${_("Subscription Details")}</h3>
+    <div class="receipt_area">
+      % if advanced_course.course_type == AdvancedCourseTypes.F2F:
+      <h4>${_("{course_name} course").format(course_name=course_name) | h} ${_("Face 2 Face Classroom")}<br>${advanced_course.display_name | h} ${advanced_course_ticket.display_name | h}</h4>
+      % endif
+      <div class="ticket-detail">
+        <%
+            item, course = shoppingcart_items[0]
+        %>
+        <dl>
+          <dt>${_("Username")}</dt>
+          <dd>${user.username}</dd>
+        </dl>
+        <dl>
+          <dt>${_("Ticket Number")}</dt>
+          <dd id="receipt-number">#${create_order_id(order)}</dd>
+        </dl>
+        <dl>
+          <dt>${_("Opening Time")}</dt>
+          <dd id="course-opening-time">${advanced_course.opening_datetime_str}</dd>
+        </dl>
+        <dl>
+          <dt>${_("Meeting Place")}</dt>
+          <dd id="course-place"><a href="${advanced_course.place_link}" target="_blank">${advanced_course.place_name | h}</a></dd>
+        </dl>
+        <dl>
+          <dt>${_("Payment method")}</dt>
+          <dd>
+            <span id="payment-method">${item.payment_method | h}</span>
+            % if item.order.bill_to_ccnum:
+            &nbsp;${item.order.bill_to_ccnum | h}
+            % endif
+          </dd>
+        </dl>
+        <dl>
+          <dt>${_("Payment amount")}</dt>
+          <dd id="ticket-price">¥${'{:,d}'.format(advanced_course_ticket.price_with_tax)} (${_("Including tax")})</dd>
+        </dl>
+        <dl>
+          <dt>${_("Other information")}</dt>
+          <dd>${advanced_course.content}</dd>
+        </dl>
+        <div class="ticket-cancel right">
+        ${_("Cancellation is <a href=\"{cancel_page_link}\">here</a>").format(cancel_page_link=marketing_link("REQUEST_NEW"))}
+        </div>
+      </div>
+    </div>
+    <a href="${reverse('dashboard')}" class="t_btn big mypage clear">${_("View Dashboard")}</a>
+  </section>
+</div>

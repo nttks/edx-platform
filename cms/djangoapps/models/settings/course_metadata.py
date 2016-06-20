@@ -54,6 +54,7 @@ class CourseMetadata(object):
         'self_paced',
         'course_category',
         'is_f2f_course',
+        'is_f2f_course_sell',
         'course_canonical_name',
         'course_contents_provider',
         'teacher_name',

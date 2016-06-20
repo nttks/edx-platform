@@ -94,9 +94,10 @@ from submissions import api as sub_api  # installed from the edx-submissions rep
 from certificates import api as certs_api
 from certificates.models import CertificateWhitelist, GeneratedCertificate
 
-from bulk_email.models import CourseEmail, SEND_TO_ALL, SEND_TO_ALL_INCLUDE_OPTOUT
+from bulk_email.models import CourseEmail, SEND_TO_ALL, SEND_TO_ALL_INCLUDE_OPTOUT, SEND_TO_ADVANCED_COURSE
 from ga_survey.models import SurveySubmission
 from student.models import get_user_by_username_or_email
+from ga_advanced_course.analytics import advanced_course_purchased_features
 
 from .tools import (
     dump_student_extensions,
@@ -2403,8 +2404,13 @@ def send_email(request, course_id):
         from_addr=from_addr
     )
 
+    extra_task_input = {}
+
+    if send_to == SEND_TO_ADVANCED_COURSE:
+        extra_task_input['advanced_course_id'] = int(request.POST["advanced_course"])
+
     # Submit the task, so that the correct InstructorTask object gets created (for monitoring purposes)
-    instructor_task.api.submit_bulk_course_email(request, course_id, email.id)
+    instructor_task.api.submit_bulk_course_email(request, course_id, email.id, extra_task_input)  # pylint: disable=no-member
 
     response_payload = {
         'course_id': course_id.to_deprecated_string(),
@@ -3097,3 +3103,30 @@ def generate_bulk_certificate_exceptions(request, course_id):  # pylint: disable
     }
 
     return JsonResponse(results)
+
+
+@ensure_csrf_cookie
+@cache_control(no_cache=True, no_store=True, must_revalidate=True)
+@require_level('staff')
+def get_students_advanced_course(request, course_id, csv=False):  # pylint: disable=redefined-outer-name
+    """
+    Respond with csv which contains a summary of all students who are purchased an advanced course.
+    """
+    from ga_advanced_course.analytics import Features
+
+    course_key = CourseKey.from_string(course_id)
+
+    query_features = [
+        Features.USER_ID, Features.EMAIL, Features.USERNAME, Features.NAME,
+        Features.ADVANCED_COURSE_NAME, Features.ADVANCED_COURSE_TICKET_NAME,
+        Features.ENTRY_DATE, Features.PAYMENT_METHOD, Features.ENROLLMENT,
+    ]
+
+    advanced_course_purchased_data = advanced_course_purchased_features(course_key, query_features)
+
+    header, datarows = instructor_analytics.csvs.format_dictlist(advanced_course_purchased_data, query_features)
+    filename = '{org}-{course}-{run}-advanced-course.csv'.format(
+        org=course_key.org, course=course_key.course, run=course_key.run
+    )
+
+    return instructor_analytics.csvs.create_csv_response(filename, header, datarows)

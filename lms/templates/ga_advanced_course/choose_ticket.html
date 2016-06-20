@@ -1,0 +1,52 @@
+<%inherit file="../main.html" />
+<%namespace name='static' file='/static_content.html'/>
+
+<%!
+from django.core.urlresolvers import reverse
+from django.utils.translation import ugettext as _
+from openedx.core.lib.ga_datetime_utils import to_timezone
+%>
+
+<%block name="pagetitle">${_("Ticket Selection")}</%block>
+
+<%block name="bodyclass">ticket option</%block>
+
+<div class="ticket_page_wrap">
+  <ul id="breadcrumb">
+    <li class="active"><span><i class="fa fa-shopping-cart"></i><span class="text">${_("Ticket Selection")}</span></span></li>
+    <li><span><i class="fa fa-credit-card"></i><span class="text">${_("Payment Method Selection")}</span></span></li>
+    <li><span><i class="fa fa-eye"></i><span class="text">${_("Content Confirmation")}</span></span></li>
+    <li><span><i class="fa fa-check"></i><span class="text">${_("Payment Completion")}</span></span></li>
+  </ul>
+  <h2>${_("Ticket Selection")}</h2>
+
+  % if messages:
+  <div class="purchase_error">
+    % for message in messages:
+    <p>${message}</p>
+    % endfor
+  </div>
+  % endif
+
+  <h3>${advanced_course.display_name | h}</h3>
+  <section class="section">
+    <div class="course_select_area clear">
+      <p>${_("Select a purchase ticket from blow.")}</p>
+    </div>
+    <div class="item_area clear">
+      % for ticket in tickets:
+      <div class="items">
+        <h4>${ticket.display_name | h}</h4>
+        <p>${ticket.description | h}</p>
+        % if ticket.is_end_of_sale():
+        <span class="t_btn disabled">${_("End of sale")}</span>
+        % else:
+        <a href="${reverse('advanced_course:purchase_ticket', args=[course_id, ticket.id])}" class="t_btn apply">¥${'{:,d}'.format(ticket.price_with_tax)}</a>
+        % endif
+        <p class="sell_by_date">${_("Sell-by date")} ${to_timezone(ticket.sell_by_date).strftime('%Y/%m/%d %H:%M')}</p>
+      </div>
+      % endfor
+    </div>
+    <p class="purchase_annotation">${_("* Display price will be tax included.")}</p>
+  </section>
+</div>

@@ -42,7 +42,8 @@
                 finishAuth: '/account/finish_auth',
                 defaultNextUrl: '/dashboard',
                 payment: '/verify_student/start-flow/',
-                trackSelection: '/course_modes/choose/'
+                trackSelection: '/course_modes/choose/',
+                advancedCourse: '/advanced_course/choose/'
             },
 
             initialize: function( obj ) {
@@ -51,7 +52,8 @@
                     enrollmentAction: $.url( '?enrollment_action' ),
                     courseId: $.url( '?course_id' ),
                     courseMode: $.url( '?course_mode' ),
-                    emailOptIn: $.url( '?email_opt_in')
+                    emailOptIn: $.url( '?email_opt_in'),
+                    advancedCourse: $.url( '?advanced_course' )
                 };
                 for (var key in queryParams) {
                     if (queryParams[key]) {
@@ -62,6 +64,7 @@
                 this.enrollmentAction = queryParams.enrollmentAction;
                 this.courseMode = queryParams.courseMode;
                 this.emailOptIn = queryParams.emailOptIn;
+                this.advancedCourse = queryParams.advancedCourse;
                 this.nextUrl = this.urls.defaultNextUrl;
                 if (queryParams.next) {
                     // Ensure that the next URL is internal for security reasons
@@ -116,7 +119,10 @@
                     var courseId = decodeURIComponent( this.courseId );
 
                     // Determine where to redirect the user after auto-enrollment.
-                    if ( !this.courseMode ) {
+                    if ( this.advancedCourse ) {
+                        /* If the course has advanced course, send user to the course choose flow */
+                        redirectUrl = this.urls.advancedCourse + courseId + '/';
+                    } else if ( !this.courseMode ) {
                         /* Backwards compatibility with the original course details page.
                         The old implementation did not specify the course mode for enrollment,
                         so we'd always send the user to the "track selection" page.

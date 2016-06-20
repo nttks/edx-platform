@@ -63,6 +63,7 @@ class CourseDetails(object):
         self.self_paced = None
         self.course_category = []
         self.is_f2f_course = False
+        self.is_f2f_course_sell = False
         self.course_canonical_name = ""
         self.course_contents_provider = ""
         self.teacher_name = ""
@@ -111,6 +112,7 @@ class CourseDetails(object):
 
         course_details.course_category = descriptor.course_category
         course_details.is_f2f_course = descriptor.is_f2f_course
+        course_details.is_f2f_course_sell = descriptor.is_f2f_course_sell
         course_details.course_canonical_name = descriptor.course_canonical_name
         # Default course canonical name is display name
         if not course_details.course_canonical_name:
@@ -280,6 +282,10 @@ class CourseDetails(object):
 
         if 'is_f2f_course' in jsondict and jsondict['is_f2f_course'] != descriptor.is_f2f_course:
             descriptor.is_f2f_course = jsondict['is_f2f_course']
+            dirty = True
+
+        if 'is_f2f_course_sell' in jsondict and jsondict['is_f2f_course_sell'] != descriptor.is_f2f_course_sell:
+            descriptor.is_f2f_course_sell = jsondict['is_f2f_course_sell']
             dirty = True
 
         if 'course_canonical_name' in jsondict and jsondict['course_canonical_name'] != descriptor.course_canonical_name:

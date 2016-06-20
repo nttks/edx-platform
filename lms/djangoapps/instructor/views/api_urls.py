@@ -164,4 +164,8 @@ urlpatterns = patterns(
     url(r'^generate_bulk_certificate_exceptions',
         'instructor.views.api.generate_bulk_certificate_exceptions',
         name='generate_bulk_certificate_exceptions'),
+
+    # CourseEvent
+    url(r'^get_students_advanced_course(?P<csv>/csv)?$',
+        'instructor.views.api.get_students_advanced_course', name="get_students_advanced_course"),
 )

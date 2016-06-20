@@ -179,6 +179,12 @@ msgid ""
 "page."
 msgstr "gaccoに登録した情報の確認と編集ができます。"
 
+#: lms/static/coffee/src/instructor_dashboard/send_email.coffee
+msgid ""
+"You are about to send an email titled '<%= subject %>' to everyone who is "
+"purchased an advanced course. Is this OK?"
+msgstr "メール '<%= subject %>'をこの上級講座を購入した受講者に送信しようとしています。間違いありませんか？"
+
 #: lms/static/js/student_account/views/account_settings_factory.js
 msgid "Other procedures"
 msgstr "その他の手続き"

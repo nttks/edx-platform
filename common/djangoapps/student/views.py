@@ -131,6 +131,7 @@ from notification_prefs.views import enable_notifications
 from openedx.core.djangoapps.user_api.preferences import api as preferences_api
 from openedx.core.djangoapps.programs.utils import get_programs_for_dashboard
 
+from ga_advanced_course.status import AdvancedCourseStatus
 from openedx.core.djangoapps.course_global.models import CourseGlobalSetting
 
 
@@ -627,6 +628,12 @@ def dashboard(request):
         for enrollment in course_enrollments
     }
 
+    # only show advanced-course-info if course has advanced-course and user does not purchased.
+    advanced_course_statuses = {
+        enrollment.course_id: AdvancedCourseStatus(request, enrollment.course_id)
+        for enrollment in course_enrollments
+    }
+
     # only show email settings for Mongo course and when bulk email is turned on
     show_email_settings_for = frozenset(
         enrollment.course_id for enrollment in course_enrollments if (
@@ -727,6 +734,7 @@ def dashboard(request):
         'courses_requirements_not_met': courses_requirements_not_met,
         'nav_hidden': True,
         'course_programs': course_programs,
+        'advanced_course_statuses': advanced_course_statuses,
     }
 
     return render_to_response('dashboard.html', context)
@@ -1007,6 +1015,8 @@ def change_enrollment(request, check_access=True):
             )
             return HttpResponseBadRequest(_("Course id is invalid"))
 
+        course = modulestore().get_course(course_id)
+
         # Record the user's email opt-in preference
         if settings.FEATURES.get('ENABLE_MKTG_EMAIL_OPT_IN'):
             _update_email_opt_in(request, course_id.org)
@@ -1039,6 +1049,11 @@ def change_enrollment(request, check_access=True):
                     CourseEnrollment.enroll(user, course_id, check_access=check_access, mode=enroll_mode)
             except Exception:
                 return HttpResponseBadRequest(_("Could not enroll"))
+
+        if course.is_f2f_course and course.is_f2f_course_sell:
+            return HttpResponse(
+                reverse("advanced_course:choose", kwargs={'course_id': unicode(course_id)})
+            )
 
         # If we have more than one course mode or professional ed is enabled,
         # then send the user to the choose your track page.

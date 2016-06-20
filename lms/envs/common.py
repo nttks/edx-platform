@@ -405,6 +405,9 @@ FEATURES = {
 
     # Enable secure token feature to playback video in JWPlayer XBlock
     'ENABLE_JWPLAYER_SECURE_TOKEN': True,
+
+    # PDF receipt feature for shoppingcart
+    'ENABLE_PDF_RECEIPT': True,
 }
 
 # Ignore static asset files on import which match this pattern
@@ -1028,6 +1031,8 @@ EMBARGO_SITE_REDIRECT_URL = None
 
 ##### shoppingcart Payment #####
 PAYMENT_SUPPORT_EMAIL = 'payment@example.com'
+PAYMENT_TAX = 8
+PAYMENT_CURRENCY = 'jpy'
 
 ##### Using cybersource by default #####
 
@@ -1995,6 +2000,10 @@ INSTALLED_APPS = (
 
     # Several operations for a gacco.org's staff
     'ga_operation',
+
+    # Advanced Course
+    'ga_advanced_course',
+    'ga_shoppingcart',
 )
 
 # Migrations which are not in the standard module "migrations"

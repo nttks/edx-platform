@@ -119,6 +119,9 @@ urlpatterns = (
     url(r'^ga_operation$',
         'ga_operation.views.ga_operation_dashboard.ga_operation_dashboard', name="ga_operation_dashboard"),
     url(r'^ga_operation/api/', include('ga_operation.views.api_urls', namespace="ga_operation_api")),
+
+    # Advanced Course
+    url(r'^advanced_course/', include('ga_advanced_course.urls', namespace='advanced_course')),
 )
 
 if settings.FEATURES["ENABLE_COMBINED_LOGIN_REGISTRATION"]:
@@ -827,6 +830,7 @@ if settings.FEATURES.get('RESTRICT_ENROLL_BY_REG_METHOD'):
 urlpatterns += (
     url(r'^shoppingcart/', include('shoppingcart.urls')),
     url(r'^commerce/', include('commerce.urls', namespace='commerce')),
+    url(r'^ga_shoppingcart/', include('ga_shoppingcart.urls', namespace='ga_shoppingcart')),
 )
 
 # Embargo

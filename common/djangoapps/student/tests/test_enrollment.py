@@ -198,6 +198,23 @@ class EnrollmentTest(UrlResetMixin, ModuleStoreTestCase):
         resp = self._change_enrollment('unenroll', course_id="edx/")
         self.assertEqual(resp.status_code, 400)
 
+    def test_with_f2f(self):
+        self.course.is_f2f_course = True
+        self.course.is_f2f_course_sell = True
+        self.update_course(self.course, self.user.id)
+
+        next_url = reverse('advanced_course:choose', kwargs={'course_id': unicode(self.course.id)})
+
+        # Enroll in the course and verify the URL we get sent to
+        resp = self._change_enrollment('enroll')
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.content, next_url)
+
+        self.assertTrue(CourseEnrollment.is_enrolled(self.user, self.course.id))
+        course_mode, is_active = CourseEnrollment.enrollment_mode_for_user(self.user, self.course.id)
+        self.assertTrue(is_active)
+        self.assertEqual(course_mode, 'audit')
+
     def _change_enrollment(self, action, course_id=None, email_opt_in=None):
         """Change the student's enrollment status in a course.
 

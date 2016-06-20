@@ -1,0 +1,302 @@
+[
+  {
+    "pk": 1,
+    "model": "ga_advanced_course.advancedcourse",
+    "fields": {
+      "course_id": "course-v1:test_advanced_course_org+test_purchase_flow_when_enroll+test_run",
+      "display_name": "Test Advance Course 1",
+      "start_date": "2026-01-01",
+      "start_time": "11:11:11",
+      "end_time": "22:22:22",
+      "capacity": 1,
+      "description": "test advanced course description 1",
+      "content": "content 1",
+      "is_active": true
+    }
+  },
+  {
+    "pk": 2,
+    "model": "ga_advanced_course.advancedcourse",
+    "fields": {
+      "course_id": "course-v1:test_advanced_course_org+test_purchase_flow_when_enroll+test_run",
+      "display_name": "Test Advance Course 2",
+      "start_date": "2026-01-02",
+      "start_time": "11:12:11",
+      "end_time": "22:23:22",
+      "capacity": 100,
+      "description": "test advanced course description 2",
+      "is_active": true
+    }
+  },
+  {
+    "pk": 3,
+    "model": "ga_advanced_course.advancedcourse",
+    "fields": {
+      "course_id": "course-v1:test_advanced_course_org+test_purchase_flow_when_enroll+test_run",
+      "display_name": "Test Advance Course 3",
+      "start_date": "2026-01-01",
+      "start_time": "00:00:00",
+      "end_time": "12:00:00",
+      "capacity": 50,
+      "description": "test advanced course description 3",
+      "is_active": true
+    }
+  },
+  {
+    "pk": 4,
+    "model": "ga_advanced_course.advancedcourse",
+    "fields": {
+      "course_id": "course-v1:test_advanced_course_org+test_purchase_flow_when_enroll+test_run",
+      "display_name": "Test Advance Course 4",
+      "start_date": "2026-01-01",
+      "start_time": "00:00:00",
+      "end_time": "12:00:00",
+      "capacity": 10,
+      "description": "test advanced course description 4",
+      "is_active": false
+    }
+  },
+  {
+    "pk": 11,
+    "model": "ga_advanced_course.advancedcourse",
+    "fields": {
+      "course_id": "course-v1:test_advanced_course_org+test_purchase_flow_from_dashboard+test_run",
+      "display_name": "Test Advance Course 11",
+      "start_date": "2026-01-01",
+      "start_time": "00:00:00",
+      "end_time": "12:00:00",
+      "capacity": 100,
+      "description": "test advanced course description",
+      "is_active": true
+    }
+  },
+  {
+    "pk": 101,
+    "model": "ga_advanced_course.advancedcourse",
+    "fields": {
+      "course_id": "course-v1:test_org+test_send_to_advanced_course+test_run",
+      "display_name": "Test Advance Course test_send_to_advanced_course 1",
+      "start_date": "2026-01-01",
+      "start_time": "00:00:00",
+      "end_time": "12:00:00",
+      "capacity": 100,
+      "description": "test advanced course description",
+      "is_active": true
+    }
+  },
+  {
+    "pk": 102,
+    "model": "ga_advanced_course.advancedcourse",
+    "fields": {
+      "course_id": "course-v1:test_org+test_send_to_advanced_course+test_run",
+      "display_name": "Test Advance Course test_send_to_advanced_course 2",
+      "start_date": "2026-01-01",
+      "start_time": "00:00:00",
+      "end_time": "12:00:00",
+      "capacity": 100,
+      "description": "test advanced course description",
+      "is_active": true
+    }
+  },
+  {
+    "pk": 999,
+    "model": "ga_advanced_course.advancedcourse",
+    "fields": {
+      "course_id": "course-v1:test_org+dummy_advanced_course+test_run",
+      "display_name": "Test Advance Course Dummy",
+      "start_date": "2026-01-01",
+      "start_time": "00:00:00",
+      "end_time": "12:00:00",
+      "capacity": 100,
+      "description": "test advanced course description",
+      "is_active": true
+    }
+  },
+  {
+    "pk": 1,
+    "model": "ga_advanced_course.advancedf2fcourse",
+    "fields": {
+      "advancedcourse_ptr": 1,
+      "place_name": "test place 1",
+      "place_link": "http://example1.com/",
+      "place_address": "test address 1",
+      "place_access": "test access 1"
+    }
+  },
+  {
+    "pk": 2,
+    "model": "ga_advanced_course.advancedf2fcourse",
+    "fields": {
+      "advancedcourse_ptr": 2,
+      "place_name": "test place 2",
+      "place_link": "http://example2.com/",
+      "place_address": "test address 2",
+      "place_access": "test access 2"
+    }
+  },
+  {
+    "pk": 3,
+    "model": "ga_advanced_course.advancedf2fcourse",
+    "fields": {
+      "advancedcourse_ptr": 3,
+      "place_name": "test place 3",
+      "place_link": "http://example3.com/",
+      "place_address": "test address 3",
+      "place_access": "test access 3"
+    }
+  },
+  {
+    "pk": 4,
+    "model": "ga_advanced_course.advancedf2fcourse",
+    "fields": {
+      "advancedcourse_ptr": 4,
+      "place_name": "test place 4",
+      "place_link": "http://example4.com/",
+      "place_address": "test address 4",
+      "place_access": "test access 4"
+    }
+  },
+  {
+    "pk": 11,
+    "model": "ga_advanced_course.advancedf2fcourse",
+    "fields": {
+      "advancedcourse_ptr": 11,
+      "place_name": "test place 11",
+      "place_link": "http://example11.com/",
+      "place_address": "test address 11",
+      "place_access": "test access 11"
+    }
+  },
+  {
+    "pk": 101,
+    "model": "ga_advanced_course.advancedf2fcourse",
+    "fields": {
+      "advancedcourse_ptr": 101,
+      "place_name": "test place 101",
+      "place_link": "http://example101.com/",
+      "place_address": "test address 101",
+      "place_access": "test access 101"
+    }
+  },
+  {
+    "pk": 102,
+    "model": "ga_advanced_course.advancedf2fcourse",
+    "fields": {
+      "advancedcourse_ptr": 102,
+      "place_name": "test place 102",
+      "place_link": "http://example102.com/",
+      "place_address": "test address 102",
+      "place_access": "test access 102"
+    }
+  },
+  {
+    "pk": 999,
+    "model": "ga_advanced_course.advancedf2fcourse",
+    "fields": {
+      "advancedcourse_ptr": 999,
+      "place_name": "test place 999",
+      "place_link": "http://example999.com/",
+      "place_address": "test address 999",
+      "place_access": "test access 999"
+    }
+  },
+  {
+    "pk": 1,
+    "model": "ga_advanced_course.advancedcourseticket",
+    "fields": {
+      "advanced_course": 1,
+      "display_name": "test ticket name 1",
+      "price": 1000,
+      "sell_by_date": "2026-01-01 00:00:00",
+      "description": "ticket description 1"
+    }
+  },
+  {
+    "pk": 2,
+    "model": "ga_advanced_course.advancedcourseticket",
+    "fields": {
+      "advanced_course": 1,
+      "display_name": "test ticket name 2",
+      "price": 2000,
+      "sell_by_date": "2016-01-01 00:00:00",
+      "description": "ticket description 2"
+    }
+  },
+  {
+    "pk": 3,
+    "model": "ga_advanced_course.advancedcourseticket",
+    "fields": {
+      "advanced_course": 2,
+      "display_name": "test ticket name 3",
+      "price": 3000,
+      "sell_by_date": "2026-01-01 00:00:00",
+      "description": "ticket description 3"
+    }
+  },
+  {
+    "pk": 4,
+    "model": "ga_advanced_course.advancedcourseticket",
+    "fields": {
+      "advanced_course": 3,
+      "display_name": "test ticket name 4",
+      "price": 4000,
+      "sell_by_date": "2016-01-01 00:00:00",
+      "description": "ticket description 4"
+    }
+  },
+  {
+    "pk": 11,
+    "model": "ga_advanced_course.advancedcourseticket",
+    "fields": {
+      "advanced_course": 11,
+      "display_name": "test ticket name 11",
+      "price": 4000,
+      "sell_by_date": "2026-01-01 00:00:00",
+      "description": "ticket description 11"
+    }
+  },
+  {
+    "pk": 101,
+    "model": "ga_advanced_course.advancedcourseticket",
+    "fields": {
+      "advanced_course": 101,
+      "display_name": "Test Advance Course test_send_to_advanced_course 1 Ticket 1",
+      "price": 5000,
+      "sell_by_date": "2026-01-01 00:00:00",
+      "description": "Test Advance Course test_send_to_advanced_course 1 Ticket description 1"
+    }
+  },
+  {
+    "pk": 102,
+    "model": "ga_advanced_course.advancedcourseticket",
+    "fields": {
+      "advanced_course": 101,
+      "display_name": "Test Advance Course test_send_to_advanced_course 1 Ticket 2",
+      "price": 5000,
+      "sell_by_date": "2026-01-01 00:00:00",
+      "description": "Test Advance Course test_send_to_advanced_course 1 Ticket description 2"
+    }
+  },
+  {
+    "pk": 103,
+    "model": "ga_advanced_course.advancedcourseticket",
+    "fields": {
+      "advanced_course": 102,
+      "display_name": "Test Advance Course test_send_to_advanced_course 2 Ticket 1",
+      "price": 5000,
+      "sell_by_date": "2026-01-01 00:00:00",
+      "description": "Test Advance Course test_send_to_advanced_course 2 Ticket description 1"
+    }
+  },
+  {
+    "pk": 104,
+    "model": "ga_advanced_course.advancedcourseticket",
+    "fields": {
+      "advanced_course": 102,
+      "display_name": "Test Advance Course test_send_to_advanced_course 2 Ticket 2",
+      "price": 5000,
+      "sell_by_date": "2026-01-01 00:00:00",
+      "description": "Test Advance Course test_send_to_advanced_course 2 Ticket description 2"
+    }
+  }
+]

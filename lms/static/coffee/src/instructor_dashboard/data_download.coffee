@@ -83,6 +83,7 @@ class DataDownload
     @$grade_config_btn = @$section.find("input[name='dump-gradeconf']'")
     @$calculate_grades_csv_btn = @$section.find("input[name='calculate-grades-csv']'")
     @$problem_grade_report_csv_btn = @$section.find("input[name='problem-grade-report']'")
+    @$list_advanced_course_csv_btn = @$section.find("input[name='list-advanced-course-csv']'")
 
     # response areas
     @$download                        = @$section.find '.data-download-container'
@@ -160,6 +161,16 @@ class DataDownload
         success: (data) =>
           @$reports_request_response.text data['status']
           $(".msg-confirm").css({"display":"block"})
+
+    @$list_advanced_course_csv_btn.click (e) =>
+      @clear_display()
+
+      url = @$list_advanced_course_csv_btn.data 'endpoint'
+      # handle csv special case
+      # redirect the document to the csv file.
+      url += '/csv'
+
+      location.href = url
 
     @$list_studs_btn.click (e) =>
       url = @$list_studs_btn.data 'endpoint'

@@ -38,5 +38,13 @@
       "course_id": "course-v1:test_org+test_dashboard_email_when_course_has_terminated+test_run",
       "email_enabled": true
     }
+  },
+  {
+    "pk": 6,
+    "model": "bulk_email.courseauthorization",
+    "fields": {
+      "course_id": "course-v1:test_org+test_send_to_advanced_course+test_run",
+      "email_enabled": true
+    }
   }
 ]
