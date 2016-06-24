@@ -86,13 +86,44 @@ PIPELINE_SASS_ARGUMENTS = '--debug-info --require {proj_dir}/static/sass/bourbon
 FEATURES['AUTOMATIC_VERIFY_STUDENT_IDENTITY_FOR_TESTING'] = True
 FEATURES['ENABLE_PAYMENT_FAKE'] = True
 
-CC_PROCESSOR_NAME = 'CyberSource2'
+CC_PROCESSOR_NAME = 'GMO'
 CC_PROCESSOR = {
     'CyberSource2': {
         "PURCHASE_ENDPOINT": '/shoppingcart/payment_fake/',
         "SECRET_KEY": 'abcd123',
         "ACCESS_KEY": 'abcd123',
         "PROFILE_ID": 'edx',
+    },
+    'GMO': {
+        'ACCESS_KEY': 'abcd123',
+        'SHOP_PASSWORD': 'abcd123',
+        'PURCHASE_ENDPOINT': '/shoppingcart/payment_fake_gmo/',
+        'HASH_TYPE': 'MD5',
+        'MAX_RETRY': 3,
+        'SESSION_TIMEOUT': 600,
+        'SHOW_CONFIRM': 1,
+        'ORDER_ID_PREFIX': 'ga-devstack',
+        'PURCHASE_PARAMS_MAP': {
+            'p001': 'p001', 'p002': 'p002', 'p003': 'p003', 'p004': 'p004', 'p005': 'p005',
+            'p006': 'p006', 'p007': 'p007', 'p008': 'p008', 'p009': 'p009', 'p010': 'p010',
+            'p011': 'p011', 'p012': 'p012', 'p013': 'p013', 'p014': 'p014', 'p015': 'p015',
+            'p016': 'p016', 'p017': 'p017', 'p018': 'p018', 'p019': 'p019', 'p020': 'p020',
+            'p028': 'p028', 'p040': 'p040',
+        },
+        'RESULT_PARAMS_MAP': {
+            'p001': 'p001', 'p002': 'p002', 'p003': 'p003', 'p004': 'p004', 'p005': 'p005',
+            'p006': 'p006', 'p007': 'p007', 'p008': 'p008', 'p009': 'p009', 'p010': 'p010',
+            'p011': 'p011', 'p012': 'p012', 'p013': 'p013', 'p014': 'p014', 'p015': 'p015',
+            'p016': 'p016', 'p017': 'p017', 'p018': 'p018', 'p019': 'p019', 'p020': 'p020',
+            'p022': 'p022', 'p048': 'p048',
+        },
+        'NOTIFICATION_PARAMS_MAP': {
+            'p001': 'p001', 'p002': 'p002', 'p003': 'p003', 'p004': 'p004', 'p005': 'p005',
+            'p006': 'p006', 'p007': 'p007', 'p008': 'p008', 'p009': 'p009', 'p010': 'p010',
+            'p011': 'p011', 'p012': 'p012', 'p013': 'p013', 'p014': 'p014', 'p015': 'p015',
+            'p016': 'p016', 'p017': 'p017', 'p018': 'p018', 'p019': 'p019', 'p020': 'p020',
+            'p913': 'p913', 'p914': 'p914',
+        },
     }
 }
 
