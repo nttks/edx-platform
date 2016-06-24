@@ -97,7 +97,7 @@ class BizContractTestBase(BizViewTestBase, ModuleStoreTestCase):
             display_names=['country', 'dept'])
 
     def create_contract_register(self, user, contract, status=REGISTER_INVITATION_CODE):
-        ContractRegisterFactory.create(user=user, contract=contract, status=status)
+        register = ContractRegisterFactory.create(user=user, contract=contract, status=status)
         for additional_info in contract.additional_info.all():
             AdditionalInfoSettingFactory.create(
                 user=user,
@@ -110,6 +110,7 @@ class BizContractTestBase(BizViewTestBase, ModuleStoreTestCase):
                 CourseEnrollmentFactory.create(user=user, course_id=course.id)
             except:
                 pass
+        return register
 
 
 class InvitationViewsTest(BizContractTestBase):

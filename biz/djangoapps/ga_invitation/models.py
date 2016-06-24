@@ -72,6 +72,10 @@ class AdditionalInfoSetting(models.Model):
         except cls.DoesNotExist:
             return None
 
+    @classmethod
+    def find_by_user_and_contract(cls, user, contract):
+        return cls.objects.filter(user=user, contract=contract)
+
 
 class ContractRegister(models.Model):
 
@@ -153,6 +157,10 @@ class ContractRegister(models.Model):
             status__in=[INPUT_INVITATION_CODE, REGISTER_INVITATION_CODE],
             contract__id__in=contract_ids
         ).exists()
+
+    @classmethod
+    def find_by_ids(cls, register_ids):
+        return cls.objects.filter(id__in=register_ids)
 
 
 class ContractRegisterHistory(models.Model):

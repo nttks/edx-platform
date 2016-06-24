@@ -1987,6 +1987,9 @@ INSTALLED_APPS = (
     # Advanced Course
     'ga_advanced_course',
     'ga_shoppingcart',
+
+    # Celery Task Management
+    'openedx.core.djangoapps.ga_task',
 )
 
 ######################### CSRF #########################################

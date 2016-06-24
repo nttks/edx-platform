@@ -561,13 +561,61 @@ msgstr "{user_count}名の登録解除を実施しました。"
 msgid "Already unregisterd {user_count} users."
 msgstr "{user_count}名は既に解除済みです。"
 
+#: biz/djangoapps/ga_contract_operation/views.py
+msgid "Processing of {task_type} is running."
+msgstr "{task_type}処理は実行中です。"
+
+#: biz/djangoapps/ga_contract_operation/views.py
+msgid "Began the processing of {task_type}."
+msgstr "{task_type}処理を開始しました。"
+
+#: biz/djangoapps/ga_contract_operation/views.py
+msgid "Execution status, please check from the task history."
+msgstr "実行状況はタスク履歴から確認してください。"
+
+#: biz/djangoapps/ga_contract_operation/views.py
+msgid "Total: {total}, Success: {succeeded}, Skipped: {skipped}, Failed: {failed}"
+msgstr "対象: {total}件、成功: {succeeded}件、スキップ: {skipped}件、失敗: {failed}件"
+
 #: biz/templates/ga_contract_operation/students.html
 msgid "After the batch unregister, it can not be undone. Are you sure?"
 msgstr "一括解除後、元に戻すことはできません。本当によろしいですか？"
 
 #: biz/templates/ga_contract_operation/students.html
+msgid "After execution of the personal information mask processing,, it can not be undone. Are you sure?"
+msgstr "個人情報削除処理の実行後、元に戻すことはできません。本当によろしいですか？"
+
+#: biz/templates/ga_contract_operation/students.html
 msgid "Unregister Student"
 msgstr "受講解除"
+
+#: biz/templates/ga_contract_operation/students.html
+msgid "Personal Information Mask"
+msgstr "個人情報削除"
+
+#: biz/templates/ga_contract_operation/students.html
+msgid "Task History"
+msgstr "タスク履歴"
+
+#: biz/templates/ga_contract_operation/students.html
+msgid "Show Task History"
+msgstr "タスク履歴を表示"
+
+#: biz/templates/ga_contract_operation/students.html
+msgid "To see the status of the tasks that have been run in the background, please click this button."
+msgstr "バックグラウンドで実行されたタスクの状況を見るには、このボタンをクリックしてください。"
+
+#: biz/templates/ga_contract_operation/students.html
+msgid "Execution Username"
+msgstr "実行ユーザー名"
+
+#: biz/templates/ga_contract_operation/students.html
+msgid "Execution Result"
+msgstr "実行結果"
+
+#: biz/templates/ga_contract_operation/students.html
+msgid "Execution Datetime"
+msgstr "実行日時"
 
 ##### Common
 #: */forms.py

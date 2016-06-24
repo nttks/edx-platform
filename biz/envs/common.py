@@ -1,7 +1,7 @@
 """
 Settings for Biz
 """
-from lms.envs.common import MIDDLEWARE_CLASSES
+from lms.envs.common import MIDDLEWARE_CLASSES, CELERY_DEFAULT_QUEUE
 
 """
 MongoDB
@@ -21,3 +21,8 @@ MIDDLEWARE_CLASSES += (
     'biz.djangoapps.ga_manager.middleware.BizAccessCheckMiddleware',
     'biz.djangoapps.ga_invitation.middleware.SpocStatusMiddleware',
 )
+
+"""
+Celery
+"""
+BIZ_CELERY_DEFAULT_QUEUE = CELERY_DEFAULT_QUEUE
