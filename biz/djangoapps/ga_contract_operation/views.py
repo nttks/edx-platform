@@ -1,6 +1,7 @@
 """
 Views for contract_operation feature
 """
+from collections import defaultdict
 from functools import wraps
 import hashlib
 import json
@@ -90,13 +91,17 @@ def students(request):
 
 
 def _contract_register_list(contract):
-    contract_register_list= []
     status = {k: unicode(v) for k, v in dict(CONTRACT_REGISTER_STATUS).items()}
     additional_searches = []
     additional_columns = []
 
     additional_infos = contract.additional_info.all()
-    if additional_infos:
+    has_additional_infos = bool(additional_infos)
+    # Additional settings value of user.
+    # key:user_id, value:dict{key:display_name, value:additional_settings_value}
+    user_additional_settings = defaultdict(dict)
+    if has_additional_infos:
+        display_names = []
         for additional_info in additional_infos:
             additional_searches.append({
                 'field': additional_info.display_name,
@@ -110,8 +115,13 @@ def _contract_register_list(contract):
                 'hidden': False,
                 'size': 1,
             })
+            display_names.append(additional_info.display_name)
 
-    for i, contract_register in enumerate(ContractRegister.find_by_contract(contract)):
+        for additional_settings in AdditionalInfoSetting.find_by_contract(contract):
+            if additional_settings.display_name in display_names:
+                user_additional_settings[additional_settings.user_id][additional_settings.display_name] = additional_settings.value
+
+    def _create_row(i, contract_register):
         row = {
             'recid': i + 1,
             'contract_register_id': contract_register.id,
@@ -120,19 +130,16 @@ def _contract_register_list(contract):
             'user_name': contract_register.user.username,
             'user_email': contract_register.user.email,
         }
-        additional_settings = AdditionalInfoSetting.objects.raw('''
-            SELECT s.id, s.user_id, s.contract_id, a.display_name, s.value, s.created FROM ga_contract_additionalinfo a
-            LEFT OUTER JOIN ga_invitation_additionalinfosetting s
-            ON a.contract_id = s.contract_id and a.display_name = s.display_name
-            WHERE a.contract_id = {} and (s.user_id = {} or s.user_id IS NULL)
-            ORDER BY a.id
-            '''.format(contract.id, contract_register.user.id))
-        if additional_settings:
-            row.update({
-                additional_setting.display_name: additional_setting.value
-                for additional_setting in additional_settings
-            })
-        contract_register_list.append(row)
+        # Set additional settings value of user.
+        if has_additional_infos and contract_register.user_id in user_additional_settings:
+            row.update(user_additional_settings[contract_register.user_id])
+        return row
+
+    contract_register_list = [
+        _create_row(i, contract_register)
+        for i, contract_register in enumerate(ContractRegister.find_by_contract(contract))
+    ]
+
     return (contract_register_list, status, additional_searches, additional_columns)
 
 

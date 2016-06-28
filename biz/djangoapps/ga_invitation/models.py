@@ -76,6 +76,10 @@ class AdditionalInfoSetting(models.Model):
     def find_by_user_and_contract(cls, user, contract):
         return cls.objects.filter(user=user, contract=contract)
 
+    @classmethod
+    def find_by_contract(cls, contract):
+        return cls.objects.filter(contract=contract).order_by('id')
+
 
 class ContractRegister(models.Model):
 
@@ -138,7 +142,7 @@ class ContractRegister(models.Model):
 
     @classmethod
     def find_by_contract(cls, contract):
-        return cls.objects.filter(contract=contract).order_by('id')
+        return cls.objects.filter(contract=contract).select_related('user__profile').order_by('id')
 
     @classmethod
     def find_input_and_register_by_contract(cls, contract):

@@ -90,7 +90,7 @@ msgstr "受講中"
 
 #: biz/djangoapps/ga_achievement/score_store.py
 msgid "Unenrolled"
-msgstr "受講解除"
+msgstr "受講取消"
 
 #: biz/djangoapps/ga_achievement/score_store.py
 msgid "Disabled"
@@ -578,8 +578,8 @@ msgid "Total: {total}, Success: {succeeded}, Skipped: {skipped}, Failed: {failed
 msgstr "対象: {total}件、成功: {succeeded}件、スキップ: {skipped}件、失敗: {failed}件"
 
 #: biz/templates/ga_contract_operation/students.html
-msgid "After the batch unregister, it can not be undone. Are you sure?"
-msgstr "一括解除後、元に戻すことはできません。本当によろしいですか？"
+msgid "Do the bulk students unregister. Are you sure?"
+msgstr "一括受講解除を行います。本当によろしいですか？"
 
 #: biz/templates/ga_contract_operation/students.html
 msgid "After execution of the personal information mask processing,, it can not be undone. Are you sure?"
