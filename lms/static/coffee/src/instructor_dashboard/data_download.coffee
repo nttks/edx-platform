@@ -173,7 +173,7 @@ class DataDownload
       # redirect the document to the csv file.
       url += '/csv'
 
-      location.href = url
+      downloadFileUsingPost url
 
     @$list_studs_btn.click (e) =>
       url = @$list_studs_btn.data 'endpoint'

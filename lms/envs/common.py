@@ -1302,6 +1302,7 @@ base_application_js = [
     'js/src/ie_shim.js',
     'js/src/accessibility_tools.js',
     'js/toggle_login_modal.js',
+    'js/src/ga_download_utils.js',
 ]
 
 dashboard_js = (

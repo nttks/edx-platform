@@ -185,6 +185,8 @@ INSTRUCTOR_POST_ENDPOINTS = set([
     'get_progress_list',
     'get_submission_scores',
     'get_oa_rubric_scores',
+    'get_survey',
+    'get_students_advanced_course',
 ])
 
 
@@ -4834,7 +4836,7 @@ class InstructorAPISurveyDownloadTestMixin(object):
         submission3 = SurveySubmissionFactory.create(**self.submission3)
         submission4 = SurveySubmissionFactory.create(**self.submission4)
 
-        response = self.client.get(self.get_url(), {})
+        response = self.client.post(self.get_url(), {})
         self.assertEqual(response['Content-Type'], 'text/csv')
         body = response.content.rstrip('\n').replace('\r', '')
         rows = body.split('\n')
@@ -4857,7 +4859,7 @@ class InstructorAPISurveyDownloadTestMixin(object):
         )
 
     def test_get_survey_when_data_is_empty(self):
-        response = self.client.get(self.get_url(), {})
+        response = self.client.post(self.get_url(), {})
         self.assertEqual(response['Content-Type'], 'text/csv')
         body = response.content.rstrip('\n').replace('\r', '')
         rows = body.split('\n')
@@ -4868,7 +4870,7 @@ class InstructorAPISurveyDownloadTestMixin(object):
         submission1 = SurveySubmissionFactory.create(**self.submission1)
         submission5 = SurveySubmissionFactory.create(**self.submission5)
 
-        response = self.client.get(self.get_url(), {})
+        response = self.client.post(self.get_url(), {})
         self.assertEqual(response['Content-Type'], 'text/csv')
         body = response.content.rstrip('\n').replace('\r', '')
         rows = body.split('\n')

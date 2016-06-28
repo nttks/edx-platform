@@ -2653,6 +2653,7 @@ def enable_certificate_generation(request, course_id=None):
     return redirect(_instructor_dash_url(course_key, section='certificates'))
 
 
+@require_POST
 @ensure_csrf_cookie
 @cache_control(no_cache=True, no_store=True, must_revalidate=True)
 @require_level('staff')
@@ -3103,6 +3104,7 @@ def generate_bulk_certificate_exceptions(request, course_id):  # pylint: disable
     return JsonResponse(results)
 
 
+@require_POST
 @ensure_csrf_cookie
 @cache_control(no_cache=True, no_store=True, must_revalidate=True)
 @require_level('staff')
