@@ -1527,6 +1527,7 @@ PIPELINE_JS = {
             'js/src/ie_shim.js',
             'js/src/string_utils.js',
             'js/src/logger.js',
+            'js/src/ga_download_utils.js',
         ],
         'output_filename': 'js/lms-application.js',
     },
