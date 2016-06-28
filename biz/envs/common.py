@@ -26,3 +26,9 @@ MIDDLEWARE_CLASSES += (
 Celery
 """
 BIZ_CELERY_DEFAULT_QUEUE = CELERY_DEFAULT_QUEUE
+
+"""
+Monthly report info
+"""
+BIZ_FROM_EMAIL = 'support@nttks.jp'
+BIZ_RECIPIENT_LIST = []

@@ -1,0 +1,19 @@
+月次レポート
+{契約名称}：{有効受講者数}
+※集計対象月の前月以前に終了している契約は含まれません
+
+% if pfgs_contract_list:
+% for contract in pfgs_contract_list:
+${contract.contract_name}：${len(contract.contract_register_list)} 
+% endfor
+% else:
+有効なプラットフォーム契約（gaccoサービス契約）が存在しません。
+% endif
+
+% if os_contract_list:
+% for contract in os_contract_list:
+${contract.contract_name}（オーナー：${contract.owner_organization.org_name}）：${len(contract.contract_register_list)} 
+% endfor
+% else:
+有効なオーナーサービス契約が存在しません。
+% endif
