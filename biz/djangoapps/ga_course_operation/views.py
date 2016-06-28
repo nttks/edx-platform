@@ -23,7 +23,7 @@ def survey(request):
     return render_to_response('ga_course_operation/survey.html')
 
 
-@require_GET
+@require_POST
 @login_required
 @check_course_selection
 @require_survey

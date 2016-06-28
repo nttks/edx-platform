@@ -23,7 +23,7 @@ class CourseOperationSurveyDownloadTest(InstructorAPISurveyDownloadTestMixin, Bi
 
     def test_get_survey_not_allowed_method(self):
         with self.skip_check_course_selection(current_contract=self.contract, current_course=self.course):
-            response = self.client.post(self.get_url())
+            response = self.client.get(self.get_url())
         self.assertEqual(405, response.status_code)
 
     def test_get_survey(self):
