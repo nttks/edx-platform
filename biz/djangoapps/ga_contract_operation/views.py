@@ -393,9 +393,6 @@ def submit_personalinfo_mask(request, registers):
         task = submit_task(request, task_type, task_class, task_input, task_key)
         history.link_to_task(task)
 
-    if not request.current_contract.is_spoc_available:
-        return _error_response(_("Unauthorized access."))
-
     history = ContractTaskHistory.create(request.current_contract, request.user)
     ContractTaskTarget.bulk_create(history, registers)
 
