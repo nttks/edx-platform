@@ -583,6 +583,21 @@ class ContractOperationViewTest(BizContractTestBase):
         data = json.loads(response.content)
         self.assertEquals(data['error'], 'Unauthorized access.')
 
+    def test_personalinfo_mask_not_spoc(self):
+        registers = [
+            self.create_contract_register(UserFactory.create(), self.contract_mooc),
+            self.create_contract_register(UserFactory.create(), self.contract_mooc),
+        ]
+        params = {'target_list': [register.id for register in registers], 'contract_id': self.contract_mooc.id, }
+
+        self.setup_user()
+        with self.skip_check_course_selection(current_contract=self.contract_mooc):
+            response = self.client.post(self._url_personalinfo_mask, params)
+
+        self.assertEqual(400, response.status_code)
+        data = json.loads(response.content)
+        self.assertEquals(data['error'], 'Unauthorized access.')
+
     # ------------------------------------------------------------
     # Task History
     # ------------------------------------------------------------
