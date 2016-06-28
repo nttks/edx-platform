@@ -165,12 +165,6 @@ def _validate_and_get_arguments(task_id, task_input):
         raise ValueError(_msg)
 
     contract = task_history.contract
-
-    if not contract.is_spoc_available:
-        _msg = "Contract {contract_id} is not SPOC contract.".format(contract_id=contract.id)
-        log.warning("Task {task_id}: {msg}".format(task_id=task_id, msg=_msg))
-        raise ValueError(_msg)
-
     targets = ContractTaskTarget.find_by_history_id(task_history.id)
 
     return (contract, targets)
@@ -205,10 +199,12 @@ def perform_delegate_personalinfo_mask(entry_id, task_input, action_name):
                 # Mask of additional information will run for all users even if it does not mask an user
                 # information. Therefore, it might be run more than once, but this is not a problem.
                 executor.disable_additional_info(user)
-                if not executor.check_enrollment(user):
-                    task_progress.skip()
-                    continue
-                executor.disable_user_info(user)
+                # Try to mask user information if contract is SPOC.
+                if contract.is_spoc_available:
+                    if not executor.check_enrollment(user):
+                        task_progress.skip()
+                        continue
+                    executor.disable_user_info(user)
                 target.complete()
         except:
             # If an exception occur, logging it and to continue processing next target.
