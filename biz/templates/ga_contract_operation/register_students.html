@@ -1,0 +1,59 @@
+<%inherit file="../main_biz.html" />
+<%!
+from django.utils.translation import ugettext as _
+from django.core.urlresolvers import reverse
+%>
+
+<%block name="pagetitle">${_("Register Students")}</%block>
+
+<%block name="js_extra">
+<script type="text/javascript">
+    $(function () {
+        $('#form').w2form({ name: 'form' });
+        $('.w2ui-buttons').on('click', '#register-btn', function () {
+            var button = $(this), messages = $('.messages'), registerForm = $('#form');
+            w2utils.lock(registerForm, '', true);
+            messages.empty();
+            $.ajax({
+                url: button.data('endpoint'),
+                type: 'POST',
+                data: {
+                    students_list: $('#list-students').val(),
+                    contract_id: button.data('contract-id'),
+                }
+            }).done(function (data) {
+                $.each(data.general_errors, function(i, v) {
+                    messages.append('<li class="error">' + v.response + '</li>');
+                });
+                $.each(data.row_errors, function(i, v) {
+                    messages.append('<li class="error">' + v.response + '</li>');
+                });
+                $.each(data.warnings, function(i, v) {
+                    messages.append('<li class="warning">' + v.response + '</li>');
+                });
+                if (messages.children().length === 0) {
+                    messages.append('<li class="info">' + gettext("All accounts were created successfully.") + '</li>');
+                }
+            }).always(function () {
+                w2utils.unlock(registerForm);
+            });
+        });
+    });
+</script>
+</%block>
+
+<%block name="custom_content">
+<div id="form" class="field-area">
+    <div class="w2ui-page page-0">
+        <div class="field">
+            <span class="operation">${_("To register a list of users in this course, contains the following columns in this exact order: email, username, name, and country. Please include one student per row and do not include any headers, footers, or blank lines.")}</span>
+        </div>
+        <div class="field">
+            <textarea id="list-students" name="students_list" rows="12" placeholder="${_("username1@domain.com,gaccotarou,gacco taro")}"></textarea>
+        </div>
+    </div>
+    <div class="w2ui-buttons">
+        <input type="button" id="register-btn" data-endpoint="${reverse('biz:contract_operation:register_students_ajax')}" data-contract-id="${request.current_contract.id}" value="&#xf044 ${_('Register Signup')}"/>
+    </div>
+</div>
+</%block>

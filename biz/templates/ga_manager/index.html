@@ -13,11 +13,11 @@ from django.core.urlresolvers import reverse
         $('#form').w2form({
             name: 'form'
         });
-        $("#edit_btn").on('click', function () {
-            if ($("#add_user").val() == "") {
+        $("#edit-btn").on('click', function () {
+            if ($("#add-user").val() == "") {
                 return;
             }
-            modify_permission(this, $("#add_user").val(), 'allow');
+            modify_permission(this, $("#add-user").val(), 'allow');
         });
         $("#organization, #permission").change(get_manager_list);
         var form_outer_height = $("#form").outerHeight();
@@ -42,7 +42,7 @@ from django.core.urlresolvers import reverse
                 }
             }).done(function (data) {
                 if (data.success) {
-                    $.each($("[id=member_detail]"), function () {
+                    $.each($("[id=member-detail]"), function () {
                         $(this).remove();
                     });
                     reset_form_size();
@@ -65,10 +65,10 @@ from django.core.urlresolvers import reverse
         }
 
         function add_manager(user) {
-            var clone = $("#member_template").clone();
+            var clone = $("#member-template").clone();
             clone.find("#name").text(user.name);
             clone.find("#email").text(user.email);
-            clone.attr("id", "member_detail");
+            clone.attr("id", "member-detail");
             clone.find("a").on('click', function () {
                 modify_permission($(this).parents("tr"), $(this).parents("tr").find("#name").text(), "revoke");
             });
@@ -87,7 +87,7 @@ from django.core.urlresolvers import reverse
             $(".messages").empty();
 
             $.ajax({
-                url: $("#edit_btn").data('endpoint'),
+                url: $("#edit-btn").data('endpoint'),
                 type: 'POST',
                 dataType: 'json',
                 data: {
@@ -146,7 +146,7 @@ from django.core.urlresolvers import reverse
 </%block>
 
 <%block name="custom_content">
-<div id="form" class="fieldArea">
+<div id="form" class="field-area">
     <div class="w2ui-page page-0">
         <div class="member-header">
             <div class="field">
@@ -179,7 +179,7 @@ from django.core.urlresolvers import reverse
                 </tr>
                 </thead>
                 <tbody>
-                <tr id="member_template" style="display: none">
+                <tr id="member-template" style="display: none">
                     <td id="name"></td>
                     <td id="email"></td>
                     <td><a class="red">${_("Revoke")}</a></td>
@@ -189,8 +189,8 @@ from django.core.urlresolvers import reverse
         </div>
     </div>
     <div class="w2ui-buttons">
-        <input type="text" id="add_user" placeholder="${_('Enter username or email')}"/>
-        <input type="submit" id="edit_btn" data-endpoint="${reverse('biz:manager:modify_ajax')}" value="&#xf044 ${_('Add User')}"/>
+        <input type="text" id="add-user" placeholder="${_('Enter username or email')}"/>
+        <input type="submit" id="edit-btn" data-endpoint="${reverse('biz:manager:modify_ajax')}" value="&#xf044 ${_('Add User')}"/>
     </div>
 </div>
 </%block>

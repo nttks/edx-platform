@@ -1,4 +1,5 @@
 from contextlib import contextmanager
+from datetime import timedelta
 from functools import wraps
 
 from django.conf import settings
@@ -7,12 +8,18 @@ from django.test import TestCase
 from django.test.utils import override_settings
 from mock import patch
 
+from biz.djangoapps.ga_contract.tests.factories import AdditionalInfoFactory, ContractFactory, ContractDetailFactory
+from biz.djangoapps.ga_invitation.tests.factories import AdditionalInfoSettingFactory, ContractRegisterFactory
+from biz.djangoapps.ga_invitation.models import INPUT_INVITATION_CODE, REGISTER_INVITATION_CODE, UNREGISTER_INVITATION_CODE
 from biz.djangoapps.ga_manager.tests.factories import ManagerPermissionFactory, ManagerFactory
 from biz.djangoapps.ga_organization.models import Organization
 from biz.djangoapps.ga_organization.tests.factories import OrganizationFactory
 from biz.djangoapps.util.biz_mongo_connection import BizMongoConnection
+from biz.djangoapps.util.datetime_utils import timezone_today
+
 from courseware.tests.helpers import LoginEnrollmentTestCase
-from student.tests.factories import UserFactory
+from student.models import CourseEnrollment, UserStanding
+from student.tests.factories import UserFactory, UserStandingFactory
 
 
 class BizTestBase(TestCase):
@@ -29,10 +36,10 @@ class BizTestBase(TestCase):
         )
         self.gacco_organization.save()
 
-        self.platformer_permission = self._create_permission('platformer', 1, 1, 1, 0, 0)
-        self.aggregator_permission = self._create_permission('aggregator', 1, 1, 1, 0, 0)
-        self.director_permission = self._create_permission('director', 0, 0, 1, 1, 1)
-        self.manager_permission = self._create_permission('manager', 0, 0, 0, 0, 1)
+        self.platformer_permission = self._create_permission('platformer', 1, 1, 1, 0, 0, 0)
+        self.aggregator_permission = self._create_permission('aggregator', 1, 1, 1, 0, 0, 0)
+        self.director_permission = self._create_permission('director', 0, 0, 1, 1, 1, 1)
+        self.manager_permission = self._create_permission('manager', 0, 0, 0, 0, 1, 0)
 
         self.addCleanup(self._clear_cache)
 
@@ -43,6 +50,7 @@ class BizTestBase(TestCase):
     def _create_permission(
         self, permission_name, can_handle_organization, can_handle_contract,
         can_handle_manager, can_handle_course_operation, can_handle_achievement,
+        can_handle_contract_operation,
     ):
         return ManagerPermissionFactory.create(
             permission_name=permission_name,
@@ -51,18 +59,55 @@ class BizTestBase(TestCase):
             can_handle_manager=can_handle_manager,
             can_handle_course_operation=can_handle_course_operation,
             can_handle_achievement=can_handle_achievement,
+            can_handle_contract_operation=can_handle_contract_operation,
         )
 
     def _create_manager(self, org, user, created, permissions):
         return ManagerFactory.create(org=org, user=user, created=created, permissions=permissions)
 
-    def _create_organization(self, org_code, creator_org, org_name='test org', created_by=None):
+    def _create_organization(self, org_code='test code', creator_org=None, org_name='test org', created_by=None):
         return OrganizationFactory.create(
             org_name=org_name,
             org_code=org_code,
-            creator_org=creator_org,
+            creator_org=creator_org or self.gacco_organization,
             created_by=created_by or UserFactory.create(),
         )
+
+    def _create_contract(self, contract_type='PF', contractor_organization=None, owner_organization=None, end_date=None,
+                         detail_courses=[], additional_display_names=[]):
+        contract = ContractFactory.create(
+            contract_type=contract_type,
+            contractor_organization=contractor_organization or self._create_organization(),
+            owner_organization=owner_organization or self.gacco_organization,
+            end_date=end_date or timezone_today() + timedelta(days=1),
+            created_by=UserFactory.create(),
+        )
+        for c in detail_courses:
+            ContractDetailFactory.create(contract=contract, course_id=c.id)
+        for d in additional_display_names:
+            AdditionalInfoFactory.create(contract=contract, display_name=d)
+        return contract
+
+    def _input_contract(self, contract, user):
+        return ContractRegisterFactory.create(user=user, contract=contract, status=INPUT_INVITATION_CODE)
+
+    def _register_contract(self, contract, user, additional_value=''):
+        for additional_info in contract.additional_info.all():
+            AdditionalInfoSettingFactory.create(
+                user=user,
+                contract=contract,
+                display_name=additional_info.display_name,
+                value='{}_{}'.format(additional_info.display_name, additional_value)
+            )
+        for detail in contract.details.all():
+            CourseEnrollment.enroll(user, detail.course_id)
+        return ContractRegisterFactory.create(user=user, contract=contract, status=REGISTER_INVITATION_CODE)
+
+    def _unregister_contract(self, contract, user):
+        return ContractRegisterFactory.create(user=user, contract=contract, status=UNREGISTER_INVITATION_CODE)
+
+    def _account_disable(self, user):
+        return UserStandingFactory.create(user=user, account_status=UserStanding.ACCOUNT_DISABLED, changed_by=user)
 
     def assertIdsOfListEqual(self, seq1, seq2):
         """

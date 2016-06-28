@@ -2821,3 +2821,11 @@ msgstr "終了時間"
 #: lms/djangoapps/ga_advanced_course/models.py
 msgid "Capacity"
 msgstr "定員"
+
+#: openedx/core/djangoapps/ga_task/tasks.py
+msgid "Waiting"
+msgstr "待機中"
+
+#: openedx/core/djangoapps/ga_task/tasks.py
+msgid "In Progress"
+msgstr "実行中"

@@ -160,6 +160,19 @@ def check_course_selection(func):
                 log.info("Redirect to course_not_specified page because course_id is not specified.")
                 return _render_course_not_specified(request)
 
+        elif re.match('^/biz/contract_operation/', request.path):
+            if not manager.can_handle_contract_operation():
+                log.warning(
+                    "Manager(id={}) has no permission to handle '{}' feature.".format(
+                        manager.id, 'contract_operation')
+                )
+                return _render_403(request)
+            elif not contract_id:
+                # if user has role(platformer and director:can_handle_contract_operation).
+                log.info("Redirect to contract_not_specified page because contract_id is not specified.")
+                return _render_contract_not_specified(request)
+
+
         log.debug("request.current_organization={}".format(getattr(request, 'current_organization', None)))
         log.debug("request.current_manager={}".format(getattr(request, 'current_manager', None)))
         log.debug("request.current_contract={}".format(getattr(request, 'current_contract', None)))
@@ -182,7 +195,6 @@ def require_survey(func):
 
     @wraps(func)
     def wrapper(request, *args, **kwargs):
-        course_id = kwargs.get('course_id')
         current_manager = getattr(request, 'current_manager', None)
         current_contract = getattr(request, 'current_contract', None)
         current_course = getattr(request, 'current_course', None)
@@ -190,8 +202,7 @@ def require_survey(func):
         if (
             current_manager and current_contract and current_course and
             current_manager.can_handle_course_operation() and
-            current_contract.is_spoc_available and
-            unicode(current_course.id) == course_id
+            current_contract.is_spoc_available
         ):
             return func(request, *args, **kwargs)
         else:

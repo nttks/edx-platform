@@ -181,7 +181,7 @@ from courseware.courses import course_image_url
         width: 24rem;
     }
 
-    .buttonArea {
+    .button-area {
         margin: 10px auto 20px;
         text-align: center;
     }
@@ -251,7 +251,7 @@ from courseware.courses import course_image_url
       % endfor
     % endif
 
-    <div class="buttonArea">
+    <div class="button-area">
       <input type="hidden" name="invitation_code" value="${contract.invitation_code}">
       <input type="hidden" name="csrfmiddlewaretoken" value="${csrf_token}">
       <br>

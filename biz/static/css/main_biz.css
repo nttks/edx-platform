@@ -45,10 +45,10 @@ nav.side-menu ul.menu li {
 }
 
 nav.side-menu ul.menu li:hover {
-    background-color: #CEE3EC;
+    background-color: #cee3ec;
     color: #333;
     cursor: pointer;
-    border-left: 3px solid #126F9A;
+    border-left: 3px solid #126f9a;
 }
 
 nav.side-menu ul.menu li:before {
@@ -59,8 +59,8 @@ nav.side-menu ul.menu li:before {
 }
 
 nav.side-menu ul.menu li.current {
-    background-color: #CEE3EC;
-    border-left: #126F9A solid 3px;
+    background-color: #cee3ec;
+    border-left: #126f9a solid 3px;
 }
 
 .view-biz .container div.main {
@@ -79,7 +79,7 @@ nav.side-menu ul.menu li.current {
 }
 
 .change-role a {
-    background-color: #43AC6A;
+    background-color: #43ac6a;
     color: #fff;
     line-height: 1.6;
     padding: 3px 20px;
@@ -141,20 +141,24 @@ ul.errorlist li {
     height: 2.6rem;
 }
 
-span.err_msg {
+span.err-msg {
     color: #e00;
     display: block;
     padding: 1px;
     position: relative;
 }
 
-span.err_msg.show-reg {
+span.err-msg.show-reg {
     left: 74px;
     top: -8px;
 }
 
 .messages .error {
     color: #e00;
+}
+
+.messages .warning {
+    color: #eb3;
 }
 
 .messages .info {
@@ -177,7 +181,7 @@ span.err_msg.show-reg {
 }
 
 /* ---------- ▽ Form Style ---------- */
-input:not([type=button]), select, texture {
+input:not([type=button]), select, textarea {
     font-style: normal;
     font-family: "ヒラギノ角ゴ Pro W3", "Hiragino Kaku Gothic Pro", "メイリオ", Meiryo, Osaka, "ＭＳ Ｐゴシック", "MS PGothic", sans-serif;
 }
@@ -198,7 +202,7 @@ input#id_org_name, input#id_org_code {
     margin: -10px 0 10px 5px;
 }
 
-input#add_user {
+input#add-user {
     width: 18rem;;
 }
 
@@ -206,13 +210,13 @@ input#add_user {
 button.btn {
     background-color: #777;
     background-image: none;
-    color: #FFF;
+    color: #fff;
     border-bottom: 2px solid #333;
     font-weight: 900;
     font-size: 0.9rem !important;
 }
 
-button.btn, input#register_btn, input#delete_btn, input#edit_btn {
+button.btn, input#register-btn, input#delete-btn, input#edit-btn {
     min-width: 6rem;
     min-height: 2rem;
 }
@@ -232,20 +236,20 @@ button.btn:hover:not(:disabled), .btn:hover, button:hover {
     border-bottom: 2px solid #222;
 }
 
-input#delete_btn {
+input#delete-btn {
     background: #777;
     transition: .3s;
     margin: 0 20px;
-    background-color: #C33;
+    background-color: #c33;
 }
 
-input#delete_btn:hover {
-    background-color: #C30707;
+input#delete-btn:hover {
+    background-color: #c30707;
 }
 
 button.btn.btn-blue {
-    background-color: #126F9A;
-    border-bottom: 2px solid #072B48;
+    background-color: #126f9a;
+    border-bottom: 2px solid #072b48;
 }
 
 button.btn.btn-blue:hover:not(:disabled) {
@@ -256,12 +260,12 @@ button.btn.btn-blue:hover:not(:disabled) {
     background-color: #777;
 }
 
-input#btnDownload {
+input#download-btn {
     margin: 1rem 0;
     padding: 0.3rem 1rem;
 }
 
-input#register_btn, input#delete_btn, input#edit_btn, input#btnDownload {
+input#register-btn, input#delete-btn, input#edit-btn, input#download-btn {
     border-bottom: 2px solid #333;
 }
 
@@ -269,18 +273,18 @@ button.biz-modal-close.w2ui-popup-btn.btn.cancel:hover, button#No:hover {
     background-color: #444 !important;
 }
 
-#role-selection-modal .btn.success, button#Yes, input#register_btn, input#edit_btn, input#btnDownload {
-    background-color: #43AC6A;
+#role-selection-modal .btn.success, button#Yes, input#register-btn, input#edit-btn, input#download-btn {
+    background-color: #43ac6a;
     border-color: #067913;
 }
 
-input#edit_btn {
+input#edit-btn {
     height: 35px;
     width: 11rem;
     margin: 2px 5px;
 }
 
-.btn.success:hover, button#Yes:hover, input#register_btn:hover, input#edit_btn:hover {
+.btn.success:hover, button#Yes:hover, input#register-btn:hover, input#edit-btn:hover {
     background-color: #409206 !important;
 }
 
@@ -295,8 +299,8 @@ input#edit_btn {
     opacity: 0.8;
 }
 
-#detail_template a, #additional_info_template a {
-    color: #2196F3;
+#detail-template a, #additional-info-template a {
+    color: #2196f3;
     font-size: 1rem;
 }
 
@@ -316,10 +320,10 @@ input#edit_btn {
     color: #777;
     text-align: left;
     font-size: 2rem;
-    border-left: solid #CF0F31 5px;
+    border-left: solid #cf0f31 5px;
     padding-left: 10px;
     margin: 0px 0 20px 0;
-    border-bottom: solid #CF0F31 1px;
+    border-bottom: solid #cf0f31 1px;
 }
 
 /* .biz-wrap */
@@ -334,14 +338,14 @@ input[type="button"] {
 }
 
 /* .biz-wrap */
-input[type="button"]#register_btn, #btnDownload {
-    background-color: #43AC6A;
+input[type="button"]#register-btn, #download-btn {
+    background-color: #43ac6a;
     /* 	border-bottom: 3px solid #2f8a7d; */
     transition: background-color 0.15s ease-in-out;
 }
 
-.biz-wrap input[type="button"]#register_btn:hover, #btnDownload:hover {
-    background: #15986C;
+.biz-wrap input[type="button"]#register-btn:hover, #download-btn:hover {
+    background: #15986c;
 }
 
 input[type="submit"]:active:not(:disabled), input[type="submit"]:focus:not(:disabled), input[type="button"]:active:not(:disabled), input[type="button"]:focus:not(:disabled), button:active:not(:disabled), button:focus:not(:disabled), .button:active:not(:disabled), .button:focus:not(:disabled) {
@@ -398,13 +402,13 @@ input[type="radio"] {
     height: 3rem;
 }
 
-a#add_detail, a#add_additional {
-    color: #2196F3;
+a#add-detail, a#add-additional {
+    color: #2196f3;
     line-height: 1.6;
     font-size: 1rem;
 }
 
-a#add_detail:before, a#add_additional:before {
+a#add-detail:before, a#add-additional:before {
     content: " + ";
 }
 
@@ -433,10 +437,10 @@ a#add_detail:before, a#add_additional:before {
 }
 
 .w2ui-marker {
-    background-color: #FFF59D;
-    color: #0D47A1;
+    background-color: #fff59d;
+    color: #0d47a1;
     padding: 0 1px 4px;
-    border: 1px solid #FFEB3B;
+    border: 1px solid #ffeb3b;
 }
 
 /* ----- Link ----- */
@@ -469,7 +473,7 @@ a#add_detail:before, a#add_additional:before {
 .w2ui-toolbar table.w2ui-button .w2ui-tb-image > span {
     font-size: 20px;
     margin: 0px 1px 1px 1px;
-    color: #008CBA;
+    color: #008cba;
     text-shadow: 1px 1px 2px #aaa;
 }
 
@@ -506,7 +510,7 @@ w2ui-grid .w2ui-toolbar-search .w2ui-search-down {
 .w2ui-icon.icon-search-down:after {
     content: " \f00e";
     font-family: FontAwesome;
-    color: #008CBA;
+    color: #008cba;
     font-size: 18px;
     cursor: pointer;
     position: absolute;
@@ -540,14 +544,14 @@ w2ui-grid .w2ui-toolbar-search .w2ui-search-down {
 }
 
 .w2ui-toolbar table.w2ui-button .w2ui-tb-caption {
-    color: #0098B2;
+    color: #0098b2;
     padding: 0px 0px 0px 2px;
     position: relative;
     left: 90px;
     top: 5px;
     font-size: 0.9rem;
     cursor: pointer;
-    border-bottom: 1px solid #0098B2 !important;
+    border-bottom: 1px solid #0098b2 !important;
     /* text-align: center; */
 }
 
@@ -555,7 +559,7 @@ td.w2ui-tb-caption:hover {
     color: #43b3cf !important;
 }
 
-.w2ui-overlay-searches-achievement_grid:before {
+.w2ui-overlay-searches-achievement-grid:before {
     margin-left: 60px;
 }
 
@@ -586,7 +590,7 @@ td.w2ui-tb-caption:hover {
 
 .w2ui-grid .w2ui-grid-body .w2ui-grid-records table tr.w2ui-even {
     color: inherit;
-    background-color: #E3EBF5;
+    background-color: #e3ebf5;
 }
 
 /* --- other ----- */
@@ -597,9 +601,9 @@ td.w2ui-tb-caption:hover {
     text-align: left;
 }
 
-tr#member_detail {
+tr#member-detail {
     font-size: 1.1rem;
-    color: #43AC6A;
+    color: #43ac6a;
 }
 
 .w2ui-overlay .w2ui-grid-searches table td.value input[type=text] {
@@ -616,7 +620,7 @@ tr#member_detail {
 .w2ui-centered {
     top: 40%;
     font-size: 1.2rem !important;
-    color: #C33;
+    color: #c33;
     font-weight: 900;
 }
 
@@ -625,15 +629,29 @@ w2ui-popup .w2ui-msg-title {
 }
 
 /* ----- organization  manager----- */
-#form.fieldArea {
+#form.field-area {
     width: 800px;
 }
 
-#form.fieldArea .w2ui-field label {
+#form.field-area .w2ui-field label {
     width: 200px;
 }
 
 /* ----- achievement ----- */
-#scoreUpdateDate span.status {
+#score-update-date span.status {
     margin-left: 10px;
+}
+
+/* ----- course_operation ----- */
+#list-students {
+    margin: 1rem;
+    width: 90%;
+}
+
+#register-btn {
+    padding: 0.3rem 1rem;
+}
+
+#form span.operation {
+    font-size: 1rem;
 }

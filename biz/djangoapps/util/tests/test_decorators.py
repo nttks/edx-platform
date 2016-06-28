@@ -122,11 +122,14 @@ class CheckCourseSelectionTestBase(BizTestBase, ModuleStoreTestCase):
     def _manager_view(self):
         return reverse('biz:manager:index')
 
-    def _course_operation_view(self, course_id):
-        return reverse('biz:course_operation:dashboard', kwargs={'course_id': course_id})
+    def _course_operation_view(self):
+        return reverse('biz:course_operation:survey')
 
     def _achievement_view(self):
         return reverse('biz:achievement:index')
+
+    def _contract_operation_view(self):
+        return reverse('biz:contract_operation:students')
 
 
 class CheckCourseSelectionForPlatformerTest(CheckCourseSelectionTestBase):
@@ -224,8 +227,17 @@ class CheckCourseSelectionForPlatformerTest(CheckCourseSelectionTestBase):
         # Call test target
         self.assertEqual('success', check_course_selection_target(self.request))
 
+    def test_contract_operation_feature(self):
+        self.request.path = self._contract_operation_view()
+        self._setup_default()
+        # Call test target
+        response = check_course_selection_target(self.request)
+        self.mock_log.warning.assert_called_with(
+            "Manager(id={}) has no permission to handle '{}' feature.".format(self.manager.id, 'contract_operation'))
+        self.assertEqual(403, response.status_code)
+
     def test_course_operation_feature(self):
-        self.request.path = self._course_operation_view(unicode(self.course.id))
+        self.request.path = self._course_operation_view()
         self._setup_default()
         # Call test target
         response = check_course_selection_target(self.request)
@@ -407,8 +419,17 @@ class CheckCourseSelectionForAggregatorTest(CheckCourseSelectionTestBase):
         self.mock_messages.error.assert_called_with(self.request, "Contract is not specified.")
         self.mock_render_to_response.assert_called_with('ga_course_selection/contract_not_specified.html')
 
+    def test_contract_operation_feature(self):
+        self.request.path = self._contract_operation_view()
+        self._setup_default()
+        # Call test target
+        response = check_course_selection_target(self.request)
+        self.mock_log.warning.assert_called_with(
+            "Manager(id={}) has no permission to handle '{}' feature.".format(self.manager.id, 'contract_operation'))
+        self.assertEqual(403, response.status_code)
+
     def test_course_operation_feature(self):
-        self.request.path = self._course_operation_view(unicode(self.course.id))
+        self.request.path = self._course_operation_view()
         self._setup_default()
         # Call test target
         response = check_course_selection_target(self.request)
@@ -590,14 +611,20 @@ class CheckCourseSelectionForDirectorTest(CheckCourseSelectionTestBase):
         # Call test target
         self.assertEqual('success', check_course_selection_target(self.request))
 
+    def test_contract_operation_feature(self):
+        self.request.path = self._contract_operation_view()
+        self._setup_default()
+        # Call test target
+        self.assertEqual('success', check_course_selection_target(self.request))
+
     def test_course_operation_feature(self):
-        self.request.path = self._course_operation_view(unicode(self.course.id))
+        self.request.path = self._course_operation_view()
         self._setup_default()
         # Call test target
         self.assertEqual('success', check_course_selection_target(self.request))
 
     def test_course_operation_feature_with_no_course_id(self):
-        self.request.path = self._course_operation_view(unicode(self.course.id))
+        self.request.path = self._course_operation_view()
         self.org = self._save_organization()
         self.org2 = self._save_organization()
         self.manager = self._save_default_manager(self.org)
@@ -644,8 +671,17 @@ class CheckCourseSelectionForManagerTest(CheckCourseSelectionForDirectorTest):
             "Manager(id={}) has no permission to handle '{}' feature.".format(self.manager.id, 'manager'))
         self.assertEqual(403, response.status_code)
 
+    def test_contract_operation_feature(self):
+        self.request.path = self._contract_operation_view()
+        self._setup_default()
+        # Call test target
+        response = check_course_selection_target(self.request)
+        self.mock_log.warning.assert_called_with(
+            "Manager(id={}) has no permission to handle '{}' feature.".format(self.manager.id, 'contract_operation'))
+        self.assertEqual(403, response.status_code)
+
     def test_course_operation_feature(self):
-        self.request.path = self._course_operation_view(unicode(self.course.id))
+        self.request.path = self._course_operation_view()
         self._setup_default()
         # Call test target
         response = check_course_selection_target(self.request)
@@ -654,7 +690,7 @@ class CheckCourseSelectionForManagerTest(CheckCourseSelectionForDirectorTest):
         self.assertEqual(403, response.status_code)
 
     def test_course_operation_feature_with_no_course_id(self):
-        self.request.path = self._course_operation_view(unicode(self.course.id))
+        self.request.path = self._course_operation_view()
         self._setup_default()
         # Call test target
         response = check_course_selection_target(self.request)
@@ -664,7 +700,7 @@ class CheckCourseSelectionForManagerTest(CheckCourseSelectionForDirectorTest):
 
 
 @require_survey
-def require_survey_target(request, course_id):
+def require_survey_target(request):
     return "success"
 
 
@@ -695,40 +731,34 @@ class RequireSurveyTest(BizTestBase, ModuleStoreTestCase):
             created_by=UserFactory.create()
         )
 
-        self.course = CourseFactory.create()
-        self.request.current_course = self.course
+        self.request.current_course = CourseFactory.create()
 
     def test_success(self):
-        self.assertEqual('success', require_survey_target(self.request, course_id=unicode(self.course.id)))
+        self.assertEqual('success', require_survey_target(self.request))
 
     @ddt.data(CONTRACT_TYPE_PF[0], CONTRACT_TYPE_OWNERS[0], CONTRACT_TYPE_OWNER_SERVICE[0])
     def test_spoc(self, contract_type):
         self.request.current_contract.contract_type = contract_type
-        self.assertEqual('success', require_survey_target(self.request, course_id=unicode(self.course.id)))
+        self.assertEqual('success', require_survey_target(self.request))
 
     @ddt.data(CONTRACT_TYPE_GACCO_SERVICE[0])
     def test_not_spoc(self, contract_type):
         self.request.current_contract.contract_type = contract_type
         with patch('biz.djangoapps.util.decorators.render_to_string', return_value=''):
-            response = require_survey_target(self.request, course_id=unicode(self.course.id))
+            response = require_survey_target(self.request)
             self.assertEqual(403, response.status_code)
 
     @ddt.data('current_manager', 'current_contract', 'current_course')
     def test_missing_params(self, param):
         setattr(self.request, param, None)
         with patch('biz.djangoapps.util.decorators.render_to_string', return_value=''):
-            response = require_survey_target(self.request, course_id=unicode(self.course.id))
+            response = require_survey_target(self.request)
             self.assertEqual(403, response.status_code)
 
     def test_no_can_handle_course_operation(self):
         self.request.current_manager.manager_permissions.remove(self.director_permission)
         with patch('biz.djangoapps.util.decorators.render_to_string', return_value=''):
-            response = require_survey_target(self.request, course_id=unicode(self.course.id))
-            self.assertEqual(403, response.status_code)
-
-    def test_different_course(self):
-        with patch('biz.djangoapps.util.decorators.render_to_string', return_value=''):
-            response = require_survey_target(self.request, course_id='course-v1:org+course+run')
+            response = require_survey_target(self.request)
             self.assertEqual(403, response.status_code)
 
 

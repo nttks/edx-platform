@@ -18,6 +18,6 @@ https://{site_name}/login
 """.format(
     platform_name=settings.PLATFORM_NAME,
     site_name=site_name,
-    email=email_address,
+    email_address=email_address,
     username=username,
 )}

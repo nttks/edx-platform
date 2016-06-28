@@ -51,7 +51,7 @@ class Command(BaseCommand):
         for contract_detail in contract_detail_list:
             try:
                 score_list = []
-                contract_register_list = ContractRegister.find_by_contract(contract_detail.contract_id)
+                contract_register_list = ContractRegister.find_input_and_register_by_contract(contract_detail.contract_id)
 
                 contract_id = contract_detail.contract_id
                 course_id = contract_detail.course_id

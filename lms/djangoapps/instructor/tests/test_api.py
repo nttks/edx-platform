@@ -127,7 +127,6 @@ INSTRUCTOR_GET_ENDPOINTS = set([
     'get_sale_records',
     'get_distribution',
     'proxy_legacy_analytics',
-    'biz:course_operation:get_survey',
 ])
 INSTRUCTOR_POST_ENDPOINTS = set([
     'active_registration_codes',
@@ -4610,7 +4609,8 @@ class InstructorAPISurveyDownloadTestMixin(object):
     Test instructor survey mix-in.
     """
 
-    url = None
+    def get_url(self):
+        raise NotImplementedError()
 
     def setUp(self):
         class _UserProfileFactory(UserProfileFactory):
@@ -4697,8 +4697,7 @@ class InstructorAPISurveyDownloadTestMixin(object):
         submission3 = SurveySubmissionFactory.create(**self.submission3)
         submission4 = SurveySubmissionFactory.create(**self.submission4)
 
-        url = reverse(self.url, kwargs={'course_id': self.course.id.to_deprecated_string()})
-        response = self.client.post(url, {})
+        response = self.client.post(self.get_url(), {})
         self.assertEqual(response['Content-Type'], 'text/csv')
         body = response.content.rstrip('\n').replace('\r', '')
         rows = body.split('\n')
@@ -4721,8 +4720,7 @@ class InstructorAPISurveyDownloadTestMixin(object):
         )
 
     def test_get_survey_when_data_is_empty(self):
-        url = reverse(self.url, kwargs={'course_id': self.course.id.to_deprecated_string()})
-        response = self.client.post(url, {})
+        response = self.client.post(self.get_url(), {})
         self.assertEqual(response['Content-Type'], 'text/csv')
         body = response.content.rstrip('\n').replace('\r', '')
         rows = body.split('\n')
@@ -4733,8 +4731,7 @@ class InstructorAPISurveyDownloadTestMixin(object):
         submission1 = SurveySubmissionFactory.create(**self.submission1)
         submission5 = SurveySubmissionFactory.create(**self.submission5)
 
-        url = reverse(self.url, kwargs={'course_id': self.course.id.to_deprecated_string()})
-        response = self.client.post(url, {})
+        response = self.client.post(self.get_url(), {})
         self.assertEqual(response['Content-Type'], 'text/csv')
         body = response.content.rstrip('\n').replace('\r', '')
         rows = body.split('\n')
@@ -4756,4 +4753,6 @@ class TestInstructorAPISurveyDownload(InstructorAPISurveyDownloadTestMixin, Modu
     """
     Test instructor survey endpoint.
     """
-    url = 'get_survey'
+
+    def get_url(self):
+        return reverse('get_survey', kwargs={'course_id': self.course.id.to_deprecated_string()})

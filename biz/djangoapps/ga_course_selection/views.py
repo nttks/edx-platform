@@ -28,15 +28,18 @@ def index(request):
     """
     current_manager = request.current_manager
     current_contract = request.current_contract
+    current_course = request.current_course
 
     # Platformer or Aggregator
-    if current_manager.is_platformer() \
-            or (current_manager.is_aggregator() and current_contract and current_contract.is_available_for_aggregator()):
+    if current_manager.is_platformer() or (current_manager.is_aggregator() and current_contract.is_available_for_aggregator()):
         return redirect(reverse('biz:contract:index'))
 
-    # Director or Manager
-    elif (current_manager.is_director() or current_manager.is_manager()) \
-            and current_contract and current_contract.is_available_for_director_or_manager():
+    # Director
+    elif current_manager.is_director() and current_contract.is_available_for_director_or_manager():
+        return redirect(reverse('biz:achievement:index')) if current_course else redirect(reverse('biz:contract_operation:students'))
+
+    # Manager
+    elif current_manager.is_manager() and current_contract.is_available_for_director_or_manager():
         return redirect(reverse('biz:achievement:index'))
 
     else:

@@ -5,7 +5,6 @@ when you run "manage.py test".
 Replace this with more appropriate tests for your application.
 """
 from mock import patch
-import tempfile
 
 from django.test.utils import override_settings
 from django.core.management import call_command
@@ -20,22 +19,17 @@ from biz.djangoapps.ga_achievement.score_store import (
     SCORE_STORE_FIELD_CERTIFICATE_STATUS_UNPUBLISHED, SCORE_STORE_FIELD_ENROLL_DATE,
     SCORE_STORE_FIELD_CERTIFICATE_ISSUE_DATE, SCORE_STORE_FIELD_TOTAL_SCORE
 )
-from biz.djangoapps.ga_contract.tests.factories import AdditionalInfoFactory, ContractFactory, ContractDetailFactory
-from biz.djangoapps.ga_invitation.tests.factories import AdditionalInfoSettingFactory, ContractRegisterFactory
-from biz.djangoapps.ga_invitation.models import INPUT_INVITATION_CODE, REGISTER_INVITATION_CODE
 from biz.djangoapps.util.mongo_utils import DEFAULT_DATETIME
 from biz.djangoapps.util.tests.testcase import BizStoreTestBase
 from lms.djangoapps.certificates.models import CertificateStatuses, GeneratedCertificate
 from lms.djangoapps.certificates.tests.factories import GeneratedCertificateFactory
 from lms.djangoapps.courseware.tests.helpers import LoginEnrollmentTestCase
-from lms.djangoapps.courseware.courses import get_course_by_id
-from student.models import CourseEnrollment, UserStanding
-from student.tests.factories import UserFactory, UserProfileFactory, UserStandingFactory
+from student.models import CourseEnrollment
+from student.tests.factories import UserFactory, UserProfileFactory
 from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
 from xmodule.modulestore.tests.factories import CourseFactory
 
 
-COMMAND_OUTPUT_FILE = tempfile.NamedTemporaryFile()
 ADDITIONAL_DISPLAY_NAME1 = 'test_number'
 ADDITIONAL_DISPLAY_NAME2 = 'test_section'
 ADDITIONAL_SETTINGS_VALUE = 'test_value'
@@ -57,21 +51,6 @@ DEFAULT_KEY = [
 
 class UpdateBizScoreStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEnrollmentTestCase):
 
-    def _input_contract(self, user):
-        ContractRegisterFactory.create(user=user, contract=self.contract, status=INPUT_INVITATION_CODE)
-
-    def _register_contract(self, user):
-        ContractRegisterFactory.create(user=user, contract=self.contract, status=REGISTER_INVITATION_CODE)
-        for additional_info in self.contract.additional_info.all():
-            AdditionalInfoSettingFactory.create(
-                user=user,
-                contract=self.contract,
-                display_name=additional_info.display_name,
-                value='{}_{}'.format(additional_info.display_name, ADDITIONAL_SETTINGS_VALUE)
-            )
-        for detail in self.contract.details.all():
-            CourseEnrollment.enroll(user, get_course_by_id(detail.course_id).id)
-
     def _certificate(self, user, course):
         GeneratedCertificateFactory.create(
             user=user,
@@ -87,21 +66,14 @@ class UpdateBizScoreStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEnrol
     def _unenroll(self, user, course):
         CourseEnrollment.unenroll(user, course.id)
 
-    def _account_disable(self, user):
-        UserStandingFactory.create(user=user, account_status=UserStanding.ACCOUNT_DISABLED, changed_by=self.user)
-
     def setUp(self):
         super(UpdateBizScoreStatusTest, self).setUp()
-        self.course1 = CourseFactory.create(org='gacco', number='course1', run='run')
-        self.course2 = CourseFactory.create(org='gacco', number='course2', run='run')
-        self.org_a = self._create_organization(org_name='a', org_code='a', creator_org=self.gacco_organization)
-        self.contract = ContractFactory.create(contractor_organization=self.org_a,
-                                               owner_organization=self.gacco_organization,
-                                               created_by=UserFactory.create())
-        ContractDetailFactory.create(contract=self.contract, course_id=self.course1.id)
-        ContractDetailFactory.create(contract=self.contract, course_id=self.course2.id)
-        AdditionalInfoFactory.create(contract=self.contract, display_name=ADDITIONAL_DISPLAY_NAME1)
-        AdditionalInfoFactory.create(contract=self.contract, display_name=ADDITIONAL_DISPLAY_NAME2)
+        self.course1 = CourseFactory.create(org=self.gacco_organization.org_code, number='course1', run='run')
+        self.course2 = CourseFactory.create(org=self.gacco_organization.org_code, number='course2', run='run')
+        self.contract = self._create_contract(
+            detail_courses=[self.course1, self.course2],
+            additional_display_names=[ADDITIONAL_DISPLAY_NAME1, ADDITIONAL_DISPLAY_NAME2],
+        )
 
     def assert_finished(self, count, course):
         ScoreBatchStatus.objects.get(contract=self.contract, course_id=course.id, status=SCORE_BATCH_STATUS_STARTED)
@@ -123,16 +95,14 @@ class UpdateBizScoreStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEnrol
         _format = '%Y%m%d%H%M%S%Z'
         self.assertEquals(first.strftime(_format), second.strftime(_format))
 
-    @override_settings(BIZ_SET_SCORE_COMMAND_OUTPUT=COMMAND_OUTPUT_FILE.name)
     def test_non_register(self):
         call_command('update_biz_score_status')
 
         self.assert_finished(0, self.course1)
         self.assert_finished(0, self.course2)
 
-    @override_settings(BIZ_SET_SCORE_COMMAND_OUTPUT=COMMAND_OUTPUT_FILE.name)
     def test_input_contract(self):
-        self._input_contract(self.user)
+        self._input_contract(self.contract, self.user)
 
         call_command('update_biz_score_status')
 
@@ -159,10 +129,9 @@ class UpdateBizScoreStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEnrol
         assert_score(self.course1)
         assert_score(self.course2)
 
-    @override_settings(BIZ_SET_SCORE_COMMAND_OUTPUT=COMMAND_OUTPUT_FILE.name)
     def test_register_contract(self):
         self._profile(self.user)
-        self._register_contract(self.user)
+        self._register_contract(self.contract, self.user, additional_value=ADDITIONAL_SETTINGS_VALUE)
         self._certificate(self.user, self.course1)
         self._certificate(self.user, self.course2)
 
@@ -191,10 +160,9 @@ class UpdateBizScoreStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEnrol
         assert_score(self.course1)
         assert_score(self.course2)
 
-    @override_settings(BIZ_SET_SCORE_COMMAND_OUTPUT=COMMAND_OUTPUT_FILE.name)
     def test_register_contract_rate(self):
         self._profile(self.user)
-        self._register_contract(self.user)
+        self._register_contract(self.contract, self.user, additional_value=ADDITIONAL_SETTINGS_VALUE)
         self._certificate(self.user, self.course1)
         self._certificate(self.user, self.course2)
 
@@ -239,10 +207,9 @@ class UpdateBizScoreStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEnrol
         assert_score(self.course1)
         assert_score(self.course2)
 
-    @override_settings(BIZ_SET_SCORE_COMMAND_OUTPUT=COMMAND_OUTPUT_FILE.name)
     def test_register_contract_unenroll(self):
         self._profile(self.user)
-        self._register_contract(self.user)
+        self._register_contract(self.contract, self.user, additional_value=ADDITIONAL_SETTINGS_VALUE)
         self._certificate(self.user, self.course1)
         self._certificate(self.user, self.course2)
         self._unenroll(self.user, self.course1)
@@ -273,10 +240,9 @@ class UpdateBizScoreStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEnrol
         assert_score(self.course1)
         assert_score(self.course2)
 
-    @override_settings(BIZ_SET_SCORE_COMMAND_OUTPUT=COMMAND_OUTPUT_FILE.name)
     def test_register_contract_account_disable(self):
         self._profile(self.user)
-        self._register_contract(self.user)
+        self._register_contract(self.contract, self.user, additional_value=ADDITIONAL_SETTINGS_VALUE)
         self._certificate(self.user, self.course1)
         self._certificate(self.user, self.course2)
         self._account_disable(self.user)
@@ -306,21 +272,22 @@ class UpdateBizScoreStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEnrol
         assert_score(self.course1)
         assert_score(self.course2)
 
-    @override_settings(BIZ_SET_SCORE_COMMAND_OUTPUT=COMMAND_OUTPUT_FILE.name)
     def test_input_and_register(self):
         for var in range(0, 50):
             user = UserFactory.create()
-            self._input_contract(user)
+            self._input_contract(self.contract, user)
         for var in range(0, 50):
             user = UserFactory.create()
-            self._register_contract(user)
+            self._register_contract(self.contract, user, additional_value=ADDITIONAL_SETTINGS_VALUE)
+        for var in range(0, 50):
+            user = UserFactory.create()
+            self._unregister_contract(self.contract, user)
 
         call_command('update_biz_score_status')
 
         self.assert_finished(100, self.course1)
         self.assert_finished(100, self.course2)
 
-    @override_settings(BIZ_SET_SCORE_COMMAND_OUTPUT=COMMAND_OUTPUT_FILE.name)
     def test_update_biz_score_status_error(self):
         with patch('biz.djangoapps.ga_achievement.models.ScoreBatchStatus.save_for_finished', side_effect=Exception()):
             call_command('update_biz_score_status')
