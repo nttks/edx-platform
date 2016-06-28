@@ -127,7 +127,6 @@ INSTRUCTOR_GET_ENDPOINTS = set([
     'get_sale_records',
     'get_distribution',
     'proxy_legacy_analytics',
-    'biz:course_operation:get_survey',
 ])
 INSTRUCTOR_POST_ENDPOINTS = set([
     'active_registration_codes',

@@ -11,7 +11,7 @@ from django.core.urlresolvers import reverse
     $(function () {
         $('#form').w2form({name: 'form'});
         $('.w2ui-buttons').on('click', '#download-btn', function () {
-            location.href = $(this).data('endpoint');
+            downloadFileUsingPost($(this).data('endpoint'));
         });
     });
 </script>
