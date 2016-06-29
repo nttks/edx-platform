@@ -2,13 +2,15 @@
 Management command to generate a report
 of register user count for biz students each contract.
 """
-import datetime
+from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 import logging
+from pytz import utc
 
 from django.conf import settings
 from django.core.mail import send_mail
 from django.core.management.base import BaseCommand, CommandError
+from django.utils import timezone
 
 from biz.djangoapps.ga_contract.models import Contract, CONTRACT_TYPE_PF, CONTRACT_TYPE_GACCO_SERVICE, CONTRACT_TYPE_OWNER_SERVICE
 from biz.djangoapps.ga_invitation.models import ContractRegisterHistory, UNREGISTER_INVITATION_CODE
@@ -64,7 +66,7 @@ def _validate(args):
 
 
 def _target_date(year, month):
-    last_target_date = datetime.date(year, month, 1)
+    last_target_date = datetime(year, month, 1, 0, 0, 0, tzinfo=timezone.get_default_timezone()).astimezone(utc)
     return (year, month, last_target_date + relativedelta(months=1), last_target_date)
 
 
@@ -111,10 +113,10 @@ def _create_report_data(target_date, last_target_date):
             HAVING NOT (status = '{}' AND modified < '{}')
         '''.format(
             contract.id,
-            target_date.strftime('%Y-%m-%d'),
+            target_date.strftime('%Y-%m-%d %H:%M:%S'),
             ','.join(user_disabled_list),
             UNREGISTER_INVITATION_CODE,
-            last_target_date.strftime('%Y-%m-%d'),
+            last_target_date.strftime('%Y-%m-%d %H:%M:%S'),
         )))
 
         if contract.contract_type == CONTRACT_TYPE_OWNER_SERVICE[0]:
