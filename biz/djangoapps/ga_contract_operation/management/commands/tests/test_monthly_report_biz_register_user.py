@@ -30,6 +30,7 @@ from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
 
 
 @ddt.ddt
+@override_settings(TIME_ZONE='Asia/Tokyo')
 class MonthlyReportBizRegisterUser(BizTestBase, ModuleStoreTestCase, LoginEnrollmentTestCase):
 
     def setUp(self):

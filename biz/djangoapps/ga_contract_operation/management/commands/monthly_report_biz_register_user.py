@@ -66,6 +66,7 @@ def _validate(args):
 
 
 def _target_date(year, month):
+    # To use in 'ModelClass.objects.raw({SQL})'
     last_target_date = datetime(year, month, 1, 0, 0, 0, tzinfo=timezone.get_default_timezone()).astimezone(utc)
     return (year, month, last_target_date + relativedelta(months=1), last_target_date)
 
@@ -102,7 +103,7 @@ def _create_report_data(target_date, last_target_date):
         'contractor_organization', 'owner_organization'
     ).filter(
         contract_type__in=[CONTRACT_TYPE_PF[0], CONTRACT_TYPE_GACCO_SERVICE[0], CONTRACT_TYPE_OWNER_SERVICE[0]],
-        end_date__gte=last_target_date
+        end_date__gt=last_target_date
     ):
 
         # Select input, register without userstanding, unregistered in last target month.
