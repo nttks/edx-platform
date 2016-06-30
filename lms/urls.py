@@ -243,8 +243,8 @@ for key, value in settings.MKTG_URL_LINK_MAP.items():
 
 for mktg_name, mktg_url in settings.MKTG_URL_LINK_MAP_URLS.items():
     urlpatterns += (
-        url(r'^{}$'.format(mktg_name), 'django.views.generic.simple.redirect_to',
-            {'url': mktg_url}, name=mktg_name),
+        url(r'^{}$'.format(mktg_name),
+            RedirectView.as_view(url=str(mktg_url), permanent=True), name=mktg_name),
     )
 
 
