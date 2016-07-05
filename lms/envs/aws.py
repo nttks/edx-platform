@@ -19,6 +19,8 @@ Common traits:
 import datetime
 import json
 
+import dateutil
+
 from .common import *
 from openedx.core.lib.logsettings import get_logger_config
 import os
@@ -405,6 +407,13 @@ if 'DJFS' in AUTH_TOKENS and AUTH_TOKENS['DJFS'] is not None:
 
 ############### Module Store Items ##########
 HOSTNAME_MODULESTORE_DEFAULT_MAPPINGS = ENV_TOKENS.get('HOSTNAME_MODULESTORE_DEFAULT_MAPPINGS', {})
+# PREVIEW DOMAIN must be present in HOSTNAME_MODULESTORE_DEFAULT_MAPPINGS for the preview to show draft changes
+if 'PREVIEW_LMS_BASE' in FEATURES and FEATURES['PREVIEW_LMS_BASE'] != '':
+    PREVIEW_DOMAIN = FEATURES['PREVIEW_LMS_BASE'].split(':')[0]
+    # update dictionary with preview domain regex
+    HOSTNAME_MODULESTORE_DEFAULT_MAPPINGS.update({
+        PREVIEW_DOMAIN: 'draft-preferred'
+    })
 
 ############### Mixed Related(Secure/Not-Secure) Items ##########
 LMS_SEGMENT_KEY = AUTH_TOKENS.get('SEGMENT_KEY')
@@ -770,6 +779,14 @@ JWT_EXPIRATION = ENV_TOKENS.get('JWT_EXPIRATION', JWT_EXPIRATION)
 
 PROCTORING_BACKEND_PROVIDER = AUTH_TOKENS.get("PROCTORING_BACKEND_PROVIDER", PROCTORING_BACKEND_PROVIDER)
 PROCTORING_SETTINGS = ENV_TOKENS.get("PROCTORING_SETTINGS", PROCTORING_SETTINGS)
+
+################# MICROSITE ####################
+MICROSITE_CONFIGURATION = ENV_TOKENS.get('MICROSITE_CONFIGURATION', {})
+MICROSITE_ROOT_DIR = path(ENV_TOKENS.get('MICROSITE_ROOT_DIR', ''))
+
+# Cutoff date for granting audit certificates
+if ENV_TOKENS.get('AUDIT_CERT_CUTOFF_DATE', None):
+    AUDIT_CERT_CUTOFF_DATE = dateutil.parser.parse(ENV_TOKENS.get('AUDIT_CERT_CUTOFF_DATE'))
 
 ##### JWPLAYER XBLOCK #####
 JWPLAYER_TRANSCRIPT_BUCKET_NAME = ENV_TOKENS.get('JWPLAYER_TRANSCRIPT_BUCKET_NAME', JWPLAYER_TRANSCRIPT_BUCKET_NAME)

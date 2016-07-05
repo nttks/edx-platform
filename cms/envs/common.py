@@ -46,8 +46,6 @@ from lms.envs.common import (
     REST_FRAMEWORK,
     # The following settings need to load module(lms.djangoapps.instructor.views.instructor_dashboard).
     BULK_EMAIL_DEFAULT_RETRY_DELAY, BULK_EMAIL_MAX_RETRIES, GRADES_DOWNLOAD_ROUTING_KEY,
-    # The following settings need to function(lms.djangoapps.courseware.access.py:has_access)
-    PREVIEW_DOMAIN,
 )
 from path import Path as path
 from warnings import simplefilter
@@ -496,7 +494,6 @@ STATICFILES_STORAGE = 'openedx.core.storage.ProductionStorage'
 # List of finder classes that know how to find static files in various locations.
 # Note: the pipeline finder is included to be able to discover optimized files
 STATICFILES_FINDERS = [
-    'openedx.core.djangoapps.theming.finders.ComprehensiveThemeFinder',
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
     'pipeline.finders.PipelineFinder',
