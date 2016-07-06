@@ -23,6 +23,12 @@ def url_class(is_active):
 def selected(is_selected):
   return "selected" if is_selected else ""
 
+def mobile_tab(tab_type="false"):
+  if tab_type in ("courseware", "course_info", "discussion", "progress"):
+    return "true"
+  else:
+    return "false"
+
 show_preview_menu = not disable_preview_menu and staff_access and active_page in ["courseware", "info"]
 cohorted_user_partition = get_cohorted_user_partition(course)
 masquerade_user_name = masquerade.user_name if masquerade else None
@@ -32,6 +38,10 @@ specific_student_selected = selected(not staff_selected and masquerade.user_name
 student_selected = selected(not staff_selected and not specific_student_selected and not masquerade_group_id)
 include_special_exams = settings.FEATURES.get('ENABLE_SPECIAL_EXAMS', False) and (course.enable_proctored_exams or course.enable_timed_exams)
 %>
+
+<%block name="headextra">
+  <link rel="stylesheet" type="text/css" href="${static.url('css/gacco-course.css')}" />
+</%block>
 
 % if include_special_exams:
   <%static:js group='proctoring'/>
@@ -81,7 +91,7 @@ include_special_exams = settings.FEATURES.get('ENABLE_SPECIAL_EXAMS', False) and
 % endif
 
 % if disable_tabs is UNDEFINED or not disable_tabs:
-<nav class="${active_page} wrapper-course-material" aria-label="${_('Course Material')}">
+<nav class="${active_page} wrapper-course-material nav-hidden" aria-label="${_('Course Material')}">
   <div class="course-material">
     <ol class="course-tabs">
       % for tab in get_course_tab_list(request, course):
@@ -89,7 +99,8 @@ include_special_exams = settings.FEATURES.get('ENABLE_SPECIAL_EXAMS', False) and
             tab_is_active = (tab.tab_id == active_page) or (tab.tab_id == default_tab)
         %>
           <li>
-             <a href="${tab.link_func(course, reverse) | h}" class="${url_class(tab_is_active)}">
+             <a href="${tab.link_func(course, reverse) | h}" data-type="${tab.type}" data-mobile="${mobile_tab(tab.type)}" class="${url_class(tab_is_active)}">
+                 <i class="tab-icon ${tab.icon}"></i>
                  ${_(tab.name) | h}
                  % if tab_is_active:
                    <span class="sr">, current location</span>
@@ -103,9 +114,43 @@ include_special_exams = settings.FEATURES.get('ENABLE_SPECIAL_EXAMS', False) and
           </li>
       % endfor
       <%block name="extratabs" />
+          <li id="more-menu">
+             <a href="#"><i class="tab-icon fa fa-ellipsis-h"></i>${_("More")}</a>
+             <ul>
+               % for tab in get_course_tab_list(request, course):
+                 % if tab.type not in ("courseware", "course_info", "discussion", "progress"):
+               <li><a href="${tab.link_func(course, reverse) | h}">${_(tab.name) | h}</a></li>
+                 % endif
+               % endfor
+               <li class="course-tab-dashboard"><a href="/dashboard">${_("Dashboard")}</a></li>
+               <li><a href="${reverse('account_settings')}">${_("Account Settings")}</a></li>
+               % if settings.MKTG_URL_LINK_MAP.get('FAQ'):
+               <li><a href="${marketing_link('FAQ')}">${_("FAQ")}</a></li>
+               % endif
+               <li class="help-tab">
+                 <a href="#help-modal" rel="leanModal" role="button">${_("Help")}</a>
+               </li>
+               <li><a href="${reverse('logout')}">${_("Log Out")}</a></li>
+             </ul>
+          </li>
     </ol>
   </div>
 </nav>
+<script type="text/javascript">
+$("#more-menu").on("click", function(e) {
+  if ($("#more-menu > ul > li").is(':hidden')) {
+    $("#more-menu > ul > li").stop(true).slideDown('fast');
+  } else {
+    $("#more-menu > ul > li").slideUp('fast');
+  }
+});
+
+$("header.global div.menu-button").on("click", function(e) {
+  $("nav.wrapper-course-material").stop();
+  $("nav.wrapper-course-material").toggleClass("nav-hidden");
+  $("header.global div.menu-button").toggleClass("active");
+});
+</script>
 %endif
 
 % if show_preview_menu:
