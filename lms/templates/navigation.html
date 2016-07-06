@@ -63,17 +63,6 @@ site_status_msg = get_site_status_msg(course_id)
     % if user.is_authenticated():
     <ol class="left nav-global authenticated">
       <%block name="navigation_global_links_authenticated">
-        % if settings.FEATURES.get('COURSES_ARE_BROWSABLE'):
-          <li class="nav-global-01">
-            <a href="${marketing_link('COURSES')}">${_('Find Courses')}</a>
-          </li>
-        % endif
-        %if settings.FEATURES.get('ENABLE_SYSADMIN_DASHBOARD','') and user.is_staff:
-          <li>
-            ## Translators: This is short for "System administration".
-            <a href="${reverse('sysadmin')}">${_("Sysadmin")}</a>
-          </li>
-        %endif
       </%block>
     </ol>
     <ol class="user">
@@ -89,13 +78,24 @@ site_status_msg = get_site_status_msg(course_id)
         <button class="dropdown" aria-haspopup="true" aria-expanded="false"><span class="sr">${_("More options dropdown")}</span><span class="fa fa-sort-desc" aria-hidden="true"></span></button>
         <ul class="dropdown-menu" aria-label="More Options" role="menu">
           <%block name="navigation_dropdown_menu_links" >
+            %if course:
             <li><a href="${reverse('dashboard')}">${_("Dashboard")}</a></li>
-            <li><a href="${reverse('learner_profile', kwargs={'username': user.username})}">${_("Profile")}</a></li>
+            % endif
+            % if request.biz_accessible:
+            <li><a href="${reverse('biz:index')}">${_("Biz")}</a></li>
+            % endif
             <li><a href="${reverse('account_settings')}">${_("Account")}</a></li>
+            % if settings.MKTG_URL_LINK_MAP.get('FAQ'):
+            <li><a href="${marketing_link('FAQ')}">${_("FAQ")}</a></li>
+            % endif
+            <li class="help-tab"><a href="#help-modal" rel="leanModal" role="button">${_("Help")}</a></li>
           </%block>
-          <li><a href="${reverse('logout')}" role="menuitem">${_("Sign Out")}</a></li>
+          <li><a href="${reverse('logout')}" role="menuitem">${_("Log Out")}</a></li>
         </ul>
       </li>
+    </ol>
+    <ol class="course-nav-menu">
+      <div class="menu-button">${_("Menu")}</div>
     </ol>
       % if should_display_shopping_cart_func() and not (course and microsite.is_request_in_microsite()): # see shoppingcart.context_processor.user_has_cart_context_processor
         <ol class="user">
@@ -107,51 +107,41 @@ site_status_msg = get_site_status_msg(course_id)
         </ol>
       % endif
     % else:
-    <ol class="left nav-global">
+    <ol class="right nav-global">
       <%block name="navigation_global_links">
         % if microsite.get_value('ENABLE_MKTG_SITE', settings.FEATURES.get('ENABLE_MKTG_SITE', False)):
           <li class="nav-global-01">
             <a href="${marketing_link('HOW_IT_WORKS')}">${_("How it Works")}</a>
           </li>
-          % if settings.FEATURES.get('COURSES_ARE_BROWSABLE'):
-            <li class="nav-global-02">
-              <a href="${marketing_link('COURSES')}">${_("Courses")}</a>
-            </li>
-          % endif
+          <li class="nav-global-02">
+            <a href="${marketing_link('COURSES')}">${_("Courses")}</a>
+          </li>
           <li class="nav-global-03">
             <a href="${marketing_link('SCHOOLS')}">${_("Schools")}</a>
           </li>
         % endif
       </%block>
-      % if not settings.FEATURES['DISABLE_LOGIN_BUTTON']:
-          % if settings.FEATURES.get('ENABLE_COURSE_DISCOVERY'):
-          <li class="nav-global-05">
-            <a class="cta cta-discovery" href="/courses">${_("Find Courses")}</a>
-          </li>
-          %endif
-          % if course and settings.FEATURES.get('RESTRICT_ENROLL_BY_REG_METHOD') and course.enrollment_domain:
-          <li class="nav-global-04">
-            <a class="cta cta-register" href="${reverse('course-specific-register', args=[course.id.to_deprecated_string()])}">${_("Register")}</a>
-          </li>
-          % else:
-          <li class="nav-global-04">
-            <a class="cta cta-register" href="/register${login_query()}">${_("Register")}</a>
-          </li>
-          % endif
-
-      % endif
     </ol>
 
     <ol class="right nav-courseware">
-    <li class="nav-courseware-01">
-      % if not settings.FEATURES['DISABLE_LOGIN_BUTTON']:
+      <li class="nav-courseware-02">
+        % if not settings.FEATURES['DISABLE_LOGIN_BUTTON']:
           % if course and settings.FEATURES.get('RESTRICT_ENROLL_BY_REG_METHOD') and course.enrollment_domain:
-          <a class="cta cta-login" href="${reverse('course-specific-login', args=[course.id.to_deprecated_string()])}${login_query()}">${_("Sign in")}</a>
+          <a class="cta cta-login" href="${reverse('course-specific-login', args=[course.id.to_deprecated_string()])}${login_query()}"><i class="fa fa-home"></i>${_("Sign in")}</a>
           % else:
-          <a class="cta cta-login" href="/login${login_query()}">${_("Sign in")}</a>
+          <a class="cta cta-login" href="/login${login_query()}"><i class="fa fa-home"></i>${_("Sign in")}</a>
           % endif
-      % endif
-    </li>
+        % endif
+      </li>
+      <li class="nav-courseware-01">
+        % if not settings.FEATURES['DISABLE_LOGIN_BUTTON']:
+          % if course and settings.FEATURES.get('RESTRICT_ENROLL_BY_REG_METHOD') and course.enrollment_domain:
+          <a class="cta cta-register" href="${reverse('course-specific-register', args=[course.id.to_deprecated_string()])}"><i class="fa fa-user"></i>${_("Register")}</a>
+          % else:
+          <a class="cta cta-register" href="/register"><i class="fa fa-user"></i>${_("Register")}</a>
+          % endif
+        % endif
+      </li>
     </ol>
     % endif
   </nav>
@@ -162,4 +152,6 @@ site_status_msg = get_site_status_msg(course_id)
 <![endif]-->
 % endif
 
-<%include file="help_modal.html"/>
+%if not user.is_authenticated():
+  <%include file="forgot_password_modal.html" />
+% endif

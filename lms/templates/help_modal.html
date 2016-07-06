@@ -13,10 +13,6 @@ from microsite_configuration.templatetags.microsite import platform_name
 
 % if settings.FEATURES.get('ENABLE_FEEDBACK_SUBMISSION', False):
 
-<div class="help-tab">
-  <a href="#help-modal" rel="leanModal" role="button">${_("Help")}</a>
-</div>
-
 <section id="help-modal" class="modal" aria-hidden="true" role="dialog" aria-label="${_("{platform_name} Help").format(platform_name=platform_name())}">
   <div class="inner-wrapper" id="help_wrapper">
     ## TODO: find a way to refactor this
