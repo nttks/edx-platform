@@ -2,7 +2,7 @@
     <% if ( type !== 'checkbox' ) { %>
         <label for="<%= form %>-<%= name %>">
             <%= label %>
-            <% if ( required && requiredStr ) { %> <%= requiredStr %></label><% } %>
+            <% if ( required && requiredStr ) { %> <span class="required"><%= requiredStr %><%= gettext("Required") %></span></label><% } %>
         </label>
     <% } %>
 
@@ -61,7 +61,7 @@
         <% if ( type === 'checkbox' ) { %>
             <label for="<%= form %>-<%= name %>">
                 <%= label %>
-                <% if ( required && requiredStr ) { %> <%= requiredStr %><% } %>
+                <% if ( required && requiredStr ) { %> <span class="required"><%= requiredStr %><%= gettext("Required") %></span></label><% } %>
             </label>
         <% } %>
         <% if ( instructions ) { %> <span class="tip tip-input" id="<%= form %>-<%= name %>-desc"><%= instructions %></span><% } %>

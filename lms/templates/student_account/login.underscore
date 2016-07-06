@@ -59,7 +59,7 @@
         <% _.each( context.providers, function( provider ) {
             if ( provider.loginUrl ) { %>
                 <button type="button" class="button button-primary button-<%- provider.id %> login-provider login-<%- provider.id %>" data-provider-url="<%- provider.loginUrl %>">
-                    <div class="icon fa <%- provider.iconClass %>" aria-hidden="true"></div>
+                    <i class="icon fa <%- provider.iconClass %>" aria-hidden="true"></i>
                     <span aria-hidden="true"><%- provider.name %></span>
                     <span class="sr"><%- _.sprintf( gettext("Sign in with %(providerName)s"), {providerName: provider.name} ) %></span>
                 </button>
