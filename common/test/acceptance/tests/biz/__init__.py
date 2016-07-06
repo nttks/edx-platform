@@ -163,6 +163,15 @@ class GaccoBizTestMixin(GaccoTestMixin):
         )
         return biz_contract_page.get_row({'Contract Name': contract_name})
 
+    def create_aggregator(self, with_contract_count=1):
+        new_aggregator = self.register_user()
+        new_org_info = self.register_organization(PLATFORMER_USER_INFO)
+        new_contracts = []
+        for i in range(with_contract_count):
+            new_contracts.append(self.register_contract(PLATFORMER_USER_INFO, new_org_info['Organization Name'], 'O'))
+        self.grant(PLATFORMER_USER_INFO, new_org_info['Organization Name'], 'aggregator', new_aggregator)
+        return new_aggregator, new_org_info, new_contracts
+
     def register_user(self):
         username = 'test_' + self.unique_id[0:8]
         return self.switch_to_user({
