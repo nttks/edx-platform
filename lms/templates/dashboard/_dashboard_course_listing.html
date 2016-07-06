@@ -106,7 +106,7 @@ from student.helpers import (
           % elif course_overview.has_started():
             ${_("Started - {start_date}").format(start_date=course_overview.start_datetime_text("SHORT_DATE"))}
           % elif course_overview.start_date_is_still_default: # Course start date TBD
-            ${_("Coming Soon")}
+            ${_("Course has not yet started")}
           % elif course_overview.starts_within(days=5):   # hasn't started yet
             ${_("Starts - {start_date}").format(start_date=course_overview.start_datetime_text("DAY_AND_TIME"))}
           % else:   # hasn't started yet
@@ -215,17 +215,10 @@ from student.helpers import (
                       </a>
                       % endif
                     % elif enrollment.mode != "verified":
-                      % if not is_course_blocked:
                       <a href="#unenroll-modal" class="action action-unenroll" rel="leanModal" data-course-id="${course_overview.id | h}" data-course-number="${course_overview.number | h}" data-course-name="${course_overview.display_name_with_default | h}" data-dashboard-index="${dashboard_index}"
                          data-track-info="${_("Are you sure you want to unenroll from %(course_name)s (%(course_number)s)?") | h}">
                         ${_('Unenroll')}
                       </a>
-                      % else:
-                      <a class="action action-unenroll is-disabled" data-course-id="${course_overview.id | h}" data-course-number="${course_overview.number | h}" data-course-name="${course_overview.display_name_with_default | h}" data-dashboard-index="${dashboard_index}"
-                         data-track-info="${_("Are you sure you want to unenroll from %(course_name)s (%(course_number)s)?") | h}">
-                        ${_('Unenroll')}
-                      </a>
-                      % endif
                     % elif show_refund_option:
                       % if not is_course_blocked:
                       <a href="#unenroll-modal" class="action action-unenroll" rel="leanModal" data-course-id="${course_overview.id | h}" data-course-number="${course_overview.number | h}" data-course-name="${course_overview.display_name_with_default | h}" data-dashboard-index="${dashboard_index}" data-cert-name-long="${cert_name_long | h}"
@@ -259,11 +252,7 @@ from student.helpers import (
                   % endif
                   <li class="actions-item" id="actions-item-email-settings-${dashboard_index}">
                     % if show_email_settings:
-                      % if not is_course_blocked:
-                        <a href="#email-settings-modal" class="action action-email-settings" rel="leanModal" data-course-id="${course_overview.id | h}" data-course-number="${course_overview.number | h}" data-dashboard-index="${dashboard_index}" data-optout="${unicode(course_overview.id) in course_optouts}">${_('Email Settings')}</a>
-                      % else:
-                        <a class="action action-email-settings is-disabled" data-course-id="${course_overview.id| h}" data-course-number="${course_overview.number | h}" data-dashboard-index="${dashboard_index}" data-optout="${unicode(course_overview.id) in course_optouts}">${_('Email Settings')}</a>
-                      % endif
+                      <a href="#email-settings-modal" class="action action-email-settings" rel="leanModal" data-course-id="${course_overview.id | h}" data-course-number="${course_overview.number | h}" data-dashboard-index="${dashboard_index}" data-optout="${unicode(course_overview.id) in course_optouts}">${_('Email Settings')}</a>
                     % endif
                   </li>
                 </ul>
