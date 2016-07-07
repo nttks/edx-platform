@@ -192,7 +192,12 @@ def unregister_students_ajax(request, registers):
 @login_required
 @check_course_selection
 def register_students(request):
-    return render_to_response('ga_contract_operation/register_students.html')
+    return render_to_response(
+        'ga_contract_operation/register_students.html',
+        {
+            'max_register_number': settings.BIZ_MAX_REGISTER_NUMBER,
+        }
+    )
 
 
 @require_POST
@@ -238,6 +243,10 @@ def register_students_ajax(request):
     students = [row.split(',') if row else [] for row in request.POST['students_list'].splitlines()]
     if not students:
         return _make_response(_('Could not find student list.'))
+
+    if len(students) > settings.BIZ_MAX_REGISTER_NUMBER:
+        return _make_response(
+            _('It has exceeded the number({max_register_number}) of cases that can be a time of registration.').format(max_register_number=settings.BIZ_MAX_REGISTER_NUMBER))
 
     generated_passwords = []
     row_num = 0
