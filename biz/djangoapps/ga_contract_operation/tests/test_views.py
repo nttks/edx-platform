@@ -11,6 +11,7 @@ import pytz
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.db import IntegrityError
+from django.test.utils import override_settings
 
 from biz.djangoapps.ga_contract_operation.models import ContractTaskHistory
 from biz.djangoapps.ga_contract_operation.tests.factories import ContractTaskHistoryFactory
@@ -316,6 +317,28 @@ class ContractOperationViewTest(BizContractTestBase):
         self.assertEquals(ContractRegister.objects.get(user__email='test_student1@example.com', contract=self.contract).status, INPUT_INVITATION_CODE)
         self.assertTrue(ContractRegister.objects.filter(user__email='test_student2@example.com', contract=self.contract).exists())
         self.assertEquals(ContractRegister.objects.get(user__email='test_student2@example.com', contract=self.contract).status, INPUT_INVITATION_CODE)
+        self.assertFalse(ContractRegister.objects.filter(user__email='test_student3@example.com', contract=self.contract).exists())
+
+    @override_settings(BIZ_MAX_REGISTER_NUMBER=2)
+    def test_register_users_over_max_number(self):
+
+        self.setup_user()
+        csv_content = "test_student1@example.com,test_student_1,tester1\n" \
+                      "test_student2@example.com,test_student_2,tester2\n" \
+                      "test_student3@example.com,test_student_3,tester3"
+
+        with self.skip_check_course_selection(current_contract=self.contract):
+            response = self.client.post(self._url_register_students_ajax(), {'contract_id': self.contract.id, 'students_list': csv_content})
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.content)
+        self.assertNotEquals(len(data['general_errors']), 0)
+        self.assertEquals(data['general_errors'][0]['response'], 'It has exceeded the number({max_register_number}) of cases that can be a time of registration.'.format(max_register_number=2))
+        self.assertFalse(User.objects.filter(username='test_student_1', email='test_student1@example.com').exists())
+        self.assertFalse(User.objects.filter(username='test_student_2', email='test_student2@example.com').exists())
+        self.assertFalse(User.objects.filter(username='test_student_3', email='test_student3@example.com').exists())
+
+        self.assertFalse(ContractRegister.objects.filter(user__email='test_student1@example.com', contract=self.contract).exists())
+        self.assertFalse(ContractRegister.objects.filter(user__email='test_student2@example.com', contract=self.contract).exists())
         self.assertFalse(ContractRegister.objects.filter(user__email='test_student3@example.com', contract=self.contract).exists())
 
     def test_students(self):
