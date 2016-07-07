@@ -1193,7 +1193,7 @@ def login_user(request, error=""):  # pylint: disable=too-many-statements,unused
 
     if not third_party_auth_successful:
         try:
-            user = authenticate(username=username, password=password, request=request)
+            user = authenticate(username=username, password=password)
         # this occurs when there are too many attempts from the same IP address
         except RateLimitException:
             return JsonResponse({

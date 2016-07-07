@@ -1,9 +1,6 @@
-# -*- coding: utf-8 -*-
 """
 End-to-end tests for resign feature
 """
-
-import re
 
 import bok_choy.browser
 from bok_choy.web_app_test import WebAppTest
@@ -24,9 +21,6 @@ class ResignTest(WebAppTest, GaccoTestMixin):
     """
     Tests that the resign functionality works
     """
-
-    RESIGN_CONFIRM_MAIL_SUBJECT = u"■gacco 退会のご案内"
-    RESIGN_CONFIRM_MAIL_URL_PATTERN = r'/resign_confirm/(?P<uidb36>[0-9A-Za-z]+)-(?P<token>.+)/'
 
     def setUp(self):
         """
@@ -58,13 +52,7 @@ class ResignTest(WebAppTest, GaccoTestMixin):
             'An email has been sent to {}. Follow the link in the email to resign.'.format(self.email)
         )
 
-        # Get keys from email
-        email_message = self.email_client.get_latest_message()
-        self.assertEqual(email_message['subject'], self.RESIGN_CONFIRM_MAIL_SUBJECT)
-        matches = re.search(self.RESIGN_CONFIRM_MAIL_URL_PATTERN, email_message['body'], re.MULTILINE)
-        self.assertIsNotNone(matches)
-        uidb36 = matches.groupdict()['uidb36']
-        token = matches.groupdict()['token']
+        uidb36, token = self.assert_email_resign()
 
         # Visit resign confirm page
         self.resign_confirm_page = ResignConfirmPage(self.browser, uidb36, token)

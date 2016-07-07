@@ -258,6 +258,21 @@ class ContractDetail(models.Model):
             ],
         ).select_related('contract')
 
+    @classmethod
+    def find_all_spoc(cls):
+        """
+        Returns all of spoc contract details even if contact is not enabled.
+
+        :return: ContractDetails objects
+        """
+        return cls.objects.filter(
+            contract__contract_type__in=[
+                CONTRACT_TYPE_PF[0],
+                CONTRACT_TYPE_OWNERS[0],
+                CONTRACT_TYPE_OWNER_SERVICE[0],
+            ]
+        ).select_related('contract')
+
 
 class AdditionalInfo(models.Model):
     """

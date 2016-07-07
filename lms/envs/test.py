@@ -585,3 +585,6 @@ FEATURES['ORGANIZATIONS_APP'] = True
 
 # Financial assistance page
 FEATURES['ENABLE_FINANCIAL_ASSISTANCE_FORM'] = True
+
+##### Settings for Biz #####
+from biz.envs.test import *

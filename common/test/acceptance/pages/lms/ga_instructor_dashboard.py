@@ -3,7 +3,8 @@ Instructor (2) dashboard page.
 """
 
 from bok_choy.page_object import PageObject
-from .instructor_dashboard import InstructorDashboardPage as EdXInstructorDashboardPage
+from .instructor_dashboard import InstructorDashboardPage as EdXInstructorDashboardPage, \
+    MembershipPage as EdXMembershipPage
 
 
 class InstructorDashboardPage(EdXInstructorDashboardPage):
@@ -19,6 +20,33 @@ class InstructorDashboardPage(EdXInstructorDashboardPage):
         send_email_section = SendEmailPage(self.browser)
         send_email_section.wait_for_page()
         return send_email_section
+
+    def select_survey(self):
+        """
+        Selects the survey tab and returns the SurveySection
+        """
+        self.q(css='a[data-section=survey]').first.click()
+        survey_section = SurveyPageSection(self.browser)
+        survey_section.wait_for_page()
+        return survey_section
+
+
+class SurveyPageSection(PageObject):
+    """
+    Survey section of the Instructor dashboard.
+    """
+    url = None
+
+    def is_browser_on_page(self):
+        return self.q(css='a[data-section=survey].active-section').present
+
+    def click_download_button(self):
+        """
+        Click the download csv button
+        """
+        self.q(css="input[name='list-survey']").click()
+        self.wait_for_ajax()
+        return self
 
 
 class SendEmailPage(PageObject):
@@ -56,3 +84,20 @@ class SendEmailPage(PageObject):
 
     def select_advanced_course(self, advanced_course_name):
         self.q(css="select[name='advanced_course'] option").filter(lambda el: el.text == advanced_course_name).first.click()
+
+class MembershipPageMemberListSection(EdXMembershipPage):
+    """
+    Member list management section of the Membership tab of the Instructor dashboard.
+    """
+    url = None
+
+    def select_role(self, role_name):
+        for option in self.q(css='#member-lists-selector option').results:
+            if role_name == option.text:
+                option.click()
+
+    def add_role(self, role_name, member):
+        self.select_role(role_name)
+        self.q(css='div[data-rolename="{}"] input.add-field'.format(role_name)).fill(member)
+        self.q(css='div[data-rolename="{}"] input.add'.format(role_name)).click()
+        self.wait_for_ajax()

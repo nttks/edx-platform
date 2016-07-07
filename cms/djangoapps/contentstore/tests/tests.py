@@ -164,18 +164,6 @@ class AuthTestCase(ContentStoreTestCase):
         # Now login should work
         self.login(self.email, self.pw)
 
-    def test_login_ratelimited(self):
-        # try logging in 30 times, the default limit in the number of failed
-        # login attempts in one 5 minute period before the rate gets limited
-        for i in xrange(30):
-            resp = self._login(self.email, 'wrong_password{0}'.format(i))
-            self.assertEqual(resp.status_code, 200)
-        resp = self._login(self.email, 'wrong_password')
-        self.assertEqual(resp.status_code, 200)
-        data = parse_json(resp)
-        self.assertFalse(data['success'])
-        self.assertIn('Too many failed login attempts.', data['value'])
-
     @override_settings(MAX_FAILED_LOGIN_ATTEMPTS_ALLOWED=3)
     @override_settings(MAX_FAILED_LOGIN_ATTEMPTS_LOCKOUT_PERIOD_SECS=2)
     def test_excessive_login_failures(self):

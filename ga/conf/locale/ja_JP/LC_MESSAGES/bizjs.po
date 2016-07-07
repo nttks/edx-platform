@@ -18,6 +18,11 @@ msgstr ""
 
 ##### Contract
 
+##### Contract Operation
+#: biz/templates/ga_contract_operation/students.html
+msgid "Please select a target."
+msgstr "対象を選択してください。"
+
 ##### Course Operation
 
 ##### Course Selection

@@ -57,7 +57,7 @@ from microsite_configuration import microsite
         overflow: hidden;
     }
 
-    select#course_id {
+    select#course-id {
         max-width: 30rem;
     }
 
@@ -210,6 +210,12 @@ from microsite_configuration import microsite
                 current_feature = 'organization'
             elif re.match('^/biz/contract/', request.path):
                 current_feature = 'contract'
+            elif re.match('^/biz/contract_operation/students', request.path):
+                current_feature = 'contract_operation/students'
+            elif re.match('^/biz/contract_operation/register_students', request.path):
+                current_feature = 'contract_operation/register_students'
+            elif re.match('^/biz/course_operation/survey', request.path):
+                current_feature = 'course_operation/survey'
             elif re.match('^/biz/manager/', request.path):
                 current_feature = 'manager'
             else:
@@ -260,12 +266,12 @@ from microsite_configuration import microsite
                                 <hr/>
                             </header>
 
-                            <form class="preventDoubleClick" action="${reverse('biz:course_selection:change')}" method="post">
+                            <form class="prevent-double-click" action="${reverse('biz:course_selection:change')}" method="post">
                                 <input type="hidden" name="csrfmiddlewaretoken" value="${csrf_token}" />
                                 <div class="error-message"></div>
                                 <div class="w2ui-field">
                                     <label>${_("Organization Name")}：</label>
-                                    <select id="org_id" name="org_id" class="org_id">
+                                    <select id="org-id" name="org_id" class="org-id">
                                         <option value="">--</option>
                                         % for selection_organization in selection_organizations:
                                         <option value="${selection_organization.id}">${selection_organization.org_name | h}</option>
@@ -274,7 +280,7 @@ from microsite_configuration import microsite
                                 </div>
                                 <div class="w2ui-field">
                                     <label>${_("Contract Name")}：</label>
-                                    <select id="contract_id" name="contract_id" class="contract_id">
+                                    <select id="contract-id" name="contract_id" class="contract-id">
                                         <option value="">--</option>
                                         % for selection_contract in selection_contracts:
                                         <option value="${selection_contract.id}" class="${selection_contract.contractor_organization.id}">${selection_contract.contract_name | h}</option>
@@ -283,7 +289,7 @@ from microsite_configuration import microsite
                                 </div>
                                 <div class="w2ui-field">
                                     <label>${_("Course Name")}：</label>
-                                    <select id="course_id" name="course_id" class="course_id">
+                                    <select id="course-id" name="course_id" class="course-id">
                                         <option value="">--</option>
                                         % for selection_contract_detail in selection_contract_details:
                                         <option value="${selection_contract_detail.course_id}" class="${selection_contract_detail.contract.id}">
@@ -303,11 +309,11 @@ from microsite_configuration import microsite
                 <script type="text/javascript">
                     $(function () {
                         // Set up for course selection
-                        $('#contract_id').chained('#org_id');
-                        $('#course_id').chained('#contract_id');
-                        $('#org_id').val('${current_organization.id if current_organization else ''}').trigger('change');
-                        $('#contract_id').val('${current_contract.id if current_contract else ''}').trigger('change');
-                        $('#course_id').val('${current_course.id if current_course else ''}');
+                        $('#contract-id').chained('#org-id');
+                        $('#course-id').chained('#contract-id');
+                        $('#org-id').val('${current_organization.id if current_organization else ''}').trigger('change');
+                        $('#contract-id').val('${current_contract.id if current_contract else ''}').trigger('change');
+                        $('#course-id').val('${current_course.id if current_course else ''}');
 
                         // Compulsory check for course selection
                         function displayModalErrorMessage(msg) {
@@ -317,21 +323,18 @@ from microsite_configuration import microsite
                             displayModalErrorMessage('');
                         }
                         $('#save-selection').click(function () {
-                            if ($('#org_id').prop('disabled') === false && $('#org_id').val() == '') {
+                            if ($('#org-id').prop('disabled') === false && $('#org-id').val() == '') {
                                 displayModalErrorMessage(gettext("Organization name is not specified."));
                                 return false;
-                            } else if ($('#contract_id').prop('disabled') === false && $('#contract_id').val() == '') {
+                            } else if ($('#contract-id').prop('disabled') === false && $('#contract-id').val() == '') {
                                 displayModalErrorMessage(gettext("Contract name is not specified."));
-                                return false;
-                            } else if ($('#course_id').prop('disabled') === false && $('#course_id').val() == '') {
-                                displayModalErrorMessage(gettext("Course name is not specified."));
                                 return false;
                             }
                             w2utils.lock($('body, #role-selection-modal'), '', true);
                         });
-                        $('#org_id').change(resetModalErrorMessage);
-                        $('#contract_id').change(resetModalErrorMessage);
-                        $('#course_id').change(resetModalErrorMessage);
+                        $('#org-id').change(resetModalErrorMessage);
+                        $('#contract-id').change(resetModalErrorMessage);
+                        $('#course-id').change(resetModalErrorMessage);
                     });
                 </script>
             </div>
@@ -365,11 +368,14 @@ from microsite_configuration import microsite
                     % endif
 
                     ## Course Operation
-                    % if current_manager.can_handle_course_operation() and current_course:
-                    <li><a href="${reverse('biz:course_operation:dashboard', kwargs={'course_id': current_course.id})}#view-membership">${_("Course Enrollment Management")}</a></li>
-                    % if current_contract.is_spoc_available:
-                    <li><a href="${reverse('biz:course_operation:dashboard', kwargs={'course_id': current_course.id})}#view-survey">${_("Survey Management")}</a></li>
+                    % if current_manager.can_handle_course_operation() and current_course and current_contract.is_spoc_available:
+                    <li class="${'current' if current_feature == 'course_operation/survey' else ''}"><a href="${reverse('biz:course_operation:survey')}">${_("Survey Management")}</a></li>
                     % endif
+
+                    ## Student
+                    % if current_manager.can_handle_contract_operation():
+                    <li class="${'current' if current_feature == 'contract_operation/register_students' else ''}"><a href="${reverse('biz:contract_operation:register_students')}">${_("Register User Management")}</a></li>
+                    <li class="${'current' if current_feature == 'contract_operation/students' else ''}"><a href="${reverse('biz:contract_operation:students')}">${_("Contract Register Management")}</a></li>
                     % endif
 
                     ## Manager

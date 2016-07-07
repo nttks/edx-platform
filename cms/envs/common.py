@@ -281,7 +281,7 @@ LOGIN_URL = EDX_ROOT_URL + '/signin'
 
 # use the ratelimit backend to prevent brute force attacks
 AUTHENTICATION_BACKENDS = (
-    'openedx.core.djangoapps.ga_ratelimitbackend.backends.RateLimitModelBackend',
+    'django.contrib.auth.backends.ModelBackend',
 )
 
 LMS_BASE = None
@@ -1164,3 +1164,6 @@ JWPLAYER_TRANSCRIPT_BUCKET_NAME = ''
 JWPLAYER_TRANSCRIPT_PREFIX = 'jwplayer_transcripts'
 JWPLAYER_SHARED_SECRET = ''
 JWPLAYER_SECURE_TOKEN_EXPIRE = 24 * 60 * 60
+
+##### RateLimitBackend #####
+RATE_LIMIT_REQUESTS = 30

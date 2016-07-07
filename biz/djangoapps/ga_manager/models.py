@@ -25,6 +25,7 @@ class ManagerPermission(models.Model):
     can_handle_manager = models.BooleanField()
     can_handle_course_operation = models.BooleanField()
     can_handle_achievement = models.BooleanField()
+    can_handle_contract_operation = models.BooleanField()
 
     def __unicode__(self):
         return self.permission_name
@@ -118,6 +119,14 @@ class Manager(models.Model):
         :return: True if this manager can handle achievement
         """
         return any([p.can_handle_achievement for p in self.manager_permissions.all()])
+
+    def can_handle_contract_operation(self):
+        """
+        Return whether this manager can handle contract_operation feature
+
+        :return: True if this manager can handle contract_operation
+        """
+        return any([p.can_handle_contract_operation for p in self.manager_permissions.all()])
 
     @classmethod
     def get_manager(cls, user, org):

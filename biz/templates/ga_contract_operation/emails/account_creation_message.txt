@@ -1,5 +1,5 @@
 ${u"""
-{email}の所有者の方へ
+{email_address} の所有者の方へ
 
 本メールがお手元に届いた方は、オンライン学習サービス
 「{platform_name}」でのオンライン講座の受講が予定されています。
@@ -7,7 +7,7 @@ ${u"""
 講座受講のためのログイン用のアカウント（メールアドレス）/パスワードは
 以下となります。
 
-　アカウント（メールアドレス）：{email}
+　アカウント（メールアドレス）：{email_address}
 　パスワード：{password}
 
 上記を用いて、下記のログイン画面からログインができます。
@@ -26,6 +26,6 @@ https://{site_name}/login
 """.format(
     platform_name=settings.PLATFORM_NAME,
     site_name=site_name,
-    email=email_address,
+    email_address=email_address,
     password=password,
 )}

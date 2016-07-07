@@ -568,7 +568,7 @@ DEFAULT_TEMPLATE_ENGINE = TEMPLATES[0]
 
 # use the ratelimit backend to prevent brute force attacks
 AUTHENTICATION_BACKENDS = (
-    'openedx.core.djangoapps.ga_ratelimitbackend.backends.RateLimitModelBackend',
+    'django.contrib.auth.backends.ModelBackend',
 )
 STUDENT_FILEUPLOAD_MAX_SIZE = 4 * 1024 * 1024  # 4 MB
 MAX_FILEUPLOADS_PER_INPUT = 20
@@ -1996,6 +1996,7 @@ INSTALLED_APPS = (
     'biz.djangoapps.ga_manager',
     'biz.djangoapps.ga_organization',
     'biz.djangoapps.ga_invitation',
+    'biz.djangoapps.ga_contract_operation',
 
     # Several operations for a gacco.org's staff
     'ga_operation',
@@ -2003,6 +2004,9 @@ INSTALLED_APPS = (
     # Advanced Course
     'ga_advanced_course',
     'ga_shoppingcart',
+
+    # Celery Task Management
+    'openedx.core.djangoapps.ga_task',
 )
 
 # Migrations which are not in the standard module "migrations"
@@ -2757,6 +2761,9 @@ JWPLAYER_TRANSCRIPT_BUCKET_NAME = ''
 JWPLAYER_TRANSCRIPT_PREFIX = 'jwplayer_transcripts'
 JWPLAYER_SHARED_SECRET = ''
 JWPLAYER_SECURE_TOKEN_EXPIRE = 24 * 60 * 60
+
+##### RateLimitBackend #####
+RATE_LIMIT_REQUESTS = 30
 
 ##### Settings for Biz #####
 from biz.envs.common import *

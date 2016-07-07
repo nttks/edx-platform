@@ -5,7 +5,7 @@ $(function () {
     });
 
     // Prevent double click
-    $('form.preventDoubleClick').submit(function () {
+    $('form.prevent-double-click').submit(function () {
         $('button[type="submit"], input[type="submit"]', this).attr('disabled', true);
     });
 });

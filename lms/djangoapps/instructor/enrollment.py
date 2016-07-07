@@ -396,12 +396,12 @@ def send_mail_to_student(student, param_dict, language=None):
             'emails/account_creation_and_enroll_emailMessage.txt'
         ),
         'biz_account_notice': (
-            'ga_course_operation/emails/account_notice_subject.txt',
-            'ga_course_operation/emails/account_notice_message.txt'
+            'ga_contract_operation/emails/account_notice_subject.txt',
+            'ga_contract_operation/emails/account_notice_message.txt'
         ),
         'biz_account_creation': (
-            'ga_course_operation/emails/account_creation_subject.txt',
-            'ga_course_operation/emails/account_creation_message.txt'
+            'ga_contract_operation/emails/account_creation_subject.txt',
+            'ga_contract_operation/emails/account_creation_message.txt'
         ),
     }
 
