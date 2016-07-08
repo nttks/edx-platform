@@ -510,7 +510,7 @@ msgstr "区切り文字カンマ(,)で、次に示す項目の順序に従い値
 
 #: biz/templates/ga_contract_operation/register_students.html
 msgid "Once can be registered number is {max_register_number}."
-msgstr "一度に登録できる利用者は{max_register_number}件です。"
+msgstr "一度に登録できる受講者は{max_register_number}件です。"
 
 #: biz/templates/ga_contract_operation/register_students.html
 msgid "username1@domain.com,gaccotarou,gacco taro"
@@ -518,7 +518,7 @@ msgstr "username1@domain.com,gaccotarou,学校 太郎"
 
 #: biz/djangoapps/ga_contract_operation/views.py
 msgid "It has exceeded the number({max_register_number}) of cases that can be a time of registration."
-msgstr "一度に登録できる利用者の上限({max_register_number})を超えています。"
+msgstr "一度に登録できる受講者の上限({max_register_number})を超えています。"
 
 #: biz/djangoapps/ga_contract_operation/views.py
 msgid "Data in row #{row_num} must have exactly three columns: email, username, and full name."
