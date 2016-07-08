@@ -105,6 +105,11 @@ class BizNavPage(PageObject):
     def course_name(self):
         return self.q(css='div.course-selection>div.current-role>div:nth-of-type(2)>div').text[0].strip()
 
+    @property
+    def left_menu_items(self):
+        menu_item = self.q(css='nav.side-menu>ul.menu>li>a')
+        return {t: h for t, h in zip(menu_item.text, menu_item.attrs('href'))}
+
     def click_organization(self):
         # Import in func for cross reference
         from .ga_organization import BizOrganizationPage
@@ -113,8 +118,10 @@ class BizNavPage(PageObject):
         return BizOrganizationPage(self.browser).wait_for_page()
 
     def click_contract(self):
-        self.q(css='nav.side-menu>ul.menu>li>a[href="/biz/contract/"]').first.click()
+        # Import in func for cross reference
         from .ga_contract import BizContractPage
+
+        self.q(css='nav.side-menu>ul.menu>li>a[href="/biz/contract/"]').first.click()
         return BizContractPage(self.browser).wait_for_page()
 
     def click_manager(self):
@@ -127,14 +134,30 @@ class BizNavPage(PageObject):
         return manager_page.wait_for_lock_absence()
 
     def click_survey(self):
+        # Import in func for cross reference
+        from .ga_survey import BizSurveyPage
+
         self.q(css='nav.side-menu>ul.menu>li>a[href="/biz/course_operation/survey"]').first.click()
-        from common.test.acceptance.pages.biz.ga_survey import BizSurveyPage
         return BizSurveyPage(self.browser).wait_for_page()
 
     def click_register_students(self):
         self.q(css='nav.side-menu>ul.menu>li>a[href="/biz/contract_operation/register_students"]').first.click()
         from common.test.acceptance.pages.biz.ga_contract_operation import BizRegisterStudentsPage
         return BizRegisterStudentsPage(self.browser).wait_for_page()
+
+    def click_score(self):
+        # Import in func for cross reference
+        from .ga_achievement import BizAchievementPage
+
+        self.q(css='nav.side-menu>ul.menu>li>a[href="/biz/achievement/"]').first.click()
+        return BizAchievementPage(self.browser).wait_for_page()
+
+    def click_register_management(self):
+        # Import in func for cross reference
+        from .ga_contract_operation import BizStudentsPage
+
+        self.q(css='nav.side-menu>ul.menu>li>a[href="/biz/contract_operation/students"]').first.click()
+        return BizStudentsPage(self.browser).wait_for_page()
 
     def change_role(self, org_id, contract_name, course_id):
         # Show role selection modal

@@ -18,15 +18,6 @@ from ...pages.lms.ga_django_admin import DjangoAdminPage
 
 class BizSetManageTargetTest(WebAppTest, GaccoBizTestMixin):
 
-    def _create_aggregator(self, with_contract_count=1):
-        new_aggregator = self.register_user()
-        new_org_info = self.register_organization(PLATFORMER_USER_INFO)
-        new_contracts = []
-        for i in range(with_contract_count):
-            new_contracts.append(self.register_contract(PLATFORMER_USER_INFO, new_org_info['Organization Name'], 'O'))
-        self.grant(PLATFORMER_USER_INFO, new_org_info['Organization Name'], 'aggregator', new_aggregator)
-        return new_aggregator, new_org_info, new_contracts
-
     def test_director_no_contract(self):
         """
         Test director has no contract
@@ -117,7 +108,7 @@ class BizSetManageTargetTest(WebAppTest, GaccoBizTestMixin):
         - Case 85, 86
         """
         # test data, org contract permission for aggregator
-        new_aggregator, _, _ = self._create_aggregator()
+        new_aggregator, _, _ = self.create_aggregator()
 
         # test data, org permission for director
         new_director = self.register_user()
@@ -162,7 +153,7 @@ class BizSetManageTargetTest(WebAppTest, GaccoBizTestMixin):
         - Case 87
         """
         # test data, org contract permission for aggregator
-        new_aggregator, new_org_info_1, _ = self._create_aggregator()
+        new_aggregator, new_org_info_1, _ = self.create_aggregator()
 
         # create course
         new_course_key_1, new_course_name_1 = self.install_course(new_org_info_1['Organization Code'])
@@ -187,7 +178,7 @@ class BizSetManageTargetTest(WebAppTest, GaccoBizTestMixin):
         - Case 88
         """
         # test data, org contract permission for aggregator
-        new_aggregator, new_org_info_1, _ = self._create_aggregator()
+        new_aggregator, new_org_info_1, _ = self.create_aggregator()
 
         # create course
         new_course_key_1, _ = self.install_course(new_org_info_1['Organization Code'])
@@ -221,7 +212,7 @@ class BizSetManageTargetTest(WebAppTest, GaccoBizTestMixin):
         - Case 89
         """
         # test data, org contract permission for aggregator
-        new_aggregator, new_org_info_1, _ = self._create_aggregator()
+        new_aggregator, new_org_info_1, _ = self.create_aggregator()
 
         # create course
         new_course_key_1, new_course_name_1 = self.install_course(new_org_info_1['Organization Code'])
@@ -256,7 +247,7 @@ class BizSetManageTargetTest(WebAppTest, GaccoBizTestMixin):
         - Case 90, 91
         """
         # test data, org permission for aggregator
-        new_aggregator, new_org_info, _ = self._create_aggregator(0)
+        new_aggregator, new_org_info, _ = self.create_aggregator(0)
 
         # Test Case 90
         self.restart_memcached()
@@ -282,7 +273,7 @@ class BizSetManageTargetTest(WebAppTest, GaccoBizTestMixin):
         - Case 92
         """
         # test data, org contract permission for aggregator
-        new_aggregator, new_org_info, new_contracts = self._create_aggregator(2)
+        new_aggregator, new_org_info, new_contracts = self.create_aggregator(2)
 
         # Test Case 92
         self.restart_memcached()

@@ -30,11 +30,13 @@ class BizContractPage(BizNavPage, W2uiMixin):
         """
         return 'Contract List' in self.browser.title
 
-    def click_register_button(self):
+    def click_register_button(self, wait_for_page=False):
         """
         Click the register button
         """
         self.q(css='#register-btn').click()
+        if wait_for_page:
+            return BizContractDetailPage(self.browser).wait_for_page()
         return self
 
     @property
