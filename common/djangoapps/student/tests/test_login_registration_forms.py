@@ -52,10 +52,11 @@ class LoginFormTest(ThirdPartyAuthTestMixin, UrlResetMixin, ModuleStoreTestCase)
         self.configure_facebook_provider(enabled=True)
 
     @patch.dict(settings.FEATURES, {"ENABLE_THIRD_PARTY_AUTH": False})
-    @ddt.data(THIRD_PARTY_AUTH_PROVIDERS)
-    def test_third_party_auth_disabled(self, provider_name):
+    @ddt.data(*THIRD_PARTY_AUTH_BACKENDS)
+    def test_third_party_auth_disabled(self, backend_name):
         response = self.client.get(self.url)
-        self.assertNotContains(response, provider_name)
+        expected_url = _third_party_login_url(backend_name, "login")
+        self.assertNotContains(response, expected_url)
 
     @ddt.data(*THIRD_PARTY_AUTH_BACKENDS)
     def test_third_party_auth_no_course_id(self, backend_name):
@@ -161,10 +162,11 @@ class RegisterFormTest(ThirdPartyAuthTestMixin, UrlResetMixin, ModuleStoreTestCa
         self.configure_facebook_provider(enabled=True)
 
     @patch.dict(settings.FEATURES, {"ENABLE_THIRD_PARTY_AUTH": False})
-    @ddt.data(*THIRD_PARTY_AUTH_PROVIDERS)
-    def test_third_party_auth_disabled(self, provider_name):
+    @ddt.data(*THIRD_PARTY_AUTH_BACKENDS)
+    def test_third_party_auth_disabled(self, backend_name):
         response = self.client.get(self.url)
-        self.assertNotContains(response, provider_name)
+        expected_url = _third_party_login_url(backend_name, "register")
+        self.assertNotContains(response, expected_url)
 
     @ddt.data(*THIRD_PARTY_AUTH_BACKENDS)
     def test_register_third_party_auth_no_course_id(self, backend_name):

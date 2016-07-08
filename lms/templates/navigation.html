@@ -81,7 +81,7 @@ site_status_msg = get_site_status_msg(course_id)
             %if course:
             <li><a href="${reverse('dashboard')}">${_("Dashboard")}</a></li>
             % endif
-            % if request.biz_accessible:
+            %if hasattr(request, 'biz_accessible') and request.biz_accessible:
             <li><a href="${reverse('biz:index')}">${_("Biz")}</a></li>
             % endif
             <li><a href="${reverse('account_settings')}">${_("Account")}</a></li>

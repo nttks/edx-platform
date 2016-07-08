@@ -105,7 +105,7 @@ class RenderXBlockTestMixin(object):
         return response
 
     @ddt.data(
-        (ModuleStoreEnum.Type.mongo, 8),
+        (ModuleStoreEnum.Type.mongo, 9),
         (ModuleStoreEnum.Type.split, 8),
     )
     @ddt.unpack
@@ -129,7 +129,7 @@ class RenderXBlockTestMixin(object):
                     self.assertContains(response, chrome_element)
 
     @ddt.data(
-        (ModuleStoreEnum.Type.mongo, 5),
+        (ModuleStoreEnum.Type.mongo, 6),
         (ModuleStoreEnum.Type.split, 5),
     )
     @ddt.unpack
@@ -145,6 +145,7 @@ class RenderXBlockTestMixin(object):
             #   (3) get_item for HTML block in get_module_by_usage_id
             #   (4) get_parent when loading HTML block
             #   (5) edx_notes descriptor call to get_course
+            #   (6) get_course_about_section in head-extra.html
             # Split:
             #   (1) course_index - bulk_operation call
             #   (2) structure - get_course_with_access

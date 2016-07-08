@@ -774,6 +774,7 @@ class StartDateTests(ModuleStoreTestCase):
     @patch('util.date_utils.ugettext', fake_ugettext(translations={
         "SHORT_DATE_FORMAT": "%Y-%b-%d",
     }))
+    @unittest.skip("It does not exist in the template of gacco")
     def test_format_localized_in_studio_course(self):
         course = self.set_up_course()
         text = self.get_about_text(course.id)
@@ -973,7 +974,7 @@ class ProgressPageTests(ModuleStoreTestCase):
         self.assertContains(resp, u"Download Your Certificate")
 
     @ddt.data(
-        *itertools.product(((38, 4, True), (38, 4, False)), (True, False))
+        *itertools.product(((42, 5, True), (42, 5, False)), (True, False))
     )
     @ddt.unpack
     def test_query_counts(self, (sql_calls, mongo_calls, self_paced), self_paced_enabled):
