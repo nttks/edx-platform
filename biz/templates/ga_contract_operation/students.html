@@ -108,8 +108,10 @@ from django.core.urlresolvers import reverse
             var $grid = $('#task-history-grid');
             w2ui['task_history_grid'].load('${reverse("biz:contract_operation:task_history")}', function() {
                 var $wrapper = $('.content-wrapper');
-                $wrapper.height($wrapper.height() + $grid.height());
-                $grid.show();
+                if ($grid.is(':hidden')) {
+                    $wrapper.height($wrapper.height() + $grid.height());
+                    $grid.show();
+                }
             });
         });
     });
