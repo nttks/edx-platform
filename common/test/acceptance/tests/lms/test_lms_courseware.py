@@ -65,7 +65,8 @@ class CoursewareTest(UniqueCourseTest):
         """
         self.courseware_page.visit()
         self.problem_page = ProblemPage(self.browser)
-        self.assertEqual(self.problem_page.problem_name, 'TEST PROBLEM 1')
+        # text-transform property is uppercase in original, but none in gacco.css
+        self.assertEqual(self.problem_page.problem_name, 'Test Problem 1')
 
     def _auto_auth(self, username, email, staff):
         """
@@ -99,7 +100,8 @@ class CoursewareTest(UniqueCourseTest):
         # Visit courseware as a student.
         self.courseware_page.visit()
         # Problem name should be "TEST PROBLEM 2".
-        self.assertEqual(self.problem_page.problem_name, 'TEST PROBLEM 2')
+        # text-transform property is uppercase in original, but none in gacco.css
+        self.assertEqual(self.problem_page.problem_name, 'Test Problem 2')
 
 
 class ProctoredExamTest(UniqueCourseTest):

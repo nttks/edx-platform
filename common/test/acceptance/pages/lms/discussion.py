@@ -504,9 +504,12 @@ class DiscussionUserProfilePage(CoursePage):
         return (
             self.q(css='section.discussion-user-threads[data-course-id="{}"]'.format(self.course_id)).present
             and
-            self.q(css='section.user-profile a.learner-profile-link').present
+            # a tag that has a class `learner-profile-link` is remove in gacco
+            #self.q(css='section.user-profile a.learner-profile-link').present
+            self.q(css='section.user-profile div.sidebar-username').present
             and
-            self.q(css='section.user-profile a.learner-profile-link').text[0] == self.username
+            #self.q(css='section.user-profile a.learner-profile-link').text[0] == self.username
+            self.q(css='section.user-profile div.sidebar-username').text[0] == self.username
         )
 
     @wait_for_js

@@ -2,6 +2,8 @@
 Acceptance tests for Video Times(Start, End and Finish) functionality.
 """
 from flaky import flaky
+from unittest import skip
+
 from .test_video_module import VideoBaseTest
 import unittest
 
@@ -106,7 +108,7 @@ class VideoTimesTest(VideoBaseTest):
 
         self.assertIn(self.video.position, ('0:15', '0:16'))
 
-    @unittest.skip('This is actually a bug! See TNL-1619')
+    @skip('This is actually a bug! See TNL-1619')
     def test_video_end_time_and_finish_time(self):
         """
         Scenario: Youtube video works after pausing at end time and then plays again from End Time to the end.

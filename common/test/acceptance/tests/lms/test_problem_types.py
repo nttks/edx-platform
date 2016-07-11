@@ -5,6 +5,7 @@ See also lettuce tests in lms/djangoapps/courseware/features/problems.feature
 """
 import random
 import textwrap
+import unittest
 
 from abc import ABCMeta, abstractmethod
 from nose.plugins.attrib import attr
@@ -210,6 +211,7 @@ class ProblemTypeTestMixin(object):
         self.wait_for_status('incorrect')
 
     @attr('a11y')
+    @unittest.skip("Does not check a11y in gacco")
     def test_problem_type_a11y(self):
         """
         Run accessibility audit for the problem type.
