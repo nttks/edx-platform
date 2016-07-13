@@ -21,22 +21,19 @@ from xmodule.modulestore.tests.factories import CourseFactory
 
 from biz.djangoapps.ga_contract.models import CONTRACT_TYPE_PF, CONTRACT_TYPE_GACCO_SERVICE
 from biz.djangoapps.ga_contract.tests.factories import AdditionalInfoFactory, ContractFactory, ContractDetailFactory
-from biz.djangoapps.ga_contract_operation.models import ContractTaskTarget
+from biz.djangoapps.ga_contract_operation.models import ContractTaskTarget, StudentRegisterTaskTarget
 from biz.djangoapps.ga_contract_operation.personalinfo import _hash
-from biz.djangoapps.ga_contract_operation.tasks import personalinfo_mask
-from biz.djangoapps.ga_contract_operation.tests.factories import ContractTaskHistoryFactory, ContractTaskTargetFactory
-from biz.djangoapps.ga_invitation.models import AdditionalInfoSetting, INPUT_INVITATION_CODE, REGISTER_INVITATION_CODE
+from biz.djangoapps.ga_contract_operation.tasks import personalinfo_mask, student_register
+from biz.djangoapps.ga_contract_operation.tests.factories import ContractTaskTargetFactory, StudentRegisterTaskTargetFactory
+from biz.djangoapps.ga_invitation.models import AdditionalInfoSetting, ContractRegister, INPUT_INVITATION_CODE, REGISTER_INVITATION_CODE
 from biz.djangoapps.ga_invitation.tests.factories import AdditionalInfoSettingFactory, ContractRegisterFactory
 from biz.djangoapps.util.datetime_utils import timezone_today
-from biz.djangoapps.util.tests.testcase import BizTestBase
+from biz.djangoapps.util.tests.testcase import BizTestBase, BizViewTestBase
 from openedx.core.djangoapps.course_global.tests.factories import CourseGlobalSettingFactory
 from openedx.core.djangoapps.ga_task.tests.test_task import TaskTestMixin
 
 
 class PersonalinfoMaskTaskTest(BizTestBase, ModuleStoreTestCase, ThirdPartyAuthTestMixin, TaskTestMixin):
-
-    def setUp(self):
-        super(PersonalinfoMaskTaskTest, self).setUp()
 
     def _setup_courses(self):
         # Setup courses. Some tests does not need course data. Therefore, call this function if need course data.
@@ -128,10 +125,6 @@ class PersonalinfoMaskTaskTest(BizTestBase, ModuleStoreTestCase, ThirdPartyAuthT
                 user = register.user
                 CourseEnrollmentFactory.create(user=user, course_id=course.id)
                 GeneratedCertificateFactory.create(user=user, course_id=course.id, name=user.profile.name)
-
-    def _create_task_history(self, contract):
-        history = ContractTaskHistoryFactory.create(contract=contract)
-        return history
 
     def _create_targets(self, history, registers, completed=False):
         for register in registers:
@@ -557,3 +550,450 @@ class PersonalinfoMaskTaskTest(BizTestBase, ModuleStoreTestCase, ThirdPartyAuthT
         # Assert 4 target is completed
         self.assertEqual(4, ContractTaskTarget.objects.filter(history=history, completed=True).count())
         self.assertFalse(ContractTaskTarget.objects.get(history=history, register=registers[4]).completed)
+
+
+class StudentRegisterTaskTest(BizViewTestBase, ModuleStoreTestCase, TaskTestMixin):
+
+    def _create_targets(self, history, students, completed=False):
+        for student in students:
+            StudentRegisterTaskTargetFactory.create(history=history, student=student, completed=completed)
+
+    def _create_input_entry(self, contract=None, history=None):
+        task_input = {}
+        if contract is not None:
+            task_input['contract_id'] = contract.id
+        if history is not None:
+            task_input['history_id'] = history.id
+        return TaskTestMixin._create_input_entry(self, task_input=task_input)
+
+    def test_register_validation(self):
+        # ----------------------------------------------------------
+        # Setup test data
+        # ----------------------------------------------------------
+        students = ["test_student1@example.com,t,t"]
+
+        contract = self._create_contract()
+        history = self._create_task_history(contract=contract)
+        self._create_targets(history, students)
+
+        # ----------------------------------------------------------
+        # Execute task
+        # ----------------------------------------------------------
+        self._test_run_with_task(
+            student_register,
+            'student_register',
+            task_entry=self._create_input_entry(contract=contract, history=history),
+            expected_attempted=1,
+            expected_num_failed=1,
+            expected_total=1,
+        )
+
+        # ----------------------------------------------------------
+        # Assertion
+        # ----------------------------------------------------------
+        self.assertEqual(0, StudentRegisterTaskTarget.objects.filter(history=history, completed=False).count())
+        self.assertEqual(1, StudentRegisterTaskTarget.objects.filter(history=history, completed=True).count())
+        self.assertEqual(
+            ' '.join(['Username must be minimum of two characters long', 'Your legal name must be a minimum of two characters long']),
+            StudentRegisterTaskTarget.objects.get(history=history, student=students[0]).message,
+        )
+
+        self.assertFalse(ContractRegister.objects.filter(contract=contract).exists())
+
+    def test_register_account_creation(self):
+        # ----------------------------------------------------------
+        # Setup test data
+        # ----------------------------------------------------------
+        students = ["test_student@example.com,test_student_1,tester1"]
+
+        contract = self._create_contract()
+        history = self._create_task_history(contract=contract)
+        self._create_targets(history, students)
+
+        # ----------------------------------------------------------
+        # Execute task
+        # ----------------------------------------------------------
+        self._test_run_with_task(
+            student_register,
+            'student_register',
+            task_entry=self._create_input_entry(contract=contract, history=history),
+            expected_attempted=1,
+            expected_num_succeeded=1,
+            expected_total=1,
+        )
+
+        # ----------------------------------------------------------
+        # Assertion
+        # ----------------------------------------------------------
+        self.assertEqual(0, StudentRegisterTaskTarget.objects.filter(history=history, completed=False).count())
+        self.assertEqual(1, StudentRegisterTaskTarget.objects.filter(history=history, completed=True).count())
+        self.assertIsNone(StudentRegisterTaskTarget.objects.get(history=history, student=students[0]).message)
+
+        self.assertTrue(User.objects.get(email='test_student@example.com').is_active)
+        self.assertEquals(ContractRegister.objects.get(user__email='test_student@example.com', contract=contract).status, INPUT_INVITATION_CODE)
+
+    def test_register_account_creation_with_blank_lines(self):
+        # ----------------------------------------------------------
+        # Setup test data
+        # ----------------------------------------------------------
+        students = ["", "test_student@example.com,test_student_1,tester1", "", ""]
+
+        contract = self._create_contract()
+        history = self._create_task_history(contract=contract)
+        self._create_targets(history, students)
+
+        # ----------------------------------------------------------
+        # Execute task
+        # ----------------------------------------------------------
+        self._test_run_with_task(
+            student_register,
+            'student_register',
+            task_entry=self._create_input_entry(contract=contract, history=history),
+            expected_attempted=4,
+            expected_num_succeeded=1,
+            expected_num_skipped=3,
+            expected_total=4,
+        )
+
+        # ----------------------------------------------------------
+        # Assertion
+        # ----------------------------------------------------------
+        self.assertEqual(0, StudentRegisterTaskTarget.objects.filter(history=history, completed=False).count())
+        self.assertEqual(4, StudentRegisterTaskTarget.objects.filter(history=history, completed=True).count())
+        self.assertEqual(4, StudentRegisterTaskTarget.objects.filter(history=history, message__isnull=True).count())
+
+        self.assertTrue(User.objects.get(email='test_student@example.com').is_active)
+        self.assertEquals(ContractRegister.objects.get(user__email='test_student@example.com', contract=contract).status, INPUT_INVITATION_CODE)
+
+    def test_register_email_and_username_already_exist(self):
+        # ----------------------------------------------------------
+        # Setup test data
+        # ----------------------------------------------------------
+        students = ["test_student@example.com,test_student_1,tester1", "test_student@example.com,test_student_1,tester2"]
+
+        contract = self._create_contract()
+        history = self._create_task_history(contract=contract)
+        self._create_targets(history, students)
+
+        # ----------------------------------------------------------
+        # Execute task
+        # ----------------------------------------------------------
+        self._test_run_with_task(
+            student_register,
+            'student_register',
+            task_entry=self._create_input_entry(contract=contract, history=history),
+            expected_attempted=2,
+            expected_num_succeeded=2,
+            expected_total=2,
+        )
+
+        # ----------------------------------------------------------
+        # Assertion
+        # ----------------------------------------------------------
+        self.assertEqual(0, StudentRegisterTaskTarget.objects.filter(history=history, completed=False).count())
+        self.assertEqual(2, StudentRegisterTaskTarget.objects.filter(history=history, completed=True).count())
+        self.assertEqual(2, StudentRegisterTaskTarget.objects.filter(history=history, message__isnull=True).count())
+
+        self.assertTrue(User.objects.get(email='test_student@example.com').is_active)
+        self.assertEquals(ContractRegister.objects.get(user__email='test_student@example.com', contract=contract).status, INPUT_INVITATION_CODE)
+
+    def test_register_insufficient_data(self):
+        # ----------------------------------------------------------
+        # Setup test data
+        # ----------------------------------------------------------
+        students = ["test_student@example.com,test_student_1", ""]
+
+        contract = self._create_contract()
+        history = self._create_task_history(contract=contract)
+        self._create_targets(history, students)
+
+        # ----------------------------------------------------------
+        # Execute task
+        # ----------------------------------------------------------
+        self._test_run_with_task(
+            student_register,
+            'student_register',
+            task_entry=self._create_input_entry(contract=contract, history=history),
+            expected_attempted=2,
+            expected_num_failed=1,
+            expected_num_skipped=1,
+            expected_total=2,
+        )
+
+        # ----------------------------------------------------------
+        # Assertion
+        # ----------------------------------------------------------
+        self.assertEqual(0, StudentRegisterTaskTarget.objects.filter(history=history, completed=False).count())
+        self.assertEqual(2, StudentRegisterTaskTarget.objects.filter(history=history, completed=True).count())
+        self.assertEqual(
+            "Data must have exactly three columns: email, username, and full name.",
+            StudentRegisterTaskTarget.objects.get(history=history, student=students[0]).message
+        )
+        self.assertIsNone(StudentRegisterTaskTarget.objects.get(history=history, student=students[1]).message)
+
+        self.assertFalse(ContractRegister.objects.filter(contract=contract).exists())
+
+    def test_register_invalid_email(self):
+        # ----------------------------------------------------------
+        # Setup test data
+        # ----------------------------------------------------------
+        students = ["test_student.example.com,test_student_1,tester1"]
+
+        contract = self._create_contract()
+        history = self._create_task_history(contract=contract)
+        self._create_targets(history, students)
+
+        # ----------------------------------------------------------
+        # Execute task
+        # ----------------------------------------------------------
+        self._test_run_with_task(
+            student_register,
+            'student_register',
+            task_entry=self._create_input_entry(contract=contract, history=history),
+            expected_attempted=1,
+            expected_num_failed=1,
+            expected_total=1,
+        )
+
+        # ----------------------------------------------------------
+        # Assertion
+        # ----------------------------------------------------------
+        self.assertEqual(0, StudentRegisterTaskTarget.objects.filter(history=history, completed=False).count())
+        self.assertEqual(1, StudentRegisterTaskTarget.objects.filter(history=history, completed=True).count())
+        self.assertEqual(
+            "Invalid email test_student.example.com.",
+            StudentRegisterTaskTarget.objects.get(history=history, student=students[0]).message
+        )
+
+        self.assertFalse(ContractRegister.objects.filter(contract=contract).exists())
+
+    def test_register_user_with_already_existing_email(self):
+        # ----------------------------------------------------------
+        # Setup test data
+        # ----------------------------------------------------------
+        self.setup_user()
+        students = ["{email},test_student_1,tester1".format(email=self.email)]
+
+        contract = self._create_contract()
+        history = self._create_task_history(contract=contract)
+        self._create_targets(history, students)
+
+        # ----------------------------------------------------------
+        # Execute task
+        # ----------------------------------------------------------
+        self._test_run_with_task(
+            student_register,
+            'student_register',
+            task_entry=self._create_input_entry(contract=contract, history=history),
+            expected_attempted=1,
+            expected_num_succeeded=1,
+            expected_total=1,
+        )
+
+        # ----------------------------------------------------------
+        # Assertion
+        # ----------------------------------------------------------
+        self.assertEqual(0, StudentRegisterTaskTarget.objects.filter(history=history, completed=False).count())
+        self.assertEqual(1, StudentRegisterTaskTarget.objects.filter(history=history, completed=True).count())
+        self.assertEqual(
+            "Warning, an account with email {email} exists but the registered username {username} is different.".format(email=self.email, username=self.username),
+            StudentRegisterTaskTarget.objects.get(history=history, student=students[0]).message
+        )
+
+        self.assertEquals(ContractRegister.objects.get(user__email=self.email, contract=contract).status, INPUT_INVITATION_CODE)
+
+    def test_register_user_with_already_existing_contract_register_input(self):
+        # ----------------------------------------------------------
+        # Setup test data
+        # ----------------------------------------------------------
+        self.setup_user()
+        students = ["{email},test_student_1,tester1".format(email=self.email)]
+
+        contract = self._create_contract()
+        ContractRegisterFactory.create(user=self.user, contract=contract, status=INPUT_INVITATION_CODE)
+        history = self._create_task_history(contract=contract)
+        self._create_targets(history, students)
+
+        # ----------------------------------------------------------
+        # Execute task
+        # ----------------------------------------------------------
+        self._test_run_with_task(
+            student_register,
+            'student_register',
+            task_entry=self._create_input_entry(contract=contract, history=history),
+            expected_attempted=1,
+            expected_num_succeeded=1,
+            expected_total=1,
+        )
+
+        # ----------------------------------------------------------
+        # Assertion
+        # ----------------------------------------------------------
+        self.assertEqual(0, StudentRegisterTaskTarget.objects.filter(history=history, completed=False).count())
+        self.assertEqual(1, StudentRegisterTaskTarget.objects.filter(history=history, completed=True).count())
+        self.assertEqual(
+            "Warning, an account with email {email} exists but the registered username {username} is different.".format(email=self.email, username=self.username),
+            StudentRegisterTaskTarget.objects.get(history=history, student=students[0]).message
+        )
+
+        self.assertEquals(ContractRegister.objects.get(user__email=self.email, contract=contract).status, INPUT_INVITATION_CODE)
+
+    def test_register_user_with_already_existing_contract_register_register(self):
+        # ----------------------------------------------------------
+        # Setup test data
+        # ----------------------------------------------------------
+        self.setup_user()
+        students = ["{email},test_student_1,tester1".format(email=self.email)]
+
+        contract = self._create_contract()
+        ContractRegisterFactory.create(user=self.user, contract=contract, status=REGISTER_INVITATION_CODE)
+        history = self._create_task_history(contract=contract)
+        self._create_targets(history, students)
+
+        # ----------------------------------------------------------
+        # Execute task
+        # ----------------------------------------------------------
+        self._test_run_with_task(
+            student_register,
+            'student_register',
+            task_entry=self._create_input_entry(contract=contract, history=history),
+            expected_attempted=1,
+            expected_num_succeeded=1,
+            expected_total=1,
+        )
+
+        # ----------------------------------------------------------
+        # Assertion
+        # ----------------------------------------------------------
+        self.assertEqual(0, StudentRegisterTaskTarget.objects.filter(history=history, completed=False).count())
+        self.assertEqual(1, StudentRegisterTaskTarget.objects.filter(history=history, completed=True).count())
+        self.assertEqual(
+            "Warning, an account with email {email} exists but the registered username {username} is different.".format(email=self.email, username=self.username),
+            StudentRegisterTaskTarget.objects.get(history=history, student=students[0]).message
+        )
+
+        self.assertEquals(ContractRegister.objects.get(user__email=self.email, contract=contract).status, REGISTER_INVITATION_CODE)
+
+    def test_register_user_with_already_existing_username(self):
+        # ----------------------------------------------------------
+        # Setup test data
+        # ----------------------------------------------------------
+        students = [
+            "test_student1@example.com,test_student_1,tester1",
+            "test_student2@example.com,test_student_1,tester2",
+        ]
+
+        contract = self._create_contract()
+        history = self._create_task_history(contract=contract)
+        self._create_targets(history, students)
+
+        # ----------------------------------------------------------
+        # Execute task
+        # ----------------------------------------------------------
+        self._test_run_with_task(
+            student_register,
+            'student_register',
+            task_entry=self._create_input_entry(contract=contract, history=history),
+            expected_attempted=2,
+            expected_num_succeeded=1,
+            expected_num_failed=1,
+            expected_total=2,
+        )
+
+        # ----------------------------------------------------------
+        # Assertion
+        # ----------------------------------------------------------
+        self.assertEqual(0, StudentRegisterTaskTarget.objects.filter(history=history, completed=False).count())
+        self.assertEqual(2, StudentRegisterTaskTarget.objects.filter(history=history, completed=True).count())
+        self.assertIsNone(StudentRegisterTaskTarget.objects.get(history=history, student=students[0]).message)
+        self.assertEqual(
+            "Username test_student_1 already exists.",
+            StudentRegisterTaskTarget.objects.get(history=history, student=students[1]).message
+        )
+
+        self.assertEquals(ContractRegister.objects.get(user__email='test_student1@example.com', contract=contract).status, INPUT_INVITATION_CODE)
+        self.assertFalse(ContractRegister.objects.filter(user__email='test_student2@example.com', contract=contract).exists())
+
+    def test_register_raising_exception_in_auto_registration_case(self):
+        # ----------------------------------------------------------
+        # Setup test data
+        # ----------------------------------------------------------
+        students = [
+            "test_student1@example.com,test_student_1,tester1",
+            "test_student2@example.com,test_student_2,tester2",
+        ]
+
+        contract = self._create_contract()
+        history = self._create_task_history(contract=contract)
+        self._create_targets(history, students)
+
+        # ----------------------------------------------------------
+        # Execute task
+        # ----------------------------------------------------------
+        with patch('biz.djangoapps.ga_contract_operation.student_register.generate_unique_password', side_effect=['hoge', Exception]):
+            self._test_run_with_task(
+                student_register,
+                'student_register',
+                task_entry=self._create_input_entry(contract=contract, history=history),
+                expected_attempted=2,
+                expected_num_succeeded=1,
+                expected_num_failed=1,
+                expected_total=2,
+            )
+
+        # ----------------------------------------------------------
+        # Assertion
+        # ----------------------------------------------------------
+        self.assertEqual(1, StudentRegisterTaskTarget.objects.filter(history=history, completed=False).count())
+        self.assertEqual(1, StudentRegisterTaskTarget.objects.filter(history=history, completed=True).count())
+        self.assertIsNone(StudentRegisterTaskTarget.objects.get(history=history, student=students[0]).message)
+        self.assertEqual(
+            "Failed to register. Please operation again after a time delay.",
+            StudentRegisterTaskTarget.objects.get(history=history, student=students[1]).message
+        )
+
+        self.assertEquals(ContractRegister.objects.get(user__email='test_student1@example.com', contract=contract).status, INPUT_INVITATION_CODE)
+        self.assertFalse(ContractRegister.objects.filter(user__email='test_student2@example.com', contract=contract).exists())
+
+    def test_register_users_created_successfully_if_others_fail(self):
+        # ----------------------------------------------------------
+        # Setup test data
+        # ----------------------------------------------------------
+        students = [
+            "test_student1@example.com,test_student_1,tester1",
+            "test_student3@example.com,test_student_1,tester3",
+            "test_student2@example.com,test_student_2,tester2",
+        ]
+
+        contract = self._create_contract()
+        history = self._create_task_history(contract=contract)
+        self._create_targets(history, students)
+
+        # ----------------------------------------------------------
+        # Execute task
+        # ----------------------------------------------------------
+        self._test_run_with_task(
+            student_register,
+            'student_register',
+            task_entry=self._create_input_entry(contract=contract, history=history),
+            expected_attempted=3,
+            expected_num_succeeded=2,
+            expected_num_failed=1,
+            expected_total=3,
+        )
+
+        # ----------------------------------------------------------
+        # Assertion
+        # ----------------------------------------------------------
+        self.assertEqual(0, StudentRegisterTaskTarget.objects.filter(history=history, completed=False).count())
+        self.assertEqual(3, StudentRegisterTaskTarget.objects.filter(history=history, completed=True).count())
+        self.assertIsNone(StudentRegisterTaskTarget.objects.get(history=history, student=students[0]).message)
+        self.assertEqual(
+            "Username test_student_1 already exists.",
+            StudentRegisterTaskTarget.objects.get(history=history, student=students[1]).message
+        )
+        self.assertIsNone(StudentRegisterTaskTarget.objects.get(history=history, student=students[2]).message)
+
+        self.assertEquals(ContractRegister.objects.get(user__email='test_student1@example.com', contract=contract).status, INPUT_INVITATION_CODE)
+        self.assertEquals(ContractRegister.objects.get(user__email='test_student2@example.com', contract=contract).status, INPUT_INVITATION_CODE)
+        self.assertFalse(ContractRegister.objects.filter(user__email='test_student3@example.com', contract=contract).exists())

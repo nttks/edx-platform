@@ -516,13 +516,17 @@ msgstr "一度に登録できる受講者は{max_register_number}件です。"
 msgid "username1@domain.com,gaccotarou,gacco taro"
 msgstr "username1@domain.com,gaccotarou,学校 太郎"
 
+#: biz/templates/ga_contract_operation/register_students.html
+msgid "No messages."
+msgstr "メッセージはありません。"
+
+#: biz/djangoapps/ga_contract_operation/views.py
+msgid "Data must have exactly three columns: email, username, and full name."
+msgstr "次の3項目が見つかりませんでした：メールアドレス、ユーザー名、氏名"
+
 #: biz/djangoapps/ga_contract_operation/views.py
 msgid "It has exceeded the number({max_register_number}) of cases that can be a time of registration."
 msgstr "一度に登録できる受講者の上限({max_register_number})を超えています。"
-
-#: biz/djangoapps/ga_contract_operation/views.py
-msgid "Data in row #{row_num} must have exactly three columns: email, username, and full name."
-msgstr "{row_num}行目から次の3項目が見つかりませんでした：メールアドレス、ユーザー名、氏名"
 
 #: biz/templates/ga_contract_operation/register_students.html
 msgid "Register Students"
@@ -534,8 +538,8 @@ msgstr "新規登録を実施する"
 
 #: biz/djangoapps/ga_contract_operation/views.py
 msgid ""
-"An account with email {email} exists but the registered username {username} is different."
-msgstr "メールアドレス「{email}」は登録されているユーザー名「{username}」と一致しませんでしたので、念のため登録・入力内容をご確認ください。"
+"Warning, an account with email {email} exists but the registered username {username} is different."
+msgstr "警告：メールアドレス「{email}」は登録されているユーザー名「{username}」と一致しませんでしたので、念のため登録・入力内容をご確認ください。"
 
 #: biz/djangoapps/ga_contract_operation/views.py
 msgid "Could not find student list."
@@ -560,6 +564,10 @@ msgstr "登録状況"
 #: biz/djangoapps/ga_contract_operation/views.py
 msgid "Failed to batch unregister. Please operation again after a time delay."
 msgstr "一括解除に失敗しました。時間を空けて再度、操作してください。"
+
+#: biz/djangoapps/ga_contract_operation/views.py
+msgid "Failed to register. Please operation again after a time delay."
+msgstr "登録処理に失敗しました。時間を空けて再度、操作してください。"
 
 #: biz/djangoapps/ga_contract_operation/views.py
 msgid "Succeed to unregister {user_count} users."
@@ -596,6 +604,10 @@ msgstr "個人情報削除処理の実行後、元に戻すことはできませ
 #: biz/templates/ga_contract_operation/students.html
 msgid "Unregister Student"
 msgstr "受講解除"
+
+#: biz/djangoapps/ga_contract_operation/tasks.py
+msgid "Student Register"
+msgstr "受講者新規登録"
 
 #: biz/templates/ga_contract_operation/students.html
 msgid "Personal Information Mask"

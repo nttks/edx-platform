@@ -1,0 +1,81 @@
+<%!
+from django.utils.translation import ugettext as _
+from django.core.urlresolvers import reverse
+%>
+<style>
+  #task-history-wrapper {
+    margin-top: 30px;
+  }
+  #task-history-wrapper h2 {
+    margin-bottom: 0;
+  }
+  #task-history-wrapper .description {
+    margin-top: 10px;
+  }
+  #task-history-grid {
+    min-width: 920px;
+    width: 98%;
+    height: 200px;
+    margin: 15px 0 0 0;
+    display: none;
+  }
+</style>
+
+<div id="task-history-wrapper">
+    <h2>${_("Task History")}</h2>
+    <p class="description">${_("To see the status of the tasks that have been run in the background, please click this button.")}</p>
+    <input type="button" id="task-history-btn" value="&#xf1da ${_("Show Task History")}">
+    <div id="task-history-grid"></div>
+</div>
+
+<script type="text/javascript">
+    $(function () {
+        var taskHistoryGrid = $('#task-history-grid').w2grid({
+            name: 'task_history_grid',
+            fixedBody: true,
+            selectType : 'cell',
+            show: {
+                footer: true,
+            },
+            columns: [
+                {field: 'task_type', caption: '${_("Task Type")}', size: '13%', hidden: false},
+                {field: 'task_state', caption: '${_("State")}', size: '6%', hidden: false},
+                {field: 'task_result', caption: '${_("Execution Result")}', size: '40%', hidden: false},
+                {field: 'requester', caption: '${_("Execution Username")}', size: '13%', hidden: false},
+                {field: 'created', caption: '${_("Execution Datetime")}', size: '20%', hidden: false},
+            ],
+            onExpand: function(e) {
+                var target = taskHistoryGrid.get(e.recid), messages = target.messages;
+                if (messages.length === 0) {
+                    messages = [{ recid: -1, message: '${_("No messages.")}' }];
+                }
+                if (w2ui.hasOwnProperty('subgrid-' + e.recid)) {
+                    w2ui['subgrid-' + e.recid].destroy();
+                }
+                $('#'+ e.box_id).css({ margin: '0px', padding: '0px', width: '100%' }).animate({ height: '105px' }, 100);
+                setTimeout(function () {
+                    $('#'+ e.box_id).w2grid({
+                        name: 'subgrid-' + e.recid,
+                        show: { columnHeaders: false },
+                        fixedBody: true,
+                        columns: [
+                            { field: 'message', size: '100%', hidden: false },
+                        ],
+                        records: messages
+                    });
+                    w2ui['subgrid-' + e.recid].resize();
+                }, 300);
+            }
+        });
+        $('#task-history-btn').click(function() {
+            var $grid = $('#task-history-grid');
+            w2ui['task_history_grid'].load('${reverse("biz:contract_operation:task_history")}', function() {
+                var $wrapper = $('.content-wrapper');
+                if ($grid.is(':hidden')) {
+                    $wrapper.height($wrapper.height() + $grid.height());
+                    $grid.show();
+                }
+            });
+        });
+    });
+</script>

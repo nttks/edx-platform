@@ -87,3 +87,45 @@ class ContractTaskTarget(models.Model):
     def complete(self):
         self.completed = True
         self.save()
+
+
+class StudentRegisterTaskTarget(models.Model):
+
+    history = models.ForeignKey(ContractTaskHistory)
+    student = models.CharField(max_length=1024)
+    message = models.CharField(max_length=1024, null=True)
+    completed = models.BooleanField(default=False)
+    created = models.DateTimeField(auto_now_add=True)
+    modified = models.DateTimeField(auto_now=True)
+
+    @classmethod
+    def bulk_create(cls, history, students):
+        targets = [cls(
+            history=history,
+            student=student,
+        ) for student in students]
+        cls.objects.bulk_create(targets)
+
+    @classmethod
+    def find_by_history_id(cls, history_id):
+        return cls.objects.filter(
+            history_id=history_id,
+        )
+
+    @classmethod
+    def find_by_history_id_and_message(cls, history_id):
+        return cls.objects.filter(
+            history_id=history_id,
+            message__isnull=False,
+        )
+
+    def complete(self, message=None):
+        if message:
+            self.message = message
+        self.completed = True
+        self.save()
+
+    def incomplete(self, message):
+        self.message = message
+        self.completed = False
+        self.save()
