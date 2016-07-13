@@ -99,7 +99,7 @@ class CourseListTestCase(ModuleStoreTestCase):
         crea_m.assert_called_once_with(cate_m())
         getc_m.assert_called_once_with([setcc_m(c) for c in self.courses])
         upls_m.assert_called_once_with(crea_m())
-        dels_m.assert_called_once_with(crea_m(), False)
+        dels_m.assert_called_once_with(crea_m())
 
     @patch('ga_upload_course_list.views.CourseList._filter_courses')
     @patch('ga_upload_course_list.views.CourseList._set_course_contents')
@@ -136,7 +136,7 @@ class CourseListTestCase(ModuleStoreTestCase):
         crea_m.assert_called_once_with(cate_m())
         self.assertEquals(getc_m.call_count, 0)
         upls_m.assert_called_once_with(crea_m())
-        dels_m.assert_called_once_with(crea_m(), True)
+        dels_m.assert_called_once_with(crea_m())
 
     def test_filter_courses(self):
         ret = self.course_list._filter_courses(self.course)
@@ -155,10 +155,6 @@ class CourseListTestCase(ModuleStoreTestCase):
 
     def test_filter_courses_passed_enrollment_start(self):
         ret = self.course_list._filter_courses(self.course_not_start)
-        self.assertFalse(ret)
-
-    def test_filter_courses_passed_terminate_start(self):
-        ret = self.course_list._filter_courses(self.course_terminated)
         self.assertFalse(ret)
 
     def test_categorize_courses(self):
@@ -244,10 +240,12 @@ class CourseListTestCase(ModuleStoreTestCase):
         }
         ret = self.course_list._create_templates(contents)
         self.assertEquals(ret, {
-            u'{}cat2_list.json'.format(CATEGORY_DIR): ANY,
-            u'{}cat2_index.json'.format(CATEGORY_DIR): ANY,
-            u'{}cat1_list.json'.format(CATEGORY_DIR): ANY,
             u'{}cat1_index.json'.format(CATEGORY_DIR): ANY,
+            u'{}cat1_list.json'.format(CATEGORY_DIR): ANY,
+            u'{}cat1_archive.json'.format(CATEGORY_DIR): ANY,
+            u'{}cat2_index.json'.format(CATEGORY_DIR): ANY,
+            u'{}cat2_list.json'.format(CATEGORY_DIR): ANY,
+            u'{}cat2_archive.json'.format(CATEGORY_DIR): ANY,
         })
 
     def test_create_templates_with_target_course(self):
@@ -259,8 +257,9 @@ class CourseListTestCase(ModuleStoreTestCase):
         }
         ret = self.course_list_with_target._create_templates(contents)
         self.assertEquals(ret, {
-            u'{}cat2_list.json'.format(CATEGORY_DIR): ANY,
             u'{}cat2_index.json'.format(CATEGORY_DIR): ANY,
+            u'{}cat2_list.json'.format(CATEGORY_DIR): ANY,
+            u'{}cat2_archive.json'.format(CATEGORY_DIR): ANY,
         })
 
     def test_upload_to_store(self):
@@ -281,11 +280,10 @@ class CourseListTestCase(ModuleStoreTestCase):
             u'category/cat1.html': "<html><body>cat1</body></html>",
             u'category/cat2.html': "<html><body>cat2</body></html>",
         }
-        self.course_list._delete_from_store(catalog, False)
+        self.course_list._delete_from_store(catalog)
         self.s3store().list.assert_any_call(prefix=CATEGORY_DIR)
-        self.s3store().list.assert_any_call(prefix=IMAGE_DIR)
         s3object.delete.assert_called_with()
-        self.assertEquals(s3object.delete.call_count, 2)
+        self.assertEquals(s3object.delete.call_count, 1)
 
 
 @override_settings(

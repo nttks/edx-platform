@@ -63,7 +63,7 @@ class CourseList(object):
         self._upload_to_store(upload_resource)
 
         if self.target_category is None:
-            self._delete_from_store(upload_resource, template_only)
+            self._delete_from_store(upload_resource)
 
     def _filter_courses(self, course):
 
@@ -73,10 +73,6 @@ class CourseList(object):
 
         if course.enrollment_start is None or course.enrollment_start > self.base_now:
             log.info("Filter course before enrollment: {}".format(course.id))
-            return False
-
-        if course.terminate_start is not None and course.terminate_start < self.base_now:
-            log.info("Filter course terminated: {}".format(course.id))
             return False
 
         if self.target_category is not None:
@@ -153,11 +149,17 @@ class CourseList(object):
             index_opened_courses = []
             list_opened_courses = []
             list_closed_courses = []
+            archive_courses = []
 
             for course in courses:
-                if course.has_ended():
+                if course.terminate_start is not None and course.terminate_start < self.base_now:
+                    archive_courses.append(course)
+                    log.debug('archive_courses {}'.format(course.id.to_deprecated_string()))
+                elif course.has_ended():
                     list_closed_courses.append(course)
                     log.debug('list_closed {}'.format(course.id.to_deprecated_string()))
+                    archive_courses.append(course)
+                    log.debug('archive_courses {}'.format(course.id.to_deprecated_string()))
                 else:
                     list_opened_courses.append(course)
                     log.debug('list_opened {}'.format(course.id.to_deprecated_string()))
@@ -176,6 +178,9 @@ class CourseList(object):
                 "opened_courses": sorted([c.course_dict for c in list_opened_courses], key=lambda x: x["start_date"]),
                 "closed_courses": sorted([c.course_dict for c in list_closed_courses], key=lambda x: x["start_date"], reverse=True)
             }
+            archive_map = {
+                "archived_courses": sorted([c.course_dict for c in archive_courses], key=lambda x: x["start_date"], reverse=True)
+            }
 
             template_path = CATEGORY_DIR + category + '_index.json'
             templates.update({template_path: json.dumps(index_map)})
@@ -183,6 +188,10 @@ class CourseList(object):
 
             template_path = CATEGORY_DIR + category + '_list.json'
             templates.update({template_path: json.dumps(list_map)})
+            log.info('{},{}'.format(category, template_path))
+
+            template_path = CATEGORY_DIR + category + '_archive.json'
+            templates.update({template_path: json.dumps(archive_map)})
             log.info('{},{}'.format(category, template_path))
 
         return templates
@@ -213,12 +222,12 @@ class CourseList(object):
         for path, data in catalog.items():
             self.store.save(path, data)
 
-    def _delete_from_store(self, catalog, template_only):
-        for prefix in [CATEGORY_DIR] if template_only else [CATEGORY_DIR, IMAGE_DIR]:
-            for s3object in self.store.list(prefix=prefix):
-                if s3object.name not in catalog.keys():
-                    log.info('delete object from s3: {}'.format(s3object.name))
-                    s3object.delete()
+    def _delete_from_store(self, catalog):
+        # delete only json-files without images of course-card.
+        for s3object in self.store.list(prefix=CATEGORY_DIR):
+            if s3object.name not in catalog.keys():
+                log.info('delete object from s3: {}'.format(s3object.name))
+                s3object.delete()
 
 
 class S3Store(object):
