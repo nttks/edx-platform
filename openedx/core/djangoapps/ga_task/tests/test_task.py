@@ -49,7 +49,7 @@ class TaskTestMixin(object):
             task_class(task_entry.id)
         self.assertIn("Requested task did not match actual task", cm.exception.message)
 
-    def _test_run_with_task(self, task_class, action_name, expected_num_succeeded, expected_num_skipped=0,
+    def _test_run_with_task(self, task_class, action_name, expected_num_succeeded=0, expected_num_skipped=0,
                             expected_num_failed=0, expected_attempted=0, expected_total=0, task_entry=None):
         """Run a task and check the number of processed."""
         if task_entry is None:
