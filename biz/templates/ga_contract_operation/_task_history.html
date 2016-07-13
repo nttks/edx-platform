@@ -54,14 +54,24 @@ from django.core.urlresolvers import reverse
                 }
                 $('#'+ e.box_id).css({ margin: '0px', padding: '0px', width: '100%' }).animate({ height: '105px' }, 100);
                 setTimeout(function () {
-                    $('#'+ e.box_id).w2grid({
+                    var messageGrid = $('#'+ e.box_id).w2grid({
                         name: 'subgrid-' + e.recid,
                         show: { columnHeaders: false },
                         fixedBody: true,
                         columns: [
                             { field: 'message', size: '100%', hidden: false },
                         ],
-                        records: messages
+                        records: messages,
+                        onDblClick: function(e) {
+                            if (e.recid != -1) {
+                                w2popup.open({
+                                    title: w2utils.lang('Notification'),
+                                    body: '<div class="red" style="font-size: 1rem;">' + messageGrid.get(e.recid).message + '</div>',
+                                    width: 600,
+                                    height: 200,
+                                });
+                            }
+                        }
                     });
                     w2ui['subgrid-' + e.recid].resize();
                 }, 300);
