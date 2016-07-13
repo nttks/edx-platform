@@ -594,6 +594,10 @@ msgid "Total: {total}, Success: {succeeded}, Skipped: {skipped}, Failed: {failed
 msgstr "対象: {total}件、成功: {succeeded}件、スキップ: {skipped}件、失敗: {failed}件"
 
 #: biz/templates/ga_contract_operation/students.html
+msgid "Do the bulk students register. Are you sure?"
+msgstr "受講者登録を行います。よろしいですか？"
+
+#: biz/templates/ga_contract_operation/students.html
 msgid "Do the bulk students unregister. Are you sure?"
 msgstr "一括受講解除を行います。本当によろしいですか？"
 

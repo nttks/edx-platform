@@ -11,23 +11,33 @@ from django.core.urlresolvers import reverse
     $(function () {
         $('#form').w2form({ name: 'form' });
         $('.w2ui-buttons').on('click', '#register-btn', function () {
-            var button = $(this), messages = $('.messages'), registerForm = $('#form');
-            w2utils.lock(registerForm, '', true);
+            var clickButton = $(this), messages = $('.messages'), registerForm = $('#form');
             messages.empty();
-            $.ajax({
-                url: button.data('endpoint'),
-                type: 'POST',
-                data: {
-                    students_list: $('#list-students').val(),
-                    contract_id: button.data('contract-id'),
-                }
-            }).done(function (data) {
-                messages.append('<li class="info">' + data.info + '</li>');
-            }).fail(function(jqXHR) {
-                var data = JSON.parse(jqXHR.responseText);
-                messages.append('<li class="error">' + data.error + '</li>');
-            }).always(function () {
-                w2utils.unlock(registerForm);
+            if ($('#list-students').val() == '') {
+                messages.append('<li class="error">${_("Could not find student list.")}</li>');
+                return;
+            }
+            w2confirm({
+                msg: clickButton.data('confirm-message'),
+                yes_class: 'btn-right',
+                no_class: 'btn-left'
+            }).yes(function () {
+                w2utils.lock(registerForm, '', true);
+                $.ajax({
+                    url: clickButton.data('endpoint'),
+                    type: 'POST',
+                    data: {
+                        students_list: $('#list-students').val(),
+                        contract_id: clickButton.data('contract-id'),
+                    }
+                }).done(function (data) {
+                    messages.append('<li class="info">' + data.info + '</li>');
+                }).fail(function(jqXHR) {
+                    var data = JSON.parse(jqXHR.responseText);
+                    messages.append('<li class="error">' + data.error + '</li>');
+                }).always(function () {
+                    w2utils.unlock(registerForm);
+                });
             });
         });
     });
@@ -53,7 +63,7 @@ from django.core.urlresolvers import reverse
         </div>
     </div>
     <div class="w2ui-buttons">
-        <input type="button" id="register-btn" data-endpoint="${reverse('biz:contract_operation:register_students_ajax')}" data-contract-id="${request.current_contract.id}" value="&#xf044 ${_('Register Signup')}"/>
+        <input type="button" id="register-btn" data-endpoint="${reverse('biz:contract_operation:register_students_ajax')}" data-confirm-message="${_('Do the bulk students register. Are you sure?')}" data-contract-id="${request.current_contract.id}" value="&#xf044 ${_('Register Signup')}"/>
     </div>
 </div>
 <%include file="_task_history.html" />
