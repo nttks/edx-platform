@@ -1,0 +1,65 @@
+## mako
+<%! from django.utils.translation import ugettext as _ %>
+<%! from oauth2_provider.templatetags.scope import scopes %>
+<%! from django.core.urlresolvers import reverse %>
+
+<%inherit file="/main.html" />
+<%namespace name='static' file='/static_content.html'/>
+
+<%block name="pagetitle">${_("Authorization request")}</%block>
+
+<%block name="bodyclass">view-authorize</%block>
+
+<section class="authorize container">
+% if error:
+  <div class="authorize-title">${_("An error occurred with authorize request.")}</div>
+  <div class="authorize-error-message">
+    <p>${_("Error Code:")} ${error}</p>
+    <p>${error_description}</p>
+</div>
+% else:
+  <div class="authorize-title">
+    <a href="#developer-info" rel="leanModal">${client.name}</a> ${_("would like to access your data with the following permissions:")}
+  </div>
+  <ul class="authorize-scope">
+    % for permission in scopes(oauth_data['scope']):
+      % if permission not in ['default']:
+        <%include file="_scope.html" args="scope=permission" />
+      % endif
+    % endfor
+  </ul>
+  <p class="policy_message">${_("When you click [Approve], it will be allowed to use your information in accordance with this app and gacco each of the Terms of Use and Privacy Policy.")}<p>
+  <form method="post" action="${reverse("oauth2:authorize")}">
+    <input type="hidden" name="csrfmiddlewaretoken" value="${ csrf_token }">
+    % for permission in scopes(oauth_data['scope']):
+      <input type="hidden" name="scope" value="${permission}">
+    % endfor
+    <div class="form-actions">
+      <button type="submit" class="action-secondary action-cancel">${_("Cancel")}</button>
+      <button type="submit" class="action-primary action-authorize" name="authorize" value="Authorize">${_("Approve")}</button>
+    </div>
+  </form>
+  <section id="developer-info" class="modal" aria-hidden="true">
+    <div class="inner-wrapper" role="dialog" aria-labelledby="developer-info-title">
+      <button class="close-modal">
+        <i class="icon fa fa-remove"></i>
+        <span class="sr">
+          ## Translators: this is a control to allow users to exit out of this modal interface (a menu or piece of UI that takes the full focus of the screen)
+          ${_("Close")}
+        </span>
+      </button>
+      <header>
+        <h2>${_("Developer Info")}</h2>
+        <hr/>
+      </header>
+      <div>
+        <form> <!-- Here for styling reasons -->
+          <section>
+          <p>${_("When you click [Approve] you will be redirected to the following URL.")}<br>&nbsp;&nbsp;&nbsp;${client.redirect_uri}</p>
+          </section>
+        </form>
+      </div>
+    </div>
+  </section>
+% endif
+</section>
