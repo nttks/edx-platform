@@ -56,7 +56,8 @@ class MatlabProblemTest(ProblemsTest):
         """
         self.courseware_page.visit()
         matlab_problem_page = MatlabProblemPage(self.browser)
-        self.assertEqual(matlab_problem_page.problem_name, 'TEST MATLAB PROBLEM')
+        # text-transform property is uppercase in original, but none in gacco.css
+        self.assertEqual(matlab_problem_page.problem_name, 'Test Matlab Problem')
         return matlab_problem_page
 
     def test_run_code(self):

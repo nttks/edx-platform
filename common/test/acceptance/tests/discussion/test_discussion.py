@@ -4,6 +4,7 @@ Tests for discussion pages
 
 import datetime
 from pytz import UTC
+from unittest import skip
 from uuid import uuid4
 from nose.plugins.attrib import attr
 
@@ -866,6 +867,7 @@ class DiscussionUserProfileTest(UniqueCourseTest):
         page.wait_for_ajax()
         self.assertTrue(page.is_window_on_top())
 
+    @skip("Profile link is removed in gacco")
     def test_redirects_to_learner_profile(self):
         """
         Scenario: Verify that learner-profile link is present on forum discussions page and we can navigate to it.

@@ -21,15 +21,26 @@
         <ol>
             % for item_num, link in enumerate(footer['navigation_links'], start=1):
             <li class="nav-colophon-0${item_num}">
-              <a id="${link['name']}" href="${link['url']}">${link['title']}</a>
+              <a id="${link['name']}" href="${link['url']}"><i class="fa fa-chevron-circle-right"></i>${link['title']}</a>
             </li>
             % endfor
+            <li class="nav-colophon-0${len(footer['navigation_links']) + 1} help-tab">
+              <a href="#help-modal" rel="leanModal" role="button"><i class="fa fa-chevron-circle-right"></i>${_("Help")}</a>
+            </li>
         </ol>
       </nav>
+      <div id="social-plugins" style="display: none;">
+        <div id="gacco-twitter" data-url="http://gacco.org/" data-text="無料オンライン大学講座「gacco」登録受付中！" data-title="Twitter"></div>
+        <div id="gacco-facebook" data-url="http://gacco.org/" data-title="Facebook"></div>
+        <div id="gacco-blog">
+          <a href="${marketing_link('BLOG')}" target="_blank" rel="noreferrer">Blog</a>
+        </div>
+      </div>
 
-      <div class="wrapper-logo">
-        <p>
-          <a href="/">
+## Whether or not to display Organization logo is under consideration.
+##      <div class="wrapper-logo">
+##        <p>
+##          <a href="/">
             ## The default logo is a placeholder.
             ## You can either replace this link entirely or update
             ## the FOOTER_ORGANIZATION_IMAGE in Django settings.
@@ -37,40 +48,40 @@
             ## can be included in the footer on other sites
             ## (e.g. a blog or marketing front-end) to provide a consistent
             ## user experience.  See the branding app for details.
-            <img alt="organization logo" src="${footer['logo_image']}">
+##            <img alt="organization logo" src="${footer['logo_image']}">
+##          </a>
+##        </p>
+##      </div>
+    </div>
+
+    <div class="references">
+      <div class="powered-by">
+        <small><!-- NTT DOCOMO, INC.<br> -->DOCOMO gacco, Inc.</small>
+      </div>
+      <div class="copyright" style="margin: 0!important; padding: 0!important;">
+        <small>Copyright (c) DOCOMO gacco, Inc., except where noted, all rights reserved.</small>
+        <br>
+        <small>${_("EdX, Open edX and the edX and Open EdX logos are registered trademarks or trademarks of edX Inc.")}</small>
+      </div>
+
+      ## Please leave this link and use one of the logos provided
+      ## The OpenEdX link may be hidden when this view is served
+      ## through an API to partner sites (such as marketing sites or blogs),
+      ## which are not technically powered by OpenEdX.
+      % if not hide_openedx_link:
+      <div class="footer-about-openedx" style="margin: 0!important; padding: 0!important;">
+        <p>
+          <a href="${footer['openedx_link']['url']}">
+            <img src="${footer['openedx_link']['image']}" alt="${footer['openedx_link']['title']}" width="80" />
           </a>
         </p>
       </div>
-
-      ## Site operators: Please do not remove this paragraph! This attributes back to edX and makes your acknowledgement of edX's trademarks clear.
-      <p class="copyright">${footer['copyright']}</p>
-
-      <nav class="nav-legal" aria-label="${_('Legal')}">
-        <ul>
-          % for item_num, link in enumerate(footer['legal_links'], start=1):
-            <li class="nav-legal-0${item_num}">
-              <a href="${link['url']}">${link['title']}</a>
-            </li>
-          % endfor
-        </ul>
-      </nav>
+      % endif
     </div>
 
-    ## Please leave this link and use one of the logos provided
-    ## The OpenEdX link may be hidden when this view is served
-    ## through an API to partner sites (such as marketing sites or blogs),
-    ## which are not technically powered by OpenEdX.
-    % if not hide_openedx_link:
-    <div class="footer-about-openedx">
-      <p>
-        <a href="${footer['openedx_link']['url']}">
-          <img src="${footer['openedx_link']['image']}" alt="${footer['openedx_link']['title']}" width="140" />
-        </a>
-      </p>
-    </div>
-    % endif
   </footer>
 </div>
+<%include file="help_modal.html"/>
 % if include_dependencies:
   <%static:js group='base_vendor'/>
   <%static:css group='style-vendor'/>

@@ -1,0 +1,43 @@
+## mako
+<%!
+from django.conf import settings
+from django.core.urlresolvers import reverse
+
+from courseware.courses import get_course_about_section
+from openedx.core.lib.courses import course_image_url
+%>
+<%namespace name='static' file='static_content.html'/>
+
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta content="gacco" name="apple-mobile-web-app-title">
+<meta content="gacco,ガッコ,がっこ,大学講座,MOOC,ムーク" name="keywords">
+<meta content="JMOOC公認サービスであるgaccoでは大学講師陣による無料のオンライン講座を提供しています>。gaccoは日本初のMOOC（大規模オープンオンライン講座）として、多彩な講師陣を迎 えて新しい教育サービス>を提供します。" name="description">
+<meta name="twitter:card" content="product" />
+<meta name="twitter:site" content="@gacco_MOOC" />
+
+% if not course:
+<meta content="無料オンライン大学講座「gacco」登録受付中！" property="og:title">
+<meta content="article" property="og:type">
+<meta content="gacco The Japan MOOC" property="og:site_name">
+<meta content="gaccoでは大学講師陣による無料のオンライン講座を提供しています。gaccoは日本初のMOOC（>大規模オープンオンライン講座）として、多彩な講師陣を迎えて新しい教育サービスを提供します。受講は基本 無料ですのでお気軽に登録を！" property="og:description">
+<meta content="http://gacco.org/" property="og:url">
+<meta content="http://gacco.org/images/common/is_step_2.png" property="og:image">
+
+% else:
+<%
+  protocol = "https" if is_secure else "http"
+  course_about = reverse('about_course', args=[course.id.to_deprecated_string()])
+  course_about_url = "{prot}://{fqdn}{uri}".format(prot=protocol, fqdn=settings.SITE_NAME, uri=course_about)
+  course_img_uri = course_image_url(course)
+  course_img_url  = "{prot}://{fqdn}{uri}".format(prot=protocol, fqdn=settings.SITE_NAME, uri=course_img_uri)
+%>
+
+<meta property="og:title" content="${course.display_name_with_default | h}" />
+<meta content="article" property="og:type">
+<meta content="gacco The Japan MOOC" property="og:site_name">
+<meta content="${get_course_about_section(request, course, 'short_description')}" property="og:description">
+<meta content="${course_about_url}" property="og:url">
+<meta content="${course_img_url}" property="og:image">
+% endif
+
+<link rel="stylesheet" type="text/css" href="${static.url('css/gacco.css')}" />

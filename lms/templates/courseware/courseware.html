@@ -107,6 +107,48 @@ ${page_title_breadcrumbs(course_name())}
         });
       });
   </script>
+  <script type="text/javascript">
+    $(function() {
+      $("a[rel*=leanModal]").leanModal({   
+        top: 50,
+        overlay: 0.5,
+        closeButton: ".modal-close"
+      });
+      $("a[rel*=leanModal]").click(function(){
+        contentHeight = $(window).height() - 100;
+        $('#modal-accordion').css({height: contentHeight});
+      });
+    });
+    $(function() {
+        var active;
+        var contentHeight;
+        if ($('#modal-accordion').length) {
+          active = $('#modal-accordion ul:has(li.active)').index('#modal-accordion ul');
+          if (active < 0) {
+            active = $('#modal-accordion h3.active').index('#modal-accordion h3');
+          }
+          if (active < 0) {
+            active = 0;
+          }
+          $('#modal-accordion').bind('accordionchange', this.log).accordion({
+            active: active,
+            header: 'h3',
+            autoHeight: false,
+            heightStyle: 'content'
+          });
+          $('#modal-accordion .ui-state-active').closest('.chapter').addClass('is-open');
+          $('#modal-accordion').show();
+
+          $('#modal-accordion a').click(function(){
+            $('#modal-accordion .is-open').removeClass('is-open');
+            $(this).closest('.chapter').addClass('is-open');
+          });
+          $('#modal-accordion .ui-accordion-content li a').click(function(){
+            $('#modal-accordion .modal-close.fa-remove').trigger('click');
+          });
+        }
+    });
+  </script>
 
 ${fragment.foot_html()}
 
@@ -118,10 +160,26 @@ ${fragment.foot_html()}
   <%include file="/courseware/course_navigation.html" args="active_page='courseware'" />
 % endif
 
+<div id="course-accordion-modal" class="modal" aria-hidden="true" role="dialog" aria-label="label name">
+  <div class="course-index" role="navigation">
+    <div id="modal-accordion">
+      <nav aria-label="${_('Course Navigation')}">
+        <div class="close_button"><span>${course.display_name_with_default}</span><i class="modal-close fa fa-remove"></i></div>
+        % if accordion.strip():
+          ${accordion}
+        % else:
+          <div class="chapter">${_("No content has been added to this course")}</div>
+        % endif
+      </nav>
+    </div>
+  </div>
+</div>
+
 <div class="container">
   <div class="course-wrapper" role="presentation">
 
 % if disable_accordion is UNDEFINED or not disable_accordion:
+    <a href="#course-accordion-modal" rel="leanModal" role="button"><span class="toc">${_("Table of contents")}</span><span>${course.display_name_with_default}</span></a>
     <div class="course-index">
       % if settings.FEATURES.get('ENABLE_COURSEWARE_SEARCH'):
         <div id="courseware-search-bar" class="search-bar courseware-search-bar" role="search" aria-label="Course">
@@ -157,13 +215,6 @@ ${fragment.foot_html()}
            getattr(course, 'entrance_exam_minimum_score_pct') and \
            entrance_exam_current_score is not UNDEFINED:
             % if not entrance_exam_passed:
-            <p class="sequential-status-message">
-                ${_('To access course materials, you must score {required_score}% or higher on this \
-                exam. Your current score is {current_score}%.').format(
-                    required_score=int(round(course.entrance_exam_minimum_score_pct * 100)),
-                    current_score=int(round(entrance_exam_current_score * 100))
-                )}
-            </p>
             <script type="text/javascript">
             $(document).ajaxSuccess(function(event, xhr, settings) {
                 if (settings.url.indexOf("xmodule_handler/problem_check") > -1) {
@@ -174,12 +225,6 @@ ${fragment.foot_html()}
                 }
             });
             </script>
-            % else:
-              <p class="sequential-status-message">
-                ${_('Your score is {current_score}%. You have passed the entrance exam.').format(
-                    current_score=int(round(entrance_exam_current_score * 100))
-                )}
-            </p>
             % endif
       % endif
 

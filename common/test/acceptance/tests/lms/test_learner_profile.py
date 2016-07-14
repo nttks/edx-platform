@@ -3,6 +3,7 @@
 End-to-end tests for Student's Profile Page.
 """
 from contextlib import contextmanager
+import unittest
 
 from datetime import datetime
 from bok_choy.web_app_test import WebAppTest
@@ -265,6 +266,7 @@ class OwnLearnerProfilePageTest(LearnerProfileTestMixin, WebAppTest):
         profile_page.wait_for_page()
         self.verify_profile_page_is_private(profile_page)
 
+    @unittest.skip("Profile is remove in gacco")
     def test_dashboard_learner_profile_link(self):
         """
         Scenario: Verify that my profile link is present on dashboard page and we can navigate to correct page.
@@ -753,6 +755,7 @@ class DifferentUserLearnerProfilePageTest(LearnerProfileTestMixin, WebAppTest):
 
 
 @attr('a11y')
+@unittest.skip("Does not check a11y in gacco")
 class LearnerProfileA11yTest(LearnerProfileTestMixin, WebAppTest):
     """
     Class to test learner profile accessibility.

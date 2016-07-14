@@ -24,6 +24,7 @@ class CoursewarePage(CoursePage):
         """
         Return the number of sections in the sidebar on the page
         """
+        # It will double order for the PC and for mobile to exist in gacco
         return len(self.q(css=self.section_selector))
 
     @property
@@ -31,6 +32,7 @@ class CoursewarePage(CoursePage):
         """
         Return the number of subsections in the sidebar on the page, including in collapsed sections
         """
+        # It will double order for the PC and for mobile to exist in gacco
         return len(self.q(css=self.subsection_selector))
 
     @property

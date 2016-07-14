@@ -420,6 +420,7 @@ class AccountSettingsPageTest(AccountSettingsTestMixin, WebAppTest):
 
 
 @attr('a11y')
+@skip("Does not check a11y in gacco")
 class AccountSettingsA11yTest(AccountSettingsTestMixin, WebAppTest):
     """
     Class to test account settings accessibility.

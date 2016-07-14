@@ -265,7 +265,8 @@ class StudioLibraryContainerCapaFilterTest(LibraryContentTestBase, TestWithSearc
     @property
     def _problem_headers(self):
         """ Expected XBLock headers according to populate_library_fixture """
-        return frozenset(child.display_name.upper() for child in self.library_fixture.children)
+        # text-transform property is uppercase in original, but none in gacco.css
+        return frozenset(child.display_name for child in self.library_fixture.children)
 
     def _set_library_content_settings(self, count=1, capa_type="Any Type"):
         """
@@ -304,7 +305,8 @@ class StudioLibraryContainerCapaFilterTest(LibraryContentTestBase, TestWithSearc
         self.assertEqual(len(children_headers), 1)
         self.assertLessEqual(
             children_headers,
-            set([header.upper() for header in ["Problem Choice Group 1", "Problem Choice Group 2"]])
+            # text-transform property is uppercase in original, but none in gacco.css
+            set([header for header in ["Problem Choice Group 1", "Problem Choice Group 2"]])
         )
 
         # Choice group test
@@ -312,7 +314,8 @@ class StudioLibraryContainerCapaFilterTest(LibraryContentTestBase, TestWithSearc
         self.assertEqual(len(children_headers), 2)
         self.assertEqual(
             children_headers,
-            set([header.upper() for header in ["Problem Select 1", "Problem Select 2"]])
+            # text-transform property is uppercase in original, but none in gacco.css
+            set([header for header in ["Problem Select 1", "Problem Select 2"]])
         )
 
         # Missing problem type test

@@ -1,0 +1,69 @@
+<%page args="scope" />
+
+<%! from django.utils.translation import ugettext as _ %>
+<%
+  scope_info_dict = {
+    'openid': {
+      'icon': 'fa-openid',
+      'description': _("Association with gacco user"),
+      'detail': _("Authority to associate the user's user and gacco of this application"),
+    },
+    'profile': {
+      'icon': 'fa-user',
+      'description': _("Display of the basic profile information"),
+      'detail': _("Display of name, username registered in gacco"),
+    },
+    'email': {
+      'icon': 'fa-envelope',
+      'description': _("Display of the E-mail address"),
+      'detail': _("Display E-mail address registered in gacco"),
+    },
+    'course_staff': {
+      'icon': 'fa-cog',
+      'description': _("Display of course IDs that has been registered as a staff"),
+      'detail': _("Display of course IDs of gacco that has been registered as a staff"),
+    },
+    'course_instructor': {
+      'icon': 'fa-cog',
+      'description': _("Display of course IDs that has been registered as an instructor"),
+      'detail': _("Display of course IDs of gacco that has been registered as an instructor"),
+    },
+    'permissions': {
+      'icon': 'fa-cog',
+      'description': _("Display of information about the permission"),
+      'detail': _("Display of information about the permission in gacco"),
+    },
+  }
+  scope_info = scope_info_dict[scope]
+%>
+<li>
+  <span class="fa-stack fa-lg">
+    <i class="fa fa-circle fa-stack-2x"></i>
+    <i class="fa ${scope_info['icon']} fa-stack-1x fa-inverse"></i>
+  </span>
+  <span class="authorize-info-desc">${scope_info['description']}</span>
+  <a href="#authorize-info-${scope}" class="authorize-info" rel="leanModal"><i class="fa fa-info-circle fa-lg"></i></a>
+</li>
+<section id="authorize-info-${scope}" class="modal" aria-hidden="true">
+  <div class="inner-wrapper" role="dialog">
+    <button class="close-modal">
+      <i class="icon fa fa-remove"></i>
+      <span class="sr">
+        ## Translators: this is a control to allow users to exit out of this modal interface (a menu or piece of UI that takes the full focus of the screen)
+        ${_("Close")}
+      </span>
+    </button>
+    <header>
+      <h2>${_("Detail")}</h2>
+      <hr/>
+    </header>
+    <div>
+      <form> <!-- Here for styling reasons -->
+        <section>
+         <p>${scope_info['detail']}</p>
+        </section>
+      </form>
+    </div>
+  </div>
+</section>
+

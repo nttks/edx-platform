@@ -30,7 +30,7 @@
             _.each( context.providers, function( provider) {
                 if ( provider.registerUrl ) { %>
                     <button type="button" class="button button-primary button-<%- provider.id %> login-provider register-<%- provider.id %>" data-provider-url="<%- provider.registerUrl %>">
-                        <span class="icon fa <%- provider.iconClass %>" aria-hidden="true"></span>
+                        <i class="icon fa <%- provider.iconClass %>" aria-hidden="true"></i>
                         <span aria-hidden="true"><%- provider.name %></span>
                         <span class="sr"><%- _.sprintf( gettext("Create account using %(providerName)s."), {providerName: provider.name} ) %></span>
                     </button>
@@ -55,11 +55,14 @@
             </h2>
         </div>
     <% } %>
+    <ul class="attention-list">
+        <li class="minority"><%- gettext("If you are under 20 years old, you have to get permission of your parents to regist this site.") %></li>
+        <li><%= gettext("<span class=\"required\">Asterisk (*) marked fields</span> are required.") %></li>
+    </ul>
 
     <%= context.fields %>
 
     <button type="submit" class="action action-primary action-update js-register register-button"><%- gettext("Create your account") %></button>
-    <p class="note">* <%- gettext("Required field") %></p>
 </form>
 
 <div class="toggle-form">

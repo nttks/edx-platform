@@ -96,10 +96,11 @@ class EntranceExamPassTest(EntranceExamTest):
         self.courseware_page.visit()
         problem_page = ProblemPage(self.browser)
         self.assertEqual(problem_page.wait_for_page().problem_name, 'HEIGHT OF EIFFEL TOWER')
-        self.assertTrue(self.courseware_page.has_entrance_exam_message())
+        # entrance exam message is removed in gacco
+        #self.assertTrue(self.courseware_page.has_entrance_exam_message())
         self.assertFalse(self.courseware_page.has_passed_message())
         problem_page.click_choice('choice_1')
         problem_page.click_check()
         self.courseware_page.wait_for_page()
-        self.assertTrue(self.courseware_page.has_passed_message())
+        # self.assertTrue(self.courseware_page.has_passed_message())
         self.assertEqual(self.courseware_page.chapter_count_in_navigation, 2)

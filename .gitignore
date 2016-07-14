@@ -83,9 +83,12 @@ bin/
 
 ### Static assets pipeline artifacts
 *.scssc
-lms/static/css/
+lms/static/css/*.css
 lms/static/certificates/css/
 cms/static/css/
+!gacco.css
+!gacco-course.css
+!gmo.css
 
 ### Styling generated from templates
 lms/static/sass/*.css

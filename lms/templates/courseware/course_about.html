@@ -87,6 +87,7 @@ from openedx.core.lib.courses import course_image_url
         }
       } else if (xhr.status == 403) {
           location.href = "${reverse('register_user')}?course_id=${course.id | u}&enrollment_action=enroll";
+          location.href = "${reverse('register_user')}?course_id=${course.id | u}&enrollment_action=enroll${'&advanced_course=1' if course.is_f2f_course and course.is_f2f_course_sell else ''}";
       } else {
         $('#register_error').html(
             (xhr.responseText ? xhr.responseText : "${_("An error occurred. Please try again later.")}")
@@ -100,6 +101,40 @@ from openedx.core.lib.courses import course_image_url
   </script>
 
   <script src="${static.url('js/course_info.js')}"></script>
+  <script src="${static.url('js/vendor/sharrre/jquery.sharrre.min.js')}"></script>
+  <script>
+  $('#social-plugins').show();
+  $('#gacco-twitter').sharrre({
+    share: {
+      twitter: true
+    },
+    buttons: {
+      twitter: {count: 'horizontal', hashtags: '#gacco'}
+    },
+    template: '<a class="box" href="#" rel="noreferrer"><div class="count" href="#">{total}</div><div class="share"><i class="fa fa-twitter-square"></i><span>Tweet</span></div></a>',
+    enableHover: false,
+    enableTracking: true,
+    click: function(api, options) {
+      api.simulateClick();
+      api.openPopup('twitter');
+    }
+  });
+  $('#gacco-facebook').sharrre({
+    share: {
+      facebook: true
+    },
+    buttons: {
+      facebook: {action: 'like', layout: 'button_count'}
+    },
+    template: '<a class="box" href="#" rel="noreferrer"><div class="count" href="#">{total}</div><div class="share"><i class="fa fa-facebook-square"></i><span>Like</span></div></a>',
+    enableHover: false,
+    enableTracking: true,
+    click: function(api, options) {
+      api.simulateClick();
+      api.openPopup('facebook');
+    }
+  });
+  </script>
 </%block>
 
 <%block name="pagetitle">${course.display_name_with_default}</%block>
@@ -111,7 +146,7 @@ from openedx.core.lib.courses import course_image_url
       <section class="intro">
         <hgroup>
           <h1>
-            ${course.display_name_with_default}
+            ${course.display_number_with_default | h}: ${course.display_name_with_default | h}
             % if not self.theme_enabled():
               <a href="#">${course.display_org_with_default | h}</a>
             % endif
@@ -162,28 +197,23 @@ from openedx.core.lib.courses import course_image_url
           </a>
           <div id="register_error"></div>
         %else:
+          % if not is_spoc_course:
           <a href="#" class="register">
             ${_("Enroll in {course_name}").format(course_name=course.display_number_with_default) | h}
           </a>
           <div id="register_error"></div>
+          % else:
+          <span class="invitation_message disabled">${_("Please be enrolled from the invitation code registration page.")}</span>
+          % endif
         %endif
         </div>
 
       </section>
-      % if get_course_about_section(request, course, "video"):
-      <a href="#video-modal" class="media" rel="leanModal">
-        <div class="hero">
-          <img src="${course_image_url(course)}" alt="" />
-          <div class="play-intro"></div>
-        </div>
-      </a>
-      %else:
       <div class="media">
         <div class="hero">
           <img src="${course_image_url(course)}" alt="" />
         </div>
       </div>
-      % endif
     </div>
       </div>
   </header>
@@ -209,144 +239,6 @@ from openedx.core.lib.courses import course_image_url
         ${get_course_about_section(request, course, "overview")}
       </div>
     </section>
-
-    <section class="course-sidebar">
-      <section class="course-summary">
-        <header>
-          % if microsite.get_value('course_about_show_social_links', True):
-          <div class="social-sharing">
-            <div class="sharing-message">${_("Share with friends and family!")}</div>
-            ## TODO: this should probably be an overrideable block,
-            ##       or something allowing themes to do whatever they
-            ##       want here (and on this whole page, really).
-            % if self.stanford_theme_enabled():
-              <a href="http://twitter.com/intent/tweet?text=I+just+enrolled+in+${course.number}+${course.display_name_with_default}!+(http://class.stanford.edu)" class="share">
-                <i class="icon fa fa-twitter"></i><span class="sr">${_("Tweet that you've enrolled in this course")}</span>
-              </a>
-              <a href="mailto:?subject=Take%20a%20course%20at%20Stanford%20online!&body=I%20just%20enrolled%20in%20${course.number}%20${course.display_name_with_default}+(http://class.stanford.edu)" class="share">
-                <i class="icon fa fa-envelope"></i><span class="sr">${_("Email someone to say you've enrolled in this course")}</span>
-              </a>
-            % else:
-              <%
-                site_domain = microsite.get_value('site_domain', settings.SITE_NAME)
-                platform_name = microsite.get_value('platform_name', settings.PLATFORM_NAME)
-
-                ## Translators: This text will be automatically posted to the student's
-                ## Twitter account. {url} should appear at the end of the text.
-                tweet_text = _("I just enrolled in {number} {title} through {account}: {url}").format(
-                    number=course.number,
-                    title=course.display_name_with_default,
-                    account=microsite.get_value('course_about_twitter_account', settings.PLATFORM_TWITTER_ACCOUNT),
-                    url=u"http://{domain}{path}".format(
-                        domain=site_domain,
-                        path=reverse('about_course', args=[course.id.to_deprecated_string()])
-                    )
-                ).replace(u" ", u"+")
-                tweet_action = u"http://twitter.com/intent/tweet?text={tweet_text}".format(tweet_text=tweet_text)
-
-                facebook_link = microsite.get_value('course_about_facebook_link', settings.PLATFORM_FACEBOOK_ACCOUNT)
-
-                email_subject = u"mailto:?subject={subject}&body={body}".format(
-                    subject=_("Take a course with {platform} online").format(platform=platform_name),
-                    body=_("I just enrolled in {number} {title} through {platform} {url}").format(
-                        number=course.number,
-                        title=course.display_name_with_default,
-                        platform=platform_name,
-                        url=u"http://{domain}{path}".format(
-                            domain=site_domain,
-                            path=reverse('about_course', args=[course.id.to_deprecated_string()]),
-                        )
-                    )
-                ).replace(u" ", u"%20")
-              %>
-              <a href="${tweet_action}" class="share">
-                <i class="icon fa fa-twitter"></i><span class="sr">${_("Tweet that you've enrolled in this course")}</span>
-              </a>
-              <a href="${facebook_link}" class="share">
-                <i class="icon fa fa-thumbs-up"></i><span class="sr">${_("Post a Facebook message to say you've enrolled in this course")}</span>
-              </a>
-              <a href="${email_subject}" class="share">
-                <i class="icon fa fa-envelope"></i><span class="sr">${_("Email someone to say you've enrolled in this course")}</span>
-              </a>
-            % endif
-          </div>
-          % endif
-        </header>
-
-        <ol class="important-dates">
-          <li class="important-dates-item"><i class="icon fa fa-info-circle"></i><p class="important-dates-item-title">${_("Course Number")}</p><span class="important-dates-item-text course-number">${course.display_number_with_default | h}</span></li>
-          % if not course.start_date_is_still_default:
-            <li class="important-dates-item"><i class="icon fa fa-calendar"></i><p class="important-dates-item-title">${_("Classes Start")}</p><span class="important-dates-item-text start-date">${course.start_datetime_text()}</span></li>
-          % endif
-            ## We plan to ditch end_date (which is not stored in course metadata),
-            ## but for backwards compatibility, show about/end_date blob if it exists.
-            % if get_course_about_section(request, course, "end_date") or course.end:
-            <li class="important-dates-item">
-                <i class="icon fa fa-calendar"></i>
-                <p class="important-dates-item-title">${_("Classes End")}</p>
-                <span class="important-dates-item-text final-date">
-                    % if get_course_about_section(request, course, "end_date"):
-                        ${get_course_about_section(request, course, "end_date")}
-                    % else:
-                        ${course.end_datetime_text()}
-                    % endif
-                </span>
-            </li>
-            % endif
-
-          % if get_course_about_section(request, course, "effort"):
-            <li class="important-dates-item"><i class="icon fa fa-pencil"></i><p class="important-dates-item-title">${_("Estimated Effort")}</p><span class="important-dates-item-text effort">${get_course_about_section(request, course, "effort")}</span></li>
-          % endif
-
-          ##<li class="important-dates-item"><i class="icon fa fa-clock-o"></i><p class="important-dates-item-title">${_('Course Length')}</p><span class="important-dates-item-text course-length">${_('{number} weeks').format(number=15)}</span></li>
-
-          %if course_price and (can_add_course_to_cart or is_cosmetic_price_enabled):
-            <li class="important-dates-item">
-              <i class="icon fa fa-money"></i>
-              <p class="important-dates-item-title">${_("Price")}</p>
-              <span class="important-dates-item-text">${course_price}</span>
-            </li>
-          %endif
-
-          % if pre_requisite_courses:
-          <% prc_target = reverse('about_course', args=[unicode(pre_requisite_courses[0]['key'])]) %>
-          <li class="prerequisite-course important-dates-item">
-            <i class="icon fa fa-list-ul"></i>
-            <p class="important-dates-item-title">${_("Prerequisites")}</p>
-            ## Multiple pre-requisite courses are not supported on frontend that's why we are pulling first element
-            <span class="important-dates-item-text pre-requisite"><a href="${prc_target}">${pre_requisite_courses[0]['display']}</a></span>
-            <p class="tip">
-            ${_("You must successfully complete {link_start}{prc_display}{link_end} before you begin this course.").format(
-              link_start='<a href="{}">'.format(prc_target),
-              link_end='</a>',
-              prc_display=pre_requisite_courses[0]['display'],
-            )}
-            </p>
-          </li>
-          % endif
-          % if get_course_about_section(request, course, "prerequisites"):
-            <li class="important-dates-item"><i class="icon fa fa-book"></i><p class="important-dates-item-title">${_("Requirements")}</p><span class="important-dates-item-text prerequisites">${get_course_about_section(request, course, "prerequisites")}</span></li>
-          % endif
-        </ol>
-      </section>
-
-
-      ## For now, ocw links are the only thing that goes in additional resources
-      % if get_course_about_section(request, course, "ocw_links"):
-      <section class="additional-resources">
-        <header>
-          <h1>${_("Additional Resources")}</h1>
-        </header>
-
-        <section>
-          ## "MITOpenCourseware" should *not* be translated
-          <h2 class="opencourseware">MITOpenCourseware</h2>
-             ${get_course_about_section(request, course, "ocw_links")}
-        </section>
-      </section>
-      %endif
-    </section>
-
   </section>
 </section>
 
@@ -367,5 +259,3 @@ from openedx.core.lib.courses import course_image_url
     </form>
   </div>
 %endif
-
-<%include file="../video_modal.html" />

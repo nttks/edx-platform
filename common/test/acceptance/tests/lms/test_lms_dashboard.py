@@ -4,6 +4,7 @@ End-to-end tests for the main LMS Dashboard (aka, Student Dashboard).
 """
 import datetime
 from nose.plugins.attrib import attr
+import unittest
 
 from ..helpers import UniqueCourseTest
 from ...fixtures.course import CourseFixture
@@ -221,6 +222,7 @@ class LmsDashboardPageTest(BaseLmsDashboardTest):
 
 
 @attr('a11y')
+@unittest.skip("Does not check a11y in gacco")
 class LmsDashboardA11yTest(BaseLmsDashboardTest):
     """
     Class to test lms student dashboard accessibility.

@@ -92,18 +92,18 @@ def when_i_navigate_to_a_section(step):
     world.disable_jquery_animations()
 
     # Open the 2nd section
-    world.css_click(css_selector='.chapter', index=1)
+    world.css_click(css_selector='.chapter', index=3)
     subsection_css = 'a[href*="Test_Subsection_2/"]'
 
     # Click on the subsection to see the content
-    world.css_click(subsection_css)
+    world.css_click(subsection_css, index=1)
 
 
 @step(u'I navigate to a subsection')
 def when_i_navigate_to_a_subsection(step):
     # Click on the 2nd subsection to see the content
     subsection_css = 'a[href*="Test_Subsection_2/"]'
-    world.css_click(subsection_css)
+    world.css_click(subsection_css, index=1)
 
 
 @step(u'I navigate to an item in a sequence')
@@ -114,17 +114,17 @@ def when_i_navigate_to_an_item_in_a_sequence(step):
 
 @step(u'I see the content of the section')
 def then_i_see_the_content_of_the_section(step):
-    wait_for_problem('PROBLEM 2')
+    wait_for_problem('Problem 2')
 
 
 @step(u'I see the content of the subsection')
 def then_i_see_the_content_of_the_subsection(step):
-    wait_for_problem('PROBLEM 4')
+    wait_for_problem('Problem 4')
 
 
 @step(u'I see the content of the sequence item')
 def then_i_see_the_content_of_the_sequence_item(step):
-    wait_for_problem('PROBLEM 6')
+    wait_for_problem('Problem 6')
 
 
 @step(u'I return to the courseware')

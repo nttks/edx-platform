@@ -58,10 +58,10 @@ else:
                         ## this is the standard case in edx-platform
                         <span class="subtitle-name">${section['format']} ${due_date}</span>
 
-                        % if 'graded' in section and section['graded']:
-                            <span class="menu-icon icon fa fa-pencil-square-o" aria-hidden="true"></span>
-                            <span class="sr">${_("This content is graded")}</span>
-                        % endif
+                        ### % if 'graded' in section and section['graded']:
+                        ###     <span class="menu-icon icon fa fa-pencil-square-o" aria-hidden="true"></span>
+                        ###     <span class="sr">${_("This content is graded")}</span>
+                        ### % endif
                     % endif
                 </p>
                 % endif
