@@ -3,6 +3,7 @@ Views for Survey
 """
 import json
 import logging
+from urlparse import parse_qsl
 
 from django.contrib.auth.decorators import login_required
 from django.http import Http404
@@ -22,8 +23,9 @@ log = logging.getLogger(__name__)
 @ensure_csrf_cookie
 def survey_init(request):
     """Returns whether the survey has already submitted."""
-    course_id = request.POST.get('course_id')
-    unit_id = request.POST.get('unit_id')
+    qs = dict(parse_qsl(request.body))
+    course_id = qs.get('course_id')
+    unit_id = qs.get('unit_id')
 
     if not course_id or not unit_id:
         log.warning("Illegal parameter. course_id=%s, unit_id=%s" % (course_id, unit_id))
@@ -53,10 +55,11 @@ def survey_ajax(request):
     """Ajax call to submit a survey."""
     MAX_CHARACTER_LENGTH = 1000
 
-    course_id = request.POST.get('course_id')
-    unit_id = request.POST.get('unit_id')
-    survey_name = request.POST.get('survey_name')
-    survey_answer = request.POST.get('survey_answer')
+    qs = dict(parse_qsl(request.body))
+    course_id = qs.get('course_id')
+    unit_id = qs.get('unit_id')
+    survey_name = qs.get('survey_name')
+    survey_answer = qs.get('survey_answer')
 
     if not course_id or not unit_id:
         log.warning("Illegal parameter. course_id=%s, unit_id=%s" % (course_id, unit_id))
