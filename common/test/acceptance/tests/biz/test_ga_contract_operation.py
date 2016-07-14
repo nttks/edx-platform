@@ -5,6 +5,7 @@ End-to-end tests for survey of biz feature
 from unittest import skip
 
 from bok_choy.web_app_test import WebAppTest
+from nose.plugins.attrib import attr
 
 from common.test.acceptance.pages.biz.ga_contract import BizContractPage
 from common.test.acceptance.pages.biz.ga_navigation import BizNavPage
@@ -17,6 +18,7 @@ from lms.envs.bok_choy import EMAIL_FILE_PATH
 
 
 @skip("TODO: implements with task history")
+@attr('shard_ga_biz_1')
 class BizContractOperationTest(WebAppTest, GaccoBizTestMixin):
     """
     Tests that the contract operation functionality of biz works

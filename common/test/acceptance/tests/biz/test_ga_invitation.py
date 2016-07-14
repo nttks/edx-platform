@@ -5,6 +5,7 @@ End-to-end tests for invitation of biz feature
 from flaky import flaky
 
 from bok_choy.web_app_test import WebAppTest
+from nose.plugins.attrib import attr
 
 from common.test.acceptance.fixtures.course import CourseFixture
 from common.test.acceptance.pages.biz.ga_contract import BizContractPage
@@ -16,6 +17,7 @@ from common.test.acceptance.tests.biz import C_DIRECTOR_USER_INFO, PLATFORMER_US
     B_DIRECTOR_USER_INFO, B_COMPANY, GaccoBizTestMixin, AGGREGATOR_USER_INFO, C_COMPANY
 
 
+@attr('shard_ga_biz_1')
 class BizInvitationTest(WebAppTest, GaccoBizTestMixin):
     """
     Tests that the invitation functionality works

@@ -6,6 +6,7 @@ import datetime
 
 import requests
 from bok_choy.web_app_test import WebAppTest
+from nose.plugins.attrib import attr
 
 from common.test.acceptance.fixtures.course import CourseFixture
 from common.test.acceptance.pages.biz.ga_contract import BizContractPage
@@ -19,6 +20,7 @@ from common.test.acceptance.tests.biz import PLATFORMER_USER_INFO, \
     A_COMPANY, A_MANAGER_USER_INFO, SUPER_USER_INFO, GaccoBizTestMixin, A_DIRECTOR_USER_INFO
 
 
+@attr('shard_ga_biz_1')
 class BizCourseAboutTest(WebAppTest, GaccoBizTestMixin):
     """
     Tests that the course about functionality works

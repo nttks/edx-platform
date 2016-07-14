@@ -5,6 +5,7 @@ End-to-end tests for access page from menu of biz feature
 from flaky import flaky
 
 from bok_choy.web_app_test import WebAppTest
+from nose.plugins.attrib import attr
 
 from . import PLAT_COMPANY_CODE, PLATFORMER_USER_INFO, GaccoBizTestMixin
 from ...pages.biz.ga_dashboard import DashboardPage
@@ -21,6 +22,7 @@ MENU_USER_REGISTER = u'Contract Register Management'
 MENU_REGISTER_MANAGEMENT = u'Register User Management'
 
 
+@attr('shard_ga_biz_1')
 class BizAccessPageFromMenuTest(WebAppTest, GaccoBizTestMixin):
 
     def test_platformer(self):

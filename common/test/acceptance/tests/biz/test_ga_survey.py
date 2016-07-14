@@ -3,12 +3,13 @@
 End-to-end tests for survey of biz feature
 """
 import csv
+import os
 import shutil
 from unittest import skip
 
 import bok_choy
-import os
 from bok_choy.web_app_test import WebAppTest
+from nose.plugins.attrib import attr
 
 from common.test.acceptance.pages.biz.ga_contract import BizContractPage
 from common.test.acceptance.pages.biz.ga_navigation import BizNavPage
@@ -25,6 +26,7 @@ DOWNLOAD_DIR = '/tmp'
 
 
 @skip("Until apply security patch")
+@attr('shard_ga_biz_1')
 class BizSurveyTest(WebAppTest, GaccoBizTestMixin):
     """
     Tests that the survey functionality of biz works
