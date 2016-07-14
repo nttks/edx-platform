@@ -84,7 +84,7 @@ class DjangoAdminListPage(PageObject, DjangoAdminGridMixin):
 
     def is_browser_on_page(self):
         if self.message:
-            return self.q(css='ul.messagelist>li.info').visible and self.q(css='table#result_list').present
+            return self.q(css='ul.messagelist>li.success').visible and self.q(css='table#result_list').present
         return self.q(css='table#result_list').present
 
 

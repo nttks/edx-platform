@@ -7,7 +7,7 @@ import bok_choy.browser
 from ...fixtures.course import CourseFixture, XBlockFixtureDesc
 from ...pages.lms.auto_auth import AutoAuthPage
 from ...pages.lms.courseware import CoursewarePage
-from ...pages.lms.ga_course_nav import CourseNavPage
+from ...pages.lms.course_nav import CourseNavPage
 from ...pages.lms.ga_survey import SurveyPage
 from ..ga_helpers import GaccoTestMixin
 from ..helpers import UniqueCourseTest, load_data_str

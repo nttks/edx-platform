@@ -159,7 +159,7 @@ class BizInvitationTest(WebAppTest, GaccoBizTestMixin):
         # Verify that course about page have no register link
         course_about_page = CourseAboutPage(self.browser, self.course._course_key).visit()
         self.assertFalse(course_about_page.is_register_link_displayed)
-        self.assertIn('You are registered for this course', course_about_page.register_disabled_text)
+        self.assertIn('You are enrolled in this course', course_about_page.register_disabled_text)
         # Register invitation code again
         BizInvitationPage(self.browser).visit().input_invitation_code(
                 contract['Invitation Code']).click_register_button()
