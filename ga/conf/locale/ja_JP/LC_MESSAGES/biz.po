@@ -520,13 +520,17 @@ msgstr "username1@domain.com,gaccotarou,学校 太郎"
 msgid "No messages."
 msgstr "メッセージはありません。"
 
-#: biz/djangoapps/ga_contract_operation/views.py
+#: biz/djangoapps/ga_contract_operation/student_register.py
 msgid "Data must have exactly three columns: email, username, and full name."
 msgstr "次の3項目が見つかりませんでした：メールアドレス、ユーザー名、氏名"
 
 #: biz/djangoapps/ga_contract_operation/views.py
 msgid "It has exceeded the number({max_register_number}) of cases that can be a time of registration."
 msgstr "一度に登録できる受講者の上限({max_register_number})を超えています。"
+
+#: biz/djangoapps/ga_contract_operation/views.py
+msgid "The number of lines per line has exceeded the {biz_max_char_length_register_line} lines."
+msgstr "１行あたりの行数が{biz_max_char_length_register_line}行を超えています。"
 
 #: biz/templates/ga_contract_operation/register_students.html
 msgid "Register Students"
@@ -536,10 +540,14 @@ msgstr "受講者を新規登録"
 msgid "Register Signup"
 msgstr "新規登録を実施する"
 
-#: biz/djangoapps/ga_contract_operation/views.py
+#: biz/djangoapps/ga_contract_operation/student_register.py
 msgid ""
 "Warning, an account with email {email} exists but the registered username {username} is different."
 msgstr "警告：メールアドレス「{email}」は登録されているユーザー名「{username}」と一致しませんでしたので、念のため登録・入力内容をご確認ください。"
+
+#: biz/djangoapps/ga_contract_operation/student_register.py
+msgid "Name cannot be more than {name_max_length} characters long"
+msgstr "氏名は{name_max_length}文字以内で入力してください。"
 
 #: biz/djangoapps/ga_contract_operation/views.py
 msgid "Could not find student list."
@@ -565,7 +573,7 @@ msgstr "登録状況"
 msgid "Failed to batch unregister. Please operation again after a time delay."
 msgstr "一括解除に失敗しました。時間を空けて再度、操作してください。"
 
-#: biz/djangoapps/ga_contract_operation/views.py
+#: biz/djangoapps/ga_contract_operation/student_register.py
 msgid "Failed to register. Please operation again after a time delay."
 msgstr "登録処理に失敗しました。時間を空けて再度、操作してください。"
 

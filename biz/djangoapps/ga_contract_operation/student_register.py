@@ -19,6 +19,7 @@ from microsite_configuration import microsite
 from openedx.core.djangoapps.ga_task.models import Task
 from openedx.core.djangoapps.ga_task.task import TaskProgress
 from student.forms import AccountCreationForm
+from student.models import UserProfile
 from student.views import _do_create_account, AccountValidationError
 
 log = logging.getLogger(__name__)
@@ -85,6 +86,12 @@ def perform_delegate_student_register(entry_id, task_input, action_name):
             validate_email(email)
         except ValidationError:
             return (_("Invalid email {email_address}.").format(email_address=email), None, None)
+
+        name_max_length = UserProfile._meta.get_field('name').max_length
+        if len(name) > name_max_length:
+            return (_(
+                "Name cannot be more than {name_max_length} characters long"
+            ).format(name_max_length=name_max_length), None, None)
 
         message = None
         user = None

@@ -219,8 +219,14 @@ def register_students_ajax(request):
         return _error_response(_("Could not find student list."))
 
     if len(students) > settings.BIZ_MAX_REGISTER_NUMBER:
-        return _error_response(
-            _('It has exceeded the number({max_register_number}) of cases that can be a time of registration.').format(max_register_number=settings.BIZ_MAX_REGISTER_NUMBER))
+        return _error_response(_(
+            "It has exceeded the number({max_register_number}) of cases that can be a time of registration."
+        ).format(max_register_number=settings.BIZ_MAX_REGISTER_NUMBER))
+
+    if any([len(s) > settings.BIZ_MAX_CHAR_LENGTH_REGISTER_LINE for s in students]):
+        return _error_response(_(
+            "The number of lines per line has exceeded the {biz_max_char_length_register_line} lines."
+        ).format(biz_max_char_length_register_line=settings.BIZ_MAX_CHAR_LENGTH_REGISTER_LINE))
 
     history = ContractTaskHistory.create(request.current_contract, request.user)
     StudentRegisterTaskTarget.bulk_create(history, students)
