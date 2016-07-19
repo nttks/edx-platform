@@ -53,6 +53,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('course_id', xmodule_django.models.CourseKeyField(max_length=255, db_index=True)),
                 ('user', models.ForeignKey(to=settings.AUTH_USER_MODEL, null=True)),
+                ('force_disabled', models.BooleanField(default=False)),
             ],
         ),
         migrations.AlterUniqueTogether(
