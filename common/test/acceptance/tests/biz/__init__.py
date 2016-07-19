@@ -220,7 +220,7 @@ class GaccoBizTestMixin(GaccoTestMixin):
         self.switch_to_user(operator)
         biz_organization_page = DashboardPage(self.browser).visit().click_biz().click_organization()
 
-        org_code = 'test_' + self.unique_id[0:4]
+        org_code = 'test_' + self.unique_id[0:8]
         org_name = 'org name ' + org_code
         biz_organization_page.click_add().input(org_name, org_code).click_register()
         self.assertIn('The new organization has been added.', biz_organization_page.messages)
