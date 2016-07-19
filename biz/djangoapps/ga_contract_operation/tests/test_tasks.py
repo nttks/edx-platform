@@ -990,3 +990,50 @@ class StudentRegisterTaskTest(BizViewTestBase, ModuleStoreTestCase, TaskTestMixi
         self.assertEquals(ContractRegister.objects.get(user__email='test_student1@example.com', contract=contract).status, INPUT_INVITATION_CODE)
         self.assertEquals(ContractRegister.objects.get(user__email='test_student2@example.com', contract=contract).status, INPUT_INVITATION_CODE)
         self.assertFalse(ContractRegister.objects.filter(user__email='test_student3@example.com', contract=contract).exists())
+
+    def test_register_over_max_char_length(self):
+        # ----------------------------------------------------------
+        # Setup test data
+        # ----------------------------------------------------------
+        students = [
+            "test_student1test_student1test_student1test_student1test_student@example.com,test_student_1,tester1",
+            "test_student3@example.com,test_student_1test_student_1test_stu,tester3",
+            "test_student2@example.com,test_student_2,tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2test",
+        ]
+
+        contract = self._create_contract()
+        history = self._create_task_history(contract=contract)
+        self._create_targets(history, students)
+
+        # ----------------------------------------------------------
+        # Execute task
+        # ----------------------------------------------------------
+        self._test_run_with_task(
+            student_register,
+            'student_register',
+            task_entry=self._create_input_entry(contract=contract, history=history),
+            expected_attempted=3,
+            expected_num_failed=3,
+            expected_total=3,
+        )
+
+        # ----------------------------------------------------------
+        # Assertion
+        # ----------------------------------------------------------
+        self.assertEqual(3, StudentRegisterTaskTarget.objects.filter(history=history, completed=True).count())
+        self.assertEqual(
+            "Email cannot be more than 75 characters long",
+            StudentRegisterTaskTarget.objects.get(history=history, student=students[0]).message
+        )
+        self.assertEqual(
+            "Username cannot be more than 30 characters long",
+            StudentRegisterTaskTarget.objects.get(history=history, student=students[1]).message
+        )
+        self.assertEqual(
+            "Name cannot be more than 255 characters long",
+            StudentRegisterTaskTarget.objects.get(history=history, student=students[2]).message
+        )
+
+        self.assertFalse(ContractRegister.objects.filter(user__email='test_student1@example.com', contract=contract).exists())
+        self.assertFalse(ContractRegister.objects.filter(user__email='test_student2@example.com', contract=contract).exists())
+        self.assertFalse(ContractRegister.objects.filter(user__email='test_student3@example.com', contract=contract).exists())
