@@ -8,7 +8,7 @@ import xmodule_django.models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('shoppingcart', '0003_auto_20160616_1451'),
+        ('shoppingcart', '0002_auto_20151208_1034'),
         ('ga_advanced_course', '0001_initial'),
     ]
 

@@ -251,6 +251,7 @@ class Migration(migrations.Migration):
                 ('standing_last_changed_at', models.DateTimeField(auto_now=True)),
                 ('changed_by', models.ForeignKey(to=settings.AUTH_USER_MODEL, blank=True)),
                 ('user', models.OneToOneField(related_name='standing', to=settings.AUTH_USER_MODEL)),
+                ('resign_reason', models.TextField(max_length=1000, null=True)),
             ],
         ),
         migrations.CreateModel(

@@ -11,7 +11,8 @@ from mock import patch
 from biz.djangoapps.ga_contract.tests.factories import AdditionalInfoFactory, ContractFactory, ContractDetailFactory
 from biz.djangoapps.ga_invitation.tests.factories import AdditionalInfoSettingFactory, ContractRegisterFactory
 from biz.djangoapps.ga_invitation.models import INPUT_INVITATION_CODE, REGISTER_INVITATION_CODE, UNREGISTER_INVITATION_CODE
-from biz.djangoapps.ga_manager.tests.factories import ManagerPermissionFactory, ManagerFactory
+from biz.djangoapps.ga_manager.models import ManagerPermission
+from biz.djangoapps.ga_manager.tests.factories import ManagerFactory
 from biz.djangoapps.ga_organization.models import Organization
 from biz.djangoapps.ga_organization.tests.factories import OrganizationFactory
 from biz.djangoapps.util.biz_mongo_connection import BizMongoConnection
@@ -36,31 +37,16 @@ class BizTestBase(TestCase):
         )
         self.gacco_organization.save()
 
-        self.platformer_permission = self._create_permission('platformer', 1, 1, 1, 0, 0, 0)
-        self.aggregator_permission = self._create_permission('aggregator', 1, 1, 1, 0, 0, 0)
-        self.director_permission = self._create_permission('director', 0, 0, 1, 1, 1, 1)
-        self.manager_permission = self._create_permission('manager', 0, 0, 0, 0, 1, 0)
+        self.platformer_permission = ManagerPermission.objects.get(permission_name='platformer')
+        self.aggregator_permission = ManagerPermission.objects.get(permission_name='aggregator')
+        self.director_permission = ManagerPermission.objects.get(permission_name='director')
+        self.manager_permission = ManagerPermission.objects.get(permission_name='manager')
 
         self.addCleanup(self._clear_cache)
 
     def _clear_cache(self):
         from django.core.cache import cache
         cache.clear()
-
-    def _create_permission(
-        self, permission_name, can_handle_organization, can_handle_contract,
-        can_handle_manager, can_handle_course_operation, can_handle_achievement,
-        can_handle_contract_operation,
-    ):
-        return ManagerPermissionFactory.create(
-            permission_name=permission_name,
-            can_handle_organization=can_handle_organization,
-            can_handle_contract=can_handle_contract,
-            can_handle_manager=can_handle_manager,
-            can_handle_course_operation=can_handle_course_operation,
-            can_handle_achievement=can_handle_achievement,
-            can_handle_contract_operation=can_handle_contract_operation,
-        )
 
     def _create_manager(self, org, user, created, permissions):
         return ManagerFactory.create(org=org, user=user, created=created, permissions=permissions)
