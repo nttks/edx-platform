@@ -11,7 +11,7 @@ from celery.states import READY_STATES
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from django.db import IntegrityError, transaction
+from django.db import transaction
 from django.utils.translation import ugettext as _
 from django.views.decorators.http import require_GET, require_POST
 
@@ -27,7 +27,6 @@ from edxmako.shortcuts import render_to_response
 from openedx.core.djangoapps.ga_task.api import AlreadyRunningError
 from openedx.core.djangoapps.ga_task.task import STATES as TASK_STATES
 from openedx.core.lib.ga_datetime_utils import to_timezone
-from openedx.core.lib.json_utils import EscapedEdxJSONEncoder
 from student.models import CourseEnrollment
 from util.json_request import JsonResponse, JsonResponseBadRequest
 

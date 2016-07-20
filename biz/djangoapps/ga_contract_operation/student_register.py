@@ -139,7 +139,7 @@ def perform_delegate_student_register(entry_id, task_input, action_name):
         task_progress.attempt()
 
         try:
-            with transaction.commit_on_success():
+            with transaction.atomic():
                 student = target.student.split(',') if target.student else []
                 message, user, email_params = _validate_student_and_get_or_create_user(student)
 
