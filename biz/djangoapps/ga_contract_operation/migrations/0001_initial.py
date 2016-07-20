@@ -36,6 +36,18 @@ class Migration(migrations.Migration):
                 ('register', models.ForeignKey(to='ga_invitation.ContractRegister')),
             ],
         ),
+        migrations.CreateModel(
+            name='StudentRegisterTaskTarget',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('student', models.CharField(max_length=1024)),
+                ('message', models.CharField(max_length=1024, null=True)),
+                ('completed', models.BooleanField(default=False)),
+                ('created', models.DateTimeField(auto_now_add=True)),
+                ('modified', models.DateTimeField(auto_now=True)),
+                ('history', models.ForeignKey(to='ga_contract_operation.ContractTaskHistory')),
+            ],
+        ),
         migrations.AlterUniqueTogether(
             name='contracttasktarget',
             unique_together=set([('history', 'register')]),
