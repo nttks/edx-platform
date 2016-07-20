@@ -32,3 +32,9 @@ Monthly report info
 """
 BIZ_FROM_EMAIL = 'support@nttks.jp'
 BIZ_RECIPIENT_LIST = []
+
+"""
+Register student
+"""
+BIZ_MAX_REGISTER_NUMBER = 1000
+BIZ_MAX_CHAR_LENGTH_REGISTER_LINE = 300

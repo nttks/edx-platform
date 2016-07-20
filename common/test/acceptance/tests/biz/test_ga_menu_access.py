@@ -2,6 +2,7 @@
 """
 End-to-end tests for access page from menu of biz feature
 """
+from flaky import flaky
 
 from bok_choy.web_app_test import WebAppTest
 
@@ -71,6 +72,7 @@ class BizAccessPageFromMenuTest(WebAppTest, GaccoBizTestMixin):
         # assert access to each page
         biz_nav.visit().click_score()
 
+    @flaky
     def test_owner_director_and_manager(self):
         """
         Test menu of owner and director and manager

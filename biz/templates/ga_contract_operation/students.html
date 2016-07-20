@@ -42,21 +42,6 @@ from django.core.urlresolvers import reverse
                     });
                     return returnRows;
                 }
-            }),
-            taskHistoryGrid = $('#task-history-grid').w2grid({
-                name: 'task_history_grid',
-                fixedBody: true,
-                selectType : 'cell',
-                show: {
-                    footer: true,
-                },
-                columns: [
-                    {field: 'task_type', caption: '${_("Task Type")}', size: '20%', hidden: false},
-                    {field: 'task_state', caption: '${_("State")}', size: '10%', hidden: false},
-                    {field: 'task_result', caption: '${_("Execution Result")}', size: '30%', hidden: false},
-                    {field: 'requester', caption: '${_("Execution Username")}', size: '15%', hidden: false},
-                    {field: 'created', caption: '${_("Execution Datetime")}', size: '25%', hidden: false},
-                ]
             });
         grid.searches = grid.searches.concat(${additional_searches});
         grid.columns = grid.columns.concat(${additional_columns});
@@ -104,35 +89,11 @@ from django.core.urlresolvers import reverse
                 });
             });
         });
-        $('#task-history-btn').click(function() {
-            var $grid = $('#task-history-grid');
-            w2ui['task_history_grid'].load('${reverse("biz:contract_operation:task_history")}', function() {
-                var $wrapper = $('.content-wrapper');
-                $wrapper.height($wrapper.height() + $grid.height());
-                $grid.show();
-            });
-        });
     });
 </script>
 <style>
   .content-wrapper {
     min-height: 650px;
-  }
-  #task-history-wrapper {
-    margin-top: 30px;
-  }
-  #task-history-wrapper h2 {
-    margin-bottom: 0;
-  }
-  #task-history-wrapper .description {
-    margin-top: 10px;
-  }
-  #task-history-grid {
-    min-width: 920px;
-    width: 98%;
-    height: 200px;
-    margin: 15px 0 0 0;
-    display: none;
   }
 </style>
 </%block>
@@ -143,10 +104,5 @@ from django.core.urlresolvers import reverse
 <input type="button" id="unregister-btn" class="grid-operation" data-confirm-message="${_('Do the bulk students unregister. Are you sure?')}" data-endpoint="${reverse('biz:contract_operation:unregister_students_ajax')}" value="&#xf014 ${_('Unregister Student')}" />
 <input type="button" class="grid-operation" data-confirm-message="${_('After execution of the personal information mask processing,, it can not be undone. Are you sure?')}" data-endpoint="${reverse('biz:contract_operation:personalinfo_mask')}" value="&#xf235 ${_('Personal Information Mask')}" />
 
-<div id="task-history-wrapper">
-  <h2>${_("Task History")}</h2>
-  <p class="description">${_("To see the status of the tasks that have been run in the background, please click this button.")}</p>
-  <input type="button" id="task-history-btn" value="&#xf1da ${_("Show Task History")}">
-  <div id="task-history-grid"></div>
-</div>
+<%include file="_task_history.html" />
 </%block>

@@ -9,6 +9,7 @@ from django.test.utils import override_settings
 from mock import patch
 
 from biz.djangoapps.ga_contract.tests.factories import AdditionalInfoFactory, ContractFactory, ContractDetailFactory
+from biz.djangoapps.ga_contract_operation.tests.factories import ContractTaskHistoryFactory
 from biz.djangoapps.ga_invitation.tests.factories import AdditionalInfoSettingFactory, ContractRegisterFactory
 from biz.djangoapps.ga_invitation.models import INPUT_INVITATION_CODE, REGISTER_INVITATION_CODE, UNREGISTER_INVITATION_CODE
 from biz.djangoapps.ga_manager.models import ManagerPermission
@@ -129,6 +130,9 @@ class BizTestBase(TestCase):
 
             if item1_id != item2_id:
                 raise self.failureException('id does not match: %s, %s' % (item1_id, item2_id))
+
+    def _create_task_history(self, contract):
+        return ContractTaskHistoryFactory.create(contract=contract)
 
 
 _current_feature = None

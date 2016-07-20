@@ -386,7 +386,7 @@ CREATE TABLE `auth_permission` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `content_type_id` (`content_type_id`,`codename`),
   CONSTRAINT `auth__content_type_id_508cf46651277a81_fk_django_content_type_id` FOREIGN KEY (`content_type_id`) REFERENCES `django_content_type` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=761 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=764 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `auth_registration`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -1498,7 +1498,7 @@ CREATE TABLE `django_content_type` (
   `model` varchar(100) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `django_content_type_app_label_45f3b1d93ec8c61c_uniq` (`app_label`,`model`)
-) ENGINE=InnoDB AUTO_INCREMENT=253 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=254 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `django_migrations`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -2012,6 +2012,22 @@ CREATE TABLE `ga_contract_operation_contracttasktarget` (
   KEY `D407c01d1c65d2b8c5d7243c1262dda4` (`register_id`),
   CONSTRAINT `D407c01d1c65d2b8c5d7243c1262dda4` FOREIGN KEY (`register_id`) REFERENCES `ga_invitation_contractregister` (`id`),
   CONSTRAINT `D99a34d288d0fc406b42bf48e7397a6a` FOREIGN KEY (`history_id`) REFERENCES `ga_contract_operation_contracttaskhistory` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `ga_contract_operation_studentregistertasktarget`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ga_contract_operation_studentregistertasktarget` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `student` varchar(1024) NOT NULL,
+  `message` varchar(1024) DEFAULT NULL,
+  `completed` tinyint(1) NOT NULL,
+  `created` datetime(6) NOT NULL,
+  `modified` datetime(6) NOT NULL,
+  `history_id` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `f25e4501be6658c7ccb3d040d9ab273c` (`history_id`),
+  CONSTRAINT `f25e4501be6658c7ccb3d040d9ab273c` FOREIGN KEY (`history_id`) REFERENCES `ga_contract_operation_contracttaskhistory` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `ga_invitation_additionalinfosetting`;

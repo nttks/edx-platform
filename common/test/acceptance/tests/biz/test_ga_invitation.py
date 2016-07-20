@@ -2,6 +2,8 @@
 """
 End-to-end tests for invitation of biz feature
 """
+from flaky import flaky
+
 from bok_choy.web_app_test import WebAppTest
 
 from common.test.acceptance.fixtures.course import CourseFixture
@@ -21,6 +23,7 @@ class BizInvitationTest(WebAppTest, GaccoBizTestMixin):
     CONTRACT_TYPE_GACCO_SERVICE = 'GS'
     CONTRACT_TYPE_OWNER_SERVICE = 'OS'
 
+    @flaky
     def test_register_owner_service_course(self):
         """
         Tests register invitation code of owner service contract.
