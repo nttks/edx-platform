@@ -239,4 +239,18 @@ class UploadToS3CommandIntegrationTestCase(ModuleStoreTestCase):
                         self.assertEqualCourseDict(closed_courses, [self.course_cn10, self.course_cn9])
                     continue
 
+                if 'archived_courses' in courses:
+                    archived_courses = courses['archived_courses']
+                    count_course = len(archived_courses)
+                    self.assertTrue(count_course > 0)
+                    if count_course == 1:
+                        # When Category is "cat2"
+                        self.assertEqual(len(archived_courses), 1)
+                        self.assertEqualCourseDict(archived_courses, [self.course_cn10])
+                    else:
+                        # When Category is "cat1"
+                        self.assertEqual(len(archived_courses), 3)
+                        self.assertEqualCourseDict(archived_courses, [self.course_cn10, self.course_cn5, self.course_cn9])
+                    continue
+
                 self.fail(args[0])
