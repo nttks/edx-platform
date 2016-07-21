@@ -52,47 +52,25 @@ include_special_exams = settings.FEATURES.get('ENABLE_SPECIAL_EXAMS', False) and
   % endfor
 <div class="proctored_exam_status"></div>
 % endif
-% if show_preview_menu:
-    <nav class="wrapper-preview-menu" aria-label="${_('Course View')}">
-        <div class="preview-menu">
-            <ol class="preview-actions">
-                <li class="action-preview">
-                    <form action="#" class="action-preview-form" method="post">
-                        <label for="action-preview-select" class="action-preview-label">${_("View this course as:")}</label>
-                        <select class="action-preview-select" id="action-preview-select" name="select">
-                            <option value="staff" ${staff_selected}>${_("Staff")}</option>
-                            <option value="student" ${student_selected}>${_("Student")}</option>
-                            <option value="specific student" ${specific_student_selected}>${_("Specific student")}</option>
-                            % if cohorted_user_partition:
-                                % for group in sorted(cohorted_user_partition.groups, key=lambda group: group.name):
-                                <option value="group.id" data-group-id="${group.id}" ${selected(masquerade_group_id == group.id)}>
-                                    ${_("Student in {content_group}").format(content_group=group.name)}
-                                </option>
-                                % endfor
-                            % endif
-                        </select>
-                        <div class="action-preview-username-container">
-                          <label for="action-preview-username" class="action-preview-label">${_("Username or email:")}</label>
-                          <input type="text" class="action-preview-username" id="action-preview-username">
-                        </div>
-                        <button type="submit" class="sr" name="submit" value="submit">${_("Set preview mode")}</button>
-                    </form>
-                </li>
-            </ol>
-            % if specific_student_selected:
-            <div class="preview-specific-student-notice">
-                <p>
-                    ${_("You are now viewing the course as <i>{user_name}</i>.").format(user_name=masquerade_user_name)}
-                </p>
-            </div>
-            % endif
-        </div>
-    </nav>
-% endif
 
 % if disable_tabs is UNDEFINED or not disable_tabs:
 <nav class="${active_page} wrapper-course-material nav-hidden" aria-label="${_('Course Material')}">
   <div class="course-material">
+    % if show_preview_menu:
+    <div class="preview-menu" id="wrapper-preview">
+      <select class="action-preview-select" id="action-preview-select" name="select">
+        <option value="staff" ${staff_selected}>${_("Staff")}</option>
+        <option value="student" ${student_selected}>${_("Student")}</option>
+        % if cohorted_user_partition:
+          % for group in sorted(cohorted_user_partition.groups, key=lambda group: group.name):
+          <option value="group.id" data-group-id="${group.id}" ${selected(masquerade_group_id == group.id)}>
+            ${_("Student in {content_group}").format(content_group=group.name)}
+          </option>
+          % endfor
+        % endif
+      </select>
+    </div>
+    % endif
     <ol class="course-tabs">
       % for tab in get_course_tab_list(request, course):
         <%
