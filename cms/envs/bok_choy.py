@@ -125,6 +125,11 @@ import uuid
 SECRET_KEY = uuid.uuid4().hex
 
 #####################################################################
+# gacco settings overrides.
+if os.environ.get('ENABLE_BOKCHOY_GA'):
+    FEATURES['ORGANIZATIONS_APP'] = False
+
+#####################################################################
 # Lastly, see if the developer has any local overrides.
 try:
     from .private import *      # pylint: disable=import-error

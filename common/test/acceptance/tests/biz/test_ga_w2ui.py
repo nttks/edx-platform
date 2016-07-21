@@ -6,12 +6,14 @@ from datetime import datetime
 import pytz
 
 from bok_choy.web_app_test import WebAppTest
+from nose.plugins.attrib import attr
 
 from common.test.acceptance.pages.biz.ga_contract import BizContractDetailPage, BizContractPage
 from . import AGGREGATOR_USER_INFO, GaccoBizTestMixin
 from ...pages.biz.ga_dashboard import DashboardPage
 
 
+@attr('shard_ga_biz_2')
 class BizW2uiTest(WebAppTest, GaccoBizTestMixin):
 
     def _create_organization(self, biz_organization_page):

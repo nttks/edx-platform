@@ -4,12 +4,14 @@ End-to-end tests for organization of biz feature
 
 from bok_choy.web_app_test import WebAppTest
 from flaky import flaky
+from nose.plugins.attrib import attr
 
 from . import AGGREGATOR_USER_INFO, PLATFORMER_USER_INFO, GaccoBizTestMixin
 from ...pages.biz.ga_dashboard import DashboardPage
 from ...pages.biz.ga_organization import BizOrganizationPage, BizOrganizationDetailPage
 
 
+@attr('shard_ga_biz_1')
 class BizOrganizationTest(WebAppTest, GaccoBizTestMixin):
 
     def assert_initial_columns(self, grid_columns):

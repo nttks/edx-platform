@@ -4,6 +4,7 @@ Test the lms/ga_survey views.
 
 import json
 import logging
+import urllib
 
 from django.http import HttpResponseNotAllowed, Http404
 from django.test import TestCase
@@ -32,6 +33,9 @@ class SuveyTests(TestCase):
         self.survey_name = 'survey #2'
         self.survey_answer = '{"Q1": "1", "Q2": ["2", "3"], "Q3": "test"}'
 
+    def _post_as_ajax(self, path, data):
+        return self.request_factory.post(path, urllib.urlencode(data), content_type='application/json')
+
     def test_survey_init_get_method_not_allowed(self):
         """Ensures that get request to /survey_init/ is not allowed"""
         req = self.request_factory.get('/survey_init/')
@@ -43,7 +47,7 @@ class SuveyTests(TestCase):
         data = {
             'unit_id': self.unit_id,
         }
-        req = self.request_factory.post('/survey_init/', data)
+        req = self._post_as_ajax('/survey_init/', data)
         req.user = self.user
         self.assertRaises(Http404, survey_init, req)
 
@@ -52,7 +56,7 @@ class SuveyTests(TestCase):
         data = {
             'course_id': self.course_id,
         }
-        req = self.request_factory.post('/survey_init/', data)
+        req = self._post_as_ajax('/survey_init/', data)
         req.user = self.user
         self.assertRaises(Http404, survey_init, req)
 
@@ -62,7 +66,7 @@ class SuveyTests(TestCase):
             'course_id': self.course_id,
             'unit_id': self.unit_id,
         }
-        req = self.request_factory.post('/survey_init/', data)
+        req = self._post_as_ajax('/survey_init/', data)
         req.user = self.user
         resp = survey_init(req)
         self.assertEquals(resp.status_code, 200)
@@ -79,7 +83,7 @@ class SuveyTests(TestCase):
             'course_id': submission.course_id,
             'unit_id': submission.unit_id,
         }
-        req = self.request_factory.post('/survey_init/', data)
+        req = self._post_as_ajax('/survey_init/', data)
         req.user = submission.user
         resp = survey_init(req)
         self.assertEquals(resp.status_code, 200)
@@ -102,7 +106,7 @@ class SuveyTests(TestCase):
             'survey_name': self.survey_name,
             'survey_answer': self.survey_answer,
         }
-        req = self.request_factory.post('/survey_ajax/', data)
+        req = self._post_as_ajax('/survey_ajax/', data)
         req.user = self.user
         self.assertRaises(Http404, survey_ajax, req)
 
@@ -113,7 +117,7 @@ class SuveyTests(TestCase):
             'survey_name': self.survey_name,
             'survey_answer': self.survey_answer,
         }
-        req = self.request_factory.post('/survey_ajax/', data)
+        req = self._post_as_ajax('/survey_ajax/', data)
         req.user = self.user
         self.assertRaises(Http404, survey_ajax, req)
 
@@ -124,7 +128,7 @@ class SuveyTests(TestCase):
             'unit_id': self.unit_id,
             'survey_answer': self.survey_answer,
         }
-        req = self.request_factory.post('/survey_ajax/', data)
+        req = self._post_as_ajax('/survey_ajax/', data)
         req.user = self.user
         self.assertRaises(Http404, survey_ajax, req)
 
@@ -135,7 +139,7 @@ class SuveyTests(TestCase):
             'unit_id': self.unit_id,
             'survey_name': self.survey_name,
         }
-        req = self.request_factory.post('/survey_ajax/', data)
+        req = self._post_as_ajax('/survey_ajax/', data)
         req.user = self.user
         self.assertRaises(Http404, survey_ajax, req)
 
@@ -147,7 +151,7 @@ class SuveyTests(TestCase):
             'survey_name': self.survey_name,
             'survey_answer': self.survey_answer,
         }
-        req = self.request_factory.post('/survey_ajax/', data)
+        req = self._post_as_ajax('/survey_ajax/', data)
         req.user = self.user
         resp = survey_ajax(req)
         self.assertEquals(resp.status_code, 200)
@@ -175,7 +179,7 @@ class SuveyTests(TestCase):
             'survey_name': self.survey_name,
             'survey_answer': self.survey_answer,
         }
-        req = self.request_factory.post('/survey_ajax/', data)
+        req = self._post_as_ajax('/survey_ajax/', data)
         req.user = submission.user
         resp = survey_ajax(req)
         self.assertEquals(resp.status_code, 200)
@@ -193,7 +197,7 @@ class SuveyTests(TestCase):
             'survey_name': self.survey_name,
             'survey_answer': 'This cannot be loaded by json.loads',
         }
-        req = self.request_factory.post('/survey_ajax/', data)
+        req = self._post_as_ajax('/survey_ajax/', data)
         req.user = self.user
         self.assertRaises(Http404, survey_ajax, req)
 
@@ -205,7 +209,7 @@ class SuveyTests(TestCase):
             'survey_name': self.survey_name,
             'survey_answer': json.dumps({'Q1': 'a' * 1001})
         }
-        req = self.request_factory.post('/survey_ajax/', data)
+        req = self._post_as_ajax('/survey_ajax/', data)
         req.user = self.user
         self.assertRaises(Http404, survey_ajax, req)
 

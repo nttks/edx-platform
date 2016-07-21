@@ -3,6 +3,7 @@ End-to-end tests for manager of biz feature
 """
 
 from bok_choy.web_app_test import WebAppTest
+from nose.plugins.attrib import attr
 
 from . import PLATFORMER_USER_INFO, AGGREGATOR_USER_INFO, C_COMPANY_NAME, GaccoBizTestMixin, visit_page_on_new_window
 from ...pages.biz.ga_dashboard import DashboardPage
@@ -15,6 +16,7 @@ from ...pages.lms.ga_resign import (
 from lms.envs.bok_choy import EMAIL_FILE_PATH
 
 
+@attr('shard_ga_biz_1')
 class BizManagerTest(WebAppTest, GaccoBizTestMixin):
 
     def _register_resigned_user(self):

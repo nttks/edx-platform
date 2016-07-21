@@ -177,7 +177,7 @@ def _footer_navigation_links():
         for link_name, link_url, link_title in [
             ("terms_of_service", marketing_link("TOS"), _("Terms of Service and Honor Code")),
             ("privacy_policy", marketing_link("PRIVACY"), _("Privacy Policy")),
-            ("help-center", settings.SUPPORT_SITE_LINK, _("Help Center")),
+            ("faq", marketing_link("FAQ"), _("FAQ")),
         ]
         if link_url and link_url != "#"
     ]

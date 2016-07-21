@@ -2,8 +2,9 @@
 """
 End-to-end tests for set manage target of biz feature
 """
-
 from bok_choy.web_app_test import WebAppTest
+from nose.plugins.attrib import attr
+
 from . import (
     SUPER_USER_INFO, PLATFORMER_USER_INFO, PLAT_COMPANY_NAME, PLAT_COMPANY_CODE,
     GaccoBizTestMixin,
@@ -16,6 +17,7 @@ from ...pages.biz.ga_navigation import NO_SELECTED
 from ...pages.lms.ga_django_admin import DjangoAdminPage
 
 
+@attr('shard_ga_biz_2')
 class BizSetManageTargetTest(WebAppTest, GaccoBizTestMixin):
 
     def test_director_no_contract(self):

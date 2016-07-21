@@ -5,6 +5,7 @@ End-to-end tests for invitation of biz feature
 from flaky import flaky
 
 from bok_choy.web_app_test import WebAppTest
+from nose.plugins.attrib import attr
 
 from common.test.acceptance.fixtures.course import CourseFixture
 from common.test.acceptance.pages.biz.ga_contract import BizContractPage
@@ -16,6 +17,7 @@ from common.test.acceptance.tests.biz import C_DIRECTOR_USER_INFO, PLATFORMER_US
     B_DIRECTOR_USER_INFO, B_COMPANY, GaccoBizTestMixin, AGGREGATOR_USER_INFO, C_COMPANY
 
 
+@attr('shard_ga_biz_1')
 class BizInvitationTest(WebAppTest, GaccoBizTestMixin):
     """
     Tests that the invitation functionality works
@@ -159,7 +161,7 @@ class BizInvitationTest(WebAppTest, GaccoBizTestMixin):
         # Verify that course about page have no register link
         course_about_page = CourseAboutPage(self.browser, self.course._course_key).visit()
         self.assertFalse(course_about_page.is_register_link_displayed)
-        self.assertIn('You are registered for this course', course_about_page.register_disabled_text)
+        self.assertIn('You are enrolled in this course', course_about_page.register_disabled_text)
         # Register invitation code again
         BizInvitationPage(self.browser).visit().input_invitation_code(
                 contract['Invitation Code']).click_register_button()

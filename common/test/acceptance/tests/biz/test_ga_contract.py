@@ -7,6 +7,7 @@ from unittest import skip
 
 import bok_choy
 from bok_choy.web_app_test import WebAppTest
+from nose.plugins.attrib import attr
 
 from common.test.acceptance.fixtures.course import CourseFixture
 from common.test.acceptance.pages.biz.ga_contract import BizContractPage, BizContractDetailPage
@@ -16,6 +17,7 @@ from common.test.acceptance.pages.lms.auto_auth import AutoAuthPage
 from common.test.acceptance.tests.biz import AGGREGATOR_USER_INFO, GaccoBizTestMixin
 
 
+@attr('shard_ga_biz_1')
 class BizContractTest(WebAppTest, GaccoBizTestMixin):
     """
     Tests that the contract functionality works

@@ -335,8 +335,8 @@ class PurchaseParams(OrderedDict):
     def __getitem__(self, key):
         return super(PurchaseParams, self).__getitem__(self._resolve_key(key))
 
-    def __setitem__(self, key, value, PREV=0, NEXT=1, dict_setitem=dict.__setitem__):
-        super(PurchaseParams, self).__setitem__(self._resolve_key(key), value, PREV, NEXT, dict_setitem)
+    def __setitem__(self, key, value, dict_setitem=dict.__setitem__):
+        super(PurchaseParams, self).__setitem__(self._resolve_key(key), value, dict_setitem)
 
     def _resolve_key(self, key):
         if key in self.attrs:
