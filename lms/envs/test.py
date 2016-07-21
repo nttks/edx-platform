@@ -368,6 +368,9 @@ MKTG_URL_LINK_MAP = {
 
     # Verified Certificates
     'WHAT_IS_VERIFIED_CERT': 'verified-certificate',
+
+    # Add by gacco
+    'FAQ': 'faq',
 }
 
 SUPPORT_SITE_LINK = 'https://support.example.com'

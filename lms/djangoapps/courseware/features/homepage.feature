@@ -18,4 +18,4 @@ Feature: LMS.Homepage for web users
     | id                 | Link                             |
     | terms_of_service   | Terms of Service and Honor Code  |
     | privacy_policy     | Privacy Policy                   |
-    | help-center        | Help Center                      |
+    | faq                | FAQ                              |
