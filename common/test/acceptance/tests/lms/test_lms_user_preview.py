@@ -2,7 +2,7 @@
 """
 Tests the "preview" selector in the LMS that allows changing between Staff, Student, and Content Groups.
 """
-
+from unittest import skip
 
 from nose.plugins.attrib import attr
 
@@ -367,6 +367,7 @@ class CourseWithContentGroupsTest(StaffViewTest):
         add_cohort_with_student("Cohort Beta", "beta", student_b_username)
         cohort_management_page.wait_for_ajax()
 
+    @skip("Specific student mode was removed in gacco")
     def test_as_specific_student(self):
         student_a_username = 'tass_student_a'
         student_b_username = 'tass_student_b'
