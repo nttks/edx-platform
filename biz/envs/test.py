@@ -5,6 +5,12 @@ import tempfile
 
 
 """
+Basic settings
+"""
+# Dummy biz secret key for dev/test
+BIZ_SECRET_KEY = 'test'
+
+"""
 Set score Batch Settings
 """
 BIZ_SET_SCORE_COMMAND_OUTPUT = tempfile.NamedTemporaryFile().name

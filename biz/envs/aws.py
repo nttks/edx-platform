@@ -12,6 +12,11 @@ from lms.envs.common import (
 
 
 """
+Basic Settings
+"""
+BIZ_SECRET_KEY = AUTH_TOKENS['BIZ_SECRET_KEY']
+
+"""
 MongoDB
 """
 BIZ_MONGO = AUTH_TOKENS.get('BIZ_MONGO', BIZ_MONGO)
