@@ -15,6 +15,8 @@ from student.helpers import DISABLE_UNENROLL_CERT_STATES
 from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
 from xmodule.modulestore.tests.factories import CourseFactory
 
+from openedx.core.djangoapps.course_global.tests.factories import CourseGlobalSettingFactory
+
 
 @ddt.ddt
 @unittest.skipUnless(settings.ROOT_URLCONF == 'lms.urls', 'Test only valid in lms')
@@ -47,16 +49,25 @@ class TestStudentDashboardUnenrollments(ModuleStoreTestCase):
             return {}
 
     @ddt.data(
-        ('notpassing', 1),
-        ('restricted', 1),
-        ('processing', 1),
-        (None, 1),
-        ('generating', 0),
-        ('ready', 0),
+        ('notpassing', True, 0),
+        ('notpassing', False, 1),
+        ('restricted', True, 0),
+        ('restricted', False, 1),
+        ('processing', True, 0),
+        ('processing', False, 1),
+        (None, True, 0),
+        (None, False, 1),
+        ('generating', True, 0),
+        ('generating', False, 0),
+        ('ready', True, 0),
+        ('ready', False, 0),
     )
     @ddt.unpack
-    def test_unenroll_available(self, cert_status, unenroll_action_count):
+    def test_unenroll_available(self, cert_status, is_global_course, unenroll_action_count):
         """ Assert that the unenroll action is shown or not based on the cert status."""
+        if is_global_course:
+            CourseGlobalSettingFactory.create(course_id=self.course.id)
+
         self.cert_status = cert_status
 
         with patch('student.views.cert_info', side_effect=self.mock_cert):
