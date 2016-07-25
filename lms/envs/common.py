@@ -1951,6 +1951,7 @@ INSTALLED_APPS = (
 
     # Course data caching
     'openedx.core.djangoapps.content.course_overviews',
+    'openedx.core.djangoapps.content.ga_course_overviews',
     'openedx.core.djangoapps.content.course_structures',
     'lms.djangoapps.course_blocks',
 

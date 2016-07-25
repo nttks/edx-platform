@@ -400,7 +400,9 @@ class CourseOverviewTestCase(ModuleStoreTestCase):
                     # an IntegrityError for the reason listed above.
                     with mock.patch(
                         'openedx.core.djangoapps.content.course_overviews.models.CourseOverviewTab.objects.bulk_create'
-                    ) as mock_bulk_create:
+                    ) as mock_bulk_create, mock.patch(
+                        'openedx.core.djangoapps.content.ga_course_overviews.models.CourseOverviewExtra.create'
+                    ):
                         mock_bulk_create.return_value = None
 
                         # Verify the CourseOverview is loaded successfully both times,

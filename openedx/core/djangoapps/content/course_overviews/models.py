@@ -4,6 +4,7 @@ Declaration of CourseOverview model
 import json
 import logging
 
+from django.core.exceptions import ObjectDoesNotExist
 from django.db import models, transaction
 from django.db.models.fields import BooleanField, DateTimeField, DecimalField, TextField, FloatField, IntegerField
 from django.db.utils import IntegrityError
@@ -99,6 +100,13 @@ class CourseOverview(TimeStampedModel):
     short_description = TextField(null=True)
     course_video_url = TextField(null=True)
     effort = TextField(null=True)
+
+    def __init__(self, *args, **kwargs):
+        super(CourseOverview, self).__init__(*args, **kwargs)
+
+        # Private variable for storing course_overview_extra to minimize calls to the database.
+        # When the property .extra is accessed for the first time, this variable will be set.
+        self._extra = None
 
     @classmethod
     def _create_from_course(cls, course):
@@ -205,6 +213,7 @@ class CourseOverview(TimeStampedModel):
             - IOError if some other error occurs while trying to load the
                 course from the module store.
         """
+        from openedx.core.djangoapps.content.ga_course_overviews.models import CourseOverviewExtra
         store = modulestore()
         with store.bulk_operations(course_id):
             course = store.get_course(course_id)
@@ -217,6 +226,7 @@ class CourseOverview(TimeStampedModel):
                             CourseOverviewTab(tab_id=tab.tab_id, course_overview=course_overview)
                             for tab in course.tabs
                         ])
+                        CourseOverviewExtra.create(course, course_overview)
                 except IntegrityError:
                     # There is a rare race condition that will occur if
                     # CourseOverview.get_from_id is called while a
@@ -487,6 +497,23 @@ class CourseOverview(TimeStampedModel):
             if tab.tab_id == "discussion" and django_comment_client.utils.is_discussion_enabled(self.id):
                 return True
         return False
+
+    @property
+    def extra(self):
+        """
+        Returns a CourseOverviewExtra of the course.
+
+        Note:
+            If the course is re-published within the lifetime of this object,
+            then the value of this property will become stale.
+        """
+        if not self._extra:
+            try:
+                self._extra = self.courseoverviewextra
+            except ObjectDoesNotExist:
+                # Basically, it should not happen.
+                self._extra = None
+        return self._extra
 
 
 class CourseOverviewTab(models.Model):
