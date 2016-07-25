@@ -5,7 +5,6 @@ End-to-end tests for survey of biz feature
 import csv
 import os
 import shutil
-from unittest import skip
 
 import bok_choy
 from bok_choy.web_app_test import WebAppTest
@@ -25,7 +24,6 @@ from ...fixtures.course import CourseFixture, XBlockFixtureDesc
 DOWNLOAD_DIR = '/tmp'
 
 
-@skip("Until apply security patch")
 @attr('shard_ga_biz_1')
 class BizSurveyTest(WebAppTest, GaccoBizTestMixin):
     """
