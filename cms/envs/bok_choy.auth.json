@@ -2,6 +2,7 @@
     "ANALYTICS_API_KEY": "",
     "AWS_ACCESS_KEY_ID": "",
     "AWS_SECRET_ACCESS_KEY": "",
+    "BIZ_SECRET_KEY": "",
     "CELERY_BROKER_PASSWORD": "celery",
     "CELERY_BROKER_USER": "celery",
     "CONTENTSTORE": {
