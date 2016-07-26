@@ -6,7 +6,6 @@ from datetime import datetime, date
 from mock import patch
 import pytz
 
-from django.conf import settings
 from django.test.utils import override_settings
 
 from biz.djangoapps.util import datetime_utils
@@ -71,3 +70,124 @@ class DateTimeUtilsTest(BizTestBase):
         # other type
         with self.assertRaises(TypeError):
             datetime_utils.format_for_w2ui('2016-01-01')
+
+    def test_seconds_to_time_format(self):
+        # int, rounded up
+        self.assertEqual(
+            '0:00',
+            datetime_utils.seconds_to_time_format(0)
+        )
+        self.assertEqual(
+            '0:01',
+            datetime_utils.seconds_to_time_format(1)
+        )
+        self.assertEqual(
+            '0:01',
+            datetime_utils.seconds_to_time_format(60)
+        )
+        self.assertEqual(
+            '0:02',
+            datetime_utils.seconds_to_time_format(61)
+        )
+        self.assertEqual(
+            '1:00',
+            datetime_utils.seconds_to_time_format(3599)
+        )
+        self.assertEqual(
+            '1:00',
+            datetime_utils.seconds_to_time_format(3600)
+        )
+        self.assertEqual(
+            '1:01',
+            datetime_utils.seconds_to_time_format(3601)
+        )
+
+        # int, no rounded up
+        self.assertEqual(
+            '0:00',
+            datetime_utils.seconds_to_time_format(0, False)
+        )
+        self.assertEqual(
+            '0:00',
+            datetime_utils.seconds_to_time_format(1, False)
+        )
+        self.assertEqual(
+            '0:01',
+            datetime_utils.seconds_to_time_format(60, False)
+        )
+        self.assertEqual(
+            '0:01',
+            datetime_utils.seconds_to_time_format(61, False)
+        )
+        self.assertEqual(
+            '0:59',
+            datetime_utils.seconds_to_time_format(3599, False)
+        )
+        self.assertEqual(
+            '1:00',
+            datetime_utils.seconds_to_time_format(3600, False)
+        )
+        self.assertEqual(
+            '1:00',
+            datetime_utils.seconds_to_time_format(3601, False)
+        )
+
+        # float, rounded up
+        self.assertEqual(
+            '0:00',
+            datetime_utils.seconds_to_time_format(0.0)
+        )
+        self.assertEqual(
+            '0:01',
+            datetime_utils.seconds_to_time_format(1.0)
+        )
+        self.assertEqual(
+            '0:01',
+            datetime_utils.seconds_to_time_format(60.0)
+        )
+        self.assertEqual(
+            '0:02',
+            datetime_utils.seconds_to_time_format(61.0)
+        )
+        self.assertEqual(
+            '1:00',
+            datetime_utils.seconds_to_time_format(3599.0)
+        )
+        self.assertEqual(
+            '1:00',
+            datetime_utils.seconds_to_time_format(3600.0)
+        )
+        self.assertEqual(
+            '1:01',
+            datetime_utils.seconds_to_time_format(3601.0)
+        )
+
+        # float, no rounded up
+        self.assertEqual(
+            '0:00',
+            datetime_utils.seconds_to_time_format(0.0, False)
+        )
+        self.assertEqual(
+            '0:00',
+            datetime_utils.seconds_to_time_format(1.0, False)
+        )
+        self.assertEqual(
+            '0:01',
+            datetime_utils.seconds_to_time_format(60.0, False)
+        )
+        self.assertEqual(
+            '0:01',
+            datetime_utils.seconds_to_time_format(61.0, False)
+        )
+        self.assertEqual(
+            '0:59',
+            datetime_utils.seconds_to_time_format(3599.0, False)
+        )
+        self.assertEqual(
+            '1:00',
+            datetime_utils.seconds_to_time_format(3600.0, False)
+        )
+        self.assertEqual(
+            '1:00',
+            datetime_utils.seconds_to_time_format(3601.0, False)
+        )

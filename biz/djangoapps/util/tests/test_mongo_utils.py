@@ -9,10 +9,7 @@ from pymongo.errors import AutoReconnect
 
 from biz.djangoapps.util.mongo_utils import BizStore
 from biz.djangoapps.util.tests.testcase import BizStoreTestBase
-from biz.djangoapps.ga_achievement.score_store import (
-    SCORE_STORE_FIELD_CONTRACT_ID, SCORE_STORE_FIELD_COURSE_ID, SCORE_STORE_FIELD_NAME, SCORE_STORE_FIELD_USERNAME,
-    SCORE_STORE_FIELD_EMAIL, SCORE_STORE_FIELD_STUDENT_STATUS
-)
+from biz.djangoapps.ga_achievement.achievement_store import ScoreStore
 
 
 class BizStoreTest(BizStoreTestBase):
@@ -32,18 +29,18 @@ class BizStoreTest(BizStoreTestBase):
         self._documents = []
 
         od1 = OrderedDict()
-        od1[SCORE_STORE_FIELD_CONTRACT_ID] = 1
-        od1[SCORE_STORE_FIELD_COURSE_ID] = 'test'
-        od1[SCORE_STORE_FIELD_NAME] = 'test.1'
-        od1[SCORE_STORE_FIELD_USERNAME] = 'user_test1'
-        od1[SCORE_STORE_FIELD_EMAIL] = 'test1@example.com'
+        od1[ScoreStore.FIELD_CONTRACT_ID] = 1
+        od1[ScoreStore.FIELD_COURSE_ID] = 'test'
+        od1[ScoreStore.FIELD_FULL_NAME] = 'test.1'
+        od1[ScoreStore.FIELD_USERNAME] = 'user_test1'
+        od1[ScoreStore.FIELD_EMAIL] = 'test1@example.com'
 
         od2 = OrderedDict()
-        od2[SCORE_STORE_FIELD_CONTRACT_ID] = 1
-        od2[SCORE_STORE_FIELD_COURSE_ID] = 'test'
-        od2[SCORE_STORE_FIELD_NAME] = 'test2'
-        od2[SCORE_STORE_FIELD_USERNAME] = 'user_test1'
-        od2[SCORE_STORE_FIELD_EMAIL] = 'test2@example.com'
+        od2[ScoreStore.FIELD_CONTRACT_ID] = 1
+        od2[ScoreStore.FIELD_COURSE_ID] = 'test'
+        od2[ScoreStore.FIELD_FULL_NAME] = 'test2'
+        od2[ScoreStore.FIELD_USERNAME] = 'user_test1'
+        od2[ScoreStore.FIELD_EMAIL] = 'test2@example.com'
 
         self._documents.append(od1)
         self._documents.append(od2)
@@ -56,10 +53,10 @@ class BizStoreTest(BizStoreTestBase):
         self._set_documents()
 
         self.key_conditions = {
-            SCORE_STORE_FIELD_CONTRACT_ID: 1,
-            SCORE_STORE_FIELD_COURSE_ID: 'test'
+            ScoreStore.FIELD_CONTRACT_ID: 1,
+            ScoreStore.FIELD_COURSE_ID: 'test'
         }
-        self.key_index_columns = [SCORE_STORE_FIELD_CONTRACT_ID, SCORE_STORE_FIELD_COURSE_ID]
+        self.key_index_columns = [ScoreStore.FIELD_CONTRACT_ID, ScoreStore.FIELD_COURSE_ID]
 
     def test_bizstore(self):
         self.set_normal()
@@ -67,6 +64,19 @@ class BizStoreTest(BizStoreTestBase):
 
         self.assertEqual(self._bizstore._key_conditions, self.key_conditions)
         self.assertEqual(self._bizstore._key_index_columns, self.key_index_columns)
+
+        self._drop_mongo_collection()
+
+    def test_set_get_document(self):
+        self.set_normal()
+        self._bizstore = BizStore(self._test_store_config, self.key_conditions, self.key_index_columns)
+
+        self._bizstore.set_documents(self._documents)
+        get_document = self._bizstore.get_document({ScoreStore.FIELD_FULL_NAME: 'test2'})
+
+        self.assertEqual(self._documents[1][ScoreStore.FIELD_FULL_NAME], get_document[ScoreStore.FIELD_FULL_NAME])
+        self.assertEqual(self._documents[1][ScoreStore.FIELD_USERNAME], get_document[ScoreStore.FIELD_USERNAME])
+        self.assertEqual(self._documents[1][ScoreStore.FIELD_EMAIL], get_document[ScoreStore.FIELD_EMAIL])
 
         self._drop_mongo_collection()
 
@@ -78,9 +88,9 @@ class BizStoreTest(BizStoreTestBase):
         get_documents = self._bizstore.get_documents()
 
         for i, item in enumerate(get_documents):
-            self.assertEqual(self._documents[i][SCORE_STORE_FIELD_NAME], item[SCORE_STORE_FIELD_NAME])
-            self.assertEqual(self._documents[i][SCORE_STORE_FIELD_USERNAME], item[SCORE_STORE_FIELD_USERNAME])
-            self.assertEqual(self._documents[i][SCORE_STORE_FIELD_EMAIL], item[SCORE_STORE_FIELD_EMAIL])
+            self.assertEqual(self._documents[i][ScoreStore.FIELD_FULL_NAME], item[ScoreStore.FIELD_FULL_NAME])
+            self.assertEqual(self._documents[i][ScoreStore.FIELD_USERNAME], item[ScoreStore.FIELD_USERNAME])
+            self.assertEqual(self._documents[i][ScoreStore.FIELD_EMAIL], item[ScoreStore.FIELD_EMAIL])
 
         self._drop_mongo_collection()
 
@@ -95,24 +105,12 @@ class BizStoreTest(BizStoreTestBase):
 
         self._drop_mongo_collection()
 
-    def test_get_fields(self):
-        self.set_normal()
-        self._bizstore = BizStore(self._test_store_config, self.key_conditions, self.key_index_columns)
-        self._bizstore.set_documents(self._documents)
-        documents = self._bizstore.get_documents()
-        fields = self._bizstore.get_fields(documents)
-
-        for field in fields:
-            self.assertIn(field, self._documents[0].keys())
-
-        self._drop_mongo_collection()
-
     def test_ensure_indexes(self):
         self.set_normal()
         self._bizstore = BizStore(self._test_store_config, self.key_conditions, self.key_index_columns)
-        self._bizstore.ensure_indexes([SCORE_STORE_FIELD_USERNAME])
+        self._bizstore.ensure_indexes([ScoreStore.FIELD_USERNAME])
         indexes = self._bizstore._collection.index_information()
-        index_key = SCORE_STORE_FIELD_USERNAME + '_1'
+        index_key = ScoreStore.FIELD_USERNAME + '_1'
         self.assertIn(index_key, indexes.keys())
 
         self._drop_mongo_collection()
@@ -120,9 +118,9 @@ class BizStoreTest(BizStoreTestBase):
     def test_drop_indexes(self):
         self.set_normal()
         self._bizstore = BizStore(self._test_store_config, self.key_conditions, self.key_index_columns)
-        self._bizstore.ensure_indexes([SCORE_STORE_FIELD_USERNAME])
+        self._bizstore.ensure_indexes([ScoreStore.FIELD_USERNAME])
         indexes = self._bizstore._collection.index_information()
-        index_key = SCORE_STORE_FIELD_USERNAME + '_1'
+        index_key = ScoreStore.FIELD_USERNAME + '_1'
         self.assertIn(index_key, indexes.keys())
 
         self._bizstore.drop_indexes()
@@ -139,9 +137,9 @@ class BizStoreTest(BizStoreTestBase):
         get_documents = self._bizstore.get_documents()
 
         for i, item in enumerate(get_documents):
-            self.assertEqual(self._documents[i][SCORE_STORE_FIELD_NAME], item[SCORE_STORE_FIELD_NAME])
-            self.assertEqual(self._documents[i][SCORE_STORE_FIELD_USERNAME], item[SCORE_STORE_FIELD_USERNAME])
-            self.assertEqual(self._documents[i][SCORE_STORE_FIELD_EMAIL], item[SCORE_STORE_FIELD_EMAIL])
+            self.assertEqual(self._documents[i][ScoreStore.FIELD_FULL_NAME], item[ScoreStore.FIELD_FULL_NAME])
+            self.assertEqual(self._documents[i][ScoreStore.FIELD_USERNAME], item[ScoreStore.FIELD_USERNAME])
+            self.assertEqual(self._documents[i][ScoreStore.FIELD_EMAIL], item[ScoreStore.FIELD_EMAIL])
 
         self._bizstore.remove_documents()
         get_remove_documents = self._bizstore.get_documents()
@@ -165,10 +163,10 @@ class BizStoreTest(BizStoreTestBase):
         self._set_documents()
 
         self.key_conditions = {
-            SCORE_STORE_FIELD_CONTRACT_ID: 1,
-            SCORE_STORE_FIELD_COURSE_ID: 'test'
+            ScoreStore.FIELD_CONTRACT_ID: 1,
+            ScoreStore.FIELD_COURSE_ID: 'test'
         }
-        self.key_index_columns = [SCORE_STORE_FIELD_CONTRACT_ID, SCORE_STORE_FIELD_COURSE_ID]
+        self.key_index_columns = [ScoreStore.FIELD_CONTRACT_ID, ScoreStore.FIELD_COURSE_ID]
 
     def wrong_bizstore(self):
         self.wrong_setup()
@@ -190,9 +188,9 @@ class BizStoreTest(BizStoreTestBase):
         get_documents = self._bizstore.get_documents()
 
         for i, item in enumerate(get_documents):
-            self.assertEqual(self._documents[i][SCORE_STORE_FIELD_NAME], item[SCORE_STORE_FIELD_NAME])
-            self.assertEqual(self._documents[i][SCORE_STORE_FIELD_USERNAME], item[SCORE_STORE_FIELD_USERNAME])
-            self.assertEqual(self._documents[i][SCORE_STORE_FIELD_EMAIL], item[SCORE_STORE_FIELD_EMAIL])
+            self.assertEqual(self._documents[i][ScoreStore.FIELD_FULL_NAME], item[ScoreStore.FIELD_FULL_NAME])
+            self.assertEqual(self._documents[i][ScoreStore.FIELD_USERNAME], item[ScoreStore.FIELD_USERNAME])
+            self.assertEqual(self._documents[i][ScoreStore.FIELD_EMAIL], item[ScoreStore.FIELD_EMAIL])
 
         self._drop_mongo_collection()
 
@@ -207,27 +205,6 @@ class BizStoreTest(BizStoreTestBase):
 
         self._drop_mongo_collection()
 
-    def test_dict_get_fields(self):
-        self.set_normal()
-        self._bizstore = BizStore(self._test_store_config, self.key_conditions, self.key_index_columns)
-        dict_documents = {SCORE_STORE_FIELD_STUDENT_STATUS: 'TEST'}
-        self._bizstore.set_documents(dict_documents)
-        documents = self._bizstore.get_documents()
-        fields = self._bizstore.get_fields(documents)
-
-        for field in fields:
-            self.assertIn(field, self._documents[0].keys())
-
-        self._drop_mongo_collection()
-
-    def test_zero_get_fields(self):
-        self.set_normal()
-        self._bizstore = BizStore(self._test_store_config, self.key_conditions, self.key_index_columns)
-        documents = OrderedDict()
-        fields = self._bizstore.get_fields(documents)
-
-        self.assertIs(0, len(fields))
-
     def test_bizstore_raise_exception(self):
         with self.assertRaises(Exception):
             self.wrong_bizstore()
@@ -235,6 +212,27 @@ class BizStoreTest(BizStoreTestBase):
     def test_set_documents_raise_exception(self):
         with self.assertRaises(Exception):
             self.wrong_set_documents()
+
+    def test_get_document_exception(self):
+        self.set_normal()
+        self._bizstore = BizStore(self._test_store_config, self.key_conditions, self.key_index_columns)
+
+        self._bizstore._collection.find_one = MagicMock(side_effect=_Exception())
+        with self.assertRaises(_Exception):
+            self._bizstore.get_document()
+
+        self.assertEqual(1, self._bizstore._collection.find_one.call_count)
+
+    def test_get_document_auto_retry(self):
+        self.set_normal()
+        self._bizstore = BizStore(self._test_store_config, self.key_conditions, self.key_index_columns)
+
+        self._bizstore._collection.find_one = MagicMock(side_effect=AutoReconnect())
+        with self.assertRaises(AutoReconnect):
+            self._bizstore.get_document()
+
+        # Verify that autoretry_read decorator has been applied.
+        self.assertEqual(5, self._bizstore._collection.find_one.call_count)
 
     def test_get_documents_exception(self):
         self.set_normal()

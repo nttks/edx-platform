@@ -126,7 +126,7 @@ class CheckCourseSelectionTestBase(BizTestBase, ModuleStoreTestCase):
         return reverse('biz:course_operation:survey')
 
     def _achievement_view(self):
-        return reverse('biz:achievement:index')
+        return reverse('biz:achievement:score')
 
     def _contract_operation_view(self):
         return reverse('biz:contract_operation:students')

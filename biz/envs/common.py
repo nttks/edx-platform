@@ -8,9 +8,14 @@ MongoDB
 """
 BIZ_MONGO = {
     'score': {
-        'host': 'localhost',
+        'host': ['localhost'],
         'db': 'biz',
         'collection': 'score',
+    },
+    'playback': {
+        'host': ['localhost'],
+        'db': 'biz',
+        'collection': 'playback',
     }
 }
 
