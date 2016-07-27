@@ -18,7 +18,7 @@ class SurveyDownload
     # attach click handlers
     @$list_survey_btn.click (e) =>
       url = @$list_survey_btn.data 'endpoint'
-      location.href = url
+      downloadFileUsingPost url
 
   # handler for when the section title is clicked.
   onClickTitle: ->

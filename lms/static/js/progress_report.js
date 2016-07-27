@@ -289,7 +289,7 @@ var ProgressReport = function(problem_list_url, submission_scores_url, openasses
       $(last_update + " " +  selector).siblings("i").show();
 
       $.ajax({
-        type: 'GET',
+        type: 'POST',
         url: url,
         dataType: 'json',
         cache: false,
