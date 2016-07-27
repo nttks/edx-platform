@@ -2,6 +2,7 @@
 MongoDB operation for Biz.
 Add mongodb operation method by the need.
 """
+from bson.code import Code
 from collections import OrderedDict
 from datetime import datetime
 import logging
@@ -90,6 +91,50 @@ class BizStore(object):
             return self._collection.find(conditions).count(True)
         except Exception as e:
             log.error("Error occurred while get count MongoDB: %s" % e)
+            raise
+
+    @autoretry_read()
+    def aggregate(self, key_field_name, value_field_name, conditions={}):
+        """
+        Aggregate the amount by grouping the specified key
+
+        :param key_field_name: field name for grouping
+        :param value_field_name: field name for aggregation
+        :param conditions: dict for conditions
+        :return: dict
+            e.g.)
+            {
+                u'key1': 100.0,
+                u'key2': 200.0,
+                u'key3': 300.0,
+            }
+        """
+        mapper = Code(u'''
+            function() {{
+                emit(
+                    this.{key_field_name},
+                    this.{value_field_name}
+                );
+            }}
+        ''').format(
+            key_field_name=key_field_name,
+            value_field_name=value_field_name,
+        )
+        reducer = Code(u'''
+            function(key, values) {
+                var sum = 0;
+                values.forEach(function(value) {
+                    sum += value;
+                });
+                return sum;
+            }
+        ''')
+        conditions.update(self._key_conditions)
+        try:
+            results = list(self._collection.map_reduce(mapper, reducer, 'results', query=conditions).find())
+            return dict([(result['_id'], result['value']) for result in results])
+        except Exception as e:
+            log.error("Error occurred while processing map reduce to MongoDB: %s" % e)
             raise
 
     @autoretry_read()

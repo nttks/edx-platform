@@ -207,6 +207,12 @@ class ContractDetail(models.Model):
         ).order_by('id')
 
     @classmethod
+    def find_enabled_by_contract_id(cls, contract_id):
+        return cls.objects.enabled().filter(
+            contract__id=contract_id,
+        ).order_by('id')
+
+    @classmethod
     def find_enabled_by_contractor_and_contract_id(cls, contractor_org_id, contract_id):
         return cls.objects.enabled().filter(
             contract__id=contract_id,

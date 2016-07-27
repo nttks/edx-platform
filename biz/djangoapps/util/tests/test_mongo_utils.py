@@ -259,3 +259,42 @@ class BizStoreTest(BizStoreTestBase):
 class _Exception(Exception):
     """Exception for exception-based test case"""
     pass
+
+
+class BizStoreAggregateTest(BizStoreTestBase):
+
+    def setUp(self):
+        super(BizStoreAggregateTest, self).setUp()
+        self.test_store = BizStore(self.BIZ_MONGO.values()[0])
+        self._create_data()
+
+    def _create_data(self):
+        self.insert_documents = [
+            {'user': 'user1', 'gender': 'male', 'subject': 'math', 'score': 10},
+            {'user': 'user1', 'gender': 'male', 'subject': 'science', 'score': 20},
+            {'user': 'user2', 'gender': 'male', 'subject': 'math', 'score': 30},
+            {'user': 'user2', 'gender': 'male', 'subject': 'science', 'score': 40},
+            {'user': 'user3', 'gender': 'female', 'subject': 'math', 'score': 50},
+            {'user': 'user3', 'gender': 'female', 'subject': 'science', 'score': 60},
+        ]
+        self.test_store.set_documents(self.insert_documents)
+
+    def test_aggregate(self):
+        summary = self.test_store.aggregate('subject', 'score')
+        self.assertDictEqual({u'science': 120.0, u'math': 90.0}, summary)
+
+    def test_aggregate_with_query(self):
+        summary = self.test_store.aggregate('subject', 'score', {'gender': 'male'})
+        self.assertDictEqual({u'science': 60.0, u'math': 40.0}, summary)
+
+    def test_aggregate_exception(self):
+        self.test_store._collection.map_reduce = MagicMock(side_effect=_Exception())
+        with self.assertRaises(_Exception):
+            self.test_store.aggregate('subject', 'score')
+        self.assertEqual(1, self.test_store._collection.map_reduce.call_count)
+
+    def test_aggregate_auto_retry(self):
+        self.test_store._collection.map_reduce = MagicMock(side_effect=AutoReconnect())
+        with self.assertRaises(AutoReconnect):
+            self.test_store.aggregate('subject', 'score')
+        self.assertEqual(5, self.test_store._collection.map_reduce.call_count)
