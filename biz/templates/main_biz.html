@@ -204,8 +204,10 @@ from microsite_configuration import microsite
             <a href="#" id="panel-btn"><span id="panel-btn-icon"></span></a>
         </div>
        <%
-            if re.match('^/biz/achievement/', request.path):
-                current_feature = 'achievement'
+            if re.match('^/biz/achievement/score', request.path):
+                current_feature = 'achievement/score'
+            elif re.match('^/biz/achievement/playback', request.path):
+                current_feature = 'achievement/playback'
             elif re.match('^/biz/organization/', request.path):
                 current_feature = 'organization'
             elif re.match('^/biz/contract/', request.path):
@@ -364,7 +366,8 @@ from microsite_configuration import microsite
                 % elif current_manager and (current_manager.is_director() or current_manager.is_manager()) and current_contract and current_contract.is_available_for_director_or_manager():
                     ## Achievement
                     % if current_manager.can_handle_achievement() and current_course:
-                    <li class="${'current' if current_feature == 'achievement' else ''}"><a href="${reverse('biz:achievement:index')}">${_("Score Status")}</a></li>
+                    <li class="${'current' if current_feature == 'achievement/score' else ''}"><a href="${reverse('biz:achievement:score')}">${_("Score Status")}</a></li>
+                    <li class="${'current' if current_feature == 'achievement/playback' else ''}"><a href="${reverse('biz:achievement:playback')}">${_("Playback Status")}</a></li>
                     % endif
 
                     ## Course Operation

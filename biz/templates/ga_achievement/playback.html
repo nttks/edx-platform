@@ -1,0 +1,143 @@
+<%inherit file="../main_biz.html" />
+<%namespace name="static" file="../static_content.html" />
+<%!
+from django.core.urlresolvers import reverse
+from django.utils.translation import ugettext as _
+%>
+
+<%block name="pagetitle">${_('Playback Status')}</%block>
+
+<%block name="js_extra">
+<script type="text/javascript">
+    var grid;
+    $(function () {
+        var playbackColumns = ${playback_columns},
+            playbackRecords = ${playback_records},
+            columnGroups = [],
+            columns = [],
+            additionalColumns = [],
+            chapterColumns = [],
+            chapterColumnGroups = [];
+        if (playbackRecords.length > 0) {
+            for (var i = 0; i < playbackColumns.length; i++) {
+                var playbackColumn = playbackColumns[i];
+                var columnNames = playbackColumn[0].split('___', 2);
+                if (columnNames.length == 2) {
+                    if (columnNames[0] === "${_('Additional Info')}") {
+                        additionalColumns.push({
+                            field: playbackColumn[0],
+                            caption: columnNames[1],
+                            searchable: true,
+                            sortable: true,
+                            size: "80px"
+                        });
+                    } else {
+                        chapterColumns.push({
+                            field: playbackColumn[0],
+                            caption: columnNames[1],
+                            sortable: true,
+                            render: renderTime,
+                            style: "text-align: right",
+                            size: "80px"
+                        });
+                        for (var j = 0; j < chapterColumnGroups.length; j++) {
+                            var chapterColumnGroup = chapterColumnGroups[j];
+                            if (chapterColumnGroup.caption === columnNames[0]) {
+                                chapterColumnGroup.span++;
+                                break;
+                            }
+                        }
+                        if (j == chapterColumnGroups.length) {
+                            chapterColumnGroups.push({
+                                caption: columnNames[0],
+                                span: 1
+                            });
+                        }
+                    }
+                }
+            }
+            columnGroups = [
+                    {master: true},
+                    {master: true},
+                    {master: true}
+                ].concat([
+                    {caption: "${_('Additional Info')}", span: additionalColumns.length}
+                ]).concat([
+                    {master: true}
+                ]);
+            if (chapterColumnGroups.length > 0) {
+                columnGroups = columnGroups.concat([
+                    {master: true}
+                ]).concat(
+                        chapterColumnGroups
+                );
+            }
+            columns = [
+                    {field: "${_('Full Name')}", caption: "${_('Full Name')}", searchable: true, sortable: true, size: "80px"},
+                    {field: "${_('Username')}", caption: "${_('Username')}", searchable: true, sortable: true, size: "80px"},
+                    {field: "${_('Email')}", caption: "${_('Email')}", searchable: true, sortable: true, size: "80px"}
+                ].concat(
+                    additionalColumns
+                ).concat([
+                    {field: "${_('Student Status')}", caption: "${_('Student Status')}", searchable: true, sortable: true, size: "80px"}
+                ]);
+            if (chapterColumns.length > 0) {
+                columns = columns.concat([
+                    {field: "${_('Total Playback Time')}", caption: "${_('Total Playback Time')}", sortable: true, render: renderTime, style: "text-align: right", size: "80px"}
+                ]).concat(
+                    chapterColumns
+                );
+            }
+        }
+
+        grid = $('#grid').w2grid({
+            name: 'playback_status',
+            fixedBody: true,
+            selectType : 'cell',
+            show: {
+                toolbar: true,
+                footer: true,
+                toolbarReload: false
+            },
+            columnGroups: columnGroups,
+            columns: columns,
+            records: playbackRecords
+        });
+    });
+
+    // Prevent double click
+    $('form#download-form').submit(function () {
+        $('#download-btn').attr('disabled', true);
+        // Using jquery.fileDownload.js
+        $.fileDownload("${reverse('biz:achievement:playback_download_csv')}", {
+                httpMethod: "POST",
+                data: {"csrfmiddlewaretoken": $.cookie("csrftoken")}
+            })
+            .always(function () {
+                $('#download-btn').attr('disabled', false);
+            });
+        return false;
+    });
+</script>
+<style>
+    .w2ui-grid .w2ui-grid-body table .w2ui-head > div,
+    .w2ui-grid .w2ui-grid-body table td.w2ui-grid-data > div {
+        font-size: 0.6rem;
+    }
+    #tb_playback_status_toolbar_item_w2ui-column-on-off {
+        display: none;
+    }
+</style>
+</%block>
+
+<%block name="custom_content">
+<div id="update-datetime">
+    <label>${_('Record Update Datetime')}：</label><span class="datetime">${update_datetime}</span><span class="status">${update_status if update_status else _('No records')}</span>
+</div>
+
+<div id="grid"></div>
+
+<form id="download-form" method="get">
+    <input type="submit" id="download-btn" value="&#xf1c3 ${_('All CSV Download')}" />
+</form>
+</%block>

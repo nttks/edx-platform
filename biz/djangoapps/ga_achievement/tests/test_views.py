@@ -9,13 +9,7 @@ import pytz
 
 from django.core.urlresolvers import reverse
 
-from biz.djangoapps.ga_achievement.score_store import (
-    SCORE_STORE_FIELD_CONTRACT_ID, SCORE_STORE_FIELD_COURSE_ID, SCORE_STORE_FIELD_NAME,
-    SCORE_STORE_FIELD_USERNAME, SCORE_STORE_FIELD_EMAIL, SCORE_STORE_FIELD_STUDENT_STATUS,
-    SCORE_STORE_FIELD_STUDENT_STATUS_UNENROLLED, SCORE_STORE_FIELD_CERTIFICATE_STATUS,
-    SCORE_STORE_FIELD_CERTIFICATE_STATUS_DOWNLOADABLE, SCORE_STORE_FIELD_CERTIFICATE_ISSUE_DATE,
-    SCORE_STORE_FIELD_TOTAL_SCORE
-)
+from biz.djangoapps.ga_achievement.achievement_store import ScoreStore
 from biz.djangoapps.ga_achievement.tests.factories import ScoreFactory, ScoreBatchStatusFactory
 from biz.djangoapps.ga_contract.tests.factories import ContractFactory
 from biz.djangoapps.util import datetime_utils
@@ -28,11 +22,11 @@ from util.file import course_filename_prefix_generator
 
 class AchievementViewTest(BizStoreTestBase, BizViewTestBase, ModuleStoreTestCase):
 
-    def _index_view(self):
-        return reverse('biz:achievement:index')
+    def _score_view(self):
+        return reverse('biz:achievement:score')
 
-    def _download_csv_view(self):
-        return reverse('biz:achievement:download_csv')
+    def _score_download_csv_view(self):
+        return reverse('biz:achievement:score_download_csv')
 
     def _create_contract(self, name, contractor, owner, created_by, invitation_code):
         return ContractFactory.create(contract_name=name, contractor_organization=contractor, owner_organization=owner,
@@ -50,19 +44,19 @@ class AchievementViewTest(BizStoreTestBase, BizViewTestBase, ModuleStoreTestCase
 
     def _create_score_data(self, is_default_date=False):
         dict_data = {
-            SCORE_STORE_FIELD_CONTRACT_ID: self.contract.id,
-            SCORE_STORE_FIELD_COURSE_ID: unicode(self.course.id),
-            SCORE_STORE_FIELD_NAME: 'TEST TEST',
-            SCORE_STORE_FIELD_USERNAME: 'TEST',
-            SCORE_STORE_FIELD_EMAIL: 'test@example.com',
-            SCORE_STORE_FIELD_STUDENT_STATUS: SCORE_STORE_FIELD_STUDENT_STATUS_UNENROLLED,
-            SCORE_STORE_FIELD_CERTIFICATE_STATUS: SCORE_STORE_FIELD_CERTIFICATE_STATUS_DOWNLOADABLE,
-            SCORE_STORE_FIELD_TOTAL_SCORE: 0.9
+            ScoreStore.FIELD_CONTRACT_ID: self.contract.id,
+            ScoreStore.FIELD_COURSE_ID: unicode(self.course.id),
+            ScoreStore.FIELD_FULL_NAME: 'TEST TEST',
+            ScoreStore.FIELD_USERNAME: 'TEST',
+            ScoreStore.FIELD_EMAIL: 'test@example.com',
+            ScoreStore.FIELD_STUDENT_STATUS: ScoreStore.FIELD_STUDENT_STATUS__UNENROLLED,
+            ScoreStore.FIELD_CERTIFICATE_STATUS: ScoreStore.FIELD_CERTIFICATE_STATUS__DOWNLOADABLE,
+            ScoreStore.FIELD_TOTAL_SCORE: 0.9
         }
         if is_default_date:
-            dict_data.update({SCORE_STORE_FIELD_CERTIFICATE_ISSUE_DATE: DEFAULT_DATETIME})
+            dict_data.update({ScoreStore.FIELD_CERTIFICATE_ISSUE_DATE: DEFAULT_DATETIME})
         else:
-            dict_data.update({SCORE_STORE_FIELD_CERTIFICATE_ISSUE_DATE: self.utc_datetime})
+            dict_data.update({ScoreStore.FIELD_CERTIFICATE_ISSUE_DATE: self.utc_datetime})
         self.score_factory = ScoreFactory.create(**dict_data)
 
     def _create_score_batch_status(self, status):
@@ -99,17 +93,16 @@ class AchievementViewTest(BizStoreTestBase, BizViewTestBase, ModuleStoreTestCase
         self._setup()
 
         with self.skip_check_course_selection(current_contract=self.contract, current_course=self.course):
-            response = self.client.get(self._index_view())
+            response = self.client.get(self._score_view())
 
         self.assertEqual(200, response.status_code)
-        self.assertIn(SCORE_STORE_FIELD_NAME, response.content)
-        self.assertIn(SCORE_STORE_FIELD_USERNAME, response.content)
-        self.assertIn(SCORE_STORE_FIELD_EMAIL, response.content)
-        self.assertIn(SCORE_STORE_FIELD_STUDENT_STATUS, response.content)
-        self.assertIn(SCORE_STORE_FIELD_CERTIFICATE_STATUS, response.content)
-        self.assertIn(SCORE_STORE_FIELD_CERTIFICATE_ISSUE_DATE, response.content)
-        self.assertIn(SCORE_STORE_FIELD_TOTAL_SCORE, response.content)
-        self.assertIn('"field": "Certificate Status", "hidden": true', response.content)
+        self.assertIn(ScoreStore.FIELD_FULL_NAME, response.content)
+        self.assertIn(ScoreStore.FIELD_USERNAME, response.content)
+        self.assertIn(ScoreStore.FIELD_EMAIL, response.content)
+        self.assertIn(ScoreStore.FIELD_STUDENT_STATUS, response.content)
+        self.assertIn(ScoreStore.FIELD_CERTIFICATE_STATUS, response.content)
+        self.assertIn(ScoreStore.FIELD_CERTIFICATE_ISSUE_DATE, response.content)
+        self.assertIn(ScoreStore.FIELD_TOTAL_SCORE, response.content)
 
     def test_index_is_score_batch_status(self):
         status = 'Finished'
@@ -120,21 +113,20 @@ class AchievementViewTest(BizStoreTestBase, BizViewTestBase, ModuleStoreTestCase
         self.score_batch_status.save()
 
         with self.skip_check_course_selection(current_contract=self.contract, current_course=self.course):
-            response = self.client.get(self._index_view())
+            response = self.client.get(self._score_view())
 
         self.assertEqual(200, response.status_code)
-        self.assertIn(SCORE_STORE_FIELD_NAME, response.content)
-        self.assertIn(SCORE_STORE_FIELD_USERNAME, response.content)
-        self.assertIn(SCORE_STORE_FIELD_EMAIL, response.content)
-        self.assertIn(SCORE_STORE_FIELD_STUDENT_STATUS, response.content)
-        self.assertIn(SCORE_STORE_FIELD_CERTIFICATE_STATUS, response.content)
-        self.assertIn(SCORE_STORE_FIELD_CERTIFICATE_ISSUE_DATE, response.content)
-        self.assertIn(SCORE_STORE_FIELD_TOTAL_SCORE, response.content)
-        self.assertIn('Score Update Date', response.content)
+        self.assertIn(ScoreStore.FIELD_FULL_NAME, response.content)
+        self.assertIn(ScoreStore.FIELD_USERNAME, response.content)
+        self.assertIn(ScoreStore.FIELD_EMAIL, response.content)
+        self.assertIn(ScoreStore.FIELD_STUDENT_STATUS, response.content)
+        self.assertIn(ScoreStore.FIELD_CERTIFICATE_STATUS, response.content)
+        self.assertIn(ScoreStore.FIELD_CERTIFICATE_ISSUE_DATE, response.content)
+        self.assertIn(ScoreStore.FIELD_TOTAL_SCORE, response.content)
+        self.assertIn('Record Update Datetime', response.content)
         self.assertIn(self.str_jst_datetime_score_update, response.content)
         self.assertIn(self.str_jst_date, response.content)
         self.assertIn(status, response.content)
-        self.assertIn('"field": "Certificate Status", "hidden": true', response.content)
 
     def test_index_default_datetime_batch_status(self):
         status = 'Finished'
@@ -145,39 +137,38 @@ class AchievementViewTest(BizStoreTestBase, BizViewTestBase, ModuleStoreTestCase
         self.score_batch_status.save()
 
         with self.skip_check_course_selection(current_contract=self.contract, current_course=self.course):
-            response = self.client.get(self._index_view())
+            response = self.client.get(self._score_view())
 
         self.assertEqual(200, response.status_code)
-        self.assertIn(SCORE_STORE_FIELD_NAME, response.content)
-        self.assertIn(SCORE_STORE_FIELD_USERNAME, response.content)
-        self.assertIn(SCORE_STORE_FIELD_EMAIL, response.content)
-        self.assertIn(SCORE_STORE_FIELD_STUDENT_STATUS, response.content)
-        self.assertIn(SCORE_STORE_FIELD_CERTIFICATE_STATUS, response.content)
-        self.assertIn(SCORE_STORE_FIELD_CERTIFICATE_ISSUE_DATE, response.content)
-        self.assertIn(SCORE_STORE_FIELD_TOTAL_SCORE, response.content)
-        self.assertIn('Score Update Date', response.content)
+        self.assertIn(ScoreStore.FIELD_FULL_NAME, response.content)
+        self.assertIn(ScoreStore.FIELD_USERNAME, response.content)
+        self.assertIn(ScoreStore.FIELD_EMAIL, response.content)
+        self.assertIn(ScoreStore.FIELD_STUDENT_STATUS, response.content)
+        self.assertIn(ScoreStore.FIELD_CERTIFICATE_STATUS, response.content)
+        self.assertIn(ScoreStore.FIELD_CERTIFICATE_ISSUE_DATE, response.content)
+        self.assertIn(ScoreStore.FIELD_TOTAL_SCORE, response.content)
+        self.assertIn('Record Update Datetime', response.content)
         self.assertIn(self.str_jst_datetime_score_update, response.content)
         self.assertNotIn(self.str_jst_date, response.content)
         self.assertNotIn(datetime_utils.to_jst(DEFAULT_DATETIME).strftime('%Y/%m/%d %H:%M'), response.content)
         self.assertIn(status, response.content)
-        self.assertIn('"field": "Certificate Status", "hidden": true', response.content)
 
     def test_download_csv_no_score_batch_status(self):
         self._setup()
 
         with self.skip_check_course_selection(current_contract=self.contract, current_course=self.course):
-            response = self.client.get(self._download_csv_view())
+            response = self.client.post(self._score_download_csv_view())
 
         self._set_csv_file_name('no-timestamp')
 
         self.assertEqual(200, response.status_code)
-        self.assertIn(SCORE_STORE_FIELD_NAME, response.content)
-        self.assertIn(SCORE_STORE_FIELD_USERNAME, response.content)
-        self.assertIn(SCORE_STORE_FIELD_EMAIL, response.content)
-        self.assertIn(SCORE_STORE_FIELD_STUDENT_STATUS, response.content)
-        self.assertIn(SCORE_STORE_FIELD_CERTIFICATE_STATUS, response.content)
-        self.assertIn(SCORE_STORE_FIELD_CERTIFICATE_ISSUE_DATE, response.content)
-        self.assertIn(SCORE_STORE_FIELD_TOTAL_SCORE, response.content)
+        self.assertIn(ScoreStore.FIELD_FULL_NAME, response.content)
+        self.assertIn(ScoreStore.FIELD_USERNAME, response.content)
+        self.assertIn(ScoreStore.FIELD_EMAIL, response.content)
+        self.assertIn(ScoreStore.FIELD_STUDENT_STATUS, response.content)
+        self.assertIn(ScoreStore.FIELD_CERTIFICATE_STATUS, response.content)
+        self.assertIn(ScoreStore.FIELD_CERTIFICATE_ISSUE_DATE, response.content)
+        self.assertIn(ScoreStore.FIELD_TOTAL_SCORE, response.content)
         self.assertIn(self.str_jst_date_csv, response.content)
 
     def test_download_csv_is_score_batch_status(self):
@@ -189,18 +180,18 @@ class AchievementViewTest(BizStoreTestBase, BizViewTestBase, ModuleStoreTestCase
         self.score_batch_status.save()
 
         with self.skip_check_course_selection(current_contract=self.contract, current_course=self.course):
-            response = self.client.get(self._download_csv_view())
+            response = self.client.post(self._score_download_csv_view())
 
         self._set_csv_file_name(self.str_jst_datetime_score_update)
 
         self.assertEqual(200, response.status_code)
-        self.assertIn(SCORE_STORE_FIELD_NAME, response.content)
-        self.assertIn(SCORE_STORE_FIELD_USERNAME, response.content)
-        self.assertIn(SCORE_STORE_FIELD_EMAIL, response.content)
-        self.assertIn(SCORE_STORE_FIELD_STUDENT_STATUS, response.content)
-        self.assertIn(SCORE_STORE_FIELD_CERTIFICATE_STATUS, response.content)
-        self.assertIn(SCORE_STORE_FIELD_CERTIFICATE_ISSUE_DATE, response.content)
-        self.assertIn(SCORE_STORE_FIELD_TOTAL_SCORE, response.content)
+        self.assertIn(ScoreStore.FIELD_FULL_NAME, response.content)
+        self.assertIn(ScoreStore.FIELD_USERNAME, response.content)
+        self.assertIn(ScoreStore.FIELD_EMAIL, response.content)
+        self.assertIn(ScoreStore.FIELD_STUDENT_STATUS, response.content)
+        self.assertIn(ScoreStore.FIELD_CERTIFICATE_STATUS, response.content)
+        self.assertIn(ScoreStore.FIELD_CERTIFICATE_ISSUE_DATE, response.content)
+        self.assertIn(ScoreStore.FIELD_TOTAL_SCORE, response.content)
         self.assertIn(self.str_jst_date_csv, response.content)
 
     def test_download_csv_default_datetime_is_score_batch_status(self):
@@ -212,17 +203,23 @@ class AchievementViewTest(BizStoreTestBase, BizViewTestBase, ModuleStoreTestCase
         self.score_batch_status.save()
 
         with self.skip_check_course_selection(current_contract=self.contract, current_course=self.course):
-            response = self.client.get(self._download_csv_view())
+            response = self.client.post(self._score_download_csv_view())
 
         self._set_csv_file_name(self.str_jst_datetime_score_update)
 
         self.assertEqual(200, response.status_code)
-        self.assertIn(SCORE_STORE_FIELD_NAME, response.content)
-        self.assertIn(SCORE_STORE_FIELD_USERNAME, response.content)
-        self.assertIn(SCORE_STORE_FIELD_EMAIL, response.content)
-        self.assertIn(SCORE_STORE_FIELD_STUDENT_STATUS, response.content)
-        self.assertIn(SCORE_STORE_FIELD_CERTIFICATE_STATUS, response.content)
-        self.assertIn(SCORE_STORE_FIELD_CERTIFICATE_ISSUE_DATE, response.content)
-        self.assertIn(SCORE_STORE_FIELD_TOTAL_SCORE, response.content)
+        self.assertIn(ScoreStore.FIELD_FULL_NAME, response.content)
+        self.assertIn(ScoreStore.FIELD_USERNAME, response.content)
+        self.assertIn(ScoreStore.FIELD_EMAIL, response.content)
+        self.assertIn(ScoreStore.FIELD_STUDENT_STATUS, response.content)
+        self.assertIn(ScoreStore.FIELD_CERTIFICATE_STATUS, response.content)
+        self.assertIn(ScoreStore.FIELD_CERTIFICATE_ISSUE_DATE, response.content)
+        self.assertIn(ScoreStore.FIELD_TOTAL_SCORE, response.content)
         self.assertNotIn(self.str_jst_datetime_score_update, response.content)
         self.assertNotIn(datetime_utils.to_jst(DEFAULT_DATETIME).strftime('%Y/%m/%d %H:%M'), response.content)
+
+    def test_download_csv__not_allowed_method(self):
+        self._setup(True)
+        with self.skip_check_course_selection(current_contract=self.contract, current_course=self.course):
+            response = self.client.get(self._score_download_csv_view())
+        self.assertEqual(405, response.status_code)

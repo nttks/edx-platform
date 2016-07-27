@@ -93,7 +93,7 @@ class CourseSelectionViewTest(BizViewTestBase, ModuleStoreTestCase):
             response = self.client.get(self._index_view())
 
         self.assertEqual(302, response.status_code)
-        self.assertEqual('http://testserver{}'.format(reverse('biz:achievement:index')), response['Location'])
+        self.assertEqual('http://testserver{}'.format(reverse('biz:achievement:score')), response['Location'])
 
     def test_index_director_with_owner_contract(self):
         manager = self._create_manager([self.director_permission])
@@ -110,7 +110,7 @@ class CourseSelectionViewTest(BizViewTestBase, ModuleStoreTestCase):
             response = self.client.get(self._index_view())
 
         self.assertEqual(302, response.status_code)
-        self.assertEqual('http://testserver{}'.format(reverse('biz:achievement:index')), response['Location'])
+        self.assertEqual('http://testserver{}'.format(reverse('biz:achievement:score')), response['Location'])
 
     def test_index_manager_with_owner_contract(self):
         manager = self._create_manager([self.manager_permission])
@@ -146,7 +146,7 @@ class CourseSelectionViewTest(BizViewTestBase, ModuleStoreTestCase):
             response = self.client.get(self._index_view())
 
         self.assertEqual(302, response.status_code)
-        self.assertEqual('http://testserver{}'.format(reverse('biz:achievement:index')), response['Location'])
+        self.assertEqual('http://testserver{}'.format(reverse('biz:achievement:score')), response['Location'])
 
     def test_index_method_not_allowed(self):
         self.assertEqual(405, self.client.post(self._index_view()).status_code)
