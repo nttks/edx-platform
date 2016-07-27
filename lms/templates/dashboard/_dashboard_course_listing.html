@@ -1,4 +1,4 @@
-<%page args="course_overview, enrollment, show_courseware_link, cert_status, can_unenroll, credit_status, show_email_settings, course_mode_info, show_refund_option, is_paid_course, is_course_blocked, verification_status, course_requirements, dashboard_index, share_settings, course_program_info" />
+<%page args="course_overview, enrollment, show_courseware_link, cert_status, can_unenroll, credit_status, show_email_settings, course_mode_info, show_refund_option, is_paid_course, is_course_blocked, verification_status, course_requirements, dashboard_index, share_settings, course_program_info, advanced_course_status" />
 
 <%!
 import urllib
@@ -83,6 +83,24 @@ from student.helpers import (
           % endif
           <div class="sts-enrollment-value">${course_verified_certs.get('enrollment_value')}</div>
         </span>
+      % endif
+      % if advanced_course_status.is_purchased():
+        <div class="advanced-course-information purchased">
+          <div class="label">${_("Face 2 Face Classroom")}${_("Purchased")}</div>
+          % for order in advanced_course_status.get_purchased_orders():
+          <a href="${reverse('shoppingcart.views.show_receipt', args=[order.id])}" class="btn">${_("View Subscription Details")}</a>
+          % endfor
+        </div>
+      % elif course_overview.extra and course_overview.extra.is_f2f_course and course_overview.extra.is_f2f_course_sell:
+        <div class="advanced-course-information apply">
+          <a href="${reverse('advanced_course:courses_face_to_face', args=[course_overview.id])}" class="btn">
+            % if advanced_course_status.has_available_f2f_course():
+            ${_("Face 2 Face Classroom")}&nbsp;${_("Subscription")}
+            % else:
+            ${_("There is face-to-face course")}
+            % endif
+          </a>
+        </div>
       % endif
     </div>
       <div class="wrapper-course-details">
@@ -215,10 +233,19 @@ from student.helpers import (
                       </a>
                       % endif
                     % elif enrollment.mode != "verified":
+                      % if advanced_course_status.is_purchased():
                       <a href="#unenroll-modal" class="action action-unenroll" rel="leanModal" data-course-id="${course_overview.id | h}" data-course-number="${course_overview.number | h}" data-course-name="${course_overview.display_name_with_default | h}" data-dashboard-index="${dashboard_index}"
-                         data-track-info="${_("Are you sure you want to unenroll from %(course_name)s (%(course_number)s)?") | h}">
+                         data-track-info="${_("Are you sure you want to unenroll from %(course_name)s (%(course_number)s)?") | h}"
+                         data-refund-info="${_("If you unenroll, ticket, such as face-to-face classroom you have purchased will not be canceled. Please contact us through the Help If you would like to cancel the ticket.") | h}">
                         ${_('Unenroll')}
                       </a>
+                      % else:
+                      <a href="#unenroll-modal" class="action action-unenroll" rel="leanModal" data-course-id="${course_overview.id | h}" data-course-number="${course_overview.number | h}" data-course-name="${course_overview.display_name_with_default | h}" data-dashboard-index="${dashboard_index}"
+                         data-track-info="${_("Are you sure you want to unenroll from %(course_name)s (%(course_number)s)?") | h}"
+                         data-refund-info="">
+                        ${_('Unenroll')}
+                      </a>
+                      % endif
                     % elif show_refund_option:
                       % if not is_course_blocked:
                       <a href="#unenroll-modal" class="action action-unenroll" rel="leanModal" data-course-id="${course_overview.id | h}" data-course-number="${course_overview.number | h}" data-course-name="${course_overview.display_name_with_default | h}" data-dashboard-index="${dashboard_index}" data-cert-name-long="${cert_name_long | h}"
@@ -264,6 +291,13 @@ from student.helpers import (
   </section>
   <footer class="wrapper-messages-primary">
     <ul class="messages-list">
+
+      % if advanced_course_status.has_available_f2f_course() and not advanced_course_status.is_purchased():
+      <div class="message message-status is-shown">
+        <p class="message-copy">${_("This course, we recommend face-to-face course. Please consider all means.")} ${_("What is face-to-face course?")} => <a href="${marketing_link('FACE_TO_FACE')}" target="_blank">${_("here")}</a></p>
+      </div>
+      % endif
+
       % if course_overview.may_certify() and cert_status:
         <%include file='_dashboard_certificate_information.html' args='cert_status=cert_status,course_overview=course_overview, enrollment=enrollment'/>
       % endif
