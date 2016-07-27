@@ -307,7 +307,7 @@ class DashboardTest(ModuleStoreTestCase):
         self.assertFalse(course_mode_info['show_upsell'])
         self.assertIsNone(course_mode_info['days_for_upsell'])
 
-    @unittest.skipUnless(settings.ROOT_URLCONF == 'lms.urls', 'Test only valid in lms')
+    @unittest.skip("Does not use in gacco")
     @patch('courseware.views.log.warning')
     @patch.dict('django.conf.settings.FEATURES', {'ENABLE_PAID_COURSE_REGISTRATION': True})
     def test_blocked_course_scenario(self, log_warning):
@@ -369,7 +369,7 @@ class DashboardTest(ModuleStoreTestCase):
         response = self.client.get(reverse('dashboard'))
         self.assertNotIn('You can no longer access this course because payment has not yet been received', response.content)
 
-    @unittest.skipUnless(settings.ROOT_URLCONF == 'lms.urls', 'Test only valid in lms')
+    @unittest.skip("Does not use in gacco")
     def test_refundable_of_purchased_course(self):
 
         self.client.login(username="jack", password="test")
@@ -389,7 +389,7 @@ class DashboardTest(ModuleStoreTestCase):
         resp = self.client.post(reverse('student.views.dashboard', args=[]))
         self.assertIn('You will not be refunded the amount you paid.', resp.content)
 
-    @unittest.skipUnless(settings.ROOT_URLCONF == 'lms.urls', 'Test only valid in lms')
+    @unittest.skip("Does not use in gacco")
     def test_refundable_when_certificate_exists(self):
         CourseModeFactory.create(
             course_id=self.course.id,
