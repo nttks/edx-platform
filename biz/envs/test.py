@@ -11,9 +11,10 @@ Basic settings
 BIZ_SECRET_KEY = 'test'
 
 """
-Set score Batch Settings
+Batch Settings
 """
 BIZ_SET_SCORE_COMMAND_OUTPUT = tempfile.NamedTemporaryFile().name
+BIZ_SET_PLAYBACK_COMMAND_OUTPUT = tempfile.NamedTemporaryFile().name
 
 """
 Monthly report info
