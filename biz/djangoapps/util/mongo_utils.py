@@ -42,6 +42,22 @@ class BizStore(object):
         self._key_index_columns = key_index_columns
 
     @autoretry_read()
+    def get_document(self, conditions={}, excludes={'_id': False}):
+        """
+        Get the data of MongoDB
+
+        :param conditions: MongoDB Condition for Dict
+        :param excludes: _id flag of exclusion
+        :return: Conversion of pymongo.cursor.Cursor type to list
+        """
+        conditions.update(self._key_conditions)
+        try:
+            return self._collection.find_one(conditions, excludes, as_class=OrderedDict)
+        except Exception as e:
+            log.error("Error occurred while find MongoDB: %s" % e)
+            raise
+
+    @autoretry_read()
     def get_documents(self, conditions={}, excludes={'_id': False}, sort_column='_id', sort=ASCENDING):
         """
         Get the data of MongoDB
@@ -75,20 +91,6 @@ class BizStore(object):
         except Exception as e:
             log.error("Error occurred while get count MongoDB: %s" % e)
             raise
-
-    @classmethod
-    def get_fields(cls, items):
-        """
-        Create fields from the retrieved documents
-        Note: create fields from the head of the documents for workaround
-        """
-        if len(items) > 0:
-            if isinstance(items[0], OrderedDict):
-                return items[0].keys()
-            else:
-                raise TypeError("Target object is not OrderedDict")
-        else:
-            return []
 
     @autoretry_read()
     def set_documents(self, posts):

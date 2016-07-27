@@ -2,7 +2,7 @@
 from factory.django import DjangoModelFactory
 
 from biz.djangoapps.ga_achievement.models import ScoreBatchStatus
-from biz.djangoapps.ga_achievement.score_store import ScoreStore
+from biz.djangoapps.ga_achievement.achievement_store import ScoreStore
 from biz.djangoapps.util.tests.factories import BizMongoFactory
 
 

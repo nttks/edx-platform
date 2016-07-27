@@ -6,19 +6,10 @@ Replace this with more appropriate tests for your application.
 """
 from mock import patch
 
-from django.test.utils import override_settings
 from django.core.management import call_command
 
-from biz.djangoapps.ga_achievement.models import ScoreBatchStatus, SCORE_BATCH_STATUS_STARTED, SCORE_BATCH_STATUS_FINISHED, SCORE_BATCH_STATUS_ERROR
-from biz.djangoapps.ga_achievement.score_store import (
-    ScoreStore, SCORE_STORE_FIELD_CONTRACT_ID, SCORE_STORE_FIELD_COURSE_ID,
-    SCORE_STORE_FIELD_NAME, SCORE_STORE_FIELD_USERNAME, SCORE_STORE_FIELD_EMAIL, SCORE_STORE_FIELD_STUDENT_STATUS,
-    SCORE_STORE_FIELD_STUDENT_STATUS_NOT_ENROLLED, SCORE_STORE_FIELD_STUDENT_STATUS_ENROLLED,
-    SCORE_STORE_FIELD_STUDENT_STATUS_UNENROLLED, SCORE_STORE_FIELD_STUDENT_STATUS_DISABLED,
-    SCORE_STORE_FIELD_CERTIFICATE_STATUS, SCORE_STORE_FIELD_CERTIFICATE_STATUS_DOWNLOADABLE,
-    SCORE_STORE_FIELD_CERTIFICATE_STATUS_UNPUBLISHED, SCORE_STORE_FIELD_ENROLL_DATE,
-    SCORE_STORE_FIELD_CERTIFICATE_ISSUE_DATE, SCORE_STORE_FIELD_TOTAL_SCORE
-)
+from biz.djangoapps.ga_achievement.models import ScoreBatchStatus, BATCH_STATUS_STARTED, BATCH_STATUS_FINISHED, BATCH_STATUS_ERROR
+from biz.djangoapps.ga_achievement.achievement_store import ScoreStore
 from biz.djangoapps.util.mongo_utils import DEFAULT_DATETIME
 from biz.djangoapps.util.tests.testcase import BizStoreTestBase
 from certificates.models import CertificateStatuses, GeneratedCertificate
@@ -34,16 +25,16 @@ ADDITIONAL_DISPLAY_NAME1 = 'test_number'
 ADDITIONAL_DISPLAY_NAME2 = 'test_section'
 ADDITIONAL_SETTINGS_VALUE = 'test_value'
 DEFAULT_KEY = [
-    SCORE_STORE_FIELD_CONTRACT_ID,
-    SCORE_STORE_FIELD_COURSE_ID,
-    SCORE_STORE_FIELD_NAME,
-    SCORE_STORE_FIELD_USERNAME,
-    SCORE_STORE_FIELD_EMAIL,
-    SCORE_STORE_FIELD_STUDENT_STATUS,
-    SCORE_STORE_FIELD_CERTIFICATE_STATUS,
-    SCORE_STORE_FIELD_ENROLL_DATE,
-    SCORE_STORE_FIELD_CERTIFICATE_ISSUE_DATE,
-    SCORE_STORE_FIELD_TOTAL_SCORE,
+    ScoreStore.FIELD_CONTRACT_ID,
+    ScoreStore.FIELD_COURSE_ID,
+    ScoreStore.FIELD_FULL_NAME,
+    ScoreStore.FIELD_USERNAME,
+    ScoreStore.FIELD_EMAIL,
+    ScoreStore.FIELD_STUDENT_STATUS,
+    ScoreStore.FIELD_CERTIFICATE_STATUS,
+    ScoreStore.FIELD_ENROLL_DATE,
+    ScoreStore.FIELD_CERTIFICATE_ISSUE_DATE,
+    ScoreStore.FIELD_TOTAL_SCORE,
     ADDITIONAL_DISPLAY_NAME1,
     ADDITIONAL_DISPLAY_NAME2,
 ]
@@ -76,16 +67,16 @@ class UpdateBizScoreStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEnrol
         )
 
     def assert_finished(self, count, course):
-        ScoreBatchStatus.objects.get(contract=self.contract, course_id=course.id, status=SCORE_BATCH_STATUS_STARTED)
-        ScoreBatchStatus.objects.get(contract=self.contract, course_id=course.id, status=SCORE_BATCH_STATUS_FINISHED, student_count=count)
+        ScoreBatchStatus.objects.get(contract=self.contract, course_id=course.id, status=BATCH_STATUS_STARTED)
+        ScoreBatchStatus.objects.get(contract=self.contract, course_id=course.id, status=BATCH_STATUS_FINISHED, student_count=count)
 
         score_list = ScoreStore(self.contract.id, unicode(course.id)).get_documents()
         self.assertEquals(len(score_list), count)
         return score_list
 
     def assert_error(self, course):
-        ScoreBatchStatus.objects.get(contract=self.contract, course_id=course.id, status=SCORE_BATCH_STATUS_STARTED)
-        ScoreBatchStatus.objects.get(contract=self.contract, course_id=course.id, status=SCORE_BATCH_STATUS_ERROR, student_count=None)
+        ScoreBatchStatus.objects.get(contract=self.contract, course_id=course.id, status=BATCH_STATUS_STARTED)
+        ScoreBatchStatus.objects.get(contract=self.contract, course_id=course.id, status=BATCH_STATUS_ERROR, student_count=None)
 
         score_list = ScoreStore(self.contract.id, unicode(course.id)).get_documents()
         self.assertEquals(len(score_list), 0)
@@ -110,16 +101,16 @@ class UpdateBizScoreStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEnrol
             score_list = self.assert_finished(1, course)
 
             score_dict = score_list[0]
-            self.assertEquals(score_dict[SCORE_STORE_FIELD_CONTRACT_ID], self.contract.id)
-            self.assertEquals(score_dict[SCORE_STORE_FIELD_COURSE_ID], unicode(course.id))
-            self.assertIsNone(score_dict[SCORE_STORE_FIELD_NAME])
-            self.assertEquals(score_dict[SCORE_STORE_FIELD_USERNAME], self.user.username)
-            self.assertEquals(score_dict[SCORE_STORE_FIELD_EMAIL], self.user.email)
-            self.assertEquals(score_dict[SCORE_STORE_FIELD_STUDENT_STATUS], SCORE_STORE_FIELD_STUDENT_STATUS_NOT_ENROLLED)
-            self.assertEquals(score_dict[SCORE_STORE_FIELD_CERTIFICATE_STATUS], SCORE_STORE_FIELD_CERTIFICATE_STATUS_UNPUBLISHED)
-            self.assertEquals(score_dict[SCORE_STORE_FIELD_ENROLL_DATE], DEFAULT_DATETIME)
-            self.assertEquals(score_dict[SCORE_STORE_FIELD_CERTIFICATE_ISSUE_DATE], DEFAULT_DATETIME)
-            self.assertEquals(score_dict[SCORE_STORE_FIELD_TOTAL_SCORE], 0)
+            self.assertEquals(score_dict[ScoreStore.FIELD_CONTRACT_ID], self.contract.id)
+            self.assertEquals(score_dict[ScoreStore.FIELD_COURSE_ID], unicode(course.id))
+            self.assertIsNone(score_dict[ScoreStore.FIELD_FULL_NAME])
+            self.assertEquals(score_dict[ScoreStore.FIELD_USERNAME], self.user.username)
+            self.assertEquals(score_dict[ScoreStore.FIELD_EMAIL], self.user.email)
+            self.assertEquals(score_dict[ScoreStore.FIELD_STUDENT_STATUS], ScoreStore.FIELD_STUDENT_STATUS__NOT_ENROLLED)
+            self.assertEquals(score_dict[ScoreStore.FIELD_CERTIFICATE_STATUS], ScoreStore.FIELD_CERTIFICATE_STATUS__UNPUBLISHED)
+            self.assertEquals(score_dict[ScoreStore.FIELD_ENROLL_DATE], DEFAULT_DATETIME)
+            self.assertEquals(score_dict[ScoreStore.FIELD_CERTIFICATE_ISSUE_DATE], DEFAULT_DATETIME)
+            self.assertEquals(score_dict[ScoreStore.FIELD_TOTAL_SCORE], 0)
             self.assertIsNone(score_dict[ADDITIONAL_DISPLAY_NAME1])
             self.assertIsNone(score_dict[ADDITIONAL_DISPLAY_NAME2])
             for k, v in score_dict.items():
@@ -141,16 +132,16 @@ class UpdateBizScoreStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEnrol
             score_list = self.assert_finished(1, course)
 
             score_dict = score_list[0]
-            self.assertEquals(score_dict[SCORE_STORE_FIELD_CONTRACT_ID], self.contract.id)
-            self.assertEquals(score_dict[SCORE_STORE_FIELD_COURSE_ID], unicode(course.id))
-            self.assertEquals(score_dict[SCORE_STORE_FIELD_NAME], self.user.profile.name)
-            self.assertEquals(score_dict[SCORE_STORE_FIELD_USERNAME], self.user.username)
-            self.assertEquals(score_dict[SCORE_STORE_FIELD_EMAIL], self.user.email)
-            self.assertEquals(score_dict[SCORE_STORE_FIELD_STUDENT_STATUS], SCORE_STORE_FIELD_STUDENT_STATUS_ENROLLED)
-            self.assertEquals(score_dict[SCORE_STORE_FIELD_CERTIFICATE_STATUS], SCORE_STORE_FIELD_CERTIFICATE_STATUS_DOWNLOADABLE)
-            self.assert_datetime(score_dict[SCORE_STORE_FIELD_ENROLL_DATE], CourseEnrollment.get_enrollment(self.user, course.id).created)
-            self.assert_datetime(score_dict[SCORE_STORE_FIELD_CERTIFICATE_ISSUE_DATE], GeneratedCertificate.certificate_for_student(self.user, course.id).created_date)
-            self.assertEquals(score_dict[SCORE_STORE_FIELD_TOTAL_SCORE], 0)
+            self.assertEquals(score_dict[ScoreStore.FIELD_CONTRACT_ID], self.contract.id)
+            self.assertEquals(score_dict[ScoreStore.FIELD_COURSE_ID], unicode(course.id))
+            self.assertEquals(score_dict[ScoreStore.FIELD_FULL_NAME], self.user.profile.name)
+            self.assertEquals(score_dict[ScoreStore.FIELD_USERNAME], self.user.username)
+            self.assertEquals(score_dict[ScoreStore.FIELD_EMAIL], self.user.email)
+            self.assertEquals(score_dict[ScoreStore.FIELD_STUDENT_STATUS], ScoreStore.FIELD_STUDENT_STATUS__ENROLLED)
+            self.assertEquals(score_dict[ScoreStore.FIELD_CERTIFICATE_STATUS], ScoreStore.FIELD_CERTIFICATE_STATUS__DOWNLOADABLE)
+            self.assert_datetime(score_dict[ScoreStore.FIELD_ENROLL_DATE], CourseEnrollment.get_enrollment(self.user, course.id).created)
+            self.assert_datetime(score_dict[ScoreStore.FIELD_CERTIFICATE_ISSUE_DATE], GeneratedCertificate.certificate_for_student(self.user, course.id).created_date)
+            self.assertEquals(score_dict[ScoreStore.FIELD_TOTAL_SCORE], 0)
             self.assertEquals(score_dict[ADDITIONAL_DISPLAY_NAME1], '{}_{}'.format(ADDITIONAL_DISPLAY_NAME1, ADDITIONAL_SETTINGS_VALUE))
             self.assertEquals(score_dict[ADDITIONAL_DISPLAY_NAME2], '{}_{}'.format(ADDITIONAL_DISPLAY_NAME2, ADDITIONAL_SETTINGS_VALUE))
             for k, v in score_dict.items():
@@ -184,16 +175,16 @@ class UpdateBizScoreStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEnrol
             score_list = self.assert_finished(1, course)
 
             score_dict = score_list[0]
-            self.assertEquals(score_dict[SCORE_STORE_FIELD_CONTRACT_ID], self.contract.id)
-            self.assertEquals(score_dict[SCORE_STORE_FIELD_COURSE_ID], unicode(course.id))
-            self.assertEquals(score_dict[SCORE_STORE_FIELD_NAME], self.user.profile.name)
-            self.assertEquals(score_dict[SCORE_STORE_FIELD_USERNAME], self.user.username)
-            self.assertEquals(score_dict[SCORE_STORE_FIELD_EMAIL], self.user.email)
-            self.assertEquals(score_dict[SCORE_STORE_FIELD_STUDENT_STATUS], SCORE_STORE_FIELD_STUDENT_STATUS_ENROLLED)
-            self.assertEquals(score_dict[SCORE_STORE_FIELD_CERTIFICATE_STATUS], SCORE_STORE_FIELD_CERTIFICATE_STATUS_DOWNLOADABLE)
-            self.assert_datetime(score_dict[SCORE_STORE_FIELD_ENROLL_DATE], CourseEnrollment.get_enrollment(self.user, course.id).created)
-            self.assert_datetime(score_dict[SCORE_STORE_FIELD_CERTIFICATE_ISSUE_DATE], GeneratedCertificate.certificate_for_student(self.user, course.id).created_date)
-            self.assertEquals(score_dict[SCORE_STORE_FIELD_TOTAL_SCORE], 88.89)
+            self.assertEquals(score_dict[ScoreStore.FIELD_CONTRACT_ID], self.contract.id)
+            self.assertEquals(score_dict[ScoreStore.FIELD_COURSE_ID], unicode(course.id))
+            self.assertEquals(score_dict[ScoreStore.FIELD_FULL_NAME], self.user.profile.name)
+            self.assertEquals(score_dict[ScoreStore.FIELD_USERNAME], self.user.username)
+            self.assertEquals(score_dict[ScoreStore.FIELD_EMAIL], self.user.email)
+            self.assertEquals(score_dict[ScoreStore.FIELD_STUDENT_STATUS], ScoreStore.FIELD_STUDENT_STATUS__ENROLLED)
+            self.assertEquals(score_dict[ScoreStore.FIELD_CERTIFICATE_STATUS], ScoreStore.FIELD_CERTIFICATE_STATUS__DOWNLOADABLE)
+            self.assert_datetime(score_dict[ScoreStore.FIELD_ENROLL_DATE], CourseEnrollment.get_enrollment(self.user, course.id).created)
+            self.assert_datetime(score_dict[ScoreStore.FIELD_CERTIFICATE_ISSUE_DATE], GeneratedCertificate.certificate_for_student(self.user, course.id).created_date)
+            self.assertEquals(score_dict[ScoreStore.FIELD_TOTAL_SCORE], 88.89)
             self.assertEquals(score_dict[ADDITIONAL_DISPLAY_NAME1], '{}_{}'.format(ADDITIONAL_DISPLAY_NAME1, ADDITIONAL_SETTINGS_VALUE))
             self.assertEquals(score_dict[ADDITIONAL_DISPLAY_NAME2], '{}_{}'.format(ADDITIONAL_DISPLAY_NAME2, ADDITIONAL_SETTINGS_VALUE))
 
@@ -221,16 +212,16 @@ class UpdateBizScoreStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEnrol
             score_list = self.assert_finished(1, course)
 
             score_dict = score_list[0]
-            self.assertEquals(score_dict[SCORE_STORE_FIELD_CONTRACT_ID], self.contract.id)
-            self.assertEquals(score_dict[SCORE_STORE_FIELD_COURSE_ID], unicode(course.id))
-            self.assertEquals(score_dict[SCORE_STORE_FIELD_NAME], self.user.profile.name)
-            self.assertEquals(score_dict[SCORE_STORE_FIELD_USERNAME], self.user.username)
-            self.assertEquals(score_dict[SCORE_STORE_FIELD_EMAIL], self.user.email)
-            self.assertEquals(score_dict[SCORE_STORE_FIELD_STUDENT_STATUS], SCORE_STORE_FIELD_STUDENT_STATUS_UNENROLLED)
-            self.assertEquals(score_dict[SCORE_STORE_FIELD_CERTIFICATE_STATUS], SCORE_STORE_FIELD_CERTIFICATE_STATUS_DOWNLOADABLE)
-            self.assert_datetime(score_dict[SCORE_STORE_FIELD_ENROLL_DATE], CourseEnrollment.get_enrollment(self.user, course.id).created)
-            self.assert_datetime(score_dict[SCORE_STORE_FIELD_CERTIFICATE_ISSUE_DATE], GeneratedCertificate.certificate_for_student(self.user, course.id).created_date)
-            self.assertEquals(score_dict[SCORE_STORE_FIELD_TOTAL_SCORE], 0)
+            self.assertEquals(score_dict[ScoreStore.FIELD_CONTRACT_ID], self.contract.id)
+            self.assertEquals(score_dict[ScoreStore.FIELD_COURSE_ID], unicode(course.id))
+            self.assertEquals(score_dict[ScoreStore.FIELD_FULL_NAME], self.user.profile.name)
+            self.assertEquals(score_dict[ScoreStore.FIELD_USERNAME], self.user.username)
+            self.assertEquals(score_dict[ScoreStore.FIELD_EMAIL], self.user.email)
+            self.assertEquals(score_dict[ScoreStore.FIELD_STUDENT_STATUS], ScoreStore.FIELD_STUDENT_STATUS__UNENROLLED)
+            self.assertEquals(score_dict[ScoreStore.FIELD_CERTIFICATE_STATUS], ScoreStore.FIELD_CERTIFICATE_STATUS__DOWNLOADABLE)
+            self.assert_datetime(score_dict[ScoreStore.FIELD_ENROLL_DATE], CourseEnrollment.get_enrollment(self.user, course.id).created)
+            self.assert_datetime(score_dict[ScoreStore.FIELD_CERTIFICATE_ISSUE_DATE], GeneratedCertificate.certificate_for_student(self.user, course.id).created_date)
+            self.assertEquals(score_dict[ScoreStore.FIELD_TOTAL_SCORE], 0)
             self.assertEquals(score_dict[ADDITIONAL_DISPLAY_NAME1], '{}_{}'.format(ADDITIONAL_DISPLAY_NAME1, ADDITIONAL_SETTINGS_VALUE))
             self.assertEquals(score_dict[ADDITIONAL_DISPLAY_NAME2], '{}_{}'.format(ADDITIONAL_DISPLAY_NAME2, ADDITIONAL_SETTINGS_VALUE))
             for k, v in score_dict.items():
@@ -253,16 +244,16 @@ class UpdateBizScoreStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEnrol
             score_list = self.assert_finished(1, course)
 
             score_dict = score_list[0]
-            self.assertEquals(score_dict[SCORE_STORE_FIELD_CONTRACT_ID], self.contract.id)
-            self.assertEquals(score_dict[SCORE_STORE_FIELD_COURSE_ID], unicode(course.id))
-            self.assertEquals(score_dict[SCORE_STORE_FIELD_NAME], self.user.profile.name)
-            self.assertEquals(score_dict[SCORE_STORE_FIELD_USERNAME], self.user.username)
-            self.assertEquals(score_dict[SCORE_STORE_FIELD_EMAIL], self.user.email)
-            self.assertEquals(score_dict[SCORE_STORE_FIELD_STUDENT_STATUS], SCORE_STORE_FIELD_STUDENT_STATUS_DISABLED)
-            self.assertEquals(score_dict[SCORE_STORE_FIELD_CERTIFICATE_STATUS], SCORE_STORE_FIELD_CERTIFICATE_STATUS_DOWNLOADABLE)
-            self.assert_datetime(score_dict[SCORE_STORE_FIELD_ENROLL_DATE], CourseEnrollment.get_enrollment(self.user, course.id).created)
-            self.assert_datetime(score_dict[SCORE_STORE_FIELD_CERTIFICATE_ISSUE_DATE], GeneratedCertificate.certificate_for_student(self.user, course.id).created_date)
-            self.assertEquals(score_dict[SCORE_STORE_FIELD_TOTAL_SCORE], 0)
+            self.assertEquals(score_dict[ScoreStore.FIELD_CONTRACT_ID], self.contract.id)
+            self.assertEquals(score_dict[ScoreStore.FIELD_COURSE_ID], unicode(course.id))
+            self.assertEquals(score_dict[ScoreStore.FIELD_FULL_NAME], self.user.profile.name)
+            self.assertEquals(score_dict[ScoreStore.FIELD_USERNAME], self.user.username)
+            self.assertEquals(score_dict[ScoreStore.FIELD_EMAIL], self.user.email)
+            self.assertEquals(score_dict[ScoreStore.FIELD_STUDENT_STATUS], ScoreStore.FIELD_STUDENT_STATUS__DISABLED)
+            self.assertEquals(score_dict[ScoreStore.FIELD_CERTIFICATE_STATUS], ScoreStore.FIELD_CERTIFICATE_STATUS__DOWNLOADABLE)
+            self.assert_datetime(score_dict[ScoreStore.FIELD_ENROLL_DATE], CourseEnrollment.get_enrollment(self.user, course.id).created)
+            self.assert_datetime(score_dict[ScoreStore.FIELD_CERTIFICATE_ISSUE_DATE], GeneratedCertificate.certificate_for_student(self.user, course.id).created_date)
+            self.assertEquals(score_dict[ScoreStore.FIELD_TOTAL_SCORE], 0)
             self.assertEquals(score_dict[ADDITIONAL_DISPLAY_NAME1], '{}_{}'.format(ADDITIONAL_DISPLAY_NAME1, ADDITIONAL_SETTINGS_VALUE))
             self.assertEquals(score_dict[ADDITIONAL_DISPLAY_NAME2], '{}_{}'.format(ADDITIONAL_DISPLAY_NAME2, ADDITIONAL_SETTINGS_VALUE))
             for k, v in score_dict.items():
