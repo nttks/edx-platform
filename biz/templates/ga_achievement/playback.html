@@ -57,36 +57,30 @@ from django.utils.translation import ugettext as _
                 }
             }
             columnGroups = [
-                    {master: true},
-                    {master: true},
-                    {master: true}
-                ].concat([
-                    {caption: "${_('Additional Info')}", span: additionalColumns.length}
-                ]).concat([
-                    {master: true}
-                ]);
+                {master: true},
+                {master: true},
+                {master: true}
+            ];
+            if (additionalColumns.length > 0) {
+                columnGroups.push({caption: "${_('Additional Info')}", span: additionalColumns.length});
+            }
+            columnGroups.push({master: true});
             if (chapterColumnGroups.length > 0) {
-                columnGroups = columnGroups.concat([
-                    {master: true}
-                ]).concat(
-                        chapterColumnGroups
-                );
+                columnGroups.push({master: true});
+                columnGroups = columnGroups.concat(chapterColumnGroups);
             }
             columns = [
-                    {field: "${_('Full Name')}", caption: "${_('Full Name')}", searchable: true, sortable: true, size: "80px"},
-                    {field: "${_('Username')}", caption: "${_('Username')}", searchable: true, sortable: true, size: "80px"},
-                    {field: "${_('Email')}", caption: "${_('Email')}", searchable: true, sortable: true, size: "80px"}
-                ].concat(
-                    additionalColumns
-                ).concat([
-                    {field: "${_('Student Status')}", caption: "${_('Student Status')}", searchable: true, sortable: true, size: "80px"}
-                ]);
+                {field: "${_('Full Name')}", caption: "${_('Full Name')}", searchable: true, sortable: true, size: "80px"},
+                {field: "${_('Username')}", caption: "${_('Username')}", searchable: true, sortable: true, size: "80px"},
+                {field: "${_('Email')}", caption: "${_('Email')}", searchable: true, sortable: true, size: "80px"}
+            ];
+            if (additionalColumns.length > 0) {
+                columns = columns.concat(additionalColumns);
+            }
+            columns.push({field: "${_('Student Status')}", caption: "${_('Student Status')}", searchable: true, sortable: true, size: "80px"});
             if (chapterColumns.length > 0) {
-                columns = columns.concat([
-                    {field: "${_('Total Playback Time')}", caption: "${_('Total Playback Time')}", sortable: true, render: renderTime, style: "text-align: right", size: "80px"}
-                ]).concat(
-                    chapterColumns
-                );
+                columns.push({field: "${_('Total Playback Time')}", caption: "${_('Total Playback Time')}", sortable: true, render: renderTime, style: "text-align: right", size: "80px"});
+                columns = columns.concat(chapterColumns);
             }
         }
 
