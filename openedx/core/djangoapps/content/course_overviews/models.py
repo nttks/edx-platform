@@ -63,8 +63,6 @@ class CourseOverview(TimeStampedModel):
     advertised_start = TextField(null=True)
     announcement = DateTimeField(null=True)
 
-    has_terminated = BooleanField(default=False)
-
     # URLs
     course_image_url = TextField()
     facebook_url = TextField(null=True)
@@ -162,8 +160,6 @@ class CourseOverview(TimeStampedModel):
             end=end,
             advertised_start=course.advertised_start,
             announcement=course.announcement,
-
-            has_terminated=course.has_terminated(),
 
             course_image_url=course_image_url(course),
             facebook_url=course.facebook_url,

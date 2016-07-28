@@ -16,6 +16,8 @@ class CourseOverviewExtra(models.Model):
 
     course_overview = models.OneToOneField(CourseOverview, db_index=True)
 
+    has_terminated = models.BooleanField(default=False)
+
     # for face-to-face course
     is_f2f_course = models.BooleanField(default=False)
     is_f2f_course_sell = models.BooleanField(default=False)
@@ -24,6 +26,7 @@ class CourseOverviewExtra(models.Model):
     def create(cls, course, overview):
         cls(
             course_overview=overview,
+            has_terminated=course.has_terminated(),
             is_f2f_course=course.is_f2f_course,
             is_f2f_course_sell=course.is_f2f_course_sell
         ).save()

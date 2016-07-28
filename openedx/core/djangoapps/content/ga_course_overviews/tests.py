@@ -1,6 +1,7 @@
 """
 Tests for ga_course_overviews app.
 """
+from datetime import datetime, timedelta
 
 from openedx.core.djangoapps.content.course_overviews.models import CourseOverview
 from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
@@ -19,9 +20,11 @@ class CourseOverviewExtraTest(ModuleStoreTestCase):
     def test_extra(self):
         # Tests default value
         overview = CourseOverview.get_from_id(self.course.id)
+        self.assertFalse(overview.extra.has_terminated)
         self.assertFalse(overview.extra.is_f2f_course)
         self.assertFalse(overview.extra.is_f2f_course_sell)
 
+        self.course.terminate_start = datetime.now() - timedelta(seconds=1)
         self.course.is_f2f_course = True
         self.course.is_f2f_course_sell = True
         # This fires a course_published signal, which should be caught in signals.py, which should in turn
@@ -30,6 +33,7 @@ class CourseOverviewExtraTest(ModuleStoreTestCase):
 
         # Tests updated value
         overview = CourseOverview.get_from_id(self.course.id)
+        self.assertTrue(overview.extra.has_terminated)
         self.assertTrue(overview.extra.is_f2f_course)
         self.assertTrue(overview.extra.is_f2f_course_sell)
 
