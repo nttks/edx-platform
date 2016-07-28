@@ -29,7 +29,8 @@ from django.utils.translation import ugettext as _
                         caption: scoreColumn[0],
                         searchable: true,
                         sortable: true,
-                        size: "80px"
+                        size: "10%",
+                        min: 80
                     });
                 } else if (scoreColumn[1] === 'date') {
                     searches.push({
@@ -44,7 +45,8 @@ from django.utils.translation import ugettext as _
                         sortable: true,
                         type: "date",
                         render: "date: yyyy/mm/dd",
-                        size: "80px"
+                        size: "10%",
+                        min: 80
                     });
                 } else if (scoreColumn[1] === 'percent') {
                     columns.push({
@@ -53,7 +55,8 @@ from django.utils.translation import ugettext as _
                         sortable: true,
                         render: renderPercent,
                         style: "text-align: right",
-                        size: "80px"
+                        size: "10%",
+                        min: 80
                     });
                 }
             }
