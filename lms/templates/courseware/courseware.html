@@ -119,35 +119,6 @@ ${page_title_breadcrumbs(course_name())}
         $('#modal-accordion').css({height: contentHeight});
       });
     });
-    $(function() {
-        var active;
-        var contentHeight;
-        if ($('#modal-accordion').length) {
-          active = $('#modal-accordion ul:has(li.active)').index('#modal-accordion ul');
-          if (active < 0) {
-            active = $('#modal-accordion h3.active').index('#modal-accordion h3');
-          }
-          if (active < 0) {
-            active = 0;
-          }
-          $('#modal-accordion').bind('accordionchange', this.log).accordion({
-            active: active,
-            header: 'h3',
-            autoHeight: false,
-            heightStyle: 'content'
-          });
-          $('#modal-accordion .ui-state-active').closest('.chapter').addClass('is-open');
-          $('#modal-accordion').show();
-
-          $('#modal-accordion a').click(function(){
-            $('#modal-accordion .is-open').removeClass('is-open');
-            $(this).closest('.chapter').addClass('is-open');
-          });
-          $('#modal-accordion .ui-accordion-content li a').click(function(){
-            $('#modal-accordion .modal-close.fa-remove').trigger('click');
-          });
-        }
-    });
   </script>
 
 ${fragment.foot_html()}
@@ -162,11 +133,11 @@ ${fragment.foot_html()}
 
 <div id="course-accordion-modal" class="modal" aria-hidden="true" role="dialog" aria-label="label name">
   <div class="course-index" role="navigation">
-    <div id="modal-accordion">
+    <div id="modal-accordion" class="accordion">
       <nav aria-label="${_('Course Navigation')}">
         <div class="close_button"><span>${course.display_name_with_default}</span><i class="modal-close fa fa-remove"></i></div>
-        % if accordion.strip():
-          ${accordion}
+        % if accordion_modal.strip():
+          ${accordion_modal}
         % else:
           <div class="chapter">${_("No content has been added to this course")}</div>
         % endif
@@ -198,7 +169,7 @@ ${fragment.foot_html()}
         </div>
       % endif
 
-      <div class="accordion">
+      <div id="accordion" class="accordion">
         <nav class="course-navigation" aria-label="${_('Course')}">
           % if accordion.strip():
             ${accordion}

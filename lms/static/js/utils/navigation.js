@@ -4,41 +4,45 @@ var edx = edx || {},
 
         var navigation = {
 
-            init: function() {
-                if ($('.accordion').length) {
-                    navigation.loadAccordion();
+            ROOT_ID_PC: '#accordion',
+            ROOT_ID_SP: '#modal-accordion',
+
+            init: function(isModal) {
+                var rootId = isModal ? navigation.ROOT_ID_SP : navigation.ROOT_ID_PC;
+                if ($(rootId + '.accordion').length) {
+                    navigation.loadAccordion(rootId);
                 }
             },
 
-            loadAccordion: function() {
-                navigation.checkForCurrent();
-                navigation.listenForClick();
-                navigation.listenForKeypress();
+            loadAccordion: function(rootId) {
+                navigation.checkForCurrent(rootId);
+                navigation.listenForClick(rootId);
+                navigation.listenForKeypress(rootId);
             },
 
-            getActiveIndex: function() {
-                var index = $('.accordion .button-chapter:has(.active)').index('.accordion .button-chapter'),
+            getActiveIndex: function(rootId) {
+                var index = $(rootId + '.accordion .button-chapter:has(.active)').index(rootId + '.accordion .button-chapter'),
                     button = null;
 
                 if (index > -1) {
-                    button = $('.accordion .button-chapter:eq(' + index + ')');
+                    button = $(rootId + '.accordion .button-chapter:eq(' + index + ')');
                 }
 
                 return button;
             },
 
-            checkForCurrent: function() {
-                var button = navigation.getActiveIndex();
+            checkForCurrent: function(rootId) {
+                var button = navigation.getActiveIndex(rootId);
 
-                navigation.closeAccordions();
+                navigation.closeAccordions(button);
 
                 if (button !== null) {
                     navigation.setupCurrentAccordionSection(button);
                 }
             },
 
-            listenForClick: function() {
-                $('.accordion').on('click', '.button-chapter', function(event) {
+            listenForClick: function(rootId) {
+                $(rootId + '.accordion').on('click', '.button-chapter', function(event) {
                     event.preventDefault();
 
                     var button = $(event.currentTarget),
@@ -49,8 +53,8 @@ var edx = edx || {},
                 });
             },
 
-            listenForKeypress: function() {
-                $('.accordion').on('keydown', '.button-chapter', function(event) {
+            listenForKeypress: function(rootId) {
+                $(rootId + '.accordion').on('keydown', '.button-chapter', function(event) {
                     // because we're changing the role of the toggle from an 'a' to a 'button'
                     // we need to ensure it has the same keyboard use cases as a real button.
                     // this is useful for screenreader users primarily.
@@ -66,7 +70,7 @@ var edx = edx || {},
             closeAccordions: function(button, section) {
                 var menu = $(section).find('.chapter-menu'), toggle;
 
-                $('.accordion .button-chapter').each(function(index, element) {
+                button.parents('.accordion').find('.button-chapter').each(function(index, element) {
                     toggle = $(element);
 
                     toggle
@@ -86,6 +90,8 @@ var edx = edx || {},
                         .find('.chapter-menu').not(menu)
                             .removeClass('is-open')
                             .slideUp();
+
+                    toggle.parents('.chapter-wrapper').removeClass('is-open');
                 });
             },
 
@@ -116,6 +122,8 @@ var edx = edx || {},
                     .find('.chapter-menu')
                         .addClass('is-open')
                         .slideDown();
+
+                buttonEl.parents('.chapter-wrapper').addClass('is-open');
             }
         };
 
@@ -128,3 +136,4 @@ var edx = edx || {},
     edx.util = edx.util || {};
     edx.util.navigation = Navigation;
     edx.util.navigation.init();
+    edx.util.navigation.init(true);

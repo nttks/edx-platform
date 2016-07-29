@@ -150,7 +150,7 @@ def courses(request):
     )
 
 
-def render_accordion(user, request, course, chapter, section, field_data_cache):
+def render_accordion(user, request, course, chapter, section, field_data_cache, is_modal=False):
     """
     Draws navigation bar. Takes current position in accordion as
     parameter.
@@ -168,7 +168,8 @@ def render_accordion(user, request, course, chapter, section, field_data_cache):
         ('toc', toc),
         ('course_id', course.id.to_deprecated_string()),
         ('csrf', csrf(request)['csrf_token']),
-        ('due_date_display_format', course.due_date_display_format)
+        ('due_date_display_format', course.due_date_display_format),
+        ('is_modal', is_modal),
     ] + template_imports.items())
     return render_to_string('courseware/accordion.html', context)
 
@@ -420,6 +421,7 @@ def _index_bulk_op(request, course_key, chapter, section, position):
         context = {
             'csrf': csrf(request)['csrf_token'],
             'accordion': render_accordion(user, request, course, chapter, section, field_data_cache),
+            'accordion_modal': render_accordion(user, request, course, chapter, section, field_data_cache, is_modal=True),
             'COURSE_TITLE': course.display_name_with_default,
             'course': course,
             'init': '',
