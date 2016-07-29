@@ -290,7 +290,6 @@ class YouTubeVideoTest(VideoBaseTest):
         unicode_text = "好 各位同学".decode('utf-8')
         self.assertTrue(self.video.downloaded_transcript_contains_text('srt', unicode_text))
 
-    @skip("Until fix video player in gacco")
     def test_download_button_two_transcript_languages(self):
         """
         Scenario: Download button works correctly for multiple transcript languages
@@ -523,7 +522,6 @@ class YouTubeVideoTest(VideoBaseTest):
             timeout=5
         )
 
-    @skip("Until fix video player in gacco")
     def test_video_language_menu_working(self):
         """
         Scenario: Language menu works correctly in Video component
@@ -745,7 +743,6 @@ class YouTubeVideoTest(VideoBaseTest):
 
         self.assertGreaterEqual(self.video.seconds, 10)
 
-    @skip("Until fix video player in gacco")
     def test_simplified_and_traditional_chinese_transcripts(self):
         """
         Scenario: Simplified and Traditional Chinese transcripts work as expected in Youtube mode
@@ -942,7 +939,6 @@ class Html5VideoTest(VideoBaseTest):
         unicode_text = "好 各位同学".decode('utf-8')
         self.assertTrue(self.video.downloaded_transcript_contains_text('srt', unicode_text))
 
-    @skip("Until fix video player in gacco")
     def test_download_button_two_transcript_languages(self):
         """
         Scenario: Download button works correctly for multiple transcript languages in HTML5 mode
