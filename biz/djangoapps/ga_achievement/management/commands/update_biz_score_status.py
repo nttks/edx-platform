@@ -11,15 +11,7 @@ from django.utils import translation
 from django.utils.translation import ugettext as _
 
 from biz.djangoapps.ga_achievement.models import ScoreBatchStatus
-from biz.djangoapps.ga_achievement.score_store import (
-    ScoreStore, SCORE_STORE_FIELD_CONTRACT_ID, SCORE_STORE_FIELD_COURSE_ID,
-    SCORE_STORE_FIELD_NAME, SCORE_STORE_FIELD_USERNAME, SCORE_STORE_FIELD_EMAIL, SCORE_STORE_FIELD_STUDENT_STATUS,
-    SCORE_STORE_FIELD_STUDENT_STATUS_NOT_ENROLLED, SCORE_STORE_FIELD_STUDENT_STATUS_ENROLLED,
-    SCORE_STORE_FIELD_STUDENT_STATUS_UNENROLLED, SCORE_STORE_FIELD_STUDENT_STATUS_DISABLED,
-    SCORE_STORE_FIELD_CERTIFICATE_STATUS, SCORE_STORE_FIELD_CERTIFICATE_STATUS_DOWNLOADABLE,
-    SCORE_STORE_FIELD_CERTIFICATE_STATUS_UNPUBLISHED, SCORE_STORE_FIELD_ENROLL_DATE,
-    SCORE_STORE_FIELD_CERTIFICATE_ISSUE_DATE, SCORE_STORE_FIELD_TOTAL_SCORE,
-)
+from biz.djangoapps.ga_achievement.achievement_store import ScoreStore
 from biz.djangoapps.ga_contract.models import ContractDetail, AdditionalInfo
 from biz.djangoapps.ga_invitation.models import ContractRegister, AdditionalInfoSetting
 from biz.djangoapps.util.decorators import handle_command_exception
@@ -76,37 +68,37 @@ class Command(BaseCommand):
 
                     # Student Status
                     if user_standing and user_standing.account_status == UserStanding.ACCOUNT_DISABLED:
-                        student_status = _(SCORE_STORE_FIELD_STUDENT_STATUS_DISABLED)
+                        student_status = _(ScoreStore.FIELD_STUDENT_STATUS__DISABLED)
                     elif not course_enrollment:
-                        student_status = _(SCORE_STORE_FIELD_STUDENT_STATUS_NOT_ENROLLED)
+                        student_status = _(ScoreStore.FIELD_STUDENT_STATUS__NOT_ENROLLED)
                     elif course_enrollment.is_active:
-                        student_status = _(SCORE_STORE_FIELD_STUDENT_STATUS_ENROLLED)
+                        student_status = _(ScoreStore.FIELD_STUDENT_STATUS__ENROLLED)
                     else:
-                        student_status = _(SCORE_STORE_FIELD_STUDENT_STATUS_UNENROLLED)
+                        student_status = _(ScoreStore.FIELD_STUDENT_STATUS__UNENROLLED)
                     # Certificate Status
                     if generated_certificate and generated_certificate.status == CertificateStatuses.downloadable:
-                        certificate_status = _(SCORE_STORE_FIELD_CERTIFICATE_STATUS_DOWNLOADABLE)
+                        certificate_status = _(ScoreStore.FIELD_CERTIFICATE_STATUS__DOWNLOADABLE)
                     else:
-                        certificate_status = _(SCORE_STORE_FIELD_CERTIFICATE_STATUS_UNPUBLISHED)
+                        certificate_status = _(ScoreStore.FIELD_CERTIFICATE_STATUS__UNPUBLISHED)
 
                     score = OrderedDict()
-                    score[SCORE_STORE_FIELD_CONTRACT_ID] = contract_id
-                    score[SCORE_STORE_FIELD_COURSE_ID] = unicode(course_id)
-                    score[_(SCORE_STORE_FIELD_NAME)] = user_profile.name if user_profile else None
-                    score[_(SCORE_STORE_FIELD_USERNAME)] = user.username
-                    score[_(SCORE_STORE_FIELD_EMAIL)] = user.email
+                    score[ScoreStore.FIELD_CONTRACT_ID] = contract_id
+                    score[ScoreStore.FIELD_COURSE_ID] = unicode(course_id)
+                    score[_(ScoreStore.FIELD_FULL_NAME)] = user_profile.name if user_profile else None
+                    score[_(ScoreStore.FIELD_USERNAME)] = user.username
+                    score[_(ScoreStore.FIELD_EMAIL)] = user.email
                     for additional_info in additional_info_list:
                         score[additional_info.display_name] = AdditionalInfoSetting.get_value_by_display_name(
                             user, contract_id, additional_info.display_name)
-                    score[_(SCORE_STORE_FIELD_STUDENT_STATUS)] = student_status
-                    score[_(SCORE_STORE_FIELD_CERTIFICATE_STATUS)] = certificate_status
-                    score[_(SCORE_STORE_FIELD_ENROLL_DATE)] = course_enrollment.created \
+                    score[_(ScoreStore.FIELD_STUDENT_STATUS)] = student_status
+                    score[_(ScoreStore.FIELD_CERTIFICATE_STATUS)] = certificate_status
+                    score[_(ScoreStore.FIELD_ENROLL_DATE)] = course_enrollment.created \
                         if course_enrollment else DEFAULT_DATETIME
-                    score[_(SCORE_STORE_FIELD_CERTIFICATE_ISSUE_DATE)] = generated_certificate.created_date \
+                    score[_(ScoreStore.FIELD_CERTIFICATE_ISSUE_DATE)] = generated_certificate.created_date \
                         if generated_certificate else DEFAULT_DATETIME
                     for section in grade['section_breakdown']:
                         score[section['label']] = float('{:.2f}'.format(section['percent']))
-                    score[_(SCORE_STORE_FIELD_TOTAL_SCORE)] = float('{:.2f}'.format(grade['percent']))
+                    score[_(ScoreStore.FIELD_TOTAL_SCORE)] = float('{:.2f}'.format(grade['percent']))
                     score_list.append(score)
 
                 score_store.remove_documents()

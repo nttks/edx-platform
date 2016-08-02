@@ -2,6 +2,7 @@
 Cache utilities
 """
 from datetime import date, datetime
+import math
 
 from django.utils import timezone
 
@@ -53,3 +54,18 @@ def format_for_w2ui(_date_or_datetime):
     else:
         raise TypeError('parameter must be instance of date or datetime. {}'.format(type(_date_or_datetime)))
     return _date_or_datetime.strftime(_format)
+
+
+def seconds_to_time_format(seconds, rounded_up=True):
+    """
+    Convert seconds to 'h:mm' string.
+
+    :param seconds: seconds (int or float)
+    :param rounded_up: if True, apply rounding up to the minutes
+    :return: 'h:mm' string
+    """
+    if rounded_up:
+        minutes = math.floor(seconds / 60) + math.ceil(float(seconds) % 60 / 60)
+    else:
+        minutes = math.floor(seconds / 60)
+    return '%d:%02d' % (math.floor(minutes / 60), minutes % 60)

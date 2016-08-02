@@ -638,7 +638,7 @@ w2ui-popup .w2ui-msg-title {
 }
 
 /* ----- achievement ----- */
-#score-update-date span.status {
+#update-datetime span.status {
     margin-left: 10px;
 }
 

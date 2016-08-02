@@ -7,23 +7,27 @@ from django.utils.translation import ugettext_lazy as _
 from biz.djangoapps.ga_contract.models import Contract
 from xmodule_django.models import CourseKeyField
 
-SCORE_BATCH_STATUS_STARTED = 'Started'
-SCORE_BATCH_STATUS_FINISHED = 'Finished'
-SCORE_BATCH_STATUS_ERROR = 'Error'
-SCORE_BATCH_STATUS = (
-    (SCORE_BATCH_STATUS_STARTED, _(SCORE_BATCH_STATUS_STARTED)),
-    (SCORE_BATCH_STATUS_FINISHED, _(SCORE_BATCH_STATUS_FINISHED)),
-    (SCORE_BATCH_STATUS_ERROR, _(SCORE_BATCH_STATUS_ERROR)),
+BATCH_STATUS_STARTED = 'Started'
+BATCH_STATUS_FINISHED = 'Finished'
+BATCH_STATUS_ERROR = 'Error'
+BATCH_STATUS = (
+    (BATCH_STATUS_STARTED, _(BATCH_STATUS_STARTED)),
+    (BATCH_STATUS_FINISHED, _(BATCH_STATUS_FINISHED)),
+    (BATCH_STATUS_ERROR, _(BATCH_STATUS_ERROR)),
 )
 
 
-class ScoreBatchStatus(models.Model):
+class BatchStatusBase(models.Model):
     """
-    Batch status for score
+    Batch status base
     """
+    class Meta:
+        app_label = 'ga_achievement'
+        abstract = True
+
     contract = models.ForeignKey(Contract)
     course_id = CourseKeyField(max_length=255, db_index=True)
-    status = models.CharField(max_length=255, db_index=True, choices=SCORE_BATCH_STATUS)
+    status = models.CharField(max_length=255, db_index=True, choices=BATCH_STATUS)
     student_count = models.IntegerField(null=True)
     created = models.DateTimeField(auto_now_add=True, db_index=True)
 
@@ -34,9 +38,9 @@ class ScoreBatchStatus(models.Model):
 
         :param contract_id: Contract id
         :param course_id: CourseKey
-        :return: the last created ScoreBatchStatus object with specified ids
+        :return: the last created BatchStatus object with specified ids
         """
-        obj = cls.objects.filter(contract_id=contract_id, course_id=course_id).order_by('-created')[:1]
+        obj = cls.objects.filter(contract_id=contract_id, course_id=course_id).order_by('-created', '-id')[:1]
         if obj.exists():
             return obj[0]
         else:
@@ -54,7 +58,7 @@ class ScoreBatchStatus(models.Model):
         return cls(
             contract_id=contract_id,
             course_id=course_id,
-            status=SCORE_BATCH_STATUS_STARTED,
+            status=BATCH_STATUS_STARTED,
         ).save()
 
     @classmethod
@@ -64,12 +68,13 @@ class ScoreBatchStatus(models.Model):
 
         :param contract_id: Contract id
         :param course_id: CourseKey
+        :param student_count: number of records which have been saved successfully
         :return: saved object
         """
         return cls(
             contract_id=contract_id,
             course_id=course_id,
-            status=SCORE_BATCH_STATUS_FINISHED,
+            status=BATCH_STATUS_FINISHED,
             student_count=student_count,
         ).save()
 
@@ -85,5 +90,19 @@ class ScoreBatchStatus(models.Model):
         return cls(
             contract_id=contract_id,
             course_id=course_id,
-            status=SCORE_BATCH_STATUS_ERROR,
+            status=BATCH_STATUS_ERROR,
         ).save()
+
+
+class ScoreBatchStatus(BatchStatusBase):
+    """
+    Batch status for score
+    """
+    pass
+
+
+class PlaybackBatchStatus(BatchStatusBase):
+    """
+    Batch status for playback
+    """
+    pass

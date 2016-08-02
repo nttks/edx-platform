@@ -11,11 +11,56 @@ from django.utils.translation import ugettext as _
 <script type="text/javascript">
     var grid;
     $(function () {
+        var scoreColumns = ${score_columns},
+            scoreRecords = ${score_records},
+            searches = [],
+            columns = [];
+        if (scoreRecords.length > 0) {
+            for (var i = 0; i < scoreColumns.length; i++) {
+                var scoreColumn = scoreColumns[i];
+                if (scoreColumn[1] === 'text') {
+                    searches.push({
+                        field: scoreColumn[0],
+                        caption: scoreColumn[0],
+                        type: "text"
+                    });
+                    columns.push({
+                        field: scoreColumn[0],
+                        caption: scoreColumn[0],
+                        searchable: true,
+                        sortable: true,
+                        size: "80px"
+                    });
+                } else if (scoreColumn[1] === 'date') {
+                    searches.push({
+                        field: scoreColumn[0],
+                        caption: scoreColumn[0],
+                        type: "date"
+                    });
+                    columns.push({
+                        field: scoreColumn[0],
+                        caption: scoreColumn[0],
+                        searchable: true,
+                        sortable: true,
+                        type: "date",
+                        render: "date: yyyy/mm/dd",
+                        size: "80px"
+                    });
+                } else if (scoreColumn[1] === 'percent') {
+                    columns.push({
+                        field: scoreColumn[0],
+                        caption: scoreColumn[0],
+                        sortable: true,
+                        render: renderPercent,
+                        style: "text-align: right",
+                        size: "80px"
+                    });
+                }
+            }
+        }
+
         grid = $('#grid').w2grid({
-            name: 'score_grid',
-            header: 'List of Names',
-            columns: ${columns},
-            records: ${records},
+            name: 'score_status',
             fixedBody: true,
             selectType : 'cell',
             show: {
@@ -23,7 +68,9 @@ from django.utils.translation import ugettext as _
                 footer: true,
                 toolbarReload: false
             },
-            searches: ${searches}
+            searches: searches,
+            columns: columns,
+            records: scoreRecords
         });
     });
 
@@ -31,18 +78,30 @@ from django.utils.translation import ugettext as _
     $('form#download-form').submit(function () {
         $('#download-btn').attr('disabled', true);
         // Using jquery.fileDownload.js
-        $.fileDownload("${reverse('biz:achievement:download_csv')}")
+        $.fileDownload("${reverse('biz:achievement:score_download_csv')}", {
+                httpMethod: "POST",
+                data: {"csrfmiddlewaretoken": $.cookie("csrftoken")}
+            })
             .always(function () {
                 $('#download-btn').attr('disabled', false);
             });
         return false;
     });
 </script>
+<style>
+    .w2ui-grid .w2ui-grid-body table .w2ui-head > div,
+    .w2ui-grid .w2ui-grid-body table td.w2ui-grid-data > div {
+        font-size: 0.6rem;
+    }
+    #tb_score_status_toolbar_item_w2ui-column-on-off {
+        display: none;
+    }
+</style>
 </%block>
 
 <%block name="custom_content">
-<div id="score-update-date">
-    <label>${_('Score Update Date')}：</label><span class="date">${score_update_date}</span><span class="status">${score_update_status}</span>
+<div id="update-datetime">
+    <label>${_('Record Update Datetime')}：</label><span class="datetime">${update_datetime}</span><span class="status">${update_status if update_status else _('No records')}</span>
 </div>
 
 <div id="grid"></div>

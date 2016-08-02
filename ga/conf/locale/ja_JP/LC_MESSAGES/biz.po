@@ -44,6 +44,10 @@ msgid "Score Status"
 msgstr "スコア状況"
 
 #: biz/templates/main_biz.html
+msgid "Playback Status"
+msgstr "動画視聴状況"
+
+#: biz/templates/main_biz.html
 msgid "Register User Management"
 msgstr "受講者登録"
 
@@ -65,8 +69,12 @@ msgstr "管理サイト"
 
 ##### Achievement
 #: biz/templates/ga_achievement/score.html
-msgid "Score Update Date"
-msgstr "成績更新日時"
+msgid "Record Update Datetime"
+msgstr "レコード更新日時"
+
+#: biz/templates/ga_achievement/score.html
+msgid "No records"
+msgstr "レコードなし"
 
 #: biz/templates/ga_achievement/score.html
 msgid "Started"
@@ -76,49 +84,57 @@ msgstr "更新中"
 msgid "All CSV Download"
 msgstr "全件CSVダウンロード"
 
-#: biz/djangoapps/ga_achievement/score_store.py
+#: biz/djangoapps/ga_achievement/achievement_store.py
 msgid "Student Status"
 msgstr "受講ステータス"
 
-#: biz/djangoapps/ga_achievement/score_store.py
+#: biz/djangoapps/ga_achievement/achievement_store.py
 msgid "Not Enrolled"
 msgstr "未受講"
 
-#: biz/djangoapps/ga_achievement/score_store.py
+#: biz/djangoapps/ga_achievement/achievement_store.py
 msgid "Enrolled"
 msgstr "受講中"
 
-#: biz/djangoapps/ga_achievement/score_store.py
+#: biz/djangoapps/ga_achievement/achievement_store.py
 msgid "Unenrolled"
 msgstr "受講取消"
 
-#: biz/djangoapps/ga_achievement/score_store.py
+#: biz/djangoapps/ga_achievement/achievement_store.py
 msgid "Disabled"
 msgstr "退会"
 
-#: biz/djangoapps/ga_achievement/score_store.py
+#: biz/djangoapps/ga_achievement/achievement_store.py
 msgid "Certificate Status"
 msgstr "修了証ステータス"
 
-#: biz/djangoapps/ga_achievement/score_store.py
+#: biz/djangoapps/ga_achievement/achievement_store.py
 msgid "Downloadable"
 msgstr "公開済"
 
-#: biz/djangoapps/ga_achievement/score_store.py
+#: biz/djangoapps/ga_achievement/achievement_store.py
 msgid "Unpublished"
 msgstr "未公開"
 
-#: biz/djangoapps/ga_achievement/score_store.py
+#: biz/djangoapps/ga_achievement/achievement_store.py
 msgid "Enroll Date"
 msgstr "受講登録日"
 
-#: biz/djangoapps/ga_achievement/score_store.py
+#: biz/djangoapps/ga_achievement/achievement_store.py
 msgid "Certificate Issue Date"
 msgstr "修了証発行日"
 
-#: biz/djangoapps/ga_achievement/score_store.py
+#: biz/djangoapps/ga_achievement/achievement_store.py
 msgid "Total Score"
 msgstr "合計スコア"
+
+#: biz/djangoapps/ga_achievement/achievement_store.py
+msgid "Total Playback Time"
+msgstr "総視聴時間"
+
+#: biz/djangoapps/ga_achievement/achievement_store.py
+msgid "Section Playback Time"
+msgstr "合計時間"
 
 ##### Contract
 #: biz/templates/ga_contract/index.html

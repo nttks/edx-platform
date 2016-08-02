@@ -16,6 +16,7 @@ MENU_CONTRACT = u'Contract List'
 MENU_MANAGER = u'Manager Setting'
 
 MENU_SCORE = u'Score Status'
+MENU_PLAYBACK = u'Playback Status'
 MENU_SURVEY = u'Survey Management'
 
 MENU_USER_REGISTER = u'Contract Register Management'
@@ -57,7 +58,7 @@ class BizAccessPageFromMenuTest(WebAppTest, GaccoBizTestMixin):
         # Case 96
         self.switch_to_user(new_director)
         biz_nav = DashboardPage(self.browser).visit().click_biz()
-        self.assertItemsEqual(biz_nav.left_menu_items.keys(), [MENU_SCORE, MENU_SURVEY, MENU_USER_REGISTER, MENU_REGISTER_MANAGEMENT, MENU_MANAGER])
+        self.assertItemsEqual(biz_nav.left_menu_items.keys(), [MENU_SCORE, MENU_PLAYBACK, MENU_SURVEY, MENU_USER_REGISTER, MENU_REGISTER_MANAGEMENT, MENU_MANAGER])
 
         # access to each page
         biz_nav.visit().click_score()
@@ -69,7 +70,7 @@ class BizAccessPageFromMenuTest(WebAppTest, GaccoBizTestMixin):
         # Case 97
         self.switch_to_user(new_manager)
         biz_nav = DashboardPage(self.browser).visit().click_biz()
-        self.assertItemsEqual(biz_nav.left_menu_items.keys(), [MENU_SCORE])
+        self.assertItemsEqual(biz_nav.left_menu_items.keys(), [MENU_SCORE, MENU_PLAYBACK])
 
         # assert access to each page
         biz_nav.visit().click_score()
@@ -105,7 +106,7 @@ class BizAccessPageFromMenuTest(WebAppTest, GaccoBizTestMixin):
         # Case 99
         self.switch_to_user(new_director)
         biz_nav = DashboardPage(self.browser).visit().click_biz()
-        self.assertItemsEqual(biz_nav.left_menu_items.keys(), [MENU_SCORE, MENU_SURVEY, MENU_USER_REGISTER, MENU_REGISTER_MANAGEMENT, MENU_MANAGER])
+        self.assertItemsEqual(biz_nav.left_menu_items.keys(), [MENU_SCORE, MENU_PLAYBACK, MENU_SURVEY, MENU_USER_REGISTER, MENU_REGISTER_MANAGEMENT, MENU_MANAGER])
 
         # access to each page
         biz_nav.visit().click_score()
@@ -117,7 +118,7 @@ class BizAccessPageFromMenuTest(WebAppTest, GaccoBizTestMixin):
         # Case 100
         self.switch_to_user(new_manager)
         biz_nav = DashboardPage(self.browser).visit().click_biz()
-        self.assertItemsEqual(biz_nav.left_menu_items.keys(), [MENU_SCORE])
+        self.assertItemsEqual(biz_nav.left_menu_items.keys(), [MENU_SCORE, MENU_PLAYBACK])
 
         # assert access to each page
         biz_nav.visit().click_score()
@@ -140,7 +141,7 @@ class BizAccessPageFromMenuTest(WebAppTest, GaccoBizTestMixin):
         # Case 101
         self.switch_to_user(new_director)
         biz_nav = DashboardPage(self.browser).visit().click_biz()
-        self.assertItemsEqual(biz_nav.left_menu_items.keys(), [MENU_SCORE, MENU_USER_REGISTER, MENU_REGISTER_MANAGEMENT, MENU_MANAGER])
+        self.assertItemsEqual(biz_nav.left_menu_items.keys(), [MENU_SCORE, MENU_PLAYBACK, MENU_USER_REGISTER, MENU_REGISTER_MANAGEMENT, MENU_MANAGER])
 
         # access to each page
         biz_nav.visit().click_score()
@@ -151,7 +152,7 @@ class BizAccessPageFromMenuTest(WebAppTest, GaccoBizTestMixin):
         # Case 102
         self.switch_to_user(new_manager)
         biz_nav = DashboardPage(self.browser).visit().click_biz()
-        self.assertItemsEqual(biz_nav.left_menu_items.keys(), [MENU_SCORE])
+        self.assertItemsEqual(biz_nav.left_menu_items.keys(), [MENU_SCORE, MENU_PLAYBACK])
 
         # assert access to each page
         biz_nav.visit().click_score()
