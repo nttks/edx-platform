@@ -20,654 +20,661 @@ msgstr ""
 "Language: ja_JP\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
-#: wiki/admin.py:72 wiki/models/article.py:25
+#: wiki/admin.py wiki/models/article.py
 msgid "created"
 msgstr "作成された"
 
-#: wiki/forms.py:30
+#: wiki/forms.py
 msgid "Only localhost... muahahaha"
 msgstr "ローカルホストのみなのだよ…はっはっは"
 
-#: wiki/forms.py:36 wiki/forms.py:44 wiki/forms.py:205
+#: wiki/forms.py wiki/forms.py wiki/forms.py
 msgid "Title"
 msgstr "件名"
 
-#: wiki/forms.py:36
+#: wiki/forms.py
 msgid "Initial title of the article. May be overridden with revision titles."
 msgstr "この記事の当初の件名です。おそらく修正版の件名で上書きされました。"
 
-#: wiki/forms.py:37
+#: wiki/forms.py
 msgid "Type in some contents"
 msgstr "いくつかのコンテンツで記入する。"
 
-#: wiki/forms.py:38
+#: wiki/forms.py
 msgid ""
 "This is just the initial contents of your article. After creating it, you "
 "can use more complex features like adding plugins, meta data, related "
 "articles etc..."
 msgstr "こちらはあなたの記事における当初のコンテンツです。作成後、プラグインやメタデータや関連記事を追加したりするなど複数の機能を追加できます。"
 
-#: wiki/forms.py:45 wiki/forms.py:207
+#: wiki/forms.py wiki/forms.py
 msgid "Contents"
 msgstr "コンテンツ"
 
-#: wiki/forms.py:48 wiki/forms.py:210
+#: wiki/forms.py wiki/forms.py
 msgid "Summary"
 msgstr "まとめ"
 
-#: wiki/forms.py:48
+#: wiki/forms.py
 msgid ""
 "Give a short reason for your edit, which will be stated in the revision log."
 msgstr "編集するにあたっての理由を記入願います。これは改変ログに蓄積されます。"
 
-#: wiki/forms.py:97
+#: wiki/forms.py
 msgid ""
 "While you were editing, someone else changed the revision. Your contents "
 "have been automatically merged with the new contents. Please review the text"
 " below."
 msgstr "編集中に、誰かが改変を行いました。あなたのコンテンツは新しいコンテンツに自動的にマージされました。以下をご確認ください。"
 
-#: wiki/forms.py:99
+#: wiki/forms.py
 msgid "No changes made. Nothing to save."
 msgstr "変更はありません。保存するものもありません。"
 
-#: wiki/forms.py:161
+#: wiki/forms.py
 msgid "Select an option"
 msgstr "オプションを選択"
 
-#: wiki/forms.py:206
+#: wiki/forms.py
 msgid "Slug"
 msgstr "文字列"
 
-#: wiki/forms.py:206
+#: wiki/forms.py
 msgid ""
 "This will be the address where your article can be found. Use only "
 "alphanumeric characters and - or _. Note that you cannot change the slug "
 "after creating the article."
-msgstr "これはあなたの記事が見つけられるためのアドレスとなります。英数字とハイフン、アンダースコアのみが利用できます。記事作成後には、この文字列は変更できませんのでご注意ください。"
+msgstr ""
+"これはあなたの記事が見つけられるためのアドレスとなります。英数字とハイフン、アンダースコアのみが利用できます。記事作成後には、この文字列は変更できませんのでご注意ください。"
 
-#: wiki/forms.py:210
+#: wiki/forms.py
 msgid "Write a brief message for the article's history log."
 msgstr "記事の改変ログ用のメッセージを記入"
 
-#: wiki/forms.py:220
+#: wiki/forms.py
 msgid "A slug may not begin with an underscore."
 msgstr "文字列はアンダースコアから始めることはできません。"
 
-#: wiki/forms.py:229
+#: wiki/forms.py
 #, python-format
 msgid "A deleted article with slug \"%s\" already exists."
 msgstr "文字列\"%s\"を用いた削除済の記事が存在します。"
 
-#: wiki/forms.py:231
+#: wiki/forms.py
 #, python-format
 msgid "A slug named \"%s\" already exists."
 msgstr "\"%s\"と命名されたものが既に存在します。"
 
-#: wiki/forms.py:244
+#: wiki/forms.py
 msgid "Yes, I am sure"
 msgstr "はい、問題ありません"
 
-#: wiki/forms.py:246
+#: wiki/forms.py
 msgid "Purge"
 msgstr "抹消"
 
-#: wiki/forms.py:247
+#: wiki/forms.py
 msgid ""
 "Purge the article: Completely remove it (and all its contents) with no undo."
 " Purging is a good idea if you want to free the slug such that users can "
 "create new articles in its place."
-msgstr "記事抹消：記事は完全に削除され(その中のコンテンツも含めて)、元に戻すことはできません。その記事にアクセスするための文字列を別の新しい記事で使えるように、文字列を開放したいというのであれば、記事末梢は良い方法となります。"
+msgstr ""
+"記事抹消：記事は完全に削除され(その中のコンテンツも含めて)、元に戻すことはできません。その記事にアクセスするための文字列を別の新しい記事で使えるように、文字列を開放したいというのであれば、記事末梢は良い方法となります。"
 
-#: wiki/forms.py:254 wiki/plugins/attachments/forms.py:24
-#: wiki/plugins/images/forms.py:64
+#: wiki/forms.py wiki/plugins/attachments/forms.py
+#: wiki/plugins/images/forms.py
 msgid "You are not sure enough!"
 msgstr "確認が不十分です！"
 
-#: wiki/forms.py:256
+#: wiki/forms.py
 msgid "While you tried to delete this article, it was modified. TAKE CARE!"
 msgstr "この記事を削除しようとしている間に、改変されております。ご注意を！"
 
-#: wiki/forms.py:262
+#: wiki/forms.py
 msgid "Lock article"
 msgstr "記事を保護する"
 
-#: wiki/forms.py:262
+#: wiki/forms.py
 msgid "Deny all users access to edit this article."
 msgstr "この記事を編集不可とする"
 
-#: wiki/forms.py:265
+#: wiki/forms.py
 msgid "Permissions"
 msgstr "権限"
 
-#: wiki/forms.py:269
+#: wiki/forms.py
 msgid "Owner"
 msgstr "作成者"
 
-#: wiki/forms.py:270
+#: wiki/forms.py
 msgid "Enter the username of the owner."
 msgstr "作成者のユーザー名を入力"
 
-#: wiki/forms.py:271
+#: wiki/forms.py
 msgid "(none)"
 msgstr "(なし)"
 
-#: wiki/forms.py:276
+#: wiki/forms.py
 msgid "Inherit permissions"
 msgstr "権限を継承"
 
-#: wiki/forms.py:276
+#: wiki/forms.py
 msgid ""
 "Check here to apply the above permissions recursively to articles under this"
 " one."
 msgstr "この記事配下の記事において上記の権限を再帰的に適用するかを、こちらでご確認ください。"
 
-#: wiki/forms.py:281
+#: wiki/forms.py
 msgid "Permission settings for the article were updated."
 msgstr "この記事についての権限設定が更新されました。"
 
-#: wiki/forms.py:283
+#: wiki/forms.py
 msgid "Your permission settings were unchanged, so nothing saved."
 msgstr "あなたの権限設定は変更されていません、そのため保存もされていません。"
 
-#: wiki/forms.py:322
+#: wiki/forms.py
 msgid "No user with that username"
 msgstr "そのようなユーザーはおりません。"
 
-#: wiki/forms.py:344
+#: wiki/forms.py
 msgid "Article locked for editing"
 msgstr "編集中のため記事は保護中"
 
-#: wiki/forms.py:351
+#: wiki/forms.py
 msgid "Article unlocked for editing"
 msgstr "記事を編集するため保護解除"
 
-#: wiki/forms.py:364
+#: wiki/forms.py
 msgid "Filter..."
 msgstr "フィルタ…"
 
-#: wiki/core/plugins/base.py:44
+#: wiki/core/plugins/base.py
 msgid "Settings for plugin"
 msgstr "プラグイン設定"
 
-#: wiki/models/article.py:20 wiki/models/pluginbase.py:165
-#: wiki/plugins/attachments/models.py:19
+#: wiki/models/article.py wiki/models/pluginbase.py
+#: wiki/plugins/attachments/models.py
 msgid "current revision"
 msgstr "現在の改訂"
 
-#: wiki/models/article.py:22
+#: wiki/models/article.py
 msgid ""
 "The revision being displayed for this article. If you need to do a roll-"
 "back, simply change the value of this field."
 msgstr "この記事への改訂版が現在表示されています。もし、ロールバックさせる必要がないのであれば、単に、この領域の値を変更してください。"
 
-#: wiki/models/article.py:26
+#: wiki/models/article.py
 msgid "modified"
 msgstr "変更済"
 
-#: wiki/models/article.py:27
+#: wiki/models/article.py
 msgid "Article properties last modified"
 msgstr "記事のプロパティで最後に変更されたもの"
 
-#: wiki/models/article.py:29
+#: wiki/models/article.py
 msgid "owner"
 msgstr "作成者"
 
-#: wiki/models/article.py:31
+#: wiki/models/article.py
 msgid ""
 "The owner of the article, usually the creator. The owner always has both "
 "read and write access."
 msgstr "この記事の作成者は通常は作成操作を行ったユーザーとなります。作成者は常に読み書きの権限を有します。"
 
-#: wiki/models/article.py:33
+#: wiki/models/article.py
 msgid "group"
 msgstr "グループ"
 
-#: wiki/models/article.py:35
+#: wiki/models/article.py
 msgid ""
 "Like in a UNIX file system, permissions can be given to a user according to "
 "group membership. Groups are handled through the Django auth system."
-msgstr "UNIXのファイルシステムのように、権限はグループに所属するユーザーに対して付与されます。グループはDjangoの認証システムによって管理されています。"
+msgstr ""
+"UNIXのファイルシステムのように、権限はグループに所属するユーザーに対して付与されます。グループはDjangoの認証システムによって管理されています。"
 
-#: wiki/models/article.py:37
+#: wiki/models/article.py
 msgid "group read access"
 msgstr "グループ読み取り権限"
 
-#: wiki/models/article.py:38
+#: wiki/models/article.py
 msgid "group write access"
 msgstr "グループ書き込み権限"
 
-#: wiki/models/article.py:39
+#: wiki/models/article.py
 msgid "others read access"
 msgstr "その他読み取り権限"
 
-#: wiki/models/article.py:40
+#: wiki/models/article.py
 msgid "others write access"
 msgstr "その他書き込み権限"
 
-#: wiki/models/article.py:168
+#: wiki/models/article.py
 #, python-format
 msgid "Article without content (%(id)d)"
 msgstr "内容の無い記事 (%(id)d)"
 
-#: wiki/models/article.py:197
+#: wiki/models/article.py
 msgid "content type"
 msgstr "コンテンツタイプ"
 
-#: wiki/models/article.py:199
+#: wiki/models/article.py
 msgid "object ID"
 msgstr "オブジェクトID"
 
-#: wiki/models/article.py:206
+#: wiki/models/article.py
 msgid "Article for object"
 msgstr "オブジェクトの記事"
 
-#: wiki/models/article.py:207
+#: wiki/models/article.py
 msgid "Articles for object"
 msgstr "オブジェクトの記事"
 
-#: wiki/models/article.py:215
+#: wiki/models/article.py
 msgid "revision number"
 msgstr "リビジョン番号"
 
-#: wiki/models/article.py:220
+#: wiki/models/article.py
 msgid "IP address"
 msgstr "IPアドレス"
 
-#: wiki/models/article.py:221
+#: wiki/models/article.py
 msgid "user"
 msgstr "ユーザー"
 
-#: wiki/models/article.py:232
+#: wiki/models/article.py
 msgid "deleted"
 msgstr "削除済み"
 
-#: wiki/models/article.py:233
+#: wiki/models/article.py
 msgid "locked"
 msgstr "ロック"
 
-#: wiki/models/article.py:251 wiki/models/pluginbase.py:39
+#: wiki/models/article.py wiki/models/pluginbase.py
 msgid "article"
 msgstr "記事"
 
-#: wiki/models/article.py:254
+#: wiki/models/article.py
 msgid "article contents"
 msgstr "記事内容"
 
-#: wiki/models/article.py:258
+#: wiki/models/article.py
 msgid "article title"
 msgstr "記事タイトル"
 
-#: wiki/models/article.py:259
+#: wiki/models/article.py
 msgid ""
 "Each revision contains a title field that must be filled out, even if the "
 "title has not changed"
 msgstr "タイトルが変更されていなくても、それぞれのリビジョンで入力されたタイトル欄が必要です。"
 
-#: wiki/models/pluginbase.py:77
+#: wiki/models/pluginbase.py
 msgid "original article"
 msgstr "元の記事"
 
-#: wiki/models/pluginbase.py:78
+#: wiki/models/pluginbase.py
 msgid "Permissions are inherited from this article"
 msgstr "アクセス許可はこの記事から継承されています"
 
-#: wiki/models/pluginbase.py:138
+#: wiki/models/pluginbase.py
 msgid "A plugin was changed"
 msgstr "プラグインが変更されました"
 
-#: wiki/models/pluginbase.py:167
+#: wiki/models/pluginbase.py
 msgid ""
 "The revision being displayed for this plugin.If you need to do a roll-back, "
 "simply change the value of this field."
 msgstr "このプラグインの改訂版が現在表示さています。ロールバックする必要がある場合は、単純にこのフィールドの値を変更してください。"
 
-#: wiki/models/urlpath.py:40
+#: wiki/models/urlpath.py
 msgid "Cache lookup value for articles"
 msgstr "この記事のキャッシュ参照値"
 
-#: wiki/models/urlpath.py:42
+#: wiki/models/urlpath.py
 msgid "slug"
 msgstr "スラッグ"
 
-#: wiki/models/urlpath.py:131
+#: wiki/models/urlpath.py
 msgid "(root)"
 msgstr "(ルート)"
 
-#: wiki/models/urlpath.py:141
+#: wiki/models/urlpath.py
 msgid "URL path"
 msgstr "URLパス"
 
-#: wiki/models/urlpath.py:142
+#: wiki/models/urlpath.py
 msgid "URL paths"
 msgstr "URLパス"
 
-#: wiki/models/urlpath.py:148
+#: wiki/models/urlpath.py
 msgid "Sorry but you cannot have a root article with a slug."
 msgstr "スラッグのあるルート記事は作成できません。"
 
-#: wiki/models/urlpath.py:150
+#: wiki/models/urlpath.py
 msgid "A non-root note must always have a slug."
 msgstr "ルートではないノートはスラッグが必要です。"
 
-#: wiki/models/urlpath.py:153
+#: wiki/models/urlpath.py
 #, python-format
 msgid "There is already a root node on %s"
 msgstr "既に %s にルートノードがあります"
 
-#: wiki/models/urlpath.py:257
+#: wiki/models/urlpath.py
 msgid ""
 "Articles who lost their parents\n"
 "===============================\n"
 "\n"
 "The children of this article have had their parents deleted. You should probably find a new home for them."
-msgstr "親をなくした記事\n===============================\n\nこの記事の子は親を削除されました。新しい接続先をさがしてください。"
+msgstr ""
+"親をなくした記事\n"
+"===============================\n"
+"\n"
+"この記事の子は親を削除されました。新しい接続先をさがしてください。"
 
-#: wiki/models/urlpath.py:260
+#: wiki/models/urlpath.py
 msgid "Lost and found"
 msgstr "一時保管場所"
 
-#: wiki/plugins/attachments/forms.py:9
+#: wiki/plugins/attachments/forms.py
 msgid "Description"
 msgstr "記述"
 
-#: wiki/plugins/attachments/forms.py:10
+#: wiki/plugins/attachments/forms.py
 msgid "A short summary of what the file contains"
 msgstr "ファイルの内容の要約"
 
-#: wiki/plugins/attachments/forms.py:19
+#: wiki/plugins/attachments/forms.py
 msgid "Yes I am sure..."
 msgstr "はい、問題ありません..."
 
-#: wiki/plugins/attachments/markdown_extensions.py:33
+#: wiki/plugins/attachments/markdown_extensions.py
 msgid "Click to download file"
 msgstr "ファイルをダウンロードするにはクリック"
 
-#: wiki/plugins/attachments/models.py:21
+#: wiki/plugins/attachments/models.py
 msgid ""
 "The revision of this attachment currently in use (on all articles using the "
 "attachment)"
 msgstr "この添付のリビジョンは現在使用されています(この添付を使用している記事)。"
 
-#: wiki/plugins/attachments/models.py:24
+#: wiki/plugins/attachments/models.py
 msgid "original filename"
 msgstr "元のファイル名"
 
-#: wiki/plugins/attachments/models.py:36
+#: wiki/plugins/attachments/models.py
 msgid "attachment"
 msgstr "添付"
 
-#: wiki/plugins/attachments/models.py:37
+#: wiki/plugins/attachments/models.py
 msgid "attachments"
 msgstr "添付"
 
-#: wiki/plugins/attachments/models.py:79
+#: wiki/plugins/attachments/models.py
 msgid "file"
 msgstr "ファイル"
 
-#: wiki/plugins/attachments/models.py:85
+#: wiki/plugins/attachments/models.py
 msgid "attachment revision"
 msgstr "添付リビジョン"
 
-#: wiki/plugins/attachments/models.py:86
+#: wiki/plugins/attachments/models.py
 msgid "attachment revisions"
 msgstr "添付リビジョン"
 
-#: wiki/plugins/attachments/views.py:49
+#: wiki/plugins/attachments/views.py
 #, python-format
 msgid "%s was successfully added."
 msgstr "%s の追加に成功しました。"
 
-#: wiki/plugins/attachments/views.py:51 wiki/plugins/attachments/views.py:111
+#: wiki/plugins/attachments/views.py wiki/plugins/attachments/views.py
 #, python-format
 msgid "Your file could not be saved: %s"
 msgstr "ファイルが保存できませんでした： %s"
 
-#: wiki/plugins/attachments/views.py:53 wiki/plugins/attachments/views.py:115
+#: wiki/plugins/attachments/views.py wiki/plugins/attachments/views.py
 msgid ""
 "Your file could not be saved, probably because of a permission error on the "
 "web server."
 msgstr "ファイルが保存できませんでした。Webサーバーのアクセス権によるエラーの可能性があります。"
 
-#: wiki/plugins/attachments/views.py:109
+#: wiki/plugins/attachments/views.py
 #, python-format
 msgid "%s uploaded and replaces old attachment."
 msgstr "%s がアップロードされ古い添付を置き換えました。"
 
-#: wiki/plugins/attachments/views.py:123
+#: wiki/plugins/attachments/views.py
 msgid ""
 "Your new file will automatically be renamed to match the file already "
 "present. Files with different extensions are not allowed."
 msgstr "新しいファイルは既存のファイルに合わせるために自動的に名前が変更されます。拡張子が違うものは許可されていません。"
 
-#: wiki/plugins/attachments/views.py:175
+#: wiki/plugins/attachments/views.py
 #, python-format
 msgid "Current revision changed for %s."
 msgstr "%s の既存のリビジョンが変更されました"
 
-#: wiki/plugins/attachments/views.py:194
+#: wiki/plugins/attachments/views.py
 #, python-format
 msgid "Added a reference to \"%(att)s\" from \"%(art)s\"."
 msgstr "\"%(art)s\" から \"%(att)s\" へ参照が追加されました。"
 
-#: wiki/plugins/attachments/views.py:224
+#: wiki/plugins/attachments/views.py
 #, python-format
 msgid "The file %s was deleted."
 msgstr "%s が削除されました。"
 
-#: wiki/plugins/attachments/views.py:227
+#: wiki/plugins/attachments/views.py
 #, python-format
 msgid "This article is no longer related to the file %s."
 msgstr "この記事は %s に関連しなくなりました。"
 
-#: wiki/plugins/attachments/wiki_plugin.py:30
+#: wiki/plugins/attachments/wiki_plugin.py
 msgid "Attachments"
 msgstr "添付"
 
-#: wiki/plugins/attachments/wiki_plugin.py:36
+#: wiki/plugins/attachments/wiki_plugin.py
 #, python-format
 msgid "A file was changed: %s"
 msgstr "ファイルが変更されました：%s"
 
-#: wiki/plugins/attachments/wiki_plugin.py:36
+#: wiki/plugins/attachments/wiki_plugin.py
 #, python-format
 msgid "A file was deleted: %s"
 msgstr "ファイルが削除されました：%s"
 
-#: wiki/plugins/help/wiki_plugin.py:13
+#: wiki/plugins/help/wiki_plugin.py
 msgid "Help"
 msgstr "ヘルプ"
 
-#: wiki/plugins/images/forms.py:16
+#: wiki/plugins/images/forms.py
 #, python-format
 msgid ""
 "New image %s was successfully uploaded. You can use it by selecting it from "
 "the list of available images."
 msgstr "新しい画像 %s のアップロードが完了しました。使用可能な画像の一覧から選択することで使用可能です。"
 
-#: wiki/plugins/images/forms.py:59
+#: wiki/plugins/images/forms.py
 msgid "Are you sure?"
 msgstr "間違いありませんか？"
 
-#: wiki/plugins/images/models.py:40
+#: wiki/plugins/images/models.py
 msgid "image"
 msgstr "画像"
 
-#: wiki/plugins/images/models.py:41
+#: wiki/plugins/images/models.py
 msgid "images"
 msgstr "画像"
 
-#: wiki/plugins/images/models.py:45
+#: wiki/plugins/images/models.py
 #, python-format
 msgid "Image: %s"
 msgstr "画像：%s"
 
-#: wiki/plugins/images/models.py:45
+#: wiki/plugins/images/models.py
 msgid "Current revision not set!!"
 msgstr "既存のリビジョンが設定されていません!!"
 
-#: wiki/plugins/images/models.py:92
+#: wiki/plugins/images/models.py
 msgid "image revision"
 msgstr "画像リビジョン"
 
-#: wiki/plugins/images/models.py:93
+#: wiki/plugins/images/models.py
 msgid "image revisions"
 msgstr "画像リビジョン"
 
-#: wiki/plugins/images/models.py:98
+#: wiki/plugins/images/models.py
 #, python-format
 msgid "Image Revsion: %d"
 msgstr "画像リビジョン：%d"
 
-#: wiki/plugins/images/views.py:64
+#: wiki/plugins/images/views.py
 #, python-format
 msgid "%s has been restored"
 msgstr "%s は復元されました"
 
-#: wiki/plugins/images/views.py:66
+#: wiki/plugins/images/views.py
 #, python-format
 msgid "%s has been marked as deleted"
 msgstr "%s は削除にマークされました"
 
-#: wiki/plugins/images/views.py:116
+#: wiki/plugins/images/views.py
 #, python-format
 msgid "%(file)s has been changed to revision #%(revision)d"
 msgstr "%(file)s はリビジョン #%(revision)d に変更されました"
 
-#: wiki/plugins/images/views.py:150
+#: wiki/plugins/images/views.py
 #, python-format
 msgid "%(file)s has been saved."
 msgstr "%(file)s は保存されました。"
 
-#: wiki/plugins/images/wiki_plugin.py:15
+#: wiki/plugins/images/wiki_plugin.py
 msgid "Images"
 msgstr "画像"
 
-#: wiki/plugins/images/wiki_plugin.py:26
+#: wiki/plugins/images/wiki_plugin.py
 #, python-format
 msgid "An image was added: %s"
 msgstr "画像は追加されました：%s"
 
-#: wiki/plugins/links/wiki_plugin.py:20
+#: wiki/plugins/links/wiki_plugin.py
 msgid "Links"
 msgstr "リンク"
 
-#: wiki/plugins/notifications/forms.py:13
+#: wiki/plugins/notifications/forms.py
 msgid "Notifications"
 msgstr "通知"
 
-#: wiki/plugins/notifications/forms.py:17
+#: wiki/plugins/notifications/forms.py
 msgid "When this article is edited"
 msgstr "記事が編集された時"
 
-#: wiki/plugins/notifications/forms.py:18
+#: wiki/plugins/notifications/forms.py
 msgid "Also receive emails about article edits"
 msgstr "記事の編集内容も受信する"
 
-#: wiki/plugins/notifications/forms.py:41
+#: wiki/plugins/notifications/forms.py
 msgid "Your notification settings were updated."
 msgstr "通知設定が更新されました。"
 
-#: wiki/plugins/notifications/forms.py:43
+#: wiki/plugins/notifications/forms.py
 msgid "Your notification settings were unchanged, so nothing saved."
 msgstr "通知設定は変更されていません、そのため保存もされていません。"
 
-#: wiki/plugins/notifications/models.py:18
+#: wiki/plugins/notifications/models.py
 #, python-format
 msgid "%(user)s subscribing to %(article)s (%(type)s)"
 msgstr "%(user)s が %(article)s (%(type)s) に参加している"
 
-#: wiki/plugins/notifications/models.py:40
+#: wiki/plugins/notifications/models.py
 #, python-format
 msgid "Article deleted: %s"
 msgstr "削除された記事：%s"
 
-#: wiki/plugins/notifications/models.py:43
+#: wiki/plugins/notifications/models.py
 #, python-format
 msgid "Article modified: %s"
 msgstr "編集された記事：%s"
 
-#: wiki/plugins/notifications/models.py:46
+#: wiki/plugins/notifications/models.py
 #, python-format
 msgid "New article created: %s"
 msgstr "作成された記事：%s"
 
-#: wiki/views/accounts.py:25
+#: wiki/views/accounts.py
 msgid "You are now sign up... and now you can sign in!"
 msgstr "サインアップされています... そしてサインインできます!"
 
-#: wiki/views/accounts.py:32
+#: wiki/views/accounts.py
 msgid "You are no longer logged in. Bye bye!"
 msgstr "ログインしていません。さようなら！"
 
-#: wiki/views/accounts.py:57
+#: wiki/views/accounts.py
 msgid "You are now logged in! Have fun!"
 msgstr "ログインしました。お楽しみください！"
 
-#: wiki/views/article.py:85
+#: wiki/views/article.py
 #, python-format
 msgid "New article '%s' created."
 msgstr "新しい記事 '%s' が作成されました。"
 
-#: wiki/views/article.py:90
+#: wiki/views/article.py
 #, python-format
 msgid "There was an error creating this article: %s"
 msgstr "記事を作成する際にエラーが発生しました：%s"
 
-#: wiki/views/article.py:92
+#: wiki/views/article.py
 msgid "There was an error creating this article."
 msgstr "この記事を作成する際にエラーが発生しました。"
 
-#: wiki/views/article.py:168
+#: wiki/views/article.py
 msgid ""
 "This article cannot be deleted because it has children or is a root article."
 msgstr "この記事は削除することができません。子があるかルート記事です。"
 
-#: wiki/views/article.py:179
+#: wiki/views/article.py
 msgid ""
 "This article together with all its contents are now completely gone! Thanks!"
 msgstr "この記事とその内容はすべてなくなりました。ありがとう！"
 
-#: wiki/views/article.py:186
+#: wiki/views/article.py
 #, python-format
 msgid ""
 "The article \"%s\" is now marked as deleted! Thanks for keeping the site "
 "free from unwanted material!"
 msgstr "記事：\"%s\" は削除にマークされています。不要な材料からサイトを解放してくれてありがとうございます。"
 
-#: wiki/views/article.py:263
+#: wiki/views/article.py
 msgid "Your changes were saved."
 msgstr "変更は保存されました。"
 
-#: wiki/views/article.py:286
+#: wiki/views/article.py
 msgid "A new revision of the article was succesfully added."
 msgstr "記事の新しいリビジョンは追加されました。"
 
-#: wiki/views/article.py:339
+#: wiki/views/article.py
 msgid "Restoring article"
 msgstr "記事の復元"
 
-#: wiki/views/article.py:341
+#: wiki/views/article.py
 #, python-format
 msgid "The article \"%s\" and its children are now restored."
 msgstr "記事： \"%s\" とその子は復元されました。"
 
-#: wiki/views/article.py:525
+#: wiki/views/article.py
 #, python-format
 msgid ""
 "The article %(title)s is now set to display revision #%(revision_number)d"
 msgstr ""
 
-#: wiki/views/article.py:590
+#: wiki/views/article.py
 msgid "New title"
 msgstr "新しいタイトル"
 
-#: wiki/views/article.py:614
+#: wiki/views/article.py
 #, python-format
 msgid "Merge between Revision #%(r1)d and Revision #%(r2)d"
 msgstr "#%(r1)d と #%(r2)d のリビジョンをマージしました。"
 
-#: wiki/views/article.py:618
+#: wiki/views/article.py
 #, python-format
 msgid ""
 "A new revision was created: Merge between Revision #%(r1)d and Revision "
