@@ -42,6 +42,9 @@ class AdvancedCourseItem(OrderItem):
 
     tax = models.DecimalField(default=0.0, decimal_places=2, max_digits=30)
 
+    class Meta:
+        app_label = 'ga_shoppingcart'
+
     @property
     def single_item_receipt_template(self):
         """

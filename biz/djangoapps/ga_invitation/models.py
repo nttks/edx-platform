@@ -34,6 +34,7 @@ class AdditionalInfoSetting(models.Model):
         """
         Meta info
         """
+        app_label = 'ga_invitation'
         unique_together = ('contract', 'user', 'display_name')
 
     user = models.ForeignKey(User)
@@ -90,6 +91,7 @@ class ContractRegister(models.Model):
         """
         Meta info
         """
+        app_label = 'ga_invitation'
         unique_together = ('contract', 'user')
 
     user = models.ForeignKey(User)
@@ -176,3 +178,6 @@ class ContractRegisterHistory(models.Model):
     status = models.CharField(max_length=255)
     created = models.DateTimeField()
     modified = models.DateTimeField()
+
+    class Meta:
+        app_label = 'ga_invitation'

@@ -14,6 +14,7 @@ class MaintenanceMessage(models.Model):
     display_flg = models.BooleanField(default=True)
 
     class Meta:
+        app_label = 'ga_maintenance_cms'
         ordering = ['-display_order']
 
     def __unicode__(self):

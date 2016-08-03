@@ -39,6 +39,9 @@ class Task(models.Model):
     updated = models.DateTimeField(auto_now=True)
     subtasks = models.TextField(blank=True)  # JSON dictionary
 
+    class Meta:
+        app_label = 'ga_task'
+
     @classmethod
     def create(cls, task_type, task_key, task_input, requester):
         """

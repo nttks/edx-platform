@@ -15,6 +15,9 @@ class Organization(models.Model):
     created_by = models.ForeignKey(User)
     created = models.DateTimeField(auto_now_add=True, db_index=True)
 
+    class Meta:
+        app_label = 'ga_organization'
+
     def __unicode__(self):
         return self.org_name
 
