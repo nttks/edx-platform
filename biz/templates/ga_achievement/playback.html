@@ -29,7 +29,8 @@ from django.utils.translation import ugettext as _
                             caption: columnNames[1],
                             searchable: true,
                             sortable: true,
-                            size: "80px"
+                            size: "10%",
+                            min: 80
                         });
                     } else {
                         chapterColumns.push({
@@ -38,7 +39,8 @@ from django.utils.translation import ugettext as _
                             sortable: true,
                             render: renderTime,
                             style: "text-align: right",
-                            size: "80px"
+                            size: "10%",
+                            min: 80
                         });
                         for (var j = 0; j < chapterColumnGroups.length; j++) {
                             var chapterColumnGroup = chapterColumnGroups[j];
@@ -70,16 +72,16 @@ from django.utils.translation import ugettext as _
                 columnGroups = columnGroups.concat(chapterColumnGroups);
             }
             columns = [
-                {field: "${_('Full Name')}", caption: "${_('Full Name')}", searchable: true, sortable: true, size: "80px"},
-                {field: "${_('Username')}", caption: "${_('Username')}", searchable: true, sortable: true, size: "80px"},
-                {field: "${_('Email')}", caption: "${_('Email')}", searchable: true, sortable: true, size: "80px"}
+                {field: "${_('Full Name')}", caption: "${_('Full Name')}", searchable: true, sortable: true, size: "10%", min: 80},
+                {field: "${_('Username')}", caption: "${_('Username')}", searchable: true, sortable: true, size: "10%", min: 80},
+                {field: "${_('Email')}", caption: "${_('Email')}", searchable: true, sortable: true, size: "10%", min: 80}
             ];
             if (additionalColumns.length > 0) {
                 columns = columns.concat(additionalColumns);
             }
-            columns.push({field: "${_('Student Status')}", caption: "${_('Student Status')}", searchable: true, sortable: true, size: "80px"});
+            columns.push({field: "${_('Student Status')}", caption: "${_('Student Status')}", searchable: true, sortable: true, size: "10%", min: 80});
             if (chapterColumns.length > 0) {
-                columns.push({field: "${_('Total Playback Time')}", caption: "${_('Total Playback Time')}", sortable: true, render: renderTime, style: "text-align: right", size: "80px"});
+                columns.push({field: "${_('Total Playback Time')}", caption: "${_('Total Playback Time')}", sortable: true, render: renderTime, style: "text-align: right", size: "10%", min: 80});
                 columns = columns.concat(chapterColumns);
             }
         }
