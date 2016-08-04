@@ -197,18 +197,6 @@ class SuveyTests(TestCase):
         req.user = self.user
         self.assertRaises(Http404, survey_ajax, req)
 
-    def test_survey_ajax_with_over_maxlength_survey_answer(self):
-        """Ensures that request with over maxlength survey_answer raises Http404"""
-        data = {
-            'course_id': self.course_id,
-            'unit_id': self.unit_id,
-            'survey_name': self.survey_name,
-            'survey_answer': json.dumps({'Q1': 'a' * 1001})
-        }
-        req = self.request_factory.post('/survey_ajax/', data)
-        req.user = self.user
-        self.assertRaises(Http404, survey_ajax, req)
-
     def test_survey_models_survey_submission(self):
         """Test for survey.models.SurveySubmission get_survey_answer/set_survey_answer"""
         submission = SurveySubmission()

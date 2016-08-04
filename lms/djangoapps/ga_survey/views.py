@@ -51,8 +51,6 @@ def survey_init(request):
 @ensure_csrf_cookie
 def survey_ajax(request):
     """Ajax call to submit a survey."""
-    MAX_CHARACTER_LENGTH = 1000
-
     course_id = request.POST.get('course_id')
     unit_id = request.POST.get('unit_id')
     survey_name = request.POST.get('survey_name')
@@ -68,14 +66,10 @@ def survey_ajax(request):
         log.warning("Illegal parameter. survey_answer=%s" % survey_answer)
         raise Http404
     try:
-        obj = json.loads(survey_answer)
+        json.loads(survey_answer)
     except:
         log.warning("Illegal parameter. survey_answer=%s" % survey_answer)
         raise Http404
-    for k, v in obj.iteritems():
-        if len(v) > MAX_CHARACTER_LENGTH:
-            log.warning("%s cannot be more than %d characters long." % (k, MAX_CHARACTER_LENGTH))
-            raise Http404
 
     try:
         submission = SurveySubmission.objects.filter(
