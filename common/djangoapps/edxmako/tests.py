@@ -26,6 +26,21 @@ from student.tests.factories import UserFactory
 from util.testing import UrlResetMixin
 
 
+FAKE_MICROSITE = {
+    "MKTG_URL_LINK_MAP": {
+        "ABOUT": "logout",
+        "ABOUT_MICROSITE": "login",
+    }
+}
+
+
+def fake_microsite_get_value(name, default=None):
+    """
+    create a fake microsite site name
+    """
+    return FAKE_MICROSITE.get(name, default)
+
+
 @ddt.ddt
 class ShortcutsTests(UrlResetMixin, TestCase):
     """
@@ -46,6 +61,16 @@ class ShortcutsTests(UrlResetMixin, TestCase):
             link = marketing_link('ABOUT')
             self.assertEquals(link, expected_link)
 
+    @override_settings(MKTG_URL_LINK_MAP={'ABOUT': 'login'})
+    @patch("microsite_configuration.microsite.get_value", fake_microsite_get_value)
+    def test_marketing_link_microsite(self):
+        # test marketing site off in microsite
+        with patch.dict('django.conf.settings.FEATURES', {'ENABLE_MKTG_SITE': False}):
+            # we are using login and logout because it is common across both cms and lms
+            expected_link = reverse('logout')
+            link = marketing_link('ABOUT')
+            self.assertEquals(link, expected_link)
+
     @override_settings(MKTG_URLS={'ROOT': 'dummy-root', 'ABOUT': '/about-us'})
     @override_settings(MKTG_URL_LINK_MAP={'ABOUT': 'login'})
     def test_is_marketing_link_set(self):
@@ -57,6 +82,16 @@ class ShortcutsTests(UrlResetMixin, TestCase):
         with patch.dict('django.conf.settings.FEATURES', {'ENABLE_MKTG_SITE': False}):
             self.assertTrue(is_marketing_link_set('ABOUT'))
             self.assertFalse(is_marketing_link_set('NOT_CONFIGURED'))
+            self.assertFalse(is_marketing_link_set('ABOUT_MICROSITE'))
+
+    @override_settings(MKTG_URL_LINK_MAP={'ABOUT': 'login'})
+    @patch("microsite_configuration.microsite.get_value", fake_microsite_get_value)
+    def test_is_marketing_link_set_microsite(self):
+        # test marketing site off in microsite
+        with patch.dict('django.conf.settings.FEATURES', {'ENABLE_MKTG_SITE': False}):
+            self.assertTrue(is_marketing_link_set('ABOUT'))
+            self.assertFalse(is_marketing_link_set('NOT_CONFIGURED'))
+            self.assertTrue(is_marketing_link_set('ABOUT_MICROSITE'))
 
     @override_settings(MKTG_URLS={'ROOT': 'dummy-root', 'ABOUT': '/about-us'})
     @override_settings(MKTG_URL_LINK_MAP={'ABOUT': 'login'})
