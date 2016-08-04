@@ -16,6 +16,11 @@ BIZ_MONGO = {
         'host': ['localhost'],
         'db': 'biz',
         'collection': 'playback',
+    },
+    'playback_log': {
+        'host': ['localhost'],
+        'db': 'biz',
+        'collection': 'playback_log',
     }
 }
 
