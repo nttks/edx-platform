@@ -20,6 +20,9 @@ class TrustedClient(models.Model):
     ip_address = models.GenericIPAddressField(db_index=True, unique=True)
     name = models.CharField(max_length=100, blank=True)
 
+    class Meta:
+        app_label = 'ga_ratelimitbackend'
+
     def __unicode__(self):
         if self.name:
             return u"{ip_address} {name}".format(ip_address=self.ip_address, name=self.name)

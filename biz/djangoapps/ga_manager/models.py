@@ -27,6 +27,9 @@ class ManagerPermission(models.Model):
     can_handle_achievement = models.BooleanField()
     can_handle_contract_operation = models.BooleanField()
 
+    class Meta:
+        app_label = 'ga_manager'
+
     def __unicode__(self):
         return self.permission_name
 
@@ -39,6 +42,9 @@ class Manager(models.Model):
     user = models.ForeignKey(User)
     manager_permissions = models.ManyToManyField(ManagerPermission, related_name='managers')
     created = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        app_label = 'ga_manager'
 
     def is_platformer(self):
         """

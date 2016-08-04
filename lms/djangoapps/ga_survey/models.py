@@ -24,6 +24,9 @@ class SurveySubmission(models.Model):
     survey_answer = models.TextField()
     created = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        app_label = 'ga_survey'
+
     def get_survey_answer(self):
         js_str = self.survey_answer
         if not js_str:

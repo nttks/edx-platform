@@ -59,6 +59,9 @@ class AdvancedCourse(models.Model):
     # use this flag if end to advanced course manually.
     is_active = models.BooleanField(default=True, verbose_name=_("Enabled"))
 
+    class Meta:
+        app_label = 'ga_advanced_course'
+
     @classmethod
     def get_advanced_course(cls, advanced_course_id):
         return cls.objects.get_subclass(pk=advanced_course_id, is_active=True)
@@ -98,6 +101,7 @@ class AdvancedCourseTicket(models.Model):
     display_order = models.IntegerField(default=99, verbose_name=_("Display Order"))
 
     class Meta:
+        app_label = 'ga_advanced_course'
         verbose_name = _("Ticket")
         verbose_name_plural = _("Ticket")
 
@@ -133,5 +137,6 @@ class AdvancedF2FCourse(AdvancedCourse):
     place_access = models.CharField(max_length=1000, blank=True, verbose_name=_("Access"))
 
     class Meta:
+        app_label = 'ga_advanced_course'
         verbose_name = _("Face 2 Face Classroom")
         verbose_name_plural = _("Face 2 Face Classroom")

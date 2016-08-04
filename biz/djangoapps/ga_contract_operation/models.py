@@ -16,6 +16,9 @@ class ContractTaskHistory(models.Model):
     updated = models.DateTimeField(auto_now=True)
     created = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        app_label = 'ga_contract_operation'
+
     @classmethod
     def create(cls, contract, requester):
         return cls.objects.create(
@@ -51,6 +54,7 @@ class ContractTaskHistory(models.Model):
 class ContractTaskTarget(models.Model):
 
     class Meta:
+        app_label = 'ga_contract_operation'
         unique_together = ('history', 'register')
 
     history = models.ForeignKey(ContractTaskHistory)
@@ -97,6 +101,9 @@ class StudentRegisterTaskTarget(models.Model):
     completed = models.BooleanField(default=False)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        app_label = 'ga_contract_operation'
 
     @classmethod
     def bulk_create(cls, history, students):

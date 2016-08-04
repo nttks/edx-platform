@@ -42,6 +42,9 @@ class Contract(models.Model):
 
     objects = ContractManager()
 
+    class Meta:
+        app_label = 'ga_contract'
+
     def is_enabled(self):
         """
         Check period of contract is available in this contract.
@@ -181,6 +184,7 @@ class ContractDetail(models.Model):
     objects = ContractDetailManager()
 
     class Meta:
+        app_label = 'ga_contract'
         ordering = ['id']
 
     @classmethod
@@ -288,6 +292,7 @@ class AdditionalInfo(models.Model):
     display_name = models.CharField(max_length=255)
 
     class Meta:
+        app_label = 'ga_contract'
         ordering = ['id']
         unique_together = ("contract", "display_name")
 
