@@ -20,35 +20,65 @@ msgstr ""
 "Language: ja_JP\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
-#-#-#-#-#  Deleted or revised messages between aspen.1(ca909e3) and master(9dd2220)  #-#-#-#-#
+#-#-#-#-#  Missing messages of discussion  #-#-#-#-#
 
-#: cms/static/js/sock.js
-msgid "Hide Studio Help"
-msgstr "Studioのヘルプを隠す"
-
-#: cms/static/js/sock.js
-msgid "Looking for Help with Studio?"
-msgstr "Studioのヘルプをお探しですか？"
-
-#: cms/static/js/views/assets.js
-msgid "Uploading…"
-msgstr "アップロード中…"
-
-#: cms/static/js/views/section_edit.js
-msgid "Your change could not be saved"
-msgstr "変更は保存されませんでした"
-
-#: cms/static/js/views/section_edit.js
-msgid "Return and resolve this issue"
-msgstr "戻って、問題を解消してください"
-
-#-#-#-#-#  Deleted or revised messages between named-release/birch(464ae71) and master(40745c2)  #-#-#-#-#
-
-#: common/templates/js/discussion/thread-show.underscore
+#: common/static/common/templates/discussion/discussion-home.underscore
+#: common/static/common/templates/discussion/thread-show.underscore
 msgid "Thread list"
 msgstr "スレッド一覧"
 
-#: common/templates/js/discussion/thread-show.underscore
+#: common/static/common/templates/discussion/discussion-home.underscore
+msgid "How to use %(platform_name)s discussions"
+msgstr "ディスカッションの使い方"
+
+#: common/static/common/templates/discussion/discussion-home.underscore
+msgid "Filter out topics"
+msgstr "トピックをフィルタ"
+
+#: common/static/common/templates/discussion/discussion-home.underscore
+msgid "Discussion Forum Guidelines"
+msgstr "ディスカッションガイドライン"
+
+#: common/static/common/templates/discussion/discussion-home.underscore
+msgid "%(platform_name)s is a brand new learning community produced by the learners. You can enrich your learning experience through communication with students from all around the world who work toward the same goal and will help you maintain the motivation for learning. Please be sure to read this guidelines and post appropriately."
+msgstr "%(platform_name)sは、受講するみなさんが創り上げる新しい学びの場です。 目標を共にする世界中の受講生への質問や、意見の交換を通し、お互いがより深く学ぶことができます。 また、受講生とのやりとりが、学びの継続につながります。 その為、以下のガイドラインをお読みの上、適切な発言をしていただけますよう、ご協力お願いします。"
+
+#: common/static/common/templates/discussion/discussion-home.underscore
+msgid "Be polite. %(platform_name)s is your classroom. Posts that respect your classmate would contribute for constructive discussions."
+msgstr "礼儀正しく発言しましょう。%(platform_name)sは教室と同じです。相手の人格を思いやった発言は、議論を健全化します。"
+
+#: common/static/common/templates/discussion/discussion-home.underscore
+msgid "Respect classmates. We have learners from all around the world and with different backgrounds. Do not discriminate, slander or defame another students."
+msgstr "多様な仲間へ配慮をしましょう。あなたと異なる性別、世代、国籍、価値観をもつ仲間が利用しています。特に人種や宗教、政治問題などについて議論をする際には、他の受講生の人格を思いやり、誹謗中傷などはやめましょう。"
+
+#: common/static/common/templates/discussion/discussion-home.underscore
+msgid "Choose a brief descriptive title to express your opinion. It would help your classmates find your post easily and understand the topic to deepen the discussion."
+msgstr "わかりやすいタイトルをつけましょう。タイトルで、あなたの投稿の内容を端的に表現してください。仲間があなたの投稿を見つけやすくなり、議論が深まります。"
+
+#: common/static/common/templates/discussion/discussion-home.underscore
+msgid "Upvote good posts. This applies to questions and answers. Click on the green plus button so that good posts can be found more easily."
+msgstr "良い発言、役立つ発言に <i class=\"icon fa fa-thumbs-o-up\"></i>（いいね！）ボタンを押しましょう。"
+
+#: common/static/common/templates/discussion/discussion-home.underscore
+msgid "Be specific. Write clearly with simple reasons."
+msgstr "具体的に書きましょう。理由を簡潔かつ明快に。"
+
+#: common/static/common/templates/discussion/discussion-home.underscore
+msgid "Before asking a question, use the search feature."
+msgstr "スレッドの乱立を避けましょう。掲示板の検索機能を活用してください。"
+
+#: common/static/common/templates/discussion/discussion-home.underscore
+msgid "Use threads appropriately."
+msgstr "用途にそったスレッドを利用しましょう。"
+
+#: common/static/common/templates/discussion/discussion-home.underscore
+msgid "Do not cheat. We encourage discussion but please avoid asking and posting blatant answers. Those caught cheating may have their accounts disabled and their progress erased."
+msgstr """ディスカッションは議論の場であり、答えを教えあう場ではありません。選択肢の正誤が判明してしまう書き込みは控えてください。<br/>"
+"良い例：問Xについて、私は～と解釈し、～と回答しました。<br/>"
+"悪い例：問Xについて、私は～と解釈し、～と回答した結果、正答or誤答でした。<br/>"
+"悪い例：私は全問正解でしたが、問Xについては～と回答しました。"
+
+#: common/static/common/templates/discussion/thread-show.underscore
 msgid "%(post_type)s posted %(time_ago)s by %(author)s"
 msgstr "%(author)sにより%(time_ago)sに投稿"
 
