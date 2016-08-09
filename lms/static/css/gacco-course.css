@@ -78,18 +78,15 @@ div.info-wrapper section.handouts ol li a:hover{
 
 /* ### courseware page */
 /* accordion header */
-.course-index div#accordion .chapter {
+.course-index .accordion .course-navigation .button-chapter {
   background-image: none;
   box-shadow: 0 1px 0 #fff inset, 0 -1px 0 rgba(0, 0, 0, 0.3) inset;
 }
+.course-index .accordion .course-navigation .chapter-content-container.is-open {
+  border-bottom: 1px solid rgba(0,0,0,0.3);
+}
 .course-index #open_close_accordion {
   display: block;
-}
-.open_close_title {
-  display: none;
-}
-nav.wrapper-course-material .course-material{
-  background-color: #ccc;
 }
 div.course-wrapper > a[href="#course-accordion-modal"] {
   display: none;
@@ -133,6 +130,10 @@ div.course-wrapper > a[href="#course-accordion-modal"] .toc {
   z-index: auto;
 }
 
+#course-accordion-modal .course-index {
+  background-color: #f6f6f6;
+}
+
 #modal-accordion {
   width: auto;
   font-size: 14px;
@@ -162,173 +163,109 @@ div.course-wrapper > a[href="#course-accordion-modal"] .toc {
   float: right;
   padding: 6px
 }
-#modal-accordion h3 {
-  border-radius: 0;
-  margin: 0;
-  overflow: visible;
-  font-size: 16px;
-}
-#modal-accordion h3:first-child {
-  border: none;
-}
-#modal-accordion h3:hover,
-#modal-accordion h3:focus {
-  color: #666;
-}
-#modal-accordion h3.ui-state-hover a,
-#modal-accordion h3.ui-state-focus a {
-  color: #666;
-}
-#modal-accordion .chapter {
+#modal-accordion .chapter-wrapper {
   width: 100% !important;
   background-color: #eee;
   box-shadow: 0 1px 0 #fff inset, 0 -1px 0 rgba(0, 0, 0, 0.1) inset;
   box-sizing: border-box;
-  padding: 11px 14px;
+  padding: 20px 0;
   transition: background-color 0.1s linear 0s;
 }
-#modal-accordion .chapter.is-open {
+#modal-accordion .chapter-wrapper.is-open {
   background: #fff;
 }
-#modal-accordion .chapter:first-child {
+#modal-accordion .chapter-wrapper:first-child {
   border-radius: 3px 0 0 0;
 }
-#modal-accordion .chapter:last-child {
+#modal-accordion .chapter-wrapper:last-child {
   border-radius: 0 0 0 3px;
   box-shadow: 0 1px 0 #fff inset;
 }
-#modal-accordion .chapter:hover,
-#modal-accordion .chapter:focus {
+#modal-accordion .chapter-wrapper:hover,
+#modal-accordion .chapter-wrapper:focus {
   background-color: #fff;
 }
-#modal-accordion .ui-accordion-header {
-  border-bottom: none;
-  color: #000;
-}
-#modal-accordion .ui-accordion-header h3 {
+#modal-accordion .chapter {
+  position: relative;
+  display: block;
   border-radius: 0;
   margin: 0;
   overflow: visible;
   font-size: 16px;
+  box-shadow: none;
+  padding-left: 40px;
+  color: #1d9dd9;
+  line-height: normal;
 }
-#modal-accordion .ui-accordion-header h3:first-child {
+#modal-accordion .chapter:first-child {
   border: none;
 }
-#modal-accordion .ui-accordion-header h3:hover,
-#modal-accordion .ui-accordion-header h3:focus {
+#modal-accordion .chapter:hover,
+#modal-accordion .chapter:focus {
   color: #666;
 }
-#modal-accordion .ui-accordion-header h3.ui-state-hover a,
-#modal-accordion .ui-accordion-header h3.ui-state-focus a {
-  color: #666;
-}
-#modal-accordion .ui-accordion-header  a {
-   border-radius: 0;
-   box-shadow: none;
-   padding-left: 19px;
-   color: #1d9dd9;
-   line-height: normal;
-}
-#modal-accordion .ui-state-active {
-  border-bottom: none;
-}
-#modal-accordion .ui-state-active:hover,
-#modal-accordion .ui-state-active:focus {
-  background: none;
-}
-#modal-accordion .ui-accordion-header span.ui-icon {
-  left: 0;
-  background-image: url("/static/images/ui-icons_222222_256x240.png");
+#modal-accordion .chapter .icon {
+  position: absolute;
+  left: 20px;
+  top: 3px;
+  color: #000;
   opacity: 0.3;
 }
-#modal-accordion .ui-accordion-content {
+#modal-accordion .chapter-content-container {
   background: transparent;
   border: none;
   border-radius: 0;
   margin: 0;
-  padding: 9px 0 9px 9px;
+  padding-left: 30px;
   overflow: auto;
-  width: 100%;
 }
-#modal-accordion .ui-accordion-content li {
+#modal-accordion .chapter-content-container .chapter-menu {
+  display: none;
+}
+#modal-accordion .chapter-content-container .menu-item {
   border-bottom: 0;
   border-radius: 0;
   margin-bottom: 4px;
+  padding: 10px 0;
 }
-#modal-accordion .ui-accordion-content li a {
+#modal-accordion .chapter-content-container .menu-item:first-child {
+  padding-top: 15px;
+}
+#modal-accordion .chapter-content-container .menu-item a {
   background: transparent;
   border-radius: 4px;
   display: block;
-  padding: 5px 36px 5px 10px;
   position: relative;
   text-decoration: none;
+  color: #3c3c3c;
 }
-#modal-accordion .ui-accordion-content li a p {
+#modal-accordion .chapter-content-container .menu-item a p {
   font-weight: bold;
   font-family: $sans-serif;
   margin-bottom: 0;
   line-height: 1.3;
 }
-#modal-accordion .ui-accordion-content li a p .subtitle {
+#modal-accordion .chapter-content-container .menu-item a p.subtitle {
   color: #666;
   font-size: 13px;
   font-weight: normal;
   display: block;
   margin: 0
 }
-#modal-accordion .ui-accordion-content li a p:empty {
-  display: none;
-}
-#modal-accordion .ui-accordion-content li a:hover,
-#modal-accordion .ui-accordion-content li a:focus, {
+#modal-accordion .chapter-content-container .menu-item a:hover,
+#modal-accordion .chapter-content-container .menu-item a:focus, {
   background: rgba(0, 0, 0, .1);
 }
-#modal-accordion .ui-accordion-content li a:hover a p,
-#modal-accordion .ui-accordion-content li a:focus a p, {
+#modal-accordion .chapter-content-container .menu-item a:hover a p,
+#modal-accordion .chapter-content-container .menu-item a:focus a p, {
   color: #333;
 }
-#modal-accordion .ui-accordion-content li a:active {
+#modal-accordion .chapter-content-container .menu-item a:active {
   box-shadow: inset 0 1px 14px 0 rgba(0,0,0, 0.1);
 }
-#modal-accordion .ui-accordion-content li a:active:after {
+#modal-accordion .chapter-content-container .menu-item a:active:after {
   opacity: 1.0;
   right: 15px;
-}
-#modal-accordion .ui-accordion-content li.active {
-  font-weight: bold;
-}
-#modal-accordion .ui-accordion-content li.active:after {
-  content: '›';
-  position: absolute;
-  top: 50%;
-  right: 20px;
-  margin-top: -13px;
-  font-size: 30px;
-  font-weight: normal;
-  color: #333;
-  opacity: 0;
-}
-#modal-accordion .ui-accordion-content li.active a {
-  border: 1px solid $border-color-1;
-  box-shadow: 0 1px 0 rgba(255, 255, 255, .35) inset;
-  background: $sidebar-active-image;
-}
-#modal-accordion .ui-accordion-content li.active a:after {
-  opacity: 1.0;
-  right: 15px;
-}
-#modal-accordion .ui-accordion-content li.active a p {
-  color: #333;
-}
-#modal-accordion .ui-accordion-content li.active span.subtitle {
-  font-weight: normal;
-}
-#modal-accordion .ui-accordion-content li.graded {
-  background-image: url('/static/images/graded.png');
-  background-repeat: no-repeat;
-  background-position: 97% center;
-}
-#modal-accordion .ui-accordion-content li.graded.active {
 }
 
 @media screen and (max-width: 800px) {
@@ -1162,12 +1099,6 @@ nav.wrapper-course-material ol.course-tabs li a.active:hover {
   nav.wrapper-course-material ol.course-tabs {
     padding: 0;
   }
-}
-
-
-/* ### course section/sub-section list */
-.course-index div#accordion h3.ui-accordion-header a{
-  line-height: normal;
 }
 
 /* ### course xmodule */

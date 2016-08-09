@@ -20,7 +20,7 @@ body.view-in-course .window-wrap {
     font-style: normal;
 }
 
-[class^="icon-"], [class*=" icon-"] {
+.login-register [class^="icon-"], .login-register [class*=" icon-"] {
     /* use !important to prevent issues with browser extensions that change fonts */
     font-family: 'icomoon' !important;
     speak: none;

@@ -147,9 +147,6 @@ from openedx.core.lib.courses import course_image_url
         <hgroup>
           <h1>
             ${course.display_number_with_default | h}: ${course.display_name_with_default | h}
-            % if not self.theme_enabled():
-              <a href="#">${course.display_org_with_default | h}</a>
-            % endif
           </h1>
         </hgroup>
 
