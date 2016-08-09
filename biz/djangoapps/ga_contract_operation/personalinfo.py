@@ -6,6 +6,7 @@ import time
 
 from django.conf import settings
 from django.db import transaction
+from django.utils.crypto import get_random_string
 from social.apps.django_app import utils as social_utils
 
 from bulk_email.models import Optout
@@ -29,7 +30,7 @@ def _hash(value):
     """
     Returns hashed value.
     """
-    return hmac.new(settings.SECRET_KEY.encode('utf-8'), value.encode('utf-8'), hashlib.sha256).hexdigest()
+    return hmac.new(settings.BIZ_SECRET_KEY.encode('utf-8'), value.encode('utf-8'), hashlib.sha256).hexdigest()
 
 
 class _PersonalinfoMaskExecutor(object):
@@ -116,7 +117,7 @@ class _PersonalinfoMaskExecutor(object):
         user.save()
 
     def _mask_email(self, user):
-        hashed_email = _hash(user.email)
+        hashed_email = _hash(user.email + get_random_string(32))
         for cea in CourseEnrollmentAllowed.objects.filter(email=user.email):
             cea.email = hashed_email
             cea.save()
