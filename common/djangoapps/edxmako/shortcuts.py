@@ -36,7 +36,7 @@ def marketing_link(name):
 
     # link_map maps URLs from the marketing site to the old equivalent on
     # the Django site
-    link_map = settings.MKTG_URL_LINK_MAP
+    link_map = microsite.get_value('MKTG_URL_LINK_MAP', settings.MKTG_URL_LINK_MAP)
     enable_mktg_site = microsite.get_value(
         'ENABLE_MKTG_SITE',
         settings.FEATURES.get('ENABLE_MKTG_SITE', False)
@@ -78,7 +78,7 @@ def is_marketing_link_set(name):
     if enable_mktg_site:
         return name in settings.MKTG_URLS
     else:
-        return name in settings.MKTG_URL_LINK_MAP
+        return name in microsite.get_value('MKTG_URL_LINK_MAP', settings.MKTG_URL_LINK_MAP)
 
 
 def marketing_link_context_processor(request):
