@@ -35,6 +35,8 @@ from openedx.core.djangoapps.ga_task.tests.test_task import TaskTestMixin
 
 class PersonalinfoMaskTaskTest(BizTestBase, ModuleStoreTestCase, ThirdPartyAuthTestMixin, TaskTestMixin):
 
+    random_value = ''
+
     def _setup_courses(self):
         # Setup courses. Some tests does not need course data. Therefore, call this function if need course data.
         self.spoc_courses = [
@@ -98,8 +100,11 @@ class PersonalinfoMaskTaskTest(BizTestBase, ModuleStoreTestCase, ThirdPartyAuthT
 
         return contract
 
-    def _create_user_and_register(self, contract, status=INPUT_INVITATION_CODE, display_names=[]):
-        user = UserFactory.create()
+    def _create_user_and_register(self, contract, status=INPUT_INVITATION_CODE, display_names=[], email=None):
+        if email is not None:
+            user = UserFactory.create(email=email)
+        else:
+            user = UserFactory.create()
         user.profile.set_meta({'old_emails': [[user.email, '2016-01-01T00:00:00.000000+00:00']]})
         user.profile.save()
         if hasattr(self, 'global_courses'):
@@ -140,7 +145,7 @@ class PersonalinfoMaskTaskTest(BizTestBase, ModuleStoreTestCase, ThirdPartyAuthT
 
     def _assert_user_info(self, user_info, user, masked=True):
         _email, _name = (user_info[user.id]['email'], user_info[user.id]['name'])
-        expected_email = _hash(_email) if masked else _email
+        expected_email = _hash(_email + self.random_value) if masked else _email
         expected_name = _hash(_name) if masked else _name
         expected_first_name = '' if masked else user_info[user.id]['first_name']
         expected_last_name = '' if masked else user_info[user.id]['last_name']
@@ -175,7 +180,7 @@ class PersonalinfoMaskTaskTest(BizTestBase, ModuleStoreTestCase, ThirdPartyAuthT
 
     def _assert_global_courses(self, user_info, user, courses, masked=True):
         _email = user_info[user.id]['email']
-        expected_email = _hash(_email) if masked else _email
+        expected_email = _hash(_email + self.random_value) if masked else _email
 
         for course in courses:
             self.assertTrue(
@@ -288,7 +293,9 @@ class PersonalinfoMaskTaskTest(BizTestBase, ModuleStoreTestCase, ThirdPartyAuthT
         # ----------------------------------------------------------
         # Execute task
         # ----------------------------------------------------------
-        self._test_run_with_task(personalinfo_mask, 'personalinfo_mask', 5, 0, 0, 5, 5, entry)
+        self.random_value = 'test1'
+        with patch('biz.djangoapps.ga_contract_operation.personalinfo.get_random_string', return_value=self.random_value):
+            self._test_run_with_task(personalinfo_mask, 'personalinfo_mask', 5, 0, 0, 5, 5, entry)
 
         # ----------------------------------------------------------
         # Assertion
@@ -302,6 +309,83 @@ class PersonalinfoMaskTaskTest(BizTestBase, ModuleStoreTestCase, ThirdPartyAuthT
             self._assert_additional_info(register.user, other_contract, display_names, masked=False)
             self._assert_user_info(user_info, register.user, masked=False)
             self._assert_global_courses(user_info, register.user, self.global_courses, masked=False)
+        # Assert all of target is completed
+        self.assertEqual(5, ContractTaskTarget.objects.filter(history=history, completed=True).count())
+
+    def test_successful_reuse_email(self):
+        """
+        Scenario:
+            1. Create userA
+            2. Execute mask to userA
+            3. Create userB with same email addrses as userA
+            4. Excute mask to userB
+        """
+        # ----------------------------------------------------------
+        # Setup test data
+        # ----------------------------------------------------------
+        self._configure_dummy_provider(enabled=True)
+        self._setup_courses()
+        display_names = ['settting1', 'setting2', ]
+        contract = self._create_contract(courses=self.spoc_courses, display_names=display_names)
+        history = self._create_task_history(contract=contract)
+        # users: enrolled only target spoc courses
+        registers = [self._create_user_and_register(contract, display_names=display_names) for _ in range(5)]
+        self._create_targets(history, registers)
+        self._create_enrollments(registers, self.spoc_courses)
+
+        entry = self._create_input_entry(contract=contract, history=history)
+
+        user_info = {register.user.id: self._create_user_info(register.user) for register in registers}
+
+        # ----------------------------------------------------------
+        # Execute task
+        # ----------------------------------------------------------
+        self.random_value = 'test1'
+        with patch('biz.djangoapps.ga_contract_operation.personalinfo.get_random_string', return_value=self.random_value):
+            self._test_run_with_task(personalinfo_mask, 'personalinfo_mask', 5, 0, 0, 5, 5, entry)
+        # ----------------------------------------------------------
+        # Assertion
+        # ----------------------------------------------------------
+        for register in registers:
+            self._assert_additional_info(register.user, contract, display_names)
+            self._assert_user_info(user_info, register.user)
+            self._assert_cert_info(user_info, register.user, self.spoc_courses)
+            self._assert_global_courses(user_info, register.user, self.global_courses)
+        # Assert all of target is completed
+        self.assertEqual(5, ContractTaskTarget.objects.filter(history=history, completed=True).count())
+
+        # ----------------------------------------------------------
+        # Setup test data for 2nd
+        # ----------------------------------------------------------
+        history = self._create_task_history(contract=contract)
+        # users: enrolled only target spoc courses
+        # Use email of 1st users
+        _user_info_of_1st = user_info.values()
+        registers = [
+            self._create_user_and_register(contract, display_names=display_names, email=_user_info_of_1st[i]['email'])
+            for i in range(5)
+        ]
+        self._create_targets(history, registers)
+        self._create_enrollments(registers, self.spoc_courses)
+
+        entry = self._create_input_entry(contract=contract, history=history)
+
+        user_info = {register.user.id: self._create_user_info(register.user) for register in registers}
+
+        # ----------------------------------------------------------
+        # Execute task for 2nd
+        # ----------------------------------------------------------
+        self.random_value = 'test2'
+        with patch('biz.djangoapps.ga_contract_operation.personalinfo.get_random_string', return_value=self.random_value):
+            self._test_run_with_task(personalinfo_mask, 'personalinfo_mask', 5, 0, 0, 5, 5, entry)
+        # ----------------------------------------------------------
+        # Assertion for 2nd
+        # ----------------------------------------------------------
+        for register in registers:
+            self._assert_additional_info(register.user, contract, display_names)
+            self._assert_user_info(user_info, register.user)
+            self._assert_cert_info(user_info, register.user, self.spoc_courses)
+            self._assert_global_courses(user_info, register.user, self.global_courses)
         # Assert all of target is completed
         self.assertEqual(5, ContractTaskTarget.objects.filter(history=history, completed=True).count())
 
@@ -332,7 +416,9 @@ class PersonalinfoMaskTaskTest(BizTestBase, ModuleStoreTestCase, ThirdPartyAuthT
         # ----------------------------------------------------------
         # Execute task
         # ----------------------------------------------------------
-        self._test_run_with_task(personalinfo_mask, 'personalinfo_mask', 3, 2, 0, 5, 5, entry)
+        self.random_value = 'test1'
+        with patch('biz.djangoapps.ga_contract_operation.personalinfo.get_random_string', return_value=self.random_value):
+            self._test_run_with_task(personalinfo_mask, 'personalinfo_mask', 3, 2, 0, 5, 5, entry)
 
         # ----------------------------------------------------------
         # Assertion
@@ -377,7 +463,9 @@ class PersonalinfoMaskTaskTest(BizTestBase, ModuleStoreTestCase, ThirdPartyAuthT
         # ----------------------------------------------------------
         # Execute task
         # ----------------------------------------------------------
-        self._test_run_with_task(personalinfo_mask, 'personalinfo_mask', 3, 2, 0, 5, 5, entry)
+        self.random_value = 'test1'
+        with patch('biz.djangoapps.ga_contract_operation.personalinfo.get_random_string', return_value=self.random_value):
+            self._test_run_with_task(personalinfo_mask, 'personalinfo_mask', 3, 2, 0, 5, 5, entry)
 
         # ----------------------------------------------------------
         # Assertion
@@ -424,7 +512,9 @@ class PersonalinfoMaskTaskTest(BizTestBase, ModuleStoreTestCase, ThirdPartyAuthT
         # ----------------------------------------------------------
         # Execute task
         # ----------------------------------------------------------
-        self._test_run_with_task(personalinfo_mask, 'personalinfo_mask', 4, 1, 0, 5, 5, entry)
+        self.random_value = 'test1'
+        with patch('biz.djangoapps.ga_contract_operation.personalinfo.get_random_string', return_value=self.random_value):
+            self._test_run_with_task(personalinfo_mask, 'personalinfo_mask', 4, 1, 0, 5, 5, entry)
 
         # ----------------------------------------------------------
         # Assertion
@@ -474,7 +564,9 @@ class PersonalinfoMaskTaskTest(BizTestBase, ModuleStoreTestCase, ThirdPartyAuthT
         # ----------------------------------------------------------
         # Execute task
         # ----------------------------------------------------------
-        self._test_run_with_task(personalinfo_mask, 'personalinfo_mask', 4, 1, 0, 5, 5, entry)
+        self.random_value = 'test1'
+        with patch('biz.djangoapps.ga_contract_operation.personalinfo.get_random_string', return_value=self.random_value):
+            self._test_run_with_task(personalinfo_mask, 'personalinfo_mask', 4, 1, 0, 5, 5, entry)
 
         # ----------------------------------------------------------
         # Assertion
@@ -522,7 +614,12 @@ class PersonalinfoMaskTaskTest(BizTestBase, ModuleStoreTestCase, ThirdPartyAuthT
         # ----------------------------------------------------------
         # Execute task
         # ----------------------------------------------------------
-        with patch('biz.djangoapps.ga_contract_operation.personalinfo._PersonalinfoMaskExecutor.check_enrollment') as mock_check_enrollment:
+        self.random_value = 'test1'
+        with patch(
+            'biz.djangoapps.ga_contract_operation.personalinfo._PersonalinfoMaskExecutor.check_enrollment'
+        ) as mock_check_enrollment, patch(
+            'biz.djangoapps.ga_contract_operation.personalinfo.get_random_string', return_value=self.random_value
+        ):
             # raise Exception at last call
             mock_check_enrollment.side_effect = [True, True, True, True, Exception]
             self._test_run_with_task(personalinfo_mask, 'personalinfo_mask', 4, 0, 1, 5, 5, entry)
