@@ -44,8 +44,8 @@ body {
 }
 
 @media screen and (max-width: 800px) {
-  body.view-incourse .wrapper-course-material .course-material,
-  body.view-incourse .wrapper-preview-menu .preview-menu {
+  body.view-in-course .wrapper-course-material .course-material,
+  body.view-in-course .wrapper-preview-menu .preview-menu {
     padding: 0;
   }
   #wrapper-preview {
@@ -919,6 +919,7 @@ nav.wrapper-course-material ol.course-tabs li .tab-icon {
     font-size: 10px;
     font-weight: normal;
     word-break: break-all;
+    line-height: 1em;
   }
   nav.wrapper-course-material ol.course-tabs li .tab-icon {
     display: block;
