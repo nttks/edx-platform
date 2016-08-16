@@ -749,6 +749,12 @@ def get_score(user, problem_descriptor, module_creator, scores_client, submissio
             # add location to the max score cache
             max_scores_cache.set(problem_descriptor.location, total)
 
+    # If the following conditions are true, then the user is considered to be the correct answer to the problem.
+    # - User has data of StudentModule. In other words, it has responded to the problem, or it has viewed.
+    # - Descriptor (ex. CapaDescriptor) has a whole_point_addition and it is True,
+    if score and getattr(problem_descriptor, 'whole_point_addition', False):
+        correct = total
+
     return weighted_score(correct, total, problem_descriptor.weight)
 
 

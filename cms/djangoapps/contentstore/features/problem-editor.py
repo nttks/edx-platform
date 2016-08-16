@@ -16,6 +16,7 @@ SHOW_ANSWER = "Show Answer"
 SHOW_RESET_BUTTON = "Show Reset Button"
 TIMER_BETWEEN_ATTEMPTS = "Timer Between Attempts"
 MATLAB_API_KEY = "Matlab API key"
+WHOLE_ADDITION_POINT = "Whole Point Addition"
 
 
 @step('I have created a Blank Common Problem$')
@@ -105,6 +106,7 @@ def i_see_advanced_settings_with_values(step):
             [SHOW_ANSWER, "Finished", False],
             [SHOW_RESET_BUTTON, "False", False],
             [TIMER_BETWEEN_ATTEMPTS, "0", False],
+            [WHOLE_ADDITION_POINT, "False", False],
         ])
 
 

@@ -200,6 +200,13 @@ class CapaFields(object):
                "or to report an issue, please contact moocsupport@mathworks.com"),
         scope=Scope.settings
     )
+    whole_point_addition = Boolean(
+        display_name=_("Whole Point Addition"),
+        help=_("If enabled, for all of the user who answered or viewed the problem, and added point "
+               "it is regarded as the correct answer to the problem."),
+        default=False,
+        scope=Scope.settings
+    )
 
 
 class CapaMixin(CapaFields):
