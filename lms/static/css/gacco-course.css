@@ -489,6 +489,11 @@ body.discussion .forum-nav-header > .forum-nav-toggle li:hover {
   min-width: 85px;
 }
 
+.container .discussion-body .discussion-article h1 {
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: 0;
+}
 
 @media screen and (max-width: 950px) {
   .container .discussion-body .forum-nav .new-post-btn {
@@ -586,7 +591,7 @@ body.discussion .forum-nav-header > .forum-nav-toggle li:hover {
   }
 
   /* discussion home panel */
-  .container .discussion-column .forum-content .blank-slate {
+  .container .discussion-column .forum-content .discussion-article {
     padding: 10px;
   }
   .container .discussion-body .discussion-column .helpgrid-row .row-title {
@@ -1144,9 +1149,9 @@ nav.wrapper-course-material ol.course-tabs li a.active:hover {
   .container .discussion-body .discussion-article .posted-details,
   .container .discussion-module.discussion-article .posted-details,
   .container .discussion-user-threads .discussion-article .posted-details,
-  .container .discussion-body .blank-slate .label,
-  .container .discussion-module .blank-slate .label,
-  .container .discussion-user-threads .blank-slate .label,
+  .container .discussion-body .discussion-article .label,
+  .container .discussion-module .discussion-article .label,
+  .container .discussion-user-threads .discussion-article .label,
   .forum-content h2,
   .forum-content h6,
   .forum-content h5,
@@ -1185,9 +1190,9 @@ nav.wrapper-course-material ol.course-tabs li a.active:hover {
   .container .discussion-body .discussion-article h1,
   .container .discussion-module .discussion-article h1,
   .container .discussion-user-threads .discussion-article,
-  .container .discussion-body .blank-slate .home-title,
-  .container .discussion-module .blank-slate .home-title,
-  .container .discussion-user-threads .blank-slate .home-title,
+  .container .discussion-body .discussion-article .home-title,
+  .container .discussion-module .discussion-article .home-title,
+  .container .discussion-user-threads .discussion-article .home-title,
   #course-content h1 {
     font-size: 14px;
   }
