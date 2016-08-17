@@ -113,6 +113,7 @@ a, a:visited {
   width: flex-grid(12);
   margin: 0 auto;
   background: $content-wrapper-bg;
+  padding-bottom: ($baseline*2);
 
   @media print {
     padding-bottom: 0;
