@@ -2487,7 +2487,7 @@ msgstr ""
 
 #: lms/templates/courseware/course_about.html
 msgid "You are enrolled in this course"
-msgstr "この講座に受講登録をしました"
+msgstr "この講座に登録されています"
 
 #: lms/templates/courseware/course_about.html
 msgid "View Courseware"
@@ -2515,7 +2515,7 @@ msgstr "{course_name} をカートに追加<span>({price} ドル)</span>"
 
 #: lms/templates/courseware/course_about.html
 msgid "Enroll in {course_name}"
-msgstr "{course_name}に受講登録"
+msgstr "{course_name}を受講登録"
 
 #: lms/templates/courseware/course_about.html
 msgid "View About Page in studio"
