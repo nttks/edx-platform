@@ -103,6 +103,9 @@ include_special_exams = settings.FEATURES.get('ENABLE_SPECIAL_EXAMS', False) and
                % endfor
                <li class="course-tab-dashboard"><a href="/dashboard">${_("Dashboard")}</a></li>
                <li><a href="${reverse('account_settings')}">${_("Account Settings")}</a></li>
+               % if user.is_authenticated():
+               <li><a href="${reverse('learner_profile', kwargs={'username': user.username})}">${_("My Profile")}</a></li>
+               % endif
                % if microsite.get_value('MKTG_URL_LINK_MAP', settings.MKTG_URL_LINK_MAP).get('FAQ'):
                <li><a href="${marketing_link('FAQ')}">${_("FAQ")}</a></li>
                % endif

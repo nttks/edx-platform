@@ -266,7 +266,6 @@ class OwnLearnerProfilePageTest(LearnerProfileTestMixin, WebAppTest):
         profile_page.wait_for_page()
         self.verify_profile_page_is_private(profile_page)
 
-    @unittest.skip("Profile is remove in gacco")
     def test_dashboard_learner_profile_link(self):
         """
         Scenario: Verify that my profile link is present on dashboard page and we can navigate to correct page.
@@ -282,7 +281,7 @@ class OwnLearnerProfilePageTest(LearnerProfileTestMixin, WebAppTest):
         dashboard_page = DashboardPage(self.browser)
         dashboard_page.visit()
         dashboard_page.click_username_dropdown()
-        self.assertIn('Profile', dashboard_page.username_dropdown_link_text)
+        self.assertIn('My Profile', dashboard_page.username_dropdown_link_text)
         dashboard_page.click_my_profile_link()
         my_profile_page = LearnerProfilePage(self.browser, username)
         my_profile_page.wait_for_page()

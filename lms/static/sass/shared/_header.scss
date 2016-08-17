@@ -143,13 +143,18 @@ header.global {
       }
     }
 
-    a.user-link {
-      @include padding(5px, 2px, 10px, 10px);
+    .user-link {
+      padding: 0;
       position: relative;
       text-transform: none;
       font-size: 14px;
       font-weight: bold;
       letter-spacing: 0;
+
+      .user-image-frame {
+        max-width: ($baseline*2);
+        border-radius: 10%;
+      }
 
       .icon {
         display: inline-block;
@@ -159,41 +164,17 @@ header.global {
         color: $m-gray;
       }
 
-      .avatar {
-
-        // CASE: right to left layout
-
-        display: inline-block;
-        @include left(8px);
-        opacity: 0.5;
-        overflow: hidden;
-        top: 4px;
-        margin-top: 1px;
-        margin-right: 2px;
-        @include transition(all 0.15s linear 0s);
-        width: 19px;
-      }
-      div {
-        margin-top: 3px;
-        float: right;
-        margin-left: 4px;
-      }
-      div {
-        margin-top: 3px;
-        float: right;
-        margin-left: 4px;
+      .label-username {
+        @include float(right);
+        @include margin(($baseline*0.75), ($baseline/4), ($baseline*0.75), ($baseline*0.75));
       }
 
-      &:hover, &:focus {
-        .avatar {
-          opacity: 0.8;
-        }
-      }
+
     }
 
     .dropdown {
       font-size: $body-font-size;
-      padding: 0 ($baseline/2);
+      padding: 4 ($baseline/2);
       color: $base-font-color;
       border: none;
       background: $white;
