@@ -97,6 +97,7 @@ data: |
         }
         textarea {
           height: auto;
+          width: 100%
         }
         .blue-button {
           background-color: #008CBA;

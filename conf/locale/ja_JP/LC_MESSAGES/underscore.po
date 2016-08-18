@@ -303,7 +303,7 @@ msgstr "特定のトピックに絞る"
 #: test_root/staticfiles/common/templates/discussion/discussion-home.underscore
 #: test_root/staticfiles/xmodule_js/common_static/common/templates/discussion/discussion-home.underscore
 msgid "Search for specific posts"
-msgstr ""
+msgstr "特定の投稿を検索する"
 
 #: common/static/common/templates/discussion/discussion-home.underscore
 #: test_root/staticfiles/common/templates/discussion/discussion-home.underscore

@@ -288,6 +288,7 @@ header.global ol li.primary>a:hover{
   text-align: center;
   text-decoration: none;
   border-radius: 1px;
+  line-height: 1.6em;
 }
 #gacco-twitter .share {
   background-color: #eee;
@@ -299,6 +300,9 @@ header.global ol li.primary>a:hover{
 }
 #gacco-twitter .share i {
   color: #55acee;
+}
+#gacco-twitter .share span {
+  margin-right: 5px;
 }
 #gacco-facebook .share i,
 #gacco-facebook .share span {
@@ -396,6 +400,7 @@ header.global ol li.primary>a:hover{
     border-top: 1px solid #b2b2b2;
     border-bottom: 1px solid #b2b2b2;
     margin-bottom: 0;
+    width: 100%;
   }
 }
 
@@ -1015,6 +1020,7 @@ header.global .nav-courseware li .cta-register{
   margin-top: 0px;
   text-shadow: none;
   text-transform: none;
+  line-height: 1.6em;
 }
 
 
