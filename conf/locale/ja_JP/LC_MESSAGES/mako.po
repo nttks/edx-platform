@@ -6979,7 +6979,7 @@ msgstr ""
 
 #: themes/red-theme/lms/templates/header.html
 msgid "My Profile"
-msgstr "自分のプロファイル"
+msgstr "プロフィール"
 
 #: themes/red-theme/lms/templates/header.html
 #: themes/red-theme/lms/templates/header.html

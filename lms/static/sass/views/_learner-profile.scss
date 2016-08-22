@@ -108,6 +108,9 @@
                     outline: 0;
                     border: 2px dashed $link-color !important;
                 }
+                .remove-button-title {
+                    color: black;
+                }
             }
 
             &:hover, &:focus {
@@ -218,6 +221,9 @@
             width: 200px;
             display: inline-block;
             vertical-align: baseline;
+            button {
+                color: #222;
+            }
         }
 
         select {
