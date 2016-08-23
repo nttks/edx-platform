@@ -26,6 +26,7 @@ from external_auth.login_and_register import (
     login as external_auth_login,
     register as external_auth_register
 )
+from openedx.core.djangoapps.course_global.models import CourseGlobalSetting
 from student.models import UserProfile
 from student.views import (
     signin_user as old_login_view,
@@ -385,6 +386,9 @@ def account_settings_context(request):
                 'url': reverse('resign'),
             }, 'invitation_code': {
                 'url': reverse('biz:invitation:index'),
+            }, 'receive_email': {
+                'url': reverse("ga_receive_email_api", kwargs={'username': user.username}),
+                'has_global_course': bool(CourseGlobalSetting.all_course_id()),
             }, 'year_of_birth': {
                 'options': year_of_birth_options,
             }, 'preferred_language': {

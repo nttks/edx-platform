@@ -30,6 +30,9 @@ define(['backbone', 'jquery', 'underscore', 'common/js/spec_helpers/ajax_helpers
                     'url': '/resign'
                 }, 'invitation_code': {
                     'url': '/biz/invitation/'
+                }, 'receive_email': {
+                    'url': '/api/user/v1/receive_email/hoge0001',
+                    'has_global_course': true
                 }
             };
 
@@ -144,6 +147,7 @@ define(['backbone', 'jquery', 'underscore', 'common/js/spec_helpers/ajax_helpers
                 AjaxHelpers.respondWithJson(requests, Helpers.createAccountSettingsData());
                 AjaxHelpers.respondWithJson(requests, Helpers.createUserPreferencesData());
                 AjaxHelpers.respondWithJson(requests, {});  // Page viewed analytics event
+                AjaxHelpers.respondWithJson(requests, {});  // Page viewed receive email get event
 
                 var sectionsData = accountSettingsView.options.sectionsData;
 
@@ -185,7 +189,7 @@ define(['backbone', 'jquery', 'underscore', 'common/js/spec_helpers/ajax_helpers
                     }, requests);
                 });
 
-                expect(sectionsData[2].fields.length).toBe(2);
+                expect(sectionsData[2].fields.length).toBe(3);
 
                 var section3Fields = sectionsData[3].fields;
                 expect(section3Fields.length).toBe(2);

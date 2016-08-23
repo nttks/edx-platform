@@ -8,14 +8,26 @@ import re
 import subprocess
 import time
 import unittest
+from contextlib import contextmanager
 from itertools import chain
 
 from email import message_from_string
 from email.header import decode_header
 
+from ..pages.common.logout import LogoutPage
+from ..pages.lms.auto_auth import AutoAuthPage
+from ..pages.lms.ga_django_admin import DjangoAdminPage
+
+
+SUPER_USER_INFO = {
+    'username': 'superuser',
+    'password': 'SuperUser3',
+    'email': 'superuser@example.com',
+}
+
 
 @unittest.skipUnless(os.environ.get('ENABLE_BOKCHOY_GA'), "Test only valid in gacco")
-class GaccoTestMixin(unittest.TestCase):
+class GaccoTestMixin(object):
     """
     Mixin for gacco tests
     """
@@ -56,6 +68,51 @@ class GaccoTestMixin(unittest.TestCase):
         Restart memcached for clear of selected-info on biz.
         """
         self.assertEqual(0, subprocess.call(['sudo', 'service', 'memcached', 'restart']))
+
+    def switch_to_user(self, user_info, course_id=None):
+        LogoutPage(self.browser).visit()
+        AutoAuthPage(
+            self.browser,
+            username=user_info['username'],
+            password=user_info['password'],
+            email=user_info['email'],
+            course_id=course_id
+        ).visit()
+        return user_info
+
+    @contextmanager
+    def setup_global_course(self, course_id):
+
+        global_course_enabled_name = "Course '{}': Global Enabled".format(course_id)
+
+        # Create course global setting.
+        self.switch_to_user(SUPER_USER_INFO)
+        django_admin_list_page = DjangoAdminPage(self.browser).visit().click_add('course_global', 'courseglobalsetting').input({
+            'course_id': course_id,
+        }).save()
+
+        grid_row = django_admin_list_page.get_row({
+            'Course global setting': global_course_enabled_name
+        })
+        self.assertIsNotNone(grid_row)
+
+        # Logout
+        LogoutPage(self.browser).visit()
+
+        yield
+
+        # Remove course global setting.
+        self.switch_to_user(SUPER_USER_INFO)
+        django_admin_list_page = DjangoAdminPage(self.browser).visit().click_list('course_global', 'courseglobalsetting')
+        django_admin_list_page = django_admin_list_page.click_grid_anchor(grid_row).click_delete().click_yes()
+
+        grid_row = django_admin_list_page.get_row({
+            'Course global setting': global_course_enabled_name
+        })
+        self.assertIsNone(grid_row)
+
+        # Logout
+        LogoutPage(self.browser).visit()
 
 
 class FilebasedEmailClient(object):

@@ -4,7 +4,7 @@ from common.test.acceptance.pages.biz.ga_contract import BizContractDetailPage, 
 from common.test.acceptance.pages.biz.ga_invitation import BizInvitationPage, BizInvitationConfirmPage
 from common.test.acceptance.pages.lms.ga_dashboard import DashboardPage as GaDashboardPage
 
-from ..ga_helpers import GaccoTestMixin
+from ..ga_helpers import GaccoTestMixin, SUPER_USER_INFO
 from ...fixtures.course import CourseFixture
 from ...pages.biz.ga_dashboard import DashboardPage
 from ...pages.biz.ga_w2ui import remove_grid_row_index
@@ -12,11 +12,6 @@ from ...pages.common.logout import LogoutPage
 from ...pages.lms.auto_auth import AutoAuthPage
 
 
-SUPER_USER_INFO = {
-    'username': 'superuser',
-    'password': 'SuperUser3',
-    'email': 'superuser@example.com',
-}
 PLATFORMER_USER_INFO = {
     'username': 'plat_platformer',
     'password': 'platPlatformer3',
@@ -95,11 +90,6 @@ class GaccoBizTestMixin(GaccoTestMixin):
     """
     Mixin for gacco biz tests
     """
-
-    def switch_to_user(self, user_info):
-        LogoutPage(self.browser).visit()
-        AutoAuthPage(self.browser, username=user_info['username'], password=user_info['password'], email=user_info['email']).visit()
-        return user_info
 
     def assert_grid_row(self, grid_row, assert_dict):
         for assert_key, assert_value in assert_dict.items():

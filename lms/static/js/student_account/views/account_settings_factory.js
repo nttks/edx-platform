@@ -118,6 +118,36 @@
                     title: gettext('Other procedures'),
                     fields: [
                         {
+                            view: new AccountSettingsFieldViews.ReceiveEmailFieldView({
+                                model: userAccountModel,
+                                title: gettext('E-mail magazine delivery settings'),
+                                valueAttribute: 'receive_email',
+                                linkTitle: '',
+                                linkHref: fieldsData.receive_email.url,
+                                hasGlobalCourse: fieldsData.receive_email.has_global_course,
+                                optout: {
+                                    linkTitle: '&#xf204;',
+                                    caption: gettext('Resume delivery'),
+                                    methodType: 'DELETE',
+                                    reverseStatus: 'optin',
+                                },
+                                optin: {
+                                    linkTitle: '&#xf205;',
+                                    caption: gettext('Stop delivery'),
+                                    methodType: 'PUT',
+                                    reverseStatus: 'optout',
+                                },
+                                loading: {
+                                    linkTitle: '&#xf021;',
+                                    caption: gettext('Working'),
+                                },
+                                helpMessage: interpolate_text(
+                                    gettext('You can set the e-mail magazine delivery from {platform_name}. The delivery is to stop/resume and click on the icon to the left. E-mail received from each course can be set from My page.'),
+                                    {platform_name: platformName}
+                                )
+                            })
+                        },
+                        {
                             view: new AccountSettingsFieldViews.InvitationCodeFieldView({
                                 model: userAccountModel,
                                 title: gettext('Invitation Code'),

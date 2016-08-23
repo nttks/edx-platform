@@ -1426,6 +1426,18 @@ html, body, h1, h2, h3, h4, h5, h6, div, p, a, label {
   padding: 0 20px;
 }
 
+.u-field-link-title-receive_email {
+  font-family: FontAwesome;
+  font-size: 2rem;
+  float: left;
+  width: 3rem;
+}
+
+#u-field-link-receive_email+span {
+  vertical-align: inherit;
+  color: #767676;
+}
+
 @media screen and (max-width: 620px) {
   .wrapper-account-settings .u-field {
     border-bottom: dotted 1px #e3e3e3;

@@ -93,3 +93,13 @@ class PreferenceUpdateError(PreferenceRequestError):
     def __init__(self, developer_message, user_message=None):
         self.developer_message = developer_message
         self.user_message = user_message
+
+
+class ReceiveEmailRequestError(UserAPIRequestError):
+    """There was a problem with a receive email request."""
+    pass
+
+
+class ReceiveEmailNotFoundGlobalCourseError(ReceiveEmailRequestError):
+    """Not found any global course(enabled) with a receive email request."""
+    pass

@@ -102,6 +102,16 @@ class DashboardPage(EdXDashboardPage):
         except NoSuchElementException:
             return False
 
+    def show_settings(self, course_name):
+        """
+        Show settings on dashboard
+        """
+        try:
+            self._get_element_in_course(course_name, ".wrapper-action-more").click()
+            return True
+        except NoSuchElementException:
+            return False
+
     def is_available_unenroll_settings(self):
         """
         Is available unenroll settings on dashboard
