@@ -1357,21 +1357,8 @@ def manage_user_standing(request):
     """
     if not request.user.is_staff:
         raise Http404
-    all_disabled_accounts = UserStanding.objects.filter(
-        account_status=UserStanding.ACCOUNT_DISABLED
-    )
 
-    all_disabled_users = [standing.user for standing in all_disabled_accounts]
-
-    headers = ['username', 'account_changed_by']
-    rows = []
-    for user in all_disabled_users:
-        row = [user.username, user.standing.all()[0].changed_by]
-        rows.append(row)
-
-    context = {'headers': headers, 'rows': rows}
-
-    return render_to_response("manage_user_standing.html", context)
+    return render_to_response("manage_user_standing.html")
 
 
 @require_POST
@@ -1402,6 +1389,7 @@ def disable_account_ajax(request):
         context['message'] = _("User with username {} does not exist").format(username)
         return JsonResponse(context, status=400)
     else:
+        context['is_active'] = _('activated') if user.is_active else _('not activated')
         user_account, _success = UserStanding.objects.get_or_create(
             user=user, defaults={'changed_by': request.user},
         )
@@ -1413,12 +1401,21 @@ def disable_account_ajax(request):
             user_account.account_status = UserStanding.ACCOUNT_ENABLED
             context['message'] = _("Successfully reenabled {}'s account").format(username)
             log.info(u"%s reenabled %s's account", request.user, username)
+        elif account_action == 'view_account_status':
+            account_status = user.standing.account_status if user.standing else None
+            if account_status == UserStanding.ACCOUNT_DISABLED:
+                context['account_status'] = _(UserStanding.ACCOUNT_DISABLED)
+            else:
+                context['account_status'] = _(UserStanding.ACCOUNT_ENABLED)
+            context['message'] = ""
+            return JsonResponse(context)
         else:
             context['message'] = _("Unexpected account status")
             return JsonResponse(context, status=400)
         user_account.changed_by = request.user
         user_account.standing_last_changed_at = datetime.datetime.now(UTC)
         user_account.save()
+        context['account_status'] = _(user_account.account_status)
 
     return JsonResponse(context)
 

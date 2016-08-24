@@ -312,6 +312,40 @@ class ProfileImageViewPostTestCase(ProfileImageEndpointMixin, APITestCase):
         self.assertFalse(mock_log.info.called)
         self.assert_no_events_were_emitted()
 
+    @ddt.data('.jpg', '.jpeg', '.jpg', '.jpeg', '.png', '.gif', '.GIF')
+    @patch(
+        'openedx.core.djangoapps.profile_images.views._make_upload_dt',
+        side_effect=[TEST_UPLOAD_DT, TEST_UPLOAD_DT2],
+    )
+    def test_upload_staff_self(self, extension, _mock_make_image_version, mock_log):
+        """
+        Test that an authenticated staff user can POST to their own upload endpoint.
+        """
+        self.user = UserFactory(is_staff=True, password=TEST_PASSWORD)
+        self.user.profile.year_of_birth = 1980
+        self.user.profile.save()
+        self.reset_tracker()
+        staff_client = APIClient()
+        staff_client.login(username=self.user.username, password=TEST_PASSWORD)
+        url = reverse(self._view_name, kwargs={'username': self.user.username})
+        with make_image_file(extension=extension) as image_file:
+            response = staff_client.post(url, {'file': image_file}, format='multipart')
+            self.check_response(response, 204)
+            self.check_images()
+            self.check_has_profile_image()
+        mock_log.info.assert_called_once_with(
+            LOG_MESSAGE_CREATE,
+            {'image_names': get_profile_image_names(self.user.username).values(), 'user_id': self.user.id}
+        )
+        self.check_upload_event_emitted()
+
+        # Try another upload and make sure that a second event is emitted.
+        with make_image_file() as image_file:
+            response = staff_client.post(url, {'file': image_file}, format='multipart')
+            self.check_response(response, 204)
+
+        self.check_upload_event_emitted(old=TEST_UPLOAD_DT, new=TEST_UPLOAD_DT2)
+
     def test_upload_missing_file(self, mock_log):
         """
         Test that omitting the file entirely from the POST results in HTTP 400.

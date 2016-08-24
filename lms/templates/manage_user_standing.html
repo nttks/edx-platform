@@ -8,7 +8,13 @@ from django.utils.translation import ugettext as _
 <h2>${_("Manage student accounts")}</h2>
 <form action="${reverse('disable_account_ajax')}" method="post" data-remote="true" class="manage-accounts-form">
     <label for="username">${_("Username:")}</label>
-    <input type="text" id="username" name="username" required="true">
+    <input type="text" id="username" name="username" required="true" autofocus>
+    <br>
+    <label for="account_status">${_("Account status:")}</label>
+    <span id="account_status"></span>
+    <br>
+    <label for="is_active">${_("Activate status:")}</label>
+    <span id="is_active"></span>
     <br>
     <br>
     <h3>${_("Profile:")}</h3>
@@ -20,8 +26,11 @@ from django.utils.translation import ugettext as _
     <br>
     <br>
     <h3>${_("Choose an action:")}</h3>
-    <label for="disable_action">${_("View Profile")}</label>
-    <input type="radio" name="account_action" value="" id="view_profile_action" checked="checked">
+    <label for="view_account_status_action">${_("View Account Status")}</label>
+    <input type="radio" name="account_action" value="view_account_status" id="view_account_status_action" checked="checked">
+    <br>
+    <label for="view_profile_action">${_("View Profile")}</label>
+    <input type="radio" name="account_action" value="" id="view_profile_action">
     <br>
     <label for="disable_action">${_("Disable Account")}</label>
     <input type="radio" name="account_action" value="disable" id="disable_action">
@@ -30,7 +39,7 @@ from django.utils.translation import ugettext as _
     <input type="radio" name="account_action" value="reenable" id="reenable_action">
     <br>
     <label for="remove_profile_image_action">${_("Remove Profile Image")}</label>
-    <input type="radio" name="account_action" value="remove_profile_image" id="remove_profile_image_action"">
+    <input type="radio" name="account_action" value="remove_profile_image" id="remove_profile_image_action">
     <br>
     <br>
     <button type="submit">${_("Submit")}</button>
@@ -38,22 +47,6 @@ from django.utils.translation import ugettext as _
 
 
 <p class="account-change-status"></p>
-<h2>${_("Students whose accounts have been disabled")}</h2>
-<p>${_("(reload your page to refresh)")}</p>
-<table id="account-table" border='1'>
-    <tr>
-        % for header in headers:
-        <th>${header}</th>
-        % endfor
-    </tr>
-    % for row in rows:
-    <tr>
-        % for cell in row:
-        <td>${cell}</td>
-        % endfor
-    </tr>
-    % endfor
-</table>
 
 <%
 PLACEHOLDER_USERNAME = '__PLACEHOLDER_USERNAME'
@@ -63,7 +56,7 @@ PLACEHOLDER_USERNAME = '__PLACEHOLDER_USERNAME'
 $(function() {
     var form = $(".manage-accounts-form"),
         profileUrl = "${reverse('accounts_api', kwargs={'username': PLACEHOLDER_USERNAME})}",
-        removeProfileUrl = "${reverse('profile_image_remove', kwargs={'username': PLACEHOLDER_USERNAME})}",
+        removeProfileUrl = "${reverse('accounts_profile_image_api', kwargs={'username': PLACEHOLDER_USERNAME})}",
         refreshProfile;
 
     refreshProfile = function(username) {
@@ -105,6 +98,8 @@ $(function() {
                 data: form.serialize(),
                 success: function(response) {
                     $(".account-change-status").html(response.message);
+                    $("#account_status").text(response["account_status"]);
+                    $("#is_active").text(response["is_active"]);
                 }
             });
         } else {

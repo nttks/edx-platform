@@ -112,7 +112,7 @@ class ProfileImageView(DeveloperErrorViewMixin, APIView):
 
     parser_classes = (MultiPartParser, FormParser, TypedFileUploadParser)
     authentication_classes = (OAuth2AuthenticationAllowInactiveUser, SessionAuthenticationAllowInactiveUser)
-    permission_classes = (permissions.IsAuthenticated, IsUserInUrl)
+    permission_classes = (permissions.IsAuthenticated, IsUserInUrlOrStaff)
 
     upload_media_types = set(itertools.chain(*(image_type.mimetypes for image_type in IMAGE_TYPES.values())))
 
@@ -120,6 +120,10 @@ class ProfileImageView(DeveloperErrorViewMixin, APIView):
         """
         POST /api/user/v1/accounts/{username}/image
         """
+
+        # Authenticated staff cannot POST to another user's upload
+        if request.user.is_staff and username != request.user.username:
+            return Response(status=status.HTTP_403_FORBIDDEN)
 
         # validate request:
         # verify that the user's
