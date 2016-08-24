@@ -105,6 +105,7 @@ class SendEmail
               @display_response success_message
 
             error: std_ajax_err =>
+              Logger.log 'edx.instructor.send_email.std_ajax_err', status: arguments[1], error: arguments[2]
               @fail_with_error gettext('Error sending email.')
 
         else
