@@ -1,1 +1,0 @@
--e git+ssh://github.com/nttks/gacco-jwplayerxblock.git@gacco/cypress#egg=jwplayerxblock
