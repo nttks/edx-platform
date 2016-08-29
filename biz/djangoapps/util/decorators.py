@@ -238,6 +238,7 @@ def handle_command_exception(output_file):
                 _output_command_status(output_file, 'NG', msg)
                 log.error(msg)
 
+        wrapper._original = func
         return wrapper
 
     return decorator

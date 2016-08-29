@@ -31,7 +31,7 @@ class BizStoreTest(BizStoreTestBase):
         od1 = OrderedDict()
         od1[ScoreStore.FIELD_CONTRACT_ID] = 1
         od1[ScoreStore.FIELD_COURSE_ID] = 'test'
-        od1[ScoreStore.FIELD_FULL_NAME] = 'test.1'
+        od1[ScoreStore.FIELD_FULL_NAME] = 'test1'
         od1[ScoreStore.FIELD_USERNAME] = 'user_test1'
         od1[ScoreStore.FIELD_EMAIL] = 'test1@example.com'
 
@@ -39,7 +39,7 @@ class BizStoreTest(BizStoreTestBase):
         od2[ScoreStore.FIELD_CONTRACT_ID] = 1
         od2[ScoreStore.FIELD_COURSE_ID] = 'test'
         od2[ScoreStore.FIELD_FULL_NAME] = 'test2'
-        od2[ScoreStore.FIELD_USERNAME] = 'user_test1'
+        od2[ScoreStore.FIELD_USERNAME] = 'user_test2'
         od2[ScoreStore.FIELD_EMAIL] = 'test2@example.com'
 
         self._documents.append(od1)

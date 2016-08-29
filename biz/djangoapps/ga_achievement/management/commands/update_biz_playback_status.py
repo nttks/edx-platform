@@ -18,7 +18,7 @@ from biz.djangoapps.ga_contract.models import ContractDetail, AdditionalInfo
 from biz.djangoapps.ga_invitation.models import ContractRegister, AdditionalInfoSetting
 from biz.djangoapps.util.decorators import handle_command_exception
 from biz.djangoapps.util.hash_utils import to_target_id
-from student.models import UserProfile, UserStanding, CourseEnrollment
+from student.models import UserStanding, CourseEnrollment
 from xmodule.modulestore.django import modulestore
 
 log = logging.getLogger(__name__)
@@ -66,7 +66,7 @@ class Command(BaseCommand):
         # Note: BaseCommand translations are deactivated by default, so activate here
         translation.activate(settings.LANGUAGE_CODE)
 
-        debug = options['debug']
+        debug = options.get('debug')
         if debug:
             stream = logging.StreamHandler(self.stdout)
             log.addHandler(stream)
@@ -139,23 +139,12 @@ class Command(BaseCommand):
                 # Records
                 records = []
                 for contract_register in ContractRegister.find_input_and_register_by_contract(
-                        contract_id).select_related('user__profile'):
+                        contract_id).select_related('user__standing', 'user__profile'):
                     user = contract_register.user
-                    # Full Name
-                    try:
-                        user_profile = user.profile
-                    except UserProfile.DoesNotExist:
-                        user_profile = None
-                    full_name = user_profile.name if user_profile else None
-
                     # Student Status
-                    try:
-                        # Note: Needs to be fixed in Dogwood because UserStanding.user is changed into OneToOneField
-                        user_standing = user.standing.get()
-                    except UserStanding.DoesNotExist:
-                        user_standing = None
                     course_enrollment = CourseEnrollment.get_enrollment(user, course_key)
-                    if user_standing and user_standing.account_status == UserStanding.ACCOUNT_DISABLED:
+                    if hasattr(user, 'standing') and user.standing \
+                        and user.standing.account_status == UserStanding.ACCOUNT_DISABLED:
                         student_status = _(PlaybackStore.FIELD_STUDENT_STATUS__DISABLED)
                     elif not course_enrollment:
                         student_status = _(PlaybackStore.FIELD_STUDENT_STATUS__NOT_ENROLLED)
@@ -164,16 +153,13 @@ class Command(BaseCommand):
                     else:
                         student_status = _(PlaybackStore.FIELD_STUDENT_STATUS__UNENROLLED)
 
-                    # Get duration summary from playback log store
-                    playback_log_store = PlaybackLogStore(unicode(course_key), to_target_id(user.id))
-                    duration_summary = playback_log_store.aggregate_duration_by_vertical()
-
                     # Records
                     record = OrderedDict()
                     record[PlaybackStore.FIELD_CONTRACT_ID] = contract_id
                     record[PlaybackStore.FIELD_COURSE_ID] = unicode(course_key)
                     record[PlaybackStore.FIELD_DOCUMENT_TYPE] = PlaybackStore.FIELD_DOCUMENT_TYPE__RECORD
-                    record[_(PlaybackStore.FIELD_FULL_NAME)] = full_name
+                    record[_(PlaybackStore.FIELD_FULL_NAME)] = user.profile.name \
+                        if hasattr(user, 'profile') and user.profile else None
                     record[_(PlaybackStore.FIELD_USERNAME)] = user.username
                     record[_(PlaybackStore.FIELD_EMAIL)] = user.email
                     for additional_info in additional_infos:
@@ -186,24 +172,29 @@ class Command(BaseCommand):
                     if target_vertical_sections:
                         # Note: Set dummy value here to keep its order
                         record[_(PlaybackStore.FIELD_TOTAL_PLAYBACK_TIME)] = None
-                    total_playback_time = 0
-                    for target_verticals in target_vertical_sections:
-                        section_playback_time = 0
-                        for target_vertical in target_verticals:
-                            duration = duration_summary.get(target_vertical.vertical_id, 0)
-                            section_playback_time = section_playback_time + duration
-                            total_playback_time = total_playback_time + duration
-                            log.debug(u"course_id={}, vertical={}, column_name={}, target_id={}, duration={}".format(
-                                unicode(course_key), target_vertical.vertical_id, target_vertical.column_name,
-                                to_target_id(user.id), duration))
-                            # Playback Time for each vertical
-                            record[target_vertical.column_name] = duration
-                        # Playback Time for each section
-                        record[u'{}{}{}'.format(
-                            target_vertical.section_name,
-                            PlaybackStore.FIELD_DELIMITER,
-                            _(PlaybackStore.FIELD_SECTION_PLAYBACK_TIME))] = section_playback_time
-                    if target_vertical_sections:
+
+                        # Get duration summary from playback log store
+                        playback_log_store = PlaybackLogStore(unicode(course_key), to_target_id(user.id))
+                        duration_summary = playback_log_store.aggregate_duration_by_vertical()
+
+                        total_playback_time = 0
+                        for target_verticals in target_vertical_sections:
+                            section_playback_time = 0
+                            for target_vertical in target_verticals:
+                                duration = duration_summary.get(target_vertical.vertical_id, 0)
+                                section_playback_time = section_playback_time + duration
+                                total_playback_time = total_playback_time + duration
+                                log.debug(u"course_id={}, vertical={}, column_name={}, target_id={}, duration={}".format(
+                                    unicode(course_key), target_vertical.vertical_id, target_vertical.column_name,
+                                    to_target_id(user.id), duration))
+                                # Playback Time for each vertical
+                                record[target_vertical.column_name] = duration
+                            # Playback Time for each section
+                            record[u'{}{}{}'.format(
+                                target_vertical.section_name,
+                                PlaybackStore.FIELD_DELIMITER,
+                                _(PlaybackStore.FIELD_SECTION_PLAYBACK_TIME))] = section_playback_time
+
                         # Total Playback Time
                         record[_(PlaybackStore.FIELD_TOTAL_PLAYBACK_TIME)] = total_playback_time
                     records.append(record)

@@ -72,12 +72,12 @@ class AchievementStoreBase(BizStore):
         conditions = {
             self.FIELD_DOCUMENT_TYPE: self.FIELD_DOCUMENT_TYPE__COLUMN,
         }
-        excludes = {
-            self.FIELD_ID: False,
-            self.FIELD_CONTRACT_ID: False,
-            self.FIELD_COURSE_ID: False,
-            self.FIELD_DOCUMENT_TYPE: False,
-        }
+        excludes = [
+            self.FIELD_ID,
+            self.FIELD_CONTRACT_ID,
+            self.FIELD_COURSE_ID,
+            self.FIELD_DOCUMENT_TYPE,
+        ]
         return self.get_document(conditions=conditions, excludes=excludes)
 
     def get_record_documents(self):
@@ -101,12 +101,12 @@ class AchievementStoreBase(BizStore):
         conditions = {
             self.FIELD_DOCUMENT_TYPE: self.FIELD_DOCUMENT_TYPE__RECORD,
         }
-        excludes = {
-            self.FIELD_ID: False,
-            self.FIELD_CONTRACT_ID: False,
-            self.FIELD_COURSE_ID: False,
-            self.FIELD_DOCUMENT_TYPE: False,
-        }
+        excludes = [
+            self.FIELD_ID,
+            self.FIELD_CONTRACT_ID,
+            self.FIELD_COURSE_ID,
+            self.FIELD_DOCUMENT_TYPE,
+        ]
         return self.get_documents(conditions=conditions, excludes=excludes)
 
     def get_data_for_w2ui(self):
@@ -240,11 +240,11 @@ class ScoreStore(AchievementStoreBase):
 
         :return: a data set for column
         """
-        excludes = {
-            self.FIELD_ID: False,
-            self.FIELD_CONTRACT_ID: False,
-            self.FIELD_COURSE_ID: False,
-        }
+        excludes = [
+            self.FIELD_ID,
+            self.FIELD_CONTRACT_ID,
+            self.FIELD_COURSE_ID,
+        ]
         record_document = self.get_document(excludes=excludes)
 
         ordered = OrderedDict()
@@ -266,11 +266,11 @@ class ScoreStore(AchievementStoreBase):
 
         :return: documents for record
         """
-        excludes = {
-            self.FIELD_ID: False,
-            self.FIELD_CONTRACT_ID: False,
-            self.FIELD_COURSE_ID: False,
-        }
+        excludes = [
+            self.FIELD_ID,
+            self.FIELD_CONTRACT_ID,
+            self.FIELD_COURSE_ID,
+        ]
         return self.get_documents(excludes=excludes)
 
 
