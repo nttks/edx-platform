@@ -88,7 +88,7 @@ site_status_msg = get_site_status_msg(course_id)
             %if hasattr(request, 'biz_accessible') and request.biz_accessible:
             <li><a href="${reverse('biz:index')}">${_("Biz")}</a></li>
             % endif
-            <li><a href="${reverse('account_settings')}">${_("Account")}</a></li>
+            <li><a href="${reverse('account_settings')}">${_("Account Settings")}</a></li>
             <li><a href="${reverse('learner_profile', kwargs={'username': user.username})}">${_("My Profile")}</a></li>
             % if microsite.get_value('MKTG_URL_LINK_MAP', settings.MKTG_URL_LINK_MAP).get('FAQ'):
             <li><a href="${marketing_link('FAQ')}">${_("FAQ")}</a></li>

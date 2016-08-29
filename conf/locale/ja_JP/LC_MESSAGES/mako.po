@@ -2919,7 +2919,7 @@ msgstr "シラバス"
 msgid ""
 "You were most recently in {section_link}.  If you're done with that, choose "
 "another section on the left."
-msgstr "前回は{section_link}にアクセスしました。別のものを学習する場合には、該当の項目をメニュー（学習リスト）からお選びください。"
+msgstr "前回は{section_link}にアクセスしました。別のものを学習する場合には、該当の項目を学習リストからお選びください。"
 
 #: lms/templates/credit_notifications/credit_eligibility_email.html
 #: lms/templates/emails/business_order_confirmation_email.txt
@@ -3171,7 +3171,7 @@ msgstr "支払いに見合うだけの還付は無いでしょう。"
 #, python-format
 msgid ""
 "Are you sure you want to unenroll from %(course_name)s (%(course_number)s)?"
-msgstr ""
+msgstr "%(course_number)s「%(course_name)s」の受講を取り消します。よろしいですか？"
 
 #: lms/templates/dashboard/_dashboard_course_listing.html
 #: lms/templates/dashboard/_dashboard_course_listing.html
@@ -4565,7 +4565,7 @@ msgstr "講座の表示名："
 
 #: lms/templates/instructor/instructor_dashboard_2/course_info.html
 msgid "Course End Date:"
-msgstr ""
+msgstr "講座閉講日："
 
 #: lms/templates/instructor/instructor_dashboard_2/course_info.html
 msgid "Has the course started?"
@@ -4587,7 +4587,7 @@ msgstr "この講座は終了済？"
 
 #: lms/templates/instructor/instructor_dashboard_2/course_info.html
 msgid "Number of sections:"
-msgstr ""
+msgstr "章の数："
 
 #: lms/templates/instructor/instructor_dashboard_2/course_info.html
 msgid "Grade Cutoffs:"
@@ -5417,7 +5417,7 @@ msgstr "ベータテスターバッチ追加"
 msgid ""
 "Note: Users must have an activated {platform_name} account before they can "
 "be enrolled as beta testers."
-msgstr ""
+msgstr "ベータテスター登録前に、{platform_name}へのアカウント登録とアクティベーションを実施してください。"
 
 #: lms/templates/instructor/instructor_dashboard_2/membership.html
 msgid ""
@@ -5441,14 +5441,14 @@ msgstr "ベータテスターを削除する"
 #. users can be added to.
 #: lms/templates/instructor/instructor_dashboard_2/membership.html
 msgid "Course Team Management"
-msgstr ""
+msgstr "講座運営チームの管理"
 
 #. Translators: an "Administrator Group" is a group, such as Course Staff,
 #. that
 #. users can be added to.
 #: lms/templates/instructor/instructor_dashboard_2/membership.html
 msgid "Select a course team role:"
-msgstr ""
+msgstr "権限を選択："
 
 #: lms/templates/instructor/instructor_dashboard_2/membership.html
 msgid "Getting available lists..."

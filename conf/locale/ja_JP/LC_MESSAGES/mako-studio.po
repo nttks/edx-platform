@@ -2449,7 +2449,7 @@ msgstr "受講登録終了日"
 
 #: cms/templates/settings.html
 msgid "Last day students can enroll."
-msgstr ""
+msgstr "受講登録最終日"
 
 #: cms/templates/settings.html
 msgid "Contact your edX Partner Manager to update these settings."

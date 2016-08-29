@@ -106,7 +106,7 @@ class DashboardMenuTest(AccountSettingsTestMixin, WebAppTest):
         dashboard_page = DashboardPage(self.browser)
         dashboard_page.visit()
         dashboard_page.click_username_dropdown()
-        self.assertIn('Account', dashboard_page.username_dropdown_link_text)
+        self.assertIn('Account Settings', dashboard_page.username_dropdown_link_text)
         dashboard_page.click_account_settings_link()
 
 

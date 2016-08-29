@@ -4098,7 +4098,7 @@ msgstr "正常に接続を解除しました。"
 
 #: lms/static/js/student_profile/views/learner_profile_factory.js
 msgid "{platform_name} learners can see my:"
-msgstr "：は、{platform_name} の受講者が参照できます"
+msgstr "{platform_name} の受講者があなたのプロフィールを参照できる範囲："
 
 #: lms/static/js/student_profile/views/learner_profile_factory.js
 msgid "Limited Profile"
@@ -5991,7 +5991,7 @@ msgstr "「質問」は回答を必要とする議題に用います。「ディ
 #: test_root/staticfiles/common/templates/discussion/thread.underscore
 #: test_root/staticfiles/xmodule_js/common_static/common/templates/discussion/thread.underscore
 msgid "Add a Response"
-msgstr ""
+msgstr "返信を追加"
 
 #: common/static/common/templates/discussion/thread.underscore
 #: test_root/staticfiles/common/templates/discussion/thread.underscore

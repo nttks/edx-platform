@@ -563,11 +563,11 @@ msgstr "課題提出締切時刻"
 
 #: cms/templates/settings.html
 msgid "First day problems can't submit, this setting is only affect to course list"
-msgstr "講座内最終課題の提出締切日時を指定"
+msgstr "講座内最終課題の提出締切日時"
 
 #: cms/templates/settings.html
 msgid "Course Terminate Date"
-msgstr "講座閉講鎖日"
+msgstr "講座閉講日"
 
 #: cms/templates/settings.html
 msgid "Course Terminate Time"
@@ -575,7 +575,7 @@ msgstr "講座閉講時刻"
 
 #: cms/templates/settings.html
 msgid "First day the course is hidden"
-msgstr "講座が閉講される日時を設定"
+msgstr "講座が閉講される日時"
 
 #: cms/templates/settings.html
 msgid "Please enter the course category, separated by commas."
@@ -1030,3 +1030,173 @@ msgstr "全体加点"
 #: common/lib/xmodule/xmodule/capa_base.py
 msgid "If enabled, for all of the user who answered or viewed the problem, and added point it is regarded as the correct answer to the problem."
 msgstr "有効にした場合、問題を回答または閲覧した全てのユーザーに対して、問題に正解したとみなして加点されます。"
+
+#-#-#-#-#  Deleted or revised messages between Cypress and Dogwood on Transifex  #-#-#-#-#
+#: lms/templates/dashboard.html
+msgid "Want to change your account settings?"
+msgstr "登録情報を変更する場合"
+
+#: lms/templates/dashboard.html
+msgid "Click the arrow next to your username above."
+msgstr "右上に表示されている▼ボタンをクリックしてメニューを開き、「アカウント設定」を選択してください。"
+
+#: lms/djangoapps/instructor/views/api.py
+#: lms/djangoapps/instructor/views/instructor_dashboard.py
+#: openedx/core/djangoapps/user_api/views.py
+#: lms/templates/instructor/instructor_dashboard_2/generate_registarion_codes_modal.html
+msgid "Email"
+msgstr "メールアドレス"
+
+#: openedx/core/djangoapps/user_api/views.py lms/templates/register.html
+msgid "Your legal name, used for any certificates you earn."
+msgstr "修了証に表示するために用いる情報です"
+
+#: templates/courseware/course_navigation.html
+msgid "More"
+msgstr "その他"
+
+#: lms/templates/courseware/course_navigation.html
+#: lms/templates/instructor/instructor_dashboard_2/membership.html
+msgid "Staff"
+msgstr "講座スタッフ"
+
+#: lms/templates/instructor/instructor_dashboard_2/membership.html
+msgid "Admin"
+msgstr "講座管理者"
+
+#: lms/templates/instructor/instructor_dashboard_2/certificates.html
+#: lms/templates/instructor/instructor_dashboard_2/course_info.html
+#: lms/templates/instructor/instructor_dashboard_2/data_download.html
+#: lms/templates/instructor/instructor_dashboard_2/e-commerce.html
+#: lms/templates/instructor/instructor_dashboard_2/send_email.html
+#: lms/templates/instructor/instructor_dashboard_2/student_admin.html
+msgid "Pending Tasks"
+msgstr "保留中の講座管理者タスク"
+
+#: lms/templates/instructor/instructor_dashboard_2/course_info.html
+msgid "Number of enrollees (admins, staff, and students) by track"
+msgstr "コースごとの受講者数（講座管理者・講座スタッフ・受講者）"
+
+#: lms/templates/instructor/instructor_dashboard_2/course_info.html
+msgid "Instructor Dashboard"
+msgstr "講座管理者用マイページ"
+
+#: lms/templates/instructor/instructor_dashboard_2/membership.html
+msgid ""
+"Course team members with the Staff role help you manage your course. Staff "
+"can enroll and unenroll learners, as well as modify their grades and access "
+"all course data. Staff also have access to your course in Studio and "
+"Insights. You can only give course team roles to enrolled users."
+msgstr ""
+"講座スタッフは講座の一部の管理業務を支援することができます。講座スタッフは学習者の受講登録および受講取消しができ、また同様に受講者の成績を調整し、すべての講座データを見ることができます。講座スタッフは自動的にStudioへのアクセス権が付与されます。"
+
+#: lms/templates/instructor/instructor_dashboard_2/membership.html
+msgid "Add Staff"
+msgstr "講座スタッフを追加する"
+
+#: lms/templates/instructor/instructor_dashboard_2/membership.html
+msgid ""
+"Course team members with the Admin role help you manage your course. They "
+"can do all of the tasks that Staff can do, and can also add and remove the "
+"Staff and Admin roles, discussion moderation roles, and the beta tester role"
+" to manage course team membership. You can only give course team roles to "
+"enrolled users."
+msgstr "講座管理者（権限）は講座のコアな管理権限です。講座管理者は講座スタッフおよびディスカッションに関する権限の編集が可能です。"
+
+#: lms/templates/instructor/instructor_dashboard_2/membership.html
+msgid "Add Admin"
+msgstr "講座管理者を追加する"
+
+#: lms/templates/instructor/instructor_dashboard_2/send_email.html
+msgid "Staff and admins"
+msgstr "講座スタッフそして講座管理者たち"
+
+#: lms/templates/instructor/instructor_dashboard_2/send_email.html
+msgid "All (students, staff, and admins)"
+msgstr "全て（受講者、講座スタッフ、講座管理者）"
+
+#: lms/djangoapps/instructor/views/instructor_dashboard.py
+msgid "Instructor"
+msgstr "講座管理"
+
+#: common/djangoapps/course_modes/models.py lms/envs/devstack.py
+msgid "Honor"
+msgstr "優等"
+
+#: common/lib/xmodule/xmodule/course_module.py
+msgid "Hide Progress Tab"
+msgstr "成績タブを隠す"
+
+#: common/lib/xmodule/xmodule/course_module.py
+msgid "Allows hiding of the progress tab."
+msgstr "成績タブを隠すことを許可する。"
+
+#: cms/templates/index.html
+msgid ""
+"The public display name for your course. This cannot be changed, but you can"
+" set a different display name in Advanced Settings later."
+msgstr "この講座の表示名です。これは変更することはできませんが、詳細設定にて別の表示名を設定することができます。"
+
+#: cms/templates/index.html
+msgid "Note: The organization name is part of the course URL"
+msgstr "注意：組織名は講座URLの一部に含まれます。名前にスペースおよび記号は使用できません。"
+
+#: cms/templates/index.html
+msgid ""
+"The unique number that identifies your course within your organization."
+msgstr "講座番号はあなたの組織内で一意になるように設定してください。"
+
+#: cms/templates/index.html
+msgid "The term in which your course will run."
+msgstr "講座の開講時期。YYYY_MM等の形式で設定してください。"
+
+#: cms/templates/settings.html
+msgid "Course Language"
+msgstr ""
+
+#: cms/templates/settings.html
+msgid "Provide useful information about your course"
+msgstr ""
+
+#: cms/templates/settings.html
+msgid "Dates that control when your course can be viewed"
+msgstr "講座スケジュール日時設定"
+
+#: cms/templates/manage_users.html
+msgid "Provide the email address of the user you want to add as Staff"
+msgstr "講座運営チームに追加したい方のメールアドレスを入力してください。"
+
+#: cms/templates/manage_users.html
+msgid "Course Team Roles"
+msgstr "講座運営チームの役割"
+
+#: cms/templates/manage_users.html
+msgid ""
+"Course team members with the Staff role are course co-authors. They have "
+"full writing and editing privileges on all course content."
+msgstr "講座スタッフはこの講座の全てのコンテンツを編集することができます。"
+
+#: cms/templates/manage_users.html
+msgid ""
+"Admins are course team members who can add and remove other course team "
+"members."
+msgstr "講座管理者はコンテンツの他、講座運営チームの管理が可能です。"
+
+#: cms/templates/manage_users.html
+msgid ""
+"All course team members can access content in Studio, the LMS, and Insights,"
+" but are not automatically enrolled in the course."
+msgstr "講座管理者・講座スタッフとも、StudioおよびLMSの全てのコンテンツにアクセスすることが可能ですが、受講登録は自動では行われませんので、別途行ってください。"
+
+#: cms/templates/manage_users.html
+msgid "Transferring Ownership"
+msgstr "講座管理者権限の引き継ぎ"
+
+#: cms/templates/manage_users.html
+msgid ""
+"Every course must have an Admin. If you are the Admin and you want to "
+"transfer ownership of the course, click <strong>Add admin access</strong> to"
+" make another user the Admin, then ask that user to remove you from the "
+"Course Team list."
+msgstr "講座管理者は必ず１名以上設定する必要があります。講座管理者権限を移譲するには、「講座管理者のアクセスを追加する」をクリックし、新しく講座管理者を作成したうえで、以前の講座管理者を削除してください。"
+

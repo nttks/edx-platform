@@ -274,3 +274,20 @@ msgstr "コース略称の入力が必要です。"
 #: cms/static/js/models/settings/course_details.js
 msgid "Teacher Name is required input."
 msgstr "講師名の入力が必要です。"
+
+#-#-#-#-#  Deleted or revised messages between Cypress and Dogwood on Transifex  #-#-#-#-#
+
+#: cms/templates/js/team-member.underscore
+msgid "Promote another member to Admin to remove your admin rights"
+msgstr "他のメンバーへ講座管理者権限を引き継ぎ、講座管理者権限を削除する"
+
+#: cms/static/js/factories/manage_users.js
+#: cms/static/js/factories/manage_users_lib.js
+msgid "Staff"
+msgstr "講座スタッフ"
+
+#: cms/static/js/factories/manage_users.js
+#: cms/static/js/factories/manage_users_lib.js
+msgid "Admin"
+msgstr "講座管理者"
+

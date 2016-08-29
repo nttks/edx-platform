@@ -827,7 +827,7 @@ msgstr "「質問」は回答を必要とする議題に用います。「ディ
 #: test_root/staticfiles/common/templates/discussion/thread.underscore
 #: test_root/staticfiles/xmodule_js/common_static/common/templates/discussion/thread.underscore
 msgid "Add a Response"
-msgstr ""
+msgstr "返信を追加"
 
 #: common/static/common/templates/discussion/thread.underscore
 #: test_root/staticfiles/common/templates/discussion/thread.underscore
