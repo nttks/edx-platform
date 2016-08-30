@@ -43,7 +43,7 @@
                 '<div class="grouped-controls">',
                     '<button class="control toggle-transcript" aria-disabled="false">',
                         '<span class="icon-fallback-img">',
-                            '<span class="icon fa fa-quote-left" aria-hidden="true"></span>',
+                            '<span class="icon fa fa-cc" aria-hidden="true"></span>',
                             '<span class="sr control-text">',
                                 gettext('Turn off transcript'),
                             '</span>',
