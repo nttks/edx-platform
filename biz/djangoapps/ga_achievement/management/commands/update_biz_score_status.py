@@ -20,7 +20,7 @@ from biz.djangoapps.util.mongo_utils import DEFAULT_DATETIME
 from certificates.models import CertificateStatuses, GeneratedCertificate
 from courseware import grades, courses
 from student.management.commands.get_grades import RequestMock
-from student.models import UserProfile, UserStanding, CourseEnrollment
+from student.models import UserStanding, CourseEnrollment
 
 log = logging.getLogger(__name__)
 
@@ -45,7 +45,7 @@ class Command(BaseCommand):
         # Note: BaseCommand translations are deactivated by default, so activate here
         translation.activate(settings.LANGUAGE_CODE)
 
-        debug = options['debug']
+        debug = options.get('debug')
         if debug:
             stream = logging.StreamHandler(self.stdout)
             log.addHandler(stream)
@@ -74,22 +74,12 @@ class Command(BaseCommand):
                 # Records
                 records = []
                 for contract_register in ContractRegister.find_input_and_register_by_contract(
-                        contract_id).select_related('user__profile'):
+                        contract_id).select_related('user__standing', 'user__profile'):
                     user = contract_register.user
-                    # Full Name
-                    try:
-                        user_profile = user.profile
-                    except UserProfile.DoesNotExist:
-                        user_profile = None
-                    full_name = user_profile.name if user_profile else None
-
                     # Student Status
-                    try:
-                        user_standing = user.standing
-                    except UserStanding.DoesNotExist:
-                        user_standing = None
                     course_enrollment = CourseEnrollment.get_enrollment(user, course_key)
-                    if user_standing and user_standing.account_status == UserStanding.ACCOUNT_DISABLED:
+                    if hasattr(user, 'standing') and user.standing \
+                        and user.standing.account_status == UserStanding.ACCOUNT_DISABLED:
                         student_status = _(ScoreStore.FIELD_STUDENT_STATUS__DISABLED)
                     elif not course_enrollment:
                         student_status = _(ScoreStore.FIELD_STUDENT_STATUS__NOT_ENROLLED)
@@ -109,7 +99,8 @@ class Command(BaseCommand):
                     record = OrderedDict()
                     record[ScoreStore.FIELD_CONTRACT_ID] = contract_id
                     record[ScoreStore.FIELD_COURSE_ID] = unicode(course_key)
-                    record[_(ScoreStore.FIELD_FULL_NAME)] = full_name
+                    record[_(ScoreStore.FIELD_FULL_NAME)] = user.profile.name \
+                        if hasattr(user, 'profile') and user.profile else None
                     record[_(ScoreStore.FIELD_USERNAME)] = user.username
                     record[_(ScoreStore.FIELD_EMAIL)] = user.email
                     additional_infos = AdditionalInfo.find_by_contract_id(contract_id)

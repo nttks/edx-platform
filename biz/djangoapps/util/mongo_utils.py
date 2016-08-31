@@ -4,6 +4,7 @@ Add mongodb operation method by the need.
 """
 from bson.code import Code
 from collections import OrderedDict
+import copy
 from datetime import datetime
 import logging
 import pytz
@@ -22,7 +23,7 @@ class BizStore(object):
     Class for a MongoDB operation
     """
 
-    def __init__(self, store_config, key_conditions={}, key_index_columns=[]):
+    def __init__(self, store_config, key_conditions=None, key_index_columns=None):
         """
         Referring to the MongoDB Connection of BizMongoConnection.
         Create a collection for MongoDB.
@@ -39,11 +40,11 @@ class BizStore(object):
         except Exception as e:
             log.error("Error occurred while connecting MongoDB: %s" % e)
             raise
-        self._key_conditions = key_conditions
-        self._key_index_columns = key_index_columns
+        self._key_conditions = key_conditions or {}
+        self._key_index_columns = key_index_columns or []
 
     @autoretry_read()
-    def get_document(self, conditions={}, excludes={'_id': False}):
+    def get_document(self, conditions=None, excludes=None):
         """
         Get the data of MongoDB
 
@@ -51,15 +52,21 @@ class BizStore(object):
         :param excludes: _id flag of exclusion
         :return: Conversion of pymongo.cursor.Cursor type to list
         """
-        conditions.update(self._key_conditions)
+        if conditions is None:
+            conditions = {}
+        _conditions = copy.deepcopy(self._key_conditions)
+        _conditions.update(conditions)
+        if excludes is None:
+            excludes = ['_id']
+        _excludes = dict((exclude, False) for exclude in excludes)
         try:
-            return self._collection.find_one(conditions, excludes, as_class=OrderedDict)
+            return self._collection.find_one(_conditions, _excludes, as_class=OrderedDict)
         except Exception as e:
             log.error("Error occurred while find MongoDB: %s" % e)
             raise
 
     @autoretry_read()
-    def get_documents(self, conditions={}, excludes={'_id': False}, sort_column='_id', sort=ASCENDING):
+    def get_documents(self, conditions=None, excludes=None, sort_column='_id', sort=ASCENDING):
         """
         Get the data of MongoDB
 
@@ -69,32 +76,41 @@ class BizStore(object):
         :param sort: Sorting method
         :return: Conversion of pymongo.cursor.Cursor type to list
         """
-        conditions.update(self._key_conditions)
+        if conditions is None:
+            conditions = {}
+        _conditions = copy.deepcopy(self._key_conditions)
+        _conditions.update(conditions)
+        if excludes is None:
+            excludes = ['_id']
+        _excludes = dict((exclude, False) for exclude in excludes)
         try:
             return list(
-                self._collection.find(conditions, excludes, as_class=OrderedDict).sort(sort_column, sort)
+                self._collection.find(_conditions, _excludes, as_class=OrderedDict).sort(sort_column, sort)
             )
         except Exception as e:
             log.error("Error occurred while find MongoDB: %s" % e)
             raise
 
     @autoretry_read()
-    def get_count(self, conditions={}):
+    def get_count(self, conditions=None):
         """
         Get the count of list
 
         :param conditions: MongoDB Condition for Dict
         :return: int
         """
-        conditions.update(self._key_conditions)
+        if conditions is None:
+            conditions = {}
+        _conditions = copy.deepcopy(self._key_conditions)
+        _conditions.update(conditions)
         try:
-            return self._collection.find(conditions).count(True)
+            return self._collection.find(_conditions).count(True)
         except Exception as e:
             log.error("Error occurred while get count MongoDB: %s" % e)
             raise
 
     @autoretry_read()
-    def aggregate(self, key_field_name, value_field_name, conditions={}):
+    def aggregate(self, key_field_name, value_field_name, conditions=None):
         """
         Aggregate the amount by grouping the specified key
 
@@ -129,9 +145,12 @@ class BizStore(object):
                 return sum;
             }
         ''')
-        conditions.update(self._key_conditions)
+        if conditions is None:
+            conditions = {}
+        _conditions = copy.deepcopy(self._key_conditions)
+        _conditions.update(conditions)
         try:
-            results = list(self._collection.map_reduce(mapper, reducer, 'results', query=conditions).find())
+            results = list(self._collection.map_reduce(mapper, reducer, 'results', query=_conditions).find())
             return dict([(result['_id'], result['value']) for result in results])
         except Exception as e:
             log.error("Error occurred while processing map reduce to MongoDB: %s" % e)
@@ -152,17 +171,19 @@ class BizStore(object):
             raise
 
     @autoretry_read()
-    def ensure_indexes(self, index_columns=[]):
+    def ensure_indexes(self, index_columns=None):
         """
         Add Index
 
         :param index_columns: list type ex)index_columns['column1', 'column2']
         :return:
         """
-        indexes = self._key_index_columns[:]
-        indexes.extend(index_columns)
+        if index_columns is None:
+            index_columns = []
+        _index_columns = copy.deepcopy(self._key_index_columns)
+        _index_columns.extend(index_columns)
         try:
-            return [self._collection.create_index([(index, ASCENDING)]) for index in indexes]
+            return [self._collection.create_index([(i, ASCENDING)]) for i in _index_columns]
         except Exception as e:
             log.error("Error occurred while ensure indexes MongoDB: %s" % e)
             raise
@@ -177,16 +198,19 @@ class BizStore(object):
         self._collection.drop_indexes()
 
     @autoretry_read()
-    def remove_documents(self, conditions={}):
+    def remove_documents(self, conditions=None):
         """
         Remove Documents
 
         :param conditions: MongoDB Condition for Dict
         :return: None
         """
-        conditions.update(self._key_conditions)
+        if conditions is None:
+            conditions = {}
+        _conditions = copy.deepcopy(self._key_conditions)
+        _conditions.update(conditions)
         try:
-            return self._collection.remove(conditions)
+            return self._collection.remove(_conditions)
         except Exception as e:
             log.error("Error occurred while remove documents MongoDB: %s" % e)
             raise
