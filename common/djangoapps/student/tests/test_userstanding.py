@@ -2,6 +2,7 @@
 These are tests for disabling and enabling student accounts, and for making sure
 that students with disabled accounts are unable to access the courseware.
 """
+import json
 import unittest
 
 from student.tests.factories import UserFactory, UserStandingFactory
@@ -70,6 +71,11 @@ class UserStandingTest(TestCase):
             UserStanding.objects.get(user=self.good_user).account_status,
             UserStanding.ACCOUNT_DISABLED
         )
+        content = json.loads(response.content)
+        self.assertEqual(
+            content['account_status'],
+            UserStanding.ACCOUNT_DISABLED
+        )
 
     def test_disabled_account_redirect_to_disabled_account_page(self):
         response = self.bad_user_client.get(self.some_url)
@@ -83,6 +89,11 @@ class UserStandingTest(TestCase):
         })
         self.assertEqual(
             UserStanding.objects.get(user=self.bad_user).account_status,
+            UserStanding.ACCOUNT_ENABLED
+        )
+        content = json.loads(response.content)
+        self.assertEqual(
+            content['account_status'],
             UserStanding.ACCOUNT_ENABLED
         )
 
@@ -103,4 +114,56 @@ class UserStandingTest(TestCase):
         self.assertEqual(response.status_code, 404)
         self.assertEqual(
             UserStanding.objects.filter(user=self.good_user).count(), 0
+        )
+
+    @unittest.skipUnless(settings.ROOT_URLCONF == 'lms.urls', 'Test only valid in lms')
+    def test_view_account_status_enable_account_case(self):
+        response = self.admin_client.post(reverse('disable_account_ajax'), {
+            'username': self.good_user.username,
+            'account_action': 'view_account_status',
+        })
+        content = json.loads(response.content)
+        self.assertEqual(
+            content['account_status'],
+            UserStanding.ACCOUNT_ENABLED
+        )
+
+    @unittest.skipUnless(settings.ROOT_URLCONF == 'lms.urls', 'Test only valid in lms')
+    def test_view_account_status_disable_account_case(self):
+        self.bad_user.standing.account_status = UserStanding.ACCOUNT_DISABLED
+        self.bad_user.standing.save()
+        response = self.admin_client.post(reverse('disable_account_ajax'), {
+            'username': self.bad_user.username,
+            'account_action': 'view_account_status',
+        })
+        content = json.loads(response.content)
+        self.assertEqual(
+            content['account_status'],
+            UserStanding.ACCOUNT_DISABLED
+        )
+
+    @unittest.skipUnless(settings.ROOT_URLCONF == 'lms.urls', 'Test only valid in lms')
+    def test_view_account_status_user_activated_case(self):
+        response = self.admin_client.post(reverse('disable_account_ajax'), {
+            'username': self.good_user.username,
+            'account_action': 'view_account_status',
+        })
+        content = json.loads(response.content)
+        self.assertEqual(
+            content['is_active'],
+            'activated'
+        )
+
+    @unittest.skipUnless(settings.ROOT_URLCONF == 'lms.urls', 'Test only valid in lms')
+    def test_view_account_status_user_not_activated_case(self):
+        self.bad_user.is_active = False
+        self.bad_user.save()
+        response = self.admin_client.post(reverse('disable_account_ajax'), {
+            'username': self.bad_user.username,
+            'account_action': 'view_account_status',
+        })
+        content = json.loads(response.content)
+        self.assertEqual(
+            content['is_active'],
+            'not activated'
         )

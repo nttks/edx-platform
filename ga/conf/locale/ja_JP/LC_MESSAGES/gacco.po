@@ -46,6 +46,22 @@ msgstr ""
 "複数のログインエラーを検知したため、ログイン制限を行っております。しばらくしてから再度お試しください。<br/><br/>"
 "なお、大学/企業等の団体でのご受講の際に、制限を解除するメニューがございます。お問い合せは<a href=\"mailto:{support_email}\">こちら</a>"
 
+#: common/djangoapps/student/views.py
+msgid "activated"
+msgstr "アクティベート済"
+
+#: common/djangoapps/student/views.py
+msgid "not activated"
+msgstr "未アクティベート"
+
+#: common/djangoapps/student/views.py
+msgid "enabled"
+msgstr "有効"
+
+#: common/djangoapps/student/views.py
+msgid "disabled"
+msgstr "失効"
+
 #: common/lib/xmodule/xmodule/course_module.py
 msgid "Course Is Hidden"
 msgstr "コース非表示"
@@ -1200,3 +1216,14 @@ msgid ""
 "Course Team list."
 msgstr "講座管理者は必ず１名以上設定する必要があります。講座管理者権限を移譲するには、「講座管理者のアクセスを追加する」をクリックし、新しく講座管理者を作成したうえで、以前の講座管理者を削除してください。"
 
+#: lms/templates/manage_user_standing.html
+msgid "Account status:"
+msgstr "アカウント状態："
+
+#: lms/templates/manage_user_standing.html
+msgid "Activate status:"
+msgstr "アクティベート状態："
+
+#: lms/templates/manage_user_standing.html
+msgid "View Account Status"
+msgstr "アカウント状態・アクティベート状態を見る"
