@@ -29,7 +29,7 @@ class RegistrationTest(WebAppTest, GaccoTestMixin):
     PASSWORD = 'openedX101'
     FULL_NAME = 'STUDENT TESTER'
 
-    # Global course is inserted by db_fixture/ga_global_course.json.
+    # Global course
     GLOBAL_COURSE_ORG = 'test_org'
     GLOBAL_COURSE_NUM = 'test_global_course'
     GLOBAL_COURSE_RUN = 'test_run'
@@ -95,49 +95,51 @@ class RegistrationTest(WebAppTest, GaccoTestMixin):
 
     def test_register_and_activate(self):
         # Create a course to register for
-        CourseFixture(
+        course_id = CourseFixture(
             self.GLOBAL_COURSE_ORG, self.GLOBAL_COURSE_NUM,
             self.GLOBAL_COURSE_RUN, self.GLOBAL_COURSE_DISPLAY
-        ).install()
+        ).install()._course_key
 
-        # Visit register page
-        self.register_page.visit()
-
-        # Check marketing link in header and footer
-        self.assert_header_footer_link(is_login=False)
-
-        # User ragistration
-        self.register_page.register(
-            email=self.EMAIL, password=self.PASSWORD, username=self.USERNAME,
-            full_name=self.FULL_NAME, terms_of_service=True
-        )
-        dashboard_page = DashboardPage(self.browser)
-        dashboard_page.wait_for_page()
-
-        # Check successfully registerered and logged in.
-        self.assertIn(self.EMAIL, dashboard_page.activation_message[0])
-        self.assertIn("Looks like you haven't enrolled in any courses yet.", dashboard_page.current_courses_text)
-
-        # Check marketing link in header and footer
-        self.assert_header_footer_link(is_login=True)
-
-        # Check activation email.
-        activation_message = self.email_client.get_latest_message()
-        self.assertEqual(self.EMAIL, activation_message['to_addresses'])
-        self.assertEqual("Activate Your edX Account", activation_message['subject'])
-        self.assertIn("Thank you for signing up for", activation_message['body'])
-
-        # Visit activation page.
-        activation_key = self._get_activation_key_from_message(activation_message['body'])
-        activation_page = ActivationPage(self.browser, activation_key)
-        activation_page.visit()
-
-        self.assertIn("Thanks for activating your account.", activation_page.complete_message)
-
-        # Visit dashboard again
-        dashboard_page.visit()
-
-        # Check global course is enrolled.
-        self.assertFalse(dashboard_page.is_exists_notification())
-        self.assertIn(self.GLOBAL_COURSE_DISPLAY, dashboard_page.current_courses_text)
-        self.assertFalse(dashboard_page.is_enable_unenroll(self.GLOBAL_COURSE_DISPLAY))
+        with self.setup_global_course(course_id):
+    
+            # Visit register page
+            self.register_page.visit()
+    
+            # Check marketing link in header and footer
+            self.assert_header_footer_link(is_login=False)
+    
+            # User ragistration
+            self.register_page.register(
+                email=self.EMAIL, password=self.PASSWORD, username=self.USERNAME,
+                full_name=self.FULL_NAME, terms_of_service=True
+            )
+            dashboard_page = DashboardPage(self.browser)
+            dashboard_page.wait_for_page()
+    
+            # Check successfully registerered and logged in.
+            self.assertIn(self.EMAIL, dashboard_page.activation_message[0])
+            self.assertIn("Looks like you haven't enrolled in any courses yet.", dashboard_page.current_courses_text)
+    
+            # Check marketing link in header and footer
+            self.assert_header_footer_link(is_login=True)
+    
+            # Check activation email.
+            activation_message = self.email_client.get_latest_message()
+            self.assertEqual(self.EMAIL, activation_message['to_addresses'])
+            self.assertEqual("Activate Your edX Account", activation_message['subject'])
+            self.assertIn("Thank you for signing up for", activation_message['body'])
+    
+            # Visit activation page.
+            activation_key = self._get_activation_key_from_message(activation_message['body'])
+            activation_page = ActivationPage(self.browser, activation_key)
+            activation_page.visit()
+    
+            self.assertIn("Thanks for activating your account.", activation_page.complete_message)
+    
+            # Visit dashboard again
+            dashboard_page.visit()
+    
+            # Check global course is enrolled.
+            self.assertFalse(dashboard_page.is_exists_notification())
+            self.assertIn(self.GLOBAL_COURSE_DISPLAY, dashboard_page.current_courses_text)
+            self.assertFalse(dashboard_page.is_enable_unenroll(self.GLOBAL_COURSE_DISPLAY))

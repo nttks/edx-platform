@@ -25,6 +25,12 @@ class DjangoAdminPage(PageObject):
             model_name=model_name)).first.click()
         return DjangoAdminAddPage(self.browser, module_name, model_name).wait_for_page()
 
+    def click_list(self, module_name, model_name):
+        self.q(css='th[scope="row"]>a[href="/admin/{module_name}/{model_name}/"]'.format(
+            module_name=module_name,
+            model_name=model_name)).first.click()
+        return DjangoAdminListPage(self.browser, module_name, model_name).wait_for_page()
+
 
 class DjangoAdminGridMixin(object):
 
@@ -35,6 +41,9 @@ class DjangoAdminGridMixin(object):
     @property
     def grid_rows(self):
         columns = self.grid_columns
+        if not columns:
+            return []
+
         all_datas = [el.text.strip() for el in self.q(css='table#result_list>tbody>tr>*').results if el.is_displayed()]
 
         if len(all_datas) % len(columns) != 0:
@@ -84,8 +93,15 @@ class DjangoAdminListPage(PageObject, DjangoAdminGridMixin):
 
     def is_browser_on_page(self):
         if self.message:
-            return self.q(css='ul.messagelist>li.success').visible and self.q(css='table#result_list').present
-        return self.q(css='table#result_list').present
+            return self.q(css='ul.messagelist>li.success').visible and self.q(css='div#changelist.module>form#changelist-form>p.paginator').present
+        return self.q(css='div#changelist.module>form#changelist-form>p.paginator').present
+
+    def click_grid_anchor(self, grid_row):
+        # Just check one pattern, so be care to use.
+        grid_anchor = self.q(css='table#result_list>tbody a').nth(grid_row['__index'])
+        record_id = grid_anchor.attrs('href')[0].strip('/').split('/')[-1]
+        grid_anchor.click()
+        return DjangoAdminModifyPage(self.browser, self.module_name, self.model_name, record_id).wait_for_page()
 
 
 class DjangoAdminAddPage(PageObject):
@@ -133,6 +149,61 @@ class DjangoAdminAddPage(PageObject):
     def save(self):
         self.q(css='div.submit-row>input[name="_save"]').first.click()
         return DjangoAdminListPage(self.browser, self.module_name, self.model_name, True).wait_for_page()
+
+
+class DjangoAdminModifyPage(DjangoAdminAddPage):
+
+    def __init__(self, browser, module_name, model_name, record_id):
+        super(DjangoAdminAddPage, self).__init__(browser)
+        self.module_name = module_name
+        self.model_name = model_name
+        self.record_id = record_id
+
+    @property
+    def url(self):
+        return '{base}/admin/{module_name}/{model_name}/{record_id}/'.format(
+            base=BASE_URL,
+            module_name=self.module_name,
+            model_name=self.model_name,
+            record_id=self.record_id,
+        )
+
+    def is_browser_on_page(self):
+        return super(DjangoAdminModifyPage, self).is_browser_on_page and self.q(css='div.submit-row>p.deletelink-box>a.deletelink').present
+
+    def click_delete(self):
+        self.q(css='div.submit-row>p.deletelink-box>a.deletelink').first.click()
+        # Just check one pattern, so be care to use.
+        return DjangoAdminDeleteConfirmPage(self.browser, self.module_name, self.model_name, self.record_id).wait_for_page()
+
+
+class DjangoAdminDeleteConfirmPage(PageObject):
+
+    def __init__(self, browser, module_name, model_name, record_id):
+        super(DjangoAdminDeleteConfirmPage, self).__init__(browser)
+        self.module_name = module_name
+        self.model_name = model_name
+        self.record_id = record_id
+
+    @property
+    def url(self):
+        return '{base}/admin/{module_name}/{model_name}/{record_id}/delete/'.format(
+            base=BASE_URL,
+            module_name=self.module_name,
+            model_name=self.model_name,
+            record_id=self.record_id,
+        )
+
+    def is_browser_on_page(self):
+        return self.q(css='form>div>input[type="submit"]').present and self.q(css='form>div>a.button.cancel-link').present
+
+    def click_yes(self):
+        self.q(css='form>div>input[type="submit"]').first.click()
+        return DjangoAdminListPage(self.browser, self.module_name, self.model_name, True).wait_for_page()
+
+    def click_back(self):
+        self.q(css='form>div>a.button.cancel-link').first.click()
+        return DjangoAdminModifyPage(self.browser, self.module_name, self.model_name, self.record_id).wait_for_page()
 
 
 class DjangoAdminLookupUserPage(PageObject, DjangoAdminGridMixin):

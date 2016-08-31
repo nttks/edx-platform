@@ -11,11 +11,13 @@ from django.utils.translation import ugettext as _
 
 from biz.djangoapps.ga_contract_operation.models import ContractTaskHistory, StudentRegisterTaskTarget
 from biz.djangoapps.ga_invitation.models import ContractRegister
+from bulk_email.models import Optout
 from lms.djangoapps.instructor.enrollment import send_mail_to_student
 from lms.djangoapps.instructor.views.api import (
     generate_unique_password, EMAIL_INDEX, NAME_INDEX, USERNAME_INDEX
 )
 from microsite_configuration import microsite
+from openedx.core.djangoapps.course_global.models import CourseGlobalSetting
 from openedx.core.djangoapps.ga_task.models import Task
 from openedx.core.djangoapps.ga_task.task import TaskProgress
 from student.forms import AccountCreationForm
@@ -125,6 +127,9 @@ def perform_delegate_student_register(entry_id, task_input, action_name):
                 user, __, registration = _do_create_account(form)
                 # Do activation for new user.
                 registration.activate()
+                # Optout of bulk email(Global Courses) for only new user.
+                for global_course_id in CourseGlobalSetting.all_course_id():
+                    Optout.objects.get_or_create(user=user, course_id=global_course_id)
             except (IntegrityError, AccountValidationError):
                 return (_("Username {user} already exists.").format(user=username), None, None)
             except ValidationError as ex:

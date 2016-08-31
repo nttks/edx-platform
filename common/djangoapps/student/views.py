@@ -633,16 +633,17 @@ def dashboard(request):
     }
 
     # only show email settings for Mongo course and when bulk email is turned on
+    global_courses = CourseGlobalSetting.all_course_id()
     show_email_settings_for = frozenset(
         enrollment.course_id for enrollment in course_enrollments if (
             settings.FEATURES['ENABLE_INSTRUCTOR_EMAIL'] and
             modulestore().get_modulestore_type(enrollment.course_id) != ModuleStoreEnum.Type.xml and
-            CourseAuthorization.instructor_email_enabled(enrollment.course_id)
+            CourseAuthorization.instructor_email_enabled(enrollment.course_id) and
+            enrollment.course_id not in global_courses
         )
     )
 
     # only show unenroll settings for not global course.
-    global_courses = CourseGlobalSetting.all_course_id()
     show_unenroll_settings_for = frozenset(
         enrollment.course_id for enrollment in course_enrollments if (
             enrollment.course_id not in global_courses

@@ -138,6 +138,75 @@
 
         });
 
+        AccountSettingsFieldViews.ReceiveEmailFieldView = FieldViews.LinkFieldView.extend({
+
+            isProcessing: false,
+            receiveEmailStatus: null,
+
+            render: function () {
+                var view = this;
+
+                if (!view.options.hasGlobalCourse) {
+                    view.$el.hide();
+                    return view;
+                }
+
+                view._super();
+                view.$el.find('#u-field-link-receive_email').after($('<span>'));
+
+                view.setText(view.options.loading);
+                $.ajax({
+                    type: 'GET',
+                    url: view.options.linkHref,
+                }).done(function(data) {
+                    view.receiveEmailStatus = data.is_receive_email ? 'optin': 'optout';
+                    view.setText(view.options[view.receiveEmailStatus]);
+                }).fail(function(jqXHR) {
+                    view.showErrorMessage(jqXHR);
+                });
+
+                return view;
+            },
+
+            setText: function(targetOptions) {
+                this.$el.find('span.u-field-link-title-receive_email').html(targetOptions.linkTitle);
+                this.$el.find('#u-field-link-receive_email+span').text(targetOptions.caption);
+            },
+
+            linkClicked: function(event) {
+                var view = this,
+                    currentStatus = view.receiveEmailStatus,
+                    reverseStatus = targetOptions = null;
+
+                event.preventDefault();
+
+                if (currentStatus == null || view.isProcessing) {
+                    return;
+                }
+
+                view.isProcessing = true;
+                view.setText(view.options.loading);
+
+                reverseStatus = view.options[currentStatus].reverseStatus;
+                targetOptions = view.options[reverseStatus];
+
+                $.ajax({
+                    type: targetOptions.methodType,
+                    url: view.options.linkHref,
+                }).done(function() {
+                    view.setText(targetOptions);
+                    view.receiveEmailStatus = reverseStatus;
+                    view.showSuccessMessage();
+                }).fail(function(jqXHR) {
+                    view.setText(view.options[currentStatus]);
+                    view.showErrorMessage(jqXHR);
+                }).always(function() {
+                    view.isProcessing = false;
+                });
+            },
+
+        });
+
         AccountSettingsFieldViews.LanguageProficienciesFieldView = FieldViews.DropdownFieldView.extend({
 
             modelValue: function () {

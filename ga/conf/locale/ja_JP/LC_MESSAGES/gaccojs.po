@@ -220,6 +220,26 @@ msgid "Other procedures"
 msgstr "その他の手続き"
 
 #: lms/static/js/student_account/views/account_settings_factory.js
+msgid "E-mail magazine delivery settings"
+msgstr "メールマガジン配信設定"
+
+#: lms/static/js/student_account/views/account_settings_factory.js
+msgid "Resume delivery"
+msgstr "配信を再開する"
+
+#: lms/static/js/student_account/views/account_settings_factory.js
+msgid "Stop delivery"
+msgstr "配信を停止する"
+
+#: lms/static/js/student_account/views/account_settings_factory.js
+msgid "Working"
+msgstr "処理中"
+
+#: lms/static/js/student_account/views/account_settings_factory.js
+msgid "You can set the e-mail magazine delivery from {platform_name}. The delivery is to stop/resume and click on the icon to the left. E-mail received from each course can be set from My page."
+msgstr "{platform_name}からのメールマガジン配信を設定できます。配信を停止/再開するには左のアイコンをクリックします。各講座からのメール受信はマイページから設定できます。"
+
+#: lms/static/js/student_account/views/account_settings_factory.js
 msgid "Resign"
 msgstr "退会手続き"
 

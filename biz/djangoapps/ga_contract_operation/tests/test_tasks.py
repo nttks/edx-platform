@@ -694,6 +694,8 @@ class StudentRegisterTaskTest(BizViewTestBase, ModuleStoreTestCase, TaskTestMixi
         # ----------------------------------------------------------
         # Setup test data
         # ----------------------------------------------------------
+        global_course_id = CourseFactory.create(org='global', course='course1', run='run').id
+
         students = ["test_student@example.com,test_student_1,tester1"]
 
         contract = self._create_contract()
@@ -719,8 +721,47 @@ class StudentRegisterTaskTest(BizViewTestBase, ModuleStoreTestCase, TaskTestMixi
         self.assertEqual(1, StudentRegisterTaskTarget.objects.filter(history=history, completed=True).count())
         self.assertIsNone(StudentRegisterTaskTarget.objects.get(history=history, student=students[0]).message)
 
-        self.assertTrue(User.objects.get(email='test_student@example.com').is_active)
+        user = User.objects.get(email='test_student@example.com')
+        self.assertTrue(user.is_active)
         self.assertEquals(ContractRegister.objects.get(user__email='test_student@example.com', contract=contract).status, INPUT_INVITATION_CODE)
+        self.assertFalse(Optout.objects.filter(user=user, course_id=global_course_id).exists())
+
+    def test_register_account_creation_with_global_course(self):
+        # ----------------------------------------------------------
+        # Setup test data
+        # ----------------------------------------------------------
+        global_course_id = CourseFactory.create(org='global', course='course1', run='run').id
+        CourseGlobalSettingFactory.create(course_id=global_course_id)
+
+        students = ["test_student@example.com,test_student_1,tester1"]
+
+        contract = self._create_contract()
+        history = self._create_task_history(contract=contract)
+        self._create_targets(history, students)
+
+        # ----------------------------------------------------------
+        # Execute task
+        # ----------------------------------------------------------
+        self._test_run_with_task(
+            student_register,
+            'student_register',
+            task_entry=self._create_input_entry(contract=contract, history=history),
+            expected_attempted=1,
+            expected_num_succeeded=1,
+            expected_total=1,
+        )
+
+        # ----------------------------------------------------------
+        # Assertion
+        # ----------------------------------------------------------
+        self.assertEqual(0, StudentRegisterTaskTarget.objects.filter(history=history, completed=False).count())
+        self.assertEqual(1, StudentRegisterTaskTarget.objects.filter(history=history, completed=True).count())
+        self.assertIsNone(StudentRegisterTaskTarget.objects.get(history=history, student=students[0]).message)
+
+        user = User.objects.get(email='test_student@example.com')
+        self.assertTrue(user.is_active)
+        self.assertEquals(ContractRegister.objects.get(user__email='test_student@example.com', contract=contract).status, INPUT_INVITATION_CODE)
+        self.assertTrue(Optout.objects.filter(user=user, course_id=global_course_id).exists())
 
     def test_register_account_creation_with_blank_lines(self):
         # ----------------------------------------------------------
@@ -861,6 +902,9 @@ class StudentRegisterTaskTest(BizViewTestBase, ModuleStoreTestCase, TaskTestMixi
         # ----------------------------------------------------------
         # Setup test data
         # ----------------------------------------------------------
+        global_course_id = CourseFactory.create(org='global', course='course1', run='run').id
+        CourseGlobalSettingFactory.create(course_id=global_course_id)
+
         self.setup_user()
         students = ["{email},test_student_1,tester1".format(email=self.email)]
 
@@ -891,11 +935,15 @@ class StudentRegisterTaskTest(BizViewTestBase, ModuleStoreTestCase, TaskTestMixi
         )
 
         self.assertEquals(ContractRegister.objects.get(user__email=self.email, contract=contract).status, INPUT_INVITATION_CODE)
+        self.assertFalse(Optout.objects.filter(user=self.user, course_id=global_course_id).exists())
 
     def test_register_user_with_already_existing_contract_register_input(self):
         # ----------------------------------------------------------
         # Setup test data
         # ----------------------------------------------------------
+        global_course_id = CourseFactory.create(org='global', course='course1', run='run').id
+        CourseGlobalSettingFactory.create(course_id=global_course_id)
+
         self.setup_user()
         students = ["{email},test_student_1,tester1".format(email=self.email)]
 
@@ -927,11 +975,15 @@ class StudentRegisterTaskTest(BizViewTestBase, ModuleStoreTestCase, TaskTestMixi
         )
 
         self.assertEquals(ContractRegister.objects.get(user__email=self.email, contract=contract).status, INPUT_INVITATION_CODE)
+        self.assertFalse(Optout.objects.filter(user=self.user, course_id=global_course_id).exists())
 
     def test_register_user_with_already_existing_contract_register_register(self):
         # ----------------------------------------------------------
         # Setup test data
         # ----------------------------------------------------------
+        global_course_id = CourseFactory.create(org='global', course='course1', run='run').id
+        CourseGlobalSettingFactory.create(course_id=global_course_id)
+
         self.setup_user()
         students = ["{email},test_student_1,tester1".format(email=self.email)]
 
@@ -963,6 +1015,7 @@ class StudentRegisterTaskTest(BizViewTestBase, ModuleStoreTestCase, TaskTestMixi
         )
 
         self.assertEquals(ContractRegister.objects.get(user__email=self.email, contract=contract).status, REGISTER_INVITATION_CODE)
+        self.assertFalse(Optout.objects.filter(user=self.user, course_id=global_course_id).exists())
 
     def test_register_user_with_already_existing_username(self):
         # ----------------------------------------------------------

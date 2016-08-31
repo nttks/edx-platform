@@ -6,6 +6,7 @@ from django.conf.urls import patterns, url
 
 from ..profile_images.views import ProfileImageView
 from .accounts.views import AccountView
+from .ga_accounts.views import ReceiveEmailView
 from .preferences.views import PreferencesView, PreferencesDetailView
 
 USERNAME_PATTERN = r'(?P<username>[\w.+-]+)'
@@ -31,5 +32,10 @@ urlpatterns = patterns(
         r'^v1/preferences/{}/(?P<preference_key>[a-zA-Z0-9_]+)$'.format(USERNAME_PATTERN),
         PreferencesDetailView.as_view(),
         name="preferences_detail_api"
+    ),
+    url(
+        r'^v1/receive_email/{}$'.format(USERNAME_PATTERN),
+        ReceiveEmailView.as_view(),
+        name="ga_receive_email_api"
     ),
 )
