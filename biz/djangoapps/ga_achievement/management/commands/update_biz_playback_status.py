@@ -24,6 +24,13 @@ from xmodule.modulestore.django import modulestore
 log = logging.getLogger(__name__)
 
 
+class CourseDoesNotExist(Exception):
+    """
+    This exception is raised in the case where None is returned from the modulestore
+    """
+    pass
+
+
 class TargetVertical(object):
     def __init__(self, section_descriptor, vertical_descriptor):
         self.section_descriptor = section_descriptor
@@ -94,6 +101,8 @@ class Command(BaseCommand):
 
                 # Get SPOC video components from course
                 course = modulestore().get_course(course_key, depth=4)
+                if not course:
+                    raise CourseDoesNotExist()
                 target_vertical_sections = []
                 for section in course.get_children():
                     target_verticals = []
@@ -208,6 +217,9 @@ class Command(BaseCommand):
                     playback_store.ensure_indexes()
                 PlaybackBatchStatus.save_for_finished(contract_id, course_key, len(records))
 
+            except CourseDoesNotExist:
+                log.warning(u"This course does not exist in modulestore. course_id={}".format(unicode(course_key)))
+                PlaybackBatchStatus.save_for_error(contract_id, course_key)
             except Exception as ex:
                 error_flag = True
                 log.error(u"Unexpected error occurred: {}".format(ex))

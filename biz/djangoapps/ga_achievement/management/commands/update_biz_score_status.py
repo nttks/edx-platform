@@ -21,8 +21,16 @@ from certificates.models import CertificateStatuses, GeneratedCertificate
 from courseware import grades, courses
 from student.management.commands.get_grades import RequestMock
 from student.models import UserStanding, CourseEnrollment
+from xmodule.modulestore.django import modulestore
 
 log = logging.getLogger(__name__)
+
+
+class CourseDoesNotExist(Exception):
+    """
+    This exception is raised in the case where None is returned from the modulestore
+    """
+    pass
 
 
 class Command(BaseCommand):
@@ -70,6 +78,10 @@ class Command(BaseCommand):
                 log.debug(u"Command update_biz_score_status is now processing [{}][{}]".format(
                     contract_id, unicode(course_key)))
                 ScoreBatchStatus.save_for_started(contract_id, course_key)
+
+                # Check if course exists in modulestore
+                if not modulestore().get_course(course_key):
+                    raise CourseDoesNotExist()
 
                 # Records
                 records = []
@@ -127,6 +139,9 @@ class Command(BaseCommand):
                     score_store.ensure_indexes()
                 ScoreBatchStatus.save_for_finished(contract_id, course_key, len(records))
 
+            except CourseDoesNotExist:
+                log.warning(u"This course does not exist in modulestore. course_id={}".format(unicode(course_key)))
+                ScoreBatchStatus.save_for_error(contract_id, course_key)
             except Exception as ex:
                 error_flag = True
                 log.error(u"Unexpected error occurred: {}".format(ex))
