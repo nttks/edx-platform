@@ -10,7 +10,8 @@ from django.conf import settings
 from django.http import HttpResponse
 
 from util.json_request import JsonResponse
-from boto.s3.connection import S3Connection
+from boto.s3 import connect_to_region
+from boto.s3.connection import OrdinaryCallingFormat, Location
 from boto.exception import S3ResponseError
 from boto.s3.key import Key
 from bson import ObjectId
@@ -29,7 +30,13 @@ def get_s3_bucket(conn, bucket_name):
 
 def get_s3_connection():
     """Return AWS S3 Connection Object"""
-    return S3Connection(settings.AWS_ACCESS_KEY_ID, settings.AWS_SECRET_ACCESS_KEY)
+    return connect_to_region(
+        Location.APNortheast,
+        aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+        aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+        is_secure=True,
+        calling_format=OrdinaryCallingFormat(),
+    )
 
 
 def handle_downloaded_file_from_s3(file_name_list, bucket_name):
