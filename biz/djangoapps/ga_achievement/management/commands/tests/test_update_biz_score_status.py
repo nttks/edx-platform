@@ -22,6 +22,7 @@ from certificates.models import CertificateStatuses, GeneratedCertificate
 from certificates.tests.factories import GeneratedCertificateFactory
 from courseware import grades
 from courseware.tests.helpers import LoginEnrollmentTestCase
+from opaque_keys.edx.locator import CourseLocator
 from student.models import CourseEnrollment
 from student.tests.factories import UserFactory, UserProfileFactory
 from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
@@ -112,19 +113,23 @@ class UpdateBizScoreStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEnrol
         }
         self.addCleanup(patcher_grade.stop)
 
-    def assert_finished(self, count, course):
-        ScoreBatchStatus.objects.get(contract=self.contract, course_id=course.id, status=BATCH_STATUS_STARTED)
-        ScoreBatchStatus.objects.get(contract=self.contract, course_id=course.id, status=BATCH_STATUS_FINISHED, student_count=count)
+        patcher_log = patch('biz.djangoapps.ga_achievement.management.commands.update_biz_score_status.log')
+        self.mock_log = patcher_log.start()
+        self.addCleanup(patcher_log.stop)
 
-        score_list = ScoreStore(self.contract.id, unicode(course.id)).get_documents()
+    def assert_finished(self, count, contract, course):
+        ScoreBatchStatus.objects.get(contract=contract, course_id=course.id, status=BATCH_STATUS_STARTED)
+        ScoreBatchStatus.objects.get(contract=contract, course_id=course.id, status=BATCH_STATUS_FINISHED, student_count=count)
+
+        score_list = ScoreStore(contract.id, unicode(course.id)).get_documents()
         self.assertEquals(len(score_list), count)
         return score_list
 
-    def assert_error(self, course):
-        ScoreBatchStatus.objects.get(contract=self.contract, course_id=course.id, status=BATCH_STATUS_STARTED)
-        ScoreBatchStatus.objects.get(contract=self.contract, course_id=course.id, status=BATCH_STATUS_ERROR, student_count=None)
+    def assert_error(self, contract, course):
+        ScoreBatchStatus.objects.get(contract=contract, course_id=course.id, status=BATCH_STATUS_STARTED)
+        ScoreBatchStatus.objects.get(contract=contract, course_id=course.id, status=BATCH_STATUS_ERROR, student_count=None)
 
-        score_list = ScoreStore(self.contract.id, unicode(course.id)).get_documents()
+        score_list = ScoreStore(contract.id, unicode(course.id)).get_documents()
         self.assertEquals(len(score_list), 0)
         return score_list
 
@@ -135,8 +140,8 @@ class UpdateBizScoreStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEnrol
     def test_contract_with_no_user(self):
         call_command('update_biz_score_status')
 
-        self.assert_finished(0, self.course1)
-        self.assert_finished(0, self.course2)
+        self.assert_finished(0, self.contract, self.course1)
+        self.assert_finished(0, self.contract, self.course2)
 
     def test_contract_with_not_enrolled_user(self):
         self._input_contract(self.contract, self.user)
@@ -144,7 +149,7 @@ class UpdateBizScoreStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEnrol
         call_command('update_biz_score_status')
 
         def assert_score(course):
-            score_list = self.assert_finished(1, course)
+            score_list = self.assert_finished(1, self.contract, course)
 
             score_dict = score_list[0]
             self.assertEquals(score_dict[ScoreStore.FIELD_CONTRACT_ID], self.contract.id)
@@ -170,7 +175,7 @@ class UpdateBizScoreStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEnrol
         call_command('update_biz_score_status')
 
         def assert_score(course):
-            score_list = self.assert_finished(1, course)
+            score_list = self.assert_finished(1, self.contract, course)
 
             score_dict = score_list[0]
             self.assertEquals(score_dict[ScoreStore.FIELD_CONTRACT_ID], self.contract.id)
@@ -210,7 +215,7 @@ class UpdateBizScoreStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEnrol
         call_command('update_biz_score_status')
 
         def assert_score(course):
-            score_list = self.assert_finished(1, course)
+            score_list = self.assert_finished(1, self.contract, course)
 
             score_dict = score_list[0]
             self.assertEquals(score_dict[ScoreStore.FIELD_CONTRACT_ID], self.contract.id)
@@ -247,7 +252,7 @@ class UpdateBizScoreStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEnrol
         call_command('update_biz_score_status')
 
         def assert_score(course):
-            score_list = self.assert_finished(1, course)
+            score_list = self.assert_finished(1, self.contract, course)
 
             score_dict = score_list[0]
             self.assertEquals(score_dict[ScoreStore.FIELD_CONTRACT_ID], self.contract.id)
@@ -276,7 +281,7 @@ class UpdateBizScoreStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEnrol
         call_command('update_biz_score_status')
 
         def assert_score(course):
-            score_list = self.assert_finished(1, course)
+            score_list = self.assert_finished(1, self.contract, course)
 
             score_dict = score_list[0]
             self.assertEquals(score_dict[ScoreStore.FIELD_CONTRACT_ID], self.contract.id)
@@ -308,8 +313,24 @@ class UpdateBizScoreStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEnrol
 
         call_command('update_biz_score_status')
 
-        self.assert_finished(100, self.course1)
-        self.assert_finished(100, self.course2)
+        self.assert_finished(100, self.contract, self.course1)
+        self.assert_finished(100, self.contract, self.course2)
+
+    def test_course_does_not_exist(self):
+
+        class DummyCourseDescriptor(object):
+            def __init__(self, org, course, run):
+                self.id = CourseLocator(org, course, run)
+
+        not_exist_course = DummyCourseDescriptor('not', 'exist', 'course')
+        not_exist_course_contract = self._create_contract(
+            detail_courses=[not_exist_course],
+        )
+
+        call_command('update_biz_score_status', not_exist_course_contract.id)
+
+        self.assert_error(not_exist_course_contract, not_exist_course)
+        self.mock_log.warning.assert_called_once()
 
     def test_error(self):
         self.mock_grade.side_effect = Exception()
@@ -317,5 +338,6 @@ class UpdateBizScoreStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEnrol
 
         call_command('update_biz_score_status')
 
-        self.assert_error(self.course1)
-        self.assert_error(self.course2)
+        self.assert_error(self.contract, self.course1)
+        self.assert_error(self.contract, self.course2)
+        self.mock_log.error.assert_called_once()

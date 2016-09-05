@@ -179,6 +179,10 @@ class UpdateBizPlaybackStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEn
         self.mock_aggregate.return_value = {}
         self.addCleanup(patcher_aggregate.stop)
 
+        patcher_log = patch('biz.djangoapps.ga_achievement.management.commands.update_biz_playback_status.log')
+        self.mock_log = patcher_log.start()
+        self.addCleanup(patcher_log.stop)
+
     def _create_course(self, org, course, run, block_info_tree):
         location = self.create_sample_course(org, course, run, block_info_tree=block_info_tree)
         return self.store.get_course(CourseLocator(location.org, location.course, location.run))
@@ -539,6 +543,22 @@ class UpdateBizPlaybackStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEn
         self.assert_finished(100, self.multiple_courses_contract, self.single_spoc_video_course)
         self.assert_finished(100, self.multiple_courses_contract, self.multiple_spoc_video_course)
 
+    def test_course_does_not_exist(self):
+
+        class DummyCourseDescriptor(object):
+            def __init__(self, org, course, run):
+                self.id = CourseLocator(org, course, run)
+
+        not_exist_course = DummyCourseDescriptor('not', 'exist', 'course')
+        not_exist_course_contract = self._create_contract(
+            detail_courses=[not_exist_course],
+        )
+
+        call_command('update_biz_playback_status', not_exist_course_contract.id)
+
+        self.assert_error(not_exist_course_contract, not_exist_course)
+        self.mock_log.warning.assert_called_once()
+
     def test_error(self):
         self.mock_aggregate.side_effect = Exception()
         self._input_contract(self.single_spoc_video_contract, self.user)
@@ -546,3 +566,4 @@ class UpdateBizPlaybackStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEn
         call_command('update_biz_playback_status', self.single_spoc_video_contract.id)
 
         self.assert_error(self.single_spoc_video_contract, self.single_spoc_video_course)
+        self.mock_log.error.assert_called_once()
