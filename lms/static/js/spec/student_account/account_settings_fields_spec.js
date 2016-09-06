@@ -77,7 +77,7 @@ define(['backbone', 'jquery', 'underscore', 'common/js/spec_helpers/ajax_helpers
                 AjaxHelpers.expectRequest(
                     requests,
                     'POST',
-                    '/i18n/setlang/',
+                    '/i18n/setlang/?clear-lang',
                     'language=' + data[fieldData.valueAttribute]
                 );
                 AjaxHelpers.respondWithNoContent(requests);
@@ -91,7 +91,7 @@ define(['backbone', 'jquery', 'underscore', 'common/js/spec_helpers/ajax_helpers
                 AjaxHelpers.expectRequest(
                     requests,
                     'POST',
-                    '/i18n/setlang/',
+                    '/i18n/setlang/?clear-lang',
                     'language=' + data[fieldData.valueAttribute]
                 );
                 AjaxHelpers.respondWithError(requests, 500);
