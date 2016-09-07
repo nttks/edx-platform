@@ -276,7 +276,7 @@ def discussion_data_download(request):
         return HttpResponseBadRequest(u'{}'.format(e))
     finally:
         log.info('path:{}, user.id:{} End.'.format(request.path, request.user.id))
-    return JSONFileResponse(object=all_documents, filename='discussion_data.json')
+    return JSONFileResponse(resp_obj=all_documents, filename='discussion_data.json')
 
 
 @staff_only
