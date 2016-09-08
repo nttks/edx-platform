@@ -272,6 +272,7 @@ header.global ol li.primary>a:hover{
   text-decoration:none;
   background-color:#bababa;
   border-radius:4px;
+  line-height: 17px;
 }
 .count:before {
   border: 10px solid transparent;
@@ -296,7 +297,7 @@ header.global ol li.primary>a:hover{
 }
 #gacco-facebook .share {
   background-color: #3b55a0;
-  padding: 0 1px
+  border: 1px solid #3b55a0;
 }
 #gacco-twitter .share i {
   color: #55acee;
