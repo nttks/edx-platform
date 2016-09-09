@@ -850,6 +850,14 @@ p.course-block {
 .course-info .details .inner-wrapper .faq .responses{
   float: inherit;
 }
+.ga_alert {
+  background-color: #f04124 !important;
+  border-color: #cf2a0e !important;
+  color: #fff !important;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+}
 
 .course-info header.course-profile {
   background: url("../images/bg01.png") repeat;
