@@ -412,8 +412,7 @@ class OwnLearnerProfilePageTest(LearnerProfileTestMixin, WebAppTest):
         And I reload the page.
         Then displayed about me should be `ThisIsIt` and about me field mode should be `display`
         Then I set empty value for about me.
-        Then displayed about me should be `Tell other edX learners a little about yourself: where you live,
-        what your interests are, why you're taking courses on edX, or what you hope to learn.` and about me
+        Then displayed about me should be empty character string and about me
         field mode should be `placeholder`
         And I reload the page.
         Then displayed about me should be `Tell other edX learners a little about yourself: where you live,
@@ -422,10 +421,7 @@ class OwnLearnerProfilePageTest(LearnerProfileTestMixin, WebAppTest):
         And I make `about me` field editable
         Then `about me` field mode should be `edit`
         """
-        placeholder_value = (
-            "Tell other learners a little about yourself: where you live, what your interests are, "
-            "why you're taking courses, or what you hope to learn."
-        )
+        placeholder_value = ''
 
         username, user_id = self.log_in_as_unique_user()
         profile_page = self.visit_profile_page(username, privacy=self.PRIVACY_PUBLIC)

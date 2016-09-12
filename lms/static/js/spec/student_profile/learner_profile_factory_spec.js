@@ -38,7 +38,8 @@ define(['backbone', 'jquery', 'underscore', 'common/js/spec_helpers/ajax_helpers
                     'default_visibility': 'all_users',
                     'platform_name': 'edX',
                     'account_settings_data': Helpers.createAccountSettingsData(options),
-                    'preferences_data': Helpers.createUserPreferencesData()
+                    'preferences_data': Helpers.createUserPreferencesData(),
+                    'parentalConsentAgeLimit': 13
                 });
             };
 
@@ -62,7 +63,7 @@ define(['backbone', 'jquery', 'underscore', 'common/js/spec_helpers/ajax_helpers
                 LearnerProfileHelpers.expectLimitedProfileSectionsAndFieldsToBeRendered(learnerProfileView);
             });
 
-            it("renders the limited profile for under 13 users", function() {
+            it("renders the limited profile for under parental consent age limit users", function() {
 
                 var context = createProfilePage(
                     true,

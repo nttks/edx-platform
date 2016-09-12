@@ -24,7 +24,9 @@
                 this.$el.html(_.template(learnerProfileTemplate, {
                     username: this.options.accountSettingsModel.get('username'),
                     ownProfile: this.options.ownProfile,
-                    showFullProfile: this.showFullProfile()
+                    showFullProfile: this.showFullProfile(),
+                    isAboveMinimumAge: this.options.accountSettingsModel.isAboveMinimumAge(),
+                    parentalConsentAgeLimit: this.options.parentalConsentAgeLimit
                 }));
                 this.renderFields();
                 return this;

@@ -70,10 +70,30 @@ define(['underscore'], function(_) {
         });
     };
 
+    var expectSectionThreeTobeRendered = function(learnerProfileView, othersProfile) {
+
+        var sectionThreeElement = learnerProfileView.$('.wrapper-profile-section-three');
+        var sectionThreeFieldElements = $(sectionThreeElement).find('.profile-private--privacy-message');
+
+        if (othersProfile) {
+            expect(sectionThreeFieldElements.text())
+                .toBe('')
+        } else {
+            if (learnerProfileView.options.accountSettingsModel.isAboveMinimumAge()) {
+                expect(sectionThreeFieldElements.text())
+                    .toBe('Please do NOT input your personally identifiable information (PII) here. This part will be shared to another students.')
+            } else {
+                expect(sectionThreeFieldElements.text())
+                    .toBe('');
+            }
+        }
+    };
+
     var expectProfileSectionsAndFieldsToBeRendered = function (learnerProfileView, othersProfile) {
         expectProfilePrivacyFieldTobeRendered(learnerProfileView, othersProfile);
         expectSectionOneTobeRendered(learnerProfileView);
         expectSectionTwoTobeRendered(learnerProfileView);
+        expectSectionThreeTobeRendered(learnerProfileView, othersProfile);
     };
 
     var expectLimitedProfileSectionsAndFieldsToBeRendered = function (learnerProfileView, othersProfile) {
@@ -91,11 +111,17 @@ define(['underscore'], function(_) {
             learnerProfileView.options.usernameFieldView
         );
 
+        expectSectionThreeTobeRendered(learnerProfileView, othersProfile);
+
         if (othersProfile) {
             expect($('.profile-private--message').text())
-                .toBe('This edX learner is currently sharing a limited profile.');
+                .toBe('');
         } else {
-            expect($('.profile-private--message').text()).toBe('You are currently sharing a limited profile.');
+            if (learnerProfileView.options.accountSettingsModel.isAboveMinimumAge()) {
+                expect($('.profile-private--message').text()).toBe('You are currently sharing a limited profile.');
+            } else {
+                expect($('.profile-private--message').text()).toBe('Children of age {parentalConsentAgeLimit} and under can NOT disclose their own profile information online.'.replace('{parentalConsentAgeLimit}', learnerProfileView.parentalConsentAgeLimit));
+            }
         }
     };
 
@@ -103,6 +129,7 @@ define(['underscore'], function(_) {
         expect(learnerProfileView.$('.wrapper-profile-field-account-privacy').length).toBe(0);
         expect(learnerProfileView.$('.wrapper-profile-section-one').length).toBe(0);
         expect(learnerProfileView.$('.wrapper-profile-section-two').length).toBe(0);
+        expect(learnerProfileView.$('.wrapper-profile-section-three').length).toBe(0);
     };
 
     return {
