@@ -693,10 +693,6 @@ header.global ol li.primary>a:hover{
   margin-top: 0;
 }
 
-nav ol.course-nav-menu {
-  display: none;
-}
-
 .find-course-button > a {
   width: 100%;
   vertical-align: middle;
@@ -969,7 +965,6 @@ p.course-block {
   text-transform: none;
 }
 div.course-wrapper > a[href="#course-accordion-modal"],
-header.global div.menu-button,
 .course-info header.course-profile .intro-inner-wrapper .intro .main-cta span.add-to-cart,
 div.history-controls input[type="submit"],
 input[type="reset"],
@@ -1036,7 +1031,6 @@ header.global .nav-courseware li .cta-register{
 .dashboard .my-courses .course .wrapper-course-actions .enter-course.archived:hover:not(:disabled),
 .forum-new-post-form .cancel:hover:not(:disabled),
 div.course-wrapper > a[href="#course-accordion-modal"]:hover:not(:disabled),
-header.global div.menu-button:hover:not(:disabled),
 .find-course-button > a:hover:not(:disabled),
 .course-info header.course-profile .intro-inner-wrapper .intro .main-cta span.add-to-cart:hover:not(:disabled),
 header.global .nav-courseware li .cta-login:hover:not(:disabled),
