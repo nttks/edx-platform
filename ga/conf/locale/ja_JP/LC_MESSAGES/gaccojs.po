@@ -253,7 +253,7 @@ msgstr "退会手続きリンクをクリックすると、登録されたメー
 msgid ""
 "The language used throughout this site. This site is currently available in "
 "a limited number of languages."
-msgstr "このサイトを利用するための言語です。現在、このサイトで利用可能な言語は日本語のみです。"
+msgstr "このサイトを利用するための言語です。現在、このサイトで利用可能な言語は日本語と英語のみです。"
 
 #: lms/static/js/student_account/views/account_settings_fields.js
 msgid "An email has been sent to {email_address}. Follow the link in the email to resign."
