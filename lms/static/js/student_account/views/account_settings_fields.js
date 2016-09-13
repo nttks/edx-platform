@@ -29,7 +29,7 @@
                 var view = this;
                 $.ajax({
                     type: 'POST',
-                    url: '/i18n/setlang/',
+                    url: '/i18n/setlang/?clear-lang',
                     data: data,
                     dataType: 'html',
                     success: function () {
