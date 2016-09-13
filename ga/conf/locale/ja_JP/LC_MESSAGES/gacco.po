@@ -1227,3 +1227,24 @@ msgstr "アクティベート状態："
 #: lms/templates/manage_user_standing.html
 msgid "View Account Status"
 msgstr "アカウント状態・アクティベート状態を見る"
+
+#: django_countries/data.py
+msgid "Holy See"
+msgstr "バチカン市国"
+
+#: django_countries/data.py
+msgid "Micronesia (Federated States of)"
+msgstr "ミクロネシア"
+
+#: django_countries/data.py
+msgid "United Kingdom of Great Britain and Northern Ireland"
+msgstr "イギリス"
+
+#: django_countries/data.py
+msgid "United States of America"
+msgstr "アメリカ合衆国"
+
+#: lms/envs/common.py
+msgid "Taiwan"
+msgstr "台湾"
+
