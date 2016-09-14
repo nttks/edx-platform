@@ -384,9 +384,9 @@ msgstr "詳細を入力してください"
 
 #: lms/templates/help_modal.html
 msgid ""
-"Please note: The {platform_name} support team is English speaking. While we "
+"Please note: The {platform_name} support team is Japanese speaking. While we "
 "will do our best to address your inquiry in any language, our responses will"
-" be in English."
+" be in Japanese."
 msgstr ""
 "注意： {platform_name}のサポートチームの言語は日本語です。すべての言語のお問い合わせに対して極力対応しますが、返信は日本語となります。"
 
