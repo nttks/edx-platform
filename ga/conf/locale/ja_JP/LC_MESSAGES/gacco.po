@@ -411,12 +411,12 @@ msgid "You do not have permission to use this function."
 msgstr "この機能を使用する権限がありません。"
 
 #: lms/templates/dashboard/_dashboard_certificate_information.html
-msgid "Congratulations! You've got the {cert_name_short} of this course. Download your {cert_name_short} and Share it below."
-msgstr "おめでとうございます！{cert_name_short}が授与されました。下のボタンから{cert_name_short}をダウンロードできます。"
+msgid "Certificate"
+msgstr "修了証"
 
 #: lms/templates/dashboard/_dashboard_certificate_information.html
-msgid "Successfully passed the Certificate of gacco"
-msgstr "gaccoの修了証を取得しました"
+msgid "Certificate of Achievement"
+msgstr "修了証"
 
 #: lms/templates/dashboard/_dashboard_course_listing.html
 msgid "Email not delivered"
