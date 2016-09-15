@@ -406,10 +406,6 @@ msgstr "アンケート結果がCSVファイルでダウンロードできます
 msgid "Get Survey CSV"
 msgstr "アンケート結果をCSVとしてダウンロードする"
 
-#: lms/templates/instructor/instructor_dashboard_2/student_admin.html
-msgid "You do not have permission to use this function."
-msgstr "この機能を使用する権限がありません。"
-
 #: lms/templates/dashboard/_dashboard_certificate_information.html
 msgid "Certificate"
 msgstr "修了証"

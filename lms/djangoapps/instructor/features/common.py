@@ -161,10 +161,12 @@ def click_a_button(step, tab_name):  # pylint: disable=unused-argument
     tab_name_dict = {
         'Course Info': 'course_info',
         'Membership': 'membership',
+        'Cohorts': 'cohort_management',
         'Student Admin': 'student_admin',
         'Data Download': 'data_download',
         'Analytics': 'analytics',
         'Email': 'send_email',
+        'Survey': 'survey',
         'Progress Report': 'progress_report',
     }
     go_to_section(tab_name_dict[tab_name])
