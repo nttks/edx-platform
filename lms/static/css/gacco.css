@@ -794,7 +794,7 @@ p.course-block {
   .dashboard .my-courses .course h3.course-title a {
     font-size: 22px !important;
     margin-bottom: 0 !important;
-    line-height: inherit !important;
+    line-height: 24px !important;
   }
   header.global ol.nav-global > li.nav-global-01 > [href="/courses"] {
     font-size: 10px;
