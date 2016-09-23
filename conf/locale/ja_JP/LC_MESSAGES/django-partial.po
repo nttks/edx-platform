@@ -465,7 +465,7 @@ msgstr "女性"
 #. Translators: 'Other' refers to the student's gender
 #: common/djangoapps/student/models.py
 msgid "Other/Prefer Not to Say"
-msgstr "その他 / 言いたくない"
+msgstr "その他"
 
 #: common/djangoapps/student/models.py
 msgid "Doctorate"

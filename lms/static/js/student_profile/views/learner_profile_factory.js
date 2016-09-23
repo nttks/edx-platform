@@ -113,7 +113,7 @@
                     editable: editable,
                     showMessages: false,
                     title: gettext('About me'),
-                    placeholderValue: gettext("Tell other learners a little about yourself: where you live, what your interests are, why you're taking courses, or what you hope to learn."),
+                    placeholderValue: '',
                     valueAttribute: "bio",
                     helpMessage: '',
                     persistChanges: true,
@@ -131,7 +131,8 @@
                 profileImageFieldView: profileImageFieldView,
                 usernameFieldView: usernameFieldView,
                 sectionOneFieldViews: sectionOneFieldViews,
-                sectionTwoFieldViews: sectionTwoFieldViews
+                sectionTwoFieldViews: sectionTwoFieldViews,
+                parentalConsentAgeLimit: options.parental_consent_age_limit
             });
 
             var getProfileVisibility = function() {

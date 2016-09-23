@@ -16,12 +16,14 @@ define(['backbone', 'jquery', 'underscore', 'common/js/spec_helpers/ajax_helpers
 
         describe("edx.user.LearnerProfileView", function () {
 
-            var createLearnerProfileView = function (ownProfile, accountPrivacy, profileIsPublic) {
+            var createLearnerProfileView = function (ownProfile, accountPrivacy, profileIsPublic, yearOfBirth, requiresParentalConsent) {
 
                 var accountSettingsModel = new UserAccountModel();
                 accountSettingsModel.set(Helpers.createAccountSettingsData());
                 accountSettingsModel.set({'profile_is_public': profileIsPublic});
                 accountSettingsModel.set({'profile_image': Helpers.PROFILE_IMAGE});
+                accountSettingsModel.set({'year_of_birth': yearOfBirth});
+                accountSettingsModel.set({'requires_parental_consent': requiresParentalConsent});
 
                 var accountPreferencesModel = new AccountPreferencesModel();
                 accountPreferencesModel.set({account_privacy: accountPrivacy});
@@ -98,8 +100,7 @@ define(['backbone', 'jquery', 'underscore', 'common/js/spec_helpers/ajax_helpers
                         editable: editable,
                         showMessages: false,
                         title: 'About me',
-                        placeholderValue: "Tell other edX learners a little about yourself: where you live, " +
-                            "what your interests are, why you're taking courses on edX, or what you hope to learn.",
+                        placeholderValue: '',
                         valueAttribute: "bio",
                         helpMessage: '',
                         messagePosition: 'header'
@@ -140,7 +141,8 @@ define(['backbone', 'jquery', 'underscore', 'common/js/spec_helpers/ajax_helpers
 
             it("renders all fields as expected for self with full access", function() {
 
-                var learnerProfileView = createLearnerProfileView(true, 'all_users', true);
+                var yearOfBirth = new Date().getFullYear() - 14,
+                    learnerProfileView = createLearnerProfileView(true, 'all_users', true, yearOfBirth, false);
 
                 Helpers.expectLoadingIndicatorIsVisible(learnerProfileView, true);
                 Helpers.expectLoadingErrorIsVisible(learnerProfileView, false);

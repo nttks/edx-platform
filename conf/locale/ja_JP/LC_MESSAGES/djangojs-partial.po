@@ -3941,7 +3941,7 @@ msgstr ""
 
 #: lms/static/js/student_profile/views/learner_profile_fields.js
 msgid "Account Settings page."
-msgstr "アカウント設定ページ。"
+msgstr "アカウント設定ページ"
 
 #: lms/static/js/student_profile/views/learner_profile_fields.js
 msgid ""

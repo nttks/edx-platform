@@ -89,6 +89,7 @@ def learner_profile_context(request, profile_username, user_is_staff):
             'country_options': list(countries),
             'language_options': settings.ALL_LANGUAGES,
             'platform_name': microsite.get_value('platform_name', settings.PLATFORM_NAME),
+            'parental_consent_age_limit': settings.PARENTAL_CONSENT_AGE_LIMIT,
         },
         'disable_courseware_js': True,
     }

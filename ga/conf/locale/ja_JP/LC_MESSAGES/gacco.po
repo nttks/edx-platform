@@ -358,8 +358,8 @@ msgstr ""
 #: lms/templates/help_modal.html
 msgid ""
 "Thank you for your inquiry or feedback.  We typically respond to a request "
-"within one business day (Monday to Friday, {open_time} UTC to {close_time} "
-"UTC.) In the meantime, please review our {link_start}detailed FAQs{link_end}"
+"within three business day (Monday to Friday"
+".) In the meantime, please review our {link_start}detailed FAQs{link_end}"
 " where most questions have already been answered."
 msgstr ""
 "他にご不明点はありますか？<br />"
@@ -384,9 +384,9 @@ msgstr "詳細を入力してください"
 
 #: lms/templates/help_modal.html
 msgid ""
-"Please note: The {platform_name} support team is English speaking. While we "
+"Please note: The {platform_name} support team is Japanese speaking. While we "
 "will do our best to address your inquiry in any language, our responses will"
-" be in English."
+" be in Japanese."
 msgstr ""
 "注意： {platform_name}のサポートチームの言語は日本語です。すべての言語のお問い合わせに対して極力対応しますが、返信は日本語となります。"
 
@@ -1227,3 +1227,24 @@ msgstr "アクティベート状態："
 #: lms/templates/manage_user_standing.html
 msgid "View Account Status"
 msgstr "アカウント状態・アクティベート状態を見る"
+
+#: django_countries/data.py
+msgid "Holy See"
+msgstr "バチカン市国"
+
+#: django_countries/data.py
+msgid "Micronesia (Federated States of)"
+msgstr "ミクロネシア"
+
+#: django_countries/data.py
+msgid "United Kingdom of Great Britain and Northern Ireland"
+msgstr "イギリス"
+
+#: django_countries/data.py
+msgid "United States of America"
+msgstr "アメリカ合衆国"
+
+#: lms/envs/common.py
+msgid "Taiwan"
+msgstr "台湾"
+

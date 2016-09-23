@@ -2535,7 +2535,7 @@ INVOICE_PAYMENT_INSTRUCTIONS = "This is where you can\nput directions on how peo
 # Used by django-countries
 COUNTRIES_OVERRIDE = {
     # Taiwan is specifically not translated to avoid it being translated as "Taiwan (Province of China)"
-    "TW": "Taiwan",
+    "TW": _("Taiwan"),
 }
 
 # which access.py permission name to check in order to determine if a course is visible in

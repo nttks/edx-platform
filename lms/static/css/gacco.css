@@ -1465,6 +1465,13 @@ html, body, h1, h2, h3, h4, h5, h6, div, p, a, label {
 .view-profile .profile-self .wrapper-profile-field-account-privacy .u-field-account_privacy {
   min-width: 0
 }
+div.wrapper-profile-section-three {
+  margin-top: 20px;
+}
+div.wrapper-profile-section-three span {
+  font-size: 0.9em;
+  padding-left: 10px;
+}
 @media screen and (max-width: 800px) {
   .view-profile .profile-section-one-fields {
     width: 50%;
