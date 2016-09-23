@@ -693,6 +693,12 @@ header.global ol li.primary>a:hover{
   margin-top: 0;
 }
 
+@media screen and (max-width: 800px) {
+  .dashboard-banner .wrapper-msg .msg.has-actions .donate-content {
+    width: 100%;
+  }
+}
+
 .find-course-button > a {
   width: 100%;
   vertical-align: middle;
