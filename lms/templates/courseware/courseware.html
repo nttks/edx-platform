@@ -150,7 +150,7 @@ ${fragment.foot_html()}
   <div class="course-wrapper" role="presentation">
 
 % if disable_accordion is UNDEFINED or not disable_accordion:
-    <a href="#course-accordion-modal" rel="leanModal" role="button"><span class="toc">${_("Table of contents")}</span><span>${course.display_name_with_default}</span></a>
+    <a href="#course-accordion-modal" rel="leanModal" role="button"><span class="toc">${_("Table of contents")}</span><span>${_("Open")}<i class="fa fa-caret-down" aria-hidden="true"></i></span></a>
     <div class="course-index">
       % if settings.FEATURES.get('ENABLE_COURSEWARE_SEARCH'):
         <div id="courseware-search-bar" class="search-bar courseware-search-bar" role="search" aria-label="Course">

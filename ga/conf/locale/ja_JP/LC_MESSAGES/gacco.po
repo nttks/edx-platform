@@ -631,6 +631,10 @@ msgstr "メニュー"
 msgid "Table of contents"
 msgstr "学習リスト"
 
+#: templates/courseware/courseware.html
+msgid "Open"
+msgstr "開く"
+
 #: templates/courseware/progress.html
 msgid "Grade graph"
 msgstr "成績グラフ"

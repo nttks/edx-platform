@@ -164,7 +164,7 @@ class JSONEncoder(json.JSONEncoder):
 
 class JSONFileResponse(JsonResponse):
     """ Return to json file response. """
-    def __init__(self, object=None, filename=None, encoder=JSONEncoder, *args, **kwargs):
-        super(JSONFileResponse, self).__init__(object=object, content_type='text/json', encoder=encoder, *args, **kwargs)
+    def __init__(self, resp_obj=None, filename=None, encoder=JSONEncoder, *args, **kwargs):
+        super(JSONFileResponse, self).__init__(resp_obj=resp_obj, encoder=encoder, *args, **kwargs)
         self['Content-Disposition'] = 'attachment; filename={}'.format(filename)
 

@@ -55,7 +55,7 @@ include_special_exams = settings.FEATURES.get('ENABLE_SPECIAL_EXAMS', False) and
 % endif
 
 % if disable_tabs is UNDEFINED or not disable_tabs:
-<nav class="${active_page} wrapper-course-material nav-hidden" aria-label="${_('Course Material')}">
+<nav class="${active_page} wrapper-course-material" aria-label="${_('Course Material')}">
   <div class="course-material">
     % if show_preview_menu:
     <div class="preview-menu" id="wrapper-preview">
@@ -125,12 +125,6 @@ $("#more-menu").on("click", function(e) {
   } else {
     $("#more-menu > ul > li").slideUp('fast');
   }
-});
-
-$("header.global div.menu-button").on("click", function(e) {
-  $("nav.wrapper-course-material").stop();
-  $("nav.wrapper-course-material").toggleClass("nav-hidden");
-  $("header.global div.menu-button").toggleClass("active");
 });
 </script>
 %endif
