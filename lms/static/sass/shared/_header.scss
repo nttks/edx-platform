@@ -174,12 +174,15 @@ header.global {
 
     .dropdown {
       font-size: $body-font-size;
-      padding: 4 ($baseline/2);
+      padding: 8px $baseline;
       color: $base-font-color;
       border: none;
       background: $white;
       box-shadow: none;
       text-shadow: none;
+      &::after {
+          border-width: 0;
+      }
     }
 
     .dropdown-menu {

@@ -1110,6 +1110,9 @@ nav.wrapper-course-material ol.course-tabs li a.active:hover {
   .xmodule_display.xmodule_VideoModule div.video article.video-wrapper div.video-player-post {
     height: 15px;
   }
+  .xmodule_display.xmodule_VideoModule div.video article.video-wrapper section.video-controls div.secondary-controls div.grouped-controls {
+    display: none;
+  }
 }
 @media screen and (max-width: 800px) {
   .xmodule_display.xmodule_VideoModule div.video article.video-wrapper section.video-controls ul.vcr li div.vidtime {

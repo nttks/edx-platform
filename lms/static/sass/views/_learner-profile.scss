@@ -316,5 +316,9 @@
               color:  $link-color;
             }
         }
+
+        .u-field-value-readonly {
+            word-wrap: break-word;
+        }
     }
 }

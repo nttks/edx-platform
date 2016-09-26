@@ -141,6 +141,14 @@ from openedx.core.lib.courses import course_image_url
         transition: .3s;
     }
 
+    @media screen and (max-width: 480px) {
+        .course-area img {
+            width: 100%;
+            object-fit: contain;
+            position: relative;
+        }
+    }
+
     .course-area img:hover {
         background-color: #126F9A;
         box-shadow: none;
@@ -179,6 +187,20 @@ from openedx.core.lib.courses import course_image_url
 
     input.additional-input {
         width: 24rem;
+    }
+
+    @media screen and (max-width: 800px) {
+        span.additional-text {
+            width: 30%;
+        }
+        input.additional-input {
+            width: 70%;
+        }
+        span.additional-text, input.additional-input {
+            max-width: 380px;
+            margin-left: auto;
+            margin-right: auto;
+        }
     }
 
     .button-area {
