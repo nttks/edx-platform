@@ -1,11 +1,5 @@
-<%! from django.utils.translation import ugettext as _, get_language %>
-% if get_language() not in ['ja', 'ja-jp']:
+<%! from django.utils.translation import ugettext as _ %>
 
 ${_("You have been enrolled in {course_name}").format(
 		course_name=display_name or course.display_name_with_default
 	)}
-% else:
-${u"［{course_name}］に受講登録されました".format(
-    course_name=course.display_name_with_default,
-)}
-% endif

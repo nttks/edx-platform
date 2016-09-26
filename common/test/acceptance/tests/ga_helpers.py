@@ -35,7 +35,7 @@ class GaccoTestMixin(object):
     WINDOW_WIDTH_PC = 1280
     WINDOW_HEIGHT_PC = 800
 
-    RESIGN_CONFIRM_MAIL_SUBJECT = u'■gacco 退会のご案内'
+    RESIGN_CONFIRM_MAIL_SUBJECT = 'How to resign from edX website'
     RESIGN_CONFIRM_MAIL_URL_PATTERN = r'/resign_confirm/(?P<uidb36>[0-9A-Za-z]+)-(?P<token>.+)/'
 
     def setup_email_client(self, email_file_path):

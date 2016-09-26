@@ -1,4 +1,6 @@
-{% load i18n %}{% load url from future %}{% autoescape off %}{% comment %}{% blocktrans %}You're receiving this e-mail because you requested a resignation from {{ site_name }}.{% endblocktrans %} #}{% endcomment %}━━━━━━━━━
+{% load i18n %}{% load url from future %}{% autoescape off %}{% get_current_language as language %}
+{% if language == 'ja' or language == 'ja-jp' %}{# --------------------------------------------------------------- ja #}
+━━━━━━━━━
 ■gacco 退会のご案内
 ━━━━━━━━━
 いつもgaccoをご利用いただきまして、ありがとうございます。
@@ -33,18 +35,34 @@ https://lms.gacco.org/dashboard
 
 
 gacco運営チーム
+{% else %}{# ----------------------------------------------------------------------------------------------------- en #}
+━━━━━━ How to resign from gacco website ━━━━━━
+You're receiving this e-mail because you requested to resign from gacco website.
 
-{% comment %}
-{% trans "Please go to the following page and click the resign button:" %}
-{% block reset_link %}
-https://{{domain}}{% url 'student.views.resign_confirm' uidb36=uid token=token %}
-{% endblock %}
+─────────
+Please go to the following page and go through the procedure.
+{{ protocol }}://{{ site_name }}{% url 'student.views.resign_confirm' uidb36=uid token=token %}
+─────────
 
-{% trans "If you didn't request this change, you can disregard this email - we have not yet resign your account." %}
+* It is not possible to register by putting in the same e-mail more than once.
+* If any errors occurred, please try to resign again.
+* If the URL appears with line breaks, please copy and paste it into your browser's address bar without line breaks and access again.
 
-{% trans "Thanks for using our site!" %}
+─────────
 
-{% blocktrans %}The edX Team{% endblocktrans %}
-{% endcomment %}
+This e-mail was automatically sent by gacco.org. Please do not reply to this e-mail.
+==================
+If you need help, please contact to:
+gacco Inquiry ( Click "Help" of the User Page and use our web form )
+https://lms.gacco.org/dashboard
 
+It would be also helpful:
+gacco FAQ
+https://support.gacco.org/
+
+---------------
+Thanks for using our site!
+
+The gacco Team
+{% endif %}
 {% endautoescape %}

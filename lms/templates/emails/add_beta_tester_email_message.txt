@@ -1,4 +1,20 @@
-<%! from django.utils.translation import ugettext as _ %>
+<%! from django.utils.translation import ugettext as _, get_language %>
+% if get_language() in ['ja', 'ja-jp']:  ## ------------------------------------------------------------------------- ja
+${full_name} 様
+
+講座スタッフのメンバーから${site_name}の${course.display_name_with_default}のベータテスターに招待されました。
+
+% if auto_enroll:
+コース教材は ${course_url} にアクセスしてください。
+% elif course_about_url is not None:
+講座に参加しベータテストを行うには ${course_about_url} へアクセスしてください。
+% else:
+講座にベータテスターとして登録するには${site_name}を訪れてください。
+% endif
+
+----
+このメールは${site_name}から${email_address}へ自動的に送信されました。
+% else:  ## --------------------------------------------------------------------------------------------------------- en
 
 ${_("Dear {full_name}").format(full_name=full_name)}
 
@@ -23,3 +39,4 @@ ${_("This email was automatically sent from {site_name} to "
 	"{email_address}").format(
 		site_name=site_name, email_address=email_address
 	)}
+% endif
