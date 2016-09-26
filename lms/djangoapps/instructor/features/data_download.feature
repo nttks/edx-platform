@@ -9,7 +9,7 @@ Feature: LMS.Instructor Dash Data Download
     #Scenario: Download student anonymized IDs as a CSV
     ## Need to figure out how to assert csvs will download without actually downloading them
 
-    Scenario: View Data Download tab by user who is not allowed to access personal info
+    Scenario: View Data Download tab by user who is not allowed to access secret info
        Given I am "<Role>" for a course
        When I visit the instructor dashboard
        Then I do not see a "Data Download" tab
@@ -18,7 +18,7 @@ Feature: LMS.Instructor Dash Data Download
        | instructor    |
        | staff         |
 
-    Scenario: View Data Download tab by user who is allowed to access personal info
+    Scenario: View Data Download tab by user who is allowed to access secret info
        Given I am "<Role>" for a course
        When I visit the instructor dashboard
        Then I see a "Data Download" tab

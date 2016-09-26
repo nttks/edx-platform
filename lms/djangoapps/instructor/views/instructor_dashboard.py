@@ -94,7 +94,7 @@ def instructor_dashboard_2(request, course_id):
         'sales_admin': CourseSalesAdminRole(course_key).has_user(request.user),
         'staff': bool(has_access(request.user, 'staff', course)),
         'forum_admin': has_forum_access(request.user, course_key, FORUM_ROLE_ADMINISTRATOR),
-        'personal_info': request.user.is_staff,
+        'secret_info': request.user.is_staff,
     }
 
     if not access['staff']:
@@ -104,11 +104,12 @@ def instructor_dashboard_2(request, course_id):
 
     sections = [
         _section_course_info(course, access),
-        _section_membership(course, access, is_white_label),
-        _section_cohort_management(course, access),
-        _section_student_admin(course, access),
+        _section_membership(course, access, is_white_label) if access['secret_info'] else None,
+        _section_cohort_management(course, access) if access['secret_info'] else None,
+        _section_student_admin(course, access) if access['secret_info'] else None,
         _section_survey(course, access),
         _section_progress_report(course, access),
+        _section_data_download(course, access) if access['secret_info'] else None,
     ]
 
     analytics_dashboard_message = None
@@ -140,10 +141,6 @@ def instructor_dashboard_2(request, course_id):
 
     if settings.FEATURES.get('INDIVIDUAL_DUE_DATES') and access['instructor']:
         sections.insert(3, _section_extensions(course))
-
-    # Gate access to Data Download tab
-    if access['personal_info']:
-        sections.append(_section_data_download(course, access))
 
     # Gate access to course email by feature flag & by course-specific authorization
     if bulk_email_is_enabled_for_course(course_key):
@@ -196,7 +193,7 @@ def instructor_dashboard_2(request, course_id):
     context = {
         'course': course,
         'studio_url': get_studio_url(course, 'course'),
-        'sections': sections,
+        'sections': [s for s in sections if s is not None],
         'disable_buttons': disable_buttons,
         'analytics_dashboard_message': analytics_dashboard_message,
         'certificate_white_list': certificate_white_list,
