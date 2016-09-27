@@ -1,5 +1,32 @@
 <%! from django.utils.translation import ugettext as _, get_language %>
-% if get_language() not in ['ja', 'ja-jp']:
+% if get_language() in ['ja', 'ja-jp']:  ## ------------------------------------------------------------------------- ja
+──────────────────
+本メールは「${course.display_name_with_default}」を受講される方へお送りしております。
+──────────────────
+
+講座スタッフからのお知らせです。
+
+
+「${course.display_name_with_default}」への受講登録が完了しました。
+
+
+マイページ（ ${'https' if is_secure else 'http'}://${site_name}/dashboard ）に講座が表示されておりますので、
+ログインしてご確認ください。
+
+※受講開始日より、マイページの「講座画面へ」ボタンから学習を開始することができます。
+
+
+──────────────────
+このメールの内容に覚えのない方は、破棄していただきますよう
+お願い申し上げます。
+
+==================
+・gaccoに関する「よくあるご質問」はコチラ
+　https://support.gacco.org/
+
+・お問い合わせはマイページの「ヘルプ」ボタンよりお願いします
+　https://lms.gacco.org/dashboard
+% else:  ## --------------------------------------------------------------------------------------------------------- en
 
 ${_("Dear {full_name}").format(full_name=full_name)}
 
@@ -19,37 +46,4 @@ ${_("This email was automatically sent from {site_name} to "
 	"{full_name}").format(
 		site_name=site_name, full_name=full_name
 	)}
-% else:
-${u"""
-──────────────────
-本メールは「{course_name}」を受講される方へお送りしております。
-──────────────────
-
-講座スタッフからのお知らせです。
-
-
-「{course_name}」への受講登録が完了しました。
-
-
-マイページ（ https://{site_name}/dashboard ）に講座が表示されておりますので、
-ログインしてご確認ください。
-
-※受講開始日より、マイページの「講座画面へ」ボタンから学習を開始することができます。
-
-
-──────────────────
-このメールの内容に覚えのない方は、破棄していただきますよう
-お願い申し上げます。
-
-==================
-・{platform_name}に関する「よくあるご質問」はコチラ
-　https://support.gacco.org/
-
-・お問い合わせはマイページの「ヘルプ」ボタンよりお願いします
-　https://{site_name}/dashboard
-""".format(
-    course_name=course.display_name_with_default,
-    platform_name=settings.PLATFORM_NAME,
-    site_name=site_name,
-)}
 % endif

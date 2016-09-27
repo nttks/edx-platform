@@ -1,4 +1,5 @@
-<%namespace file="../main.html" import="stanford_theme_enabled" />
+<%! from django.utils.translation import get_language %>
+% if get_language() in ['ja', 'ja-jp']:  ## ------------------------------------------------------------------------- ja
 ━━━━━━━━━━
 ■gaccoメールアドレス変更手続きのご案内
 ━━━━━━━━━━
@@ -38,3 +39,34 @@ https://lms.gacco.org/dashboard
 
 
 gacco運営チーム
+% else:  ## --------------------------------------------------------------------------------------------------------- en
+━━━━━━━━━━
+■How to change your e-mail associated with your gacco account
+━━━━━━━━━━
+Thank you for using our site!
+
+
+We received a request to change the e-mail associated with your gacco account.
+Please go to the following page and go through the procedure.
+
+──────────
+% if is_secure:
+ https://${ site }/email_confirm/${ key }
+% else:
+ http://${ site }/email_confirm/${ key }
+% endif
+──────────
+
+
+* If any errors occurred, please reapply for a change of the email.
+
+This e-mail was automatically sent by gacco.org. Please do not reply to this e-mail.
+==================
+If you need help, please contact to:
+gacco Inquiry ( Click "Help" of the User Page and use our web form )
+https://lms.gacco.org/dashboard
+
+
+Thanks for using our site!
+The gacco Team
+% endif

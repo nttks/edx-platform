@@ -1,5 +1,38 @@
 <%! from django.utils.translation import ugettext as _, get_language %>
-% if get_language() not in ['ja', 'ja-jp']:
+% if get_language() in ['ja', 'ja-jp']:  ## ------------------------------------------------------------------------- ja
+──────────────────
+本メールは「${course.display_name_with_default}」を受講される方へお送りしております。
+──────────────────
+
+講座スタッフからのお知らせです。
+
+
+「${course.display_name_with_default}」への受講登録は完了しましたが、
+gaccoアカウントがまだ作成されておりませんでしたので、
+下記のメールアドレス・パスワードでアカウントを作成させていただきました。
+
+メールアドレス: ${email_address}
+パスワード: ${password}
+
+
+ログイン画面（ ${'https' if is_secure else 'http'}://${site_name}/login ）から上記の内容でログインしてください。
+マイページに講座が表示されております。
+
+※受講開始日より、マイページの「講座画面へ」ボタンから学習を開始することができます。
+※パスワードは、盗用および不正使用の防止のために定期的に変更することを推奨いたします。
+
+
+──────────────────
+このメールの内容に覚えのない方は、破棄していただきますよう
+お願い申し上げます。
+
+==================
+・gaccoに関する「よくあるご質問」はコチラ
+　https://support.gacco.org/
+
+・お問い合わせはマイページの「ヘルプ」ボタンよりお願いします
+　https://lms.gacco.org/dashboard
+% else:  ## --------------------------------------------------------------------------------------------------------- en
 
 ${_("Welcome to {course_name}").format(course_name=course.display_name_with_default)}
 
@@ -13,45 +46,4 @@ ${_("It is recommended that you change your password.")}
 ${_("Sincerely yours,"
 ""
 "The {course_name} Team").format(course_name=course.display_name_with_default)}
-% else:
-${u"""
-──────────────────
-本メールは「{course_name}」を受講される方へお送りしております。
-──────────────────
-
-講座スタッフからのお知らせです。
-
-
-「{course_name}」への受講登録は完了しましたが、
-{platform_name}アカウントがまだ作成されておりませんでしたので、
-下記のメールアドレス・パスワードでアカウントを作成させていただきました。
-
-メールアドレス: {email}
-パスワード: {password}
-
-
-ログイン画面（ https://{site_name}/login ）から上記の内容でログインしてください。
-マイページに講座が表示されております。
-
-※受講開始日より、マイページの「講座画面へ」ボタンから学習を開始することができます。
-※パスワードは、盗用および不正使用の防止のために定期的に変更することを推奨いたします。
-
-
-──────────────────
-このメールの内容に覚えのない方は、破棄していただきますよう
-お願い申し上げます。
-
-==================
-・{platform_name}に関する「よくあるご質問」はコチラ
-　https://support.gacco.org/
-
-・お問い合わせはマイページの「ヘルプ」ボタンよりお願いします
-　https://{site_name}/dashboard
-""".format(
-    course_name=course.display_name_with_default,
-    platform_name=settings.PLATFORM_NAME,
-    site_name=site_name,
-    email=email_address,
-    password=password,
-)}
 % endif

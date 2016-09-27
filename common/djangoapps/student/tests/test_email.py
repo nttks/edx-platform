@@ -355,7 +355,7 @@ class EmailChangeConfirmationTests(EmailTestMixin, TransactionTestCase):
         }
         self.assertEmailUser(
             email_user,
-            'emails/email_change_subject.txt',
+            'emails/confirm_email_change_subject.txt',
             context,
             'emails/confirm_email_change.txt',
             context
@@ -369,9 +369,9 @@ class EmailChangeConfirmationTests(EmailTestMixin, TransactionTestCase):
 
         mako_middleware_process_request(request)
         body = render_to_string('emails/confirm_email_change.txt', context)
-        url = safe_get_host(request)
 
-        self.assertIn(url, body)
+        self.assertIn(self.user.email, body)
+        self.assertIn(self.pending_change_request.new_email, body)
 
     def test_not_pending(self, email_user):
         self.key = 'not_a_key'

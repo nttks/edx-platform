@@ -2483,7 +2483,7 @@ def confirm_email_change(request, key):  # pylint: disable=unused-argument
             transaction.set_rollback(True)
             return response
 
-        subject = render_to_string('emails/email_change_subject.txt', address_context)
+        subject = render_to_string('emails/confirm_email_change_subject.txt', address_context)
         subject = ''.join(subject.splitlines())
         message = render_to_string('emails/confirm_email_change.txt', address_context)
         u_prof = UserProfile.objects.get(user=user)

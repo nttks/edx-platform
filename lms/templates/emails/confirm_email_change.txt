@@ -1,8 +1,5 @@
-<%! from django.core.urlresolvers import reverse %>
-<%namespace file="../main.html" import="stanford_theme_enabled" />
-## Again, ugly hack that needs to be changed
-## TODO: this probably needs better formatting to look nice in an
-##       email client (Mako leaves awkward whitespace)
+<%! from django.utils.translation import get_language %>
+% if get_language() in ['ja', 'ja-jp']:  ## ------------------------------------------------------------------------- ja
 ━━━━━━━━━━
 ■gacco メールアドレス変更完了のご案内
 ━━━━━━━━━━
@@ -28,3 +25,27 @@ https://lms.gacco.org/dashboard
 
 
 gacco運営チーム
+% else:  ## --------------------------------------------------------------------------------------------------------- en
+━━━━━━━━━━
+■gacco account email change
+━━━━━━━━━━
+Thank you very much for using our site!
+
+Your request has been completed successfully.
+
+
+【 old email 】${old_email}
+          ↓
+【 new email 】${new_email}
+
+
+This e-mail was automatically sent by gacco.org. Please do not reply to this e-mail.
+==================
+If you need help, please contact to:
+gacco Inquiry ( Click "Help" of the User Page and use our web form )
+https://lms.gacco.org/dashboard
+
+
+Thanks for using our site!
+The gacco Team
+% endif

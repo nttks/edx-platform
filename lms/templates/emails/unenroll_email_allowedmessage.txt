@@ -1,4 +1,12 @@
-<%! from django.utils.translation import ugettext as _ %>
+<%! from django.utils.translation import ugettext as _, get_language %>
+% if get_language() in ['ja', 'ja-jp']:  ## ------------------------------------------------------------------------- ja
+受講者 様、
+
+講座スタッフによって${display_name or course.display_name_with_defaul}から受講解除されました。以前に送信した招待は無視してください。
+
+----
+このメールは${site_name}から${email_address}へ自動的に送信されました。
+% else:  ## --------------------------------------------------------------------------------------------------------- en
 
 ${_("Dear Student,")}
 
@@ -11,3 +19,4 @@ ${_("This email was automatically sent from {site_name} "
 	"to {email_address}").format(
 		site_name=site_name, email_address=email_address
 	)}
+% endif

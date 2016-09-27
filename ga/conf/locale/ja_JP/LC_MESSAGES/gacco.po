@@ -103,55 +103,43 @@ msgstr "ログインして学習をはじめましょう。"
 
 #: lms/templates/emails/activation_email_subject.txt
 msgid "Activate Your {platform_name} Account"
-msgstr "■gacco 会員登録のご案内"
+msgstr "■{platform_name} 会員登録のご案内"
 
-#: lms/templates/emails/activation_email.txt:3
-msgid "Thank you for signing up for {platform_name}."
-msgstr ""
-"━━━━━━━━━\n"
-"■gacco 会員登録のご案内\n"
-"━━━━━━━━━\n"
-"この度は、gaccoに会員登録いただきまして、ありがとうございます。"
+#: lms/templates/emails/email_change_subject.txt
+msgid "How to change your e-mail associated with your {platform_name} account"
+msgstr "■{platform_name}メールアドレス変更手続きのご案内"
 
-#: lms/templates/emails/activation_email.txt:5
-msgid ""
-"Change your life and start learning today by activating your "
-"{platform_name} account. Click on the link below or copy and "
-"paste it into your browser's address bar."
-msgstr ""
-"登録の手続きはまだ完了していません。\n"
-"以下のURLをクリックし、登録を完了してください。\n"
-"─────────\n"
-"【会員登録手続き用ＵＲＬ】"
+#: lms/templates/emails/confirm_email_change_subject.txt
+msgid "{platform_name} account email change"
+msgstr "■{platform_name}メールアドレス変更完了のご案内"
 
-#: lms/templates/emails/activation_email.txt:49
-msgid ""
-"If you didn't request this, you don't need to do anything; you won't receive"
-" any more email from us. Please do not reply to this e-mail; if you require "
-"assistance, check the help section of the {platform_name} website."
-msgstr ""
-"─────────\n"
-"\n"
-"※上記手続き用URLが改行され、URLをクリックしても\n"
-"　登録ページが表示されない場合は、URLをすべてコピーして、\n"
-"　ブラウザのアドレス欄に貼り付けてアクセスしてください。\n"
-"\n"
-"─────────\n"
-"\n"
-"このメールは自動送信しています。ご返信いただいてもお答えできかね\n"
-"ますのでご了承ください。\n"
-"\n"
-"なお、このメールの内容に覚えのない方は、破棄していただきますよう\n"
-"お願い申し上げます。\n"
-"==================\n"
-"・gaccoに関する「よくあるご質問」はコチラ\n"
-"https://support.gacco.org/\n"
-"\n"
-"・お問い合わせはマイページの「ヘルプ」ボタンよりお願いします\n"
-"https://lms.gacco.org/dashboard\n"
-"\n"
-"\n"
-"gacco運営チーム"
+#: lms/templates/registration/password_reset_subject.txt
+msgid "Password reset on %(platform_name)s"
+msgstr "■%(platform_name)s パスワード変更"
+
+#: lms/templates/registration/resign_subject.txt
+msgid "How to resign from %(platform_name)s website"
+msgstr "■%(platform_name)s 退会のご案内"
+
+#: lms/templates/emails/enroll_email_allowedsubject.txt
+msgid "You have been invited to register for {course_name}"
+msgstr "{course_name} に登録するように招待されました。"
+
+#: lms/templates/emails/enroll_email_enrolledsubject.txt
+msgid "You have been enrolled in {course_name}"
+msgstr "［{course_name}］に受講登録されました"
+
+#: lms/templates/emails/unenroll_email_subject.txt
+msgid "You have been un-enrolled from {course_name}"
+msgstr "{course_name} から受講解除されました。"
+
+#: lms/templates/emails/add_beta_tester_email_subject.txt
+msgid "You have been invited to a beta test for {course_name}"
+msgstr "あなたは{course_name}のベータテスターとして招待されました。"
+
+#: lms/templates/emails/remove_beta_tester_email_subject.txt
+msgid "You have been removed from a beta test for {course_name}"
+msgstr "{course_name}のベータテスターから解除されました。"
 
 #: common/djangoapps/student/forms.py
 msgid "New password is required."
@@ -182,83 +170,6 @@ msgid ""
 msgstr ""
 "\n"
 "<a href=\"%(MKTG_URL_FAQ)s\">よくある質問</a>のページを見る"
-
-#: django/django/contrib/auth/templates/registration/password_reset_subject.txt
-msgid "Password reset on %(site_name)s"
-msgstr "■gacco パスワード変更"
-
-#: lms/templates/registration/password_reset_email.html:2
-#, python-format
-msgid ""
-"You're receiving this e-mail because you requested a password reset for your"
-" user account at %(site_name)s."
-msgstr ""
-"━━━━━━━━━\n"
-"■gacco パスワード再設定手続きのご案内\n"
-"━━━━━━━━━\n"
-"いつもgaccoをご利用いただきまして、ありがとうございます。"
-"\n"
-
-#: lms/templates/registration/password_reset_email.html:4
-msgid "Please go to the following page and choose a new password:"
-msgstr ""
-"下記のURLをクリックし、パスワードの再設定を行ってください。\n"
-"\n"
-"─────────\n"
-"【パスワード再設定手続き用ＵＲＬ】"
-
-#: lms/templates/registration/password_reset_email.html:9
-msgid ""
-"If you didn't request this change, you can disregard this email - we have "
-"not yet reset your password."
-msgstr ""
-"─────────\n"
-"\n"
-"※アクセスしてもエラー画面が表示される場合は、\n"
-"　再度パスワード再設定の申込を行ってください。\n"
-"\n"
-"※上記手続き用URLが改行され、URLをクリックしても\n"
-"　登録ページが表示されない場合は、URLをすべてコピーして\n"
-"　ブラウザのアドレス欄に貼り付けてアクセスしてください。\n"
-"\n"
-"─────────\n"
-"\n"
-"このメールは自動送信しています。ご返信いただいてもお答えできかね\n"
-"ますのでご了承ください。"
-
-#: lms/templates/registration/password_reset_email.html:11
-msgid "Thanks for using our site!"
-msgstr ""
-"==================\n"
-"・gaccoに関する「よくあるご質問」はコチラ\n"
-"https://support.gacco.org/\n"
-"\n"
-"・お問い合わせはマイページの「ヘルプ」ボタンよりお願いします\n"
-"https://lms.gacco.org/dashboard"
-"\n"
-
-#: lms/templates/registration/password_reset_email.html:13
-#, python-format
-msgid "The %(platform_name)s Team"
-msgstr "gacco運営チーム"
-
-#: lms/templates/registration/resign_subject.txt
-msgid "Resignation from %(site_name)s"
-msgstr "%(site_name)s からの退会手続き"
-
-#: lms/templates/registration/resign_email.html
-msgid "You're receiving this e-mail because you requested a resignation from %(site_name)s."
-msgstr "このメールは退会処理をするために送信されています。"
-
-#: lms/templates/registration/resign_email.html
-msgid "Please go to the following page and click the resign button:"
-msgstr "次のページで退会するボタンをクリックしてください。"
-
-#: lms/templates/registration/resign_email.html
-msgid ""
-"If you didn't request this change, you can disregard this email - we have "
-"not yet resign your account."
-msgstr "この処理を要求していない場合はこのメールは無視してください。退会処理はまだ行われていません。"
 
 #: lms/templates/registration/resign_confirm.html
 msgid ""
