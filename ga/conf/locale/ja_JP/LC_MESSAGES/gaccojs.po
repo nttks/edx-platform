@@ -321,7 +321,7 @@ msgstr "{parentalConsentAgeLimit}歳以下の方はプロフィールを公開�
 
 #: lms/static/js/student_profile/views/learner_profile_factory.js
 msgid "{platform_name} learners can see my:"
-msgstr "ユーザ名以外のプロフィールの公開設定："
+msgstr "{platform_name}受講者へのプロフィールの公開設定："
 
 #: lms/static/js/student_profile/views/learner_profile_factory.js
 msgid "Limited Profile"
@@ -331,6 +331,11 @@ msgstr "非公開"
 msgid "Full Profile"
 msgstr "公開"
 
+#: lms/static/js/student_profile/views/learner_profile_factory.js
+msgid "About me"
+msgstr "自己紹介"
+
+#: lms/static/js/student_profile/views/learner_profile_fields.js
 msgid ""
 "You must specify your birth year before you can share your full profile. To "
 "specify your birth year, go to the {account_settings_page_link}"
