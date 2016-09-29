@@ -6,7 +6,8 @@ import imghdr
 import json
 import logging
 
-from boto.s3.connection import S3Connection, Location
+from boto.s3 import connect_to_region
+from boto.s3.connection import Location, OrdinaryCallingFormat
 from boto.s3.key import Key
 from boto.exception import S3ResponseError
 
@@ -246,7 +247,12 @@ class S3Store(object):
         self.conn = self._connect()
 
     def _connect(self):
-        return S3Connection(self.access_key, self.secret_key)
+        return connect_to_region(
+            self.location,
+            aws_access_key_id=self.access_key,
+            aws_secret_access_key=self.secret_key,
+            calling_format=OrdinaryCallingFormat(),
+        )
 
     def list(self, prefix):
         bucket = self.conn.get_bucket(self.bucket_name)

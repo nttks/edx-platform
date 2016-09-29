@@ -6,7 +6,8 @@ import time
 import traceback
 from functools import wraps
 
-from boto.s3.connection import S3Connection, Location as S3Location
+from boto.s3 import connect_to_region
+from boto.s3.connection import Location as S3Location, OrdinaryCallingFormat
 from boto.s3.key import Key
 from prettytable import PrettyTable
 
@@ -259,9 +260,12 @@ class TranscriptS3Store(object):
         self.conn = self._connect()
 
     def _connect(self):
-        return S3Connection(
-            settings.AWS_ACCESS_KEY_ID,
-            settings.AWS_SECRET_ACCESS_KEY)
+        return connect_to_region(
+            self.location,
+            aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+            aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+            calling_format=OrdinaryCallingFormat(),
+        )
 
     def save(self, course_id, data, filename):
         try:

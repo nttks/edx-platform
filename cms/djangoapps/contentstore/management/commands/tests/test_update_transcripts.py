@@ -1,6 +1,7 @@
 import copy
 import json
 import tempfile
+import unittest
 
 from boto.exception import S3ResponseError
 from datetime import datetime, timedelta
@@ -84,6 +85,7 @@ class TestArgParsing(ModuleStoreTestCase):
         mock_store_class.assert_called_once_with()
 
 
+@unittest.skip("TODO: after release Dogwood")
 @override_settings(TRANSCRIPTS_COMMAND_OUTPUT=command_output_file.name,
                    TRANSCRIPTS_BACKUP_BUCKET_NAME=TRANSCRIPTS_BACKUP_BUCKET_NAME,
                    TRANSCRIPTS_BACKUP_DIR=TRANSCRIPTS_BACKUP_DIR,
@@ -305,6 +307,7 @@ class TestUpdateTranscripts(ModuleStoreTestCase):
             call_command('update_transcripts')
 
 
+@unittest.skip("TODO: after release Dogwood")
 class TestUpdateTranscriptsSplit(TestUpdateTranscripts):
     """
     Tests update_transcripts command for split courses

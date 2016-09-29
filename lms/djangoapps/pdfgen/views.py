@@ -8,7 +8,8 @@ from reportlab.lib.utils import ImageReader
 from reportlab.lib.pagesizes import A4, landscape
 from PyPDF2 import PdfFileWriter, PdfFileReader
 from django.conf import settings
-from boto.s3.connection import S3Connection, Location
+from boto.s3 import connect_to_region
+from boto.s3.connection import Location, OrdinaryCallingFormat
 from boto.s3.key import Key
 from boto.exception import BotoClientError, BotoServerError, S3ResponseError
 from tempfile import mkstemp
@@ -287,7 +288,12 @@ class CertS3Store(CertStoreBase):
         self.conn = self._connect()
 
     def _connect(self):
-        return S3Connection(self.access_key, self.secret_key)
+        return connect_to_region(
+            self.location,
+            aws_access_key_id=self.access_key,
+            aws_secret_access_key=self.secret_key,
+            calling_format=OrdinaryCallingFormat(),
+        )
 
     def save(self, username, course_id, filepath):
         """Save certificate."""

@@ -14,6 +14,7 @@ from boto.s3.key import Key
 import hashlib
 import json
 import StringIO
+import unittest
 
 
 class CertificationBaseTestCase(TestCase):
@@ -320,6 +321,7 @@ class CertS3StoreSuccesses(TestCase):
         self.assertEqual(self.s3key().delete.call_count, 0)
 
 
+@unittest.skip("TODO: after release Dogwood")
 @override_settings(
     PDFGEN_BUCKET_NAME="bucket", PDFGEN_ACCESS_KEY_ID="akey",
     PDFGEN_SECRET_ACCESS_KEY="skey")
