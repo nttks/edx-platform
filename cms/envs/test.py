@@ -282,6 +282,7 @@ FEATURES['ENABLE_TEAMS'] = True
 
 # Dummy secret key for dev/test
 SECRET_KEY = '85920908f28904ed733fe576320db18cabd7b6cd'
+ANONYMOUS_ID_SECRET_KEY = SECRET_KEY
 
 # Dummy biz secret key for dev/test
 from biz.envs.test import BIZ_SECRET_KEY

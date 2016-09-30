@@ -239,6 +239,7 @@ CACHES = {
 
 # Dummy secret key for dev
 SECRET_KEY = '85920908f28904ed733fe576320db18cabd7b6cd'
+ANONYMOUS_ID_SECRET_KEY = SECRET_KEY
 
 # hide ratelimit warnings while running tests
 filterwarnings('ignore', message='No request passed to the backend, unable to rate-limit')
