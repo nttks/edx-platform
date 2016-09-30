@@ -61,6 +61,7 @@ from xmodule.mixin import LicenseMixin
 
 # Dummy secret key for dev/test
 SECRET_KEY = 'dev key'
+ANONYMOUS_ID_SECRET_KEY = SECRET_KEY
 
 STUDIO_NAME = "Studio"
 STUDIO_SHORT_NAME = "Studio"
