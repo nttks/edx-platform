@@ -528,6 +528,15 @@ msgstr "対面学習コースがある場合はチェックを入れてくださ
 msgid "Please check if sell a reversal classes."
 msgstr "対面学習コースをgacco上で販売する場合はチェックを入れてください。"
 
+#: cms/djangoapps/contentstore/views/entrance_exam.py
+#: lms/djangoapps/courseware/tabs.py
+msgid "Entrance Exam"
+msgstr ""
+
+#: cms/djangoapps/contentstore/views/entrance_exam.py
+msgid "Entrance Exam - Subsection"
+msgstr "受講者情報登録"
+
 #-#-#-#-#  Original messages in gacco/templates  #-#-#-#-#
 
 #: templates/theme-header.html
