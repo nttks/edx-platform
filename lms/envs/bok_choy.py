@@ -168,6 +168,7 @@ MOCK_SEARCH_BACKING_FILE = (
 import uuid
 SECRET_KEY = uuid.uuid4().hex
 ANONYMOUS_ID_SECRET_KEY = SECRET_KEY
+USERNAME_CIPHER_SECRET_KEY = SECRET_KEY
 
 # Set dummy values for profile image settings.
 PROFILE_IMAGE_BACKEND = {

@@ -274,6 +274,7 @@ class TestCreateAccount(ModuleStoreTestCase):
         """
         self.base_extauth_bypass_sending_activation_email(True)
 
+    @unittest.skipUnless(settings.ROOT_URLCONF == 'lms.urls', 'Test only valid in lms')
     @ddt.data(True, False)
     def test_discussions_email_digest_pref(self, digest_enabled):
         with mock.patch.dict("student.models.settings.FEATURES", {"ENABLE_DISCUSSION_EMAIL_DIGEST": digest_enabled}):

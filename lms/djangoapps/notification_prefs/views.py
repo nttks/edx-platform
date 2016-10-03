@@ -43,7 +43,7 @@ class UsernameCipher(object):
     @staticmethod
     def _get_aes_cipher(initialization_vector):
         hash_ = sha256()
-        hash_.update(settings.SECRET_KEY)
+        hash_.update(settings.USERNAME_CIPHER_SECRET_KEY)
         return AES.new(hash_.digest(), AES.MODE_CBC, initialization_vector)
 
     @staticmethod

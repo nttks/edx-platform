@@ -2688,6 +2688,7 @@ CREDIT_TASK_MAX_RETRIES = 5
 # Dummy secret key for dev/test
 SECRET_KEY = 'dev key'
 ANONYMOUS_ID_SECRET_KEY = SECRET_KEY
+USERNAME_CIPHER_SECRET_KEY = SECRET_KEY
 
 # Secret keys shared with credit providers.
 # Used to digitally sign credit requests (us --> provider)
