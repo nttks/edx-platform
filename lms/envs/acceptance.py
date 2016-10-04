@@ -192,6 +192,7 @@ if FEATURES.get('ENABLE_COURSEWARE_SEARCH') or \
 import uuid
 SECRET_KEY = uuid.uuid4().hex
 ANONYMOUS_ID_SECRET_KEY = SECRET_KEY
+USERNAME_CIPHER_SECRET_KEY = SECRET_KEY
 
 ############################### PIPELINE #######################################
 

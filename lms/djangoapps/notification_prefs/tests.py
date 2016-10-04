@@ -16,7 +16,7 @@ from openedx.core.djangoapps.user_api.models import UserPreference
 from util.testing import UrlResetMixin
 
 
-@override_settings(SECRET_KEY="test secret key")
+@override_settings(USERNAME_CIPHER_SECRET_KEY="test secret key")
 class NotificationPrefViewTest(UrlResetMixin, TestCase):
     INITIALIZATION_VECTOR = "\x00" * 16
 
