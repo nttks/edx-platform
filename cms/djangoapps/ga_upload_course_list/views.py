@@ -208,7 +208,8 @@ class CourseList(object):
             "teacher_name": course.teacher_name,
             "contents_provider": course.course_contents_provider,
             "description": course.course_list_description,
-            "span": course.course_span
+            "span": course.course_span,
+            "category": course.course_category,
         }
         if course.has_ended():
             course_dict["status"] = "closed"
