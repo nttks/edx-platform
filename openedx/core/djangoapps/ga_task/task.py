@@ -175,6 +175,18 @@ def run_main_task(entry_id, task_fcn, action_name):
     """
     Applies the `task_fcn` to the arguments defined in `entry_id` of Task.
     """
+    # TODO : Fix!
+    import time
+    sleep_count = 0
+    while len(Task.objects.filter(pk=entry_id)) == 0:
+        sleep_count += 1
+        log.warning(u'{} Sleeping... {}'.format(action_name, sleep_count))
+        time.sleep(1)
+        if sleep_count > 60:
+            # error log for zabbix if sleep over 1 minute.
+            log.error(u'Too sleepy : Failed to execute celery task.')
+            raise ValueError(u'Can not get Task pk={}'.format(entry_id))
+
     entry = Task.objects.get(pk=entry_id)
     entry.task_state = PROGRESS
     entry.save_now()
