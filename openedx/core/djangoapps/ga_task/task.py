@@ -8,6 +8,8 @@ from celery.states import SUCCESS, FAILURE
 from django.db import reset_queries
 from django.utils.translation import ugettext as _
 
+from util.db import outer_atomic
+
 from openedx.core.djangoapps.ga_task.models import Task, PROGRESS, QUEUING
 
 # define different loggers for use within tasks and on client side
@@ -175,9 +177,12 @@ def run_main_task(entry_id, task_fcn, action_name):
     """
     Applies the `task_fcn` to the arguments defined in `entry_id` of Task.
     """
-    entry = Task.objects.get(pk=entry_id)
-    entry.task_state = PROGRESS
-    entry.save_now()
+    # Get the Task to be updated. If this fails then let the exception return to Celery.
+    # There's no point in catching it here.
+    with outer_atomic():
+        entry = Task.objects.get(pk=entry_id)
+        entry.task_state = PROGRESS
+        entry.save_now()
 
     # Get inputs to use in this task from the entry
     task_id = entry.task_id
