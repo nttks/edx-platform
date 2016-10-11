@@ -191,15 +191,14 @@ class LmsDashboardPageTest(BaseLmsDashboardTest):
     def test_near_future_course_date(self):
         """
         Scenario:
-            Course Date should have the format 'Starts - Wednesday at 5am UTC'
+            Course Date should have the format 'Starts - Sep 23, 2015' (the same format as the course starts in future)
             if the course on student dashboard starts within 5 days.
 
         As a Student,
         Given that I have enrolled to a course
         And the course starts within 5 days
         When I visit dashboard page
-        Then the course date should have the following format "Starts - %A at %-I%P UTC"
-            e.g. "Starts - Wednesday at 5am UTC"
+        Then the course date should have the following format "Starts - %b %d, %Y" e.g. "Starts - Sep 23, 2015"
         """
         course_start_date = self.now + datetime.timedelta(days=2)
         course_end_date = self.now + datetime.timedelta(days=365)
@@ -208,8 +207,8 @@ class LmsDashboardPageTest(BaseLmsDashboardTest):
                                                 'end_date': course_end_date})
         self.course_fixture.configure_course()
 
-        start_date = course_start_date.strftime(DEFAULT_DAY_AND_TIME_FORMAT)
-        expected_course_date = "Starts - {start_date} UTC".format(start_date=start_date)
+        start_date = course_start_date.strftime(DEFAULT_SHORT_DATE_FORMAT)
+        expected_course_date = "Starts - {start_date}".format(start_date=start_date)
 
         # reload the page for changes to course date changes to appear in dashboard
         self.dashboard_page.visit()
