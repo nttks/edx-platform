@@ -8,6 +8,8 @@ from celery.states import SUCCESS, FAILURE
 from django.db import reset_queries
 from django.utils.translation import ugettext as _
 
+from util.db import outer_atomic
+
 from openedx.core.djangoapps.ga_task.models import Task, PROGRESS, QUEUING
 
 # define different loggers for use within tasks and on client side
@@ -175,21 +177,12 @@ def run_main_task(entry_id, task_fcn, action_name):
     """
     Applies the `task_fcn` to the arguments defined in `entry_id` of Task.
     """
-    # TODO : Fix!
-    import time
-    sleep_count = 0
-    while len(Task.objects.filter(pk=entry_id)) == 0:
-        sleep_count += 1
-        log.warning(u'{} Sleeping... {}'.format(action_name, sleep_count))
-        time.sleep(1)
-        if sleep_count > 60:
-            # error log for zabbix if sleep over 1 minute.
-            log.error(u'Too sleepy : Failed to execute celery task.')
-            raise ValueError(u'Can not get Task pk={}'.format(entry_id))
-
-    entry = Task.objects.get(pk=entry_id)
-    entry.task_state = PROGRESS
-    entry.save_now()
+    # Get the Task to be updated. If this fails then let the exception return to Celery.
+    # There's no point in catching it here.
+    with outer_atomic():
+        entry = Task.objects.get(pk=entry_id)
+        entry.task_state = PROGRESS
+        entry.save_now()
 
     # Get inputs to use in this task from the entry
     task_id = entry.task_id

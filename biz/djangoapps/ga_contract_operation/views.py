@@ -192,6 +192,7 @@ def register_students(request):
     )
 
 
+@transaction.non_atomic_requests
 @require_POST
 @login_required
 @check_course_selection
@@ -308,6 +309,7 @@ def task_history_ajax(request):
     })
 
 
+@transaction.non_atomic_requests
 @require_POST
 @login_required
 @check_course_selection
