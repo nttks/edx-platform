@@ -125,6 +125,9 @@ import uuid
 SECRET_KEY = uuid.uuid4().hex
 ANONYMOUS_ID_SECRET_KEY = SECRET_KEY
 
+### Max character length of course display name for test long name
+MAX_LENGTH_COURSE_DISPLAY_NAME = 64
+
 #####################################################################
 # gacco settings overrides.
 if os.environ.get('ENABLE_BOKCHOY_GA'):

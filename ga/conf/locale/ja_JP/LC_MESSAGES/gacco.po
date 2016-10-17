@@ -1168,3 +1168,10 @@ msgstr "アメリカ合衆国"
 msgid "Taiwan"
 msgstr "台湾"
 
+#: cms/djangoapps/contentstore/views/course.py
+msgid "Course name, please be up to {max_length} characters."
+msgstr "講座名は{max_length}文字以内で設定してください。"
+
+#: cms/djangoapps/models/settings/course_metadata.py
+msgid "Course display name, please be up to {max_length} characters."
+msgstr "講座の表示名は{max_length}文字以内で設定してください。"

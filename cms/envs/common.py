@@ -1167,3 +1167,6 @@ JWPLAYER_SECURE_TOKEN_EXPIRE = 24 * 60 * 60
 
 ##### RateLimitBackend #####
 RATE_LIMIT_REQUESTS = 30
+
+### Max character length of course display name
+MAX_LENGTH_COURSE_DISPLAY_NAME = 30

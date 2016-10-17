@@ -706,6 +706,12 @@ def _create_or_rerun_course(request):
 
         fields = {'start': start}
         if display_name is not None:
+            if len(display_name) > settings.MAX_LENGTH_COURSE_DISPLAY_NAME:
+                return JsonResponse({
+                    'ErrMsg': _(
+                        'Course name, please be up to {max_length} characters.'
+                    ).format(max_length=settings.MAX_LENGTH_COURSE_DISPLAY_NAME),
+                })
             fields['display_name'] = display_name
 
         # Set a unique wiki_slug for newly created courses. To maintain active wiki_slugs for

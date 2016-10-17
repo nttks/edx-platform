@@ -877,6 +877,32 @@ class CourseMetadataEditingTest(CourseTestCase):
         self.assertNotEqual(test_model['days_early_for_beta']['value'], "supposed to be an integer",
                             'days_early_for beta should not be updated to a wrong value')
 
+    def test_validate_from_json_display_name_over_max_length(self):
+        jsondict = {
+            "display_name": {"value": "Course Display Name", "display_name": "Course Display Name", },
+        }
+
+        # Fail to validate and update
+        with override_settings(MAX_LENGTH_COURSE_DISPLAY_NAME=18):
+            is_valid, errors, test_model = CourseMetadata.validate_and_update_from_json(self.course, jsondict, user=self.user)
+
+        # Check valid results from validate_and_update_from_json
+        self.assertFalse(is_valid)
+        self.assertEqual(len(errors), 1)
+        self.assertEqual('Course Display Name', errors[0]['model']['display_name'])
+        self.assertEqual('Course display name, please be up to 18 characters.', errors[0]['message'])
+        self.assertIsNone(test_model)
+
+        # Success to validate and update
+        with override_settings(MAX_LENGTH_COURSE_DISPLAY_NAME=19):
+            is_valid, errors, test_model = CourseMetadata.validate_and_update_from_json(self.course, jsondict, user=self.user)
+
+        # Check valid results from validate_and_update_from_json
+        self.assertTrue(is_valid)
+        self.assertEqual(len(errors), 0)
+        self.assertIsNotNone(test_model)
+        self.assertEqual(test_model['display_name']['value'], 'Course Display Name')
+
     def test_correct_http_status(self):
         json_data = json.dumps({
             "advertised_start": {"value": 1, "display_name": "Course Advertised Start Date", },

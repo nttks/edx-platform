@@ -191,7 +191,16 @@ class CourseMetadata(object):
             try:
                 val = model['value']
                 if hasattr(descriptor, key) and getattr(descriptor, key) != val:
-                    key_values[key] = descriptor.fields[key].from_json(val)
+                    if key == 'display_name' and len(val) > settings.MAX_LENGTH_COURSE_DISPLAY_NAME:
+                        did_validate = False
+                        errors.append({
+                            'message': _(
+                               'Course display name, please be up to {max_length} characters.'
+                            ).format(max_length=settings.MAX_LENGTH_COURSE_DISPLAY_NAME),
+                            'model': model
+                        })
+                    else:
+                        key_values[key] = descriptor.fields[key].from_json(val)
             except (TypeError, ValueError) as err:
                 did_validate = False
                 errors.append({'message': err.message, 'model': model})

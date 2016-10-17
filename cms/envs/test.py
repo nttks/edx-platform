@@ -290,3 +290,6 @@ from biz.envs.test import BIZ_SECRET_KEY
 # can't test start dates with this True, but on the other hand,
 # can test everything else :)
 FEATURES['DISABLE_START_DATES'] = True
+
+### Max character length of course display name for test long name
+MAX_LENGTH_COURSE_DISPLAY_NAME = 1024
