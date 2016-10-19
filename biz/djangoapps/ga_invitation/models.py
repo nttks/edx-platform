@@ -116,11 +116,23 @@ class ContractRegister(models.Model):
             modified=self.modified
         ).save()
 
+    def is_input(self):
+        """
+        Check status of input.
+        """
+        return self.status == INPUT_INVITATION_CODE
+
     def is_registered(self):
         """
         Check status of register.
         """
         return self.status == REGISTER_INVITATION_CODE
+
+    def is_unregistered(self):
+        """
+        Check status of unregister.
+        """
+        return self.status == UNREGISTER_INVITATION_CODE
 
     @classmethod
     def get_by_user_contract(cls, user, contract):
@@ -167,6 +179,13 @@ class ContractRegister(models.Model):
     @classmethod
     def find_by_ids(cls, register_ids):
         return cls.objects.filter(id__in=register_ids)
+
+    @classmethod
+    def get_by_login_code_contract(cls, login_code, contract):
+        try:
+            return cls.objects.select_related('user').get(user__bizuser__login_code=login_code, contract=contract)
+        except cls.DoesNotExist:
+            return None
 
 
 class ContractRegisterHistory(models.Model):

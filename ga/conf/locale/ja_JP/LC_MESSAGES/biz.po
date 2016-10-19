@@ -213,10 +213,15 @@ msgstr "新しい追加情報を追加"
 msgid "Save Contract"
 msgstr "登録"
 
+#: biz/djangoapps/ga_contract/admin.py
+msgid "Url code is invalid. Please enter alphanumeric {min_length}-{max_length} characters."
+msgstr "URLコードが不正です。英字で{min_length}～{max_length}文字で入力してください。"
+
 #: biz/djangoapps/ga_contract/views.py
 msgid "You need to create an organization first."
 msgstr "組織を先に作成する必要があります。"
 
+#: biz/djangoapps/ga_contract/views.py
 msgid "The new contract has been added."
 msgstr "新しい契約が追加されました。"
 
@@ -518,11 +523,20 @@ msgstr "登録済の契約が存在するため、組織を削除できません
 
 ##### Contract Operation
 #: biz/templates/ga_contract_operation/register_students.html
-msgid "To register a list of users in this course, contains the following columns in this exact order: email, username, name, and country. Please include one student per row and do not include any headers, footers, or blank lines."
+msgid "To register a list of users in this course, contains the following columns in this exact order: email, username, and name. Please include one student per row and do not include any headers, footers, or blank lines."
 msgstr "区切り文字カンマ(,)で、次に示す項目の順序に従い値を指定してください。なお、1受講者につき1行で記載し、ヘッダー、フッターや空行を含んではいけません。<br/>"
 "・メールアドレス：半角英数字、ハイフン(-)、アンダーバー(_)、ピリオド(.)。<br/>"
 "・ユーザー名：半角英数2文字以上、30文字以下。ディスカッションの際に表示されるユーザー名となります。(一度、登録すると変更できません)<br/>"
 "・氏名：修了証に表示するために用いる情報です。"
+
+#: biz/templates/ga_contract_operation/register_students.html
+msgid "To register a list of users in this course, contains the following columns in this exact order: email, username, name, login code, and password. Please include one student per row and do not include any headers, footers, or blank lines."
+msgstr "区切り文字カンマ(,)で、次に示す項目の順序に従い値を指定してください。なお、1受講者につき1行で記載し、ヘッダー、フッターや空行を含んではいけません。<br/>"
+"・メールアドレス：半角英数字、ハイフン(-)、アンダーバー(_)、ピリオド(.)。<br/>"
+"・ユーザー名：半角英数2文字以上、30文字以下。ディスカッションの際に表示されるユーザー名となります。(一度、登録すると変更できません)<br/>"
+"・氏名：修了証に表示するために用いる情報です。<br/>"
+"・ログインコード：半角英数2文字以上、30文字以下<br/>"
+"・パスワード：半角英数8文字以上(半角アルファベットの大文字、小文字、数字を1文字以上含めてください)<br/>"
 
 #: biz/templates/ga_contract_operation/register_students.html
 msgid "Once can be registered number is {max_register_number}."
@@ -533,12 +547,36 @@ msgid "username1@domain.com,gaccotarou,gacco taro"
 msgstr "username1@domain.com,gaccotarou,学校 太郎"
 
 #: biz/templates/ga_contract_operation/register_students.html
+msgid "username1@domain.com,gaccotarou,gacco taro,gacco,Gacco12345"
+msgstr "username1@domain.com,gaccotarou,学校 太郎,gaccoCode,Gacco12345"
+
+#: biz/templates/ga_contract_operation/register_students.html
 msgid "No messages."
 msgstr "メッセージはありません。"
 
 #: biz/djangoapps/ga_contract_operation/student_register.py
+msgid "Invalid email {email}."
+msgstr "メールアドレスが不正です：{email}"
+
+#: biz/djangoapps/ga_contract_operation/student_register.py
+msgid "Invalid login code {login_code}."
+msgstr "ログインコードが不正です：{login_code}"
+
+#: biz/djangoapps/ga_contract_operation/student_register.py
+msgid "Invalid password {password}."
+msgstr "パスワードが不正です：{password}"
+
+#: biz/djangoapps/ga_contract_operation/student_register.py
+msgid "Login code {login_code} already exists."
+msgstr "ログインコード「{login_code}」は既に利用されています。"
+
+#: biz/djangoapps/ga_contract_operation/student_register.py
 msgid "Data must have exactly three columns: email, username, and full name."
 msgstr "次の3項目が見つかりませんでした：メールアドレス、ユーザー名、氏名"
+
+#: biz/djangoapps/ga_contract_operation/student_register.py
+msgid "Data must have exactly five columns: email, username, full name, login code and password."
+msgstr "次の5項目が見つかりませんでした：メールアドレス、ユーザー名、氏名、ログインコード、パスワード"
 
 #: biz/djangoapps/ga_contract_operation/views.py
 msgid "It has exceeded the number({max_register_number}) of cases that can be a time of registration."
@@ -560,6 +598,14 @@ msgstr "新規登録を実施する"
 msgid ""
 "Warning, an account with email {email} exists but the registered username {username} is different."
 msgstr "警告：メールアドレス「{email}」は登録されているユーザー名「{username}」と一致しませんでしたので、念のため登録・入力内容をご確認ください。"
+
+#: biz/djangoapps/ga_contract_operation/student_register.py
+msgid "Warning, an account with email {email} exists but the registered login code {login_code} is different."
+msgstr "警告：メールアドレス「{email}」は登録されているログインコード「{login_code}」と一致しませんでしたので、念のため登録・入力内容をご確認ください。"
+
+#: biz/djangoapps/ga_contract_operation/student_register.py
+msgid "Warning, an account with email {email} exists but the registered password is different."
+msgstr "警告：メールアドレス「{email}」は登録されているパスワードと一致しませんでしたので、念のため登録・入力内容をご確認ください。"
 
 #: biz/djangoapps/ga_contract_operation/student_register.py
 msgid "Name cannot be more than {name_max_length} characters long"
@@ -664,6 +710,19 @@ msgstr "実行結果"
 #: biz/templates/ga_contract_operation/students.html
 msgid "Execution Datetime"
 msgstr "実行日時"
+
+##### Login
+#: biz/djangoapps/ga_login/views.py
+msgid "Login code or password is incorrect."
+msgstr "ログインコード、もしくはパスワードが間違っています。"
+
+#: biz/djangoapps/ga_login/views.py
+msgid "Login Code"
+msgstr "ログインコード"
+
+#: biz/djangoapps/ga_login/views.py
+msgid "example: loginCode123"
+msgstr "例：loginCode123"
 
 ##### Common
 #: */forms.py

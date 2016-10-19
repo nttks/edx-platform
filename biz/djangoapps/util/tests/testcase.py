@@ -8,7 +8,10 @@ from django.test import TestCase
 from django.test.utils import override_settings
 from mock import patch
 
-from biz.djangoapps.ga_contract.tests.factories import AdditionalInfoFactory, ContractFactory, ContractDetailFactory
+from biz.djangoapps.ga_contract.tests.factories import (
+    AdditionalInfoFactory, ContractFactory,
+    ContractAuthFactory, ContractDetailFactory,
+)
 from biz.djangoapps.ga_contract_operation.tests.factories import ContractTaskHistoryFactory
 from biz.djangoapps.ga_invitation.tests.factories import AdditionalInfoSettingFactory, ContractRegisterFactory
 from biz.djangoapps.ga_invitation.models import INPUT_INVITATION_CODE, REGISTER_INVITATION_CODE, UNREGISTER_INVITATION_CODE
@@ -60,9 +63,10 @@ class BizTestBase(TestCase):
             created_by=created_by or UserFactory.create(),
         )
 
-    def _create_contract(self, contract_type='PF', contractor_organization=None, owner_organization=None, end_date=None,
-                         detail_courses=[], additional_display_names=[]):
+    def _create_contract(self, contract_name='test contract', contract_type='PF', contractor_organization=None, owner_organization=None, end_date=None,
+                         detail_courses=[], additional_display_names=[], url_code=None):
         contract = ContractFactory.create(
+            contract_name=contract_name,
             contract_type=contract_type,
             contractor_organization=contractor_organization or self._create_organization(),
             owner_organization=owner_organization or self.gacco_organization,
@@ -73,6 +77,8 @@ class BizTestBase(TestCase):
             ContractDetailFactory.create(contract=contract, course_id=c.id)
         for d in additional_display_names:
             AdditionalInfoFactory.create(contract=contract, display_name=d)
+        if url_code:
+            ContractAuthFactory.create(contract=contract, url_code=url_code)
         return contract
 
     def _input_contract(self, contract, user):
@@ -195,7 +201,6 @@ class BizViewTestBase(BizTestBase, LoginEnrollmentTestCase):
             side_effect=_mock_check_course_selection
         ), patch('biz.djangoapps.util.decorators.require_survey', side_effect=_mock_func):
             yield
-
 
 def _biz_store_config():
     """

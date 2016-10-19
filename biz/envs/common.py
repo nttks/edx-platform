@@ -1,7 +1,7 @@
 """
 Settings for Biz
 """
-from lms.envs.common import MIDDLEWARE_CLASSES, CELERY_DEFAULT_QUEUE
+from lms.envs.common import MIDDLEWARE_CLASSES, CELERY_DEFAULT_QUEUE, INSTALLED_APPS
 
 """
 MongoDB
@@ -30,6 +30,21 @@ Middleware Classes
 MIDDLEWARE_CLASSES += (
     'biz.djangoapps.ga_manager.middleware.BizAccessCheckMiddleware',
     'biz.djangoapps.ga_invitation.middleware.SpocStatusMiddleware',
+)
+
+"""
+Install Apps
+"""
+INSTALLED_APPS += (
+    'biz.djangoapps.ga_achievement',
+    'biz.djangoapps.ga_contract',
+    'biz.djangoapps.ga_course_operation',
+    'biz.djangoapps.ga_course_selection',
+    'biz.djangoapps.ga_manager',
+    'biz.djangoapps.ga_organization',
+    'biz.djangoapps.ga_invitation',
+    'biz.djangoapps.ga_contract_operation',
+    'biz.djangoapps.ga_login',
 )
 
 """

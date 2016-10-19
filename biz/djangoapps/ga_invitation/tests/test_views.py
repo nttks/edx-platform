@@ -17,7 +17,7 @@ from lms.djangoapps.courseware.courses import get_course_by_id
 
 from biz.djangoapps.ga_contract.models import CONTRACT_TYPE_PF, CONTRACT_TYPE_GACCO_SERVICE
 from biz.djangoapps.ga_contract.tests.factories import (
-    AdditionalInfoFactory, ContractDetailFactory, ContractFactory)
+    AdditionalInfoFactory, ContractAuthFactory, ContractDetailFactory, ContractFactory)
 from biz.djangoapps.ga_invitation.models import (
     AdditionalInfoSetting, ContractRegister,
     INPUT_INVITATION_CODE, REGISTER_INVITATION_CODE)
@@ -30,7 +30,8 @@ from biz.djangoapps.util.tests.testcase import BizTestBase, BizViewTestBase
 
 class BizContractTestBase(BizViewTestBase, ModuleStoreTestCase):
 
-    def _create_contract(self, contract_name='test contract', contract_type=CONTRACT_TYPE_PF[0], contractor_organization=None, end_date=None, course_ids=[], display_names=[]):
+    def _create_contract(self, contract_name='test contract', contract_type=CONTRACT_TYPE_PF[0], contractor_organization=None,
+                         end_date=None, course_ids=[], display_names=[], url_code=None):
         contract = ContractFactory.create(
             contract_name=contract_name,
             contract_type=contract_type,
@@ -43,6 +44,8 @@ class BizContractTestBase(BizViewTestBase, ModuleStoreTestCase):
             ContractDetailFactory.create(contract=contract, course_id=course_id)
         for display_name in display_names:
             AdditionalInfoFactory.create(contract=contract, display_name=display_name)
+        if url_code:
+            ContractAuthFactory.create(contract=contract, url_code=url_code)
         return contract
 
     def setUp(self):
@@ -63,6 +66,10 @@ class BizContractTestBase(BizViewTestBase, ModuleStoreTestCase):
             org=self.gacco_organization.org_code, number='spoc3', run='run3')
         self.course_spoc4 = CourseFactory.create(
             org=self.gacco_organization.org_code, number='spoc4', run='run4')
+        self.course_spoc5 = CourseFactory.create(
+            org=self.gacco_organization.org_code, number='spoc5', run='run5')
+        self.course_spoc6 = CourseFactory.create(
+            org=self.gacco_organization.org_code, number='spoc6', run='run6')
         self.course_mooc1 = CourseFactory.create(
             org=self.gacco_organization.org_code, number='mooc1', run='run5')
         self.no_contract_course = CourseFactory.create(
@@ -95,6 +102,17 @@ class BizContractTestBase(BizViewTestBase, ModuleStoreTestCase):
             contractor_organization=self.contract_org,
             course_ids=[self.course_mooc1.id],
             display_names=['country', 'dept'])
+        self.contract_auth = self._create_contract(
+            contract_name='test contract auth',
+            contractor_organization=self.contract_org,
+            course_ids=[self.course_spoc5.id],
+            url_code='testAuth')
+        self.contract_auth_disabled = self._create_contract(
+            contract_name='test contract auth disabled',
+            contractor_organization=self.contract_org,
+            end_date=(timezone_today() - timedelta(days=1)),
+            course_ids=[self.course_spoc6.id],
+            url_code='testAuthDisabled')
 
     def create_contract_register(self, user, contract, status=REGISTER_INVITATION_CODE):
         register = ContractRegisterFactory.create(user=user, contract=contract, status=status)
@@ -180,6 +198,13 @@ class InvitationViewsVerifyTest(InvitationViewsTest):
         self.assertFalse(content['result'])
         self.assertEqual(content['message'], 'Invitation code is invalid.')
 
+    def test_auth_no_register(self):
+        self.setup_user()
+        response = self.assert_request_status_code(200, self._url_verify(), 'POST', data={'invitation_code': self.contract_auth.invitation_code})
+        content = json.loads(response.content)
+        self.assertFalse(content['result'])
+        self.assertEqual(content['message'], 'Invitation code is invalid.')
+
     def test_no_detail(self):
         self.setup_user()
         response = self.assert_request_status_code(200, self._url_verify(), 'POST', data={'invitation_code': self.contract_nodetail.invitation_code})
@@ -218,6 +243,12 @@ class InvitationViewsConfirmTest(InvitationViewsTest):
     def test_disabled(self):
         self.setup_user()
         response = self.assert_request_status_code(404, self._url_confirm(self.contract_disabled.invitation_code))
+        with self.assertRaises(ContractRegister.DoesNotExist):
+            ContractRegister.objects.get(user=self.user)
+
+    def test_auth_no_register(self):
+        self.setup_user()
+        response = self.assert_request_status_code(404, self._url_confirm(self.contract_auth.invitation_code))
         with self.assertRaises(ContractRegister.DoesNotExist):
             ContractRegister.objects.get(user=self.user)
 
@@ -277,6 +308,14 @@ class InvitationViewsRegisterTest(InvitationViewsTest):
         self.setup_user()
         self.assert_request_status_code(200, self._url_confirm(self.contract.invitation_code))
         response = self.assert_request_status_code(200, self._url_register(), 'POST', data={'invitation_code': self.contract_disabled.invitation_code})
+        content = json.loads(response.content)
+        self.assertFalse(content['result'])
+        self.assertIn(self._url_index(), content['message'])
+
+    def test_auth_no_register(self):
+        self.setup_user()
+        self.assert_request_status_code(200, self._url_confirm(self.contract.invitation_code))
+        response = self.assert_request_status_code(200, self._url_register(), 'POST', data={'invitation_code': self.contract_auth.invitation_code})
         content = json.loads(response.content)
         self.assertFalse(content['result'])
         self.assertIn(self._url_index(), content['message'])

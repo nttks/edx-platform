@@ -66,6 +66,14 @@ def verify(request):
     if not contract or not contract.is_enabled():
         return JsonResponse({'result': False, 'message': _('Invitation code is invalid.')})
 
+    # If contract has contract-auth, allow only registerd user. Ref: Issue #1082
+    if hasattr(contract, 'contractauth') and not ContractRegister.get_by_user_contract(request.user, contract):
+        log.warning(
+            'Contract has auth, but not found contract register, invitation_code(%s), contract_id(%s), user_id(%s)',
+            invitation_code, contract.id, request.user.id,
+        )
+        return JsonResponse({'result': False, 'message': _('Invitation code is invalid.')})
+
     contract_details = contract.details.all()
     if not contract_details:
         log.warning('Not found contract detail, invitation_code(%s), contract_id(%s)', invitation_code, contract.id)
@@ -93,6 +101,11 @@ def confirm(request, invitation_code):
     contract = Contract.get_by_invitation_code(invitation_code)
     if not contract or not contract.is_enabled():
         log.warning('Contract is None or disabled.')
+        raise Http404()
+
+    # If contract has contract-auth, allow only registerd user. Ref: Issue #1082
+    if hasattr(contract, 'contractauth') and not ContractRegister.get_by_user_contract(request.user, contract):
+        log.warning('Contract has auth, but not found contract register.')
         raise Http404()
 
     courses = [get_course_by_id(detail.course_id) for detail in contract.details.all()]
@@ -143,6 +156,16 @@ def register(request):
 
     contract = Contract.get_by_invitation_code(invitation_code)
     if not contract or not contract.is_enabled():
+        return JsonResponse({
+            'result': False,
+            'message': _(
+                'Invitation code is invalid. Please operate again from <a href="{index_url}">here</a>.'
+            ).format(index_url=reverse('biz:invitation:index'))
+        })
+
+    # If contract has contract-auth, allow only registerd user. Ref: Issue #1082
+    if hasattr(contract, 'contractauth') and not ContractRegister.get_by_user_contract(request.user, contract):
+        log.warning('Not found contract detail, invitation_code(%s), contract_id(%s)', invitation_code, contract.id)
         return JsonResponse({
             'result': False,
             'message': _(

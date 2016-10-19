@@ -1,8 +1,10 @@
 
 import logging
+import re
 import time
 
 from django.conf import settings
+from django.contrib.auth import authenticate
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
 from django.contrib.auth.models import User
@@ -11,11 +13,11 @@ from django.utils.translation import ugettext as _
 
 from biz.djangoapps.ga_contract_operation.models import ContractTaskHistory, StudentRegisterTaskTarget
 from biz.djangoapps.ga_invitation.models import ContractRegister
+from biz.djangoapps.ga_login.models import BizUser, LOGIN_CODE_MIN_LENGTH, LOGIN_CODE_MAX_LENGTH
+from biz.djangoapps.ga_contract.models import ContractAuth
 from bulk_email.models import Optout
 from lms.djangoapps.instructor.enrollment import send_mail_to_student
-from lms.djangoapps.instructor.views.api import (
-    generate_unique_password, EMAIL_INDEX, NAME_INDEX, USERNAME_INDEX
-)
+from lms.djangoapps.instructor.views.api import generate_unique_password
 from microsite_configuration import microsite
 from openedx.core.djangoapps.course_global.models import CourseGlobalSetting
 from openedx.core.djangoapps.ga_task.models import Task
@@ -23,6 +25,7 @@ from openedx.core.djangoapps.ga_task.task import TaskProgress
 from student.forms import AccountCreationForm
 from student.models import UserProfile
 from student.views import _do_create_account, AccountValidationError
+from util.password_policy_validators import validate_password_strength
 
 log = logging.getLogger(__name__)
 
@@ -33,7 +36,7 @@ def _validate_and_get_arguments(task_id, task_input):
 
     try:
         history_id = task_input['history_id']
-        task_history = ContractTaskHistory.objects.get(pk=history_id)
+        task_history = ContractTaskHistory.objects.select_related('contract__contractauth').get(pk=history_id)
     except ContractTaskHistory.DoesNotExist:
         # The ContactTaskHistory object should be committed in the view function before the task
         # is submitted and reaches this point.
@@ -66,36 +69,49 @@ def perform_delegate_student_register(entry_id, task_input, action_name):
     task_id = entry.task_id
 
     contract, targets = _validate_and_get_arguments(task_id, task_input)
+    has_contractauth = hasattr(contract, 'contractauth')
 
     task_progress = TaskProgress(action_name, len(targets), time.time())
     task_progress.update_task_state()
 
     generated_passwords = []
 
-    def _validate_student_and_get_or_create_user(student):
-        # 3 columns(email,username,name) 1 line
-        if len(student) != 3:
-            if len(student) > 0:
-                return (_("Data must have exactly three columns: email, username, and full name."), None, None)
-            else:
-                return (None, None, None)
+    def _fail(message):
+        return (message, None, None)
 
-        email = student[EMAIL_INDEX]
-        username = student[USERNAME_INDEX]
-        name = student[NAME_INDEX]
-
+    def _validate_student_and_get_or_create_user(email, username, name, login_code=None, password=None):
+        # validate email
         try:
             validate_email(email)
         except ValidationError:
-            return (_("Invalid email {email_address}.").format(email_address=email), None, None)
+            return _fail(_("Invalid email {email_address}.").format(email_address=email))
 
+        # validate name
         name_max_length = UserProfile._meta.get_field('name').max_length
         if len(name) > name_max_length:
-            return (_(
+            return _fail(_(
                 "Name cannot be more than {name_max_length} characters long"
-            ).format(name_max_length=name_max_length), None, None)
+            ).format(name_max_length=name_max_length))
 
-        message = None
+        if login_code and password:
+            # validate login_code
+            if not re.match(
+                r'^[-\w]{{{min_length},{max_length}}}$'.format(
+                    min_length=LOGIN_CODE_MIN_LENGTH,
+                    max_length=LOGIN_CODE_MAX_LENGTH),
+                login_code):
+                return _fail(_("Invalid login code {login_code}.").format(login_code=login_code))
+
+            # validate password
+            try:
+                validate_password_strength(password)
+            except ValidationError:
+                return _fail(_("Invalid password {password}.").format(password=password))
+
+            # Get contract register by login code for after-validate.
+            contract_register_same_login_code = ContractRegister.get_by_login_code_contract(login_code, contract)
+
+        messages = []
         user = None
         email_params = {
             'site_name': microsite.get_value('SITE_NAME', settings.SITE_NAME),
@@ -105,15 +121,38 @@ def perform_delegate_student_register(entry_id, task_input, action_name):
         if User.objects.filter(email=email).exists():
             user = User.objects.get(email=email)
             if user.username != username:
-                message = _(
+                messages.append(_(
                     "Warning, an account with email {email} exists but the registered username {username} is different."
-                ).format(email=email, username=user.username)
-                log.warning(u'email {email} already exist'.format(email=email))
-    
+                ).format(email=email, username=user.username))
+                log.warning(u'email {email} already exist, but username is different.'.format(email=email))
+
+            # Create BizUser?
+            if login_code and password:
+                # validate duplicate login_code in contract
+                if contract_register_same_login_code and contract_register_same_login_code.user.id != user.id:
+                    return _fail(_("Login code {login_code} already exists.").format(login_code=login_code))
+
+                biz_user, __ = BizUser.objects.get_or_create(user=user, defaults={'login_code': login_code})
+                if biz_user.login_code != login_code:
+                    messages.append(_(
+                        "Warning, an account with email {email} exists but the registered login code {login_code} is different."
+                    ).format(email=email, login_code=biz_user.login_code))
+                    log.warning(u'email {email} already exist, but login code is different.'.format(email=email))
+
+                if authenticate(username=user.username, password=password) is None:
+                    messages.append(_(
+                        "Warning, an account with email {email} exists but the registered password is different."
+                    ).format(email=email))
+                    log.warning(u'email {email} already exist, but password is different.'.format(email=email))
+
             email_params['message'] = 'biz_account_notice'
             email_params['username'] = user.username
         else:
-            password = generate_unique_password(generated_passwords)
+            # validate duplicate login_code in contract
+            if login_code and contract_register_same_login_code:
+                return _fail(_("Login code {login_code} already exists.").format(login_code=login_code))
+
+            password = password or generate_unique_password(generated_passwords)
             try:
                 form = AccountCreationForm(
                     data={
@@ -127,26 +166,45 @@ def perform_delegate_student_register(entry_id, task_input, action_name):
                 user, __, registration = _do_create_account(form)
                 # Do activation for new user.
                 registration.activate()
+                # Create BizUser?
+                if login_code:
+                    BizUser.objects.create(user=user, login_code=login_code)
                 # Optout of bulk email(Global Courses) for only new user.
                 for global_course_id in CourseGlobalSetting.all_course_id():
                     Optout.objects.get_or_create(user=user, course_id=global_course_id)
             except (IntegrityError, AccountValidationError):
-                return (_("Username {user} already exists.").format(user=username), None, None)
+                return _fail(_("Username {user} already exists.").format(user=username))
             except ValidationError as ex:
-                return (' '.join(ex.messages), None, None)
+                return _fail(' '.join(ex.messages))
 
             email_params['message'] = 'biz_account_creation'
             email_params['password'] = password
 
-        return (message, user, email_params)
+        return (''.join(messages), user, email_params)
+
+    def _validate(studnet):
+        student_columns = target.student.split(',') if target.student else []
+        len_student_columns = len(student_columns)
+
+        if len_student_columns == 0:
+            # skip
+            return (None, None, None)
+
+        if has_contractauth and len_student_columns != 5:
+            # 5 columns(email,username,name,logincode,password) 1 line
+            return _fail(_("Data must have exactly five columns: email, username, full name, login code and password."))
+        elif not has_contractauth and len_student_columns != 3:
+            # 3 columns(email,username,name) 1 line
+            return _fail(_("Data must have exactly three columns: email, username, and full name."))
+
+        return _validate_student_and_get_or_create_user(*student_columns)
 
     for target in targets:
         task_progress.attempt()
 
         try:
             with transaction.atomic():
-                student = target.student.split(',') if target.student else []
-                message, user, email_params = _validate_student_and_get_or_create_user(student)
+                message, user, email_params = _validate(target.student)
 
                 if user is None and email_params is None:
                     if message is None:

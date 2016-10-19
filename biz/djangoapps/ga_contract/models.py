@@ -13,6 +13,13 @@ CONTRACT_TYPE_GACCO_SERVICE = ('GS', _('Gacco Service Contract'))
 CONTRACT_TYPE_OWNER_SERVICE = ('OS', _('Owner Service Contract'))
 CONTRACT_TYPE = (CONTRACT_TYPE_PF, CONTRACT_TYPE_OWNERS, CONTRACT_TYPE_GACCO_SERVICE, CONTRACT_TYPE_OWNER_SERVICE)
 
+URL_CODE_MIN_LENGTH = 8
+URL_CODE_MAX_LENGTH = 255
+URL_CODE_PATTERN = '(?P<url_code>[a-zA-Z0-9]{{{min_length},{max_length}}})'.format(
+    min_length=URL_CODE_MIN_LENGTH,
+    max_length=URL_CODE_MAX_LENGTH,
+)
+
 
 class ContractManager(models.Manager):
     def enabled(self, **kwargs):
@@ -41,6 +48,9 @@ class Contract(models.Model):
     created = models.DateTimeField(auto_now_add=True, db_index=True)
 
     objects = ContractManager()
+
+    def __unicode__(self):
+        return self.contract_name
 
     class Meta:
         app_label = 'ga_contract'
@@ -123,7 +133,7 @@ class Contract(models.Model):
         :return: Contract object, or raise DoesNotExist if not exist
         """
         contract_types = cls.get_contract_types(manager)
-        return cls.objects.enabled().get(
+        return cls.objects.enabled().select_related('contractauth').get(
             pk=contract_id,
             contractor_organization__id=manager.org.id,
             contract_type__in=contract_types,
@@ -132,7 +142,7 @@ class Contract(models.Model):
     @classmethod
     def get_by_invitation_code(cls, invitation_code):
         try:
-            return cls.objects.get(invitation_code=invitation_code)
+            return cls.objects.select_related('contractauth').get(invitation_code=invitation_code)
         except cls.DoesNotExist:
             return None
 
@@ -305,3 +315,24 @@ class AdditionalInfo(models.Model):
         :return: AdditionalInfo objects
         """
         return cls.objects.filter(contract_id=contract_id).order_by('id')
+
+
+class ContractAuth(models.Model):
+    """
+    This table contains contract auth info.
+    """
+    contract = models.OneToOneField(
+        Contract,
+        on_delete=models.CASCADE,
+        primary_key=True,
+    )
+    url_code = models.CharField(max_length=URL_CODE_MAX_LENGTH, unique=True)
+    modified_by = models.ForeignKey(User)
+    modified = models.DateTimeField(auto_now=True)
+
+    def __unicode__(self):
+        return u'{}({})'.format(self.contract.contract_name, self.url_code)
+
+    class Meta:
+        app_label = 'ga_contract'
+        ordering = ['contract']

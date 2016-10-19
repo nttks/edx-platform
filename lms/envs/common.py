@@ -1990,16 +1990,6 @@ INSTALLED_APPS = (
     # custom ratelimit-backend
     'openedx.core.djangoapps.ga_ratelimitbackend',
 
-    # gacco ASP
-    'biz.djangoapps.ga_achievement',
-    'biz.djangoapps.ga_contract',
-    'biz.djangoapps.ga_course_operation',
-    'biz.djangoapps.ga_course_selection',
-    'biz.djangoapps.ga_manager',
-    'biz.djangoapps.ga_organization',
-    'biz.djangoapps.ga_invitation',
-    'biz.djangoapps.ga_contract_operation',
-
     # Several operations for a gacco.org's staff
     'ga_operation',
 

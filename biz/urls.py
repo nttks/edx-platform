@@ -15,4 +15,5 @@ urlpatterns = patterns('',
     url(r'^organization/', include('biz.djangoapps.ga_organization.urls', namespace='organization')),
     url(r'^invitation/', include('biz.djangoapps.ga_invitation.urls', namespace='invitation')),
     url(r'^contract_operation/', include('biz.djangoapps.ga_contract_operation.urls', namespace='contract_operation')),
+    url(r'^login/', include('biz.djangoapps.ga_login.urls', namespace='login')),
 )
