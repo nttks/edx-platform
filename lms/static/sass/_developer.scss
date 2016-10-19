@@ -83,7 +83,7 @@
     @include margin-left( ($baseline/2) );
 
     &.is-selected {
-      background: $m-green-s1 !important;
+      background: #f52d2f !important;
     }
   }
 }

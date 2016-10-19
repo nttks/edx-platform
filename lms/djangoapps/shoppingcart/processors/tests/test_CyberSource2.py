@@ -5,6 +5,7 @@ Tests for the newer CyberSource API implementation.
 from mock import patch
 from django.test import TestCase
 from django.conf import settings
+from django.test.utils import override_settings
 import ddt
 
 from student.tests.factories import UserFactory
@@ -24,6 +25,7 @@ from shoppingcart.processors.exceptions import (
 
 
 @ddt.ddt
+@override_settings(PAYMENT_CURRENCY='usd')
 class CyberSource2Test(TestCase):
     """
     Test the CyberSource API implementation.  As much as possible,

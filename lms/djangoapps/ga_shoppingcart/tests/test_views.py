@@ -4,11 +4,16 @@ import ddt
 import json
 from mock import patch
 
+from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.test import TestCase
 from django.test.utils import override_settings
+from django.utils.translation import get_language
 
+from dark_lang.models import DarkLangConfig
+from lang_pref import LANGUAGE_KEY
 from opaque_keys.edx.keys import CourseKey
+from openedx.core.djangoapps.user_api.preferences.api import set_user_preference
 from shoppingcart.models import Order, OrderItem
 from shoppingcart.processors.GMO import create_order_id
 from student.tests.factories import UserFactory
@@ -88,20 +93,31 @@ class NotificationViewTest(TestCase):
     @patch('ga_shoppingcart.order_helpers.log')
     @patch.object(AdvancedCourseItem, 'purchased_callback')
     @ddt.data(
-        ('0', 'CAPTURE', 'CAPTURE'),
-        ('9', 'CAPTURE', 'CAPTURE'),
+        ('0', 'CAPTURE', 'CAPTURE', 'ja-jp'),
+        ('9', 'CAPTURE', 'CAPTURE', 'en'),
+        ('0', 'CAPTURE', 'CAPTURE', None),
     )
     @ddt.unpack
-    def test_notify_capture(self, payment_type, job, status, purchased_callback, o_logger, n_logger, v_logger):
+    def test_notify_capture(self, payment_type, job, status, lang_code, purchased_callback, o_logger, n_logger, v_logger):
         self.params.update({
             'param_payment_type': payment_type,
             'param_status': status,
             'param_job': job,
         })
 
+        if lang_code:
+            DarkLangConfig(
+                released_languages=('en, ja-jp'),
+                changed_by=self.user,
+                enabled=True
+            ).save()
+            set_user_preference(self.user, LANGUAGE_KEY, lang_code)
+
         response = self._access_notify(self.params)
 
         self._assert_response(response, v_logger)
+        # Verify current language
+        self.assertEqual(lang_code if lang_code else settings.LANGUAGE_CODE, get_language())
 
         order = Order.objects.get(pk=self.order.id)
         self.assertEqual('purchased', order.status)

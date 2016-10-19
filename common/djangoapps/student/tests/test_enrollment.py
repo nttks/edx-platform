@@ -215,6 +215,28 @@ class EnrollmentTest(UrlResetMixin, ModuleStoreTestCase):
         self.assertTrue(is_active)
         self.assertEqual(course_mode, 'audit')
 
+    def test_with_f2f_and_professional(self):
+        """
+        Tests that do not move to f2f page when paid course and f2f are both set.
+        """
+        CourseModeFactory.create(
+            course_id=self.course.id,
+            mode_slug='no-id-professional',
+            mode_display_name='no-id-professional',
+        )
+        self.course.is_f2f_course = True
+        self.course.is_f2f_course_sell = True
+        self.update_course(self.course, self.user.id)
+
+        next_url = reverse('course_modes_choose', kwargs={'course_id': unicode(self.course.id)})
+
+        # Enroll in the course and verify the URL we get sent to
+        resp = self._change_enrollment('enroll')
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.content, next_url)
+
+        self.assertFalse(CourseEnrollment.is_enrolled(self.user, self.course.id))
+
     def _change_enrollment(self, action, course_id=None, email_opt_in=None):
         """Change the student's enrollment status in a course.
 

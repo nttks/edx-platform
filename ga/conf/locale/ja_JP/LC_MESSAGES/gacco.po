@@ -555,6 +555,10 @@ msgstr "開く"
 msgid "Grade graph"
 msgstr "成績グラフ"
 
+#: templates/courseware/course_about.html
+msgid "paid course"
+msgstr "有料"
+
 #: templates/register-sidebar.html
 msgid "Please check the 'FAQs' if you experience any problems."
 msgstr "お困りの場合はサポートサイトの「よくある質問」をご確認ください。"
@@ -688,8 +692,16 @@ msgid "There is face-to-face course"
 msgstr "対面学習コースあり"
 
 #: templates/dashboard/_dashboard_course_listing.html
-msgid "View Subscription Details"
+msgid "View your order"
 msgstr "申込内容確認"
+
+#: templates/dashboard/_dashboard_course_listing.html
+msgid "Paid Course"
+msgstr "有料講座"
+
+#: templates/dashboard/_dashboard_course_listing.html
+msgid "Purchase completed"
+msgstr "購入済み"
 
 #: templates/ga_advanced_course/choose.html
 msgid "Recommended: Online and Face-to-face course"
@@ -804,15 +816,23 @@ msgid "Ticket Selection"
 msgstr "チケット選択"
 
 #: templates/ga_advanced_course/choose_ticket.html
-msgid "Payment Method Selection"
+msgctxt "payment_breadcrumb"
+msgid "Select"
+msgstr "申込内容選択"
+
+#: templates/ga_advanced_course/choose_ticket.html
+msgctxt "payment_breadcrumb"
+msgid "Payment"
 msgstr "支払方法選択"
 
 #: templates/ga_advanced_course/choose_ticket.html
-msgid "Content Confirmation"
+msgctxt "payment_breadcrumb"
+msgid "Confirm"
 msgstr "内容確認"
 
 #: templates/ga_advanced_course/choose_ticket.html
-msgid "Payment Completion"
+msgctxt "payment_breadcrumb"
+msgid "Complete"
 msgstr "購入完了"
 
 #: templates/ga_advanced_course/choose_ticket.html
@@ -877,7 +897,7 @@ msgstr "ドコモケータイ払い"
 
 #: templates/ga_advanced_course/receipt.html
 msgid "Payment amount"
-msgstr "お支い払金額"
+msgstr "お支払い金額"
 
 #: templates/ga_advanced_course/receipt.html
 msgid "Buy the ticket"
@@ -966,6 +986,10 @@ msgstr "全体加点"
 #: common/lib/xmodule/xmodule/capa_base.py
 msgid "If enabled, for all of the user who answered or viewed the problem, and added point it is regarded as the correct answer to the problem."
 msgstr "有効にした場合、問題を回答または閲覧した全てのユーザーに対して、問題に正解したとみなして加点されます。"
+
+#: lms/templates/emails/paid_course_order_confirmation_email_subject.txt
+msgid "{platform_name} Notice of the registration completion"
+msgstr "{platform_name} 受講登録完了のお知らせ"
 
 #-#-#-#-#  Deleted or revised messages between Cypress and Dogwood on Transifex  #-#-#-#-#
 #: lms/templates/dashboard.html

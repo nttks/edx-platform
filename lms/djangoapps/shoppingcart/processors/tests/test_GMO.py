@@ -6,7 +6,7 @@ import ddt
 
 from django.test import TestCase
 from django.test.utils import override_settings
-from django.utils import timezone
+from django.utils import timezone, translation
 
 from opaque_keys.edx.keys import CourseKey
 from student.tests.factories import UserFactory
@@ -132,13 +132,17 @@ class GMOTest(TestCase):
 
         return params
 
-    def test_get_signed_purchase_params(self):
+    @ddt.data('ja', 'ja-jp', 'en', 'es')
+    def test_get_signed_purchase_params(self, lang_code):
+        # pseudo language settings
+        translation.activate(lang_code)
+
         params = get_signed_purchase_params(self.order, self.CALLBACK_URL, self.EXTRA_DATA)
 
         # Check parameter exists
         for key in [
             'p001', 'p002', 'p003', 'p004', 'p005', 'p006', 'p007', 'p008', 'p009', 'p010', 'p011', 'p012',
-            'p014', 'p015', 'p016', 'p018', 'p019', 'p028', 'p040',
+            'p014', 'p015', 'p016', 'p018', 'p019', 'p028', 'p039', 'p040',
         ]:
             self.assertTrue(key in params)
 
@@ -165,6 +169,11 @@ class GMOTest(TestCase):
         self.assertEqual(params['p018'], 1)
         self.assertEqual(params['p019'], 1)
         self.assertEqual(params['p028'], 1)
+        # template has been determined by language
+        if lang_code == 'ja' or lang_code == 'ja-jp':
+            self.assertEqual(params['p039'], 1)
+        else:
+            self.assertEqual(params['p039'], 2)
         self.assertEqual(params['p040'], 'CAPTURE')
 
     @patch.object(AdvancedCourseItem, 'purchased_callback')
@@ -315,6 +324,7 @@ class GMOTest(TestCase):
                 'p018': 'param18',
                 'p019': 'param19',
                 'p028': 'param28',
+                'p039': 'param39',
                 'p040': 'param40',
             },
         }
@@ -373,6 +383,7 @@ class PurchaseParamsTest(TestCase):
         params['show_confirm'] = '1'
         params['use_credit'] = '2'
         params['use_docomo'] = '3'
+        params['template'] = 9
         params['job'] = 'test_job'
 
         self.assertEqual('test_shop_id', params['param1'])
@@ -428,6 +439,9 @@ class PurchaseParamsTest(TestCase):
 
         self.assertEqual('3', params['param28'])
         self.assertEqual('3', params['use_docomo'])
+
+        self.assertEqual(9, params['param39'])
+        self.assertEqual(9, params['template'])
 
         self.assertEqual('test_job', params['param40'])
         self.assertEqual('test_job', params['job'])

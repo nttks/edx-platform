@@ -5,6 +5,7 @@ Tests for Microsite Dashboard with Shopping Cart History
 import mock
 
 from django.core.urlresolvers import reverse
+from django.test.utils import override_settings
 
 from mock import patch
 
@@ -36,6 +37,7 @@ def non_microsite_configuration():
     return {}
 
 
+@override_settings(PAYMENT_CURRENCY='usd')
 @patch.dict('django.conf.settings.FEATURES', {'ENABLE_PAID_COURSE_REGISTRATION': True})
 class TestOrderHistoryOnMicrositeDashboard(ModuleStoreTestCase):
     """

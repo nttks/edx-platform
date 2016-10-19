@@ -3,6 +3,7 @@ Utility methods for ga_shoppingcart
 """
 from datetime import timedelta
 
+from django.conf import settings
 from django.utils import timezone
 
 # Hack for Studio. This module is referenced from common/djangoapps/student/views.py.
@@ -15,3 +16,7 @@ except:
 
 def get_order_keep_time():
     return timezone.now() - timedelta(seconds=SC_SESSION_TIMEOUT)
+
+
+def get_tax(price):
+    return int(price * settings.PAYMENT_TAX / 100)

@@ -304,8 +304,14 @@ def get_purchase_params(cart, callback_url=None, extra_data=None):
     params['payment_method'] = 'card'
 
     if callback_url is not None:
-        params['override_custom_receipt_page'] = callback_url
-        params['override_custom_cancel_page'] = callback_url
+        if isinstance(callback_url, tuple):
+            callback_url1 = callback_url[0]
+            callback_url2 = callback_url[1] if len(callback_url) >= 2 else callback_url[0]
+        else:
+            callback_url1 = callback_url
+            callback_url2 = callback_url
+        params['override_custom_receipt_page'] = callback_url1
+        params['override_custom_cancel_page'] = callback_url2
 
     if extra_data is not None:
         # CyberSource allows us to send additional data in "merchant defined data" fields

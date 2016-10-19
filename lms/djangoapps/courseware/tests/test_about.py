@@ -2,6 +2,7 @@
 Test the about xblock
 """
 import datetime
+import ddt
 import pytz
 
 from django.conf import settings
@@ -12,6 +13,7 @@ from nose.plugins.attrib import attr
 from opaque_keys.edx.locations import SlashSeparatedCourseKey
 
 from course_modes.models import CourseMode
+from course_modes.tests.factories import CourseModeFactory
 from track.tests import EventTrackingTestCase
 from xmodule.modulestore.tests.django_utils import TEST_DATA_MIXED_CLOSED_MODULESTORE
 
@@ -34,6 +36,7 @@ REG_STR = "<form id=\"class_enroll_form\" method=\"post\" data-remote=\"true\" a
 SHIB_ERROR_STR = "The currently logged-in user account does not have permission to enroll in this course."
 
 
+@ddt.ddt
 @attr('shard_1')
 class AboutTestCase(LoginEnrollmentTestCase, ModuleStoreTestCase, EventTrackingTestCase):
     """
@@ -77,6 +80,25 @@ class AboutTestCase(LoginEnrollmentTestCase, ModuleStoreTestCase, EventTrackingT
 
         # Check that registration button is present
         self.assertIn(REG_STR, resp.content)
+        self.assertIn("Enroll in {}".format(self.course.display_number_with_default), resp.content)
+        self.assertNotIn("paid course", resp.content)
+
+    @ddt.data(CourseMode.PROFESSIONAL, CourseMode.NO_ID_PROFESSIONAL_MODE)
+    def test_anonymous_user_pro(self, mode_slug):
+        """
+        This test asserts that a non-logged in user can visit the course about page (Professional)
+        """
+        CourseModeFactory.create(course_id=self.course.id, mode_slug=mode_slug)
+
+        url = reverse('about_course', args=[self.course.id.to_deprecated_string()])
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn("OOGIE BLOOGIE", resp.content)
+
+        # Check that registration button is present
+        self.assertIn(REG_STR, resp.content)
+        self.assertIn("Enroll in {}".format(self.course.display_number_with_default), resp.content)
+        self.assertIn("paid course", resp.content)
 
     def test_logged_in(self):
         """
@@ -87,6 +109,23 @@ class AboutTestCase(LoginEnrollmentTestCase, ModuleStoreTestCase, EventTrackingT
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
         self.assertIn("OOGIE BLOOGIE", resp.content)
+        self.assertIn("Enroll in {}".format(self.course.display_number_with_default), resp.content)
+        self.assertNotIn("paid course", resp.content)
+
+    @ddt.data(CourseMode.PROFESSIONAL, CourseMode.NO_ID_PROFESSIONAL_MODE)
+    def test_logged_in_pro(self, mode_slug):
+        """
+        This test asserts that a logged-in user can visit the course about page
+        """
+        CourseModeFactory.create(course_id=self.course.id, mode_slug=mode_slug)
+
+        self.setup_user()
+        url = reverse('about_course', args=[self.course.id.to_deprecated_string()])
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn("OOGIE BLOOGIE", resp.content)
+        self.assertIn("Enroll in {}".format(self.course.display_number_with_default), resp.content)
+        self.assertIn("paid course", resp.content)
 
     def test_already_enrolled(self):
         """

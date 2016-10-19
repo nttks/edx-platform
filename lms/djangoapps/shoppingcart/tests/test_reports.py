@@ -9,6 +9,7 @@ import StringIO
 from textwrap import dedent
 
 from django.conf import settings
+from django.test.utils import override_settings
 
 from course_modes.models import CourseMode
 from shoppingcart.models import (Order, CertificateItem, PaidCourseRegistration, PaidCourseRegistrationAnnotation,
@@ -161,6 +162,7 @@ class ReportTypeTests(ModuleStoreTestCase):
         self.assertEqual(csv.replace('\r\n', '\n').strip(), self.CORRECT_UNI_REVENUE_SHARE_CSV.strip())
 
 
+@override_settings(PAYMENT_CURRENCY='usd')
 class ItemizedPurchaseReportTest(ModuleStoreTestCase):
     """
     Tests for the models used to generate itemized purchase reports

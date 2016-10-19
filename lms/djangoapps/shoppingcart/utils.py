@@ -11,6 +11,8 @@ from pdfminer.converter import PDFPageAggregator
 from pdfminer.pdfpage import PDFPage
 from pdfminer.layout import LAParams, LTTextBox, LTTextLine, LTFigure
 
+from course_modes.models import CourseMode
+
 
 def is_shopping_cart_enabled():
     """
@@ -82,3 +84,8 @@ def parse_lt_objects(lt_objects):
             text_content.append(parse_lt_objects(lt_object._objs))  # pylint: disable=protected-access
 
     return '\n'.join(text_content)
+
+
+def is_no_id_professional(order_item):
+    from shoppingcart.models import CertificateItem
+    return isinstance(order_item, CertificateItem) and order_item.mode == CourseMode.NO_ID_PROFESSIONAL_MODE

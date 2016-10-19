@@ -18,7 +18,7 @@ from django.views.decorators.http import require_POST, require_http_methods
 from django.core.urlresolvers import reverse
 from django.views.decorators.csrf import csrf_exempt
 from util.bad_request_rate_limiter import BadRequestRateLimiter
-from util.date_utils import get_default_time_display
+from util.date_utils import strftime_localized
 from django.contrib.auth.decorators import login_required
 from microsite_configuration import microsite
 from edxmako.shortcuts import render_to_response
@@ -46,11 +46,13 @@ from .models import (
 )
 from .processors import (
     process_postpay_callback, render_purchase_form_html,
-    get_signed_purchase_params, get_purchase_endpoint
+    get_signed_purchase_params, get_purchase_endpoint, create_order_id
 )
 
 import json
 from .decorators import enforce_shopping_cart_enabled
+
+from openedx.core.lib.ga_datetime_utils import to_timezone
 
 
 log = logging.getLogger("shoppingcart")
@@ -828,9 +830,10 @@ def _show_receipt_json(order):
     """
     order_info = {
         'orderNum': order.id,
+        'receipt_number': create_order_id(order),
         'currency': order.currency,
         'status': order.status,
-        'purchase_datetime': get_default_time_display(order.purchase_time) if order.purchase_time else None,
+        'purchase_datetime': strftime_localized(to_timezone(order.purchase_time), '%Y/%m/%d %H:%M') if order.purchase_time else None,
         'billed_to': {
             'first_name': order.bill_to_first,
             'last_name': order.bill_to_last,
@@ -842,10 +845,13 @@ def _show_receipt_json(order):
             'country': order.bill_to_country,
         },
         'total_cost': order.total_cost,
+        'total_tax': order.total_tax,
+        'payment_method': order.payment_method,
         'items': [
             {
                 'quantity': item.qty,
                 'unit_cost': item.unit_cost,
+                'tax': item.tax if hasattr(item, 'tax') else 0,
                 'line_cost': item.line_cost,
                 'line_desc': item.line_desc,
                 'course_key': unicode(item.course_id)

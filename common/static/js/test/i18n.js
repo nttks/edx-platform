@@ -1,5 +1,6 @@
 window.gettext = function(s){return s;};
 window.ngettext = function(singular, plural, num){ return num == 1 ? singular : plural }
+window.pgettext = function(ctx, s){return s;};
 
 function interpolate(fmt, obj, named) {
     if (named) {

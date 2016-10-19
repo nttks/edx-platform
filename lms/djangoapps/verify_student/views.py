@@ -415,6 +415,7 @@ class PayAndVerifyView(View):
             'processors': processors,
             'requirements': requirements,
             'user_full_name': full_name,
+            'user_email': request.user.email,
             'verification_deadline': (
                 get_default_time_display(verification_deadline)
                 if verification_deadline else ""
@@ -726,7 +727,7 @@ def checkout_with_shoppingcart(request, user, course_key, course_mode, amount):
     cart = Order.get_cart_for_user(user)
     cart.clear()
     enrollment_mode = course_mode.slug
-    CertificateItem.add_to_order(cart, course_key, amount, enrollment_mode)
+    item = CertificateItem.add_to_order(cart, course_key, amount, enrollment_mode)
 
     # Change the order's status so that we don't accidentally modify it later.
     # We need to do this to ensure that the parameters we send to the payment system
@@ -740,14 +741,23 @@ def checkout_with_shoppingcart(request, user, course_key, course_mode, amount):
     callback_url = request.build_absolute_uri(
         reverse("shoppingcart.views.postpay_callback")
     )
+    cancel_callback_url = request.build_absolute_uri(
+        reverse("about_course", args=[unicode(course_key)])
+    )
+
+    extra_data = [
+        item.line_desc,
+        unicode(course_key),
+        user.id,
+    ]
 
     payment_data = {
         'payment_processor_name': settings.CC_PROCESSOR_NAME,
         'payment_page_url': get_purchase_endpoint(),
         'payment_form_data': get_signed_purchase_params(
             cart,
-            callback_url=callback_url,
-            extra_data=[unicode(course_key), course_mode.slug]
+            callback_url=(callback_url, cancel_callback_url),
+            extra_data=extra_data
         ),
     }
     return payment_data

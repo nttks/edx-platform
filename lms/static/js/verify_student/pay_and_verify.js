@@ -55,6 +55,7 @@ var edx = edx || {};
                 ),
                 upgrade: el.data('msg-key') === 'upgrade',
                 minPrice: el.data('course-mode-min-price'),
+                tax: el.data('course-mode-tax'),
                 sku: el.data('course-mode-sku'),
                 contributionAmount: el.data('contribution-amount'),
                 suggestedPrices: _.filter(
@@ -67,7 +68,9 @@ var edx = edx || {};
                 courseModeSlug: el.data('course-mode-slug'),
                 alreadyVerified: el.data('already-verified'),
                 verificationGoodUntil: el.data('verification-good-until'),
-                isABTesting:  el.data('is-ab-testing')
+                isABTesting:  el.data('is-ab-testing'),
+                platformName: el.data('platform-name'),
+                email: el.data('email')
             },
             'payment-confirmation-step': {
                 courseKey: el.data('course-key'),
@@ -75,7 +78,8 @@ var edx = edx || {};
                 courseStartDate: el.data('course-start-date'),
                 coursewareUrl: el.data('courseware-url'),
                 platformName: el.data('platform-name'),
-                requirements: el.data('requirements')
+                requirements: el.data('requirements'),
+                cancelUrl: el.data('cancel-url')
             },
             'face-photo-step': {
                 platformName: el.data('platform-name'),

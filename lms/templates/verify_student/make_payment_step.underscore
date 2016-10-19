@@ -1,12 +1,16 @@
+<div class="ticket_page_wrap">
+  <ul id="breadcrumb">
+    <li class="active"><span><i class="fa fa-shopping-cart"></i><span class="text"><%= pgettext("payment_breadcrumb", "Select") %></span></span></li>
+    <li><span><i class="fa fa-credit-card"></i><span class="text"><%= pgettext("payment_breadcrumb", "Payment") %></span></span></li>
+    <li><span><i class="fa fa-eye"></i><span class="text"><%= pgettext("payment_breadcrumb", "Confirm") %></span></span></li>
+    <li><span><i class="fa fa-check"></i><span class="text"><%= pgettext("payment_breadcrumb", "Complete") %></span></span></li>
+  </ul>
+</div>
 <div id="wrapper-review" tab-index="0" class="wrapper-view make-payment-step">
+  <% if ( isActive ) { %>
   <div class="review view">
     <% if ( !upgrade ) { %>
-      <h2 class="title center-col">
-        <%= _.sprintf(
-            gettext( "You are enrolling in: %(courseName)s"),
-            { courseName: '<span class="course-title">' + courseName + '</span>' }
-          ) %>
-      </h2>
+      <div class="title" style="color: #000; text-align: right; font-size: 16px;"><%- gettext( "*Your enrollment has not been completed yet." ) %></div>
     <% } else { %>
       <h2 class="title">
         <%= _.sprintf(
@@ -27,8 +31,6 @@
             gettext( "You can pay now even if you don't have the following items available, but you will need to have these by %(date)s to qualify to earn a Verified Certificate." ),
             { date: verificationDeadline }
           ) %>
-        <% } else if ( !isActive ) { %>
-          <%- gettext( "You need to activate your account before you can enroll in courses. Check your inbox for an activation email. After you complete activation you can return and refresh this page." ) %>
         <% } else { %>
             <%- gettext( "You can pay now even if you don't have the following items available, but you will need to have these to qualify to earn a Verified Certificate." ) %>
         <% } %>
@@ -82,8 +84,7 @@
 
     <% if ( courseModeSlug === 'no-id-professional') { %>
     <div class="container register is-verified">
-      <h3 class="title"><%- gettext( "ID-Verification is not required for this Professional Education course." ) %></h3>
-      <p><%- gettext( "All professional education courses are fee-based, and require payment to complete the enrollment process." ) %></p>
+      <p><%- gettext( "You can make a payment before enrolling the course." ) %></p>
     </div>
     <% } else if ( alreadyVerified && verificationGoodUntil ) { %>
     <div class="container register is-verified">
@@ -97,12 +98,11 @@
     </div>
     <% } %>
 
-  <% if ( isActive ) { %>
   <div class="payment-buttons nav-wizard is-ready center">
     <input type="hidden" name="contribution" value="<%- minPrice %>" />
     <input type="hidden" name="sku" value="<%- sku %>" />
     <div class="purchase">
-      <p class="product-info"><span class="product-name"></span> <%- gettext( "price" ) %>: <span class="price">$<%- minPrice %> USD</span></p>
+      <p class="product-info"><span class="product-name"><%= courseName %></span> <%- gettext( "price" ) %>: <span class="price">¥<%- _.numberFormat(minPrice + tax) %> (<%= gettext("Including tax") %>)</span></p>
     </div>
     <div class="pay-options">
       <%
@@ -110,7 +110,32 @@
       %>
     </div>
   </div>
-  <% } %>
+
+  <div class="action-buttons">
+    <a href="/courses/<%- courseKey %>/about" class="action-primary-gray back"><%- gettext("Back") %></a>
+  </div>
 
   <form id="payment-processor-form"></form>
+  <% } else { %>
+  <div class="wrapper-msg urgency-high" style="border: 0;">
+    <div class="msg" style="min-width: 0;">
+      <div class="msg-content">
+        <h2 class="title"><%- gettext("Thanks for Registering!") %></h2>
+        <div class="copy">
+          <p class="activation-message">
+            <%= interpolate(
+              gettext(
+                "You've successfully created an account on %(platform_name)s. We've sent an account " +
+                "activation message to %(email)s. To activate your account and start enrolling in " +
+                "courses, click the link in the message."
+              ),
+              {platform_name: platformName, email: email}, true
+            ) %>
+            <%- gettext("Please wait for the arrival of the Activation Mail.") %>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <% } %>
 </div>

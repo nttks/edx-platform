@@ -26,6 +26,7 @@ var edx = edx || {};
                 isActive: true,
                 suggestedPrices: [],
                 minPrice: 0,
+                tax: 0,
                 sku: '',
                 currency: 'usd',
                 upgrade: false,
@@ -37,7 +38,9 @@ var edx = edx || {};
                 alreadyVerified: false,
                 courseModeSlug: 'audit',
                 verificationGoodUntil: '',
-                isABTesting: false
+                isABTesting: false,
+                courseKey: '',
+                email: ''
             };
         },
 
@@ -46,7 +49,7 @@ var edx = edx || {};
                 case "professional":
                     return gettext( "Professional Education Verified Certificate" );
                 case "no-id-professional":
-                    return gettext( "Professional Education" );
+                    return '';
                 default:
                     if ( isUpgrade ) {
                         return gettext( "Verified Certificate upgrade" );
@@ -61,6 +64,8 @@ var edx = edx || {};
                 return gettext('Checkout');
             } else if (processorName.toLowerCase()=='paypal') {
                 return gettext('Checkout with PayPal');
+            } else if (processorName.toLowerCase() == 'gmo') {
+                return gettext('CHECK OUT');
             } else {
                 // This is mainly for testing as no other processors are supported right now.
                 // Translators: 'processor' is the name of a third-party payment processing vendor (example: "PayPal")

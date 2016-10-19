@@ -17,7 +17,7 @@ define([
             };
 
             var STEP_DATA = {
-                minPrice: "12",
+                minPrice: 12,
                 currency: "usd",
                 processors: ["test-payment-processor"],
                 courseKey: "edx/test/test",
@@ -43,7 +43,7 @@ define([
 
                 // check that contribution value is same as price given
                 expect( sel.length ).toEqual(1);
-                expect( sel.val() ).toEqual(price);
+                expect( sel.val() ).toEqual(price.toString());
             };
 
             var expectPaymentButtonEnabled = function( isEnabled ) {
@@ -61,6 +61,11 @@ define([
                 // Payment button should be hidden
                 expect( payButton.length ).toEqual(0);
             };
+
+            var expectInactiveMessageShow = function( isShow ) {
+                var inactiveMessage = $( '.activation-message' );
+                expect( inactiveMessage.length > 0 ).toEqual( isShow );
+            }
 
             var goToPayment = function( requests, kwargs ) {
                 var params = {
@@ -145,6 +150,7 @@ define([
             it( 'provides working payment buttons for a single processor', function() {
                 createView({processors: ['cybersource']});
                 checkPaymentButtons( AjaxHelpers.requests(this), {cybersource: "Checkout"});
+                expectInactiveMessageShow( false );
             });
 
             it( 'provides working payment buttons for multiple processors', function() {
@@ -154,6 +160,7 @@ define([
                     paypal: "Checkout with PayPal",
                     other: "Checkout with other"
                 });
+                expectInactiveMessageShow( false );
             });
 
             it( 'by default minimum price is selected if no suggested prices are given', function() {
@@ -185,6 +192,7 @@ define([
             it( 'disables payment for inactive users', function() {
                 createView({ isActive: false });
                 expectPaymentDisabledBecauseInactive();
+                expectInactiveMessageShow( true );
             });
 
             it( 'displays an error if the order could not be created', function() {

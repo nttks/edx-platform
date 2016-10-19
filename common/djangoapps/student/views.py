@@ -50,7 +50,7 @@ from social.exceptions import AuthException, AuthAlreadyAssociated
 from edxmako.shortcuts import render_to_response, render_to_string, marketing_link
 
 from course_modes.models import CourseMode
-from shoppingcart.api import order_history
+from shoppingcart.api import paid_course_order_history 
 from student.models import (
     Registration, UserProfile,
     PendingEmailChange, CourseEnrollment, CourseEnrollmentAttribute, unique_id_for_user,
@@ -646,7 +646,8 @@ def dashboard(request):
     # only show unenroll settings for not global course.
     show_unenroll_settings_for = frozenset(
         enrollment.course_id for enrollment in course_enrollments if (
-            enrollment.course_id not in global_courses
+            enrollment.course_id not in global_courses and
+            not CourseMode.has_professional_mode(course_modes_by_course[enrollment.course_id])
         )
     )
 
@@ -684,8 +685,7 @@ def dashboard(request):
     # we'll display the banner
     denied_banner = any(item.display for item in reverifications["denied"])
 
-    # Populate the Order History for the side-bar.
-    order_history_list = order_history(user, course_org_filter=course_org_filter, org_filter_out_set=org_filter_out_set)
+    paid_course_order_history_list = paid_course_order_history(user)
 
     # get list of courses having pre-requisites yet to be completed
     courses_having_prerequisites = frozenset(
@@ -729,7 +729,7 @@ def dashboard(request):
         'platform_name': platform_name,
         'enrolled_courses_either_paid': enrolled_courses_either_paid,
         'provider_states': [],
-        'order_history_list': order_history_list,
+        'paid_course_order_history_list': paid_course_order_history_list,
         'courses_requirements_not_met': courses_requirements_not_met,
         'nav_hidden': True,
         'course_programs': course_programs,
@@ -1049,11 +1049,6 @@ def change_enrollment(request, check_access=True):
             except Exception:
                 return HttpResponseBadRequest(_("Could not enroll"))
 
-        if course.is_f2f_course and course.is_f2f_course_sell:
-            return HttpResponse(
-                reverse("advanced_course:choose", kwargs={'course_id': unicode(course_id)})
-            )
-
         # If we have more than one course mode or professional ed is enabled,
         # then send the user to the choose your track page.
         # (In the case of no-id-professional/professional ed, this will redirect to a page that
@@ -1061,6 +1056,11 @@ def change_enrollment(request, check_access=True):
         if CourseMode.has_verified_mode(available_modes) or CourseMode.has_professional_mode(available_modes):
             return HttpResponse(
                 reverse("course_modes_choose", kwargs={'course_id': unicode(course_id)})
+            )
+
+        if course.is_f2f_course and course.is_f2f_course_sell:
+            return HttpResponse(
+                reverse("advanced_course:choose", kwargs={'course_id': unicode(course_id)})
             )
 
         # Otherwise, there is only one mode available (the default)

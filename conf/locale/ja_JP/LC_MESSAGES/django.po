@@ -7002,7 +7002,7 @@ msgstr "必要時間"
 
 #: lms/djangoapps/shoppingcart/reports.py
 msgid "Order ID"
-msgstr "注文ID"
+msgstr "申込番号"
 
 #: lms/djangoapps/shoppingcart/reports.py
 msgid "Unit Cost"

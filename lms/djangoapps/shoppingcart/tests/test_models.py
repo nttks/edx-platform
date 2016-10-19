@@ -264,7 +264,7 @@ class OrderTest(ModuleStoreTestCase):
             'Completed Order',
             {
                 'orderId': 1,
-                'currency': 'usd',
+                'currency': settings.PAYMENT_CURRENCY,
                 'total': '40.00',
                 'products': [
                     {
@@ -477,6 +477,7 @@ class OrderItemTest(TestCase):
         self.assertEqual(item.get_list_price(), item.list_price)
 
 
+@override_settings(PAYMENT_CURRENCY='usd')
 @patch.dict('django.conf.settings.FEATURES', {'ENABLE_PAID_COURSE_REGISTRATION': True})
 class PaidCourseRegistrationTest(ModuleStoreTestCase):
     """
@@ -862,7 +863,7 @@ class CertificateItemTest(ModuleStoreTestCase):
             'Refunded Order',
             {
                 'orderId': 1,
-                'currency': 'usd',
+                'currency': settings.PAYMENT_CURRENCY,
                 'total': '40.00',
                 'products': [
                     {
@@ -1072,12 +1073,23 @@ class CertificateItemTest(ModuleStoreTestCase):
         # Check that the tax-deduction information appears in the confirmation email
         self.assertEqual(len(mail.outbox), 1)
         email = mail.outbox[0]
-        self.assertEquals('Order Payment Confirmation', email.subject)
-        self.assertNotIn("If you haven't verified your identity yet, please start the verification process", email.body)
-        self.assertIn(
-            "You can unenroll in the course and receive a full refund for 2 days after the course start date. ",
-            email.body
-        )
+        self.assertEqual('{} Notice of the registration completion'.format(settings.PLATFORM_NAME), email.subject)
+        self.assertIn('I will inform you that your registration of a paid course has been completed.', email.body)
+
+    @override_settings(PAYMENT_TAX=8)
+    def test_tax(self):
+        CourseEnrollment.enroll(self.user, self.course_key)
+        cart = Order.get_cart_for_user(user=self.user)
+        CertificateItem.add_to_order(cart, self.course_key, self.cost, 'verified')
+
+        item = CertificateItem.objects.filter(order=cart)[0]
+        # Verify that calculated tax can be acquired
+        self.assertEqual(3, item.tax)
+
+        item.additional_info.delete()
+        item = CertificateItem.objects.filter(order=cart)[0]
+        # Verify that exception does not occur and default value can be acquired
+        self.assertEqual(0, item.tax)
 
 
 class DonationTest(ModuleStoreTestCase):

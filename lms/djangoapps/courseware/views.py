@@ -886,6 +886,10 @@ def course_about(request, course_id):
         # get prerequisite courses display names
         pre_requisite_courses = get_prerequisite_courses_display(course)
 
+        # get course mode and check professional mode
+        available_modes = CourseMode.modes_for_course_dict(course.id)
+        is_professional_mode = CourseMode.has_professional_mode(available_modes)
+
         return render_to_response('courseware/course_about.html', {
             'course': course,
             'staff_access': staff_access,
@@ -909,6 +913,7 @@ def course_about(request, course_id):
             'cart_link': reverse('shoppingcart.views.show_cart'),
             'pre_requisite_courses': pre_requisite_courses,
             'is_spoc_course': spoc_status.is_spoc_course if spoc_status else False,
+            'is_professional_mode': is_professional_mode,
         })
 
 

@@ -29,3 +29,8 @@ def get_processor_config():
         config = config['microsites'][config_key]
 
     return config
+
+
+def create_order_id(order):
+    prefix = get_processor_config().get('ORDER_ID_PREFIX', 'order')
+    return "{prefix}-{order_id}".format(prefix=prefix, order_id=order.id)

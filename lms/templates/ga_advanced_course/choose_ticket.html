@@ -3,7 +3,7 @@
 
 <%!
 from django.core.urlresolvers import reverse
-from django.utils.translation import ugettext as _
+from django.utils.translation import pgettext, ugettext as _
 from openedx.core.lib.ga_datetime_utils import to_timezone
 %>
 
@@ -13,10 +13,10 @@ from openedx.core.lib.ga_datetime_utils import to_timezone
 
 <div class="ticket_page_wrap">
   <ul id="breadcrumb">
-    <li class="active"><span><i class="fa fa-shopping-cart"></i><span class="text">${_("Ticket Selection")}</span></span></li>
-    <li><span><i class="fa fa-credit-card"></i><span class="text">${_("Payment Method Selection")}</span></span></li>
-    <li><span><i class="fa fa-eye"></i><span class="text">${_("Content Confirmation")}</span></span></li>
-    <li><span><i class="fa fa-check"></i><span class="text">${_("Payment Completion")}</span></span></li>
+    <li class="active"><span><i class="fa fa-shopping-cart"></i><span class="text">${pgettext("payment_breadcrumb", "Select")}</span></span></li>
+    <li><span><i class="fa fa-credit-card"></i><span class="text">${pgettext("payment_breadcrumb", "Payment")}</span></span></li>
+    <li><span><i class="fa fa-eye"></i><span class="text">${pgettext("payment_breadcrumb", "Confirm")}</span></span></li>
+    <li><span><i class="fa fa-check"></i><span class="text">${pgettext("payment_breadcrumb", "Complete")}</span></span></li>
   </ul>
   <h2>${_("Ticket Selection")}</h2>
 

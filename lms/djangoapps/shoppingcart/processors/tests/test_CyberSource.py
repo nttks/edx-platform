@@ -62,7 +62,8 @@ def fakemicrosite(name, default=None):
 
 @override_settings(
     CC_PROCESSOR_NAME=TEST_CC_PROCESSOR_NAME,
-    CC_PROCESSOR=TEST_CC_PROCESSOR
+    CC_PROCESSOR=TEST_CC_PROCESSOR,
+    PAYMENT_CURRENCY='usd',
 )
 class CyberSourceTests(TestCase):
 

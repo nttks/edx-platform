@@ -116,6 +116,10 @@
   // HACK: fix global header height in verification flow ECOM-1808
   header.global {
     height: 76px;
+
+    &.slim {
+      border-bottom: 1px solid #919191;
+    }
   }
 
   // HACK: nasty override due to our bad input/button styling
@@ -170,9 +174,17 @@
   // elements - controls
   .action-primary {
     @extend %btn-verify-primary;
+    background: #ff5233;
+    box-shadow: none;
     // needed for override due to .register a:link styling
     border: 0 !important;
     color: $white !important;
+
+    &:hover, &:focus, &:active {
+      opacity: 1;
+      background: #f52d2f;
+      box-shadow: none;
+    }
   }
 
   // elements - controls
@@ -181,6 +193,18 @@
     // needed for override due to .register a:link styling
     border: 0 !important;
     color: $white !important;
+  }
+
+  .action-primary-gray {
+    @extend %btn-primary-gray;
+    // needed for override due to .register a:link styling
+    border: 0 !important;
+    color: $white !important;
+
+    &.back {
+      min-width: 6rem;
+      border-radius: 8px;
+    }
   }
 
   .action-confirm {
@@ -879,7 +903,8 @@
 
         .payment-buttons {
           overflow: auto;
-          padding-bottom: ($baseline/4);
+          padding-top: ($baseline/2);
+          padding-bottom: ($baseline/2);
           margin: {
               top: ($baseline / 2);
               bottom: ($baseline * 0.75);
@@ -894,11 +919,29 @@
               background: $blue !important;
             }
           }
+
+          .purchase {
+            .product-name {
+              padding-right: 10px;
+            }
+          }
+        }
+
+        .action-buttons {
+          padding-top: ($baseline / 2);
         }
 
         .border-gray {
           border-bottom: 2px solid $gray;
           margin: ($baseline*1.12) 0;
+        }
+
+        @media only screen and (max-width: 800px) {
+          .action-buttons {
+            padding: 10px;
+
+            a { width: 100%; }
+          }
         }
     }
 
@@ -1158,6 +1201,8 @@
     border-radius: ($baseline/10);
     background: $m-gray-l4;
     padding: ($baseline*0.75) $baseline;
+    box-shadow: none;
+    border: solid 1px #ccc;
 
     .help-inline, .wizard-steps {
 
@@ -2118,6 +2163,31 @@
       margin-top: 20px;
     }
   }
+
+  @media only screen and (max-width: 800px) {
+    .container {
+      padding: 0;
+    }
+
+    .carousel #wrapper-review {
+      padding: 3px;
+    }
+
+    .payment-buttons {
+      .purchase {
+        width: 100%;
+
+        .product-name {
+          display: block;
+          padding-bottom: 10px;
+        }
+      }
+
+      .action-primary {
+        width: 100%;
+      }
+    }
+  }
 }
 
 .reverify-blocked {
@@ -2359,6 +2429,68 @@
       .instruction {
         @extend %t-copy-lead1;
         margin-bottom: $baseline;
+      }
+    }
+  }
+}
+
+// ====================
+.payment-confirmation-step {
+  .action-buttons {
+    a {
+      @include float(right);
+    }
+  }
+
+  @media only screen and (max-width: 800px) {
+    padding: 3px;
+
+    .payment-info {
+      padding: 0 !important;
+    }
+
+    .action-buttons {
+      margin-bottom: 10px;
+
+      a {
+        float: none;
+        width: 100%;
+      }
+    }
+  }
+
+  @media only screen and (max-width: 640px) {
+    .wrapper-report .report {
+      thead, tbody {
+        display: block;
+        float: left;
+        border-bottom: 1px solid #b1b2b4;
+
+        tr {
+          border-bottom: 0;
+        }
+
+        th[scope="col"], td {
+          display: list-item;
+          line-height: 1.0rem;
+          padding: 10px;
+          font-size: 12px;
+          height: 45px;
+        }
+      }
+
+      thead {
+        width: 30%;
+      }
+
+      tbody {
+        width: 70%;
+      }
+
+      tfoot {
+        display: block;
+        float: left;
+        width: 100%;
       }
     }
   }

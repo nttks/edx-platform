@@ -6347,7 +6347,7 @@ msgstr "このページを記録として印刷してください；これはレ
 #: test_root/staticfiles/templates/commerce/receipt.underscore
 #: test_root/staticfiles/templates/verify_student/payment_confirmation_step.underscore
 msgid "Order No."
-msgstr "注文番号"
+msgstr "申込番号"
 
 #: lms/templates/commerce/receipt.underscore
 #: lms/templates/verify_student/payment_confirmation_step.underscore
@@ -7236,7 +7236,7 @@ msgstr "講座へ進む"
 #: lms/templates/verify_student/enrollment_confirmation_step.underscore
 #: test_root/staticfiles/templates/verify_student/enrollment_confirmation_step.underscore
 msgid "Go to your Dashboard"
-msgstr "マイページへ移動"
+msgstr "マイページへ"
 
 #: lms/templates/verify_student/enrollment_confirmation_step.underscore
 #: test_root/staticfiles/templates/verify_student/enrollment_confirmation_step.underscore
@@ -7610,7 +7610,7 @@ msgstr "認証状態は %(verificationGoodUntil)s まで有効です。"
 #: lms/templates/verify_student/make_payment_step.underscore
 #: test_root/staticfiles/templates/verify_student/make_payment_step.underscore
 msgid "price"
-msgstr "価格"
+msgstr "金額"
 
 #: lms/templates/verify_student/make_payment_step_ab_testing.underscore
 #: test_root/staticfiles/templates/verify_student/make_payment_step_ab_testing.underscore

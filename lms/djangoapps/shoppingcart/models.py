@@ -51,10 +51,11 @@ from .exceptions import (
     UnexpectedOrderItemStatus,
     ItemNotFoundInCartException
 )
-from .utils import is_pdf_receipt_enabled
+from .utils import is_pdf_receipt_enabled, is_no_id_professional
 from microsite_configuration import microsite
 from shoppingcart.pdf import PDFInvoice
 
+from openedx.core.djangoapps.content.course_overviews.models import CourseOverview
 from openedx.core.lib.ga_datetime_utils import to_timezone
 
 
@@ -155,7 +156,10 @@ class Order(models.Model):
             cart_order = cls.objects.filter(user=user, status='cart').order_by('-id')[:1].get()
         except ObjectDoesNotExist:
             # if nothing exists in the database, create a new cart
-            cart_order, _created = cls.objects.get_or_create(user=user, status='cart')
+            cart_order, _created = cls.objects.get_or_create(
+                user=user, status='cart',
+                defaults={'currency': settings.PAYMENT_CURRENCY}
+            )
         return cart_order
 
     @classmethod
@@ -211,6 +215,23 @@ class Order(models.Model):
     @property
     def total_tax(self):
         return sum(i.tax for i in self.orderitem_set.filter(status=self.status).select_subclasses() if hasattr(i, 'tax'))
+
+    @property
+    def payment_method(self):
+        """
+        Returns payment method
+        """
+        from shoppingcart.processors.GMO import ResultParams
+        _data = json.loads(self.processor_reply_dump if self.processor_reply_dump else '{}')
+        if not _data:
+            return _("Unknown")
+        params = ResultParams(_data)
+        if params.is_card():
+            return _("Credit Card")
+        elif params.is_docomo():
+            return _("Docomo Mobile Payment")
+        else:
+            return _("Unknown")
 
     def has_items(self, item_type=None):
         """
@@ -402,6 +423,21 @@ class Order(models.Model):
                             'advanced_course': AdvancedCourse.get_advanced_course(
                                 _item.advanced_course_ticket.advanced_course_id
                             ),
+                            'site_name': site_name,
+                        }
+                    )
+                elif is_no_id_professional(orderitems[0]):
+                    _item = orderitems[0]
+                    subject = render_to_string('emails/paid_course_order_confirmation_email_subject.txt', None)
+                    # Email subject *must not* contain newlines
+                    subject = ''.join(subject.splitlines())
+                    message = render_to_string(
+                        'emails/paid_course_order_confirmation_email.txt',
+                        {
+                            'order': self,
+                            'purchased_datetime': to_timezone(self.purchase_time),
+                            'recipient_name': recipient[0],
+                            'course': CourseOverview.get_from_id(_item.course_id),
                             'site_name': site_name,
                         }
                     )
@@ -1901,6 +1937,14 @@ class CertificateItem(OrderItem):
     course_enrollment = models.ForeignKey(CourseEnrollment)
     mode = models.SlugField()
 
+    @property
+    def tax(self):
+        try:
+            return self.additional_info.tax
+        except ObjectDoesNotExist:
+            # this should not happen because additional_info should be created at post_save of this instance.
+            return 0.0
+
     @receiver(UNENROLL_DONE)
     def refund_cert_callback(sender, course_enrollment=None, skip_refund=False, **kwargs):  # pylint: disable=no-self-argument,unused-argument
         """
@@ -1956,7 +2000,7 @@ class CertificateItem(OrderItem):
 
     @classmethod
     @transaction.atomic
-    def add_to_order(cls, order, course_id, cost, mode, currency='usd'):
+    def add_to_order(cls, order, course_id, cost, mode, currency=None):
         """
         Add a CertificateItem to an order
 
@@ -1974,6 +2018,9 @@ class CertificateItem(OrderItem):
             CertificateItem.add_to_order(cart, 'edX/Test101/2013_Fall', 30, 'verified')
 
         """
+        if currency is None:
+            currency = settings.PAYMENT_CURRENCY
+
         super(CertificateItem, cls).add_to_order(order, course_id, cost, currency=currency)
 
         course_enrollment = CourseEnrollment.get_or_create_enrollment(order.user, course_id)
@@ -2004,10 +2051,13 @@ class CertificateItem(OrderItem):
         # Translators: In this particular case, mode_name refers to a
         # particular mode (i.e. Honor Code Certificate, Verified Certificate, etc)
         # by which a user could enroll in the given course.
-        item.line_desc = _("{mode_name} for course {course}").format(
-            mode_name=mode_info.name,
-            course=course_name
-        )
+        if mode == CourseMode.NO_ID_PROFESSIONAL_MODE:
+            item.line_desc = course_name
+        else:
+            item.line_desc = _("{mode_name} for course {course}").format(
+                mode_name=mode_info.name,
+                course=course_name
+            )
         item.currency = currency
         order.currency = currency
         order.save()

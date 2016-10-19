@@ -3,7 +3,7 @@ API for for getting information about the user's shopping cart.
 """
 from django.core.urlresolvers import reverse
 from xmodule.modulestore.django import ModuleI18nService
-from shoppingcart.models import OrderItem
+from shoppingcart.models import CertificateItem, OrderItem
 
 
 def order_history(user, **kwargs):
@@ -35,3 +35,16 @@ def order_history(user, **kwargs):
                         'order_date': ModuleI18nService().strftime(order_item.order.purchase_time, 'SHORT_DATE')
                     })
     return order_history_list
+
+
+def paid_course_order_history(user):
+    """
+    Returns the list of previously purchased orders for a user. Only the orders with CertificateItem.
+    """
+    order_histories = {}
+    purchased_order_items = CertificateItem.objects.filter(user=user, status='purchased').order_by('fulfilled_time')
+    for order_item in purchased_order_items:
+        # Should not be purchased more than once for the same course,
+        # but if that is considered valid only the latest order.
+        order_histories[order_item.course_id] = order_item.order_id
+    return order_histories

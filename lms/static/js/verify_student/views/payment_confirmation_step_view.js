@@ -19,7 +19,8 @@ var edx = edx || {};
                 courseStartDate: '',
                 coursewareUrl: '',
                 platformName: '',
-                requirements: []
+                requirements: [],
+                cancelUrl: ''
             };
         },
 
@@ -127,9 +128,10 @@ var edx = edx || {};
 
             receiptContext = {
                 orderNum: data.orderNum,
+                receiptNum: data.receipt_number,
                 currency: data.currency,
                 purchasedDatetime: data.purchase_datetime,
-                totalCost: view.formatMoney( data.total_cost ),
+                totalCost: view.formatMoney( data.total_cost + data.total_tax ),
                 isRefunded: data.status === "refunded",
                 billedTo: {
                     firstName: data.billed_to.first_name,
@@ -139,6 +141,7 @@ var edx = edx || {};
                     postalCode: data.billed_to.postal_code,
                     country: data.billed_to.country
                 },
+                paymentMethod: data.payment_method,
                 items: []
             };
 
@@ -147,7 +150,7 @@ var edx = edx || {};
                 function( item ) {
                     return {
                         lineDescription: item.line_desc,
-                        cost: view.formatMoney( item.line_cost )
+                        cost: view.formatMoney( item.line_cost + item.tax )
                     };
                 }
             );
@@ -156,7 +159,7 @@ var edx = edx || {};
         },
 
         formatMoney: function( moneyStr ) {
-            return Number( moneyStr ).toFixed(2);
+            return Number( moneyStr ).toLocaleString();
         }
     });
 

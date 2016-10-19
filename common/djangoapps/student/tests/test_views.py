@@ -9,6 +9,7 @@ from pyquery import PyQuery as pq
 from django.core.urlresolvers import reverse
 from django.conf import settings
 
+from course_modes.tests.factories import CourseModeFactory
 from student.tests.factories import UserFactory, CourseEnrollmentFactory
 from student.models import CourseEnrollment
 from student.helpers import DISABLE_UNENROLL_CERT_STATES
@@ -67,6 +68,28 @@ class TestStudentDashboardUnenrollments(ModuleStoreTestCase):
         """ Assert that the unenroll action is shown or not based on the cert status."""
         if is_global_course:
             CourseGlobalSettingFactory.create(course_id=self.course.id)
+
+        self.cert_status = cert_status
+
+        with patch('student.views.cert_info', side_effect=self.mock_cert):
+            response = self.client.get(reverse('dashboard'))
+
+            self.assertEqual(pq(response.content)(self.UNENROLL_ELEMENT_ID).length, unenroll_action_count)
+
+    @ddt.data(
+        (None, None, 1),
+        (None, 'honor', 1),
+        (None, 'audit', 1),
+        (None, 'verified', 1),
+        (None, 'credit', 1),
+        (None, 'professional', 0),
+        (None, 'no-id-professional', 0),
+    )
+    @ddt.unpack
+    def test_unenroll_available_with_course_mode(self, cert_status, mode_slug, unenroll_action_count):
+        """ Assert that the unenroll action is shown or not based on the course mode."""
+        if mode_slug:
+            CourseModeFactory.create(course_id=self.course.id, mode_slug=mode_slug)
 
         self.cert_status = cert_status
 

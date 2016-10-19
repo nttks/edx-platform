@@ -28,7 +28,7 @@ from common.test.utils import XssTestMixin
 from xmodule.modulestore.tests.django_utils import SharedModuleStoreTestCase, ModuleStoreTestCase
 from xmodule.modulestore.tests.factories import CourseFactory
 from student.roles import CourseSalesAdminRole
-from util.date_utils import get_default_time_display
+from util.date_utils import strftime_localized
 from util.testing import UrlResetMixin
 
 from shoppingcart.views import _can_download_report, _get_date_from_str
@@ -49,6 +49,8 @@ from shoppingcart.views import initialize_report
 from shoppingcart.tests.payment_fake import PaymentFakeView
 from shoppingcart.processors.CyberSource2 import sign
 
+from openedx.core.lib.ga_datetime_utils import to_timezone
+
 
 def mock_render_purchase_form_html(*args, **kwargs):
     return render_purchase_form_html(*args, **kwargs)
@@ -64,6 +66,7 @@ render_mock = Mock(side_effect=mock_render_to_response)
 postpay_mock = Mock()
 
 
+@override_settings(PAYMENT_CURRENCY='usd')
 @patch.dict('django.conf.settings.FEATURES', {'ENABLE_PAID_COURSE_REGISTRATION': True})
 @ddt.ddt
 class ShoppingCartViewsTests(SharedModuleStoreTestCase, XssTestMixin):
@@ -907,7 +910,7 @@ class ShoppingCartViewsTests(SharedModuleStoreTestCase, XssTestMixin):
         # Parse the response as JSON and check the contents
         json_resp = json.loads(resp.content)
         self.assertEqual(json_resp.get('currency'), self.cart.currency)
-        self.assertEqual(json_resp.get('purchase_datetime'), get_default_time_display(self.cart.purchase_time))
+        self.assertEqual(json_resp.get('purchase_datetime'), strftime_localized(to_timezone(self.cart.purchase_time), '%Y/%m/%d %H:%M'))
         self.assertEqual(json_resp.get('total_cost'), self.cart.total_cost)
         self.assertEqual(json_resp.get('status'), "purchased")
         self.assertEqual(json_resp.get('billed_to'), {
@@ -927,6 +930,7 @@ class ShoppingCartViewsTests(SharedModuleStoreTestCase, XssTestMixin):
                 'unit_cost': 40,
                 'quantity': 1,
                 'line_cost': 40,
+                'tax': 3,
                 'line_desc': '{} for course Test Course'.format(self.verified_course_mode.mode_display_name),
                 'course_key': unicode(self.verified_course_key)
             })
@@ -988,6 +992,7 @@ class ShoppingCartViewsTests(SharedModuleStoreTestCase, XssTestMixin):
             'unit_cost': 40,
             'quantity': 1,
             'line_cost': 40,
+            'tax': 0,  # PaidCourseRegistration has no implementation about tax
             'line_desc': 'Registration for Course: Robot Super Course',
             'course_key': unicode(self.course_key)
         })
@@ -995,6 +1000,7 @@ class ShoppingCartViewsTests(SharedModuleStoreTestCase, XssTestMixin):
             'unit_cost': 40,
             'quantity': 1,
             'line_cost': 40,
+            'tax': 3,
             'line_desc': '{} for course Test Course'.format(self.verified_course_mode.mode_display_name),
             'course_key': unicode(self.verified_course_key)
         })

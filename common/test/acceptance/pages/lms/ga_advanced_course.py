@@ -285,19 +285,19 @@ class DashboardPage(GaDashboradPage):
 
     def has_advanced_course_purchased_message(self, course_name):
         try:
-            self._get_element_in_course(course_name, ".advanced-course-information.purchased")
+            self._get_element_in_course(course_name, ".advanced-course-information.advanced-course.purchased")
             return True
         except NoSuchElementException:
             return False
 
     def show_advanced_courses_page(self, course_name):
-        btn = self._get_element_in_course(course_name, '.advanced-course-information.apply .btn')
+        btn = self._get_element_in_course(course_name, '.advanced-course-information.advanced-course.apply .btn')
         course_id = btn.get_attribute('href').split('/')[-2]
         btn.click()
         return AdvancedF2FCoursesPage(self.browser, course_id).wait_for_page()
 
     def show_receipt_page(self, course_name):
-        self._get_element_in_course(course_name, '.advanced-course-information.purchased .btn').click()
+        self._get_element_in_course(course_name, '.advanced-course-information.advanced-course.purchased .btn').click()
 
         return AdvancedCourseReceiptPage(self.browser).wait_for_page()
 

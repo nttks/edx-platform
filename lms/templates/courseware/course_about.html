@@ -86,8 +86,7 @@ from openedx.core.lib.courses import course_image_url
           location.href = xhr.responseText;
         }
       } else if (xhr.status == 403) {
-          location.href = "${reverse('register_user')}?course_id=${course.id | u}&enrollment_action=enroll";
-          location.href = "${reverse('register_user')}?course_id=${course.id | u}&enrollment_action=enroll${'&advanced_course=1' if course.is_f2f_course and course.is_f2f_course_sell else ''}";
+          location.href = "${reverse('register_user')}?course_id=${course.id | u}&enrollment_action=enroll${'&advanced_course=1' if not is_professional_mode and course.is_f2f_course and course.is_f2f_course_sell else ''}";
       } else {
         $('#register_error').html(
             (xhr.responseText ? xhr.responseText : "${_("An error occurred. Please try again later.")}")
@@ -195,9 +194,15 @@ from openedx.core.lib.courses import course_image_url
           <div id="register_error"></div>
         %else:
           % if not is_spoc_course:
-          <a href="#" class="register">
-            ${_("Enroll in {course_name}").format(course_name=course.display_number_with_default) | h}
-          </a>
+            % if is_professional_mode:
+            <a href="#" class="register register-professional">
+              ${_("Enroll in {course_name}").format(course_name=course.display_number_with_default) | h} (${_("paid course")})
+            </a>
+            % else:
+            <a href="#" class="register">
+              ${_("Enroll in {course_name}").format(course_name=course.display_number_with_default) | h}
+            </a>
+            % endif
           <div id="register_error"></div>
           % else:
           <span class="invitation_message disabled">${_("Please be enrolled from the invitation code registration page.")}</span>

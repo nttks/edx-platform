@@ -11,7 +11,7 @@ from django.utils.translation import ugettext as _
 from model_utils.managers import InheritanceManager
 
 from courseware.courses import get_course_by_id
-from shoppingcart.models import OrderItem
+from shoppingcart.models import CertificateItem, OrderItem
 from xmodule_django.models import CourseKeyField
 
 from openedx.core.lib.ga_datetime_utils import to_timezone
@@ -155,3 +155,12 @@ class AdvancedCourseItem(OrderItem):
             return _("Docomo Mobile Payment")
         else:
             return _("Unknown")
+
+
+class CertificateItemAdditionalInfo(models.Model):
+
+    certificate_item = models.OneToOneField(CertificateItem, related_name='additional_info')
+    tax = models.DecimalField(default=0.0, decimal_places=2, max_digits=30)
+
+    class Meta:
+        app_label = 'ga_shoppingcart'

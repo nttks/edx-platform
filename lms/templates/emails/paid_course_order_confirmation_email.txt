@@ -1,0 +1,74 @@
+<%! 
+    from django.utils.translation import get_language
+    from shoppingcart.processors import create_order_id
+%>
+% if get_language() in ['ja', 'ja-jp']:  ## ------------------------------------------------------------------------- ja
+${recipient_name} 様
+
+gaccoをご利用いただき、ありがとうございます。
+有料講座の受講登録が完了したことをお知らせいたします。
+
+------------------------------------
+購入内容
+------------------------------------
+「${course.display_name_with_default}」講座
+
+注文番号: #${create_order_id(order)}
+開講日: ${course.start_datetime_text()}
+お支払い方法: ${order.payment_method}
+お支払い金額: ¥${"{:,d}".format(int(order.total_cost + order.total_tax))}
+購入日時: ${purchased_datetime.strftime('%Y/%m/%d %H:%M:%S')}
+
+
+マイページに講座が登録されていることをご確認ください。
+講座は、開講日１５時から受講できます。
+https://${site_name}/dashboard
+
+講座詳細
+https://${site_name}/courses/${unicode(course.id)}/about
+
+
+このメールは自動送信しています。ご返信いただいても
+お答えできかねますのでご了承ください。
+==================
+・お問い合わせやキャンセルはこちらから
+https://support.gacco.org/hc/ja/requests/new
+
+
+gacco運営チーム
+% else:  ## --------------------------------------------------------------------------------------------------------- en
+${recipient_name}
+
+Thank you for using gacco!
+I will inform you that your registration of a paid course has been completed.
+
+------------------------------------
+Your purchased contents
+------------------------------------
+[${course.display_name_with_default}]
+
+Order ID: #${create_order_id(order)}
+Starting date: ${course.start_datetime_text()}
+Payment method: ${order.payment_method}
+Total amount: ¥${"{:,d}".format(int(order.total_cost + order.total_tax))}
+Purchased date time: ${purchased_datetime.strftime('%Y/%m/%d %H:%M:%S')}
+
+
+Please double check if your purchased course is surely registered in your gacco account. You can start learning the course from 3pm on the starting date.
+
+Your dashboard page: https://${site_name}/dashboard
+
+Course details: https://${site_name}/courses/${unicode(course.id)}/about
+
+This e-mail was automatically sent by gacco.org.
+Please do not reply to this e-mail.
+
+==================
+If you need help, please contact to:
+https://support.gacco.org/hc/ja/requests/new
+---------------
+
+Thanks for using our site!
+
+The gacco Team
+% endif

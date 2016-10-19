@@ -1,14 +1,14 @@
 <div class="wrapper-content-main payment-confirmation-step">
   <article class="content-main">
     <h3 class="title">
-      <%= _.sprintf( gettext( "Thank you! We have received your payment for %(courseName)s." ), { courseName: '<span class="course-title">' + courseName + '</span>' } ) %>
+      <%- gettext( "You have successfully completed your course." ) %>
     </h3>
 
     <% if ( receipt ) { %>
     <div class="list-info">
       <div class="info-item payment-info">
         <div class="copy">
-          <p><%- gettext( "Please print this page for your records; it serves as your receipt. You will also receive an email with the same information." ) %></p>
+          <p><%- gettext( "You will receive a confirmation email shortly." ) %></p>
         </div>
 
         <div class="wrapper-report">
@@ -16,25 +16,28 @@
             <thead>
               <tr>
                 <th scope="col" ><%- gettext( "Order No." ) %></th>
-                <th scope="col" ><%- gettext( "Description" ) %></th>
-                <th scope="col" ><%- gettext( "Date" ) %></th>
-                <th scope="col" ><%- gettext( "Amount" ) %></th>
+                <th scope="col" ><%- gettext( "Course title" ) %></th>
+                <th scope="col" ><%- gettext( "Order date" ) %></th>
+                <th scope="col" ><%- gettext( "Payment method" ) %></th>
+                <th scope="col" ><%- gettext( "Payment amount" ) %></th>
               </tr>
             </thead>
 
             <tbody>
               <% for ( var i = 0; i < receipt.items.length; i++ ) { %>
                 <% if ( receipt.isRefunded ) { %>
-                  <td><del><%- receipt.orderNum %></del></td>
+                  <td><del><%- receipt.receiptNum %></del></td>
                   <td><del><%- receipt.items[i].lineDescription %></del></td>
                   <td><del><%- receipt.purchasedDatetime %></del></td>
+                  <td><del><%- receipt.paymentMethod %></del></td>
                   <td><del><%- receipt.items[i].cost %> (<%- receipt.currency.toUpperCase() %>)</del></td>
                 <% } else { %>
                   <tr>
-                    <td><%- receipt.orderNum %></td>
+                    <td><%- receipt.receiptNum %></td>
                     <td><%- receipt.items[i].lineDescription %></td>
                     <td><%- receipt.purchasedDatetime %></td>
-                    <td><%- receipt.items[i].cost %> (<%- receipt.currency.toUpperCase() %>)</td>
+                    <td><%- receipt.paymentMethod %></td>
+                    <td>¥<%- receipt.items[i].cost %> (<%- gettext( "Including tax" ) %>)</td>
                   </tr>
                 <% } %>
               <% } %>
@@ -42,10 +45,10 @@
 
             <tfoot>
               <tr>
-                <th scope="row" class="total-label" colspan="1"><%- gettext( "Total" ) %></th>
-                <td class="total-value" colspan="3">
-                  <span class="value-amount"><%- receipt.totalCost %></span>
-                   <span class="value-currency">(<%- receipt.currency.toUpperCase() %>)</span>
+                <th scope="row" class="total-label" style="text-align: right;" colspan="4"><%- gettext( "Total" ) %></th>
+                <td class="total-value" colspan="1">
+                  <span class="value-amount">¥<%- receipt.totalCost %></span>
+                   <span class="value-currency">(<%- gettext( "Including tax" ) %>)</span>
                 </td>
               </tr>
             </tfoot>
@@ -58,9 +61,17 @@
               <p><%- gettext( "Crossed out items have been refunded." ) %></p>
             </div>
           </div>
+          <% } else { %>
+            <p style="text-align: right;">
+            <%= interpolate(
+                    gettext( "If you would like to cancel, please contact <a href=\"%(cancelUrl)s\">HERE</a> (language is Japanese only)" ),
+                    {cancelUrl: cancelUrl}, true
+                )
+            %>
           <% } %>
         </div>
 
+        <!--
         <div class="copy">
           <p><%- gettext( "Billed to" ) %>:
               <span class="name-first"><%- receipt.billedTo.firstName %></span>
@@ -71,6 +82,7 @@
               <span class="address-country"><%- receipt.billedTo.country.toUpperCase() %></span>)
           </p>
         </div>
+        -->
       </div>
     </div>
     <% } else { %>
@@ -147,5 +159,9 @@
       </a>
     </nav>
     <% } %>
+
+    <div class="action-buttons clearfix">
+      <a href="/dashboard" class="action-primary-blue" style="float: right;"><%- gettext("Go to your Dashboard") %></a>
+    </div>
   </article>
 </div>

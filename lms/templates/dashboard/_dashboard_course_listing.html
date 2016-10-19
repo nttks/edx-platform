@@ -84,15 +84,21 @@ from student.helpers import (
           <div class="sts-enrollment-value">${course_verified_certs.get('enrollment_value')}</div>
         </span>
       % endif
+      % if enrollment.course_id in paid_course_order_history_list:
+        <div class="advanced-course-information paid-course purchased">
+          <div class="label">${_("Paid Course")} ${_("Purchase completed")}</div>
+          <a href="${reverse('verify_student_payment_confirmation', kwargs={'course_id': unicode(enrollment.course_id)})}?payment-order-num=${paid_course_order_history_list[enrollment.course_id]}" class="btn">${_("View your order")}</a>
+        </div>
+      % endif
       % if advanced_course_status.is_purchased():
-        <div class="advanced-course-information purchased">
-          <div class="label">${_("Face 2 Face Classroom")}${_("Purchased")}</div>
+        <div class="advanced-course-information advanced-course purchased">
+          <div class="label">${_("Face 2 Face Classroom")} ${_("Purchase completed")}</div>
           % for order in advanced_course_status.get_purchased_orders():
-          <a href="${reverse('shoppingcart.views.show_receipt', args=[order.id])}" class="btn">${_("View Subscription Details")}</a>
+          <a href="${reverse('shoppingcart.views.show_receipt', args=[order.id])}" class="btn">${_("View your order")}</a>
           % endfor
         </div>
       % elif course_overview.extra and course_overview.extra.is_f2f_course and course_overview.extra.is_f2f_course_sell:
-        <div class="advanced-course-information apply">
+        <div class="advanced-course-information advanced-course apply">
           <a href="${reverse('advanced_course:courses_face_to_face', args=[course_overview.id])}" class="btn">
             % if advanced_course_status.has_available_f2f_course():
             ${_("Face 2 Face Classroom")}&nbsp;${_("Subscription")}

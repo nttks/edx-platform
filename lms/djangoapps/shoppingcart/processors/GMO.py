@@ -9,7 +9,7 @@ from collections import OrderedDict
 
 from django.conf import settings
 from django.utils import timezone
-from django.utils.translation import ugettext as _
+from django.utils.translation import get_language, ugettext as _
 
 from .exceptions import *
 from .helpers import get_processor_config
@@ -159,6 +159,7 @@ def get_purchase_params(cart, callback_url=None, extra_data=None):
     params['show_confirm'] = get_processor_config().get('SHOW_CONFIRM')
     params['use_credit'] = 1
     params['use_docomo'] = 1
+    params['template'] = 1 if get_language() in ['ja', 'ja-jp'] else 2
     params['job'] = 'CAPTURE'
 
     if extra_data is not None:
@@ -318,6 +319,7 @@ class PurchaseParams(OrderedDict):
         'p018': 'show_confirm',
         'p019': 'use_credit',
         'p028': 'use_docomo',
+        'p039': 'template',
         'p040': 'job',
     }
 

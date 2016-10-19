@@ -88,6 +88,8 @@ def _process_capture(params):
     if params.is_capture_success():
         log.info('We received the notification of the CAPTURE success.')
         order = _payment_accepted(params)
+        # set language for the translation at the time of sending email
+        order_helpers.set_language_from_order(order)
         order_helpers.purchase(order, processor_reply_dump=params.get_dumps(), override=False)
     elif params.is_capture_ignore():
         # nothing to do
