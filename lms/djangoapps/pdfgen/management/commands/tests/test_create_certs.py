@@ -1,28 +1,29 @@
-from django.test import TestCase
-from django.core.management import call_command
-from django.core.management.base import CommandError
-from django.conf import settings
-from django.test.utils import override_settings
-from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
-from xmodule.modulestore import ModuleStoreEnum
-from xmodule.modulestore.tests.factories import CourseFactory, ItemFactory
-from xmodule.modulestore.exceptions import DuplicateCourseError
-from capa.tests.response_xml_factory import OptionResponseXMLFactory
-from opaque_keys.edx.locator import CourseLocator
-from student.tests.factories import UserFactory, CourseEnrollmentFactory
-from pdfgen.management.commands import create_certs as cc
-from pdfgen.tests.factories import GeneratedCertificateFactory
-from certificates.models import CertificateStatuses
-from mock import patch, MagicMock, ANY
-from StringIO import StringIO
 import datetime
+from mock import patch, ANY
 import os
 from random import randint
-#from pytz import UTC
+from StringIO import StringIO
+
+from boto.s3.connection import Location
+from django.conf import settings
+from django.core.management import call_command
+from django.core.management.base import CommandError
+from django.test import TestCase
+from django.test.utils import override_settings
 from django.utils.timezone import UTC
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4, landscape
-import unittest
+
+from opaque_keys.edx.locator import CourseLocator
+
+from certificates.models import CertificateStatuses
+from pdfgen.management.commands import create_certs as cc
+from pdfgen.tests.factories import GeneratedCertificateFactory
+from student.tests.factories import UserFactory, CourseEnrollmentFactory
+from xmodule.modulestore import ModuleStoreEnum
+from xmodule.modulestore.exceptions import DuplicateCourseError
+from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
+from xmodule.modulestore.tests.factories import CourseFactory
 
 
 class GenerateCertCommandTestCase(TestCase):
@@ -128,7 +129,6 @@ class GenerateCertCommandTestCase(TestCase):
             "'{}' is an invalid course_id".format(self.invalid_course_id))
 
 
-@unittest.skip("TODO: after release Dogwood")
 @override_settings(
     PDFGEN_BUCKET_NAME='bucket', PDFGEN_ACCESS_KEY_ID='akey',
     PDFGEN_SECRET_ACCESS_KEY='skey', PDFGEN_CERT_AUTHOR='author',
@@ -173,7 +173,7 @@ class GenerateCertCommandIntegrationTestCase(ModuleStoreTestCase):
         self.log_mock = patcher0.start()
         self.addCleanup(patcher0.stop)
 
-        patcher1 = patch('pdfgen.views.S3Connection')
+        patcher1 = patch('pdfgen.views.connect_to_region')
         self.s3conn_mock = patcher1.start()
         self.addCleanup(patcher1.stop)
 
@@ -210,8 +210,11 @@ class GenerateCertCommandIntegrationTestCase(ModuleStoreTestCase):
         grade_mock.assert_any_call(self.students[2], ANY, self.course)
 
         self.s3conn_mock.assert_any_call(
-            settings.PDFGEN_ACCESS_KEY_ID,
-            settings.PDFGEN_SECRET_ACCESS_KEY)
+            Location.APNortheast,
+            aws_access_key_id=settings.PDFGEN_ACCESS_KEY_ID,
+            aws_secret_access_key=settings.PDFGEN_SECRET_ACCESS_KEY,
+            calling_format=ANY
+        )
         self.s3conn_mock().get_bucket.assert_any_call(
             settings.PDFGEN_BUCKET_NAME)
 
@@ -230,8 +233,11 @@ class GenerateCertCommandIntegrationTestCase(ModuleStoreTestCase):
         call_command(self.prog_name, *self.args_delete, **self.kwargs)
 
         self.s3conn_mock.assert_any_call(
-            settings.PDFGEN_ACCESS_KEY_ID,
-            settings.PDFGEN_SECRET_ACCESS_KEY)
+            Location.APNortheast,
+            aws_access_key_id=settings.PDFGEN_ACCESS_KEY_ID,
+            aws_secret_access_key=settings.PDFGEN_SECRET_ACCESS_KEY,
+            calling_format=ANY
+        )
         self.s3conn_mock().get_bucket.assert_any_call(
             settings.PDFGEN_BUCKET_NAME)
 
@@ -259,7 +265,6 @@ class GenerateCertCommandIntegrationTestCase(ModuleStoreTestCase):
         self.assertEqual(std_mock.getvalue(), "\nFetching course data for {}\nFetching enrollment for students({}).\nPublish robot1's certificate : Status downloadable\n".format(self.course.id, self.course.id))
 
 
-@unittest.skip("TODO: after release Dogwood")
 class GenerateCertCommandIntegrationSplitTestCase(GenerateCertCommandIntegrationTestCase):
     """
     Tests create_certs command for split courses

@@ -1,12 +1,11 @@
 from copy import copy
 from datetime import datetime, timedelta
 import json
-from mock import patch
+from mock import patch, ANY
 import pytz
 from StringIO import StringIO
-import unittest
 
-from nose.plugins.attrib import attr
+from boto.s3.connection import Location
 
 from django.conf import settings
 from django.core.management import call_command
@@ -40,7 +39,6 @@ class UploadToS3CommandTestCase(TestCase):
         self.clist_m().upload.assert_called_once_with(self.kwargs["template_only"])
 
 
-@unittest.skip("TODO: after release Dogwood")
 @override_settings(
     TOP_PAGE_BUCKET_NAME="bucket", AWS_ACCESS_KEY_ID="akey",
     AWS_SECRET_ACCESS_KEY="skey")
@@ -158,7 +156,7 @@ class UploadToS3CommandIntegrationTestCase(ModuleStoreTestCase):
         })
 
         patcher1 = patch(
-            'ga_upload_course_list.views.S3Connection')
+            'ga_upload_course_list.views.connect_to_region')
         self.s3conn = patcher1.start()
         self.addCleanup(patcher1.stop)
 
@@ -184,7 +182,11 @@ class UploadToS3CommandIntegrationTestCase(ModuleStoreTestCase):
         call_command(self.prog_name, *self.args, **self.kwargs)
 
         self.s3conn.assert_called_once_with(
-            settings.AWS_ACCESS_KEY_ID, settings.AWS_SECRET_ACCESS_KEY)
+            Location.APNortheast,
+            aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+            aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+            calling_format=ANY
+        )
         self.s3key().set_contents_from_string.assert_any_call(self.image_data)
 
         call_list = self.s3key().set_contents_from_string.call_args_list

@@ -1,9 +1,9 @@
 import copy
 import json
 import tempfile
-import unittest
 
 from boto.exception import S3ResponseError
+from boto.s3.connection import Location
 from datetime import datetime, timedelta
 from mock import patch, ANY
 from pymongo import MongoClient
@@ -85,7 +85,6 @@ class TestArgParsing(ModuleStoreTestCase):
         mock_store_class.assert_called_once_with()
 
 
-@unittest.skip("TODO: after release Dogwood")
 @override_settings(TRANSCRIPTS_COMMAND_OUTPUT=command_output_file.name,
                    TRANSCRIPTS_BACKUP_BUCKET_NAME=TRANSCRIPTS_BACKUP_BUCKET_NAME,
                    TRANSCRIPTS_BACKUP_DIR=TRANSCRIPTS_BACKUP_DIR,
@@ -158,7 +157,7 @@ class TestUpdateTranscripts(ModuleStoreTestCase):
             org='edX', course='003', display_name='Already Ended Course', end=past_end)
 
         # patcher
-        patcher_conn = patch('contentstore.management.commands.update_transcripts.S3Connection')
+        patcher_conn = patch('contentstore.management.commands.update_transcripts.connect_to_region')
         self.mock_conn_class = patcher_conn.start()
         self.mock_conn_class.return_value.get_bucket.return_value = None
         self.addCleanup(patcher_conn.stop)
@@ -212,7 +211,12 @@ class TestUpdateTranscripts(ModuleStoreTestCase):
         """
         call_command('update_transcripts', self.course.id.to_deprecated_string())
 
-        self.mock_conn_class.assert_called_once_with(ANY, ANY)
+        self.mock_conn_class.assert_called_once_with(
+            Location.APNortheast,
+            aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+            aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+            calling_format=ANY
+        )
 
         # assert info log
         self.assertIn("Success", self.logger_info.call_args[0][0])
@@ -225,7 +229,12 @@ class TestUpdateTranscripts(ModuleStoreTestCase):
 
         call_command('update_transcripts', self.course.id.to_deprecated_string())
 
-        self.mock_conn_class.assert_called_once_with(ANY, ANY)
+        self.mock_conn_class.assert_called_once_with(
+            Location.APNortheast,
+            aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+            aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+            calling_format=ANY
+        )
         self.assertEqual(1, self.mock_get_transcripts.call_count)
 
         # assert info log
@@ -240,7 +249,12 @@ class TestUpdateTranscripts(ModuleStoreTestCase):
 
         call_command('update_transcripts', self.course2.id.to_deprecated_string())
 
-        self.mock_conn_class.assert_called_once_with(ANY, ANY)
+        self.mock_conn_class.assert_called_once_with(
+            Location.APNortheast,
+            aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+            aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+            calling_format=ANY
+        )
         self.mock_get_transcripts.assert_called_once_with(ANY, ANY, ANY)
         mock_get_data.assert_called_once_with(ANY, ANY)
 
@@ -256,7 +270,12 @@ class TestUpdateTranscripts(ModuleStoreTestCase):
 
         call_command('update_transcripts', self.course2.id.to_deprecated_string())
 
-        self.mock_conn_class.assert_called_once_with(ANY, ANY)
+        self.mock_conn_class.assert_called_once_with(
+            Location.APNortheast,
+            aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+            aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+            calling_format=ANY
+        )
         self.mock_get_transcripts.assert_called_once_with(ANY, ANY, ANY)
         mock_get_data.assert_called_once_with(ANY, ANY)
 
@@ -273,7 +292,12 @@ class TestUpdateTranscripts(ModuleStoreTestCase):
 
         call_command('update_transcripts', self.course2.id.to_deprecated_string())
 
-        self.mock_conn_class.assert_called_once_with(ANY, ANY)
+        self.mock_conn_class.assert_called_once_with(
+            Location.APNortheast,
+            aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+            aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+            calling_format=ANY
+        )
         self.mock_get_transcripts.assert_called_once_with(ANY, ANY, ANY)
         mock_get_data.assert_called_once_with(ANY, ANY)
         self.mock_conn_class.return_value.get_bucket.assert_called_once_with(ANY)
@@ -287,7 +311,12 @@ class TestUpdateTranscripts(ModuleStoreTestCase):
         """
         call_command('update_transcripts', self.course3.id.to_deprecated_string())
 
-        self.mock_conn_class.assert_called_once_with(ANY, ANY)
+        self.mock_conn_class.assert_called_once_with(
+            Location.APNortheast,
+            aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+            aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+            calling_format=ANY
+        )
 
         # assert info log
         self.assertIn("This course has already ende", self.logger_info.call_args[0][0])
@@ -307,7 +336,6 @@ class TestUpdateTranscripts(ModuleStoreTestCase):
             call_command('update_transcripts')
 
 
-@unittest.skip("TODO: after release Dogwood")
 class TestUpdateTranscriptsSplit(TestUpdateTranscripts):
     """
     Tests update_transcripts command for split courses

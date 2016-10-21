@@ -1,20 +1,22 @@
+import hashlib
+import json
+from mock import Mock, patch, ANY, create_autospec, mock_open
+import StringIO
+
+from boto.exception import BotoClientError, BotoServerError, S3ResponseError
+from boto.s3.connection import S3Connection, Location
+from boto.s3.key import Key
 from django.test import TestCase
 from django.conf import settings
 from django.test.utils import override_settings
-from mock import Mock, patch, ANY, create_autospec, mock_open
-from opaque_keys.edx.locator import CourseLocator
-from pdfgen.views import (CertificateBase, CertificateHonor, CertStoreBase,
-                          CertS3Store, create_cert_pdf, delete_cert_pdf, CertPDF,
-                          PDFBaseNotFound, PDFBaseIsNotPDF, PDFBaseIsNotImage,
-                          InvalidSettings)
-from boto.s3.connection import S3Connection, Location
-from boto.exception import BotoClientError, BotoServerError, S3ResponseError
-from boto.s3.key import Key
 
-import hashlib
-import json
-import StringIO
-import unittest
+from opaque_keys.edx.locator import CourseLocator
+from pdfgen.views import (
+    CertificateBase, CertificateHonor, CertStoreBase,
+    CertS3Store, create_cert_pdf, delete_cert_pdf, CertPDF,
+    PDFBaseNotFound, PDFBaseIsNotPDF, PDFBaseIsNotImage,
+    InvalidSettings
+)
 
 
 class CertificationBaseTestCase(TestCase):
@@ -321,7 +323,6 @@ class CertS3StoreSuccesses(TestCase):
         self.assertEqual(self.s3key().delete.call_count, 0)
 
 
-@unittest.skip("TODO: after release Dogwood")
 @override_settings(
     PDFGEN_BUCKET_NAME="bucket", PDFGEN_ACCESS_KEY_ID="akey",
     PDFGEN_SECRET_ACCESS_KEY="skey")
@@ -343,36 +344,36 @@ class CertS3StoreErrors(TestCase):
             s3 = CertS3Store()
 
     @patch('pdfgen.views.Key.generate_url', return_value="http://example.com/")
-    @patch('pdfgen.views.S3Connection.create_bucket')
+    @patch('pdfgen.views.connect_to_region')
     @patch('pdfgen.views.Key.set_contents_from_filename')
     def test_save_raise_S3ResponseError_with_404(self, moc1, moc2, moc3):
-        s3 = CertS3Store()
-        s3exception = S3ResponseError(status=404, reason="reason")
-        with patch('pdfgen.views.S3Connection.get_bucket',
-                   side_effect=s3exception) as bucket:
+        s3conn = Mock()
+        s3conn.get_bucket.side_effect = S3ResponseError(status=404, reason="reason")
+        moc2.return_value = s3conn
 
-            response_json = s3.save(
-                self.username, self.course_id, self.filepath)
-            self.assertEqual(response_json, json.dumps(
-                {"download_url": "http://example.com/"}))
-            bucket.assert_called_once_with(self.bucket_name)
-            moc1.assert_called_once_with(self.filepath)
-            moc2.assert_called_once_with(
-                self.bucket_name, location=self.location)
-            moc3.assert_called_once_with(
-                expires_in=0, query_auth=False, force_http=True)
+        response_json = CertS3Store().save(
+            self.username, self.course_id, self.filepath)
+        self.assertEqual(response_json, json.dumps(
+            {"download_url": "http://example.com/"}))
+        s3conn.get_bucket.assert_called_once_with(self.bucket_name)
+        moc1.assert_called_once_with(self.filepath)
+        s3conn.create_bucket.assert_called_once_with(
+            self.bucket_name, location=self.location)
+        moc3.assert_called_once_with(
+            expires_in=0, query_auth=False, force_http=True)
 
-    def test_save_raise_S3ResponseError(self):
-        s3 = CertS3Store()
+    @patch('pdfgen.views.connect_to_region')
+    def test_save_raise_S3ResponseError(self, moc2):
         s3exception = S3ResponseError(status="status", reason="reason")
-        with patch('pdfgen.views.S3Connection.get_bucket',
-                   side_effect=s3exception) as bucket:
+        s3conn = Mock()
+        s3conn.get_bucket.side_effect = s3exception
+        moc2.return_value = s3conn
 
-            response_json = s3.save(
-                self.username, self.course_id, self.filepath)
-            self.assertEqual(response_json, json.dumps(
-                {"error": "{}".format(s3exception)}))
-            bucket.assert_called_once_with(self.bucket_name)
+        response_json = CertS3Store().save(
+            self.username, self.course_id, self.filepath)
+        self.assertEqual(response_json, json.dumps(
+            {"error": "{}".format(s3exception)}))
+        s3conn.get_bucket.assert_called_once_with(self.bucket_name)
 
 
 @override_settings(
