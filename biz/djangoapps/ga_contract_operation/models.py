@@ -104,6 +104,7 @@ class StudentRegisterTaskTarget(models.Model):
 
     class Meta:
         app_label = 'ga_contract_operation'
+        ordering = ['id']
 
     @classmethod
     def bulk_create(cls, history, students):

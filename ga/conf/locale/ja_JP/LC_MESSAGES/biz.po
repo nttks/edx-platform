@@ -611,6 +611,10 @@ msgstr "警告：メールアドレス「{email}」は登録されているパ�
 msgid "Name cannot be more than {name_max_length} characters long"
 msgstr "氏名は{name_max_length}文字以内で入力してください。"
 
+#: biz/djangoapps/ga_contract_operation/student_register.py
+msgid "Line {line_number}:{message}"
+msgstr "{line_number}行目：{message}"
+
 #: biz/djangoapps/ga_contract_operation/views.py
 msgid "Could not find student list."
 msgstr "受講者のリストが見つかりません。"

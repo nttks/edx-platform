@@ -199,7 +199,7 @@ def perform_delegate_student_register(entry_id, task_input, action_name):
 
         return _validate_student_and_get_or_create_user(*student_columns)
 
-    for target in targets:
+    for line_number, target in enumerate(targets, start=1):
         task_progress.attempt()
 
         try:
@@ -220,11 +220,14 @@ def perform_delegate_student_register(entry_id, task_input, action_name):
                     log.info("Task {task_id}: Success to process of register to User {user_id}".format(task_id=task_id, user_id=user.id))
                     task_progress.success()
 
-                target.complete(message)
+                target.complete(_("Line {line_number}:{message}").format(line_number=line_number, message=message) if message else "")
         except:
             # If an exception occur, logging it and to continue processing next target.
             log.exception(u"Task {task_id}: Failed to register {student}".format(task_id=task_id, student=target.student))
             task_progress.fail()
-            target.incomplete(_("Failed to register. Please operation again after a time delay."))
+            target.incomplete(_("Line {line_number}:{message}").format(
+                line_number=line_number,
+                message=_("Failed to register. Please operation again after a time delay."),
+            ))
 
     return task_progress.update_task_state()
