@@ -123,3 +123,9 @@ class DashboardPage(EdXDashboardPage):
         Is available change email settings on dashboard
         """
         return self.q(css='#email-settings-modal').visible
+
+    def get_status_message(self, course_name):
+        try:
+            return self._get_element_in_course(course_name, ".messages-list>.message-status>p").text
+        except NoSuchElementException:
+            return ''

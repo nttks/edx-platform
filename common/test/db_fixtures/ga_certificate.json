@@ -1,0 +1,96 @@
+[
+  {
+    "pk": 1099,
+    "model": "auth.user",
+    "fields": {
+      "date_joined": "2015-06-12 11:02:13",
+      "username": "ga_testcert",
+      "first_name": "ga_john",
+      "last_name": "ga_doe",
+      "email":"ga_cert@example.com",
+      "password": "ga_testuser",
+      "is_staff": false,
+      "is_active": true
+    }
+  },
+  {
+    "pk": 1099,
+    "model": "student.userprofile",
+    "fields": {
+      "user": 1099,
+      "name": "ga_test cert",
+      "courseware": "course.xml",
+      "allow_certificate": true
+    }
+  },
+  {
+    "pk": 1099,
+    "model": "student.registration",
+    "fields": {
+      "user": 1099,
+      "activation_key": "MTFg9a8jsdP1UbQYEMF8hjYlBVA68FhH"
+    }
+  },
+  {
+    "pk": 1098,
+    "model": "student.courseenrollment",
+    "fields": {
+      "course_id": "course-v1:ga_test_org+335535897951379478207964576572017930000+test_run_001",
+      "created": "2015-06-12 11:02:13",
+      "is_active": true,
+      "mode": "honor",
+      "user_id": 1099
+    }
+  },
+  {
+    "pk": 1098,
+    "model": "certificates.generatedcertificate",
+    "fields": {
+      "user": 1099,
+      "download_url": "http://www.edx.org/certificates/downloand",
+      "grade": "0",
+      "course_id": "course-v1:ga_test_org+335535897951379478207964576572017930000+test_run_001",
+      "key": "",
+      "distinction": false,
+      "status": "notpassing",
+      "verify_uuid": "",
+      "download_uuid": "",
+      "name": "testcert",
+      "created_date": "2015-06-12 11:02:13",
+      "modified_date": "2015-06-12 11:02:13",
+      "error_reason": "",
+      "mode": "honor"
+    }
+  },
+  {
+    "pk": 1099,
+    "model": "student.courseenrollment",
+    "fields": {
+      "course_id": "course-v1:ga_test_org+335535897951379478207964576572017930000+test_run_002",
+      "created": "2015-06-12 11:02:13",
+      "is_active": true,
+      "mode": "audit",
+      "user_id": 1099
+    }
+  },
+  {
+    "pk": 1099,
+    "model": "certificates.generatedcertificate",
+    "fields": {
+      "user": 1099,
+      "download_url": "",
+      "grade": "0",
+      "course_id": "course-v1:ga_test_org+335535897951379478207964576572017930000+test_run_002",
+      "key": "",
+      "distinction": false,
+      "status": "notpassing",
+      "verify_uuid": "",
+      "download_uuid": "",
+      "name": "testcert",
+      "created_date": "2015-06-12 11:02:13",
+      "modified_date": "2015-06-12 11:02:13",
+      "error_reason": "",
+      "mode": "honor"
+    }
+  }
+]
