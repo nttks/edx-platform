@@ -60,7 +60,6 @@ body.discussion, .discussion-module {
   .discussion-comment {
 
     .response-body {
-      @extend %t-copy-sub2;
       display: inline-block;
       margin-bottom: ($baseline/2);
       width: flex-grid(10,12);
