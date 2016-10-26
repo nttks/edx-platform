@@ -1081,6 +1081,9 @@ a.light-button:hover:not(:disabled),
   text-shadow: none;
   text-transform: none;
 }
+.course-info header.course-profile .intro-inner-wrapper .intro .main-cta strong {
+  padding: 14px 10px 15px 10px;
+}
 .container .discussion-module .new-post-btn,
 .container .discussion-user-threads .new-post-btn,
 .container .discussion-body .forum-nav .new-post-btn,

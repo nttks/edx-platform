@@ -127,7 +127,7 @@ class RegistrationTest(WebAppTest, GaccoTestMixin):
             activation_message = self.email_client.get_latest_message()
             self.assertEqual(self.EMAIL, activation_message['to_addresses'])
             self.assertEqual("Activate Your edX Account", activation_message['subject'])
-            self.assertIn("Thank you for signing up for", activation_message['body'])
+            self.assertIn("Thank you for creating an account with ", activation_message['body'])
     
             # Visit activation page.
             activation_key = self._get_activation_key_from_message(activation_message['body'])

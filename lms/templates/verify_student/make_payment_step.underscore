@@ -1,6 +1,6 @@
 <div class="ticket_page_wrap">
   <ul id="breadcrumb">
-    <li class="active"><span><i class="fa fa-shopping-cart"></i><span class="text"><%= pgettext("payment_breadcrumb", "Select") %></span></span></li>
+    <li class="active"><span><i class="fa fa-shopping-cart"></i><span class="text"><%= pgettext("payment_breadcrumb", "Order") %></span></span></li>
     <li><span><i class="fa fa-credit-card"></i><span class="text"><%= pgettext("payment_breadcrumb", "Payment") %></span></span></li>
     <li><span><i class="fa fa-eye"></i><span class="text"><%= pgettext("payment_breadcrumb", "Confirm") %></span></span></li>
     <li><span><i class="fa fa-check"></i><span class="text"><%= pgettext("payment_breadcrumb", "Complete") %></span></span></li>
@@ -10,7 +10,7 @@
   <% if ( isActive ) { %>
   <div class="review view">
     <% if ( !upgrade ) { %>
-      <div class="title" style="color: #000; text-align: right; font-size: 16px;"><%- gettext( "*Your enrollment has not been completed yet." ) %></div>
+      <div class="title" style="color: #000; text-align: right; font-size: 16px;"><%- gettext( "*Your purchase could not be completed yet." ) %></div>
     <% } else { %>
       <h2 class="title">
         <%= _.sprintf(
@@ -84,7 +84,7 @@
 
     <% if ( courseModeSlug === 'no-id-professional') { %>
     <div class="container register is-verified">
-      <p><%- gettext( "You can make a payment before enrolling the course." ) %></p>
+      <p><%- gettext( "You move forward with the payment process." ) %></p>
     </div>
     <% } else if ( alreadyVerified && verificationGoodUntil ) { %>
     <div class="container register is-verified">
@@ -120,18 +120,13 @@
   <div class="wrapper-msg urgency-high" style="border: 0;">
     <div class="msg" style="min-width: 0;">
       <div class="msg-content">
-        <h2 class="title"><%- gettext("Thanks for Registering!") %></h2>
+        <h2 class="title"><%- gettext("Before you enroll in a course, you need to activate your account.") %></h2>
         <div class="copy">
           <p class="activation-message">
             <%= interpolate(
-              gettext(
-                "You've successfully created an account on %(platform_name)s. We've sent an account " +
-                "activation message to %(email)s. To activate your account and start enrolling in " +
-                "courses, click the link in the message."
-              ),
-              {platform_name: platformName, email: email}, true
+              gettext("We've sent an email to %(email)s with instructions for activating your account. Please try again."),
+              {email: email}, true
             ) %>
-            <%- gettext("Please wait for the arrival of the Activation Mail.") %>
           </p>
         </div>
       </div>

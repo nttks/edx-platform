@@ -39,11 +39,11 @@ gacco運営チーム
 % else:  ## --------------------------------------------------------------------------------------------------------- en
 ${recipient_name}
 
-Thank you for using gacco!
-I will inform you that your registration of a paid course has been completed.
+Thank you for your order, we hope you enjoy learning with gacco!
+We will inform you that your order has been completed.
 
 ------------------------------------
-Your purchased contents
+Order Summary
 ------------------------------------
 [${course.display_name_with_default}]
 
@@ -51,24 +51,24 @@ Order ID: #${create_order_id(order)}
 Starting date: ${course.start_datetime_text()}
 Payment method: ${order.payment_method}
 Total amount: ¥${"{:,d}".format(int(order.total_cost + order.total_tax))}
-Purchased date time: ${purchased_datetime.strftime('%Y/%m/%d %H:%M:%S')}
+Purchase date: ${purchased_datetime.strftime('%Y/%m/%d %H:%M:%S')}
 
 
-Please double check if your purchased course is surely registered in your gacco account. You can start learning the course from 3pm on the starting date.
+You can attending the course from 3PM on the starting date in your gacco account
 
 Your dashboard page: https://${site_name}/dashboard
 
 Course details: https://${site_name}/courses/${unicode(course.id)}/about
 
-This e-mail was automatically sent by gacco.org.
-Please do not reply to this e-mail.
+This email was automatically sent by gacco.org.
+Please do not reply to this email.
 
 ==================
 If you need help, please contact to:
 https://support.gacco.org/hc/ja/requests/new
 ---------------
 
-Thanks for using our site!
+Thank you for learning the gacco!
 
 The gacco Team
 % endif

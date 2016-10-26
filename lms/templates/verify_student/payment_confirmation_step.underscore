@@ -1,14 +1,14 @@
 <div class="wrapper-content-main payment-confirmation-step">
   <article class="content-main">
     <h3 class="title">
-      <%- gettext( "You have successfully completed your course." ) %>
+      <%- gettext( "You have successfully completed your order." ) %>
     </h3>
 
     <% if ( receipt ) { %>
     <div class="list-info">
       <div class="info-item payment-info">
         <div class="copy">
-          <p><%- gettext( "You will receive a confirmation email shortly." ) %></p>
+          <p><%- gettext( "We send a confirmation email to you." ) %></p>
         </div>
 
         <div class="wrapper-report">

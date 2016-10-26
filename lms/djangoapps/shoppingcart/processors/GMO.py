@@ -156,6 +156,7 @@ def get_purchase_params(cart, callback_url=None, extra_data=None):
     params['max_retry'] = get_processor_config().get('MAX_RETRY')
     params['session_timeout'] = get_processor_config().get('SESSION_TIMEOUT')
     params['encode'] = 'utf-8'
+    params['lang'] = 'en' if get_language() == 'en' else 'ja'
     params['show_confirm'] = get_processor_config().get('SHOW_CONFIRM')
     params['use_credit'] = 1
     params['use_docomo'] = 1
@@ -316,6 +317,7 @@ class PurchaseParams(OrderedDict):
         'p014': 'max_retry',
         'p015': 'session_timeout',
         'p016': 'encode',
+        'p017': 'lang',
         'p018': 'show_confirm',
         'p019': 'use_credit',
         'p028': 'use_docomo',

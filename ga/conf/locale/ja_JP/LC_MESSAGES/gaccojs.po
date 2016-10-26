@@ -296,11 +296,11 @@ msgid "Teacher Name is required input."
 msgstr "講師名の入力が必要です。"
 
 #: lms/templates/verify_student/make_payment_step.underscore
-msgid "*Your enrollment has not been completed yet."
+msgid "*Your purchase could not be completed yet."
 msgstr "※受講登録はまだ完了していません。"
 
 #: lms/templates/verify_student/make_payment_step.underscore
-msgid "You can make a payment before enrolling the course."
+msgid "You move forward with the payment process."
 msgstr "この講座を受講登録するには、受講料の支払い手続きが必要です。"
 
 #: lms/templates/verify_student/make_payment_step.underscore
@@ -313,7 +313,7 @@ msgstr "戻る"
 
 #: lms/templates/verify_student/make_payment_step.underscore
 msgctxt "payment_breadcrumb"
-msgid "Select"
+msgid "Order"
 msgstr "申込内容選択"
 
 #: lms/templates/verify_student/make_payment_step.underscore
@@ -336,28 +336,19 @@ msgid "Including tax"
 msgstr "税込"
 
 #: lms/templates/verify_student/make_payment_step.underscore
-msgid "Thanks for Registering!"
-msgstr "ご登録いただきありがとうございます！"
+msgid "Before you enroll in a course, you need to activate your account."
+msgstr "会員登録が完了しておりません。"
 
 #: lms/templates/verify_student/make_payment_step.underscore
-msgid ""
-"You've successfully created an account on %(platform_name)s. We've sent an account "
-"activation message to %(email)s. To activate your account and start enrolling in "
-"courses, click the link in the message."
-msgstr ""
-"%(platform_name)sへの会員登録の手続きはまだ完了していません。【会員登録手続き用のURL】が %(email)s "
-"宛に送信されておりますので、メール内の手続き用URLをクリックしてアクティベーションを完了してください。"
-
-#: lms/templates/verify_student/make_payment_step.underscore
-msgid "Please wait for the arrival of the Activation Mail."
-msgstr "アクティベーションを完了しましたら、このページに戻り、再読み込みをしてください。"
+msgid "We've sent an email to %(email)s with instructions for activating your account. Please try again."
+msgstr "ご登録いただいた%(email)s宛に会員登録のご案内メールを送信しております。メール内のURLをクリックし、会員登録を行ってからお申込ください。"
 
 #: lms/templates/verify_student/payment_confirmation_step.underscore.underscore
-msgid "You have successfully completed your course."
-msgstr "講座の受講登録が完了しました。"
+msgid "You have successfully completed your order."
+msgstr "講座の受講登録は完了しています。"
 
 #: lms/templates/verify_student/payment_confirmation_step.underscore.underscore
-msgid "You will receive a confirmation email shortly."
+msgid "We send a confirmation email to you."
 msgstr "この画面は、マイページからいつでも確認いただけます。また、同様の情報をメールでもお送りしています。"
 
 #: lms/templates/verify_student/payment_confirmation_step.underscore.underscore

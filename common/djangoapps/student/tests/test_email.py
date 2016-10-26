@@ -75,12 +75,9 @@ class ActivationEmailTests(TestCase):
     # Text fragments we expect in the body of an email
     # sent from an OpenEdX installation.
     OPENEDX_FRAGMENTS = [
-        "Thank you for signing up for {platform}.".format(platform=settings.PLATFORM_NAME),
+        "Thank you for creating an account with ",
         "http://edx.org/activate/",
-        (
-            "if you require assistance, check the help section of the "
-            "{platform} website".format(platform=settings.PLATFORM_NAME)
-        )
+        "This email message was automatically sent by "
     ]
 
     # Text fragments we expect in the body of an email
@@ -99,6 +96,7 @@ class ActivationEmailTests(TestCase):
         self._create_account()
         self._assert_activation_email(self.ACTIVATION_SUBJECT, self.OPENEDX_FRAGMENTS)
 
+    @unittest.skip("Not use in gacco")
     @patch.dict(settings.FEATURES, {'IS_EDX_DOMAIN': True})
     def test_activation_email_edx_domain(self):
         self._create_account()

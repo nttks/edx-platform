@@ -16,6 +16,6 @@ Feature: LMS.Homepage for web users
     Given I visit the homepage
     Then I should see the following links and ids
     | id                 | Link                             |
-    | terms_of_service   | Terms of Service and Honor Code  |
+    | terms_of_service   | Terms of Service                 |
     | privacy_policy     | Privacy Policy                   |
     | faq                | FAQ                              |

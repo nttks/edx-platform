@@ -40,13 +40,9 @@ https://lms.gacco.org/dashboard
 
 gacco運営チーム
 % else:  ## --------------------------------------------------------------------------------------------------------- en
-${_("Thank you for signing up for {platform_name}.").format(platform_name=settings.PLATFORM_NAME)}
+Thank you for creating an account with gacco
 
-${_("Change your life and start learning today by activating your "
-    "{platform_name} account. Click on the link below or copy and "
-    "paste it into your browser's address bar.").format(
-      platform_name=settings.PLATFORM_NAME
-    )}
+You need to activate your gacco account. To activate your account, click the following link. If that doesn't work, copy and paste the link into your browser's address bar.
 
 % if is_secure:
   https://${ site }/activate/${ key }
@@ -54,42 +50,8 @@ ${_("Change your life and start learning today by activating your "
   http://${ site }/activate/${ key }
 % endif
 
-% if settings.FEATURES.get('IS_EDX_DOMAIN'):
-${_("After you activate your account, you can sign up for "
-    "and take any of the hundreds of courses {platform_name} offers."
-  ).format(platform_name=settings.PLATFORM_NAME)}
+The gacco Team
 
-${_("If you need help, please use our web form at "
-    "{contact_us_url} or email {info_email_address}."
-  ).format(
-    contact_us_url="https://www.edx.org/contact-us",
-    info_email_address=settings.CONTACT_EMAIL
-  )}
-
-${_("We hope you enjoy learning with {platform_name}!").format(
-    platform_name=settings.PLATFORM_NAME
-)}
-
-${_("The {platform_name} Team").format(platform_name=settings.PLATFORM_NAME)}
-
-${_("This email was automatically sent by {site_name} because someone "
-      "attempted to create an {platform_name} account using this email address."
-    ).format(
-      site_name=settings.SITE_NAME,
-      platform_name=settings.PLATFORM_NAME
-    )}
-
-% elif stanford_theme_enabled():  ## Temporary hack until we develop a better way to adjust language
-${_("If you didn't request this, you don't need to do anything; you won't "
-      "receive any more email from us. Please do not reply to this e-mail; "
-      "if you require assistance, check the about section of the "
-      "{platform_name} Courses web site.").format(platform_name=settings.PLATFORM_NAME)}
-
-% else:
-${_("If you didn't request this, you don't need to do anything; you won't "
-      "receive any more email from us. Please do not reply to this e-mail; "
-      "if you require assistance, check the help section of the "
-      "{platform_name} website.").format(platform_name=settings.PLATFORM_NAME)}
-
-% endif
+This email message was automatically sent by gacco.org, please do not reply to this email.
+If you have any further question please visit the help section on gacco.org.
 % endif

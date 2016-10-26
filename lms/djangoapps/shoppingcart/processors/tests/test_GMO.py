@@ -142,7 +142,7 @@ class GMOTest(TestCase):
         # Check parameter exists
         for key in [
             'p001', 'p002', 'p003', 'p004', 'p005', 'p006', 'p007', 'p008', 'p009', 'p010', 'p011', 'p012',
-            'p014', 'p015', 'p016', 'p018', 'p019', 'p028', 'p039', 'p040',
+            'p014', 'p015', 'p016', 'p017', 'p018', 'p019', 'p028', 'p039', 'p040',
         ]:
             self.assertTrue(key in params)
 
@@ -166,6 +166,10 @@ class GMOTest(TestCase):
         self.assertEqual(params['p014'], 3)
         self.assertEqual(params['p015'], 600)
         self.assertEqual(params['p016'], 'utf-8')
+        if lang_code == 'en':
+            self.assertEqual(params['p017'], 'en')
+        else:
+            self.assertEqual(params['p017'], 'ja')
         self.assertEqual(params['p018'], 1)
         self.assertEqual(params['p019'], 1)
         self.assertEqual(params['p028'], 1)
@@ -321,6 +325,7 @@ class GMOTest(TestCase):
                 'p014': 'param14',
                 'p015': 'param15',
                 'p016': 'param16',
+                'p017': 'param17',
                 'p018': 'param18',
                 'p019': 'param19',
                 'p028': 'param28',
@@ -380,6 +385,7 @@ class PurchaseParamsTest(TestCase):
         params['max_retry'] = '10'
         params['session_timeout'] = '600'
         params['encode'] = 'utf-8'
+        params['lang'] = 'ja'
         params['show_confirm'] = '1'
         params['use_credit'] = '2'
         params['use_docomo'] = '3'
@@ -430,6 +436,9 @@ class PurchaseParamsTest(TestCase):
 
         self.assertEqual('utf-8', params['param16'])
         self.assertEqual('utf-8', params['encode'])
+
+        self.assertEqual('ja', params['param17'])
+        self.assertEqual('ja', params['lang'])
 
         self.assertEqual('1', params['param18'])
         self.assertEqual('1', params['show_confirm'])

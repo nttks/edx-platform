@@ -556,8 +556,8 @@ msgid "Grade graph"
 msgstr "成績グラフ"
 
 #: templates/courseware/course_about.html
-msgid "paid course"
-msgstr "有料"
+msgid "[fee-charging]"
+msgstr "（有料）"
 
 #: templates/register-sidebar.html
 msgid "Please check the 'FAQs' if you experience any problems."
@@ -817,7 +817,7 @@ msgstr "チケット選択"
 
 #: templates/ga_advanced_course/choose_ticket.html
 msgctxt "payment_breadcrumb"
-msgid "Select"
+msgid "Order"
 msgstr "申込内容選択"
 
 #: templates/ga_advanced_course/choose_ticket.html
@@ -988,8 +988,19 @@ msgid "If enabled, for all of the user who answered or viewed the problem, and a
 msgstr "有効にした場合、問題を回答または閲覧した全てのユーザーに対して、問題に正解したとみなして加点されます。"
 
 #: lms/templates/emails/paid_course_order_confirmation_email_subject.txt
-msgid "{platform_name} Notice of the registration completion"
+msgid "The order has been completed from {platform_name}"
 msgstr "{platform_name} 受講登録完了のお知らせ"
+
+#: lms/templates/registration/activate_account_notice.html
+msgid "You're almost there!"
+msgstr "会員登録はまだ終了しておりません。"
+
+#: lms/templates/registration/activate_account_notice.html
+msgid ""
+"Before you enroll in a course, you need to activate your account. We've "
+"sent an email to {email} with instructions for activating your account."
+msgstr ""
+"入力された{email}宛に会員登録のご案内メールを送信しました。メール内のURLをクリックし、会員登録を行ってください。"
 
 #-#-#-#-#  Deleted or revised messages between Cypress and Dogwood on Transifex  #-#-#-#-#
 #: lms/templates/dashboard.html

@@ -175,7 +175,7 @@ def _footer_navigation_links():
             "url": link_url,
         }
         for link_name, link_url, link_title in [
-            ("terms_of_service", marketing_link("TOS"), _("Terms of Service and Honor Code")),
+            ("terms_of_service", marketing_link("TOS"), _("Terms of Service")),
             ("privacy_policy", marketing_link("PRIVACY"), _("Privacy Policy")),
             ("faq", marketing_link("FAQ"), _("FAQ")),
         ]

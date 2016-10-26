@@ -81,7 +81,7 @@ class AboutTestCase(LoginEnrollmentTestCase, ModuleStoreTestCase, EventTrackingT
         # Check that registration button is present
         self.assertIn(REG_STR, resp.content)
         self.assertIn("Enroll in {}".format(self.course.display_number_with_default), resp.content)
-        self.assertNotIn("paid course", resp.content)
+        self.assertNotIn("fee-charging", resp.content)
 
     @ddt.data(CourseMode.PROFESSIONAL, CourseMode.NO_ID_PROFESSIONAL_MODE)
     def test_anonymous_user_pro(self, mode_slug):
@@ -98,7 +98,7 @@ class AboutTestCase(LoginEnrollmentTestCase, ModuleStoreTestCase, EventTrackingT
         # Check that registration button is present
         self.assertIn(REG_STR, resp.content)
         self.assertIn("Enroll in {}".format(self.course.display_number_with_default), resp.content)
-        self.assertIn("paid course", resp.content)
+        self.assertIn("fee-charging", resp.content)
 
     def test_logged_in(self):
         """
@@ -110,7 +110,7 @@ class AboutTestCase(LoginEnrollmentTestCase, ModuleStoreTestCase, EventTrackingT
         self.assertEqual(resp.status_code, 200)
         self.assertIn("OOGIE BLOOGIE", resp.content)
         self.assertIn("Enroll in {}".format(self.course.display_number_with_default), resp.content)
-        self.assertNotIn("paid course", resp.content)
+        self.assertNotIn("fee-charging", resp.content)
 
     @ddt.data(CourseMode.PROFESSIONAL, CourseMode.NO_ID_PROFESSIONAL_MODE)
     def test_logged_in_pro(self, mode_slug):
@@ -125,7 +125,7 @@ class AboutTestCase(LoginEnrollmentTestCase, ModuleStoreTestCase, EventTrackingT
         self.assertEqual(resp.status_code, 200)
         self.assertIn("OOGIE BLOOGIE", resp.content)
         self.assertIn("Enroll in {}".format(self.course.display_number_with_default), resp.content)
-        self.assertIn("paid course", resp.content)
+        self.assertIn("fee-charging", resp.content)
 
     def test_already_enrolled(self):
         """
