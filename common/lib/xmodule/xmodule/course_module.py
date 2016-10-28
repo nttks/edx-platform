@@ -461,13 +461,13 @@ class CourseFields(object):
         help=_(
             "Enter end, early_with_info, or early_no_info. After certificate generation, students who passed see a "
             "link to their certificates on the dashboard and students who did not pass see information about the "
-            "grading configuration. The default is end, which displays this certificate information to all students "
-            "after the course end date. To display this certificate information to all students as soon as "
-            "certificates are generated, enter early_with_info. To display only the links to passing students as "
-            "soon as certificates are generated, enter early_no_info."
+            "grading configuration. The default is early_with_info, which displays this certificate information to "
+            "all students as soon as certificates are generated. To display this certificate information to all "
+            "students after the course end date, enter end. To display only the links to passing students "
+            "as soon as certificates are generated, enter early_no_info."
         ),
         scope=Scope.settings,
-        default="end"
+        default="early_with_info"
     )
     course_image = String(
         display_name=_("Course About Page Image"),

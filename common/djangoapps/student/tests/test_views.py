@@ -33,7 +33,9 @@ class TestStudentDashboardUnenrollments(ModuleStoreTestCase):
     def setUp(self):
         """ Create a course and user, then log in. """
         super(TestStudentDashboardUnenrollments, self).setUp()
-        self.course = CourseFactory.create()
+        self.course = CourseFactory.create(
+            certificates_display_behavior='end'
+        )
         self.user = UserFactory.create(username=self.USERNAME, email=self.EMAIL, password=self.PASSWORD)
         CourseEnrollmentFactory(course_id=self.course.id, user=self.user)
         self.cert_status = None

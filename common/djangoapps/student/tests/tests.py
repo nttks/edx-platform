@@ -195,6 +195,7 @@ class CourseEndingTest(TestCase):
         )
 
         # test when the display is unavailable or notpassing, we get the correct results out
+        # early_no_info
         course2.certificates_display_behavior = 'early_no_info'
         cert_status = {'status': 'unavailable'}
         self.assertEqual(_cert_info(user, course2, cert_status, course_mode), {})
@@ -205,6 +206,30 @@ class CourseEndingTest(TestCase):
             'mode': 'honor'
         }
         self.assertEqual(_cert_info(user, course2, cert_status, course_mode), {})
+
+        # early_with_info
+        course2.certificates_display_behavior = 'early_with_info'
+        cert_status = {'status': 'unavailable'}
+        self.assertEqual(_cert_info(user, course2, cert_status, course_mode), {})
+
+        cert_status = {
+            'status': 'notpassing', 'grade': '67',
+            'download_url': download_url,
+            'mode': 'honor'
+        }
+        self.assertEqual(
+            _cert_info(user, course2, cert_status, course_mode),
+            {
+                'status': 'notpassing',
+                'show_disabled_download_button': False,
+                'show_download_url': False,
+                'show_survey_button': False,
+                'grade': '67',
+                'mode': 'honor',
+                'linked_in_url': None,
+                'can_unenroll': True,
+            }
+        )
 
 
 @ddt.ddt

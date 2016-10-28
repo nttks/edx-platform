@@ -537,6 +537,19 @@ msgstr ""
 msgid "Entrance Exam - Subsection"
 msgstr "受講者情報登録"
 
+#: common/lib/xmodule/xmodule/course_module.py
+msgid ""
+"Enter end, early_with_info, or early_no_info. After certificate generation, students who passed see a "
+"link to their certificates on the dashboard and students who did not pass see information about the "
+"grading configuration. The default is early_with_info, which displays this certificate information to "
+"all students as soon as certificates are generated. To display this certificate information to all "
+"students after the course end date, enter end. To display only the links to passing students "
+"as soon as certificates are generated, enter early_no_info."
+msgstr ""
+"'end', 'early_with_info', "
+"'early_no_info'のいずれかを入力してください。修了証の生成後、合格した受講者はマイページで修了証へのリンクが確認でき、不合格の受講者は採点に関する情報を確認できます。"
+"デフォルトは'early_with_info'で生成後すぐに表示されます。講座終了後に表示するには'end'を指定してください。生成後、合格した受講者にのみ表示するには'early_no_info'を指定してください。"
+
 #-#-#-#-#  Original messages in gacco/templates  #-#-#-#-#
 
 #: templates/theme-header.html

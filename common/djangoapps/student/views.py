@@ -320,9 +320,13 @@ def _cert_info(user, course_overview, cert_status, course_mode):  # pylint: disa
     if cert_status is None:
         return default_info
 
-    is_hidden_status = cert_status['status'] in ('unavailable', 'processing', 'generating', 'notpassing', 'auditing')
+    hidden_status = {
+        'early_no_info': ('unavailable', 'processing', 'generating', 'notpassing', 'auditing'),
+        'early_with_info': ('unavailable', 'processing', 'generating', 'auditing'),
+    }
 
-    if course_overview.certificates_display_behavior == 'early_no_info' and is_hidden_status:
+    if (course_overview.certificates_display_behavior in hidden_status and
+            cert_status['status'] in hidden_status[course_overview.certificates_display_behavior]):
         return {}
 
     status = template_state.get(cert_status['status'], default_status)
