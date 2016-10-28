@@ -27,6 +27,8 @@ from biz.djangoapps.ga_contract_operation.tasks import personalinfo_mask
 from biz.djangoapps.ga_contract_operation.tests.factories import ContractTaskTargetFactory
 from biz.djangoapps.ga_invitation.models import AdditionalInfoSetting, INPUT_INVITATION_CODE
 from biz.djangoapps.ga_invitation.tests.factories import AdditionalInfoSettingFactory, ContractRegisterFactory
+from biz.djangoapps.ga_login.models import BizUser
+from biz.djangoapps.ga_login.tests.factories import BizUserFactory
 from biz.djangoapps.util.datetime_utils import timezone_today
 from biz.djangoapps.util.tests.testcase import BizTestBase
 from openedx.core.djangoapps.course_global.tests.factories import CourseGlobalSettingFactory
@@ -100,13 +102,15 @@ class PersonalinfoMaskTaskTest(BizTestBase, ModuleStoreTestCase, ThirdPartyAuthT
 
         return contract
 
-    def _create_user_and_register(self, contract, status=INPUT_INVITATION_CODE, display_names=[], email=None):
+    def _create_user_and_register(self, contract, status=INPUT_INVITATION_CODE, display_names=[], email=None, login_code=None):
         if email is not None:
             user = UserFactory.create(email=email)
         else:
             user = UserFactory.create()
         user.profile.set_meta({'old_emails': [[user.email, '2016-01-01T00:00:00.000000+00:00']]})
         user.profile.save()
+        if login_code is not None:
+            BizUserFactory.create(user=user, login_code=login_code)
         if hasattr(self, 'global_courses'):
             for course in self.global_courses:
                 CourseEnrollmentAllowedFactory.create(email=user.email, course_id=course.id)
@@ -141,14 +145,16 @@ class PersonalinfoMaskTaskTest(BizTestBase, ModuleStoreTestCase, ThirdPartyAuthT
             'name': user.profile.name,
             'first_name': user.first_name,
             'last_name': user.last_name,
+            'login_code': user.bizuser.login_code if hasattr(user, 'bizuser') else None,
         }
 
     def _assert_user_info(self, user_info, user, masked=True):
-        _email, _name = (user_info[user.id]['email'], user_info[user.id]['name'])
+        _email, _name, _login_code = (user_info[user.id]['email'], user_info[user.id]['name'], user_info[user.id]['login_code'])
         expected_email = _hash(_email + self.random_value) if masked else _email
         expected_name = _hash(_name) if masked else _name
         expected_first_name = '' if masked else user_info[user.id]['first_name']
         expected_last_name = '' if masked else user_info[user.id]['last_name']
+        expected_login_code = self.random_value if _login_code and masked else _login_code
 
         # re-acquire the data
         user = User.objects.get(pk=user.id)
@@ -169,6 +175,12 @@ class PersonalinfoMaskTaskTest(BizTestBase, ModuleStoreTestCase, ThirdPartyAuthT
             self.assertFalse(UserSocialAuth.objects.filter(user_id=user.id).exists())
         else:
             self.assertTrue(UserSocialAuth.objects.filter(user_id=user.id).exists())
+
+        self.assertEqual(bool(_login_code), hasattr(user, 'bizuser'))
+        if _login_code:
+            self.assertEqual(expected_login_code, user.bizuser.login_code)
+        else:
+            self.assertIsNone(expected_login_code)
 
     def _assert_cert_info(self, user_info, user, courses, masked=True):
         _name = user_info[user.id]['name']
@@ -311,6 +323,51 @@ class PersonalinfoMaskTaskTest(BizTestBase, ModuleStoreTestCase, ThirdPartyAuthT
             self._assert_global_courses(user_info, register.user, self.global_courses, masked=False)
         # Assert all of target is completed
         self.assertEqual(5, ContractTaskTarget.objects.filter(history=history, completed=True).count())
+
+    def test_successful_login_code(self):
+        # ----------------------------------------------------------
+        # Setup test data
+        # ----------------------------------------------------------
+        self._configure_dummy_provider(enabled=True)
+        self._setup_courses()
+        display_names = ['settting1', 'setting2', ]
+        contract = self._create_contract(courses=self.spoc_courses, display_names=display_names)
+        history = self._create_task_history(contract=contract)
+        # users: enrolled only target spoc courses
+        registers = [self._create_user_and_register(contract, display_names=display_names, login_code='LoginCode{}'.format(i)) for i in range(5)]
+        self._create_targets(history, registers)
+        self._create_enrollments(registers, self.spoc_courses)
+        # This is `NOT` the target contract
+        other_contract = self._create_contract(courses=self.other_enabled_spoc_courses, display_names=display_names)
+        other_registers = [self._create_user_and_register(other_contract, display_names=display_names, login_code='LoginCode{}'.format(i)) for i in range(5)]
+        self._create_contract(courses=self.other_not_enabled_spoc_courses, display_names=display_names, enabled=False)
+
+        entry = self._create_input_entry(contract=contract, history=history)
+
+        user_info = {register.user.id: self._create_user_info(register.user) for register in registers + other_registers}
+
+        # ----------------------------------------------------------
+        # Execute task
+        # ----------------------------------------------------------
+        self.random_value = 'test1'
+        with patch('biz.djangoapps.ga_contract_operation.personalinfo.get_random_string', return_value=self.random_value):
+            self._test_run_with_task(personalinfo_mask, 'personalinfo_mask', 5, 0, 0, 5, 5, entry)
+
+        # ----------------------------------------------------------
+        # Assertion
+        # ----------------------------------------------------------
+        for register in registers:
+            self._assert_additional_info(register.user, contract, display_names)
+            self._assert_user_info(user_info, register.user)
+            self._assert_cert_info(user_info, register.user, self.spoc_courses)
+            self._assert_global_courses(user_info, register.user, self.global_courses)
+        for register in other_registers:
+            self._assert_additional_info(register.user, other_contract, display_names, masked=False)
+            self._assert_user_info(user_info, register.user, masked=False)
+            self._assert_global_courses(user_info, register.user, self.global_courses, masked=False)
+        # Assert all of target is completed
+        self.assertEqual(5, ContractTaskTarget.objects.filter(history=history, completed=True).count())
+
 
     def test_successful_reuse_email(self):
         """

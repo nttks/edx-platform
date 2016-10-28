@@ -87,6 +87,7 @@ class _PersonalinfoMaskExecutor(object):
         self._disconnect_third_party_auth(user)
         self._mask_name(user)
         self._mask_email(user)
+        self._mask_login_code(user)
 
     def disable_additional_info(self, user):
         """
@@ -115,6 +116,11 @@ class _PersonalinfoMaskExecutor(object):
         user.first_name = ''
         user.last_name = ''
         user.save()
+
+    def _mask_login_code(self, user):
+        if hasattr(user, 'bizuser'):
+            user.bizuser.login_code = get_random_string(30)
+            user.bizuser.save()
 
     def _mask_email(self, user):
         hashed_email = _hash(user.email + get_random_string(32))
