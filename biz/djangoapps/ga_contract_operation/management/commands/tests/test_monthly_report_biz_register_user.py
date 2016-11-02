@@ -6,7 +6,6 @@ when you run "manage.py test".
 Replace this with more appropriate tests for your application.
 """
 from datetime import datetime, timedelta
-from dateutil.relativedelta import relativedelta
 import ddt
 from django.db import connection
 from mock import patch
@@ -21,8 +20,8 @@ from biz.djangoapps.ga_contract_operation.management.commands.monthly_report_biz
     _render_message,
     _target_date,
 )
-from biz.djangoapps.ga_invitation.models import ContractRegister, ContractRegisterHistory
-from biz.djangoapps.util.datetime_utils import timezone_today, timezone_now
+from biz.djangoapps.ga_invitation.models import ContractRegisterHistory
+from biz.djangoapps.util.datetime_utils import timezone_today
 from biz.djangoapps.util.tests.testcase import BizTestBase
 from lms.djangoapps.courseware.tests.helpers import LoginEnrollmentTestCase
 from student.models import UserStanding
@@ -440,3 +439,52 @@ class MonthlyReportBizRegisterUser(BizTestBase, ModuleStoreTestCase, LoginEnroll
 
         self.assertIn(u'有効なプラットフォーム契約（gaccoサービス契約）が存在しません。', message)
         self.assertIn(u'有効なオーナーサービス契約が存在しません。', message)
+
+    @ddt.unpack
+    @ddt.data(
+        (2016, 1, 2016, 1, 31, 2015, 12, 31),
+        (2016, 2, 2016, 2, 29, 2016, 1, 31),
+        (2016, 3, 2016, 3, 31, 2016, 2, 29),
+        (2016, 4, 2016, 4, 30, 2016, 3, 31),
+        (2016, 5, 2016, 5, 31, 2016, 4, 30),
+        (2016, 6, 2016, 6, 30, 2016, 5, 31),
+        (2016, 7, 2016, 7, 31, 2016, 6, 30),
+        (2016, 8, 2016, 8, 31, 2016, 7, 31),
+        (2016, 9, 2016, 9, 30, 2016, 8, 31),
+        (2016, 10, 2016, 10, 31, 2016, 9, 30),
+        (2016, 11, 2016, 11, 30, 2016, 10, 31),
+        (2016, 12, 2016, 12, 31, 2016, 11, 30),
+        (2017, 1, 2017, 1, 31, 2016, 12, 31),
+        (2017, 2, 2017, 2, 28, 2017, 1, 31),
+        (2017, 3, 2017, 3, 31, 2017, 2, 28),
+    )
+    def test_target_date(self, year, month,
+                         target_date_year, target_date_month, target_date_day,
+                         last_target_date_year, last_target_date_month, last_target_date_day):
+
+        target_year, target_month, target_date, last_target_date = _target_date(year, month)
+
+        def _assert_target_date(year, month, day, assert_date):
+            self.assertEqual(year, assert_date.year)
+            self.assertEqual(month, assert_date.month)
+            self.assertEqual(day, assert_date.day)
+
+            self.assertEqual(15, assert_date.hour)
+            self.assertEqual(0, assert_date.minute)
+            self.assertEqual(0, assert_date.second)
+            self.assertEqual(utc, assert_date.tzinfo)
+
+        self.assertEqual(year, target_year)
+        self.assertEqual(month, target_month)
+        _assert_target_date(
+            target_date_year,
+            target_date_month,
+            target_date_day,
+            target_date
+        )
+        _assert_target_date(
+            last_target_date_year,
+            last_target_date_month,
+            last_target_date_day,
+            last_target_date
+        )

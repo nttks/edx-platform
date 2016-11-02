@@ -1021,7 +1021,7 @@ msgid "Want to change your account settings?"
 msgstr "登録情報を変更する場合"
 
 #: lms/templates/dashboard.html
-msgid "Click the arrow next to your username above."
+msgid "Click the arrow (▼) on the top right of the screen and go to \"Account Settings\"."
 msgstr "右上に表示されている▼ボタンをクリックしてメニューを開き、「アカウント設定」を選択してください。"
 
 #: lms/djangoapps/instructor/views/api.py

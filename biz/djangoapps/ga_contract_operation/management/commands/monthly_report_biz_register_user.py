@@ -3,7 +3,7 @@ Management command to generate a report
 of register user count for biz students each contract.
 """
 import argparse
-from datetime import datetime, timedelta
+from datetime import datetime
 from dateutil.relativedelta import relativedelta
 import logging
 from pytz import utc
@@ -71,8 +71,9 @@ def _validate(args):
 
 def _target_date(year, month):
     # To use in 'ModelClass.objects.raw({SQL})'
-    last_target_date = datetime(year, month, 1, 0, 0, 0, tzinfo=timezone.get_default_timezone()).astimezone(utc)
-    return (year, month, last_target_date + relativedelta(months=1), last_target_date)
+    last_target_date = datetime(year, month, 1, 0, 0, 0, tzinfo=timezone.get_default_timezone())
+    target_date = last_target_date + relativedelta(months=1)
+    return (year, month, target_date.astimezone(utc), last_target_date.astimezone(utc))
 
 
 def _render_message(year, month, pfgs_contract_list, os_contract_list):
