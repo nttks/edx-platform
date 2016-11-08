@@ -383,6 +383,10 @@ msgstr "講座スタッフ"
 msgid "Admin"
 msgstr "講座管理者"
 
+#: cms/templates/js/video/transcripts/messages/transcripts-not-found.underscore
+msgid "We don't have a timed transcript for this video. Please upload an .srt file."
+msgstr "新しい字幕を設定してください。srt形式のみサポートしています。"
+
 #: lms/templates/student_profile/learner_profile.underscore
 msgid "Please do NOT input your personally identifiable information (PII) here. This part will be shared to another students."
 msgstr "他の受講者に公開されます。個人情報の記載はお控えください。"
