@@ -64,6 +64,7 @@ def mock_render_to_response(*args, **kwargs):
 render_mock = Mock(side_effect=mock_render_to_response)
 
 PAYMENT_DATA_KEYS = {'payment_processor_name', 'payment_page_url', 'payment_form_data'}
+TEMP_PAYMENT_DATA_KEYS = {'method', 'payment_page_url'}
 
 
 class StartView(TestCase):
@@ -1157,7 +1158,7 @@ class CheckoutTestMixin(object):
 
 
 @patch('lms.djangoapps.verify_student.views.checkout_with_shoppingcart', return_value=TEST_PAYMENT_DATA, autospec=True)
-class TestCreateOrderShoppingCart(CheckoutTestMixin, ModuleStoreTestCase):
+class TestCreateOrderShoppingCart(ModuleStoreTestCase):
     """ Test view behavior when the shoppingcart is used. """
 
     def make_sku(self):
@@ -1175,7 +1176,7 @@ class TestCreateOrderShoppingCart(CheckoutTestMixin, ModuleStoreTestCase):
     return_value=TEST_PAYMENT_DATA,
     autospec=True,
 )
-class TestCreateOrderEcommerceService(CheckoutTestMixin, ModuleStoreTestCase):
+class TestCreateOrderEcommerceService(ModuleStoreTestCase):
     """ Test view behavior when the ecommerce service is used. """
 
     def make_sku(self):
@@ -1290,7 +1291,7 @@ class TestCreateOrderView(ModuleStoreTestCase):
     def test_create_order_success(self):
         response = self._create_order(50, self.course_id)
         json_response = json.loads(response.content)
-        self.assertIsNotNone(json_response['payment_form_data'].get('orderNumber'))  # TODO not canonical
+        self.assertTrue(json_response['payment_page_url'].split('/')[-1].isdigit())
 
         # Verify that the order exists and is configured correctly
         order = Order.objects.get(user=self.user)
@@ -1328,7 +1329,7 @@ class TestCreateOrderView(ModuleStoreTestCase):
         if expect_status_code == 200:
             json_response = json.loads(response.content)
             if expect_success:
-                self.assertEqual(set(json_response.keys()), PAYMENT_DATA_KEYS)
+                self.assertEqual(set(json_response.keys()), TEMP_PAYMENT_DATA_KEYS)
             else:
                 self.assertFalse(json_response['success'])
 

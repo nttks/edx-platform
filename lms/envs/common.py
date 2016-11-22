@@ -2002,6 +2002,9 @@ INSTALLED_APPS = (
 
     # Management optional function
     'openedx.core.djangoapps.ga_optional',
+
+    # Form Tools
+    'formtools',
 )
 
 # Migrations which are not in the standard module "migrations"

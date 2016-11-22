@@ -1,6 +1,7 @@
 <div class="ticket_page_wrap">
   <ul id="breadcrumb">
     <li class="active"><span><i class="fa fa-shopping-cart"></i><span class="text"><%= pgettext("payment_breadcrumb", "Order") %></span></span></li>
+    <li><span><i class="fa fa-pencil-square-o"></i><span class="text"><%= pgettext("payment_breadcrumb", "Information") %></span></span></li>
     <li><span><i class="fa fa-credit-card"></i><span class="text"><%= pgettext("payment_breadcrumb", "Payment") %></span></span></li>
     <li><span><i class="fa fa-eye"></i><span class="text"><%= pgettext("payment_breadcrumb", "Confirm") %></span></span></li>
     <li><span><i class="fa fa-check"></i><span class="text"><%= pgettext("payment_breadcrumb", "Complete") %></span></span></li>

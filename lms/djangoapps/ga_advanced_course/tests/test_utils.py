@@ -5,12 +5,11 @@ from student.tests.factories import UserFactory
 from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
 from xmodule.modulestore.tests.factories import CourseFactory
 
-from ga_advanced_course.exceptions import InvalidOrder
 from ga_advanced_course.utils import (
     is_advanced_course_purchased, is_advanced_course_full, is_advanced_course_end_of_sale,
-    check_order_can_purchase,
 )
-from ga_shoppingcart.utils import SC_SESSION_TIMEOUT
+from ga_shoppingcart.exceptions import InvalidOrder
+from ga_shoppingcart.utils import check_order_can_purchase, SC_SESSION_TIMEOUT
 from .factories import AdvancedF2FCourseFactory, AdvancedCourseTicketFactory
 from .utils import purchase_ticket, start_purchase_ticket, make_ticket_to_out_of_sale
 

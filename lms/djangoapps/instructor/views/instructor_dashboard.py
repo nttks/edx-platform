@@ -565,6 +565,7 @@ def _section_data_download(course, access):
         'course_has_survey': True if course.course_survey_name else False,
         'course_survey_results_url': reverse('get_course_survey_results', kwargs={'course_id': unicode(course_key)}),
         'get_students_advanced_course_url': reverse('get_students_advanced_course', kwargs={'course_id': unicode(course_key)}),
+        'get_students_paid_course_url': reverse('get_students_paid_course', kwargs={'course_id': unicode(course_key)}),
     }
     return section_data
 

@@ -81,11 +81,19 @@ msgstr "ログアウト"
 
 #: lms/templates/instructor/instructor_dashboard_2/data_download.html
 msgid "Click to download a CSV file that lists learners who purchased an advanced course (ex. face-to-face course)."
-msgstr "発展的講座（例：対面学習コース）を購入している受講者情報のCSVファイルを生成するにはクリックしてください。"
+msgstr "その他（対面学習コース、gaccatz等）を購入している受講者情報のCSVファイルを生成するにはクリックしてください。"
 
 #: lms/templates/instructor/instructor_dashboard_2/data_download.html
 msgid "Download purchaser information of advanced courses as a CSV"
-msgstr "発展的講座購入者情報をCSVとしてダウンロードする"
+msgstr "その他（対面学習コース、gaccatz等）を購入している受講者情報をCSVとしてダウンロードする"
+
+#: lms/templates/instructor/instructor_dashboard_2/data_download.html
+msgid "Click to download a CSV file that lists learners who purchased a paid course."
+msgstr "有料講座を購入している受講者情報のCSVファイルを生成するにはクリックしてください。"
+
+#: lms/templates/instructor/instructor_dashboard_2/data_download.html
+msgid "Download purchaser information of paid courses as a CSV"
+msgstr "有料講座を購入している受講者情報のCSVファイルを生成するにはクリックしてください。"
 
 #-#-#-#-#  Original messages in gacco  #-#-#-#-#
 
@@ -835,6 +843,11 @@ msgstr "申込内容選択"
 
 #: templates/ga_advanced_course/choose_ticket.html
 msgctxt "payment_breadcrumb"
+msgid "Information"
+msgstr "お客様情報入力"
+
+#: templates/ga_advanced_course/choose_ticket.html
+msgctxt "payment_breadcrumb"
 msgid "Payment"
 msgstr "支払方法選択"
 
@@ -936,7 +949,7 @@ msgstr "このチケットはキャンセルされました。"
 msgid "Cancellation is <a href=\"{cancel_page_link}\">here</a>"
 msgstr "※キャンセルは<a href=\"{cancel_page_link}\">こちら</a>"
 
-#: templates/ga_advanced_course/checkout_ticket.html
+#: templates/ga_shoppingcart/checkout.html
 msgid "Processing"
 msgstr "処理中"
 
@@ -1251,3 +1264,113 @@ msgstr "お使いのブラウザソフトのcookie（クッキー）設定を有
 #: lms/templates/ga_csrf_failure.html
 msgid "If not resolve your sign in problem, please try other browser."
 msgstr "それでも解決しない場合は、他のブラウザでお試しください。"
+
+#: lms/templates/ga_shoppingcart/input_personal_info.html
+msgid "Your Personal Information"
+msgstr "お客様情報入力"
+
+#: lms/djangoapps/ga_shoppingcart/forms.py
+msgid "gacco taro"
+msgstr "学校　太郎"
+
+#: lms/djangoapps/ga_shoppingcart/forms.py
+msgid "Kana"
+msgstr "フリガナ"
+
+#: lms/djangoapps/ga_shoppingcart/forms.py
+msgid "ガッコウ　タロウ"
+msgstr "ガッコウ　タロウ"
+
+#: lms/djangoapps/ga_shoppingcart/forms.py
+msgid "Postal/Zip Code"
+msgstr "郵便番号"
+
+#: lms/djangoapps/ga_shoppingcart/forms.py
+msgid "Address Line"
+msgstr "住所"
+
+#: lms/djangoapps/ga_shoppingcart/forms.py
+msgid "Urbannet Azabu Building 1-6-15 Minamiazabu"
+msgstr "東京都港区"
+
+#: lms/djangoapps/ga_shoppingcart/forms.py
+msgid "Minato-Ku Tokyo Japan"
+msgstr "南麻布一丁目6番15号 アーバンネット麻布ビル"
+
+#: lms/djangoapps/ga_shoppingcart/forms.py
+msgid "Phone Number"
+msgstr "電話番号"
+
+#: lms/djangoapps/ga_shoppingcart/forms.py
+msgid "0312345678 (Except Hyphen)"
+msgstr "0312345678 (ハイフン無し)"
+
+#: lms/djangoapps/ga_shoppingcart/forms.py
+msgid "Please write your personal computer environments.<br> ex.) MacBook Air. 1.6GHz Intel core i5. 8GB RAM. NTT FLET'S HIKARI"
+msgstr "お使いの環境スペックについてご記入ください<br>（例: MacBook Air, 1.6GHz インテル i5, 8GB RAM, FTTH (フレッツ光))"
+
+#: lms/djangoapps/ga_shoppingcart/forms.py
+msgid "Please type using full-width katakana and space."
+msgstr "全角カナとスペース以外の文字が含まれています"
+
+#: lms/djangoapps/ga_shoppingcart/forms.py
+msgid "Please type using half-width numbers."
+msgstr "半角数字以外の文字が含まれています"
+
+#: lms/templates/ga_shoppingcart/input_personal_info.html
+msgid "Information"
+msgstr "お客様情報入力"
+
+#: lms/templates/ga_shoppingcart/input_personal_info.html
+msgid "Please fill out your information below and click \"Next\"."
+msgstr "お客様情報を入力して「次へ」ボタンを押してください。"
+
+#: lms/templates/ga_shoppingcart/input_personal_info.html
+msgid "* gacco Privacy Policy is "
+msgstr "※個人情報の取り扱いおよびプライバシーポリシーは"
+
+#: lms/templates/ga_shoppingcart/input_personal_info.html
+msgid "HERE"
+msgstr "こちら"
+
+#: lms/templates/ga_shoppingcart/input_personal_info.html
+msgid "* Our shipment is only provided domestically in Japan."
+msgstr "※商品のお届け先は、日本国内に限ります。"
+
+#: lms/templates/ga_shoppingcart/input_personal_info.html
+msgid "Asterisk(*) marked fields are required."
+msgstr "* は入力必須項目です。"
+
+#: lms/templates/ga_shoppingcart/input_personal_info.html
+msgid "(ex: 1010001 except hyphen)"
+msgstr "（例：1010001 ハイフン無し）"
+
+#: lms/templates/ga_shoppingcart/input_personal_info.html
+msgid "Full-width Kana"
+msgstr "全角カナ"
+
+#: lms/templates/ga_shoppingcart/input_personal_info.html
+msgid "Half-width number"
+msgstr "半角数字"
+
+#: lms/templates/ga_shoppingcart/input_personal_info.html
+msgid "Our shipment is only provided domestically in Japan"
+msgstr "配送先は日本国内に限ります"
+
+#: lms/templates/ga_shoppingcart/input_personal_info.html
+msgctxt "personal_input_form"
+msgid "Next"
+msgstr "次へ"
+
+#: lms/templates/ga_shoppingcart/input_personal_info.html
+msgctxt "personal_input_form"
+msgid "Back"
+msgstr "戻る"
+
+#: lms/templates/ga_shoppingcart/input_personal_info_preview.html
+msgid "Confirm your personal information"
+msgstr "お客様情報の確認"
+
+#: lms/templates/ga_shoppingcart/input_personal_info_preview.html
+msgid "Please confirm your information bellow and click \"Next\"<br>DO NOT PRESS \"Browser Back Button.\"<br>Please use the \"Back\" button on the bottom of this screen."
+msgstr "入力内容ご確認の上、「次へ」ボタンを押してください。<br>内容を修正したい場合は、「戻る」ボタンを押してください。<br>ブラウザの「戻る」ボタンは押さないでください。"

@@ -25,16 +25,15 @@ from shoppingcart.processors import (
 )
 from util.json_request import JsonResponse
 
-from ga_advanced_course.exceptions import InvalidOrder
 from ga_advanced_course.status import AdvancedCourseStatus
 from ga_advanced_course.models import AdvancedCourseTypes, AdvancedCourse, AdvancedCourseTicket
 from ga_advanced_course.utils import (
     is_advanced_course_purchased,
     is_advanced_course_full,
     is_advanced_course_end_of_sale,
-    check_order_can_purchase,
 )
-from ga_shoppingcart.models import AdvancedCourseItem
+from ga_shoppingcart.models import AdvancedCourseItem, PersonalInfoSetting
+from ga_shoppingcart.views import get_user_paying_cart, render_checkout
 
 log = logging.getLogger(__name__)
 
@@ -80,39 +79,6 @@ def _get_advanced_course_ticket(ticket_id):
     except AdvancedCourseTicket.DoesNotExist:
         log.warning("No advanced course ticket. ticket_id={ticket_id}".format(ticket_id=ticket_id))
         raise Http404()
-
-
-def _get_user_paying_cart(user, order_id):
-    """
-    Returns order object related with specified user and order_id.
-
-    An order must be available and status of order must be `paying`.
-    And order must have been created by specified user.
-    """
-    try:
-        order = Order.objects.get(pk=order_id, status='paying')
-    except Order.DoesNotExist:
-        log.warning(
-            "No paying order for user_id={user_id}, order_id={order_id}".format(
-                user_id=user.id, order_id=order_id
-            )
-        )
-        raise Http404()
-
-    if user != order.user:
-        log.warning("User and order not match user={user_id}, order_user={order_user_id}".format(
-            user_id=user.id, order_user_id=order.user.id
-        ))
-        raise Http404()
-
-    try:
-        check_order_can_purchase(order)
-    except InvalidOrder:
-        # TODO it should be notified of the message to the user. But now, only purchase immediately.
-        # In the future, we have plan to implement re-authentication and implement notify page at the same time.
-        raise Http404()
-
-    return order
 
 
 def _check_for_purchase(request, advanced_course, tickets):
@@ -345,7 +311,10 @@ def purchase_ticket(request, course, ticket_id):
     # Now, only use shoppingcart. it may switch ecommerce-service in the future.
     order = _purchase_with_shoppingcart(request.user, ticket)
 
-    return redirect(reverse('advanced_course:checkout_ticket', args=[order.id]))
+    if PersonalInfoSetting.has_personal_info_setting(advanced_course=advanced_course):
+        return redirect(reverse('ga_shoppingcart:input_personal_info', args=[order.id]))
+    else:
+        return redirect(reverse('advanced_course:checkout_ticket', args=[order.id]))
 
 
 @require_GET
@@ -354,13 +323,7 @@ def checkout_ticket(request, order_id):
     """
     This page is cushion for authentication. Use re-authentication in the future.
     """
-    order = _get_user_paying_cart(request.user, order_id)
-
-    context = {
-        'order_id': order.id,
-    }
-
-    return render_to_response('ga_advanced_course/checkout_ticket.html', context)
+    return render_checkout(request.user, order_id, 'advanced_course:checkout')
 
 
 @require_POST
@@ -371,7 +334,7 @@ def checkout(request):
     """
     order_id = request.POST.get('order_id')
 
-    order = _get_user_paying_cart(request.user, order_id)
+    order = get_user_paying_cart(request.user, order_id)
 
     # Now, only use shoppingcart. it may switch ecommerce-service in the future.
     payment_data = _checkout_with_shoppingcart(request, request.user, order)

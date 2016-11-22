@@ -170,7 +170,7 @@
     }
   }
 
-  @media only screen and (max-width: 640px) {
+  @media only screen and (max-width: 800px) {
     #breadcrumb {
       .text {
         display: none;
@@ -193,7 +193,7 @@
 
     li {
       float: left;
-      width: 25%;
+      width: 20%;
 
       > span {
         color: #fff;

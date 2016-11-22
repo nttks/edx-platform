@@ -35,6 +35,7 @@ from student import auth
 from student.roles import GlobalStaff, CourseSalesAdminRole, CourseFinanceAdminRole
 from util.file import (
     store_uploaded_file, course_and_time_based_filename_generator,
+    course_filename_prefix_generator,
     FileValidationException, UniversalNewlineIterator
 )
 from util.json_request import JsonResponse, JsonResponseBadRequest
@@ -97,7 +98,7 @@ from certificates.models import CertificateWhitelist, GeneratedCertificate
 from bulk_email.models import CourseEmail, SEND_TO_ALL, SEND_TO_ALL_INCLUDE_OPTOUT, SEND_TO_ADVANCED_COURSE
 from ga_survey.models import SurveySubmission
 from student.models import get_user_by_username_or_email
-from ga_advanced_course.analytics import advanced_course_purchased_features
+from ga_advanced_course.analytics import Features, advanced_course_purchased_features, paid_course_purchased_features
 
 from .tools import (
     dump_student_extensions,
@@ -3110,9 +3111,8 @@ def generate_bulk_certificate_exceptions(request, course_id):  # pylint: disable
 @require_level('staff')
 def get_students_advanced_course(request, course_id, csv=False):  # pylint: disable=redefined-outer-name
     """
-    Respond with csv which contains a summary of all students who are purchased an advanced course.
+    Respond with csv which contains a summary of all students who purchased an advanced course.
     """
-    from ga_advanced_course.analytics import Features
 
     course_key = CourseKey.from_string(course_id)
 
@@ -3120,13 +3120,51 @@ def get_students_advanced_course(request, course_id, csv=False):  # pylint: disa
         Features.USER_ID, Features.EMAIL, Features.USERNAME, Features.NAME,
         Features.ADVANCED_COURSE_NAME, Features.ADVANCED_COURSE_TICKET_NAME,
         Features.ENTRY_DATE, Features.PAYMENT_METHOD, Features.ENROLLMENT,
+        Features.FULL_NAME, Features.KANA, Features.POSTAL_CODE,
+        Features.ADDRESS_LINE_1, Features.ADDRESS_LINE_2, Features.PHONE_NUMBER,
+        Features.GACCATZ_CHECK, Features.FREE_ENTRY_FIELD_1, Features.FREE_ENTRY_FIELD_2,
+        Features.FREE_ENTRY_FIELD_3, Features.FREE_ENTRY_FIELD_4, Features.FREE_ENTRY_FIELD_5,
     ]
 
     advanced_course_purchased_data = advanced_course_purchased_features(course_key, query_features)
 
     header, datarows = instructor_analytics.csvs.format_dictlist(advanced_course_purchased_data, query_features)
-    filename = '{org}-{course}-{run}-advanced-course.csv'.format(
-        org=course_key.org, course=course_key.course, run=course_key.run
+
+    filename = u'{course_prefix}_{csv_name}.csv'.format(
+        course_prefix=course_filename_prefix_generator(course_key),
+        csv_name='advanced-course',
+    )
+
+    return instructor_analytics.csvs.create_csv_response(filename, header, datarows)
+
+
+@require_POST
+@ensure_csrf_cookie
+@cache_control(no_cache=True, no_store=True, must_revalidate=True)
+@require_level('staff')
+def get_students_paid_course(request, course_id, csv=False):  # pylint: disable=redefined-outer-name
+    """
+    Respond with csv which contains a summary of all students who purchased a paid course.
+    """
+
+    course_key = CourseKey.from_string(course_id)
+
+    query_features = [
+        Features.USER_ID, Features.EMAIL, Features.USERNAME, Features.NAME,
+        Features.ENTRY_DATE, Features.PAYMENT_METHOD, Features.ENROLLMENT,
+        Features.FULL_NAME, Features.KANA, Features.POSTAL_CODE,
+        Features.ADDRESS_LINE_1, Features.ADDRESS_LINE_2, Features.PHONE_NUMBER,
+        Features.GACCATZ_CHECK, Features.FREE_ENTRY_FIELD_1, Features.FREE_ENTRY_FIELD_2,
+        Features.FREE_ENTRY_FIELD_3, Features.FREE_ENTRY_FIELD_4, Features.FREE_ENTRY_FIELD_5,
+    ]
+
+    paid_course_purchased_data = paid_course_purchased_features(course_key, query_features)
+
+    header, datarows = instructor_analytics.csvs.format_dictlist(paid_course_purchased_data, query_features)
+
+    filename = u'{course_prefix}_{csv_name}.csv'.format(
+        course_prefix=course_filename_prefix_generator(course_key),
+        csv_name='paid-course',
     )
 
     return instructor_analytics.csvs.create_csv_response(filename, header, datarows)

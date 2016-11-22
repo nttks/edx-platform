@@ -22,7 +22,7 @@ from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.utils.translation import ugettext as _, ugettext_lazy
 from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_POST, require_GET
 from django.views.generic.base import View, RedirectView
 
 import analytics
@@ -36,6 +36,8 @@ from courseware.url_helpers import get_redirect_url
 from edx_rest_api_client.exceptions import SlumberBaseException
 from edxmako.shortcuts import render_to_response, render_to_string
 from embargo import api as embargo_api
+from ga_shoppingcart.models import PersonalInfoSetting
+from ga_shoppingcart.views import get_user_paying_cart, render_checkout
 from microsite_configuration import microsite
 from openedx.core.djangoapps.commerce.utils import ecommerce_api_client
 from openedx.core.djangoapps.user_api.accounts import NAME_MIN_LENGTH
@@ -722,12 +724,12 @@ def checkout_with_ecommerce_service(user, course_key, course_mode, processor):
         )
 
 
-def checkout_with_shoppingcart(request, user, course_key, course_mode, amount):
+def _purchase_with_shoppingcart(user, course_mode, course_key, amount):
     """ Create an order and trigger checkout using shoppingcart."""
     cart = Order.get_cart_for_user(user)
     cart.clear()
     enrollment_mode = course_mode.slug
-    item = CertificateItem.add_to_order(cart, course_key, amount, enrollment_mode)
+    CertificateItem.add_to_order(cart, course_key, amount, enrollment_mode)
 
     # Change the order's status so that we don't accidentally modify it later.
     # We need to do this to ensure that the parameters we send to the payment system
@@ -738,16 +740,23 @@ def checkout_with_shoppingcart(request, user, course_key, course_mode, amount):
     # If a user later re-enters the verification / payment flow, she will create a new order.
     cart.start_purchase()
 
+    return cart
+
+
+def checkout_with_shoppingcart(request, user, cart):
+    """ Create an order and trigger checkout using shoppingcart."""
+    item = cart.orderitem_set.all().select_subclasses()[0]
+
     callback_url = request.build_absolute_uri(
         reverse("shoppingcart.views.postpay_callback")
     )
     cancel_callback_url = request.build_absolute_uri(
-        reverse("about_course", args=[unicode(course_key)])
+        reverse("about_course", args=[unicode(item.course_id)])
     )
 
     extra_data = [
         item.line_desc,
-        unicode(course_key),
+        unicode(item.course_id),
         user.id,
     ]
 
@@ -818,7 +827,19 @@ def create_order(request):
             request.POST.get('processor')
         )
     else:
-        payment_data = checkout_with_shoppingcart(request, request.user, course_id, current_mode, amount)
+        order = _purchase_with_shoppingcart(request.user, current_mode, course_id, amount)
+        if PersonalInfoSetting.has_personal_info_setting(
+                course_mode=CourseMode.objects.get(
+                    course_id=course_id,
+                    mode_slug=current_mode.slug,
+                )):
+            payment_page_url = reverse('ga_shoppingcart:input_personal_info', args=[order.id])
+        else:
+            payment_page_url = reverse('verify_student_checkout_course', args=[order.id])
+        payment_data = {
+            'method': 'GET',
+            'payment_page_url': payment_page_url
+        }
 
     if 'processor' not in request.POST:
         # (XCOM-214) To be removed after release.
@@ -827,6 +848,31 @@ def create_order(request):
         # the payment data result.
         payment_data = payment_data['payment_form_data']
     return HttpResponse(json.dumps(payment_data), content_type="application/json")
+
+
+@require_GET
+@login_required
+def checkout_course(request, order_id):
+    """
+    This page is cushion for authentication. Use re-authentication in the future.
+    """
+    return render_checkout(request.user, order_id, 'verify_student_checkout')
+
+
+@require_POST
+@login_required
+def checkout(request):
+    """
+    The endpoint that add a single product to the user's cart and request immediate checkout.
+    """
+    order_id = request.POST.get('order_id')
+
+    order = get_user_paying_cart(request.user, order_id)
+
+    # Now, only use shoppingcart. it may switch ecommerce-service in the future.
+    payment_data = checkout_with_shoppingcart(request, request.user, order)
+
+    return JsonResponse(payment_data)
 
 
 class SubmitPhotosView(View):

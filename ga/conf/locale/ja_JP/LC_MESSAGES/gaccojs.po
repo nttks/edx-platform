@@ -318,6 +318,11 @@ msgstr "申込内容選択"
 
 #: lms/templates/verify_student/make_payment_step.underscore
 msgctxt "payment_breadcrumb"
+msgid "Information"
+msgstr "お客様情報入力"
+
+#: lms/templates/verify_student/make_payment_step.underscore
+msgctxt "payment_breadcrumb"
 msgid "Payment"
 msgstr "支払方法選択"
 
