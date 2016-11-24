@@ -93,7 +93,7 @@ msgstr "有料講座を購入している受講者情報のCSVファイルを生
 
 #: lms/templates/instructor/instructor_dashboard_2/data_download.html
 msgid "Download purchaser information of paid courses as a CSV"
-msgstr "有料講座を購入している受講者情報のCSVファイルを生成するにはクリックしてください。"
+msgstr "有料講座を購入している受講者情報をCSVとしてダウンロードする"
 
 #-#-#-#-#  Original messages in gacco  #-#-#-#-#
 
