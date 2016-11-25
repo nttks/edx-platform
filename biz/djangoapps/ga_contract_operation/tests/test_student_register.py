@@ -194,7 +194,7 @@ class StudentRegisterTaskTest(BizViewTestBase, ModuleStoreTestCase, TaskTestMixi
 
         user = User.objects.get(email='test_student@example.com')
         self.assertTrue(user.is_active)
-        self.assertEquals(ContractRegister.objects.get(user__email='test_student@example.com', contract=contract).status, INPUT_INVITATION_CODE)
+        self.assertEqual(ContractRegister.objects.get(user__email='test_student@example.com', contract=contract).status, INPUT_INVITATION_CODE)
         self.assertFalse(Optout.objects.filter(user=user, course_id=global_course_id).exists())
         if url_code:
             self.assertEqual('Test_Student_1', BizUser.objects.get(user=user).login_code)
@@ -236,7 +236,7 @@ class StudentRegisterTaskTest(BizViewTestBase, ModuleStoreTestCase, TaskTestMixi
 
         user = User.objects.get(email='test_student@example.com')
         self.assertTrue(user.is_active)
-        self.assertEquals(ContractRegister.objects.get(user__email='test_student@example.com', contract=contract).status, INPUT_INVITATION_CODE)
+        self.assertEqual(ContractRegister.objects.get(user__email='test_student@example.com', contract=contract).status, INPUT_INVITATION_CODE)
         self.assertTrue(Optout.objects.filter(user=user, course_id=global_course_id).exists())
         if url_code:
             self.assertEqual('Test_Student_1', BizUser.objects.get(user=user).login_code)
@@ -276,7 +276,7 @@ class StudentRegisterTaskTest(BizViewTestBase, ModuleStoreTestCase, TaskTestMixi
 
         user = User.objects.get(email='test_student@example.com')
         self.assertTrue(user.is_active)
-        self.assertEquals(ContractRegister.objects.get(user__email='test_student@example.com', contract=contract).status, INPUT_INVITATION_CODE)
+        self.assertEqual(ContractRegister.objects.get(user__email='test_student@example.com', contract=contract).status, INPUT_INVITATION_CODE)
         if url_code:
             self.assertEqual('Test_Student_1', BizUser.objects.get(user=user).login_code)
 
@@ -320,7 +320,7 @@ class StudentRegisterTaskTest(BizViewTestBase, ModuleStoreTestCase, TaskTestMixi
 
         user = User.objects.get(email='test_student@example.com')
         self.assertTrue(user.is_active)
-        self.assertEquals(ContractRegister.objects.get(user__email='test_student@example.com', contract=contract).status, INPUT_INVITATION_CODE)
+        self.assertEqual(ContractRegister.objects.get(user__email='test_student@example.com', contract=contract).status, INPUT_INVITATION_CODE)
         if url_code:
             self.assertEqual('Test_Student_1', BizUser.objects.get(user=user).login_code)
 
@@ -454,7 +454,7 @@ class StudentRegisterTaskTest(BizViewTestBase, ModuleStoreTestCase, TaskTestMixi
                 StudentRegisterTaskTarget.objects.get(history=history, student=students[0]).message
             )
 
-        self.assertEquals(ContractRegister.objects.get(user__email=self.email, contract=contract).status, INPUT_INVITATION_CODE)
+        self.assertEqual(ContractRegister.objects.get(user__email=self.email, contract=contract).status, INPUT_INVITATION_CODE)
         self.assertFalse(Optout.objects.filter(user=self.user, course_id=global_course_id).exists())
         if url_code:
             self.assertEqual('Test_Student_1', BizUser.objects.get(user=self.user).login_code)
@@ -506,7 +506,7 @@ class StudentRegisterTaskTest(BizViewTestBase, ModuleStoreTestCase, TaskTestMixi
                 StudentRegisterTaskTarget.objects.get(history=history, student=students[0]).message
             )
 
-        self.assertEquals(ContractRegister.objects.get(user__email=self.email, contract=contract).status, INPUT_INVITATION_CODE)
+        self.assertEqual(ContractRegister.objects.get(user__email=self.email, contract=contract).status, INPUT_INVITATION_CODE)
         self.assertFalse(Optout.objects.filter(user=self.user, course_id=global_course_id).exists())
         if url_code:
             self.assertEqual('Test_Student_1', BizUser.objects.get(user=self.user).login_code)
@@ -558,7 +558,7 @@ class StudentRegisterTaskTest(BizViewTestBase, ModuleStoreTestCase, TaskTestMixi
                 StudentRegisterTaskTarget.objects.get(history=history, student=students[0]).message
             )
 
-        self.assertEquals(ContractRegister.objects.get(user__email=self.email, contract=contract).status, REGISTER_INVITATION_CODE)
+        self.assertEqual(ContractRegister.objects.get(user__email=self.email, contract=contract).status, REGISTER_INVITATION_CODE)
         self.assertFalse(Optout.objects.filter(user=self.user, course_id=global_course_id).exists())
         if url_code:
             self.assertEqual('Test_Student_1', BizUser.objects.get(user=self.user).login_code)
@@ -765,7 +765,7 @@ class StudentRegisterTaskTest(BizViewTestBase, ModuleStoreTestCase, TaskTestMixi
         )
 
         self.assertEqual(2, BizUser.objects.filter(login_code=self.login_code).count())
-        self.assertEquals(ContractRegister.objects.get(user__email='test_student1@example.com', contract=contract).status, INPUT_INVITATION_CODE)
+        self.assertEqual(ContractRegister.objects.get(user__email='test_student1@example.com', contract=contract).status, INPUT_INVITATION_CODE)
         self.assertFalse(ContractRegister.objects.filter(user__email='test_student2@example.com', contract=contract).exists())
         self.assertFalse(ContractRegister.objects.filter(user__email=self.email, contract=contract).exists())
 
@@ -812,7 +812,7 @@ class StudentRegisterTaskTest(BizViewTestBase, ModuleStoreTestCase, TaskTestMixi
             StudentRegisterTaskTarget.objects.get(history=history, student=students[1]).message
         )
 
-        self.assertEquals(ContractRegister.objects.get(user__email='test_student1@example.com', contract=contract).status, INPUT_INVITATION_CODE)
+        self.assertEqual(ContractRegister.objects.get(user__email='test_student1@example.com', contract=contract).status, INPUT_INVITATION_CODE)
         self.assertFalse(ContractRegister.objects.filter(user__email='test_student2@example.com', contract=contract).exists())
 
     def test_register_user_with_already_existing_login_code(self):
@@ -852,7 +852,7 @@ class StudentRegisterTaskTest(BizViewTestBase, ModuleStoreTestCase, TaskTestMixi
             StudentRegisterTaskTarget.objects.get(history=history, student=students[1]).message
         )
 
-        self.assertEquals(ContractRegister.objects.get(user__email='test_student1@example.com', contract=contract).status, INPUT_INVITATION_CODE)
+        self.assertEqual(ContractRegister.objects.get(user__email='test_student1@example.com', contract=contract).status, INPUT_INVITATION_CODE)
         self.assertFalse(ContractRegister.objects.filter(user__email='test_student2@example.com', contract=contract).exists())
 
     @ddt.data(
@@ -899,7 +899,7 @@ class StudentRegisterTaskTest(BizViewTestBase, ModuleStoreTestCase, TaskTestMixi
             StudentRegisterTaskTarget.objects.get(history=history, student=students[1]).message
         )
 
-        self.assertEquals(ContractRegister.objects.get(user__email='test_student1@example.com', contract=contract).status, INPUT_INVITATION_CODE)
+        self.assertEqual(ContractRegister.objects.get(user__email='test_student1@example.com', contract=contract).status, INPUT_INVITATION_CODE)
         self.assertFalse(ContractRegister.objects.filter(user__email='test_student2@example.com', contract=contract).exists())
 
     @ddt.data(
@@ -948,8 +948,8 @@ class StudentRegisterTaskTest(BizViewTestBase, ModuleStoreTestCase, TaskTestMixi
         )
         self.assertIsNone(StudentRegisterTaskTarget.objects.get(history=history, student=students[2]).message)
 
-        self.assertEquals(ContractRegister.objects.get(user__email='test_student1@example.com', contract=contract).status, INPUT_INVITATION_CODE)
-        self.assertEquals(ContractRegister.objects.get(user__email='test_student2@example.com', contract=contract).status, INPUT_INVITATION_CODE)
+        self.assertEqual(ContractRegister.objects.get(user__email='test_student1@example.com', contract=contract).status, INPUT_INVITATION_CODE)
+        self.assertEqual(ContractRegister.objects.get(user__email='test_student2@example.com', contract=contract).status, INPUT_INVITATION_CODE)
         self.assertFalse(ContractRegister.objects.filter(user__email='test_student3@example.com', contract=contract).exists())
 
     @ddt.data(
@@ -1005,3 +1005,50 @@ class StudentRegisterTaskTest(BizViewTestBase, ModuleStoreTestCase, TaskTestMixi
         self.assertFalse(ContractRegister.objects.filter(user__email='test_student1@example.com', contract=contract).exists())
         self.assertFalse(ContractRegister.objects.filter(user__email='test_student2@example.com', contract=contract).exists())
         self.assertFalse(ContractRegister.objects.filter(user__email='test_student3@example.com', contract=contract).exists())
+
+    @ddt.data(
+        (None, None, [
+            "test_student@example.com,test_student_1,tester1",
+        ], 1),
+        ("contract-url-code", True, [
+            "test_student@example.com,test_student_1,tester1,Test_Student_1,TestStudent1",
+        ], 1),
+        ("contract-url-code", False, [
+            "test_student@example.com,test_student_1,tester1,Test_Student_1,TestStudent1",
+        ], 0),
+    )
+    @ddt.unpack
+    @patch('biz.djangoapps.ga_contract_operation.student_register.send_mail_to_student')
+    def test_register_send_mail(self, url_code, send_mail, students, send_mail_call_count, send_mail_to_student):
+        # ----------------------------------------------------------
+        # Setup test data
+        # ----------------------------------------------------------
+        contract = self._create_contract(url_code=url_code, send_mail=send_mail)
+        history = self._create_task_history(contract=contract)
+        self._create_targets(history, students)
+
+        # ----------------------------------------------------------
+        # Execute task
+        # ----------------------------------------------------------
+        self._test_run_with_task(
+            student_register,
+            'student_register',
+            task_entry=self._create_input_entry(contract=contract, history=history),
+            expected_attempted=1,
+            expected_num_succeeded=1,
+            expected_total=1,
+        )
+
+        # ----------------------------------------------------------
+        # Assertion
+        # ----------------------------------------------------------
+        self.assertEqual(0, StudentRegisterTaskTarget.objects.filter(history=history, completed=False).count())
+        self.assertEqual(1, StudentRegisterTaskTarget.objects.filter(history=history, completed=True).count())
+        self.assertIsNone(StudentRegisterTaskTarget.objects.get(history=history, student=students[0]).message)
+
+        user = User.objects.get(email='test_student@example.com')
+        self.assertTrue(user.is_active)
+        self.assertEqual(ContractRegister.objects.get(user__email='test_student@example.com', contract=contract).status, INPUT_INVITATION_CODE)
+        if url_code:
+            self.assertEqual('Test_Student_1', BizUser.objects.get(user=user).login_code)
+        self.assertEqual(send_mail_call_count, send_mail_to_student.call_count)

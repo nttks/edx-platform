@@ -116,13 +116,13 @@ msgstr "更新"
 
 #: common/djangoapps/config_models/models.py
 msgid "Change date"
-msgstr "日付変更"
+msgstr "変更日付"
 
 #. Translators: this label indicates the name of the user who made this
 #. change:
 #: common/djangoapps/config_models/models.py
 msgid "Changed by"
-msgstr "更新者は"
+msgstr "更新者"
 
 #: common/djangoapps/config_models/models.py
 msgid "Enabled"
@@ -5564,7 +5564,7 @@ msgstr "完了"
 
 #: lms/djangoapps/instructor/views/instructor_task_helpers.py
 msgid "Incomplete"
-msgstr "完了できず"
+msgstr "未完了"
 
 #: lms/djangoapps/instructor/views/registration_codes.py
 #: lms/djangoapps/instructor/views/registration_codes.py

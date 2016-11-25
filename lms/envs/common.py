@@ -1999,6 +1999,9 @@ INSTALLED_APPS = (
 
     # Celery Task Management
     'openedx.core.djangoapps.ga_task',
+
+    # Management optional function
+    'openedx.core.djangoapps.ga_optional',
 )
 
 # Migrations which are not in the standard module "migrations"
@@ -2756,6 +2759,9 @@ JWPLAYER_SECURE_TOKEN_EXPIRE = 24 * 60 * 60
 
 ##### RateLimitBackend #####
 RATE_LIMIT_REQUESTS = 30
+
+##### Format #####
+FORMAT_MODULE_PATH = ['conf.formats']
 
 ##### Settings for Biz #####
 from biz.envs.common import *

@@ -544,6 +544,7 @@ class MongoModuleStore(ModuleStoreDraftAndPublished, ModuleStoreWriteBase, Mongo
                  i18n_service=None,
                  fs_service=None,
                  user_service=None,
+                 optional_service=None,
                  signal_handler=None,
                  retry_wait_time=0.1,
                  **kwargs):
@@ -590,6 +591,7 @@ class MongoModuleStore(ModuleStoreDraftAndPublished, ModuleStoreWriteBase, Mongo
         self.i18n_service = i18n_service
         self.fs_service = fs_service
         self.user_service = user_service
+        self.optional_service = optional_service
 
         self._course_run_cache = {}
         self.signal_handler = signal_handler
@@ -914,6 +916,9 @@ class MongoModuleStore(ModuleStoreDraftAndPublished, ModuleStoreWriteBase, Mongo
 
             if self.request_cache:
                 services["request_cache"] = self.request_cache
+
+            if self.optional_service:
+                services["optional"] = self.optional_service
 
             system = CachingDescriptorSystem(
                 modulestore=self,
@@ -1272,6 +1277,9 @@ class MongoModuleStore(ModuleStoreDraftAndPublished, ModuleStoreWriteBase, Mongo
 
             if self.user_service:
                 services["user"] = self.user_service
+
+            if self.optional_service:
+                services["optional"] = self.optional_service
 
             runtime = CachingDescriptorSystem(
                 modulestore=self,

@@ -1015,6 +1015,18 @@ msgid ""
 msgstr ""
 "入力された{email}宛に会員登録のご案内メールを送信しました。メール内のURLをクリックし、会員登録を行ってください。"
 
+#: openedx/core/djangoapps/ga_optional/models.py
+msgid "Settings for the course optional feature"
+msgstr "講座のオプション機能設定"
+
+#: openedx/core/djangoapps/ga_optional/models.py
+msgid "Feature"
+msgstr "機能"
+
+#: openedx/core/djangoapps/ga_optional/models.py
+msgid "Staff Assessment for Peer Grading"
+msgstr "相互採点のスタッフ採点"
+
 #-#-#-#-#  Deleted or revised messages between Cypress and Dogwood on Transifex  #-#-#-#-#
 #: lms/templates/dashboard.html
 msgid "Want to change your account settings?"

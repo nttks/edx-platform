@@ -107,6 +107,7 @@ class MixedModuleStore(ModuleStoreDraftAndPublished, ModuleStoreWriteBase):
             i18n_service=None,
             fs_service=None,
             user_service=None,
+            optional_service=None,
             create_modulestore_instance=None,
             signal_handler=None,
             **kwargs
@@ -152,6 +153,7 @@ class MixedModuleStore(ModuleStoreDraftAndPublished, ModuleStoreWriteBase):
                 i18n_service=i18n_service,
                 fs_service=fs_service,
                 user_service=user_service,
+                optional_service=optional_service,
                 signal_handler=signal_handler,
             )
             # replace all named pointers to the store into actual pointers

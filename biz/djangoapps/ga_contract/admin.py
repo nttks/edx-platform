@@ -30,7 +30,7 @@ class ContractAuthForm(forms.ModelForm):
 
     class Meta:
         model = ContractAuth
-        fields = ['contract', 'url_code']
+        fields = ['contract', 'url_code', 'send_mail']
 
 
 class ContractAuthAdmin(admin.ModelAdmin):

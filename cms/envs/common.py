@@ -846,6 +846,9 @@ INSTALLED_APPS = (
 
     # upload course list
     'ga_upload_course_list',
+
+    # Management optional function
+    'openedx.core.djangoapps.ga_optional',
 )
 
 

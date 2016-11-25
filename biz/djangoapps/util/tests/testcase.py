@@ -64,7 +64,7 @@ class BizTestBase(TestCase):
         )
 
     def _create_contract(self, contract_name='test contract', contract_type='PF', contractor_organization=None, owner_organization=None, end_date=None,
-                         detail_courses=[], additional_display_names=[], url_code=None):
+                         detail_courses=[], additional_display_names=[], url_code=None, send_mail=False):
         contract = ContractFactory.create(
             contract_name=contract_name,
             contract_type=contract_type,
@@ -78,7 +78,7 @@ class BizTestBase(TestCase):
         for d in additional_display_names:
             AdditionalInfoFactory.create(contract=contract, display_name=d)
         if url_code:
-            ContractAuthFactory.create(contract=contract, url_code=url_code)
+            ContractAuthFactory.create(contract=contract, url_code=url_code, send_mail=send_mail)
         return contract
 
     def _input_contract(self, contract, user):

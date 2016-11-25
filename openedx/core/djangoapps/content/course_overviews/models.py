@@ -44,7 +44,7 @@ class CourseOverview(TimeStampedModel):
         app_label = 'course_overviews'
 
     # IMPORTANT: Bump this whenever you modify this model and/or add a migration.
-    VERSION = 3
+    VERSION = 4
 
     # Cache entry versioning.
     version = IntegerField()

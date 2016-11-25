@@ -46,6 +46,14 @@ try:
 except ImportError:
     HAS_USER_SERVICE = False
 
+# We also may not always have the ga_optional module available
+try:
+    from openedx.core.djangoapps.ga_optional.xblock_service import OptionalService
+
+    HAS_OPTIONAL_SERVICE = True
+except ImportError:
+    HAS_OPTIONAL_SERVICE = False
+
 try:
     from xblock_django.models import XBlockDisableConfig
 except ImportError:
@@ -131,6 +139,7 @@ def create_modulestore_instance(
         i18n_service=None,
         fs_service=None,
         user_service=None,
+        optional_service=None,
         signal_handler=None,
 ):
     """
@@ -167,6 +176,11 @@ def create_modulestore_instance(
     else:
         xb_user_service = None
 
+    if HAS_OPTIONAL_SERVICE and not optional_service:
+        xb_optional_service = OptionalService()
+    else:
+        xb_optional_service = None
+
     if 'read_preference' in doc_store_config:
         doc_store_config['read_preference'] = getattr(ReadPreference, doc_store_config['read_preference'])
 
@@ -186,6 +200,7 @@ def create_modulestore_instance(
         i18n_service=i18n_service or ModuleI18nService(),
         fs_service=fs_service or xblock.reference.plugins.FSService(),
         user_service=user_service or xb_user_service,
+        optional_service=optional_service or xb_optional_service,
         signal_handler=signal_handler or SignalHandler(class_),
         **_options
     )

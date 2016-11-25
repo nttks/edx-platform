@@ -334,7 +334,7 @@ class XMLModuleStore(ModuleStoreReadBase):
 
     def __init__(
             self, data_dir, default_class=None, source_dirs=None, course_ids=None,
-            load_error_modules=True, i18n_service=None, fs_service=None, user_service=None,
+            load_error_modules=True, i18n_service=None, fs_service=None, user_service=None, optional_service=None,
             signal_handler=None, target_course_id=None, **kwargs   # pylint: disable=unused-argument
     ):
         """
@@ -374,6 +374,7 @@ class XMLModuleStore(ModuleStoreReadBase):
         self.i18n_service = i18n_service
         self.fs_service = fs_service
         self.user_service = user_service
+        self.optional_service = optional_service
 
         # If we are specifically asked for missing courses, that should
         # be an error.  If we are asked for "all" courses, find the ones
@@ -558,6 +559,9 @@ class XMLModuleStore(ModuleStoreReadBase):
 
             if self.user_service:
                 services['user'] = self.user_service
+
+            if self.optional_service:
+                services['optional'] = self.optional_service
 
             system = ImportSystem(
                 xmlstore=self,

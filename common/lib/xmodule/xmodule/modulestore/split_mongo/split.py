@@ -640,7 +640,7 @@ class SplitMongoModuleStore(SplitBulkWriteMixin, ModuleStoreWriteBase):
     def __init__(self, contentstore, doc_store_config, fs_root, render_template,
                  default_class=None,
                  error_tracker=null_error_tracker,
-                 i18n_service=None, fs_service=None, user_service=None,
+                 i18n_service=None, fs_service=None, user_service=None, optional_service=None,
                  services=None, signal_handler=None, **kwargs):
         """
         :param doc_store_config: must have a host, db, and collection entries. Other common entries: port, tz_aware.
@@ -672,6 +672,9 @@ class SplitMongoModuleStore(SplitBulkWriteMixin, ModuleStoreWriteBase):
 
         if self.request_cache is not None:
             self.services["request_cache"] = self.request_cache
+
+        if optional_service is not None:
+            self.services["optional"] = optional_service
 
         self.signal_handler = signal_handler
 

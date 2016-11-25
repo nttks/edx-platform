@@ -327,6 +327,7 @@ class ContractAuth(models.Model):
         primary_key=True,
     )
     url_code = models.CharField(max_length=URL_CODE_MAX_LENGTH, unique=True)
+    send_mail = models.BooleanField(default=False)
     modified_by = models.ForeignKey(User)
     modified = models.DateTimeField(auto_now=True)
 

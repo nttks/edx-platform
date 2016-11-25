@@ -3,6 +3,8 @@ import logging
 
 from celery.states import READY_STATES, SUCCESS, FAILURE, REVOKED
 
+from util.db import outer_atomic
+
 from openedx.core.djangoapps.ga_task.models import Task
 
 log = logging.getLogger(__name__)
@@ -52,10 +54,10 @@ def submit_task(request, task_type, task_class, task_input, task_key, queue=None
     """
     Helper method to submit a task.
     """
-    # check to see if task is already running, and reserve it otherwise:
-    task = _reserve_task(task_type, task_key, task_input, request.user)
+    with outer_atomic():
+        # check to see if task is already running, and reserve it otherwise:
+        task = _reserve_task(task_type, task_key, task_input, request.user)
 
     task_args = [task.id]
-    # FIXME need xmodule instanciate?
     task_class.apply_async(task_args, task_id=task.task_id, queue=queue)
     return task

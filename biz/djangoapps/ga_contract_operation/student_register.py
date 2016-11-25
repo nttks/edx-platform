@@ -215,7 +215,8 @@ def perform_delegate_student_register(entry_id, task_input, action_name):
                     # Create contract register if not created.
                     ContractRegister.objects.get_or_create(user=user, contract=contract)
 
-                    send_mail_to_student(user.email, email_params)
+                    if not has_contractauth or contract.contractauth.send_mail:
+                        send_mail_to_student(user.email, email_params)
 
                     log.info("Task {task_id}: Success to process of register to User {user_id}".format(task_id=task_id, user_id=user.id))
                     task_progress.success()
