@@ -8,7 +8,7 @@ from .utils import PaverTestCase
 
 EXPECTED_COFFEE_COMMAND = (
     "node_modules/.bin/coffee --compile `find {platform_root}/lms "
-    "{platform_root}/cms {platform_root}/common {gacco_theme_root} -type f -name \"*.coffee\"`"
+    "{platform_root}/cms {platform_root}/common -type f -name \"*.coffee\"`"
 )
 EXPECTED_SASS_COMMAND = (
     "sass --update --cache-location /tmp/sass-cache --default-encoding utf-8 --style compressed"
@@ -20,13 +20,11 @@ EXPECTED_SASS_COMMAND = (
     " --load-path lms/static/themed_sass"
     " --load-path cms/static/sass --load-path common/static/sass"
     " --load-path lms/static/certificates/sass"
-    " --load-path {gacco_theme_root}/static/sass"
     " lms/static/sass:lms/static/css"
     " lms/static/themed_sass:lms/static/css"
     " cms/static/sass:cms/static/css"
     " common/static/sass:common/static/css"
     " lms/static/certificates/sass:lms/static/certificates/css"
-    " {gacco_theme_root}/static/sass:{gacco_theme_root}/static/css"
 )
 EXPECTED_PREPROCESS_ASSETS_COMMAND = (
     "python manage.py {system} --settings={asset_settings} preprocess_assets"
@@ -232,14 +230,13 @@ class TestPaverServerTasks(PaverTestCase):
             expected_asset_settings = "test_static_optimized"
         expected_collect_static = not is_fast and expected_settings != "devstack"
         platform_root = os.getcwd()
-        theme_root = path(platform_root).abspath().parent / "themes" / "gacco"
         if not is_fast:
             expected_messages.append(EXPECTED_PREPROCESS_ASSETS_COMMAND.format(
                 system=system, asset_settings=expected_asset_settings
             ))
             expected_messages.append("xmodule_assets common/static/xmodule")
-            expected_messages.append(EXPECTED_COFFEE_COMMAND.format(platform_root=platform_root, gacco_theme_root=theme_root))
-            expected_messages.append(EXPECTED_SASS_COMMAND.format(gacco_theme_root=theme_root))
+            expected_messages.append(EXPECTED_COFFEE_COMMAND.format(platform_root=platform_root))
+            expected_messages.append(EXPECTED_SASS_COMMAND)
         if expected_collect_static:
             expected_messages.append(EXPECTED_COLLECT_STATIC_COMMAND.format(
                 system=system, asset_settings=expected_asset_settings
@@ -271,7 +268,6 @@ class TestPaverServerTasks(PaverTestCase):
             expected_asset_settings = "test_static_optimized"
         expected_collect_static = not is_fast and expected_settings != "devstack"
         platform_root = os.getcwd()
-        theme_root = path(platform_root).abspath().parent / "themes" / "gacco"
         expected_messages = []
         if not is_fast:
             expected_messages.append(EXPECTED_PREPROCESS_ASSETS_COMMAND.format(
@@ -281,8 +277,8 @@ class TestPaverServerTasks(PaverTestCase):
                 system="cms", asset_settings=expected_asset_settings
             ))
             expected_messages.append("xmodule_assets common/static/xmodule")
-            expected_messages.append(EXPECTED_COFFEE_COMMAND.format(platform_root=platform_root, gacco_theme_root=theme_root))
-            expected_messages.append(EXPECTED_SASS_COMMAND.format(gacco_theme_root=theme_root))
+            expected_messages.append(EXPECTED_COFFEE_COMMAND.format(platform_root=platform_root))
+            expected_messages.append(EXPECTED_SASS_COMMAND)
         if expected_collect_static:
             expected_messages.append(EXPECTED_COLLECT_STATIC_COMMAND.format(
                 system="lms", asset_settings=expected_asset_settings
