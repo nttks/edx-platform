@@ -190,6 +190,20 @@ class CourseFields(object):
         scope=Scope.settings
     )
     end = Date(help=_("Date that this class ends"), scope=Scope.settings)
+
+    individual_end_days = Integer(
+        help=_("Number of days from the base date to the course ends"),
+        scope=Scope.settings
+    )
+    individual_end_hours = Integer(
+        help=_("Number of hours from the base date to the course ends"),
+        scope=Scope.settings
+    )
+    individual_end_minutes = Integer(
+        help=_("Number of minutes from the base date to the course ends"),
+        scope=Scope.settings
+    )
+
     cosmetic_display_price = Integer(
         display_name=_("Cosmetic Course Display Price"),
         help=_(

@@ -26,6 +26,12 @@ class CourseOverviewExtra(models.Model):
     is_f2f_course = models.BooleanField(default=False)
     is_f2f_course_sell = models.BooleanField(default=False)
 
+    # for self-paced
+    self_paced = models.BooleanField(default=False)
+    individual_end_days = models.IntegerField(null=True)
+    individual_end_hours = models.IntegerField(null=True)
+    individual_end_minutes = models.IntegerField(null=True)
+
     @classmethod
     def create(cls, course, overview):
         cls(
@@ -33,7 +39,11 @@ class CourseOverviewExtra(models.Model):
             is_course_hidden=course.is_course_hidden,
             terminate_start=course.terminate_start,
             is_f2f_course=course.is_f2f_course,
-            is_f2f_course_sell=course.is_f2f_course_sell
+            is_f2f_course_sell=course.is_f2f_course_sell,
+            self_paced=course.self_paced,
+            individual_end_days=course.individual_end_days,
+            individual_end_hours=course.individual_end_hours,
+            individual_end_minutes=course.individual_end_minutes
         ).save()
 
     @property
@@ -50,3 +60,7 @@ class CourseOverviewExtra(models.Model):
             return False
 
         return datetime.now(UTC()) > self.terminate_start
+
+    @property
+    def has_individual_end(self):
+        return self.individual_end_days or self.individual_end_hours or self.individual_end_minutes
