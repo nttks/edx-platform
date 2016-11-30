@@ -47,6 +47,9 @@ from lms.envs.common import (
     REST_FRAMEWORK,
     # The following settings need to load module(lms.djangoapps.instructor.views.instructor_dashboard).
     BULK_EMAIL_DEFAULT_RETRY_DELAY, BULK_EMAIL_MAX_RETRIES, GRADES_DOWNLOAD_ROUTING_KEY,
+    # The following settings need to use ORA2 file upload.
+    ORA2_FILE_PREFIX, FILE_UPLOAD_STORAGE_BUCKET_NAME, FILE_UPLOAD_STORAGE_PREFIX,
+    ORA2_WAF_PROXY_SERVER_IP, ORA2_WAF_PROXY_SERVER_PORT, ORA2_WAF_VIRUS_DETECTION_KEYWORD,
 )
 from path import Path as path
 from warnings import simplefilter
@@ -198,6 +201,10 @@ FEATURES = {
 
     # Enable secure token feature to playback video in JWPlayer XBlock
     'ENABLE_JWPLAYER_SECURE_TOKEN': True,
+
+    # Optional security feature for ORA2 file upload
+    'ENABLE_ORA2_WAF_PROXY': False,
+    'ENABLE_ORA2_FILE_TYPE_STRICT_CHECK': False,
 }
 
 ENABLE_JASMINE = False
