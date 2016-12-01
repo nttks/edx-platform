@@ -2763,5 +2763,8 @@ RATE_LIMIT_REQUESTS = 30
 ##### Format #####
 FORMAT_MODULE_PATH = ['conf.formats']
 
+##### CSRF #####
+CSRF_FAILURE_VIEW = 'openedx.core.djangoapps.ga_csrf.views.csrf_failure'
+
 ##### Settings for Biz #####
 from biz.envs.common import *

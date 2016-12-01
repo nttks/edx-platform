@@ -1235,3 +1235,19 @@ msgstr "講座名は{max_length}文字以内で設定してください。"
 #: cms/djangoapps/models/settings/course_metadata.py
 msgid "Course display name, please be up to {max_length} characters."
 msgstr "講座の表示名は{max_length}文字以内で設定してください。"
+
+#: lms/templates/ga_csrf_failure.html
+msgid "The sign in errors are caused by communication line or your browser settings. Please try following method."
+msgstr "通信回線、またはブラウザの設定が原因と思われます。以下の解決方法をお試しください。"
+
+#: lms/templates/ga_csrf_failure.html
+msgid "Close your browser screen once and sign in again after a while. Also confirm a connection state of your communication line."
+msgstr "画面を一旦閉じ、少し時間を置いてから再度ログインしてください。 また、インターネット回線の接続状態を確認してください。"
+
+#: lms/templates/ga_csrf_failure.html
+msgid "Enabling cookie support on your browser."
+msgstr "お使いのブラウザソフトのcookie（クッキー）設定を有効にしてください。"
+
+#: lms/templates/ga_csrf_failure.html
+msgid "If not resolve your sign in problem, please try other browser."
+msgstr "それでも解決しない場合は、他のブラウザでお試しください。"

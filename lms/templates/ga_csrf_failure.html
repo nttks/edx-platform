@@ -1,0 +1,36 @@
+<%!
+from django.utils.translation import ugettext as _
+%>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>403 Forbidden</title>
+  <style type="text/css">
+    .login-register .status .message-copy li {
+      margin: 0;
+      list-style: none;
+    }
+    #summary {
+      background: #ffc;
+      padding: 10px;
+    }
+    #summary ol li {
+      list-style-type: decimal;
+    }
+    #summary ol li:not(:first-child) {
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+<div id="summary">
+  <p>${_("The sign in errors are caused by communication line or your browser settings. Please try following method.")}</p>
+  <ol>
+    <li>${_("Close your browser screen once and sign in again after a while. Also confirm a connection state of your communication line.")}</li>
+    <li>${_("Enabling cookie support on your browser.")}</li>
+  </ol>
+  <p>${_("If not resolve your sign in problem, please try other browser.")}</p>
+</div>
+</body>
+</html>
