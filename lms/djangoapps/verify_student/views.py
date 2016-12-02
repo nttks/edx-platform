@@ -841,12 +841,6 @@ def create_order(request):
             'payment_page_url': payment_page_url
         }
 
-    if 'processor' not in request.POST:
-        # (XCOM-214) To be removed after release.
-        # the absence of this key in the POST payload indicates that the request was initiated from
-        # a stale js client, which expects a response containing only the 'payment_form_data' part of
-        # the payment data result.
-        payment_data = payment_data['payment_form_data']
     return HttpResponse(json.dumps(payment_data), content_type="application/json")
 
 

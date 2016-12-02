@@ -189,6 +189,7 @@ INSTRUCTOR_POST_ENDPOINTS = set([
     'get_oa_rubric_scores',
     'get_survey',
     'get_students_advanced_course',
+    'get_students_paid_course',
 ])
 
 

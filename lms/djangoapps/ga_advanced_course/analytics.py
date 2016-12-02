@@ -173,7 +173,7 @@ def paid_course_purchased_features(course_id, features):
     Returns a list of the paid course.
     """
 
-    def _extract_advanced_course_item(item):
+    def _extract_paid_course_item(item):
         """ convert item to dictionary """
         order_dict = {
             k: getattr(item.order, v)
@@ -185,7 +185,11 @@ def paid_course_purchased_features(course_id, features):
         })
         return order_dict
 
-    event_user_items = CertificateItem.objects.filter(course_id=course_id, status='purchased')
+    event_user_items = CertificateItem.objects.filter(
+        course_id=course_id,
+        status='purchased',
+        order__status='purchased',
+    )
     user_ids = set([item.user.id for item in event_user_items])
     enrollment_users = CourseEnrollment.objects.filter(
         user__in=user_ids,
@@ -195,7 +199,7 @@ def paid_course_purchased_features(course_id, features):
 
     return [
         dict(itertools.chain(
-            _extract_advanced_course_item(item).items(),
+            _extract_paid_course_item(item).items(),
             _get_general_features(item, enrollment_users, features),
         ))
         for item in event_user_items

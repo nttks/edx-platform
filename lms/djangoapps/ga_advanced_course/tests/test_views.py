@@ -14,7 +14,7 @@ from student.tests.factories import UserFactory
 from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
 from xmodule.modulestore.tests.factories import CourseFactory
 
-from ga_shoppingcart.models import AdvancedCourseItem
+from ga_shoppingcart.models import AdvancedCourseItem, PersonalInfoSetting
 from ga_shoppingcart.utils import SC_SESSION_TIMEOUT
 
 from ga_advanced_course.models import AdvancedCourseTypes
@@ -267,6 +267,11 @@ class AdvancedCourseViewTest(LoginEnrollmentTestCase, ModuleStoreTestCase):
         path = reverse('advanced_course:choose_ticket', args=[course.id, ticket.id])
         self._assert_redirect(response, path)
 
+    def _create_personal_input_setting(self, advanced_course):
+        p = PersonalInfoSetting()
+        p.advanced_course = advanced_course
+        p.save()
+
 
 @ddt.ddt
 class AdvancedCourseChooseViewTest(AdvancedCourseViewTest):
@@ -429,7 +434,7 @@ class AdvancedCoursePurchaseTicketViewTest(CourseCheckMixin, TicketCheckMixin, A
         path = reverse('advanced_course:purchase_ticket', args=[course.id, ticket_id])
         return self._access_page(path)
 
-    def _assert_purchase_ticket_response(self, response, ticket, user):
+    def _assert_purchase_ticket_response(self, response, ticket, user, viewname):
         item = OrderItem.objects.get_subclass(
             user=user.id,
             status='paying',
@@ -439,7 +444,7 @@ class AdvancedCoursePurchaseTicketViewTest(CourseCheckMixin, TicketCheckMixin, A
         self.assertTrue(isinstance(item, AdvancedCourseItem))
         self.assertEqual(item.advanced_course_ticket, ticket)
 
-        path = reverse('advanced_course:checkout_ticket', args=[item.id])
+        path = reverse(viewname, args=[item.id])
         self._assert_redirect(response, path)
 
     def get_course_check_response(self):
@@ -463,7 +468,23 @@ class AdvancedCoursePurchaseTicketViewTest(CourseCheckMixin, TicketCheckMixin, A
 
         response = self._get_purchase_ticket(self.course, ticket.id)
 
-        self._assert_purchase_ticket_response(response, ticket, self.user)
+        self._assert_purchase_ticket_response(response, ticket, self.user, 'advanced_course:checkout_ticket')
+
+    def test_purchase_ticket_when_required_personal_info(self):
+        advanced_course = self._create_advanced_courses(self.course, 2)[0]
+        ticket = self._create_ticket(advanced_course, 2)[0]
+        self._create_personal_input_setting(advanced_course)
+
+        # Make advanced_course to full just before
+        for _ in range(advanced_course.capacity - 1):
+            purchase_ticket(UserFactory.create(), ticket)
+
+        self.setup_user()
+        self.enroll(self.course)
+
+        response = self._get_purchase_ticket(self.course, ticket.id)
+
+        self._assert_purchase_ticket_response(response, ticket, self.user, 'ga_shoppingcart:input_personal_info')
 
     def test_purchase_ticket_not_exists(self):
         advanced_course = self._create_advanced_courses(self.course, 2, active=False)[0]
