@@ -17,6 +17,7 @@ from student.helpers import (
   VERIFY_STATUS_NEED_TO_REVERIFY,
   DISABLE_UNENROLL_CERT_STATES,
 )
+from util.date_utils import get_time_display
 %>
 
 <%
@@ -125,14 +126,25 @@ from student.helpers import (
           <span class="info-university">${course_overview.display_org_with_default | h} - </span>
           <span class="info-course-id">${course_overview.display_number_with_default | h}</span>
           <span class="info-date-block" data-tooltip="Hi">
-          % if course_overview.has_ended():
-            ${_("Ended - {end_date}").format(end_date=course_overview.end_datetime_text("SHORT_DATE"))}
-          % elif course_overview.has_started():
-            ${_("Started - {start_date}").format(start_date=course_overview.start_datetime_text("SHORT_DATE"))}
-          % elif course_overview.start_date_is_still_default: # Course start date TBD
-            ${_("Course has not yet started")}
-          % else:   # hasn't started yet
-            ${_("Starts - {start_date}").format(start_date=course_overview.start_datetime_text("SHORT_DATE"))}
+          % if course_overview.extra and course_overview.extra.self_paced:
+            % if not course_overview.has_started():
+              ${_("Starts - {start_date}").format(start_date=course_overview.start_datetime_text("SHORT_DATE"))}
+            % else:
+              ${_("Classes Start - {start_date}").format(start_date=get_time_display(enrollment.get_individual_start_date(), "DATE_TIME", settings.TIME_ZONE),)}
+            % endif
+            % if not staff_access and enrollment.get_individual_end_date():
+              <br>${_("Ended - {end_date}").format(end_date=get_time_display(enrollment.get_individual_end_date(), "DATE_TIME", settings.TIME_ZONE))}
+            % endif
+          % else:
+            % if course_overview.has_ended():
+              ${_("Ended - {end_date}").format(end_date=course_overview.end_datetime_text("SHORT_DATE"))}
+            % elif course_overview.has_started():
+              ${_("Started - {start_date}").format(start_date=course_overview.start_datetime_text("SHORT_DATE"))}
+            % elif course_overview.start_date_is_still_default: # Course start date TBD
+              ${_("Course has not yet started")}
+            % else:   # hasn't started yet
+              ${_("Starts - {start_date}").format(start_date=course_overview.start_datetime_text("SHORT_DATE"))}
+            % endif
           % endif
           </span>
         </div>
@@ -374,7 +386,7 @@ from student.helpers import (
             <%include file = "_dashboard_xseries_info.html" args="course_program_info=course_program_info, enrollment_mode=enrollment.mode" />
         % endif
 
-        % if course_overview.extra and course_overview.extra.has_terminated and not staff_access:
+        % if (course_overview.extra and course_overview.extra.has_terminated and not staff_access) or (enrollment.is_individual_closed() and not staff_access):
          <p id="block-course-msg" class="course-block">
            ${_("This course has been closed.")}
          </p>

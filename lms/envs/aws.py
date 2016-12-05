@@ -740,7 +740,7 @@ if FEATURES.get('INDIVIDUAL_DUE_DATES'):
 
 ##### Self-Paced Course Due Dates #####
 FIELD_OVERRIDE_PROVIDERS += (
-    'courseware.self_paced_overrides.SelfPacedDateOverrideProvider',
+    'courseware.ga_self_paced_overrides.SelfPacedDateOverrideProvider',
 )
 
 # PROFILE IMAGE CONFIG

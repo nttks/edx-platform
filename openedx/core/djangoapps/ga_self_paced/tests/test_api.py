@@ -77,6 +77,29 @@ class TestApi(ModuleStoreTestCase):
         else:
             self.assertEqual(created, api.get_base_date(enrollment))
 
+    @ddt.data('audit', 'no-id-professional')
+    def test_get_base_date_paid_course(self, mode):
+        self.course.start = timezone.now()
+        self.update_course(self.course, self.user.id)
+
+        if mode == 'no-id-professional':
+            # emulate payment flow
+            enrollment = CourseEnrollmentFactory.create(user=self.user, course_id=self.course.id, mode='audit', is_active=False)
+            enrollment.is_active = True
+            enrollment.mode = mode
+            enrollment.save()
+        else:
+            enrollment = CourseEnrollmentFactory.create(user=self.user, course_id=self.course.id, mode=mode)
+
+        # Get enrollment date (enrollment data was created after course update)
+        base_date = api.get_base_date(enrollment)
+
+        if mode == 'no-id-professional':
+            self.assertNotEqual(base_date, enrollment.created)
+            self.assertEqual(base_date, enrollment.history.filter(is_active=True).order_by('-history_date')[0].history_date)
+        else:
+            self.assertEqual(base_date, enrollment.created)
+
     def test_get_base_date_none(self):
         self.assertIsNone(api.get_base_date(None))
 

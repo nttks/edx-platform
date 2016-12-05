@@ -75,6 +75,10 @@ msgstr "trueかfalseを入力してください。trueにするとコースが�
 msgid "This course has been closed."
 msgstr "本講座のサービス提供は終了しました。"
 
+#: templates/dashboard/_dashboard_course_listing.html
+msgid "Classes Start - {start_date}"
+msgstr "受講開始日 - {start_date}"
+
 #: lms/templates/navigation.html lms/templates/original_navigation.html
 msgid "Log Out"
 msgstr "ログアウト"
@@ -535,6 +539,30 @@ msgstr "対面学習コースがある場合はチェックを入れてくださ
 #: cms/templates/settings.html
 msgid "Please check if sell a reversal classes."
 msgstr "対面学習コースをgacco上で販売する場合はチェックを入れてください。"
+
+#: cms/templates/settings.html
+msgid "Individual Course End Days"
+msgstr "個別講座終了日数"
+
+#: cms/templates/settings.html
+msgid "Hours"
+msgstr "時"
+
+#: cms/templates/settings.html
+msgid "Minutes"
+msgstr "分"
+
+#: cms/templates/settings.html
+msgid "Days up to the course available period"
+msgstr "受講可能期間までの日数"
+
+#: cms/templates/settings.html
+msgid "Hours up to the course available period"
+msgstr "受講可能期間までの時間"
+
+#: cms/templates/settings.html
+msgid "Minutes up to the course available period"
+msgstr "受講可能期間までの分"
 
 #: cms/djangoapps/contentstore/views/entrance_exam.py
 #: lms/djangoapps/courseware/tabs.py
@@ -1374,3 +1402,11 @@ msgstr "お客様情報の確認"
 #: lms/templates/ga_shoppingcart/input_personal_info_preview.html
 msgid "Please confirm your information bellow and click \"Next\"<br>DO NOT PRESS \"Browser Back Button.\"<br>Please use the \"Back\" button on the bottom of this screen."
 msgstr "入力内容ご確認の上、「次へ」ボタンを押してください。<br>内容を修正したい場合は、「戻る」ボタンを押してください。<br>ブラウザの「戻る」ボタンは押さないでください。"
+
+#. Translators: the translation for "DATE_TIME_FORMAT" must be a format
+#. string for formatting dates with times.  For example, the American
+#. English form is "%b %d, %Y at %H:%M".
+#. See http://strftime.org for details.
+#: common/djangoapps/util/date_utils.py
+msgid "DATE_TIME_FORMAT"
+msgstr "%Y年%b%d日 %H:%M"

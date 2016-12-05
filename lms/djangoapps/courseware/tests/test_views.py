@@ -485,6 +485,30 @@ class ViewsTestCase(ModuleStoreTestCase):
         staff_response = self.client.get(request_url)
         self.assertEqual(staff_response.status_code, 200)
 
+    def test_self_paced_course_has_been_closed(self):
+        course = CourseFactory.create(
+            start=datetime(2016, 1, 1, 0, 0, 0).replace(tzinfo=UTC),
+            self_paced=True,
+            individual_end_days=10
+        )
+        admin = AdminFactory()
+        # Create enrollment data and set the created to the past than individual_end_days
+        for enrollment in [CourseEnrollment.enroll(self.user, course.id), CourseEnrollment.enroll(admin, course.id)]:
+            enrollment.created = enrollment.created - timedelta(days=10)
+            enrollment.save()
+
+        request_url = '/courses/{}/courseware/'.format(unicode(course.id))
+
+        self.client.login(username=self.user.username, password="123456")
+        user_response = self.client.get(request_url)
+        self.assertEqual(user_response.status_code, 302)
+        self.assertEqual(user_response['Location'], 'http://testserver/dashboard')
+        self.client.logout()
+
+        self.client.login(username=admin.username, password="test")
+        staff_response = self.client.get(request_url)
+        self.assertEqual(staff_response.status_code, 200)
+
     def test_financial_assistance_page(self):
         self.client.login(username=self.user.username, password=self.password)
         url = reverse('financial_assistance')

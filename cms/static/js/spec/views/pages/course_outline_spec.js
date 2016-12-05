@@ -216,7 +216,8 @@ define(["jquery", "common/js/spec_helpers/ajax_helpers", "common/js/components/u
                     'course-outline', 'xblock-string-field-editor', 'modal-button',
                     'basic-modal', 'course-outline-modal', 'release-date-editor',
                     'due-date-editor', 'grading-editor', 'publish-editor',
-                    'staff-lock-editor', 'timed-examination-preference-editor'
+                    'staff-lock-editor', 'timed-examination-preference-editor',
+                    'individual-release-days-editor', 'individual-due-days-editor'
                 ]);
                 appendSetFixtures(mockOutlinePage);
                 mockCourseJSON = createMockCourseJSON({}, [
@@ -575,6 +576,170 @@ define(["jquery", "common/js/spec_helpers/ajax_helpers", "common/js/components/u
                         ['Unit 100', 'Unit 50', 'Unit 1']
                     );
                     expect(modalWindow.find('.outline-subsection').length).toBe(2);
+                });
+            });
+
+            describe('Section in self-paced', function() {
+
+                beforeEach(function() {
+                    /* global course */
+                    course.set('self_paced', true);
+                });
+
+                afterEach(function() {
+                    /* global course */
+                    course.set('self_paced', false);
+                });
+
+                it('can be edited', function() {
+                    createCourseOutlinePage(this, mockCourseJSON, false);
+                    outlinePage.$('.section-header-actions .configure-button').click();
+                    $('#individual_start_days').val(1);
+                    $('#individual_start_hours').val(2);
+                    $('#individual_start_minutes').val(3);
+                    // Section release date can't be cleared.
+                    expect($('.wrapper-modal-window .action-clear')).not.toExist();
+
+                    // self-paced Section does not contain start_date
+                    expect($('#start_date')).not.toExist();
+
+                    // Section does not contain due_date or grading type selector
+                    expect($('#due_date')).not.toExist();
+                    expect($('#grading_type')).not.toExist();
+                    expect($('#individual_due_days')).not.toExist();
+                    expect($('#individual_due_hours')).not.toExist();
+                    expect($('#individual_due_minutes')).not.toExist();
+
+                    // Staff lock controls are always visible
+                    expect($('#staff_lock')).toExist();
+                    $('.wrapper-modal-window .action-save').click();
+                    AjaxHelpers.expectJsonRequest(requests, 'POST', '/xblock/mock-section', {
+                        'metadata': {
+                            'individual_start_days': '1',
+                            'individual_start_hours': '2',
+                            'individual_start_minutes': '3'
+                        }
+                    });
+                    expect(requests[0].requestHeaders['X-HTTP-Method-Override']).toBe('PATCH');
+
+                    // This is the response for the change operation.
+                    AjaxHelpers.respondWithJson(requests, {});
+                    var mockResponseSectionJSON = createMockSectionJSON({
+                            individual_release_date: 'Jan 02, 2015 at 00:00 UTC',
+                            individual_released_to_students: true,
+                            individual_start_days: '1',
+                            individual_start_hours: '2',
+                            individual_start_minutes: '3',
+                        }, [
+                            createMockSubsectionJSON({}, [
+                                createMockVerticalJSON({
+                                    has_changes: true,
+                                    published: false
+                                })
+                            ])
+                        ]);
+                    AjaxHelpers.expectJsonRequest(requests, 'GET', '/xblock/outline/mock-section');
+                    AjaxHelpers.respondWithJson(requests, mockResponseSectionJSON);
+                    AjaxHelpers.expectNoRequests(requests);
+                    expect($('.outline-section .status-release-value')).toContainText('Released:');
+                    expect($('.outline-section .status-release-value')).toContainText('After Jan 02, 2015 at 00:00 UTC');
+
+                    outlinePage.$('.section-header-actions .configure-button').click();
+                    expect($('#individual_start_days').val()).toBe('1');
+                    expect($('#individual_start_hours').val()).toBe('2');
+                    expect($('#individual_start_minutes').val()).toBe('3');
+                });
+
+                it('Scheduled', function() {
+                    var mockCourseJSON = createMockCourseJSON({}, [createMockSectionJSON({
+                        individual_release_date: 'Jan 02, 2015 at 00:00 UTC',
+                        individual_released_to_students: false
+                    })]);
+                    createCourseOutlinePage(this, mockCourseJSON, false);
+                    expect($('.outline-section .status-release-value')).toContainText('Scheduled:');
+                    expect($('.outline-section .status-release-value')).toContainText('After Jan 02, 2015 at 00:00 UTC');
+                });
+
+                it('Unscheduled', function() {
+                    createCourseOutlinePage(this, mockCourseJSON, false);
+                    expect($('.outline-section .status-release-value')).toContainText('Unscheduled');
+                });
+
+                describe('Input invalid days, hours, minutes', function() {
+                    var daysErrorMessage = 'Please enter an integer between 0 and 999.',
+                        hoursErrorMessage = 'Please enter an integer between 0 and 23.',
+                        minutesErrorMessage = 'Please enter an integer between 0 and 59.';
+
+                    beforeEach(function() {
+                        createCourseOutlinePage(this, mockCourseJSON, false);
+                        outlinePage.$('.section-header-actions .configure-button').click();
+                    });
+
+                    it('Input non numeric days should result in error', function() {
+                        expect($('#individual-start-error')).not.toContainText(daysErrorMessage);
+                        $('#individual_start_days').val('a').trigger('change');
+                        expect($('#individual-start-error')).toContainText(daysErrorMessage);
+                        $('#individual_start_days').val(0).trigger('change');
+                        expect($('#individual-start-error')).not.toContainText(daysErrorMessage);
+                    });
+
+                    it('Input negative days should result in error', function () {
+                        $('#individual_start_days').val(0).trigger('change');
+                        expect($('#individual-start-error')).not.toContainText(daysErrorMessage);
+                        $('#individual_start_days').val(-1).trigger('change');
+                        expect($('#individual-start-error')).toContainText(daysErrorMessage);
+                    });
+
+                    it('Input too big days should result in error', function () {
+                        $('#individual_start_days').val(999).trigger('change');
+                        expect($('#individual-start-error')).not.toContainText(daysErrorMessage);
+                        $('#individual_start_days').val(1000).trigger('change');
+                        expect($('#individual-start-error')).toContainText(daysErrorMessage);
+                    });
+
+                    it('Input non numeric hours should result in error', function() {
+                        expect($('#individual-start-error')).not.toContainText(hoursErrorMessage);
+                        $('#individual_start_hours').val('a').trigger('change');
+                        expect($('#individual-start-error')).toContainText(hoursErrorMessage);
+                        $('#individual_start_hours').val(0).trigger('change');
+                        expect($('#individual-start-error')).not.toContainText(hoursErrorMessage);
+                    });
+
+                    it('Input negative hours should result in error', function () {
+                        $('#individual_start_hours').val(0).trigger('change');
+                        expect($('#individual-start-error')).not.toContainText(hoursErrorMessage);
+                        $('#individual_start_hours').val(-1).trigger('change');
+                        expect($('#individual-start-error')).toContainText(hoursErrorMessage);
+                    });
+
+                    it('Input too big hours should result in error', function () {
+                        $('#individual_start_hours').val(23).trigger('change');
+                        expect($('#individual-start-error')).not.toContainText(hoursErrorMessage);
+                        $('#individual_start_hours').val(24).trigger('change');
+                        expect($('#individual-start-error')).toContainText(hoursErrorMessage);
+                    });
+
+                    it('Input non numeric minutes should result in error', function() {
+                        expect($('#individual-start-error')).not.toContainText(minutesErrorMessage);
+                        $('#individual_start_minutes').val('a').trigger('change');
+                        expect($('#individual-start-error')).toContainText(minutesErrorMessage);
+                        $('#individual_start_minutes').val(0).trigger('change');
+                        expect($('#individual-start-error')).not.toContainText(minutesErrorMessage);
+                    });
+
+                    it('Input negative minutes should result in error', function () {
+                        $('#individual_start_minutes').val(0).trigger('change');
+                        expect($('#individual-start-error')).not.toContainText(minutesErrorMessage);
+                        $('#individual_start_minutes').val(-1).trigger('change');
+                        expect($('#individual-start-error')).toContainText(minutesErrorMessage);
+                    });
+
+                    it('Input too big hours should result in error', function () {
+                        $('#individual_start_minutes').val(59).trigger('change');
+                        expect($('#individual-start-error')).not.toContainText(minutesErrorMessage);
+                        $('#individual_start_minutes').val(60).trigger('change');
+                        expect($('#individual-start-error')).toContainText(minutesErrorMessage);
+                    });
                 });
             });
 
@@ -1028,6 +1193,164 @@ define(["jquery", "common/js/spec_helpers/ajax_helpers", "common/js/components/u
                         ['Unit 100', 'Unit 50']
                     );
                     expect(modalWindow.find('.outline-subsection')).not.toExist();
+                });
+            });
+
+            describe('Subsection in self-paced', function() {
+                beforeEach(function() {
+                    /* global course */
+                    course.set('self_paced', true);
+                });
+                afterEach(function() {
+                    /* global course */
+                    course.set('self_paced', false);
+                });
+                it('can be edited', function() {
+                    createCourseOutlinePage(this, mockCourseJSON, false);
+                    outlinePage.$('.outline-subsection .configure-button').click();
+                    $('#individual_due_days').val(1);
+                    $('#individual_due_hours').val(2);
+                    $('#individual_due_minutes').val(3);
+                    $('#grading_type').val('Lab');
+
+                    // self-paced Subsection does not contain start_date and due_date
+                    expect($('#start_date')).not.toExist();
+                    expect($('#due_date')).not.toExist();
+
+                    // Staff lock controls are always visible
+                    expect($('#staff_lock')).toExist();
+
+                    $('.wrapper-modal-window .action-save').click();
+                    AjaxHelpers.expectJsonRequest(requests, 'POST', '/xblock/mock-subsection', {
+                        'graderType': 'Lab',
+                        'metadata': {
+                            'individual_due_days': '1',
+                            'individual_due_hours': '2',
+                            'individual_due_minutes': '3',
+                            'is_practice_exam': false,
+                            'is_time_limited': false,
+                            'is_proctored_enabled': false,
+                            'default_time_limit_minutes': null
+                        }
+                    });
+                    expect(requests[0].requestHeaders['X-HTTP-Method-Override']).toBe('PATCH');
+                    AjaxHelpers.respondWithJson(requests, {});
+
+                    var mockServerValuesJson = createMockSectionJSON({}, [
+                        createMockSubsectionJSON({
+                            graded: true,
+                            format: 'Lab',
+                            individual_due_days: 1,
+                            individual_due_hours: 2,
+                            individual_due_minutes: 3
+                        }, [
+                            createMockVerticalJSON({
+                                has_changes: true,
+                                published: false
+                            })
+                        ])
+                    ]);
+                    AjaxHelpers.expectJsonRequest(requests, 'GET', '/xblock/outline/mock-section');
+                    AjaxHelpers.respondWithJson(requests, mockServerValuesJson);
+                    AjaxHelpers.expectNoRequests(requests);
+
+                    expect($('.outline-subsection .status-release-value').text().trim()).toBe('');
+                    expect($('.outline-subsection .status-grading-date')).toContainText('Due:');
+                    expect($('.outline-subsection .status-grading-date')).toContainText(
+                        'After 1 days 2 hours 3 minutes from the enrollment start date and time'
+                    );
+                    expect($('.outline-subsection .status-grading-value')).toContainText('Lab');
+
+                    expect($('.outline-item .outline-subsection .status-grading-value')).toContainText('Lab');
+
+                    outlinePage.$('.outline-item .outline-subsection .configure-button').click();
+                    expect($('#individual_due_days').val()).toBe('1');
+                    expect($('#individual_due_hours').val()).toBe('2');
+                    expect($('#individual_due_minutes').val()).toBe('3');
+                    expect($('#grading_type').val()).toBe('Lab');
+                });
+
+                it('Unscheduled', function() {
+                    createCourseOutlinePage(this, mockCourseJSON, false);
+                    expect($('.outline-subsection .status-release-value').text().trim()).toBe('');
+                    expect($('.outline-subsection .status-grading-date')).not.toContainText('Due:');
+                });
+
+                describe('Input invalid days, hours, minutes', function() {
+                    var daysErrorMessage = 'Please enter an integer between 0 and 999.',
+                        hoursErrorMessage = 'Please enter an integer between 0 and 23.',
+                        minutesErrorMessage = 'Please enter an integer between 0 and 59.';
+
+                    beforeEach(function() {
+                        createCourseOutlinePage(this, mockCourseJSON, false);
+                        outlinePage.$('.outline-item .outline-subsection .configure-button').click();
+                    });
+
+                    it('Input non numeric days should result in error', function() {
+                        expect($('#individual-due-error')).not.toContainText(daysErrorMessage);
+                        $('#individual_due_days').val('a').trigger('change');
+                        expect($('#individual-due-error')).toContainText(daysErrorMessage);
+                        $('#individual_due_days').val(0).trigger('change');
+                        expect($('#individual-due-error')).not.toContainText(daysErrorMessage);
+                    });
+
+                    it('Input negative days should result in error', function() {
+                        $('#individual_due_days').val(0).trigger('change');
+                        expect($('#individual-due-error')).not.toContainText(daysErrorMessage);
+                        $('#individual_due_days').val(-1).trigger('change');
+                        expect($('#individual-due-error')).toContainText(daysErrorMessage);
+                    });
+
+                    it('Input too big days should result in error', function() {
+                        $('#individual_due_days').val(999).trigger('change');
+                        expect($('#individual-due-error')).not.toContainText(daysErrorMessage);
+                        $('#individual_due_days').val(1000).trigger('change');
+                        expect($('#individual-due-error')).toContainText(daysErrorMessage);
+                    });
+
+                    it('Input non numeric hours should result in error', function() {
+                        expect($('#individual-due-error')).not.toContainText(hoursErrorMessage);
+                        $('#individual_due_hours').val('a').trigger('change');
+                        expect($('#individual-due-error')).toContainText(hoursErrorMessage);
+                        $("#individual_due_hours").val(0).trigger('change');
+                        expect($('#individual-due-error')).not.toContainText(hoursErrorMessage);
+                    });
+
+                    it('Input negative hours should result in error', function() {
+                        $('#individual_due_hours').val(0).trigger('change');
+                        expect($('#individual-due-error')).not.toContainText(hoursErrorMessage);
+                        $('#individual_due_hours').val(-1).trigger('change');
+                        expect($('#individual-due-error')).toContainText(hoursErrorMessage);
+                    });
+
+                    it('Input too big hours should result in error', function() {
+                        $('#individual_due_hours').val(23).trigger('change');
+                        expect($('#individual-due-error')).not.toContainText(hoursErrorMessage);
+                        $('#individual_due_hours').val(24).trigger('change');
+                        expect($('#individual-due-error')).toContainText(hoursErrorMessage);
+                    });
+
+                    it('Input non numeric minutes should result in error', function() {
+                        expect($('#individual-due-error')).not.toContainText(minutesErrorMessage);
+                        $('#individual_due_minutes').val('a').trigger('change');
+                        expect($('#individual-due-error')).toContainText(minutesErrorMessage);
+                        $('#individual_due_minutes').val(0).trigger('change');
+                        expect($('#individual-due-error')).not.toContainText(minutesErrorMessage);
+                    });
+
+                    it('Input negative minutes should result in error', function() {
+                        $('#individual_due_minutes').val(0).trigger('change');
+                        expect($('#individual-due-error')).not.toContainText(minutesErrorMessage);
+                        $('#individual_due_minutes').val(-1).trigger('change');
+                        expect($('#individual-due-error')).toContainText(minutesErrorMessage);
+                    });
+
+                    it('Input too big minutes should result in error', function() {
+                        $('#individual_due_minutes').val(59).trigger('change');
+                        expect($('#individual-due-error')).not.toContainText(minutesErrorMessage);
+                        $('#individual_due_minutes').val(60).trigger('change');
+                        expect($('#individual-due-error')).toContainText(minutesErrorMessage);
+                    });
                 });
             });
 

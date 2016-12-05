@@ -129,6 +129,7 @@ from openedx.core.djangoapps.programs.utils import get_programs_for_dashboard
 
 from ga_advanced_course.status import AdvancedCourseStatus
 from openedx.core.djangoapps.course_global.models import CourseGlobalSetting
+from openedx.core.djangoapps.ga_self_paced import api as self_paced_api
 
 
 log = logging.getLogger("edx.student")
@@ -677,7 +678,11 @@ def dashboard(request):
                 registrationcoderedemption__redeemed_by=request.user
             ),
             enrollment.course_id
-        ) or (enrollment.course_overview.extra and enrollment.course_overview.extra.has_terminated and not staff_access)
+        ) or (
+            enrollment.course_overview.extra and enrollment.course_overview.extra.has_terminated and not staff_access
+        ) or (
+            enrollment.is_individual_closed() and not staff_access
+        )
     )
 
     enrolled_courses_either_paid = frozenset(

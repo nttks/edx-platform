@@ -12,8 +12,8 @@ define(['jquery', 'backbone', 'underscore', 'gettext', 'js/views/baseview',
     $, Backbone, _, gettext, BaseView, BaseModal, date, XBlockViewUtils, DateUtils
 ) {
     'use strict';
-    var CourseOutlineXBlockModal, SettingsXBlockModal, PublishXBlockModal, AbstractEditor, BaseDateEditor,
-        ReleaseDateEditor, DueDateEditor, GradingEditor, PublishEditor, StaffLockEditor,
+    var CourseOutlineXBlockModal, SettingsXBlockModal, PublishXBlockModal, AbstractEditor, BaseDateEditor, BaseIndividualDaysEditor,
+        ReleaseDateEditor, IndividualReleaseDaysEditor, DueDateEditor, IndividualDueDaysEditor, GradingEditor, PublishEditor, StaffLockEditor,
         VerificationAccessEditor, TimedExaminationPreferenceEditor;
 
     CourseOutlineXBlockModal = BaseModal.extend({
@@ -35,11 +35,21 @@ define(['jquery', 'backbone', 'underscore', 'gettext', 'js/views/baseview',
             this.events = $.extend({}, BaseModal.prototype.events, this.events);
             this.template = this.loadTemplate('course-outline-modal');
             this.options.title = this.getTitle();
+            this.listenTo(this.model, 'invalid', this.disableSaveButton);
+            this.listenTo(this.model, 'valid', this.enableSaveButton);
         },
 
         afterRender: function () {
             BaseModal.prototype.afterRender.call(this);
             this.initializeEditors();
+        },
+
+        disableSaveButton: function () {
+            this.getActionButton('save').addClass('is-disabled').attr('aria-disabled', true);
+        },
+
+        enableSaveButton: function () {
+            this.getActionButton('save').removeClass('is-disabled').attr('aria-disabled', false);
         },
 
         initializeEditors: function () {
@@ -261,6 +271,87 @@ define(['jquery', 'backbone', 'underscore', 'gettext', 'js/views/baseview',
                 }
             };
         }
+    });
+    BaseIndividualDaysEditor = AbstractEditor.extend({
+        fieldPrefix: null,
+        elementSelectorPrefix: null,
+        errorSelector: null,
+
+        events: {
+            'input .individual-days': 'validate',
+            'change .individual-days': 'validate'
+        },
+
+        initialize: function () {
+            // needs to get field name before to call super method
+            this.daysFieldName = this.fieldPrefix + '_days';
+            this.hoursFieldName = this.fieldPrefix + '_hours';
+            this.minutesFieldName = this.fieldPrefix + '_minutes';
+            AbstractEditor.prototype.initialize.call(this);
+        },
+        afterRender: function () {
+            AbstractEditor.prototype.afterRender.call(this);
+            this.daysElement = this.$(this.elementSelectorPrefix + '_days');
+            this.hoursElement = this.$(this.elementSelectorPrefix + '_hours');
+            this.minutesElement = this.$(this.elementSelectorPrefix + '_minutes');
+            this.setValue(
+                this.model.get(this.daysFieldName),
+                this.model.get(this.hoursFieldName),
+                this.model.get(this.minutesFieldName)
+            );
+        },
+        setValue: function (days, hours, minutes) {
+            this.daysElement.val(days);
+            this.hoursElement.val(hours);
+            this.minutesElement.val(minutes);
+        },
+        validate: function(event) {
+            var errorMessages = this.$(this.errorSelector),
+                isValid = true;
+            errorMessages.empty();
+            $.each([this.daysElement, this.hoursElement, this.minutesElement], function(i, element) {
+                var value = element.val(),
+                    // Element must have min and max and data-label attributes.
+                    min = parseInt(element.attr('min')),
+                    max = parseInt(element.attr('max')),
+                    label = element.data('label');
+                if (value && (isNaN(value) || !(min <= parseInt(value) && parseInt(value) <= max))) {
+                    isValid = false;
+                    errorMessages.append(
+                        $('<li>').text(label + ' ' + interpolate(
+                            gettext('Please enter an integer between %(min)s and %(max)s.'),
+                            {min: min, max: max}, true
+                        ))
+                    );
+                }
+            });
+            if (isValid) {
+                this.model.trigger('valid');
+            } else {
+                this.model.trigger('invalid');
+            }
+        },
+        getRequestData: function () {
+            var metadata = {};
+            metadata[this.daysFieldName] = this.daysElement.val();
+            metadata[this.hoursFieldName] = this.hoursElement.val();
+            metadata[this.minutesFieldName] = this.minutesElement.val();
+            return {
+                metadata: metadata
+            };
+        }
+    });
+    IndividualReleaseDaysEditor = BaseIndividualDaysEditor.extend({
+        templateName: 'individual-release-days-editor',
+        fieldPrefix: 'individual_start',
+        elementSelectorPrefix: '#individual_start',
+        errorSelector: '#individual-start-error'
+    });
+    IndividualDueDaysEditor = BaseIndividualDaysEditor.extend({
+        templateName: 'individual-due-days-editor',
+        fieldPrefix: 'individual_due',
+        elementSelectorPrefix: '#individual_due',
+        errorSelector: '#individual-due-error'
     });
     TimedExaminationPreferenceEditor = AbstractEditor.extend({
         templateName: 'timed-examination-preference-editor',
@@ -586,9 +677,9 @@ define(['jquery', 'backbone', 'underscore', 'gettext', 'js/views/baseview',
             var editors = [];
 
             if (xblockInfo.isChapter()) {
-                editors = [ReleaseDateEditor, StaffLockEditor];
+                editors = [ReleaseDateEditor, IndividualReleaseDaysEditor, StaffLockEditor];
             } else if (xblockInfo.isSequential()) {
-                editors = [ReleaseDateEditor, GradingEditor, DueDateEditor];
+                editors = [ReleaseDateEditor, GradingEditor, DueDateEditor, IndividualDueDaysEditor];
 
                 var enable_special_exams = (options.enable_proctored_exams || options.enable_timed_exams);
                 if (enable_special_exams) {
@@ -607,6 +698,8 @@ define(['jquery', 'backbone', 'underscore', 'gettext', 'js/views/baseview',
             /* globals course */
             if (course.get('self_paced')) {
                 editors = _.without(editors, ReleaseDateEditor, DueDateEditor);
+            } else {
+                editors = _.without(editors, IndividualReleaseDaysEditor, IndividualDueDaysEditor);
             }
             return new SettingsXBlockModal($.extend({
                 editors: editors,

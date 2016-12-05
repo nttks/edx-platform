@@ -55,6 +55,8 @@ from util.model_utils import emit_field_changed_events, get_changed_fields_dict
 from util.query import use_read_replica_if_available
 from util.milestones_helpers import is_entrance_exams_enabled
 
+from openedx.core.djangoapps.ga_self_paced import api as self_paced_api
+
 
 UNENROLL_DONE = Signal(providing_args=["course_enrollment", "skip_refund"])
 log = logging.getLogger(__name__)
@@ -1460,6 +1462,15 @@ class CourseEnrollment(models.Model):
             Unicode cache key
         """
         return cls.COURSE_ENROLLMENT_CACHE_KEY.format(user_id, unicode(course_key))
+
+    def get_individual_start_date(self):
+        return self_paced_api.get_base_date(self)
+
+    def get_individual_end_date(self):
+        return self_paced_api.get_course_end_date(self)
+
+    def is_individual_closed(self):
+        return self_paced_api.is_course_closed(self)
 
 
 @receiver(models.signals.post_save, sender=CourseEnrollment)

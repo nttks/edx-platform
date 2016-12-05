@@ -64,11 +64,13 @@ function(Backbone, _, str, ModuleUtils) {
              * True if the release date of the xblock is in the past.
              */
             'released_to_students': null,
+            'individual_released_to_students': null,
             /**
              * If the xblock is published, the date on which it will be released to students.
              * This can be null if the release date is unscheduled.
              */
             'release_date': null,
+            'individual_release_date': null,
             /**
              * The xblock which is determining the release date. For instance, for a unit,
              * this will either be the parent subsection or the grandparent section.
@@ -103,6 +105,20 @@ function(Backbone, _, str, ModuleUtils) {
              * The same as `release_date` but as an ISO-formatted date string.
              */
             'start': null,
+            /**
+             * Individual release days for self-paced.
+             * This can be null if the days are unscheduled.
+             */
+            'individual_start_days': null,
+            'individual_start_hours': null,
+            'individual_start_minutes': null,
+            /**
+             * Individual due date for self-paced.
+             * This can be null if the days is unscheduled.
+             */
+            'individual_due_days': null,
+            'individual_due_hours': null,
+            'individual_due_minutes': null,
             /**
              * The same as `due_date` but as an ISO-formatted date string.
              */

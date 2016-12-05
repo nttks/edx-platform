@@ -47,6 +47,30 @@ class InheritanceMixin(XBlockMixin):
         help=_("Enter the default date by which problems are due."),
         scope=Scope.settings,
     )
+    individual_start_days = Integer(
+        help=_("Number of days from the base date to the chapter starts"),
+        scope=Scope.settings
+    )
+    individual_start_hours = Integer(
+        help=_("Number of hours from the base date to the chapter starts"),
+        scope=Scope.settings
+    )
+    individual_start_minutes = Integer(
+        help=_("Number of minutes from the base date to the chapter starts"),
+        scope=Scope.settings
+    )
+    individual_due_days = Integer(
+        help=_("Number of days from the base date to the due"),
+        scope=Scope.settings
+    )
+    individual_due_hours = Integer(
+        help=_("Number of hours from the base date to the due"),
+        scope=Scope.settings
+    )
+    individual_due_minutes = Integer(
+        help=_("Number of minutes from the base date to the due"),
+        scope=Scope.settings
+    )
     visible_to_staff_only = Boolean(
         help=_("If true, can be seen only by course staff, regardless of start date."),
         default=False,

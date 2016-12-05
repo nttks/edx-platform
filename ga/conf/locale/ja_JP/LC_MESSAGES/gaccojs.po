@@ -427,3 +427,31 @@ msgstr ""
 msgid "There was {strong_start}{num_errors} validation error{strong_end} while trying to save the course settings in the database."
 msgid_plural "There were {strong_start}{num_errors} validation errors{strong_end} while trying to save the course settings in the database."
 msgstr[0] "{strong_start}入力エラーが{num_errors}件{strong_end}あります。"
+
+#: cms/templates/js/course-outline.underscore
+msgid "After %(date)s"
+msgstr "%(date)s 以降"
+
+#: cms/templates/js/course-outline.underscore
+msgid "After %(days)s days %(hours)s hours %(minutes)s minutes from the enrollment start date and time"
+msgstr "受講開始日時から%(days)s日%(hours)s時間%(minutes)s分後"
+
+#: cms/templates/js/individual-release-days-editor.underscore
+msgid "Individual Release Days"
+msgstr "個別リリース日数"
+
+#: cms/templates/js/individual-release-days-editor.underscore
+msgid "Individual Due Days:"
+msgstr "個別期限日数："
+
+#: cms/templates/js/individual-release-days-editor.underscore
+msgid "Days:"
+msgstr "日数："
+
+#: cms/templates/js/individual-release-days-editor.underscore
+msgid "Hours:"
+msgstr "時："
+
+#: cms/templates/js/individual-release-days-editor.underscore
+msgid "Minutes:"
+msgstr "分："

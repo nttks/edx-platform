@@ -61,6 +61,9 @@ class CourseSettingsEncoderTest(CourseTestCase):
         self.assertEqual(jsondetails['course_contents_provider'], "")
         self.assertEqual(jsondetails['teacher_name'], "Teacher Name")
         self.assertEqual(jsondetails['course_span'], "")
+        self.assertIsNone(jsondetails['individual_end_days'], "individual_end_days somehow initialized")
+        self.assertIsNone(jsondetails['individual_end_hours'], "individual_end_hours somehow initialized")
+        self.assertIsNone(jsondetails['individual_end_minutes'], "individual_end_minutes somehow initialized")
 
     def test_ooc_encoder(self):
         """

@@ -24,10 +24,18 @@ def get_base_date(enrollment):
 
     If the student has been enrolled before starting course, then base date is
     course start date. Otherwise, base date is enrollment date.
+
+    Enrollment date is create date of CourseEnrollment. However, in case of paid course,
+    CourseEnrollment are created in the inactive state and become active after payment
+    process is completed. Therefore, use the latest date of histories.
     """
     if not enrollment:
         return None
-    return max(enrollment.course_overview.start, enrollment.created)
+    if enrollment.is_paid_course():
+        enrollment_date = enrollment.history.filter(is_active=True, mode=enrollment.mode).latest('history_date').history_date
+    else:
+        enrollment_date = enrollment.created
+    return max(enrollment.course_overview.start, enrollment_date)
 
 
 def get_course_end_date(enrollment):

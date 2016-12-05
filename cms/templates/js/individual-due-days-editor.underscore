@@ -1,0 +1,21 @@
+<p><%= gettext('Individual Due Days:') %></p>
+<ul class="list-fields list-input">
+    <li class="field field-text">
+        <label for="individual_due_days" class="label"><%= gettext('Days:') %></label>
+        <input type="number" min="0" max="999" id="individual_due_days" name="individual_due_days" value=""
+            placeholder="DD" class="individual-days" data-label="<%= gettext('Days:') %>" autocomplete="off" />
+    </li>
+
+    <li class="field field-text">
+        <label for="individual_due_hours"><%= gettext('Hours:') %></label>
+        <input type="number" min="0" max="23" id="individual_due_hours" name="individual_due_hours" value=""
+            placeholder="HH" class="individual-days" data-label="<%= gettext('Hours:') %>" autocomplete="off" />
+    </li>
+
+    <li class="field field-text">
+        <label for="individual_due_minutes"><%= gettext('Minutes:') %></label>
+        <input type="number" min="0" max="59" id="individual_due_minutes" name="individual_due_minutes" value=""
+            placeholder="MM" class="individual-days" data-label="<%= gettext('Minutes:') %>" autocomplete="off" />
+    </li>
+</ul>
+<ul id="individual-due-error" class="individual-error"></ul>

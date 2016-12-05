@@ -32,6 +32,26 @@
         <span class="tip tip-stacked timezone">(UTC)</span>
       </div>
     </li>
+
+    <li class="field-group field-group-course-end" id="individual-course-end">
+      <div class="field individual-date" id="field-course-end-days">
+        <label for="individual-course-end-days">${_("Individual Course End Days")}</label>
+        <input type="text" class="end-date end" id="individual-course-end-days" placeholder="DD" autocomplete="off" />
+        <span class="tip tip-stacked">${_("Days up to the course available period")}</span>
+      </div>
+
+      <div class="field individual-date" id="field-course-end-hours">
+        <label for="individual-course-end-hours">${_("Hours")}</label>
+        <input type="text" class="end" id="individual-course-end-hours" value="" placeholder="HH" autocomplete="off" />
+        <span class="tip tip-stacked">${_("Hours up to the course available period")}</span>
+      </div>
+
+      <div class="field individual-date" id="field-course-end-minutes">
+        <label for="individual-course-end-minutes">${_("Minutes")}</label>
+        <input type="text" class="end" id="individual-course-end-minutes" value="" placeholder="MM" autocomplete="off" />
+        <span class="tip tip-stacked">${_("Minutes up to the course available period")}</span>
+      </div>
+    </li>
   </ol>
 
   <ol class="list-input">

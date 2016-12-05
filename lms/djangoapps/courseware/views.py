@@ -337,7 +337,8 @@ def index(request, course_id, chapter=None, section=None,
         registrationcoderedemption__redeemed_by=request.user
     )
 
-    if course.has_terminated() and not has_access(request.user, 'staff', course):
+    enrollment = CourseEnrollment.get_enrollment(user, course_key)
+    if (course.has_terminated() or (enrollment and enrollment.is_individual_closed())) and not has_access(request.user, 'staff', course):
         return redirect(reverse('dashboard'))
 
     # Redirect to dashboard if the course is blocked due to non-payment.

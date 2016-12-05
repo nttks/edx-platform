@@ -41,6 +41,9 @@ class CourseDetails(object):
         self.language = None
         self.start_date = None  # 'start'
         self.end_date = None  # 'end'
+        self.individual_end_days = None
+        self.individual_end_hours = None
+        self.individual_end_minutes = None
         self.enrollment_start = None
         self.enrollment_end = None
         self.deadline_start = None
@@ -95,6 +98,9 @@ class CourseDetails(object):
 
         course_details.start_date = descriptor.start
         course_details.end_date = descriptor.end
+        course_details.individual_end_days = descriptor.individual_end_days
+        course_details.individual_end_hours = descriptor.individual_end_hours
+        course_details.individual_end_minutes = descriptor.individual_end_minutes
         course_details.enrollment_start = descriptor.enrollment_start
         course_details.enrollment_end = descriptor.enrollment_end
         course_details.deadline_start = descriptor.deadline_start
@@ -248,6 +254,18 @@ class CourseDetails(object):
         if converted != descriptor.terminate_start:
             dirty = True
             descriptor.terminate_start = converted
+
+        if 'individual_end_days' in jsondict and jsondict['individual_end_days'] != descriptor.individual_end_days:
+            descriptor.individual_end_days = jsondict['individual_end_days']
+            dirty = True
+
+        if 'individual_end_hours' in jsondict and jsondict['individual_end_hours'] != descriptor.individual_end_hours:
+            descriptor.individual_end_hours = jsondict['individual_end_hours']
+            dirty = True
+
+        if 'individual_end_minutes' in jsondict and jsondict['individual_end_minutes'] != descriptor.individual_end_minutes:
+            descriptor.individual_end_minutes = jsondict['individual_end_minutes']
+            dirty = True
 
         if 'course_image_name' in jsondict and jsondict['course_image_name'] != descriptor.course_image:
             descriptor.course_image = jsondict['course_image_name']

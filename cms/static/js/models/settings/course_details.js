@@ -9,6 +9,9 @@ var CourseDetails = Backbone.Model.extend({
         language: '',
         start_date: null,	// maps to 'start'
         end_date: null,		// maps to 'end'
+        individual_end_days: null,
+        individual_end_hours: null,
+        individual_end_minutes: null,
         enrollment_start: null,
         enrollment_end: null,
         deadline_start: null,
@@ -44,17 +47,29 @@ var CourseDetails = Backbone.Model.extend({
         if (newattrs.start_date === null) {
             errors.start_date = gettext("The course must have an assigned start date.");
         }
-        if (newattrs.start_date && newattrs.end_date && newattrs.start_date >= newattrs.end_date) {
-            errors.end_date = gettext("The course end date must be later than the course start date.");
-        }
         if (newattrs.start_date && newattrs.enrollment_start && newattrs.start_date < newattrs.enrollment_start) {
             errors.enrollment_start = gettext("The course start date must be later than the enrollment start date.");
         }
         if (newattrs.enrollment_start && newattrs.enrollment_end && newattrs.enrollment_start >= newattrs.enrollment_end) {
             errors.enrollment_end = gettext("The enrollment start date cannot be after the enrollment end date.");
         }
-        if (newattrs.end_date && newattrs.enrollment_end && newattrs.end_date < newattrs.enrollment_end) {
-            errors.enrollment_end = gettext("The enrollment end date cannot be after the course end date.");
+        if (newattrs.self_paced) {
+            if (newattrs.individual_end_days && !ValidationHelpers.validateIntegerRange(newattrs.individual_end_days, this._individual_end_days_range)) {
+                errors.individual_end_days = interpolate(gettext("Please enter an integer between %(min)s and %(max)s."), this._individual_end_days_range, true);
+            }
+            if (newattrs.individual_end_hours && !ValidationHelpers.validateIntegerRange(newattrs.individual_end_hours, this._individual_end_hours_range)) {
+                errors.individual_end_hours = interpolate(gettext("Please enter an integer between %(min)s and %(max)s."), this._individual_end_hours_range, true);
+            }
+            if (newattrs.individual_end_minutes && !ValidationHelpers.validateIntegerRange(newattrs.individual_end_minutes, this._individual_end_minutes_range)) {
+                errors.individual_end_minutes = interpolate(gettext("Please enter an integer between %(min)s and %(max)s."), this._individual_end_minutes_range, true);
+            }
+        } else {
+            if (newattrs.start_date && newattrs.end_date && newattrs.start_date >= newattrs.end_date) {
+                errors.end_date = gettext("The course end date must be later than the course start date.");
+            }
+            if (newattrs.end_date && newattrs.enrollment_end && newattrs.end_date < newattrs.enrollment_end) {
+                errors.enrollment_end = gettext("The enrollment end date cannot be after the course end date.");
+            }
         }
         if (newattrs.deadline_start && newattrs.start_date && newattrs.deadline_start < newattrs.start_date) {
             errors.deadline_start = gettext("The deadline start date cannot be before the course start date.");
@@ -91,6 +106,10 @@ var CourseDetails = Backbone.Model.extend({
     },
 
     _videokey_illegal_chars : /[^a-zA-Z0-9_-]/g,
+
+    _individual_end_days_range: {min: 0, max: 999},
+    _individual_end_hours_range: {min: 0, max: 23},
+    _individual_end_minutes_range: {min: 0, max: 59},
 
     set_videosource: function(newsource) {
         // newsource either is <video youtube="speed:key, *"/> or just the "speed:key, *" string
