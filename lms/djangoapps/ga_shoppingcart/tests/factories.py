@@ -18,7 +18,6 @@ class PersonalInfoFactory(DjangoModelFactory):
     address_line_1 = factory.Sequence(lambda n: 'Address Line 1 {0}'.format(n))
     address_line_2 = factory.Sequence(lambda n: 'Address Line 2 {0}'.format(n))
     phone_number = factory.Sequence(lambda n: '{0:013}'.format(n))
-    gaccatz_check = factory.Sequence(lambda n: 'Gaccatz Check{0}'.format(n))
     free_entry_field_1 = factory.Sequence(lambda n: 'Free Entry Field 1 {0}'.format(n))
     free_entry_field_2 = factory.Sequence(lambda n: 'Free Entry Field 2 {0}'.format(n))
     free_entry_field_3 = factory.Sequence(lambda n: 'Free Entry Field 3 {0}'.format(n))

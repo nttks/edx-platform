@@ -257,7 +257,6 @@ class PersonalInfo(models.Model):
     address_line_1 = models.CharField(max_length=255, null=True, blank=False, verbose_name=_("Address Line 1"))
     address_line_2 = models.CharField(max_length=255, null=True, blank=True, verbose_name=_("Address Line 2"))
     phone_number = models.CharField(max_length=32, null=True, blank=False, verbose_name=_("Phone Number"))
-    gaccatz_check = models.CharField(max_length=1024, null=True, blank=False, verbose_name=_("Please write your personal computer environments.<br> ex.) MacBook Air. 1.6GHz Intel core i5. 8GB RAM. NTT FLET'S HIKARI"))
     free_entry_field_1 = models.CharField(max_length=1024, null=True, blank=False, verbose_name=_("Free Entry Field 1"))
     free_entry_field_2 = models.CharField(max_length=1024, null=True, blank=False, verbose_name=_("Free Entry Field 2"))
     free_entry_field_3 = models.CharField(max_length=1024, null=True, blank=False, verbose_name=_("Free Entry Field 3"))

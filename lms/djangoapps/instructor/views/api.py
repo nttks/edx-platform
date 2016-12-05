@@ -3122,7 +3122,7 @@ def get_students_advanced_course(request, course_id, csv=False):  # pylint: disa
         Features.ENTRY_DATE, Features.PAYMENT_METHOD, Features.ENROLLMENT,
         Features.FULL_NAME, Features.KANA, Features.POSTAL_CODE,
         Features.ADDRESS_LINE_1, Features.ADDRESS_LINE_2, Features.PHONE_NUMBER,
-        Features.GACCATZ_CHECK, Features.FREE_ENTRY_FIELD_1, Features.FREE_ENTRY_FIELD_2,
+        Features.FREE_ENTRY_FIELD_1, Features.FREE_ENTRY_FIELD_2,
         Features.FREE_ENTRY_FIELD_3, Features.FREE_ENTRY_FIELD_4, Features.FREE_ENTRY_FIELD_5,
     ]
 
@@ -3154,7 +3154,7 @@ def get_students_paid_course(request, course_id, csv=False):  # pylint: disable=
         Features.ENTRY_DATE, Features.PAYMENT_METHOD, Features.ENROLLMENT,
         Features.FULL_NAME, Features.KANA, Features.POSTAL_CODE,
         Features.ADDRESS_LINE_1, Features.ADDRESS_LINE_2, Features.PHONE_NUMBER,
-        Features.GACCATZ_CHECK, Features.FREE_ENTRY_FIELD_1, Features.FREE_ENTRY_FIELD_2,
+        Features.FREE_ENTRY_FIELD_1, Features.FREE_ENTRY_FIELD_2,
         Features.FREE_ENTRY_FIELD_3, Features.FREE_ENTRY_FIELD_4, Features.FREE_ENTRY_FIELD_5,
     ]
 

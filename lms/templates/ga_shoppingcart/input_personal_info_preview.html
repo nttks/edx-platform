@@ -39,14 +39,16 @@
                     % for field in form:
                     <li class="${field.name}">
                         ${field.as_hidden()}
-                        <label for="${field.name}">
-                            ${_(field.label)}
-                        </label>
-                        <span> ${field.data} </span>
-                        % if field.errors:
+                        % if field.name != 'gaccatz_check':
+                            <label for="${field.name}">
+                                ${_(field.label)}
+                            </label>
+                            <span> ${field.data} </span>
+                            % if field.errors:
                             <span class="err-msg">
-                                ${field.errors[0]}
-                            </span>
+                                    ${field.errors[0]}
+                                </span>
+                            % endif
                         % endif
                     </li>
                     % endfor

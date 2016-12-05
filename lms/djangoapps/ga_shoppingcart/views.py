@@ -157,6 +157,8 @@ class InputPersonalInfoFormPreview(FormPreview):
 
     @method_decorator(login_required)
     def done(self, request, cleaned_data):
+        if cleaned_data.get('gaccatz_check'):
+            del cleaned_data['gaccatz_check']
         personal_info_setting = PersonalInfoSetting.get_item_with_order_id(order_id=self.order_id)
         PersonalInfo.objects.update_or_create(
             cleaned_data,

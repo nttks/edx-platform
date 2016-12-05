@@ -4,7 +4,7 @@ import re
 from django import forms
 from django.utils.translation import ugettext as _, get_language
 
-from .models import PersonalInfo, PersonalInfoSetting
+from .models import PersonalInfo
 
 
 class PersonalInfoModelForm(forms.ModelForm):
@@ -15,7 +15,7 @@ class PersonalInfoModelForm(forms.ModelForm):
     address_line_1 = forms.CharField()
     address_line_2 = forms.CharField(required=False)
     phone_number = forms.CharField()
-    gaccatz_check = forms.CharField(widget=forms.Textarea())
+    gaccatz_check = forms.BooleanField(widget=forms.CheckboxInput(attrs={'class': 'gaccatz_check_field'}))
     free_entry_field_1 = forms.CharField(widget=forms.Textarea())
     free_entry_field_2 = forms.CharField(widget=forms.Textarea())
     free_entry_field_3 = forms.CharField(widget=forms.Textarea())
@@ -92,7 +92,7 @@ class PersonalInfoModelForm(forms.ModelForm):
             del (self.fields['gaccatz_check'])
         else:
             self.fields['gaccatz_check'].label = _(
-                'Please write your personal computer environments.<br> ex.) MacBook Air. 1.6GHz Intel core i5. 8GB RAM. NTT FLET\'S HIKARI')
+                'We agree to the precondition for participation in gaccatz.')
 
         if not personal_info_setting.free_entry_field_1_title:
             del (self.fields['free_entry_field_1'])

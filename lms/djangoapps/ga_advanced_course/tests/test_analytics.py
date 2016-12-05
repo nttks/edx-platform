@@ -39,7 +39,7 @@ class AnalyticsTest(ModuleStoreTestCase):
             Features.ENTRY_DATE, Features.PAYMENT_METHOD, Features.ENROLLMENT,
             Features.FULL_NAME, Features.KANA, Features.POSTAL_CODE,
             Features.ADDRESS_LINE_1, Features.ADDRESS_LINE_2, Features.PHONE_NUMBER,
-            Features.GACCATZ_CHECK, Features.FREE_ENTRY_FIELD_1, Features.FREE_ENTRY_FIELD_2,
+            Features.FREE_ENTRY_FIELD_1, Features.FREE_ENTRY_FIELD_2,
             Features.FREE_ENTRY_FIELD_3, Features.FREE_ENTRY_FIELD_4, Features.FREE_ENTRY_FIELD_5,
         ]
 
@@ -172,12 +172,11 @@ class AnalyticsTest(ModuleStoreTestCase):
             Features.ADDRESS_LINE_1: target[12] or '#N/A',
             Features.ADDRESS_LINE_2: target[13] or '#N/A',
             Features.PHONE_NUMBER: target[14] or '#N/A',
-            Features.GACCATZ_CHECK: target[15] or '#N/A',
-            Features.FREE_ENTRY_FIELD_1: target[16] or '#N/A',
-            Features.FREE_ENTRY_FIELD_2: target[17] or '#N/A',
-            Features.FREE_ENTRY_FIELD_3: target[18] or '#N/A',
-            Features.FREE_ENTRY_FIELD_4: target[19] or '#N/A',
-            Features.FREE_ENTRY_FIELD_5: target[20] or '#N/A',
+            Features.FREE_ENTRY_FIELD_1: target[15] or '#N/A',
+            Features.FREE_ENTRY_FIELD_2: target[16] or '#N/A',
+            Features.FREE_ENTRY_FIELD_3: target[17] or '#N/A',
+            Features.FREE_ENTRY_FIELD_4: target[18] or '#N/A',
+            Features.FREE_ENTRY_FIELD_5: target[19] or '#N/A',
         }
 
     def test_advanced_course_purchased_features(self):
@@ -216,7 +215,7 @@ class AnalyticsTest(ModuleStoreTestCase):
                 self.purchase_time, _('Credit Card'), _('Enrolled'),
                 personal_info.full_name, personal_info.kana, personal_info.postal_code,
                 personal_info.address_line_1, personal_info.address_line_2, personal_info.phone_number,
-                personal_info.gaccatz_check, personal_info.free_entry_field_1, personal_info.free_entry_field_2,
+                personal_info.free_entry_field_1, personal_info.free_entry_field_2,
                 personal_info.free_entry_field_3, personal_info.free_entry_field_4, personal_info.free_entry_field_5,
             )
             for i, (user, personal_info) in enumerate(zip(
@@ -269,7 +268,7 @@ class AnalyticsTest(ModuleStoreTestCase):
                 self.purchase_time, _('Credit Card'), _('Enrolled'),
                 personal_info.full_name, personal_info.kana, personal_info.postal_code,
                 personal_info.address_line_1, personal_info.address_line_2, personal_info.phone_number,
-                personal_info.gaccatz_check, personal_info.free_entry_field_1, personal_info.free_entry_field_2,
+                personal_info.free_entry_field_1, personal_info.free_entry_field_2,
                 personal_info.free_entry_field_3, personal_info.free_entry_field_4, personal_info.free_entry_field_5,
             )
             for i, (user, personal_info) in enumerate(zip(
@@ -302,7 +301,7 @@ class AnalyticsForPaidCourseTest(ModuleStoreTestCase):
             Features.ENTRY_DATE, Features.PAYMENT_METHOD, Features.ENROLLMENT,
             Features.FULL_NAME, Features.KANA, Features.POSTAL_CODE,
             Features.ADDRESS_LINE_1, Features.ADDRESS_LINE_2, Features.PHONE_NUMBER,
-            Features.GACCATZ_CHECK, Features.FREE_ENTRY_FIELD_1, Features.FREE_ENTRY_FIELD_2,
+            Features.FREE_ENTRY_FIELD_1, Features.FREE_ENTRY_FIELD_2,
             Features.FREE_ENTRY_FIELD_3, Features.FREE_ENTRY_FIELD_4, Features.FREE_ENTRY_FIELD_5,
         ]
 
@@ -399,12 +398,11 @@ class AnalyticsForPaidCourseTest(ModuleStoreTestCase):
             Features.ADDRESS_LINE_1: target[10] or '#N/A',
             Features.ADDRESS_LINE_2: target[11] or '#N/A',
             Features.PHONE_NUMBER: target[12] or '#N/A',
-            Features.GACCATZ_CHECK: target[13] or '#N/A',
-            Features.FREE_ENTRY_FIELD_1: target[14] or '#N/A',
-            Features.FREE_ENTRY_FIELD_2: target[15] or '#N/A',
-            Features.FREE_ENTRY_FIELD_3: target[16] or '#N/A',
-            Features.FREE_ENTRY_FIELD_4: target[17] or '#N/A',
-            Features.FREE_ENTRY_FIELD_5: target[18] or '#N/A',
+            Features.FREE_ENTRY_FIELD_1: target[13] or '#N/A',
+            Features.FREE_ENTRY_FIELD_2: target[14] or '#N/A',
+            Features.FREE_ENTRY_FIELD_3: target[15] or '#N/A',
+            Features.FREE_ENTRY_FIELD_4: target[16] or '#N/A',
+            Features.FREE_ENTRY_FIELD_5: target[17] or '#N/A',
         }
 
     def test_paid_course_purchased_features(self):
@@ -430,7 +428,7 @@ class AnalyticsForPaidCourseTest(ModuleStoreTestCase):
                 self.purchase_time, _('Credit Card'), _('Enrolled'),
                 personal_info.full_name, personal_info.kana, personal_info.postal_code,
                 personal_info.address_line_1, personal_info.address_line_2, personal_info.phone_number,
-                personal_info.gaccatz_check, personal_info.free_entry_field_1, personal_info.free_entry_field_2,
+                personal_info.free_entry_field_1, personal_info.free_entry_field_2,
                 personal_info.free_entry_field_3, personal_info.free_entry_field_4, personal_info.free_entry_field_5,
             )
             for i, (user, personal_info) in enumerate(zip(
@@ -474,7 +472,7 @@ class AnalyticsForPaidCourseTest(ModuleStoreTestCase):
                 self.purchase_time, _('Credit Card'), _('Enrolled'),
                 personal_info.full_name, personal_info.kana, personal_info.postal_code,
                 personal_info.address_line_1, personal_info.address_line_2, personal_info.phone_number,
-                personal_info.gaccatz_check, personal_info.free_entry_field_1, personal_info.free_entry_field_2,
+                personal_info.free_entry_field_1, personal_info.free_entry_field_2,
                 personal_info.free_entry_field_3, personal_info.free_entry_field_4, personal_info.free_entry_field_5,
             )
             for i, (user, personal_info) in enumerate(zip(

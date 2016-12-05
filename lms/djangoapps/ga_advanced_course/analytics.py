@@ -25,7 +25,6 @@ class Features(object):
     ADDRESS_LINE_1 = 'Address Line 1'
     ADDRESS_LINE_2 = 'Address Line 2'
     PHONE_NUMBER = 'Phone Number'
-    GACCATZ_CHECK = 'Gaccatz Check'
     FREE_ENTRY_FIELD_1 = 'Free Entry Field 1'
     FREE_ENTRY_FIELD_2 = 'Free Entry Field 2'
     FREE_ENTRY_FIELD_3 = 'Free Entry Field 3'
@@ -65,7 +64,6 @@ class Features(object):
         ADDRESS_LINE_1: 'address_line_1',
         ADDRESS_LINE_2: 'address_line_2',
         PHONE_NUMBER: 'phone_number',
-        GACCATZ_CHECK: 'gaccatz_check',
         FREE_ENTRY_FIELD_1: 'free_entry_field_1',
         FREE_ENTRY_FIELD_2: 'free_entry_field_2',
         FREE_ENTRY_FIELD_3: 'free_entry_field_3',

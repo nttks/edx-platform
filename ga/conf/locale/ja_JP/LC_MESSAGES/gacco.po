@@ -1403,8 +1403,12 @@ msgid "0312345678 (Except Hyphen)"
 msgstr "0312345678 (ハイフン無し)"
 
 #: lms/djangoapps/ga_shoppingcart/forms.py
-msgid "Please write your personal computer environments.<br> ex.) MacBook Air. 1.6GHz Intel core i5. 8GB RAM. NTT FLET'S HIKARI"
-msgstr "お使いの環境スペックについてご記入ください<br>（例: MacBook Air, 1.6GHz インテル i5, 8GB RAM, FTTH (フレッツ光))"
+msgid "We agree to the precondition for participation in gaccatz."
+msgstr "gaccatz参加に必要な全ての注意事項を確認し、同意します。"
+
+#: lms/djangoapps/ga_shoppingcart/forms.py
+msgid "Please check the precondition is"
+msgstr "gaccatz参加に必要な注意事項は"
 
 #: lms/djangoapps/ga_shoppingcart/forms.py
 msgid "Please type using full-width katakana and space."

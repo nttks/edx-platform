@@ -40,17 +40,28 @@
                     <li><span class="required-msg red">${_('Asterisk(*) marked fields are required.')}</span></li>
                     % for field in form:
                         <li class="${field.name}">
-                            <label for="${field.name}">
-                                ${_(field.label)}
-                                % if field.field.required and field.label:
-                                    <span class="red">*</span>
-                                % endif
-                            </label>
-                            % if field.name == 'postal_code':
-                                ${field}<span class="postal_code_msg">${_('(ex: 1010001 except hyphen)')}</span><br>
+                            % if field.name == 'gaccatz_check':
+                                <div>
+                                    <span class="gaccatz_checkbox">
+                                        ${field}
+                                        <label class="checkbox_background" for="formtools_${field.name}"></label>
+                                    </span>
+                                    <label for="formtools_${field.name}">${_(field.label)} <span class="red">*</span></label>
+                                </div>
+                                <span class="gaccatz_additional_description">${_("Please check the precondition is")} <a href="http://gacco.org/gaccatz/envcheck.html#spec" target="_blank">${_("HERE")}</a></span>
                             % else:
-                                ${field}
-                            % endif
+                                <label for="${field.name}">
+                                    ${_(field.label)}
+                                    % if field.field.required and field.label:
+                                    <span class="red">*</span>
+                                    % endif
+                                </label>
+                                % if field.name == 'postal_code':
+                                    ${field}<span class="postal_code_msg">${_('(ex: 1010001 except hyphen)')}</span><br>
+                                % else:
+                                    ${field}
+                                % endif
+                            %endif
                         </li>
                         <li class="note note_${field.name} red">
                             % if field.errors:
