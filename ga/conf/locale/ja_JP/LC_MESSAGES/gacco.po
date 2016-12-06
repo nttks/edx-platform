@@ -460,12 +460,12 @@ msgstr "コースカテゴリ"
 
 #: common/lib/xmodule/xmodule/course_module.py
 #: cms/templates/settings.html
-msgid "Face 2 Face Classroom"
+msgid "Face-to-Face Course"
 msgstr "対面学習コース"
 
 #: common/lib/xmodule/xmodule/course_module.py
 #: cms/templates/settings.html
-msgid "Sell Face 2 Face Classroom"
+msgid "Sell Face-to-Face Course"
 msgstr "対面学習コースの販売"
 
 #: common/lib/xmodule/xmodule/course_module.py
@@ -760,7 +760,7 @@ msgid "Biz Manager Dashboard"
 msgstr "法人管理ダッシュボード"
 
 #: templates/dashboard/_dashboard_course_listing.html
-msgid "This course, we recommend face-to-face course. Please consider all means."
+msgid "This course, we recommend face-to-face course. Please consider the course."
 msgstr "この講座は、対面学習をお奨めしています。ぜひご検討ください。"
 
 #: templates/dashboard/_dashboard_course_listing.html
@@ -772,24 +772,24 @@ msgid "here"
 msgstr "こちら"
 
 #: templates/dashboard/_dashboard_course_listing.html
-msgid "Subscription"
-msgstr "申込"
+msgid "Face-to-Face Course Subscription"
+msgstr "対面学習コース申込"
 
 #: templates/dashboard/_dashboard_course_listing.html
-msgid "There is face-to-face course"
+msgid "There is Face-to-Face Course"
 msgstr "対面学習コースあり"
 
 #: templates/dashboard/_dashboard_course_listing.html
-msgid "View your order"
+msgid "View Your Order"
 msgstr "申込内容確認"
 
 #: templates/dashboard/_dashboard_course_listing.html
-msgid "Paid Course"
-msgstr "有料講座"
+msgid "Purchased Paid Course"
+msgstr "有料講座 購入済み"
 
 #: templates/dashboard/_dashboard_course_listing.html
-msgid "Purchase completed"
-msgstr "購入済み"
+msgid "Purchased Face-to-Face Course"
+msgstr "対面学習コース 購入済み"
 
 #: templates/ga_advanced_course/choose.html
 msgid "Recommended: Online and Face-to-face course"
@@ -892,7 +892,7 @@ msgid "Access"
 msgstr "アクセス"
 
 #: templates/ga_advanced_course/courses.html
-msgid "Other information"
+msgid "Other Information"
 msgstr "その他情報"
 
 #: templates/ga_advanced_course/courses.html
@@ -929,7 +929,7 @@ msgid "Complete"
 msgstr "購入完了"
 
 #: templates/ga_advanced_course/choose_ticket.html
-msgid "Sell-by date"
+msgid "Sell-by Date"
 msgstr "販売期限"
 
 #: templates/ga_advanced_course/choose_ticket.html
@@ -937,28 +937,24 @@ msgid "* Display price will be tax included."
 msgstr "※表示価格は税込となります。"
 
 #: templates/ga_advanced_course/choose_ticket.html
-msgid "Select a purchase ticket from blow."
+msgid "Select a purchase ticket from below."
 msgstr "下記から購入チケットを選択してください。"
 
 #: templates/ga_advanced_course/receipt.html
-msgid "Purchase tickets at the following content was completed."
-msgstr "下記内容にてチケットの購入が完了いたしました。"
+msgid "Your order has been completed."
+msgstr "チケットの購入が完了いたしました。"
 
 #: templates/ga_advanced_course/receipt.html
-msgid "To the email address that you registered, we automatically send a confirmation e-mail of the ticket purchase is complete."
+msgid "We automatically send the confirmation email that you registered."
 msgstr "ご登録いただいているメールアドレス宛てに、チケット購入完了の確認メールを自動送信いたしました。"
-
-#: templates/ga_advanced_course/receipt.html
-msgid "On the day, Please present this ticket screen (printable) or e-mail screen at the time of acceptance."
-msgstr "当日は、受付時に本チケット画面（印刷可）またはメール画面をご提示ください。"
 
 #: templates/ga_advanced_course/receipt.html
 msgid "Subscription Details"
 msgstr "お申し込み内容"
 
 #: templates/ga_advanced_course/receipt.html
-msgid "{course_name} course"
-msgstr "「{course_name}」講座"
+msgid "{course_name} Face-to-Face Course"
+msgstr "「{course_name}」講座 対面学習コース"
 
 #: templates/ga_advanced_course/receipt.html
 msgid "Ticket Number"
@@ -977,7 +973,7 @@ msgid "Request Details"
 msgstr "申し込み詳細"
 
 #: templates/ga_advanced_course/receipt.html
-msgid "Payment method"
+msgid "Payment Method"
 msgstr "お支払い方法"
 
 #: templates/ga_advanced_course/receipt.html
@@ -989,15 +985,15 @@ msgid "Docomo Mobile Payment"
 msgstr "ドコモケータイ払い"
 
 #: templates/ga_advanced_course/receipt.html
-msgid "Payment amount"
+msgid "Payment Amount"
 msgstr "お支払い金額"
 
 #: templates/ga_advanced_course/receipt.html
-msgid "Buy the ticket"
+msgid "Your Ticket"
 msgstr "購入チケット"
 
 #: templates/ga_advanced_course/receipt.html
-msgid "Price of ticket"
+msgid "Price of Ticket"
 msgstr "チケット料金"
 
 #: templates/ga_advanced_course/receipt.html

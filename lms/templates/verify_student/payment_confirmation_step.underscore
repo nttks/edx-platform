@@ -16,10 +16,10 @@
             <thead>
               <tr>
                 <th scope="col" ><%- gettext( "Order No." ) %></th>
-                <th scope="col" ><%- gettext( "Course title" ) %></th>
-                <th scope="col" ><%- gettext( "Order date" ) %></th>
-                <th scope="col" ><%- gettext( "Payment method" ) %></th>
-                <th scope="col" ><%- gettext( "Payment amount" ) %></th>
+                <th scope="col" ><%- gettext( "Course Title" ) %></th>
+                <th scope="col" ><%- gettext( "Order Date" ) %></th>
+                <th scope="col" ><%- gettext( "Payment Method" ) %></th>
+                <th scope="col" ><%- gettext( "Payment Amount" ) %></th>
               </tr>
             </thead>
 

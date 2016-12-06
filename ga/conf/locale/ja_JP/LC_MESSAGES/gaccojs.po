@@ -370,16 +370,20 @@ msgstr "講座の受講登録は完了しています。"
 msgid "We send a confirmation email to you."
 msgstr "この画面は、マイページからいつでも確認いただけます。また、同様の情報をメールでもお送りしています。"
 
+#: cms/templates/js/certificate-editor.underscore
+msgid "Course Title"
+msgstr "講座名"
+
 #: lms/templates/verify_student/payment_confirmation_step.underscore.underscore
-msgid "Order date"
+msgid "Order Date"
 msgstr "購入日時"
 
 #: lms/templates/verify_student/payment_confirmation_step.underscore.underscore
-msgid "Payment method"
+msgid "Payment Method"
 msgstr "お支払い方法"
 
 #: lms/templates/verify_student/payment_confirmation_step.underscore.underscore
-msgid "Payment amount"
+msgid "Payment Amount"
 msgstr "お支払い金額"
 
 #: lms/templates/verify_student/payment_confirmation_step.underscore.underscore

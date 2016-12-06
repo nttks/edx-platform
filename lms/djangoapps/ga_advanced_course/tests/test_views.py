@@ -304,9 +304,9 @@ class AdvancedCourseChooseViewTest(AdvancedCourseViewTest):
         self.assertIn("Enroll course selection", response.content)
         self.assertIn("Thank you for an enroll. This course has {} courses.".format(expected_count), response.content)
         if is_f2f_course and is_f2f_course_sell:
-            self.assertIn("Face 2 Face Classroom", response.content)
+            self.assertIn("Face-to-Face Course", response.content)
         else:
-            self.assertNotIn("Face 2 Face Classroom", response.content)
+            self.assertNotIn("Face-to-Face Course", response.content)
         self.assertIn("Online Course (Free of charge)", response.content)
 
     def test_choose_advanced_course_not_enrolled(self):

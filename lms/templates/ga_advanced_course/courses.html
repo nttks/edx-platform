@@ -117,7 +117,7 @@ $(function(){
       % for ticket in advanced_course.tickets:
       <p class="course-ticket">
         ${ticket.display_name | h} ¥${'{:,d}'.format(ticket.price_with_tax)} (${_("Including tax")})<br>
-        <span class="sell_by_date">${_("Sell-by date")} ${strftime_localized(to_timezone(ticket.sell_by_date), '%Y/%m/%d %H:%M')}</span>
+        <span class="sell_by_date">${_("Sell-by Date")} ${strftime_localized(to_timezone(ticket.sell_by_date), '%Y/%m/%d %H:%M')}</span>
       </p>
       % endfor
     </div>
@@ -127,7 +127,7 @@ $(function(){
       <h6>${_("Access")}</h6>
       <p class="course-access">${advanced_course.place_access | h}</p>
       % if advanced_course.content:
-      <h6>${_("Other information")}</h6>
+      <h6>${_("Other Information")}</h6>
       <p class="course-other-content">${advanced_course.content}</p>
       % endif
     </div>

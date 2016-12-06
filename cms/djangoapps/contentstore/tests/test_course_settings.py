@@ -307,8 +307,8 @@ class CourseDetailsViewTest(CourseTestCase):
             self.assertContains(response, "Course Contents Provider")
             self.assertContains(response, "Teacher Name")
             self.assertContains(response, "Course Span")
-            self.assertContains(response, "Face 2 Face Classroom")
-            self.assertContains(response, "Sell Face 2 Face Classroom")
+            self.assertContains(response, "Face-to-Face Course")
+            self.assertContains(response, "Sell Face-to-Face Course")
 
     @unittest.skipUnless(settings.FEATURES.get('ENTRANCE_EXAMS', False), True)
     def test_entrance_exam_created_updated_and_deleted_successfully(self):
@@ -444,8 +444,8 @@ class CourseDetailsViewTest(CourseTestCase):
             self.assertContains(response, "Course Contents Provider")
             self.assertContains(response, "Teacher Name")
             self.assertContains(response, "Course Span")
-            self.assertContains(response, "Face 2 Face Classroom")
-            self.assertContains(response, "Sell Face 2 Face Classroom")
+            self.assertContains(response, "Face-to-Face Course")
+            self.assertContains(response, "Sell Face-to-Face Course")
 
 
 @ddt.ddt

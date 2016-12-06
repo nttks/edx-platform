@@ -87,24 +87,24 @@ from util.date_utils import get_time_display
       % endif
       % if enrollment.course_id in paid_course_order_history_list:
         <div class="advanced-course-information paid-course purchased">
-          <div class="label">${_("Paid Course")} ${_("Purchase completed")}</div>
-          <a href="${reverse('verify_student_payment_confirmation', kwargs={'course_id': unicode(enrollment.course_id)})}?payment-order-num=${paid_course_order_history_list[enrollment.course_id]}" class="btn">${_("View your order")}</a>
+          <div class="label">${_("Purchased Paid Course")}</div>
+          <a href="${reverse('verify_student_payment_confirmation', kwargs={'course_id': unicode(enrollment.course_id)})}?payment-order-num=${paid_course_order_history_list[enrollment.course_id]}" class="btn">${_("View Your Order")}</a>
         </div>
       % endif
       % if advanced_course_status.is_purchased():
         <div class="advanced-course-information advanced-course purchased">
-          <div class="label">${_("Face 2 Face Classroom")} ${_("Purchase completed")}</div>
+          <div class="label">${_("Purchased Face-to-Face Course")}</div>
           % for order in advanced_course_status.get_purchased_orders():
-          <a href="${reverse('shoppingcart.views.show_receipt', args=[order.id])}" class="btn">${_("View your order")}</a>
+          <a href="${reverse('shoppingcart.views.show_receipt', args=[order.id])}" class="btn">${_("View Your Order")}</a>
           % endfor
         </div>
       % elif course_overview.extra and course_overview.extra.is_f2f_course and course_overview.extra.is_f2f_course_sell:
         <div class="advanced-course-information advanced-course apply">
           <a href="${reverse('advanced_course:courses_face_to_face', args=[course_overview.id])}" class="btn">
             % if advanced_course_status.has_available_f2f_course():
-            ${_("Face 2 Face Classroom")}&nbsp;${_("Subscription")}
+            ${_("Face-to-Face Course Subscription")}
             % else:
-            ${_("There is face-to-face course")}
+            ${_("There is Face-to-Face Course")}
             % endif
           </a>
         </div>
@@ -312,7 +312,7 @@ from util.date_utils import get_time_display
 
       % if advanced_course_status.has_available_f2f_course() and not advanced_course_status.is_purchased():
       <div class="message message-status is-shown">
-        <p class="message-copy">${_("This course, we recommend face-to-face course. Please consider all means.")} ${_("What is face-to-face course?")} => <a href="${marketing_link('FACE_TO_FACE')}" target="_blank">${_("here")}</a></p>
+        <p class="message-copy">${_("This course, we recommend face-to-face course. Please consider the course.")} ${_("What is face-to-face course?")} => <a href="${marketing_link('FACE_TO_FACE')}" target="_blank">${_("here")}</a></p>
       </div>
       % endif
 
