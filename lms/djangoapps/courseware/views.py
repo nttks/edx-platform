@@ -67,6 +67,7 @@ from .entrance_exams import (
 from courseware.user_state_client import DjangoXBlockUserStateClient
 from course_modes.models import CourseMode
 
+from pdfgen import api as pdfgen_api
 from student.models import UserTestGroup, CourseEnrollment
 from student.views import is_course_blocked
 from util.cache import cache, cache_if_anonymous
@@ -1298,7 +1299,7 @@ def generate_user_cert(request, course_id):
 
     Certificate generation is allowed if:
     * The user has passed the course, and
-    * The user does not already have a pending/completed certificate.
+    * The user does not already have a pending/completed/error certificate.
 
     Note that if an error occurs during certificate generation
     (for example, if the queue is down), then we simply mark the
@@ -1335,18 +1336,18 @@ def generate_user_cert(request, course_id):
 
     certificate_status = certs_api.certificate_downloadable_status(student, course.id)
 
-    if certificate_status["is_downloadable"]:
-        return HttpResponseBadRequest(_("Certificate has already been created."))
-    elif certificate_status["is_generating"]:
-        return HttpResponseBadRequest(_("Certificate is being created."))
+    if certificate_status["is_downloadable"] or certificate_status["is_generating"] or certificate_status["is_error"]:
+        # This illegal operation may happen, for example, by the following procedure:
+        #  1) Show the same progress page on multiple browser tabs.
+        #  2) Click 'Request Certificate' button on one tab (cert status is set to 'downloadable' or so).
+        #  3) Then, click 'Request Certificate' button on another tab.
+        msg = "Certificate self-generation is not allowed because the task has started before."
+        log.warning(msg)
+        return HttpResponseBadRequest(msg)
     else:
         # If the certificate is not already in-process or completed,
         # then create a new certificate generation task.
-        # If the certificate cannot be added to the queue, this will
-        # mark the certificate with "error" status, so it can be re-run
-        # with a management command.  From the user's perspective,
-        # it will appear that the certificate task was submitted successfully.
-        certs_api.generate_user_certificates(student, course.id, course=course, generation_mode='self')
+        pdfgen_api.generate_user_certificate(request, student, course)
         _track_successful_certificate_generation(student.id, course.id)
         return HttpResponse()
 

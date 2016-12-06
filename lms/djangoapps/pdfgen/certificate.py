@@ -37,9 +37,6 @@ class CertificatePDF(object):
         course_name = course.display_name
         request = self._create_request()
 
-        if not course.has_ended():
-            raise CertPDFException('This couse is not ended.')
-
         print "Fetching enrollment for students({0}).".format(self.course_id)
         for student in students.iterator():
             request.user = student
@@ -115,8 +112,6 @@ class CertificatePDF(object):
 
         print "\nFetching course data for {0}".format(self.course_id)
         course = courses.get_course_by_id(self.course_id)
-        if not course.has_ended():
-            raise CertPDFException('This couse is not ended.')
 
         print "Fetching enrollment for students({0}).".format(self.course_id)
         for student in students.iterator():

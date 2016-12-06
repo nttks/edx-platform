@@ -28,7 +28,7 @@
 
                 .btn {
                     @extend %btn-primary-blue;
-                    @extend %t-weight4;
+                    font-size: 13px;
                     text-shadow: none;
                 }
             }

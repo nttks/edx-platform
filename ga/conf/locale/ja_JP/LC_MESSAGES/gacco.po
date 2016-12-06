@@ -600,9 +600,48 @@ msgstr "学習リスト"
 msgid "Open"
 msgstr "開く"
 
-#: templates/courseware/progress.html
-msgid "Grade graph"
-msgstr "成績グラフ"
+#: lms/templates/courseware/progress.html
+msgid "Your certificate is available"
+msgstr "修了書発行が完了しました"
+
+#: lms/templates/courseware/progress.html
+msgid "You can download your certificate by clicking 'Download Your Certificate' button, and you can also download it on your dashboard."
+msgstr "「修了書をダウンロード (PDF)」ボタンからダウンロードができます。また、マイページからもダウンロードができます。"
+
+#: lms/templates/courseware/progress.html
+msgid "Download Your Certificate"
+msgstr "修了証をダウンロード (PDF)"
+
+#: lms/templates/courseware/progress.html
+msgid "We're working on it..."
+msgstr "修了書発行中..."
+
+#: lms/templates/courseware/progress.html
+msgid ""
+"We're creating your certificate. You can keep working in your courses and a "
+"link to it will appear here and on your Dashboard when it is ready."
+msgstr "修了証を発行中です。今しばらくお待ちください。"
+
+#: lms/templates/courseware/progress.html
+msgid "Congratulations, you qualified for a certificate!"
+msgstr "修了証が発行できます"
+
+#: lms/templates/courseware/progress.html
+msgid ""
+"You can keep working for a higher grade, or request your certificate now."
+msgstr "修了条件を満たしましたので、修了証を発行することができます。「修了証発行」ボタンを押してください。"
+
+#: lms/templates/courseware/progress.html
+msgid "Request Certificate"
+msgstr "修了書発行"
+
+#: lms/templates/courseware/progress.html
+msgid "An error has occurred"
+msgstr "エラーが発生しました"
+
+#: lms/templates/courseware/progress.html
+msgid "An error has occurred while generating your certificate. Please wait a moment and try again."
+msgstr "修了証が発行できませんでした。しばらくたってから再度、修了証を発行してください。"
 
 #: templates/courseware/course_about.html
 msgid "[fee-charging]"
@@ -1186,6 +1225,40 @@ msgstr "講座番号はあなたの組織内で一意になるように設定し
 #: cms/templates/index.html
 msgid "The term in which your course will run."
 msgstr "講座の開講時期。YYYY_MM等の形式で設定してください。"
+
+#: cms/templates/course_outline.html
+msgid "Course Pacing:"
+msgstr "講座の種類："
+
+#: cms/templates/course_outline.html
+msgid "Self-Paced"
+msgstr "開始日可変型講座"
+
+#: cms/templates/course_outline.html
+msgid "Instructor-Paced"
+msgstr "通常講座"
+
+#: cms/templates/settings.html
+msgid "Course Pacing"
+msgstr "講座の種類"
+
+#: cms/templates/settings.html
+msgid "Set the pacing for this course"
+msgstr "提供する講座の種類を設定します"
+
+#: cms/templates/settings.html
+msgid ""
+"Instructor-paced courses progress at the pace that the course author sets. "
+"You can configure release dates for course content and due dates for "
+"assignments."
+msgstr "通常講座は講座提供者が講座の受講開始日や課題提出の期日を決めることができます。"
+
+#: cms/templates/settings.html
+msgid ""
+"Self-paced courses do not have release dates for course content or due dates"
+" for assignments. Learners can complete course material at any time before "
+"the course end date."
+msgstr "開始日可変型講座は講座提供者が受講開始日や課題提出の期日を決めることができません。講座が閉講するまで、受講者が開始したいタイミングで講座を受講し始めることができます。課題提出までの期間は講座提供者が事前に決めることができます。"
 
 #: cms/templates/settings.html
 msgid "Course Language"

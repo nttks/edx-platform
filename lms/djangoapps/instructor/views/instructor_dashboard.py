@@ -168,11 +168,7 @@ def instructor_dashboard_2(request, course_id):
         sections.append(_section_special_exams(course, access))
 
     # Certificates panel
-    # This is used to generate example certificates
-    # and enable self-generated certificates for a course.
-    certs_enabled = CertificateGenerationConfiguration.current().enabled
-    if certs_enabled and access['admin']:
-        sections.append(_section_certificates(course))
+    # NOTE: This panel is not used in gacco
 
     disable_buttons = not _is_small_course(course_key)
 
@@ -325,6 +321,7 @@ def _section_certificates(course):
         'example_certificate_status': example_cert_status,
         'can_enable_for_course': can_enable_for_course,
         'enabled_for_course': certs_api.cert_generation_enabled(course.id),
+        'is_self_paced': course.self_paced,
         'instructor_generation_enabled': instructor_generation_enabled,
         'html_cert_enabled': html_cert_enabled,
         'active_certificate': certs_api.get_active_web_certificate(course),

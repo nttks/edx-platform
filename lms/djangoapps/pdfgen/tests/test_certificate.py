@@ -41,7 +41,6 @@ class CertificatePDF_create_TestCase(TestCase):
     @patch('pdfgen.certificate.CertificatePDF._get_students')
     def test_create(self, students_mock, course_mock, request_mock, pdf_mock):
         students_mock().iterator.return_value = itertools.repeat(self.student, 1)
-        course_mock().has_ended.return_value = True
 
         cert = CertificatePDF(self.user, self.course_id, self.debug,
                               self.noop, self.file_prefix, self.exclude)
@@ -51,21 +50,6 @@ class CertificatePDF_create_TestCase(TestCase):
         course_mock.assert_called_with(self.course_id)
         request_mock.assert_called_once_with()
         pdf_mock.assert_called_once_with(self.student, request_mock(), course_mock())
-
-    @patch('pdfgen.certificate.CertificatePDF._create_request')
-    @patch('pdfgen.certificate.courses.get_course_by_id')
-    @patch('pdfgen.certificate.CertificatePDF._get_students')
-    def test_create_not_ended(self, students_mock, course_mock, request_mock):
-        course_mock().has_ended = lambda: False
-        with self.assertRaises(CertPDFException) as e:
-            cert = CertificatePDF(self.user, self.course_id, self.debug,
-                                  self.noop, self.file_prefix, self.exclude)
-            cert.create()
-
-        self.assertEqual(e.exception.message, 'This couse is not ended.')
-        students_mock.assert_called_once_with()
-        course_mock.assert_called_with(self.course_id)
-        request_mock.assert_called_once_with()
 
     @patch('pdfgen.certificate.create_cert_pdf',
            return_value=json.dumps({"download_url": "http://s3/test.pdf"}))
@@ -480,23 +464,6 @@ class CertificatePDF_publish_TestCase(TestCase):
             user=self.student, course_id=self.course_id,
             status=CertificateStatuses.generating)
         self.assertEqual(self.cert.save.call_count, 0)
-
-    @patch('pdfgen.certificate.GeneratedCertificate.objects.filter')
-    @patch('pdfgen.certificate.courses.get_course_by_id')
-    @patch('pdfgen.certificate.CertificatePDF._get_students')
-    def test_publish_not_ended(self, st_mock, crs_mock, gen_mock):
-        gen_mock().iterator.return_value = itertools.repeat(self.cert, 1)
-        st_mock().iterator.return_value = itertools.repeat(self.student, 1)
-        crs_mock().has_ended.return_value = False
-
-        with self.assertRaises(CertPDFException) as e:
-            cert = CertificatePDF(self.user, self.course_id, self.debug,
-                                  self.noop, self.file_prefix, self.exclude)
-            cert.publish()
-
-        self.assertEqual(e.exception.message, 'This couse is not ended.')
-        st_mock.assert_called_with()
-        crs_mock.assert_called_with(self.course_id)
 
     @patch('pdfgen.certificate.GeneratedCertificate.objects.filter')
     @patch('pdfgen.certificate.courses.get_course_by_id')

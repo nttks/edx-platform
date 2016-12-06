@@ -959,7 +959,7 @@ class ProgressPageTests(ModuleStoreTestCase):
         resp = views.progress(self.request, course_id=unicode(self.course.id))
         self.assertContains(resp, u"View Certificate")
 
-        self.assertContains(resp, u"You can keep working for a higher grade")
+        self.assertContains(resp, u"You can download your certificate")
         cert_url = certs_api.get_certificate_url(course_id=self.course.id, uuid=certificate.verify_uuid)
         self.assertContains(resp, cert_url)
 
@@ -998,11 +998,17 @@ class ProgressPageTests(ModuleStoreTestCase):
         self.assertContains(resp, u"Download Your Certificate")
 
     @ddt.data(
-        *itertools.product(((42, 5, True), (42, 5, False)), (True, False))
+        *itertools.product(((43, 5, True), (42, 5, False)), (True, False))
     )
     @ddt.unpack
     def test_query_counts(self, (sql_calls, mongo_calls, self_paced), self_paced_enabled):
-        """Test that query counts remain the same for self-paced and instructor-paced courses."""
+        """
+        Test that query counts is as expected for self-paced and instructor-paced courses.
+
+        This case is for 'audit' student, and SQL call counts differ between self-paced and instructor-paced
+        because we did not cherry-pick 6fe063821414d3f4021a23000cb69702a1dfe8ae.
+        We want even 'audit' student can see a certificate generation button in the progress page.
+        """
         SelfPacedConfiguration(enabled=self_paced_enabled).save()
         self.setup_course(self_paced=self_paced)
         with self.assertNumQueries(sql_calls), check_mongo_calls(mongo_calls):
@@ -1153,7 +1159,7 @@ class GenerateUserCertTests(ModuleStoreTestCase):
         )
         resp = self.client.post(self.url)
         self.assertEqual(resp.status_code, HttpResponseBadRequest.status_code)
-        self.assertIn("Certificate is being created.", resp.content)
+        self.assertIn("Certificate self-generation is not allowed because the task has started before.", resp.content)
 
     @patch('courseware.grades.grade', Mock(return_value={'grade': 'Pass', 'percent': 0.75}))
     @override_settings(CERT_QUEUE='certificates', LMS_SEGMENT_KEY="foobar")
@@ -1170,7 +1176,21 @@ class GenerateUserCertTests(ModuleStoreTestCase):
 
         resp = self.client.post(self.url)
         self.assertEqual(resp.status_code, HttpResponseBadRequest.status_code)
-        self.assertIn("Certificate has already been created.", resp.content)
+        self.assertIn("Certificate self-generation is not allowed because the task has started before.", resp.content)
+
+    @patch('courseware.grades.grade', Mock(return_value={'grade': 'Pass', 'percent': 0.75}))
+    def test_user_with_passing_existing_error_cert(self):
+        # If cert generation task failed and status is set to error
+        # then json will return cert generating message with bad request code
+        GeneratedCertificateFactory.create(
+            user=self.student,
+            course_id=self.course.id,
+            status=CertificateStatuses.error,
+            mode='verified'
+        )
+        resp = self.client.post(self.url)
+        self.assertEqual(resp.status_code, HttpResponseBadRequest.status_code)
+        self.assertIn("Certificate self-generation is not allowed because the task has started before.", resp.content)
 
     def test_user_with_non_existing_course(self):
         # If try to access a course with valid key pattern then it will return

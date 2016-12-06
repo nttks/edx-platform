@@ -150,6 +150,16 @@ msgstr "{email_address}宛に手続き用のメールを送信しました。メ
 
 #-#-#-#-#  Original messages in gacco  #-#-#-#-#
 
+#: lms/static/js/courseware/certificates_api.js
+msgid "We're working on it..."
+msgstr "修了書発行中..."
+
+#: lms/static/js/courseware/certificates_api.js
+msgid ""
+"We're creating your certificate. You can keep working in your courses and a "
+"link to it will appear here and on your Dashboard when it is ready."
+msgstr "修了証を発行中です。今しばらくお待ちください。"
+
 #: pollxblock/static/js/src/pollxblock.js
 msgid "Change your vote"
 msgstr "選びなおす"
@@ -294,6 +304,10 @@ msgstr "コース略称の入力が必要です。"
 #: cms/static/js/models/settings/course_details.js
 msgid "Teacher Name is required input."
 msgstr "講師名の入力が必要です。"
+
+#: cms/static/js/views/settings/main.js
+msgid "Course pacing cannot be changed once a course has started."
+msgstr "講座の種類は開講するまでは変更できますが、開講後の変更はできませんのでご注意ください。"
 
 #: lms/templates/verify_student/make_payment_step.underscore
 msgid "*Your purchase could not be completed yet."
