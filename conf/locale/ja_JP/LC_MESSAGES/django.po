@@ -15946,15 +15946,15 @@ msgstr "開始日を編集"
 
 #: cms/templates/course_outline.html
 msgid "Course Pacing:"
-msgstr "講座の種類："
+msgstr ""
 
 #: cms/templates/course_outline.html
 msgid "Self-Paced"
-msgstr "開始日可変型講座"
+msgstr ""
 
 #: cms/templates/course_outline.html
 msgid "Instructor-Paced"
-msgstr "通常講座"
+msgstr ""
 
 #: cms/templates/course_outline.html
 msgid "Creating your course organization"
@@ -17854,18 +17854,18 @@ msgstr "受講者が入学試験を完了するために必要な点数。"
 
 #: cms/templates/settings.html
 msgid "Course Pacing"
-msgstr "講座の種類"
+msgstr ""
 
 #: cms/templates/settings.html
 msgid "Set the pacing for this course"
-msgstr "提供する講座の種類を設定します"
+msgstr ""
 
 #: cms/templates/settings.html
 msgid ""
 "Instructor-paced courses progress at the pace that the course author sets. "
 "You can configure release dates for course content and due dates for "
 "assignments."
-msgstr "通常講座は講座提供者が講座の受講開始日や課題提出の期日を決めることができます。"
+msgstr ""
 
 #: cms/templates/settings.html
 msgid ""
@@ -17873,7 +17873,6 @@ msgid ""
 " for assignments. Learners can complete course material at any time before "
 "the course end date."
 msgstr ""
-"開始日可変型講座は講座提供者が受講開始日や課題提出の期日を決めることができません。講座が閉講するまで、受講者が開始したいタイミングで講座を受講し始めることができます。課題提出までの期間は講座提供者が事前に決めることができます。"
 
 #: cms/templates/settings.html
 msgid "Course Content License"
