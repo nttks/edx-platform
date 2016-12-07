@@ -64,7 +64,9 @@ var DetailsView = ValidatingView.extend({
 
     render: function() {
         this.setupDatePicker('start_date');
-        this.setupDatePicker('end_date');
+        if (!this.model.get('self_paced')) {
+            this.setupDatePicker('end_date');
+        }
         this.setupDatePicker('enrollment_start');
         this.setupDatePicker('enrollment_end');
         this.setupDatePicker('deadline_start');
@@ -137,9 +139,11 @@ var DetailsView = ValidatingView.extend({
         this.$el.find('#' + this.fieldToSelectorMap['course_span']).val(this.model.get('course_span'));
 
         // Individual end date for self-paced
-        this.$el.find('#' + this.fieldToSelectorMap['individual_end_days']).val(this.model.get('individual_end_days'));
-        this.$el.find('#' + this.fieldToSelectorMap['individual_end_hours']).val(this.model.get('individual_end_hours'));
-        this.$el.find('#' + this.fieldToSelectorMap['individual_end_minutes']).val(this.model.get('individual_end_minutes'));
+        if (this.model.get('self_paced')) {
+            this.$el.find('#' + this.fieldToSelectorMap['individual_end_days']).val(this.model.get('individual_end_days'));
+            this.$el.find('#' + this.fieldToSelectorMap['individual_end_hours']).val(this.model.get('individual_end_hours'));
+            this.$el.find('#' + this.fieldToSelectorMap['individual_end_minutes']).val(this.model.get('individual_end_minutes'));
+        }
 
         return this;
     },
