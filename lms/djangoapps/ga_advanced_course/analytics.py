@@ -1,4 +1,5 @@
 import itertools
+import re
 
 from django.utils.translation import ugettext as _
 
@@ -103,7 +104,7 @@ def _get_general_features(item, enrollment_users, features):
             }
         else:
             order_dict = {
-                k: getattr(personal_info, v) or '#N/A'
+                k: re.sub('\r\n|\r|\n', ' ', getattr(personal_info, v)) or '#N/A'
                 for k, v in Features.PERSONAL_INFO_FEATURES.items() if k in features
             }
         return order_dict

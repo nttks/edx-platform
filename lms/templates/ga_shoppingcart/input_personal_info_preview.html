@@ -2,9 +2,14 @@
 <%namespace name='static' file='/static_content.html'/>
 
 <%!
+    import re
+
     from django.core.urlresolvers import reverse
     from django.utils.translation import pgettext, ugettext as _
     from openedx.core.lib.ga_datetime_utils import to_timezone
+
+    def br(text):
+        return re.sub('\r\n|\r|\n', '<br>', text)
 %>
 
 <%block name="pagetitle">${_("Confirm your personal information")}</%block>
@@ -43,12 +48,9 @@
                             <label for="${field.name}">
                                 ${_(field.label)}
                             </label>
-                            <span> ${field.data} </span>
-                            % if field.errors:
-                            <span class="err-msg">
-                                    ${field.errors[0]}
-                                </span>
-                            % endif
+                            <span>
+                                ${field.data | br}
+                            </span>
                         % endif
                     </li>
                     % endfor

@@ -268,7 +268,7 @@ form#personal_input_preview_form {
     li {
         width: 100%;
         &:not(.address_line_1) {
-            margin-bottom: 20px;
+            margin-bottom: 40px;
         }
         label {
             font-weight: bold;
@@ -283,7 +283,6 @@ form#personal_input_preview_form {
                 display: block;
             }
         }
-        label[for="gaccatz_check"],
         label[for="free_entry_field_1"],
         label[for="free_entry_field_2"],
         label[for="free_entry_field_3"],
@@ -293,6 +292,9 @@ form#personal_input_preview_form {
             padding-left: 10px;
             display: block;
             box-sizing: border-box;
+            & + span {
+                line-height: 1.5em;
+            }
         }
         span {
             line-height: $default_line_height;

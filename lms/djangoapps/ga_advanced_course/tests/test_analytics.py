@@ -1,3 +1,4 @@
+import re
 
 from django.test.utils import override_settings
 from django.utils import timezone
@@ -156,27 +157,33 @@ class AnalyticsTest(ModuleStoreTestCase):
 
     @staticmethod
     def _convert(*target):
+        _target = []
+        for i, v in enumerate(target):
+            if isinstance(v, str):
+                _target.append(re.sub('\r\n|\r|\n', ' ', target[i]))
+            else:
+                _target.append(v)
         return {
-            Features.USER_ID: target[0],
-            Features.EMAIL: target[1],
-            Features.USERNAME: target[2],
-            Features.NAME: target[3],
-            Features.ADVANCED_COURSE_NAME: target[4],
-            Features.ADVANCED_COURSE_TICKET_NAME: target[5],
-            Features.ENTRY_DATE: target[6],
-            Features.PAYMENT_METHOD: target[7],
-            Features.ENROLLMENT: target[8],
-            Features.FULL_NAME: target[9] or '#N/A',
-            Features.KANA: target[10] or '#N/A',
-            Features.POSTAL_CODE: target[11] or '#N/A',
-            Features.ADDRESS_LINE_1: target[12] or '#N/A',
-            Features.ADDRESS_LINE_2: target[13] or '#N/A',
-            Features.PHONE_NUMBER: target[14] or '#N/A',
-            Features.FREE_ENTRY_FIELD_1: target[15] or '#N/A',
-            Features.FREE_ENTRY_FIELD_2: target[16] or '#N/A',
-            Features.FREE_ENTRY_FIELD_3: target[17] or '#N/A',
-            Features.FREE_ENTRY_FIELD_4: target[18] or '#N/A',
-            Features.FREE_ENTRY_FIELD_5: target[19] or '#N/A',
+            Features.USER_ID: _target[0],
+            Features.EMAIL: _target[1],
+            Features.USERNAME: _target[2],
+            Features.NAME: _target[3],
+            Features.ADVANCED_COURSE_NAME: _target[4],
+            Features.ADVANCED_COURSE_TICKET_NAME: _target[5],
+            Features.ENTRY_DATE: _target[6],
+            Features.PAYMENT_METHOD: _target[7],
+            Features.ENROLLMENT: _target[8],
+            Features.FULL_NAME: _target[9] or '#N/A',
+            Features.KANA: _target[10] or '#N/A',
+            Features.POSTAL_CODE: _target[11] or '#N/A',
+            Features.ADDRESS_LINE_1: _target[12] or '#N/A',
+            Features.ADDRESS_LINE_2: _target[13] or '#N/A',
+            Features.PHONE_NUMBER: _target[14] or '#N/A',
+            Features.FREE_ENTRY_FIELD_1: _target[15] or '#N/A',
+            Features.FREE_ENTRY_FIELD_2: _target[16] or '#N/A',
+            Features.FREE_ENTRY_FIELD_3: _target[17] or '#N/A',
+            Features.FREE_ENTRY_FIELD_4: _target[18] or '#N/A',
+            Features.FREE_ENTRY_FIELD_5: _target[19] or '#N/A',
         }
 
     def test_advanced_course_purchased_features(self):
@@ -384,25 +391,31 @@ class AnalyticsForPaidCourseTest(ModuleStoreTestCase):
 
     @staticmethod
     def _convert(*target):
+        _target = []
+        for i, v in enumerate(target):
+            if isinstance(v, str):
+                _target.append(re.sub('\r\n|\r|\n', ' ', target[i]))
+            else:
+                _target.append(v)
         return {
-            Features.USER_ID: target[0],
-            Features.EMAIL: target[1],
-            Features.USERNAME: target[2],
-            Features.NAME: target[3],
-            Features.ENTRY_DATE: target[4],
-            Features.PAYMENT_METHOD: target[5],
-            Features.ENROLLMENT: target[6],
-            Features.FULL_NAME: target[7] or '#N/A',
-            Features.KANA: target[8] or '#N/A',
-            Features.POSTAL_CODE: target[9] or '#N/A',
-            Features.ADDRESS_LINE_1: target[10] or '#N/A',
-            Features.ADDRESS_LINE_2: target[11] or '#N/A',
-            Features.PHONE_NUMBER: target[12] or '#N/A',
-            Features.FREE_ENTRY_FIELD_1: target[13] or '#N/A',
-            Features.FREE_ENTRY_FIELD_2: target[14] or '#N/A',
-            Features.FREE_ENTRY_FIELD_3: target[15] or '#N/A',
-            Features.FREE_ENTRY_FIELD_4: target[16] or '#N/A',
-            Features.FREE_ENTRY_FIELD_5: target[17] or '#N/A',
+            Features.USER_ID: _target[0],
+            Features.EMAIL: _target[1],
+            Features.USERNAME: _target[2],
+            Features.NAME: _target[3],
+            Features.ENTRY_DATE: _target[4],
+            Features.PAYMENT_METHOD: _target[5],
+            Features.ENROLLMENT: _target[6],
+            Features.FULL_NAME: _target[7] or '#N/A',
+            Features.KANA: _target[8] or '#N/A',
+            Features.POSTAL_CODE: _target[9] or '#N/A',
+            Features.ADDRESS_LINE_1: _target[10] or '#N/A',
+            Features.ADDRESS_LINE_2: _target[11] or '#N/A',
+            Features.PHONE_NUMBER: _target[12] or '#N/A',
+            Features.FREE_ENTRY_FIELD_1: _target[13] or '#N/A',
+            Features.FREE_ENTRY_FIELD_2: _target[14] or '#N/A',
+            Features.FREE_ENTRY_FIELD_3: _target[15] or '#N/A',
+            Features.FREE_ENTRY_FIELD_4: _target[16] or '#N/A',
+            Features.FREE_ENTRY_FIELD_5: _target[17] or '#N/A',
         }
 
     def test_paid_course_purchased_features(self):
