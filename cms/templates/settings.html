@@ -191,8 +191,7 @@ CMS.URL.UPLOAD_ASSET = '${upload_asset_url}';
               </div>
             </li>
 
-            % if context_course.self_paced:
-            <li class="field-group field-group-course-end" id="individual-course-end">
+            <li class="field-group field-group-course-end" id="individual-course-end" style="display: none;">
               <div class="field individual-date" id="field-course-end-days">
                 <label for="individual-course-end-days">${_("Individual Course End Days")}</label>
                 <input type="text" class="end-date end" id="individual-course-end-days" placeholder="DD" autocomplete="off" />
@@ -211,8 +210,8 @@ CMS.URL.UPLOAD_ASSET = '${upload_asset_url}';
                 <span class="tip tip-stacked">${_("Minutes up to the course available period")}</span>
               </div>
             </li>
-            % else:
-            <li class="field-group field-group-course-end" id="course-end">
+
+            <li class="field-group field-group-course-end" id="course-end" style="display: none;">
               <div class="field date" id="field-course-end-date">
                 <label for="course-end-date">${_("Course End Date")}</label>
                 <input type="text" class="end-date date end" id="course-end-date" placeholder="MM/DD/YYYY" autocomplete="off" />
@@ -225,7 +224,6 @@ CMS.URL.UPLOAD_ASSET = '${upload_asset_url}';
                 <span class="tip tip-stacked timezone">${_("(UTC)")}</span>
               </div>
             </li>
-            % endif
           </ol>
 
           <ol class="list-input">

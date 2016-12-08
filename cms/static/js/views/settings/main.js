@@ -60,13 +60,13 @@ var DetailsView = ValidatingView.extend({
                 closeIcon: true
             }).show();
         }
+
+        this.listenTo(this.model, 'change:self_paced', this.handleCoursePaceChange);
     },
 
     render: function() {
         this.setupDatePicker('start_date');
-        if (!this.model.get('self_paced')) {
-            this.setupDatePicker('end_date');
-        }
+        this.setupDatePicker('end_date');
         this.setupDatePicker('enrollment_start');
         this.setupDatePicker('enrollment_end');
         this.setupDatePicker('deadline_start');
@@ -138,11 +138,16 @@ var DetailsView = ValidatingView.extend({
         this.$el.find('#' + this.fieldToSelectorMap['teacher_name']).val(this.model.get('teacher_name'));
         this.$el.find('#' + this.fieldToSelectorMap['course_span']).val(this.model.get('course_span'));
 
-        // Individual end date for self-paced
         if (this.model.get('self_paced')) {
+            // Individual end date for self-paced
             this.$el.find('#' + this.fieldToSelectorMap['individual_end_days']).val(this.model.get('individual_end_days'));
             this.$el.find('#' + this.fieldToSelectorMap['individual_end_hours']).val(this.model.get('individual_end_hours'));
             this.$el.find('#' + this.fieldToSelectorMap['individual_end_minutes']).val(this.model.get('individual_end_minutes'));
+            this.$el.find('#course-end').hide();
+            this.$el.find('#individual-course-end').show();
+        } else {
+            this.$el.find('#individual-course-end').hide();
+            this.$el.find('#course-end').show();
         }
 
         return this;
@@ -425,6 +430,23 @@ var DetailsView = ValidatingView.extend({
     handleLicenseChange: function() {
         this.showNotificationBar()
         this.model.set("license", this.licenseModel.toString())
+    },
+
+    handleCoursePaceChange: function() {
+        var courseEnd = this.$el.find('#course-end'),
+            individualCourseEnd = this.$el.find('#individual-course-end');
+        if (this.model.get('self_paced')) {
+            courseEnd.find('input.date').val(null).trigger('change');
+            courseEnd.find('input.time').val(null).trigger('change');
+            courseEnd.hide();
+            individualCourseEnd.show();
+        } else {
+            this.$el.find('#' + this.fieldToSelectorMap['individual_end_days']).val(null).trigger('change');
+            this.$el.find('#' + this.fieldToSelectorMap['individual_end_hours']).val(null).trigger('change');
+            this.$el.find('#' + this.fieldToSelectorMap['individual_end_minutes']).val(null).trigger('change');
+            individualCourseEnd.hide();
+            courseEnd.show();
+        }
     }
 });
 
