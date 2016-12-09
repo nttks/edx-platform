@@ -234,8 +234,10 @@ define([
                 this.model.set({self_paced: true});
             });
 
-            it('Input non numeric individual_end_days should result in error', function () {
+            it('Input non integer individual_end_days should result in error', function () {
                 this.view.$el.find('#individual-course-end-days').val('a').trigger('change');
+                expect(this.view.$el.find('span.message-error')).toContainText(daysErrorMessage);
+                this.view.$el.find('#individual-course-end-days').val('1.0').trigger('change');
                 expect(this.view.$el.find('span.message-error')).toContainText(daysErrorMessage);
                 this.view.$el.find('#individual-course-end-days').val(0).trigger('change');
                 expect(this.view.$el.find('span.message-error')).not.toContainText(daysErrorMessage);
@@ -255,8 +257,10 @@ define([
                 expect(this.view.$el.find('span.message-error')).toContainText(daysErrorMessage);
             });
 
-            it('Input non numeric individual_end_hours should result in error', function () {
+            it('Input non integer individual_end_hours should result in error', function () {
                 this.view.$el.find('#individual-course-end-hours').val('a').trigger('change');
+                expect(this.view.$el.find('span.message-error')).toContainText(hoursErrorMessage);
+                this.view.$el.find('#individual-course-end-hours').val('1.0').trigger('change');
                 expect(this.view.$el.find('span.message-error')).toContainText(hoursErrorMessage);
             });
 
@@ -274,8 +278,10 @@ define([
                 expect(this.view.$el.find('span.message-error')).toContainText(hoursErrorMessage);
             });
 
-            it('Input non numeric individual_end_minutes should result in error', function () {
+            it('Input non integer individual_end_minutes should result in error', function () {
                 this.view.$el.find('#individual-course-end-minutes').val('a').trigger('change');
+                expect(this.view.$el.find('span.message-error')).toContainText(minutesErrorMessage);
+                this.view.$el.find('#individual-course-end-minutes').val('1.0').trigger('change');
                 expect(this.view.$el.find('span.message-error')).toContainText(minutesErrorMessage);
             });
 

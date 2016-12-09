@@ -7,9 +7,9 @@
  */
 define(['jquery', 'backbone', 'underscore', 'gettext', 'js/views/baseview',
     'js/views/modals/base_modal', 'date', 'js/views/utils/xblock_utils',
-    'js/utils/date_utils'
+    'js/utils/date_utils', 'js/models/validation_helpers'
 ], function(
-    $, Backbone, _, gettext, BaseView, BaseModal, date, XBlockViewUtils, DateUtils
+    $, Backbone, _, gettext, BaseView, BaseModal, date, XBlockViewUtils, DateUtils, ValidationHelpers
 ) {
     'use strict';
     var CourseOutlineXBlockModal, SettingsXBlockModal, PublishXBlockModal, AbstractEditor, BaseDateEditor, BaseIndividualDaysEditor,
@@ -312,15 +312,14 @@ define(['jquery', 'backbone', 'underscore', 'gettext', 'js/views/baseview',
             $.each([this.daysElement, this.hoursElement, this.minutesElement], function(i, element) {
                 var value = element.val(),
                     // Element must have min and max and data-label attributes.
-                    min = parseInt(element.attr('min')),
-                    max = parseInt(element.attr('max')),
+                    range = {min: parseInt(element.attr('min')), max: parseInt(element.attr('max'))},
                     label = element.data('label');
-                if (value && (isNaN(value) || !(min <= parseInt(value) && parseInt(value) <= max))) {
+                if (value && !ValidationHelpers.validateIntegerRange(value, range)) {
                     isValid = false;
                     errorMessages.append(
                         $('<li>').text(label + ' ' + interpolate(
                             gettext('Please enter an integer between %(min)s and %(max)s.'),
-                            {min: min, max: max}, true
+                            range, true
                         ))
                     );
                 }

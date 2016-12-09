@@ -675,9 +675,11 @@ define(["jquery", "common/js/spec_helpers/ajax_helpers", "common/js/components/u
                         outlinePage.$('.section-header-actions .configure-button').click();
                     });
 
-                    it('Input non numeric days should result in error', function() {
+                    it('Input non integer days should result in error', function() {
                         expect($('#individual-start-error')).not.toContainText(daysErrorMessage);
                         $('#individual_start_days').val('a').trigger('change');
+                        expect($('#individual-start-error')).toContainText(daysErrorMessage);
+                        $('#individual_start_days').val('1.0').trigger('change');
                         expect($('#individual-start-error')).toContainText(daysErrorMessage);
                         $('#individual_start_days').val(0).trigger('change');
                         expect($('#individual-start-error')).not.toContainText(daysErrorMessage);
@@ -697,9 +699,11 @@ define(["jquery", "common/js/spec_helpers/ajax_helpers", "common/js/components/u
                         expect($('#individual-start-error')).toContainText(daysErrorMessage);
                     });
 
-                    it('Input non numeric hours should result in error', function() {
+                    it('Input non integer hours should result in error', function() {
                         expect($('#individual-start-error')).not.toContainText(hoursErrorMessage);
                         $('#individual_start_hours').val('a').trigger('change');
+                        expect($('#individual-start-error')).toContainText(hoursErrorMessage);
+                        $('#individual_start_hours').val('1.0').trigger('change');
                         expect($('#individual-start-error')).toContainText(hoursErrorMessage);
                         $('#individual_start_hours').val(0).trigger('change');
                         expect($('#individual-start-error')).not.toContainText(hoursErrorMessage);
@@ -719,9 +723,11 @@ define(["jquery", "common/js/spec_helpers/ajax_helpers", "common/js/components/u
                         expect($('#individual-start-error')).toContainText(hoursErrorMessage);
                     });
 
-                    it('Input non numeric minutes should result in error', function() {
+                    it('Input non integer minutes should result in error', function() {
                         expect($('#individual-start-error')).not.toContainText(minutesErrorMessage);
                         $('#individual_start_minutes').val('a').trigger('change');
+                        expect($('#individual-start-error')).toContainText(minutesErrorMessage);
+                        $('#individual_start_minutes').val('1.0').trigger('change');
                         expect($('#individual-start-error')).toContainText(minutesErrorMessage);
                         $('#individual_start_minutes').val(0).trigger('change');
                         expect($('#individual-start-error')).not.toContainText(minutesErrorMessage);
@@ -1286,9 +1292,11 @@ define(["jquery", "common/js/spec_helpers/ajax_helpers", "common/js/components/u
                         outlinePage.$('.outline-item .outline-subsection .configure-button').click();
                     });
 
-                    it('Input non numeric days should result in error', function() {
+                    it('Input non integer days should result in error', function() {
                         expect($('#individual-due-error')).not.toContainText(daysErrorMessage);
                         $('#individual_due_days').val('a').trigger('change');
+                        expect($('#individual-due-error')).toContainText(daysErrorMessage);
+                        $('#individual_due_days').val('1.0').trigger('change');
                         expect($('#individual-due-error')).toContainText(daysErrorMessage);
                         $('#individual_due_days').val(0).trigger('change');
                         expect($('#individual-due-error')).not.toContainText(daysErrorMessage);
@@ -1308,9 +1316,11 @@ define(["jquery", "common/js/spec_helpers/ajax_helpers", "common/js/components/u
                         expect($('#individual-due-error')).toContainText(daysErrorMessage);
                     });
 
-                    it('Input non numeric hours should result in error', function() {
+                    it('Input non integer hours should result in error', function() {
                         expect($('#individual-due-error')).not.toContainText(hoursErrorMessage);
                         $('#individual_due_hours').val('a').trigger('change');
+                        expect($('#individual-due-error')).toContainText(hoursErrorMessage);
+                        $('#individual_due_hours').val('1.0').trigger('change');
                         expect($('#individual-due-error')).toContainText(hoursErrorMessage);
                         $("#individual_due_hours").val(0).trigger('change');
                         expect($('#individual-due-error')).not.toContainText(hoursErrorMessage);
@@ -1330,9 +1340,11 @@ define(["jquery", "common/js/spec_helpers/ajax_helpers", "common/js/components/u
                         expect($('#individual-due-error')).toContainText(hoursErrorMessage);
                     });
 
-                    it('Input non numeric minutes should result in error', function() {
+                    it('Input non integer minutes should result in error', function() {
                         expect($('#individual-due-error')).not.toContainText(minutesErrorMessage);
                         $('#individual_due_minutes').val('a').trigger('change');
+                        expect($('#individual-due-error')).toContainText(minutesErrorMessage);
+                        $('#individual_due_minutes').val('1.0').trigger('change');
                         expect($('#individual-due-error')).toContainText(minutesErrorMessage);
                         $('#individual_due_minutes').val(0).trigger('change');
                         expect($('#individual-due-error')).not.toContainText(minutesErrorMessage);
