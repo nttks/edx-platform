@@ -2,6 +2,7 @@
 <%namespace name='static' file='/static_content.html'/>
 
 <%!
+    import cgi
     import re
 
     from django.core.urlresolvers import reverse
@@ -9,7 +10,7 @@
     from openedx.core.lib.ga_datetime_utils import to_timezone
 
     def br(text):
-        return re.sub('\r\n|\r|\n', '<br>', text)
+        return re.sub('\r\n|\r|\n', '<br>', cgi.escape(text))
 %>
 
 <%block name="pagetitle">${_("Confirm your personal information")}</%block>
@@ -50,9 +51,6 @@
                             </label>
                             <span>
                                 ${field.data | br}
-                            </span>
-                            <span>
-                                ${field.data | h}
                             </span>
                         % endif
                     </li>
