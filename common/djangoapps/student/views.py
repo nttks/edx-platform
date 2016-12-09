@@ -321,16 +321,17 @@ def _cert_info(user, course_overview, cert_status, course_mode):  # pylint: disa
     if cert_status is None:
         return default_info
 
+    status = template_state.get(cert_status['status'], default_status)
+
     hidden_status = {
-        'early_no_info': ('unavailable', 'processing', 'generating', 'notpassing', 'auditing'),
-        'early_with_info': ('unavailable', 'processing', 'generating', 'auditing'),
+        'early_no_info': ('processing', 'generating', 'notpassing', 'auditing'),
+        'early_with_info': ('processing', 'generating', 'auditing'),
     }
 
+    # Note: Compare status with template_state, NOT status of GeneratedCertificate(Model). Modify from edX!
     if (course_overview.certificates_display_behavior in hidden_status and
-            cert_status['status'] in hidden_status[course_overview.certificates_display_behavior]):
+            status in hidden_status[course_overview.certificates_display_behavior]):
         return {}
-
-    status = template_state.get(cert_status['status'], default_status)
 
     status_dict = {
         'status': status,
