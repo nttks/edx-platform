@@ -150,6 +150,8 @@ var DetailsView = ValidatingView.extend({
             this.$el.find('#course-end').show();
         }
 
+        this.changeBackgroundColor();
+
         return this;
     },
     fieldToSelectorMap : {
@@ -446,6 +448,15 @@ var DetailsView = ValidatingView.extend({
             this.$el.find('#' + this.fieldToSelectorMap['individual_end_minutes']).val(null).trigger('change');
             individualCourseEnd.hide();
             courseEnd.show();
+        }
+        this.changeBackgroundColor();
+    },
+
+    changeBackgroundColor: function() {
+        if (this.model.get('self_paced')) {
+            $('body').addClass('self-paced');
+        } else {
+            $('body').removeClass('self-paced');
         }
     }
 });
