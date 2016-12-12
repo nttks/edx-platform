@@ -376,11 +376,12 @@ h3 {
   vertical-align: middle;
 }
 
-#card-information img.visa { width: 40px; }
-#card-information img.master { width: 50px; }
-#card-information img.diners { width: 35px; }
-#card-information img.amex { width: 30px; }
-#card-information img.jcb { width: 30px; }
+/* Specify height for IE */
+#card-information img.visa { width: 40px; height: 25.4844px; }
+#card-information img.master { width: 50px; height: 30.6875px; }
+#card-information img.diners { width: 35px; height: 32.8125px; }
+#card-information img.amex { width: 30px; height: 29.5938px; }
+#card-information img.jcb { width: 30px; height: 37.1406px; }
 
 #card-form {
   padding: 20px 0;
