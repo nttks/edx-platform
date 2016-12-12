@@ -1009,8 +1009,8 @@ msgid "This ticket has been cancelled."
 msgstr "このチケットはキャンセルされました。"
 
 #: templates/ga_advanced_course/receipt.html
-msgid "Cancellation is <a href=\"{cancel_page_link}\">here</a>"
-msgstr "※キャンセルは<a href=\"{cancel_page_link}\">こちら</a>"
+msgid "If you would like to cancel, please contact <a href=\"{cancel_page_link}\">HERE</a> (language is Japanese only)"
+msgstr "キャンセルは<a href=\"{cancel_page_link}\">こちら</a>"
 
 #: templates/ga_shoppingcart/checkout.html
 msgid "Processing"

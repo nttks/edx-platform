@@ -76,15 +76,13 @@ $(function () {
     </div>
     <h3>${_("Subscription Details")}</h3>
     <div class="receipt_area">
-      <div class="clearfix">
-        <div class="ticket-cancel pull-right">
-          <p style="padding: 1rem 0;">${_("Cancellation is <a href=\"{cancel_page_link}\">here</a>").format(cancel_page_link=marketing_link("REQUEST_NEW"))}</p>
-        </div>
-        <div style="float: left;">
-          % if advanced_course.course_type == AdvancedCourseTypes.F2F:
-          <h4>${_("{course_name} Face-to-Face Course").format(course_name=course_name) | h}<br>${advanced_course.display_name | h} ${advanced_course_ticket.display_name | h}</h4>
-          % endif
-        </div>
+      <div class="ticket-cancel">
+        <p>${_("If you would like to cancel, please contact <a href=\"{cancel_page_link}\">HERE</a> (language is Japanese only)").format(cancel_page_link=marketing_link("REQUEST_NEW"))}</p>
+      </div>
+      <div>
+        % if advanced_course.course_type == AdvancedCourseTypes.F2F:
+        <h4>${_("{course_name} Face-to-Face Course").format(course_name=course_name) | h}<br>${advanced_course.display_name | h} ${advanced_course_ticket.display_name | h}</h4>
+        % endif
       </div>
       <div class="ticket-detail">
         <%

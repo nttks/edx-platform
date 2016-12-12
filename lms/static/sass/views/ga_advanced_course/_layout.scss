@@ -245,6 +245,11 @@
       }
     }
 
+    .ticket-cancel {
+      margin-top: 1rem;
+      text-align: right;
+    }
+
     @media print, screen and (min-width: 1074px) {
       h4 {
         margin-left: 2rem;
