@@ -640,7 +640,7 @@ msgid "An error has occurred"
 msgstr "エラーが発生しました"
 
 #: lms/templates/courseware/progress.html
-msgid "An error has occurred while generating your certificate. Please wait a moment and try again."
+msgid "An error has occurred while creating your certificate. Please wait a moment and try again."
 msgstr "修了証が発行できませんでした。しばらくたってから再度、修了証を発行してください。"
 
 #: templates/courseware/course_about.html
