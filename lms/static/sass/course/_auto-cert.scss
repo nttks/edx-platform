@@ -19,17 +19,32 @@
 
             .msg-content {
                 width: flex-grid(9,12);
+
+                .copy {
+                    padding: 5px 10px 5px 0;
+                }
             }
 
             .msg-actions {
                 @extend %t-copy-base;
                 display: inline-block;
                 width: flex-grid(3,12);
+                margin-top: 10px;
 
                 .btn {
                     @extend %btn-primary-blue;
                     font-size: 13px;
                     text-shadow: none;
+                }
+            }
+
+            @media only screen and (max-width: 800px) {
+                .msg-content {
+                    width: 100%;
+                }
+
+                .msg-actions {
+                    width: auto;
                 }
             }
         }
