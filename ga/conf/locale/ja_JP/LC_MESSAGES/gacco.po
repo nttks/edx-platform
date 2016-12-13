@@ -844,15 +844,18 @@ msgid "See next"
 msgstr "続きを見る"
 
 #: templates/ga_advanced_course/courses.html
-msgid "Details of Face to face course"
+msgctxt "face_to_face_course"
+msgid "Details of Face-to-Face Course"
 msgstr "対面学習コース詳細"
 
 #: templates/ga_advanced_course/courses.html
-msgid "List of Face to face classroom"
+msgctxt "face_to_face_classroom"
+msgid "List of Face-to-face course"
 msgstr "対面授業一覧"
 
 #: templates/ga_advanced_course/courses.html
-msgid "Details of Face to face classroom"
+msgctxt "face_to_face_classroom"
+msgid "Details of Face-to-face course"
 msgstr "対面授業詳細"
 
 #: templates/ga_advanced_course/courses.html

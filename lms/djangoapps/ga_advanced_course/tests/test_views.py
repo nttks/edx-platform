@@ -349,7 +349,7 @@ class AdvancedCourseF2FCoursesViewTest(CourseCheckMixin, AdvancedCourseViewTest)
         response = self._get_advanced_courses(self.course)
 
         self.assertEqual(200, response.status_code)
-        self.assertIn("Details of Face to face course", response.content)
+        self.assertIn("Details of Face-to-Face Course", response.content)
         self.assertNotIn("purchase_error", response.content)
 
         for course in advanced_courses:
