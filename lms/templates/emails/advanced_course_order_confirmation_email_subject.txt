@@ -1,1 +1,2 @@
-【gacco】チケットご購入完了のお知らせ
+<%! from django.utils.translation import ugettext as _ %>
+${_("Your ticket has been completed from {platform_name}").format(platform_name=settings.PLATFORM_NAME)}

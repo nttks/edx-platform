@@ -1073,7 +1073,7 @@ class CertificateItemTest(ModuleStoreTestCase):
         # Check that the tax-deduction information appears in the confirmation email
         self.assertEqual(len(mail.outbox), 1)
         email = mail.outbox[0]
-        self.assertEqual('The order has been completed from {}'.format(settings.PLATFORM_NAME), email.subject)
+        self.assertEqual('Your course has been completed from {}'.format(settings.PLATFORM_NAME), email.subject)
         self.assertIn('We will inform you that your order has been completed.', email.body)
 
     @override_settings(PAYMENT_TAX=8)

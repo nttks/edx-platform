@@ -1080,8 +1080,12 @@ msgid "If enabled, for all of the user who answered or viewed the problem, and a
 msgstr "有効にした場合、問題を回答または閲覧した全てのユーザーに対して、問題に正解したとみなして加点されます。"
 
 #: lms/templates/emails/paid_course_order_confirmation_email_subject.txt
-msgid "The order has been completed from {platform_name}"
+msgid "Your course has been completed from {platform_name}"
 msgstr "{platform_name} 受講登録完了のお知らせ"
+
+#: lms/templates/emails/advanced_course_order_confirmation_email_subject.txt
+msgid "Your ticket has been completed from {platform_name}"
+msgstr "{platform_name} チケット購入完了のお知らせ"
 
 #: lms/templates/registration/activate_account_notice.html
 msgid "You're almost there!"

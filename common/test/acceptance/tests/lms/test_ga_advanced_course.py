@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 tests for advanced course
 """
@@ -52,7 +51,7 @@ class AdvancedCourseTest(WebAppTest, GaccoTestMixin):
 
     def _assert_purchase_email(self, ticket_name, price, payment_method):
         email_message = self.email_client.get_latest_message()
-        self.assertEqual(email_message['subject'], u'【gacco】チケットご購入完了のお知らせ')
+        self.assertEqual(email_message['subject'], 'Your ticket has been completed from edX')
         self.assertIn(ticket_name, email_message['body'])
         self.assertIn('{:,d}'.format(price), email_message['body'])
         self.assertIn(payment_method, email_message['body'])
