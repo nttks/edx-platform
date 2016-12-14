@@ -11,6 +11,8 @@
 
 <%block name="bodyclass">ticket option</%block>
 
+<%block name="headextra"><meta name="format-detection" content="telephone=no" /></%block>
+
 <div class="ticket_page_wrap">
     <ul id="breadcrumb">
         <li><span><i class="fa fa-shopping-cart"></i><span class="text">${pgettext("payment_breadcrumb", "Order")}</span></span></li>
@@ -48,7 +50,9 @@
                                     </span>
                                     <label for="formtools_${field.name}">${_(field.label)} <span class="red">*</span></label>
                                 </div>
-                                <span class="gaccatz_additional_description">${_("Please check the precondition is")} <a href="http://gacco.org/gaccatz/envcheck.html#spec" target="_blank">${_("HERE")}</a></span>
+                                <span class="gaccatz_additional_description">
+                                    ${_("Please check {link_start}HERE{link_end} from the precondition for more information.").format(link_start="<a href=\"http://gacco.org/gaccatz/envcheck.html#spec\" target=\"_blank\">", link_end="</a>")}
+                                </span>
                             % else:
                                 <label for="${field.name}">
                                     ${_(field.label)}
@@ -63,9 +67,9 @@
                                 % endif
                             %endif
                         </li>
-                        <li class="note note_${field.name} red">
+                        <li class="note note_${field.name}">
                             % if field.errors:
-                                <span class="err-msg">
+                                <span class="err-msg red">
                                     ${field.errors[0]}
                                 </span>
                             % else:

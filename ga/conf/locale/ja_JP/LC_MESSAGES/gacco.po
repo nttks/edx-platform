@@ -1414,8 +1414,8 @@ msgid "We agree to the precondition for participation in gaccatz."
 msgstr "gaccatz参加に必要な全ての注意事項を確認し、同意します。"
 
 #: lms/djangoapps/ga_shoppingcart/forms.py
-msgid "Please check the precondition is"
-msgstr "gaccatz参加に必要な注意事項は"
+msgid "Please check {link_start}HERE{link_end} from the precondition for more information."
+msgstr "gaccatz参加に必要な注意事項は{link_start}こちら{link_end}"
 
 #: lms/djangoapps/ga_shoppingcart/forms.py
 msgid "Please type using full-width katakana and space."
@@ -1480,7 +1480,7 @@ msgid "Confirm your personal information"
 msgstr "お客様情報の確認"
 
 #: lms/templates/ga_shoppingcart/input_personal_info_preview.html
-msgid "Please confirm your information bellow and click \"Next\"<br>DO NOT PRESS \"Browser Back Button.\"<br>Please use the \"Back\" button on the bottom of this screen."
+msgid "Please confirm your information bellow and click \"Next\"<br>DO NOT PRESS \"Browser Back Button.\" Please use the \"Back\" button on the bottom of this screen."
 msgstr "入力内容ご確認の上、「次へ」ボタンを押してください。<br>内容を修正したい場合は、「戻る」ボタンを押してください。<br>ブラウザの「戻る」ボタンは押さないでください。"
 
 #. Translators: the translation for "DATE_TIME_FORMAT" must be a format

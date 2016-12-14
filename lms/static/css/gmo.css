@@ -106,6 +106,7 @@ h3 {
   list-style: none;
   display: inline-block;
   width: 100%;
+  margin-left: 12px;
 }
 
 #breadcrumb li {
@@ -575,7 +576,9 @@ h3 {
   #card-form .input.card-number {
     width: 90%;
   }
+}
 
+@media only screen and (max-width: 840px) {
   #breadcrumb span.text {
     display: none;
   }
