@@ -834,7 +834,7 @@ class ProgressPageTests(ModuleStoreTestCase):
 
         mako_middleware_process_request(self.request)
 
-        self.setup_course()
+        self.setup_course(self_paced=True)
 
     def setup_course(self, **options):
         """Create the test course."""

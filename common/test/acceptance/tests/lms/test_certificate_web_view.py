@@ -1,8 +1,11 @@
 """
 Acceptance tests for the certificate web view feature.
 """
+from datetime import datetime, timedelta
+
 from ..helpers import UniqueCourseTest, EventsTestMixin, load_data_str, get_element_padding
 from nose.plugins.attrib import attr
+from ...fixtures.config import ConfigModelFixture
 from ...fixtures.course import CourseFixture, XBlockFixtureDesc, CourseUpdateDesc
 from ...fixtures.certificates import CertificateConfigFixture
 from ...pages.lms.auto_auth import AutoAuthPage
@@ -103,6 +106,9 @@ class CertificateProgressPageTest(UniqueCourseTest):
     def setUp(self):
         super(CertificateProgressPageTest, self).setUp()
 
+        # Enable SelfPacedConfiguration for self-paced course
+        ConfigModelFixture('/config/self_paced', {'enabled': True}).install()
+
         # set same course number as we have in fixture json
         self.course_info['number'] = "3355358979513794782079645765720179311111"
 
@@ -115,13 +121,18 @@ class CertificateProgressPageTest(UniqueCourseTest):
             'version': 1,
             'is_active': True
         }
-        course_settings = {'certificates': test_certificate_config}
+        course_settings = {
+            'certificates': test_certificate_config,
+            'self_paced': True,
+        }
 
         self.course_fixture = CourseFixture(
             self.course_info["org"],
             self.course_info["number"],
             self.course_info["run"],
             self.course_info["display_name"],
+            # Set the course start date to tomorrow in order to allow setting pacing
+            start_date=datetime.now() + timedelta(days=1),
             settings=course_settings
         )
 
@@ -149,6 +160,11 @@ class CertificateProgressPageTest(UniqueCourseTest):
         )
 
         self.course_fixture.install()
+
+        # Reset the course start date to the past date so that the user can visit courseware
+        self.course_fixture.add_course_details({'start_date': datetime(1970, 1, 1)})
+        self.course_fixture.configure_course()
+
         self.user_id = "99"  # we have created a user with this id in fixture
         self.cert_fixture = CertificateConfigFixture(self.course_id, test_certificate_config)
 
