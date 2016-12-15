@@ -78,7 +78,7 @@ class BizContractDetailPage(BizNavPage, W2uiMixin):
         return self
 
     def select_contractor_organization(self, name):
-        self.q(css='select#contractor_organization>option').filter(lambda el: el.text.strip == name).first.click()
+        self.q(css='select#id_contractor_organization>option').filter(lambda el: el.text.strip() == name).first.click()
         return self
 
     def add_detail_info(self, value, index):

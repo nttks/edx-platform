@@ -96,7 +96,7 @@ class BizInvitationTest(WebAppTest, GaccoBizTestMixin):
         # Try to register invitation code without additional info
         BizInvitationPage(self.browser).visit().input_invitation_code(
                 contract_effective['Invitation Code']).click_register_button()
-        confirm_page = BizInvitationConfirmPage(self.browser).wait_for_page().click_register_button()
+        confirm_page = BizInvitationConfirmPage(self.browser, contract_effective['Invitation Code']).wait_for_page().click_register_button()
         confirm_page.wait_for_ajax()
         self.assertIn(u'部署 is required.', confirm_page.additional_messages)
 
@@ -105,7 +105,7 @@ class BizInvitationTest(WebAppTest, GaccoBizTestMixin):
         AccountSettingsPage(self.browser).visit().click_on_link_in_link_field('invitation_code')
         BizInvitationPage(self.browser).wait_for_page().input_invitation_code(
                 contract_effective['Invitation Code']).click_register_button()
-        BizInvitationConfirmPage(self.browser).wait_for_page()
+        BizInvitationConfirmPage(self.browser, contract_effective['Invitation Code']).wait_for_page()
 
         # Verify that course about page have no register link
         course_about_page = CourseAboutPage(self.browser, self.course._course_key).visit()
@@ -115,7 +115,7 @@ class BizInvitationTest(WebAppTest, GaccoBizTestMixin):
         AccountSettingsPage(self.browser).visit().click_on_link_in_link_field('invitation_code')
         BizInvitationPage(self.browser).wait_for_page().input_invitation_code(
                 contract_effective['Invitation Code']).click_register_button()
-        BizInvitationConfirmPage(self.browser).wait_for_page().input_additional_info(u'マーケティング部',
+        BizInvitationConfirmPage(self.browser, contract_effective['Invitation Code']).wait_for_page().input_additional_info(u'マーケティング部',
                                                                                      0).click_register_button()
 
         # Verify that course is registered
@@ -150,7 +150,7 @@ class BizInvitationTest(WebAppTest, GaccoBizTestMixin):
         # Register invitation code
         BizInvitationPage(self.browser).visit().input_invitation_code(
                 contract['Invitation Code']).click_register_button()
-        BizInvitationConfirmPage(self.browser).wait_for_page() \
+        BizInvitationConfirmPage(self.browser, contract['Invitation Code']).wait_for_page() \
             .input_additional_info(u'開発部', 0).input_additional_info(u'学校　太郎', 1).click_register_button()
         # Verify that course is registered
         dashboard = DashboardPage(self.browser)
@@ -165,7 +165,7 @@ class BizInvitationTest(WebAppTest, GaccoBizTestMixin):
         # Register invitation code again
         BizInvitationPage(self.browser).visit().input_invitation_code(
                 contract['Invitation Code']).click_register_button()
-        BizInvitationConfirmPage(self.browser).wait_for_page() \
+        BizInvitationConfirmPage(self.browser, contract['Invitation Code']).wait_for_page() \
             .input_additional_info(u'事業サービス部', 0).input_additional_info(u'学校　花子', 1).click_register_button()
         # Verify that course is registered
         dashboard = DashboardPage(self.browser).wait_for_page()

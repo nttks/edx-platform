@@ -226,6 +226,11 @@ if os.environ.get('ENABLE_BOKCHOY_GA'):
     FEATURES['ENABLE_PDF_RECEIPT'] = False
     FEATURES['STORE_BILLING_INFO'] = True
 
+    """
+    Register student
+    """
+    BIZ_MAX_REGISTER_NUMBER = 10
+
 #####################################################################
 # Lastly, see if the developer has any local overrides.
 try:

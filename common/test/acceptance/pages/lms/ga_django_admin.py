@@ -9,6 +9,9 @@ from bok_choy.page_object import PageObject
 from . import BASE_URL
 
 
+KEY_GRID_INDEX = '__index'
+
+
 class DjangoAdminPage(PageObject):
     """
     Django admin, where the staff can add/update
@@ -52,10 +55,15 @@ class DjangoAdminGridMixin(object):
         grid_rows = []
         for i, row_datas in enumerate(zip(*[iter(all_datas)] * len(columns))):
             row = dict(zip(columns, row_datas))
-            row['__index'] = i
+            row[KEY_GRID_INDEX] = i
             grid_rows.append(row)
 
         return grid_rows
+
+    @property
+    def last_grid_row(self):
+        rows = self.grid_rows
+        return rows[-1] if rows else None
 
     def find_rows(self, search_dict):
         return [row for row in self.grid_rows
@@ -70,6 +78,9 @@ class DjangoAdminGridMixin(object):
         if count_row == 1:
             return find_rows[0]
         elif count_row == 0:
+            print('{}'.format(self.grid_columns))
+            print('{}'.format(self.grid_rows))
+            print('{}'.format(search_dict))
             return None
         else:
             raise ValueError('Get row found multiple({}) rows.'.format(count_row))
@@ -98,7 +109,7 @@ class DjangoAdminListPage(PageObject, DjangoAdminGridMixin):
 
     def click_grid_anchor(self, grid_row):
         # Just check one pattern, so be care to use.
-        grid_anchor = self.q(css='table#result_list>tbody a').nth(grid_row['__index'])
+        grid_anchor = self.q(css='table#result_list>tbody a').nth(grid_row[KEY_GRID_INDEX])
         record_id = grid_anchor.attrs('href')[0].strip('/').split('/')[-1]
         grid_anchor.click()
         return DjangoAdminModifyPage(self.browser, self.module_name, self.model_name, record_id).wait_for_page()
@@ -119,14 +130,25 @@ class DjangoAdminAddPage(PageObject):
             model_name=self.model_name,
         )
 
+
     def is_browser_on_page(self):
         return self.q(css='div.submit-row>input[name="_save"]').present
 
+    @property
+    def error_messages(self):
+        return self.q(css='.errorlist>li').text
+
     def input(self, data):
         for name, value in data.items():
-            input_name = self.q(css='input[name="{}"]'.format(name))
-            if input_name.present:
-                input_name.first.fill(value)
+            input_text = self.q(css='input[name="{}"][type="text"]'.format(name))
+            if input_text.present:
+                input_text.first.fill(value)
+                continue
+            input_checkbox = self.q(css='input[name="{}"][type="checkbox"]'.format(name))
+            if input_checkbox.present:
+                input_checkbox_checked = self.q(css='input[name="{}"][type="checkbox"]:checked'.format(name)).present
+                if (value and not input_checkbox_checked) or (not value and input_checkbox_checked):
+                    input_checkbox.first.click()
                 continue
             select_option_value = self.q(css='select[name="{}"]>option[value="{}"]'.format(name, value))
             if select_option_value.present:
@@ -146,9 +168,9 @@ class DjangoAdminAddPage(PageObject):
         self.browser.switch_to_window(self.browser.window_handles[0])
         return self
 
-    def save(self):
+    def save(self, success=True):
         self.q(css='div.submit-row>input[name="_save"]').first.click()
-        return DjangoAdminListPage(self.browser, self.module_name, self.model_name, True).wait_for_page()
+        return DjangoAdminListPage(self.browser, self.module_name, self.model_name, True).wait_for_page() if success else self
 
 
 class DjangoAdminModifyPage(DjangoAdminAddPage):

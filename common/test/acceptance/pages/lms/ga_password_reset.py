@@ -38,6 +38,7 @@ class PasswordResetConfirmPage(PageObject):
         """
         self.q(css='input#new_password1').fill(password1)
         self.q(css='input#new_password2').fill(password2)
+        return self
 
     def submit(self):
         """

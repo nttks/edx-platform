@@ -1,15 +1,14 @@
 from contextlib import contextmanager
 
-from common.test.acceptance.pages.biz.ga_contract import BizContractDetailPage, BizContractPage
-from common.test.acceptance.pages.biz.ga_invitation import BizInvitationPage, BizInvitationConfirmPage
-from common.test.acceptance.pages.lms.ga_dashboard import DashboardPage as GaDashboardPage
+from django.utils.crypto import get_random_string
 
 from ..ga_helpers import GaccoTestMixin, SUPER_USER_INFO
 from ...fixtures.course import CourseFixture
+from ...pages.biz.ga_contract import BizContractDetailPage, BizContractPage
 from ...pages.biz.ga_dashboard import DashboardPage
+from ...pages.biz.ga_invitation import BizInvitationPage, BizInvitationConfirmPage
 from ...pages.biz.ga_w2ui import remove_grid_row_index
-from ...pages.common.logout import LogoutPage
-from ...pages.lms.auto_auth import AutoAuthPage
+from ...pages.lms.ga_dashboard import DashboardPage as GaDashboardPage
 
 
 PLATFORMER_USER_INFO = {
@@ -162,13 +161,21 @@ class GaccoBizTestMixin(GaccoTestMixin):
         self.grant(PLATFORMER_USER_INFO, new_org_info['Organization Name'], 'aggregator', new_aggregator)
         return new_aggregator, new_org_info, new_contracts
 
-    def register_user(self):
-        username = 'test_' + self.unique_id[0:8]
-        return self.switch_to_user({
+    @property
+    def new_password(self):
+        return 'Aa0' + get_random_string(12)
+
+    @property
+    def new_user_info(self):
+        username = 'test_' + get_random_string(12)
+        return {
             'username': username,
-            'password': 'Password123',
+            'password': self.new_password,
             'email': username + '@example.com',
-        })
+        }
+
+    def register_user(self):
+        return self.switch_to_user(self.new_user_info)
 
     def grant(self, operator, organization_name, permission, grant_to_user_info):
         self.switch_to_user(operator)
@@ -228,7 +235,7 @@ class GaccoBizTestMixin(GaccoTestMixin):
         Register invitation code
         """
         BizInvitationPage(self.browser).visit().input_invitation_code(invitation_code).click_register_button()
-        invitation_confirm_page = BizInvitationConfirmPage(self.browser).wait_for_page()
+        invitation_confirm_page = BizInvitationConfirmPage(self.browser, invitation_code).wait_for_page()
         if additional_info:
             for i, additional_name in enumerate(additional_info):
                 invitation_confirm_page.input_additional_info(additional_name, i)

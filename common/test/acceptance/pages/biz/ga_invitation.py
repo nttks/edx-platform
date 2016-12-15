@@ -1,12 +1,12 @@
 """
 Pages for biz invitation
 """
+from bok_choy.page_object import PageObject
+
 from . import BASE_URL
-from .ga_navigation import BizNavPage
-from .ga_w2ui import W2uiMixin
 
 
-class BizInvitationPage(BizNavPage, W2uiMixin):
+class BizInvitationPage(PageObject):
     """
     Invitation page
     """
@@ -41,10 +41,21 @@ class BizInvitationPage(BizNavPage, W2uiMixin):
         return self.q(css="#message-invitation-code").text
 
 
-class BizInvitationConfirmPage(BizNavPage, W2uiMixin):
+class BizInvitationConfirmPage(PageObject):
     """
     Invitation confirm page
     """
+
+    def __init__(self, browser, invitation_code):
+        super(BizInvitationConfirmPage, self).__init__(browser)
+        self.invitation_code = invitation_code
+
+    @property
+    def url(self):
+        return '{base}/biz/invitation/{invitation_code}'.format(
+            base=BASE_URL,
+            invitation_code=self.invitation_code
+        )
 
     def is_browser_on_page(self):
         """

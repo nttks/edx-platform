@@ -38,6 +38,9 @@ class GaccoTestMixin(object):
     RESIGN_CONFIRM_MAIL_SUBJECT = 'How to resign from edX website'
     RESIGN_CONFIRM_MAIL_URL_PATTERN = r'/resign_confirm/(?P<uidb36>[0-9A-Za-z]+)-(?P<token>.+)/'
 
+    PASSWORD_RESET_CONFIRM_MAIL_SUBJECT_PATTERN = u"^Password reset on [^$]+$"
+    PASSWORD_RESET_CONFIRM_MAIL_URL_PATTERN = r'/password_reset_confirm/(?P<uidb36>[0-9A-Za-z]+)-(?P<token>.+)/'
+
     def setup_email_client(self, email_file_path):
         """
         Set up an email client
@@ -63,14 +66,29 @@ class GaccoTestMixin(object):
         self.assertIsNotNone(matches)
         return (matches.groupdict()['uidb36'], matches.groupdict()['token'])
 
+    def assert_email_password_reset(self):
+        """
+        Assert email of password reset.
+        - return uidb36 and token in email body.
+        """
+        email_message = self.email_client.get_latest_message()
+        self.assertIsNotNone(re.match(self.PASSWORD_RESET_CONFIRM_MAIL_SUBJECT_PATTERN, email_message['subject']))
+        matches = re.search(self.PASSWORD_RESET_CONFIRM_MAIL_URL_PATTERN, email_message['body'], re.MULTILINE)
+        self.assertIsNotNone(matches)
+
+        return (matches.groupdict()['uidb36'], matches.groupdict()['token'])
+
     def restart_memcached(self):
         """
         Restart memcached for clear of selected-info on biz.
         """
         self.assertEqual(0, subprocess.call(['sudo', 'service', 'memcached', 'restart']))
 
-    def switch_to_user(self, user_info, course_id=None):
+    def logout(self):
         LogoutPage(self.browser).visit()
+
+    def switch_to_user(self, user_info, course_id=None):
+        self.logout()
         AutoAuthPage(
             self.browser,
             username=user_info['username'],
@@ -91,9 +109,7 @@ class GaccoTestMixin(object):
             'course_id': course_id,
         }).save()
 
-        grid_row = django_admin_list_page.get_row({
-            'Course global setting': global_course_enabled_name
-        })
+        grid_row = django_admin_list_page.last_grid_row
         self.assertIsNotNone(grid_row)
 
         # Logout
@@ -113,6 +129,10 @@ class GaccoTestMixin(object):
 
         # Logout
         LogoutPage(self.browser).visit()
+
+
+class NoEmailFileException(Exception):
+    pass
 
 
 class FilebasedEmailClient(object):
@@ -140,7 +160,7 @@ class FilebasedEmailClient(object):
             if self._count_messages() > 0:
                 return True
             elif time.time() > timeout:
-                raise Exception("Timeout. No email file was found at %s." % self.email_file_path)
+                raise NoEmailFileException("Timeout. No email file was found at %s." % self.email_file_path)
             time.sleep(self.WAIT_TIMEOUT)
 
     def _get_messages_from_file(self, file):

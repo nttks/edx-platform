@@ -62,13 +62,13 @@ class BizCourseAboutTest(WebAppTest, GaccoBizTestMixin):
         # Case 67
         # Register invitation code
         BizInvitationPage(self.browser).visit().input_invitation_code(invitation_code).click_register_button()
-        BizInvitationConfirmPage(self.browser).wait_for_page()
+        BizInvitationConfirmPage(self.browser, invitation_code).wait_for_page()
         CourseAboutPage(self.browser, course._course_key).visit()
 
         # Case 68
         # Register invitation code and additional info
         BizInvitationPage(self.browser).visit().input_invitation_code(invitation_code).click_register_button()
-        BizInvitationConfirmPage(self.browser).wait_for_page().input_additional_info(u'マーケティング部', 0) \
+        BizInvitationConfirmPage(self.browser, invitation_code).wait_for_page().input_additional_info(u'マーケティング部', 0) \
             .click_register_button()
         DashboardPage(self.browser).wait_for_page()
         CourseAboutPage(self.browser, course._course_key).visit()

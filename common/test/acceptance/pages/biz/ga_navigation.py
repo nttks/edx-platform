@@ -141,8 +141,10 @@ class BizNavPage(PageObject):
         return BizSurveyPage(self.browser).wait_for_page()
 
     def click_register_students(self):
+        # Import in func for cross reference
+        from .ga_contract_operation import BizRegisterStudentsPage
+
         self.q(css='nav.side-menu>ul.menu>li>a[href="/biz/contract_operation/register_students"]').first.click()
-        from common.test.acceptance.pages.biz.ga_contract_operation import BizRegisterStudentsPage
         return BizRegisterStudentsPage(self.browser).wait_for_page()
 
     def click_score(self):
