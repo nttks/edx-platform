@@ -22,7 +22,7 @@ class PersonalInfoFactory(DjangoModelFactory):
     free_entry_field_2 = factory.Sequence(lambda n: 'Free Entry Field 2 {0}\r\nline2\r\nline3'.format(n))
     free_entry_field_3 = factory.Sequence(lambda n: 'Free Entry Field 3 {0}\rline2\rline3'.format(n))
     free_entry_field_4 = factory.Sequence(lambda n: 'Free Entry Field 4 {0}\r\nline2\r\nline3'.format(n))
-    free_entry_field_5 = factory.Sequence(lambda n: 'Free Entry Field 5 {0}\nline2\nline3'.format(n))
+    free_entry_field_5 = None
 
 
 class PersonalInfoSettingFactory(DjangoModelFactory):

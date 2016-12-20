@@ -94,7 +94,6 @@ class AnalyticsTest(ModuleStoreTestCase):
             free_entry_field_2_title='bbb',
             free_entry_field_3_title='ccc',
             free_entry_field_4_title='ddd',
-            free_entry_field_5_title='eee',
         ))
 
         # Create user and enrollement and order
@@ -347,7 +346,6 @@ class AnalyticsForPaidCourseTest(ModuleStoreTestCase):
             free_entry_field_2_title='bbb',
             free_entry_field_3_title='ccc',
             free_entry_field_4_title='ddd',
-            free_entry_field_5_title='eee',
         ))
 
         # Create user and enrollement and order
