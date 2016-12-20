@@ -1,17 +1,21 @@
 /**
- * View for the advanced course checkout ticket page
+ * View for the advanced course ticket and paid course checkout page
  */
 var edx = edx || {};
 
 (function($, _, Backbone){
     'use strict';
 
-    edx.ga_advanced_course = edx.ga_advanced_course || {};
+    edx.ga_shoppingcart = edx.ga_shoppingcart || {};
 
-    edx.ga_advanced_course.AdvancedF2FCourseCheckoutView = Backbone.View.extend({
+    edx.ga_shoppingcart.CheckoutView = Backbone.View.extend({
 
         getOrderId: function() {
             return $('#order-id').val();
+        },
+
+        getPageUrlId: function() {
+            return $('#page-url').val();
         },
 
         checkout: function() {
@@ -21,14 +25,14 @@ var edx = edx || {};
 
             // Create the order for the amount
             $.ajax({
-                url: '/advanced_course/checkout/',
+                url: this.getPageUrlId(),
                 type: 'POST',
                 headers: {
                     'X-CSRFToken': $.cookie('csrftoken')
                 },
                 data: postData,
                 context: this,
-                success: this.handleCreateOrderResponse,
+                success: this.handleCreateOrderResponse
             });
         },
 
@@ -49,9 +53,10 @@ var edx = edx || {};
             });
 
             form.submit();
-        },
+        }
     });
 
-    new edx.ga_advanced_course.AdvancedF2FCourseCheckoutView().checkout();
+    new edx.ga_shoppingcart.CheckoutView().checkout();
 
 })(jQuery, _, Backbone);
+

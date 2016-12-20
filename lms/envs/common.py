@@ -1701,6 +1701,9 @@ CELERY_CREATE_MISSING_QUEUES = True
 CELERY_DEFAULT_QUEUE = DEFAULT_PRIORITY_QUEUE
 CELERY_DEFAULT_ROUTING_KEY = DEFAULT_PRIORITY_QUEUE
 
+# pdfgen uses the same queue as default, but it can be overwritten by json configuration
+PDFGEN_CELERY_DEFAULT_QUEUE = CELERY_DEFAULT_QUEUE
+
 CELERY_QUEUES = {
     HIGH_PRIORITY_QUEUE: {},
     LOW_PRIORITY_QUEUE: {},
@@ -2002,6 +2005,9 @@ INSTALLED_APPS = (
 
     # Management optional function
     'openedx.core.djangoapps.ga_optional',
+
+    # Form Tools
+    'formtools',
 )
 
 # Migrations which are not in the standard module "migrations"

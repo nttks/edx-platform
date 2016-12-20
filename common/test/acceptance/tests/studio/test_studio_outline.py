@@ -5,6 +5,7 @@ import json
 from datetime import datetime, timedelta
 import itertools
 from pytz import UTC
+from unittest import skip
 from bok_choy.promise import EmptyPromise
 from nose.plugins.attrib import attr
 
@@ -1763,6 +1764,7 @@ class DeprecationWarningMessageTest(CourseOutlineTest):
         )
 
 
+@skip('gacco use ga_self_paced')
 @attr('shard_4')
 class SelfPacedOutlineTest(CourseOutlineTest):
     """Test the course outline for a self-paced course."""

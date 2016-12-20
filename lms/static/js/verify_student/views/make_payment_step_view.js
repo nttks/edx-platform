@@ -195,15 +195,19 @@ var edx = edx || {};
             $( 'input', form ).remove();
 
             form.attr( 'action', paymentData.payment_page_url );
-            form.attr( 'method', 'POST' );
 
-            _.each( paymentData.payment_form_data, function( value, key ) {
-                $('<input>').attr({
-                    type: 'hidden',
-                    name: key,
-                    value: value
-                }).appendTo(form);
-            });
+            if (paymentData.method === 'GET') {
+                form.attr( 'method', paymentData.method );
+            } else {
+                form.attr( 'method', 'POST' );
+                _.each( paymentData.payment_form_data, function( value, key ) {
+                    $('<input>').attr({
+                        type: 'hidden',
+                        name: key,
+                        value: value
+                    }).appendTo(form);
+                });
+            }
 
             // Marketing needs a way to tell the difference between users
             // leaving for the payment processor and users dropping off on

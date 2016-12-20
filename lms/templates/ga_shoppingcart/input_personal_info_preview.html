@@ -1,0 +1,79 @@
+<%inherit file="../main.html" />
+<%namespace name='static' file='/static_content.html'/>
+
+<%!
+    import cgi
+    import re
+
+    from django.core.urlresolvers import reverse
+    from django.utils.translation import pgettext, ugettext as _
+    from openedx.core.lib.ga_datetime_utils import to_timezone
+
+    def br(text):
+        return re.sub('\r\n|\r|\n', '<br>', cgi.escape(text))
+%>
+
+<%block name="pagetitle">${_("Confirm your personal information")}</%block>
+
+<%block name="bodyclass">ticket option</%block>
+
+<%block name="headextra"><meta name="format-detection" content="telephone=no" /></%block>
+
+<div class="ticket_page_wrap">
+    <ul id="breadcrumb">
+        <li><span><i class="fa fa-shopping-cart"></i><span class="text">${pgettext("payment_breadcrumb", "Order")}</span></span></li>
+        <li class="active"><span><i class="fa fa-pencil-square-o"></i><span class="text">${pgettext("payment_breadcrumb", "Information")}</span></span></li>
+        <li><span><i class="fa fa-credit-card"></i><span class="text">${pgettext("payment_breadcrumb", "Payment")}</span></span></li>
+        <li><span><i class="fa fa-eye"></i><span class="text">${pgettext("payment_breadcrumb", "Confirm")}</span></span></li>
+        <li><span><i class="fa fa-check"></i><span class="text">${pgettext("payment_breadcrumb", "Complete")}</span></span></li>
+    </ul>
+    <h2>${_("Confirm your personal information")}</h2>
+
+    % if messages:
+        <div class="purchase_error">
+            % for message in messages:
+                <p>${message}</p>
+            % endfor
+        </div>
+    % endif
+
+    <section class="section">
+        <div class="course_select_area clear">
+            <p>${_("Please confirm your information bellow and click \"Next\"<br>DO NOT PRESS \"Browser Back Button.\" Please use the \"Back\" button on the bottom of this screen.")}</p>
+        </div>
+        <div class="item_area clear">
+            <form method="POST" id="personal_input_preview_form">
+                <ul class="clear">
+                    % for field in form:
+                    <li class="${field.name}">
+                        ${field.as_hidden()}
+                        % if field.name != 'gaccatz_check':
+                            <label for="${field.name}">
+                                ${_(field.label)}
+                            </label>
+                            <span>
+                                ${field.data | br}
+                            </span>
+                        % endif
+                    </li>
+                    % endfor
+                </ul>
+                <input type="hidden" name="csrfmiddlewaretoken" value="${csrf_token}" />
+                <input type="hidden" name="${stage_field}" value="2" />
+                <input type="hidden" name="${hash_field}" value="${hash_value}" />
+                <input class="button" type="submit" name="submit" value=${pgettext("personal_input_form", "Next")}>
+            </form>
+
+            <form method="POST" id="cancel_form">
+                % for field in form:
+                    ${field.as_hidden()}
+                % endfor
+                <input type="hidden" name="cancel" value="true" />
+                <input type="hidden" name="csrfmiddlewaretoken" value="${csrf_token}" />
+                <input type="hidden" name="${stage_field}" value="1" />
+                <input class="cancel-button" type="submit" name="back" value=${pgettext("personal_input_form", "Back")}>
+            </form>
+        </div>
+    </section>
+</div>
+

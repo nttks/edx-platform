@@ -150,6 +150,16 @@ msgstr "{email_address}宛に手続き用のメールを送信しました。メ
 
 #-#-#-#-#  Original messages in gacco  #-#-#-#-#
 
+#: lms/static/js/courseware/certificates_api.js
+msgid "We're working on it..."
+msgstr "修了書発行中..."
+
+#: lms/static/js/courseware/certificates_api.js
+msgid ""
+"We're creating your certificate. You can keep working in your courses and a "
+"link to it will appear here and on your Dashboard when it is ready."
+msgstr "修了証を発行中です。今しばらくお待ちください。"
+
 #: pollxblock/static/js/src/pollxblock.js
 msgid "Change your vote"
 msgstr "選びなおす"
@@ -295,6 +305,10 @@ msgstr "コース略称の入力が必要です。"
 msgid "Teacher Name is required input."
 msgstr "講師名の入力が必要です。"
 
+#: cms/static/js/views/settings/main.js
+msgid "Course pacing cannot be changed once a course has started."
+msgstr "講座の種類は開講するまでは変更できますが、開講後の変更はできませんのでご注意ください。"
+
 #: lms/templates/verify_student/make_payment_step.underscore
 msgid "*Your purchase could not be completed yet."
 msgstr "※受講登録はまだ完了していません。"
@@ -315,6 +329,11 @@ msgstr "戻る"
 msgctxt "payment_breadcrumb"
 msgid "Order"
 msgstr "申込内容選択"
+
+#: lms/templates/verify_student/make_payment_step.underscore
+msgctxt "payment_breadcrumb"
+msgid "Information"
+msgstr "お客様情報入力"
 
 #: lms/templates/verify_student/make_payment_step.underscore
 msgctxt "payment_breadcrumb"
@@ -351,16 +370,20 @@ msgstr "講座の受講登録は完了しています。"
 msgid "We send a confirmation email to you."
 msgstr "この画面は、マイページからいつでも確認いただけます。また、同様の情報をメールでもお送りしています。"
 
+#: cms/templates/js/certificate-editor.underscore
+msgid "Course Title"
+msgstr "講座名"
+
 #: lms/templates/verify_student/payment_confirmation_step.underscore.underscore
-msgid "Order date"
+msgid "Order Date"
 msgstr "購入日時"
 
 #: lms/templates/verify_student/payment_confirmation_step.underscore.underscore
-msgid "Payment method"
+msgid "Payment Method"
 msgstr "お支払い方法"
 
 #: lms/templates/verify_student/payment_confirmation_step.underscore.underscore
-msgid "Payment amount"
+msgid "Payment Amount"
 msgstr "お支払い金額"
 
 #: lms/templates/verify_student/payment_confirmation_step.underscore.underscore
@@ -422,3 +445,31 @@ msgstr ""
 msgid "There was {strong_start}{num_errors} validation error{strong_end} while trying to save the course settings in the database."
 msgid_plural "There were {strong_start}{num_errors} validation errors{strong_end} while trying to save the course settings in the database."
 msgstr[0] "{strong_start}入力エラーが{num_errors}件{strong_end}あります。"
+
+#: cms/templates/js/course-outline.underscore
+msgid "After %(date)s"
+msgstr "%(date)s 以降"
+
+#: cms/templates/js/course-outline.underscore
+msgid "After %(days)s days %(hours)s hours %(minutes)s minutes from the enrollment start date and time"
+msgstr "受講開始日時から%(days)s日%(hours)s時間%(minutes)s分後"
+
+#: cms/templates/js/individual-release-days-editor.underscore
+msgid "Individual Release Days"
+msgstr "個別リリース日数"
+
+#: cms/templates/js/individual-release-days-editor.underscore
+msgid "Individual Due Days:"
+msgstr "個別期限日数："
+
+#: cms/templates/js/individual-release-days-editor.underscore
+msgid "Days:"
+msgstr "日数："
+
+#: cms/templates/js/individual-release-days-editor.underscore
+msgid "Hours:"
+msgstr "時："
+
+#: cms/templates/js/individual-release-days-editor.underscore
+msgid "Minutes:"
+msgstr "分："

@@ -536,6 +536,9 @@ p, ul, ol, dl {
 
 // +UI - Misc
 // ====================
+body.self-paced {
+  background: #e9f3eb;
+}
 hr.divide {
   @extend %cont-text-sr;
 }

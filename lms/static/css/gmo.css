@@ -106,11 +106,12 @@ h3 {
   list-style: none;
   display: inline-block;
   width: 100%;
+  margin-left: 12px;
 }
 
 #breadcrumb li {
   float: left;
-  width: 25%;
+  width: 20%;
 }
 
 #breadcrumb li span.text {
@@ -376,11 +377,12 @@ h3 {
   vertical-align: middle;
 }
 
-#card-information img.visa { width: 40px; }
-#card-information img.master { width: 50px; }
-#card-information img.diners { width: 35px; }
-#card-information img.amex { width: 30px; }
-#card-information img.jcb { width: 30px; }
+/* Specify height for IE */
+#card-information img.visa { width: 40px; height: 25.4844px; }
+#card-information img.master { width: 50px; height: 30.6875px; }
+#card-information img.diners { width: 35px; height: 32.8125px; }
+#card-information img.amex { width: 30px; height: 29.5938px; }
+#card-information img.jcb { width: 30px; height: 37.1406px; }
 
 #card-form {
   padding: 20px 0;
@@ -574,7 +576,9 @@ h3 {
   #card-form .input.card-number {
     width: 90%;
   }
+}
 
+@media only screen and (max-width: 840px) {
   #breadcrumb span.text {
     display: none;
   }

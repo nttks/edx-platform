@@ -40,7 +40,10 @@ define([
                 course_canonical_name: 'Course_Canonical_Name',
                 course_contents_provider: 'Course_Contents_Provider',
                 teacher_name: 'Teacher_Name',
-                course_span: 'Course_Span'
+                course_span: 'Course_Span',
+                individual_end_days: null,
+                individual_end_hours: null,
+                individual_end_minutes: null
             },
             mockSettingsPage = readFixtures('mock/mock-settings-page.underscore');
 
@@ -220,6 +223,81 @@ define([
             expect(this.model.get('language')).toEqual('');
             this.view.saveView();
             AjaxHelpers.expectJsonRequest(requests, 'POST', urlRoot, modelData);
+        });
+
+        describe('Input invalid days, hours, minutes', function() {
+            var daysErrorMessage = 'Please enter an integer between 0 and 999.',
+                hoursErrorMessage = 'Please enter an integer between 0 and 23.',
+                minutesErrorMessage = 'Please enter an integer between 0 and 59.';
+
+            beforeEach(function() {
+                this.model.set({self_paced: true});
+            });
+
+            it('Input non integer individual_end_days should result in error', function () {
+                this.view.$el.find('#individual-course-end-days').val('a').trigger('change');
+                expect(this.view.$el.find('span.message-error')).toContainText(daysErrorMessage);
+                this.view.$el.find('#individual-course-end-days').val('1.0').trigger('change');
+                expect(this.view.$el.find('span.message-error')).toContainText(daysErrorMessage);
+                this.view.$el.find('#individual-course-end-days').val(0).trigger('change');
+                expect(this.view.$el.find('span.message-error')).not.toContainText(daysErrorMessage);
+            });
+
+            it('Input negative individual_end_days should result in error', function () {
+                this.view.$el.find('#individual-course-end-days').val(0).trigger('change');
+                expect(this.view.$el.find('span.message-error')).not.toContainText(daysErrorMessage);
+                this.view.$el.find('#individual-course-end-days').val(-1).trigger('change');
+                expect(this.view.$el.find('span.message-error')).toContainText(daysErrorMessage);
+            });
+
+            it('Input too big individual_end_days should result in error', function () {
+                this.view.$el.find('#individual-course-end-days').val(999).trigger('change');
+                expect(this.view.$el.find('span.message-error')).not.toContainText(daysErrorMessage);
+                this.view.$el.find('#individual-course-end-days').val(1000).trigger('change');
+                expect(this.view.$el.find('span.message-error')).toContainText(daysErrorMessage);
+            });
+
+            it('Input non integer individual_end_hours should result in error', function () {
+                this.view.$el.find('#individual-course-end-hours').val('a').trigger('change');
+                expect(this.view.$el.find('span.message-error')).toContainText(hoursErrorMessage);
+                this.view.$el.find('#individual-course-end-hours').val('1.0').trigger('change');
+                expect(this.view.$el.find('span.message-error')).toContainText(hoursErrorMessage);
+            });
+
+            it('Input negative individual_end_hours should result in error', function () {
+                this.view.$el.find('#individual-course-end-hours').val(0).trigger('change');
+                expect(this.view.$el.find('span.message-error')).not.toContainText(hoursErrorMessage);
+                this.view.$el.find('#individual-course-end-hours').val(-1).trigger('change');
+                expect(this.view.$el.find('span.message-error')).toContainText(hoursErrorMessage);
+            });
+
+            it('Input too big individual_end_hours should result in error', function () {
+                this.view.$el.find('#individual-course-end-hours').val(23).trigger('change');
+                expect(this.view.$el.find('span.message-error')).not.toContainText(hoursErrorMessage);
+                this.view.$el.find('#individual-course-end-hours').val(24).trigger('change');
+                expect(this.view.$el.find('span.message-error')).toContainText(hoursErrorMessage);
+            });
+
+            it('Input non integer individual_end_minutes should result in error', function () {
+                this.view.$el.find('#individual-course-end-minutes').val('a').trigger('change');
+                expect(this.view.$el.find('span.message-error')).toContainText(minutesErrorMessage);
+                this.view.$el.find('#individual-course-end-minutes').val('1.0').trigger('change');
+                expect(this.view.$el.find('span.message-error')).toContainText(minutesErrorMessage);
+            });
+
+            it('Input negative individual_end_minutes should result in error', function () {
+                this.view.$el.find('#individual-course-end-minutes').val(0).trigger('change');
+                expect(this.view.$el.find('span.message-error')).not.toContainText(minutesErrorMessage);
+                this.view.$el.find('#individual-course-end-minutes').val(-1).trigger('change');
+                expect(this.view.$el.find('span.message-error')).toContainText(minutesErrorMessage);
+            });
+
+            it('Input too big individual_end_minutes should result in error', function () {
+                this.view.$el.find('#individual-course-end-minutes').val(59).trigger('change');
+                expect(this.view.$el.find('span.message-error')).not.toContainText(minutesErrorMessage);
+                this.view.$el.find('#individual-course-end-minutes').val(60).trigger('change');
+                expect(this.view.$el.find('span.message-error')).toContainText(minutesErrorMessage);
+            });
         });
 
     });

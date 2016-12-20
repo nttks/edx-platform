@@ -11,6 +11,8 @@ import unittest
 from contextlib import contextmanager
 from itertools import chain
 
+from django.utils.crypto import get_random_string
+
 from email import message_from_string
 from email.header import decode_header
 
@@ -97,6 +99,22 @@ class GaccoTestMixin(object):
             course_id=course_id
         ).visit()
         return user_info
+
+    @property
+    def new_password(self):
+        return 'Aa0' + get_random_string(12)
+
+    @property
+    def new_user_info(self):
+        username = 'test_' + get_random_string(12)
+        return {
+            'username': username,
+            'password': self.new_password,
+            'email': username + '@example.com',
+        }
+
+    def register_user(self):
+        return self.switch_to_user(self.new_user_info)
 
     @contextmanager
     def setup_global_course(self, course_id):

@@ -35,6 +35,7 @@ from xblock_django.user_service import DjangoXBlockUserService
 from opaque_keys.edx.keys import UsageKey, CourseKey
 from opaque_keys.edx.locations import Location
 from xmodule.partitions.partitions import Group, UserPartition
+from util.date_utils import get_default_time_display
 
 
 class ItemTest(CourseTestCase):
@@ -1621,6 +1622,138 @@ class TestXBlockInfo(ItemTest):
 
             self.assertEqual(xblock_info['start'], DEFAULT_START_DATE.strftime('%Y-%m-%dT%H:%M:%SZ'))
 
+    def test_self_paced_chapter_xblock_info(self):
+        now = datetime.now(UTC)
+        self.course.start = now
+        self.course.self_paced = True
+        self.update_course(self.course, self.user.id)
+
+        chapter = modulestore().get_item(self.chapter.location)
+        chapter.individual_start_days = 1
+        chapter.individual_start_hours = 2
+        chapter.individual_start_minutes = 3
+        # Set start but this date does not have been used
+        chapter.start = DEFAULT_START_DATE
+        self.store.update_item(chapter, self.user.id)
+
+        xblock_info = create_xblock_info(
+            chapter,
+            include_child_info=True,
+            include_children_predicate=ALWAYS,
+        )
+        self.validate_chapter_xblock_info(xblock_info)
+        self.assertEqual(xblock_info['individual_start_days'], 1)
+        self.assertEqual(xblock_info['individual_start_hours'], 2)
+        self.assertEqual(xblock_info['individual_start_minutes'], 3)
+        self.assertFalse(xblock_info['individual_released_to_students'])
+        # Verify that course start date has been used. Chapter start date has not been used.
+        self.assertEqual(
+            xblock_info['individual_release_date'],
+            get_default_time_display(now + timedelta(days=1, hours=2, minutes=3))
+        )
+
+    def test_self_paced_sequential_xblock_info(self):
+        self.course.self_paced = True
+        self.update_course(self.course, self.user.id)
+
+        sequential = modulestore().get_item(self.sequential.location)
+        sequential.individual_start_days = 1
+        sequential.individual_start_hours = 2
+        sequential.individual_start_minutes = 3
+        sequential.individual_due_days = 4
+        sequential.individual_due_hours = 5
+        sequential.individual_due_minutes = 6
+        self.store.update_item(sequential, self.user.id)
+
+        xblock_info = create_xblock_info(
+            sequential,
+            include_child_info=True,
+            include_children_predicate=ALWAYS,
+        )
+        self.validate_sequential_xblock_info(xblock_info)
+        self.assertEqual(xblock_info['individual_start_days'], 1)
+        self.assertEqual(xblock_info['individual_start_hours'], 2)
+        self.assertEqual(xblock_info['individual_start_minutes'], 3)
+        self.assertFalse(xblock_info['individual_released_to_students'])
+        self.assertEqual(
+            xblock_info['individual_release_date'],
+            get_default_time_display(DEFAULT_START_DATE + timedelta(days=1, hours=2, minutes=3))
+        )
+        self.assertEqual(xblock_info['individual_due_days'], 4)
+        self.assertEqual(xblock_info['individual_due_hours'], 5)
+        self.assertEqual(xblock_info['individual_due_minutes'], 6)
+
+    @ddt.data(
+        (1, 2, 3), (1, None, None), (None, 1, None), (None, None, 1), (None, None, None)
+    )
+    @ddt.unpack
+    def test_self_paced_individual_release_date(self, days, hours, minutes):
+        now = datetime.now().replace(tzinfo=UTC)
+        self.course.start = now
+        self.course.self_paced = True
+        self.update_course(self.course, self.user.id)
+
+        chapter = modulestore().get_item(self.chapter.location)
+        chapter.start = now
+        chapter.individual_start_days = days
+        chapter.individual_start_hours = hours
+        chapter.individual_start_minutes = minutes
+
+        xblock_info = create_xblock_info(
+            chapter,
+            include_child_info=True,
+            include_children_predicate=ALWAYS,
+        )
+
+        if days is None and hours is None and minutes is None:
+            self.assertEqual(xblock_info['individual_release_date'], '')
+        else:
+            self.assertEqual(
+                xblock_info['individual_release_date'],
+                get_default_time_display(now + timedelta(days=days or 0, hours=hours or 0, minutes=minutes or 0))
+            )
+
+    @ddt.data(
+        (1, 2, 3), (1, None, None), (None, 1, None), (None, None, 1), (None, None, None)
+    )
+    @ddt.unpack
+    def test_instructor_paced_individual_release_date(self, days, hours, minutes):
+        chapter = modulestore().get_item(self.chapter.location)
+        chapter.individual_start_days = days
+        chapter.individual_start_hours = hours
+        chapter.individual_start_minutes = minutes
+
+        xblock_info = create_xblock_info(
+            chapter,
+            include_child_info=True,
+            include_children_predicate=ALWAYS,
+        )
+
+        self.assertEqual(xblock_info['individual_release_date'], '')
+
+    @ddt.data(
+        (False, -1), (False, 0), (True, 1)
+    )
+    @ddt.unpack
+    def test_self_paced_individual_release_date_to_students(self, expected, delay):
+        now = datetime.now().replace(tzinfo=UTC, microsecond=0)
+        self.course.start = now
+        self.course.self_paced = True
+        self.update_course(self.course, self.user.id)
+
+        chapter = modulestore().get_item(self.chapter.location)
+        # Start of chapter should be ignored
+        chapter.start = now + timedelta(days=1)
+        chapter.individual_start_days = 0
+
+        with patch('django.utils.timezone.now', return_value=now + timedelta(seconds=delay)):
+            xblock_info = create_xblock_info(
+                chapter,
+                include_child_info=True,
+                include_children_predicate=ALWAYS,
+            )
+            self.assertEqual(xblock_info['individual_released_to_students'], expected)
+
     def validate_course_xblock_info(self, xblock_info, has_child_info=True, course_outline=False):
         """
         Validate that the xblock info is correct for the test course.
@@ -1848,6 +1981,7 @@ class TestLibraryXBlockCreation(ItemTest):
         self.assertFalse(lib.children)
 
 
+@ddt.ddt
 class TestXBlockPublishingInfo(ItemTest):
     """
     Unit tests for XBlock's outline handling.
@@ -1906,6 +2040,23 @@ class TestXBlockPublishingInfo(ItemTest):
         xblock.start = start
         self.store.update_item(xblock, self.user.id)
 
+    def _set_individual_release_days(self, location, start, days=None, hours=None, minutes=None):
+        """
+        Sets the individual release days for the specified xblock.
+        """
+        xblock = modulestore().get_item(location)
+        # start of xblock should be ignored
+        xblock.start = DEFAULT_START_DATE
+        if days:
+            xblock.individual_start_days = days
+        if hours:
+            xblock.individual_start_hours = hours
+        if minutes:
+            xblock.individual_start_minutes = minutes
+        self.store.update_item(xblock, self.user.id)
+        self.course.start = start.replace(microsecond=0)
+        self.update_course(self.course, self.user.id)
+
     def _enable_staff_only(self, location):
         """
         Enables staff only for the specified xblock.
@@ -1921,6 +2072,11 @@ class TestXBlockPublishingInfo(ItemTest):
         xblock = modulestore().get_item(location)
         xblock.display_name = display_name
         self.store.update_item(xblock, self.user.id)
+
+    def _setup_self_paced(self, self_paced):
+        if self_paced:
+            self.course.self_paced = True
+            self.update_course(self.course, self.user.id)
 
     def _verify_xblock_info_state(self, xblock_info, xblock_info_field, expected_state, path=None, should_equal=True):
         """
@@ -1956,52 +2112,76 @@ class TestXBlockPublishingInfo(ItemTest):
         """
         self._verify_xblock_info_state(xblock_info, 'has_explicit_staff_lock', expected_state, path, should_equal)
 
-    def test_empty_chapter(self):
+    @ddt.data(True, False)
+    def test_empty_chapter(self, self_paced):
+        self._setup_self_paced(self_paced)
         empty_chapter = self._create_child(self.course, 'chapter', "Empty Chapter")
         xblock_info = self._get_xblock_info(empty_chapter.location)
         self._verify_visibility_state(xblock_info, VisibilityState.unscheduled)
 
-    def test_empty_sequential(self):
+    @ddt.data(True, False)
+    def test_empty_sequential(self, self_paced):
+        self._setup_self_paced(self_paced)
         chapter = self._create_child(self.course, 'chapter', "Test Chapter")
         self._create_child(chapter, 'sequential', "Empty Sequential")
         xblock_info = self._get_xblock_info(chapter.location)
         self._verify_visibility_state(xblock_info, VisibilityState.unscheduled)
         self._verify_visibility_state(xblock_info, VisibilityState.unscheduled, path=self.FIRST_SUBSECTION_PATH)
 
-    def test_published_unit(self):
+    @ddt.data(True, False)
+    def test_published_unit(self, self_paced):
         """
         Tests the visibility state of a published unit with release date in the future.
         """
+        self._setup_self_paced(self_paced)
         chapter = self._create_child(self.course, 'chapter', "Test Chapter")
         sequential = self._create_child(chapter, 'sequential', "Test Sequential")
         self._create_child(sequential, 'vertical', "Published Unit", publish_item=True)
         self._create_child(sequential, 'vertical', "Staff Only Unit", staff_only=True)
-        self._set_release_date(chapter.location, datetime.now(UTC) + timedelta(days=1))
+        if self_paced:
+            self._set_individual_release_days(
+                chapter.location,
+                datetime.now(UTC) - timedelta(days=1, hours=1, minutes=1),
+                days=1, hours=1, minutes=2
+            )
+        else:
+            self._set_release_date(chapter.location, datetime.now(UTC) + timedelta(days=1))
         xblock_info = self._get_xblock_info(chapter.location)
         self._verify_visibility_state(xblock_info, VisibilityState.ready)
         self._verify_visibility_state(xblock_info, VisibilityState.ready, path=self.FIRST_SUBSECTION_PATH)
         self._verify_visibility_state(xblock_info, VisibilityState.ready, path=self.FIRST_UNIT_PATH)
         self._verify_visibility_state(xblock_info, VisibilityState.staff_only, path=self.SECOND_UNIT_PATH)
 
-    def test_released_unit(self):
+    @ddt.data(True, False)
+    def test_released_unit(self, self_paced):
         """
         Tests the visibility state of a published unit with release date in the past.
         """
+        self._setup_self_paced(self_paced)
         chapter = self._create_child(self.course, 'chapter', "Test Chapter")
         sequential = self._create_child(chapter, 'sequential', "Test Sequential")
         self._create_child(sequential, 'vertical', "Published Unit", publish_item=True)
         self._create_child(sequential, 'vertical', "Staff Only Unit", staff_only=True)
-        self._set_release_date(chapter.location, datetime.now(UTC) - timedelta(days=1))
+        if self_paced:
+            self._set_individual_release_days(
+                chapter.location,
+                datetime.now(UTC) - timedelta(days=1, hours=1, minutes=1),
+                days=1, hours=1, minutes=1
+            )
+        else:
+            self._set_release_date(chapter.location, datetime.now(UTC) - timedelta(days=1))
         xblock_info = self._get_xblock_info(chapter.location)
         self._verify_visibility_state(xblock_info, VisibilityState.live)
         self._verify_visibility_state(xblock_info, VisibilityState.live, path=self.FIRST_SUBSECTION_PATH)
         self._verify_visibility_state(xblock_info, VisibilityState.live, path=self.FIRST_UNIT_PATH)
         self._verify_visibility_state(xblock_info, VisibilityState.staff_only, path=self.SECOND_UNIT_PATH)
 
-    def test_unpublished_changes(self):
+    @ddt.data(True, False)
+    def test_unpublished_changes(self, self_paced):
         """
         Tests the visibility state of a published unit with draft (unpublished) changes.
         """
+        self._setup_self_paced(self_paced)
         chapter = self._create_child(self.course, 'chapter', "Test Chapter")
         sequential = self._create_child(chapter, 'sequential', "Test Sequential")
         unit = self._create_child(sequential, 'vertical', "Published Unit", publish_item=True)
@@ -2039,10 +2219,12 @@ class TestXBlockPublishingInfo(ItemTest):
         # Finally verify the state of the chapter
         self._verify_visibility_state(xblock_info, VisibilityState.ready)
 
-    def test_staff_only_section(self):
+    @ddt.data(True, False)
+    def test_staff_only_section(self, self_paced):
         """
         Tests that an explicitly staff-locked section and all of its children are visible to staff only.
         """
+        self._setup_self_paced(self_paced)
         chapter = self._create_child(self.course, 'chapter', "Test Chapter", staff_only=True)
         sequential = self._create_child(chapter, 'sequential', "Test Sequential")
         vertical = self._create_child(sequential, 'vertical', "Unit")
@@ -2059,10 +2241,12 @@ class TestXBlockPublishingInfo(ItemTest):
         add_container_page_publishing_info(vertical, vertical_info)
         self.assertEqual(_xblock_type_and_display_name(chapter), vertical_info["staff_lock_from"])
 
-    def test_no_staff_only_section(self):
+    @ddt.data(True, False)
+    def test_no_staff_only_section(self, self_paced):
         """
         Tests that a section with a staff-locked subsection and a visible subsection is not staff locked itself.
         """
+        self._setup_self_paced(self_paced)
         chapter = self._create_child(self.course, 'chapter', "Test Chapter")
         self._create_child(chapter, 'sequential', "Test Visible Sequential")
         self._create_child(chapter, 'sequential', "Test Staff Locked Sequential", staff_only=True)
@@ -2071,11 +2255,13 @@ class TestXBlockPublishingInfo(ItemTest):
         self._verify_visibility_state(xblock_info, VisibilityState.staff_only, path=[0], should_equal=False)
         self._verify_visibility_state(xblock_info, VisibilityState.staff_only, path=[1])
 
-    def test_staff_only_subsection(self):
+    @ddt.data(True, False)
+    def test_staff_only_subsection(self, self_paced):
         """
         Tests that an explicitly staff-locked subsection and all of its children are visible to staff only.
         In this case the parent section is also visible to staff only because all of its children are staff only.
         """
+        self._setup_self_paced(self_paced)
         chapter = self._create_child(self.course, 'chapter', "Test Chapter")
         sequential = self._create_child(chapter, 'sequential', "Test Sequential", staff_only=True)
         vertical = self._create_child(sequential, 'vertical', "Unit")
@@ -2092,10 +2278,12 @@ class TestXBlockPublishingInfo(ItemTest):
         add_container_page_publishing_info(vertical, vertical_info)
         self.assertEqual(_xblock_type_and_display_name(sequential), vertical_info["staff_lock_from"])
 
-    def test_no_staff_only_subsection(self):
+    @ddt.data(True, False)
+    def test_no_staff_only_subsection(self, self_paced):
         """
         Tests that a subsection with a staff-locked unit and a visible unit is not staff locked itself.
         """
+        self._setup_self_paced(self_paced)
         chapter = self._create_child(self.course, 'chapter', "Test Chapter")
         sequential = self._create_child(chapter, 'sequential', "Test Sequential")
         self._create_child(sequential, 'vertical', "Unit")
@@ -2105,7 +2293,9 @@ class TestXBlockPublishingInfo(ItemTest):
         self._verify_visibility_state(xblock_info, VisibilityState.staff_only, self.FIRST_UNIT_PATH, should_equal=False)
         self._verify_visibility_state(xblock_info, VisibilityState.staff_only, self.SECOND_UNIT_PATH)
 
-    def test_staff_only_unit(self):
+    @ddt.data(True, False)
+    def test_staff_only_unit(self, self_paced):
+        self._setup_self_paced(self_paced)
         chapter = self._create_child(self.course, 'chapter', "Test Chapter")
         sequential = self._create_child(chapter, 'sequential', "Test Sequential")
         vertical = self._create_child(sequential, 'vertical', "Unit", staff_only=True)
@@ -2147,10 +2337,12 @@ class TestXBlockPublishingInfo(ItemTest):
         self._verify_visibility_state(xblock_info, VisibilityState.live, path=self.FIRST_UNIT_PATH)
         self._verify_visibility_state(xblock_info, VisibilityState.staff_only, path=self.SECOND_UNIT_PATH)
 
-    def test_locked_section_staff_only_message(self):
+    @ddt.data(True, False)
+    def test_locked_section_staff_only_message(self, self_paced):
         """
         Tests that a locked section has a staff only message and its descendants do not.
         """
+        self._setup_self_paced(self_paced)
         chapter = self._create_child(self.course, 'chapter', "Test Chapter", staff_only=True)
         sequential = self._create_child(chapter, 'sequential', "Test Sequential")
         self._create_child(sequential, 'vertical', "Unit")
@@ -2159,10 +2351,12 @@ class TestXBlockPublishingInfo(ItemTest):
         self._verify_has_staff_only_message(xblock_info, False, path=self.FIRST_SUBSECTION_PATH)
         self._verify_has_staff_only_message(xblock_info, False, path=self.FIRST_UNIT_PATH)
 
-    def test_locked_unit_staff_only_message(self):
+    @ddt.data(True, False)
+    def test_locked_unit_staff_only_message(self, self_paced):
         """
         Tests that a lone locked unit has a staff only message along with its ancestors.
         """
+        self._setup_self_paced(self_paced)
         chapter = self._create_child(self.course, 'chapter', "Test Chapter")
         sequential = self._create_child(chapter, 'sequential', "Test Sequential")
         self._create_child(sequential, 'vertical', "Unit", staff_only=True)

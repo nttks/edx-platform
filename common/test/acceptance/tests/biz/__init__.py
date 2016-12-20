@@ -174,9 +174,6 @@ class GaccoBizTestMixin(GaccoTestMixin):
             'email': username + '@example.com',
         }
 
-    def register_user(self):
-        return self.switch_to_user(self.new_user_info)
-
     def grant(self, operator, organization_name, permission, grant_to_user_info):
         self.switch_to_user(operator)
 

@@ -10,11 +10,15 @@ $(document).ready(function() {
             url: post_url,
             dataType: 'text',
             success: function () {
-                location.reload();
+                $(".auto-cert-message .msg-content .title").text(gettext("We're working on it..."));
+                $(".auto-cert-message .msg-content .copy").text(gettext("We're creating your certificate. You can keep working in your courses and a link to it will appear here and on your Dashboard when it is ready."));
+                $(".msg-actions").empty();
+                setTimeout(function() {
+                    location.reload();
+                }, 30 * 1000);
             },
             error: function(jqXHR, textStatus, errorThrown) {
-                $('#errors-info').html(jqXHR.responseText);
-                $(".generate_certs").attr("disabled", false).removeClass('is-disabled').attr('aria-disabled', false);
+                location.reload();
             }
         });
     });

@@ -1,21 +1,27 @@
 """
 Test the student dashboard view.
 """
+from datetime import datetime, timedelta
 import ddt
 import unittest
 from mock import patch
 from pyquery import PyQuery as pq
+import pytz
 
 from django.core.urlresolvers import reverse
 from django.conf import settings
 
+from certificates.models import CertificateStatuses
+from certificates.tests.factories import GeneratedCertificateFactory
 from course_modes.tests.factories import CourseModeFactory
 from student.tests.factories import UserFactory, CourseEnrollmentFactory
 from student.models import CourseEnrollment
 from student.helpers import DISABLE_UNENROLL_CERT_STATES
+from student.views import cert_info
 from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
 from xmodule.modulestore.tests.factories import CourseFactory
 
+from openedx.core.djangoapps.content.course_overviews.models import CourseOverview
 from openedx.core.djangoapps.course_global.tests.factories import CourseGlobalSettingFactory
 
 
@@ -139,3 +145,104 @@ class TestStudentDashboardUnenrollments(ModuleStoreTestCase):
             response = self.client.get(reverse('dashboard'))
 
             self.assertEqual(response.status_code, 200)
+
+
+YESTERDAY = datetime.now(pytz.UTC) - timedelta(days=1)
+
+
+@ddt.ddt
+@unittest.skipUnless(settings.ROOT_URLCONF == 'lms.urls', 'Test only valid in lms')
+class TestCertInfo(ModuleStoreTestCase):
+
+    @ddt.data(
+        ('early_with_info', None, CertificateStatuses.deleted, None),
+        ('early_with_info', None, CertificateStatuses.deleting, None),
+        ('early_with_info', None, CertificateStatuses.downloadable, 'ready'),
+        ('early_with_info', None, CertificateStatuses.error, None),
+        ('early_with_info', None, CertificateStatuses.generating, None),
+        ('early_with_info', None, CertificateStatuses.notpassing, 'notpassing'),
+        ('early_with_info', None, CertificateStatuses.regenerating, None),
+        ('early_with_info', None, CertificateStatuses.restricted, 'restricted'),
+        ('early_with_info', None, CertificateStatuses.unavailable, None),
+        ('early_with_info', None, CertificateStatuses.auditing, None),
+        ('early_with_info', None, CertificateStatuses.audit_passing, None),
+        ('early_with_info', None, CertificateStatuses.audit_notpassing, None),
+        ('early_no_info', None, CertificateStatuses.deleted, None),
+        ('early_no_info', None, CertificateStatuses.deleting, None),
+        ('early_no_info', None, CertificateStatuses.downloadable, 'ready'),
+        ('early_no_info', None, CertificateStatuses.error, None),
+        ('early_no_info', None, CertificateStatuses.generating, None),
+        ('early_no_info', None, CertificateStatuses.notpassing, None),
+        ('early_no_info', None, CertificateStatuses.regenerating, None),
+        ('early_no_info', None, CertificateStatuses.restricted, 'restricted'),
+        ('early_no_info', None, CertificateStatuses.unavailable, None),
+        ('early_no_info', None, CertificateStatuses.auditing, None),
+        ('early_no_info', None, CertificateStatuses.audit_passing, None),
+        ('early_no_info', None, CertificateStatuses.audit_notpassing, None),
+        ('end', None, CertificateStatuses.deleted, None),
+        ('end', None, CertificateStatuses.deleting, None),
+        ('end', None, CertificateStatuses.downloadable, None),
+        ('end', None, CertificateStatuses.error, None),
+        ('end', None, CertificateStatuses.generating, None),
+        ('end', None, CertificateStatuses.notpassing, None),
+        ('end', None, CertificateStatuses.regenerating, None),
+        ('end', None, CertificateStatuses.restricted, None),
+        ('end', None, CertificateStatuses.unavailable, None),
+        ('end', None, CertificateStatuses.auditing, None),
+        ('end', None, CertificateStatuses.audit_passing, None),
+        ('end', None, CertificateStatuses.audit_notpassing, None),
+        ('early_with_info', YESTERDAY, CertificateStatuses.deleted, None),
+        ('early_with_info', YESTERDAY, CertificateStatuses.deleting, None),
+        ('early_with_info', YESTERDAY, CertificateStatuses.downloadable, 'ready'),
+        ('early_with_info', YESTERDAY, CertificateStatuses.error, None),
+        ('early_with_info', YESTERDAY, CertificateStatuses.generating, None),
+        ('early_with_info', YESTERDAY, CertificateStatuses.notpassing, 'notpassing'),
+        ('early_with_info', YESTERDAY, CertificateStatuses.regenerating, None),
+        ('early_with_info', YESTERDAY, CertificateStatuses.restricted, 'restricted'),
+        ('early_with_info', YESTERDAY, CertificateStatuses.unavailable, None),
+        ('early_with_info', YESTERDAY, CertificateStatuses.auditing, None),
+        ('early_with_info', YESTERDAY, CertificateStatuses.audit_passing, None),
+        ('early_with_info', YESTERDAY, CertificateStatuses.audit_notpassing, None),
+        ('early_no_info', YESTERDAY, CertificateStatuses.deleted, None),
+        ('early_no_info', YESTERDAY, CertificateStatuses.deleting, None),
+        ('early_no_info', YESTERDAY, CertificateStatuses.downloadable, 'ready'),
+        ('early_no_info', YESTERDAY, CertificateStatuses.error, None),
+        ('early_no_info', YESTERDAY, CertificateStatuses.generating, None),
+        ('early_no_info', YESTERDAY, CertificateStatuses.notpassing, None),
+        ('early_no_info', YESTERDAY, CertificateStatuses.regenerating, None),
+        ('early_no_info', YESTERDAY, CertificateStatuses.restricted, 'restricted'),
+        ('early_no_info', YESTERDAY, CertificateStatuses.unavailable, None),
+        ('early_no_info', YESTERDAY, CertificateStatuses.auditing, None),
+        ('early_no_info', YESTERDAY, CertificateStatuses.audit_passing, None),
+        ('early_no_info', YESTERDAY, CertificateStatuses.audit_notpassing, None),
+        ('end', YESTERDAY, CertificateStatuses.deleted, 'processing'),
+        ('end', YESTERDAY, CertificateStatuses.deleting, 'processing'),
+        ('end', YESTERDAY, CertificateStatuses.downloadable, 'ready'),
+        ('end', YESTERDAY, CertificateStatuses.error, 'processing'),
+        ('end', YESTERDAY, CertificateStatuses.generating, 'generating'),
+        ('end', YESTERDAY, CertificateStatuses.notpassing, 'notpassing'),
+        ('end', YESTERDAY, CertificateStatuses.regenerating, 'generating'),
+        ('end', YESTERDAY, CertificateStatuses.restricted, 'restricted'),
+        ('end', YESTERDAY, CertificateStatuses.unavailable, 'processing'),
+        ('end', YESTERDAY, CertificateStatuses.auditing, 'auditing'),
+        ('end', YESTERDAY, CertificateStatuses.audit_passing, 'auditing'),
+        ('end', YESTERDAY, CertificateStatuses.audit_notpassing, 'auditing'),
+    )
+    @ddt.unpack
+    def test_certificates_display_behavior(self, certificates_display_behavior, course_end, status, cert_info_status):
+        user = UserFactory.create()
+        course = CourseFactory.create(end=course_end, certificates_display_behavior=certificates_display_behavior)
+        GeneratedCertificateFactory.create(
+            user=user,
+            course_id=course.id,
+            status=status,
+            mode='honor',
+            download_url='http://test_certificate_url',
+            grade='1.0',
+        )
+
+        status_dict = cert_info(user, CourseOverview.get_from_id(course.id), None)
+        if cert_info_status:
+            self.assertEqual(cert_info_status, status_dict['status']);
+        else:
+            self.assertEqual({}, status_dict);

@@ -54,7 +54,7 @@ class AdvancedCourse(models.Model):
     description = models.CharField(max_length=1000, verbose_name=_("Description"))
 
     # long description of advanced course. it will allow html.
-    content = models.TextField(blank=True, verbose_name=_("Other information"))
+    content = models.TextField(blank=True, verbose_name=_("Other Information"))
 
     # use this flag if end to advanced course manually.
     is_active = models.BooleanField(default=True, verbose_name=_("Enabled"))
@@ -88,13 +88,13 @@ class AdvancedCourse(models.Model):
 
 class AdvancedCourseTicket(models.Model):
 
-    advanced_course = models.ForeignKey(AdvancedCourse, db_index=True, verbose_name=_("Face 2 Face Classroom"))
+    advanced_course = models.ForeignKey(AdvancedCourse, db_index=True, verbose_name=_("Face-to-Face Course"))
 
     display_name = models.CharField(max_length=255, verbose_name=_("Display Name"))
 
-    price = models.IntegerField(default=0, verbose_name=_("Price of ticket"))
+    price = models.IntegerField(default=0, verbose_name=_("Price of Ticket"))
 
-    sell_by_date = models.DateTimeField(verbose_name=_("Sell-by date"))
+    sell_by_date = models.DateTimeField(verbose_name=_("Sell-by Date"))
 
     description = models.CharField(max_length=255, verbose_name=_("Description"))
 
@@ -138,5 +138,5 @@ class AdvancedF2FCourse(AdvancedCourse):
 
     class Meta:
         app_label = 'ga_advanced_course'
-        verbose_name = _("Face 2 Face Classroom")
-        verbose_name_plural = _("Face 2 Face Classroom")
+        verbose_name = _("Face-to-Face Course")
+        verbose_name_plural = _("Face-to-Face Course")

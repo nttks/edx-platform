@@ -31,6 +31,10 @@
 
     <p><input type="button" name="list-profiles-csv" value="${_("Download profile information as a CSV")}" data-endpoint="${ section_data['get_students_features_url'] }" data-csv="true"></p>
 
+    <p>${_("Click to download a CSV file that lists learners who purchased a paid course.")}</p>
+
+    <p><input type="button" name="list-paid-course-csv" value="${_("Download purchaser information of paid courses as a CSV")}" data-endpoint="${ section_data['get_students_paid_course_url'] }" data-csv="true">
+
     <p>${_("Click to download a CSV file that lists learners who purchased an advanced course (ex. face-to-face course).")}</p>
 
     <p><input type="button" name="list-advanced-course-csv" value="${_("Download purchaser information of advanced courses as a CSV")}" data-endpoint="${ section_data['get_students_advanced_course_url'] }" data-csv="true">

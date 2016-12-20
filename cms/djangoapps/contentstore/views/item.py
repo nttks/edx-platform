@@ -18,6 +18,7 @@ from django.conf import settings
 from django.core.exceptions import PermissionDenied
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseBadRequest, HttpResponse, Http404
+from django.utils import timezone
 from django.utils.translation import ugettext as _
 from django.views.decorators.http import require_http_methods
 
@@ -54,6 +55,8 @@ from models.settings.course_grading import CourseGradingModel
 from opaque_keys.edx.keys import CourseKey
 from opaque_keys.edx.locator import LibraryUsageLocator
 from cms.lib.xblock.authoring_mixin import VISIBILITY_VIEW
+
+from openedx.core.djangoapps.ga_self_paced import api as self_paced_api
 
 __all__ = [
     'orphan_handler', 'xblock_handler', 'xblock_view_handler', 'xblock_outline_handler', 'xblock_container_handler'
@@ -805,9 +808,16 @@ def create_xblock_info(xblock, data=None, metadata=None, include_ancestor_info=F
         child_info = None
 
     release_date = _get_release_date(xblock, user)
+    individual_release_date = self_paced_api.get_individual_date(course.start, {
+        'days': xblock.individual_start_days,
+        'hours': xblock.individual_start_hours,
+        'minutes': xblock.individual_start_minutes,
+    }) if course and course.self_paced and any(t is not None for t in [
+        xblock.individual_start_days, xblock.individual_start_hours, xblock.individual_start_minutes
+    ]) else None
 
     if xblock.category != 'course':
-        visibility_state = _compute_visibility_state(xblock, child_info, is_xblock_unit and has_changes)
+        visibility_state = _compute_visibility_state(xblock, child_info, is_xblock_unit and has_changes, course)
     else:
         visibility_state = None
     published = modulestore().has_published_version(xblock) if not is_library_block else None
@@ -842,12 +852,20 @@ def create_xblock_info(xblock, data=None, metadata=None, include_ancestor_info=F
         "studio_url": xblock_studio_url(xblock, parent_xblock),
         "released_to_students": datetime.now(UTC) > xblock.start,
         "release_date": release_date,
+        "individual_released_to_students": individual_release_date and timezone.now() > individual_release_date,
+        "individual_release_date": get_default_time_display(individual_release_date),
         "visibility_state": visibility_state,
         "has_explicit_staff_lock": xblock.fields['visible_to_staff_only'].is_set_on(xblock),
         "start": xblock.fields['start'].to_json(xblock.start),
+        "individual_start_days": xblock.fields['individual_start_days'].to_json(xblock.individual_start_days),
+        "individual_start_hours": xblock.fields['individual_start_hours'].to_json(xblock.individual_start_hours),
+        "individual_start_minutes": xblock.fields['individual_start_minutes'].to_json(xblock.individual_start_minutes),
         "graded": xblock.graded,
         "due_date": get_default_time_display(xblock.due),
         "due": xblock.fields['due'].to_json(xblock.due),
+        "individual_due_days": xblock.fields['individual_due_days'].to_json(xblock.individual_due_days),
+        "individual_due_hours": xblock.fields['individual_due_hours'].to_json(xblock.individual_due_hours),
+        "individual_due_minutes": xblock.fields['individual_due_minutes'].to_json(xblock.individual_due_minutes),
         "format": xblock.format,
         "course_graders": [grader.get('type') for grader in graders],
         "has_changes": has_changes,
@@ -960,18 +978,38 @@ class VisibilityState(object):
     staff_only = 'staff_only'
 
 
-def _compute_visibility_state(xblock, child_info, is_unit_with_changes):
+def _compute_visibility_state(xblock, child_info, is_unit_with_changes, course=None):
     """
     Returns the current publish state for the specified xblock and its children
     """
+    def _get_chapter_xblock(_xblock):
+        if _xblock is None or _xblock.category == 'chapter':
+            return _xblock
+        else:
+            return _get_chapter_xblock(get_parent_xblock(_xblock))
+
     if xblock.visible_to_staff_only:
         return VisibilityState.staff_only
     elif is_unit_with_changes:
         # Note that a unit that has never been published will fall into this category,
         # as well as previously published units with draft content.
         return VisibilityState.needs_attention
-    is_unscheduled = xblock.start == DEFAULT_START_DATE
-    is_live = datetime.now(UTC) > xblock.start
+    if course and course.self_paced:
+        # release date depends on chapter in self-paced course
+        if xblock.category == 'chapter':
+            chapter = xblock
+        else:
+            chapter = _get_chapter_xblock(xblock) or xblock
+        _days, _hours, _minutes = chapter.individual_start_days, chapter.individual_start_hours, chapter.individual_start_minutes
+        is_unscheduled = _days is None and _hours is None and _minutes is None
+        is_live = timezone.now() > self_paced_api.get_individual_date(course.start, {
+            'days': _days or 0, 'hours': _hours or 0, 'minutes': _minutes or 0
+        })
+    else:
+        # If we have not changed the start date of the course from the DEFAULT_START_DATE,
+        # the start date of the xblock may also be the DEFAULT_START_DATE.
+        is_unscheduled = xblock.start == DEFAULT_START_DATE
+        is_live = datetime.now(UTC) > xblock.start
     children = child_info and child_info.get('children', [])
     if children and len(children) > 0:
         all_staff_only = True

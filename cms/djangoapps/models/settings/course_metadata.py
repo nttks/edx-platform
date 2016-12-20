@@ -59,6 +59,15 @@ class CourseMetadata(object):
         'course_contents_provider',
         'teacher_name',
         'course_span',
+        'individual_start_days',
+        'individual_start_hours',
+        'individual_start_minutes',
+        'individual_end_days',
+        'individual_end_hours',
+        'individual_end_minutes',
+        'individual_due_days',
+        'individual_due_hours',
+        'individual_due_minutes',
     ]
 
     @classmethod

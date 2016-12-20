@@ -17,6 +17,7 @@ from student.helpers import (
   VERIFY_STATUS_NEED_TO_REVERIFY,
   DISABLE_UNENROLL_CERT_STATES,
 )
+from util.date_utils import get_time_display
 %>
 
 <%
@@ -86,24 +87,24 @@ from student.helpers import (
       % endif
       % if enrollment.course_id in paid_course_order_history_list:
         <div class="advanced-course-information paid-course purchased">
-          <div class="label">${_("Paid Course")} ${_("Purchase completed")}</div>
-          <a href="${reverse('verify_student_payment_confirmation', kwargs={'course_id': unicode(enrollment.course_id)})}?payment-order-num=${paid_course_order_history_list[enrollment.course_id]}" class="btn">${_("View your order")}</a>
+          <div class="label">${_("Purchased Paid Course")}</div>
+          <a href="${reverse('verify_student_payment_confirmation', kwargs={'course_id': unicode(enrollment.course_id)})}?payment-order-num=${paid_course_order_history_list[enrollment.course_id]}" class="btn">${_("View Your Order")}</a>
         </div>
       % endif
       % if advanced_course_status.is_purchased():
         <div class="advanced-course-information advanced-course purchased">
-          <div class="label">${_("Face 2 Face Classroom")} ${_("Purchase completed")}</div>
+          <div class="label">${_("Purchased Face-to-Face Course")}</div>
           % for order in advanced_course_status.get_purchased_orders():
-          <a href="${reverse('shoppingcart.views.show_receipt', args=[order.id])}" class="btn">${_("View your order")}</a>
+          <a href="${reverse('shoppingcart.views.show_receipt', args=[order.id])}" class="btn">${_("View Your Order")}</a>
           % endfor
         </div>
       % elif course_overview.extra and course_overview.extra.is_f2f_course and course_overview.extra.is_f2f_course_sell:
         <div class="advanced-course-information advanced-course apply">
           <a href="${reverse('advanced_course:courses_face_to_face', args=[course_overview.id])}" class="btn">
             % if advanced_course_status.has_available_f2f_course():
-            ${_("Face 2 Face Classroom")}&nbsp;${_("Subscription")}
+            ${_("Face-to-Face Course Subscription")}
             % else:
-            ${_("There is face-to-face course")}
+            ${_("There is Face-to-Face Course")}
             % endif
           </a>
         </div>
@@ -125,14 +126,25 @@ from student.helpers import (
           <span class="info-university">${course_overview.display_org_with_default | h} - </span>
           <span class="info-course-id">${course_overview.display_number_with_default | h}</span>
           <span class="info-date-block" data-tooltip="Hi">
-          % if course_overview.has_ended():
-            ${_("Ended - {end_date}").format(end_date=course_overview.end_datetime_text("SHORT_DATE"))}
-          % elif course_overview.has_started():
-            ${_("Started - {start_date}").format(start_date=course_overview.start_datetime_text("SHORT_DATE"))}
-          % elif course_overview.start_date_is_still_default: # Course start date TBD
-            ${_("Course has not yet started")}
-          % else:   # hasn't started yet
-            ${_("Starts - {start_date}").format(start_date=course_overview.start_datetime_text("SHORT_DATE"))}
+          % if course_overview.extra and course_overview.extra.self_paced:
+            % if not course_overview.has_started():
+              ${_("Starts - {start_date}").format(start_date=get_time_display(course_overview.start))}
+            % else:
+              ${_("Classes Start - {start_date}").format(start_date=get_time_display(enrollment.get_individual_start_date()))}
+            % endif
+            % if not staff_access and enrollment.get_individual_end_date():
+              <br>${_("Ended - {end_date}").format(end_date=get_time_display(enrollment.get_individual_end_date()))}
+            % endif
+          % else:
+            % if course_overview.has_ended():
+              ${_("Ended - {end_date}").format(end_date=course_overview.end_datetime_text("SHORT_DATE"))}
+            % elif course_overview.has_started():
+              ${_("Started - {start_date}").format(start_date=course_overview.start_datetime_text("SHORT_DATE"))}
+            % elif course_overview.start_date_is_still_default: # Course start date TBD
+              ${_("Course has not yet started")}
+            % else:   # hasn't started yet
+              ${_("Starts - {start_date}").format(start_date=course_overview.start_datetime_text("SHORT_DATE"))}
+            % endif
           % endif
           </span>
         </div>
@@ -300,7 +312,7 @@ from student.helpers import (
 
       % if advanced_course_status.has_available_f2f_course() and not advanced_course_status.is_purchased():
       <div class="message message-status is-shown">
-        <p class="message-copy">${_("This course, we recommend face-to-face course. Please consider all means.")} ${_("What is face-to-face course?")} => <a href="${marketing_link('FACE_TO_FACE')}" target="_blank">${_("here")}</a></p>
+        <p class="message-copy">${_("This course, we recommend face-to-face course. Please consider the course.")} ${_("What is face-to-face course?")} => <a href="${marketing_link('FACE_TO_FACE')}" target="_blank">${_("here")}</a></p>
       </div>
       % endif
 
@@ -374,7 +386,7 @@ from student.helpers import (
             <%include file = "_dashboard_xseries_info.html" args="course_program_info=course_program_info, enrollment_mode=enrollment.mode" />
         % endif
 
-        % if course_overview.extra and course_overview.extra.has_terminated and not staff_access:
+        % if (course_overview.extra and course_overview.extra.has_terminated and not staff_access) or (enrollment.is_individual_closed() and not staff_access):
          <p id="block-course-msg" class="course-block">
            ${_("This course has been closed.")}
          </p>

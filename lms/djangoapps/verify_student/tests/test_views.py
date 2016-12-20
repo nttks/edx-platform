@@ -6,6 +6,7 @@ Tests of verify_student views.
 import json
 import urllib
 from datetime import timedelta, datetime
+from unittest import skip
 from uuid import uuid4
 
 import ddt
@@ -36,6 +37,7 @@ from courseware.url_helpers import get_redirect_url
 from common.test.utils import XssTestMixin
 from commerce.tests import TEST_PAYMENT_DATA, TEST_API_URL, TEST_API_SIGNING_KEY
 from embargo.test_utils import restrict_course
+from ga_shoppingcart.models import PersonalInfoSetting
 from openedx.core.djangoapps.user_api.accounts.api import get_account_settings
 from shoppingcart.models import Order, CertificateItem
 from student.tests.factories import UserFactory, CourseEnrollmentFactory
@@ -44,7 +46,7 @@ from util.date_utils import get_default_time_display
 from util.testing import UrlResetMixin
 from lms.djangoapps.verify_student.views import (
     checkout_with_ecommerce_service, render_to_response, PayAndVerifyView,
-    _compose_message_reverification_email
+    _compose_message_reverification_email, _purchase_with_shoppingcart
 )
 from lms.djangoapps.verify_student.models import (
     VerificationDeadline, SoftwareSecurePhotoVerification,
@@ -64,6 +66,7 @@ def mock_render_to_response(*args, **kwargs):
 render_mock = Mock(side_effect=mock_render_to_response)
 
 PAYMENT_DATA_KEYS = {'payment_processor_name', 'payment_page_url', 'payment_form_data'}
+TEMP_PAYMENT_DATA_KEYS = {'method', 'payment_page_url'}
 
 
 class StartView(TestCase):
@@ -1071,16 +1074,19 @@ class CheckoutTestMixin(object):
         response = self.client.post(reverse('verify_student_create_order'), post_params)
         self.assertEqual(response.status_code, expected_status_code)
         if expected_status_code == 200:
-            # ensure we called checkout at all
-            self.assertTrue(patched_create_order.called)
-            # ensure checkout args were correct
-            args = self._get_checkout_args(patched_create_order)
-            self.assertEqual(args['user'], self.user)
-            self.assertEqual(args['course_key'], expected_course_key)
-            self.assertEqual(args['course_mode'].slug, expected_mode_slug)
             # ensure response data was correct
             data = json.loads(response.content)
-            self.assertEqual(set(data.keys()), PAYMENT_DATA_KEYS)
+            if 'checkout_with_ecommerce_service' == patched_create_order.__name__:
+                # ensure we called checkout at all
+                self.assertTrue(patched_create_order.called)
+                # ensure checkout args were correct
+                args = self._get_checkout_args(patched_create_order)
+                self.assertEqual(args['user'], self.user)
+                self.assertEqual(args['course_key'], expected_course_key)
+                self.assertEqual(args['course_mode'].slug, expected_mode_slug)
+                self.assertEqual(set(data.keys()), PAYMENT_DATA_KEYS)
+            else:
+                self.assertEqual(set(data.keys()), TEMP_PAYMENT_DATA_KEYS)
         else:
             self.assertFalse(patched_create_order.called)
 
@@ -1134,6 +1140,7 @@ class CheckoutTestMixin(object):
         }
         self._assert_checked_out(params, patched_create_order, self.course.id, 'verified')
 
+    @skip('Not used in gacco')
     def test_old_clients(self, patched_create_order):
         # ensure the response to a request from a stale js client is modified so as
         # not to break behavior in the browser.
@@ -1290,7 +1297,7 @@ class TestCreateOrderView(ModuleStoreTestCase):
     def test_create_order_success(self):
         response = self._create_order(50, self.course_id)
         json_response = json.loads(response.content)
-        self.assertIsNotNone(json_response['payment_form_data'].get('orderNumber'))  # TODO not canonical
+        self.assertTrue(json_response['payment_page_url'].split('/')[-1].isdigit())
 
         # Verify that the order exists and is configured correctly
         order = Order.objects.get(user=self.user)
@@ -1299,6 +1306,24 @@ class TestCreateOrderView(ModuleStoreTestCase):
         self.assertEqual(item.status, 'paying')
         self.assertEqual(item.course_id, self.course.id)
         self.assertEqual(item.mode, 'verified')
+        self.assertEqual(reverse('verify_student_checkout_course', args=[order.id]), json_response['payment_page_url'])
+
+    @patch.dict(settings.FEATURES, {'AUTOMATIC_VERIFY_STUDENT_IDENTITY_FOR_TESTING': True})
+    def test_create_order_with_personal_info_success(self):
+        self._create_personal_input_setting()
+        response = self._create_order(50, self.course_id)
+        json_response = json.loads(response.content)
+        self.assertTrue(json_response['payment_page_url'].split('/')[-1].isdigit())
+        self.assertEquals(json_response['method'], 'GET')
+
+        # Verify that the order exists and is configured correctly
+        order = Order.objects.get(user=self.user)
+        self.assertEqual(order.status, 'paying')
+        item = CertificateItem.objects.get(order=order)
+        self.assertEqual(item.status, 'paying')
+        self.assertEqual(item.course_id, self.course.id)
+        self.assertEqual(item.mode, 'verified')
+        self.assertEqual(reverse('ga_shoppingcart:input_personal_info', args=[order.id]), json_response['payment_page_url'])
 
     def _create_order(self, contribution, course_id, expect_success=True, expect_status_code=200):
         """Create a new order.
@@ -1328,11 +1353,19 @@ class TestCreateOrderView(ModuleStoreTestCase):
         if expect_status_code == 200:
             json_response = json.loads(response.content)
             if expect_success:
-                self.assertEqual(set(json_response.keys()), PAYMENT_DATA_KEYS)
+                self.assertEqual(set(json_response.keys()), TEMP_PAYMENT_DATA_KEYS)
             else:
                 self.assertFalse(json_response['success'])
 
         return response
+
+    def _create_personal_input_setting(self):
+        p = PersonalInfoSetting()
+        p.course_mode = CourseMode.objects.get(
+            course_id=CourseLocator.from_string(self.course_id),
+            mode_slug=CourseMode.VERIFIED
+        )
+        p.save()
 
 
 @ddt.ddt
@@ -2507,3 +2540,71 @@ class TestEmailMessageWithDefaultICRVBlock(ModuleStoreTestCase):
             self.course.id, self.user.id, self.reverification_location, "denied", True
         )
         self.assertIsNone(resp)
+
+
+class GaCheckoutTestMixin(ModuleStoreTestCase):
+    def setUp(self, **kwargs):
+        super(GaCheckoutTestMixin, self).setUp()
+
+        self.user = UserFactory.create(username="rusty", password="test")
+        self.client.login(username="rusty", password="test")
+        self.course_id = CourseLocator('org', self._testMethodName, 'run')
+        self.course = CourseFactory.create(
+            org=self.course_id.org, number=self.course_id.course, run=self.course_id.run
+        )
+        self.course_mode = CourseMode(
+            course_id=self.course_id,
+            mode_slug=CourseMode.NO_ID_PROFESSIONAL_MODE,
+            mode_display_name="Verified Certificate",
+            min_price=50
+        )
+        self.course_mode.save()
+        self.order = _purchase_with_shoppingcart(self.user, self.course_mode, self.course_id, 1)
+
+
+class TestGaCheckoutCourse(GaCheckoutTestMixin):
+
+    def test_checkout_course(self):
+        response = self.client.get(
+            reverse('verify_student_checkout_course', args=[self.order.id])
+        )
+        self.assertEqual(200, response.status_code)
+        self.assertContains(response, 'id="order-id" value="{}"'.format(self.order.id))
+        self.assertContains(response, 'id="page-url" value="{}"'.format(reverse('verify_student_checkout')))
+
+
+class TestGaCheckout(GaCheckoutTestMixin):
+
+    def test_checkout(self):
+        def _mock_get_signed_purchase_params(cart, callback_url=None, extra_data=None):
+            return {
+                'order_id': cart.id, 'callback_url': callback_url, 'extra_data': extra_data
+            }
+
+        with patch(
+            'lms.djangoapps.verify_student.views.get_signed_purchase_params',
+            side_effect=_mock_get_signed_purchase_params
+        ) as mock:
+            response = self.client.post(
+                reverse('verify_student_checkout'),
+                dict(order_id=self.order.id)
+            )
+            self.assertEqual(1, mock.call_count)
+
+        self.assertEqual(200, response.status_code)
+
+        content = json.loads(response.content)
+        self.assertEqual(settings.CC_PROCESSOR_NAME, content['payment_processor_name'])
+        self.assertEqual('/shoppingcart/payment_fake', content['payment_page_url'])
+        self.assertItemsEqual({
+            'order_id': self.order.id,
+            'callback_url': (
+                reverse('shoppingcart.views.postpay_callback'),
+                reverse('about_course', args=[self.course.id])
+            ),
+            'extra_data': [
+                '{}'.format(self.course.display_name),
+                str(self.course.id),
+                self.user.id
+            ]
+        }, content['payment_form_data'])

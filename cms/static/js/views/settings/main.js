@@ -60,6 +60,8 @@ var DetailsView = ValidatingView.extend({
                 closeIcon: true
             }).show();
         }
+
+        this.listenTo(this.model, 'change:self_paced', this.handleCoursePaceChange);
     },
 
     render: function() {
@@ -136,6 +138,20 @@ var DetailsView = ValidatingView.extend({
         this.$el.find('#' + this.fieldToSelectorMap['teacher_name']).val(this.model.get('teacher_name'));
         this.$el.find('#' + this.fieldToSelectorMap['course_span']).val(this.model.get('course_span'));
 
+        if (this.model.get('self_paced')) {
+            // Individual end date for self-paced
+            this.$el.find('#' + this.fieldToSelectorMap['individual_end_days']).val(this.model.get('individual_end_days'));
+            this.$el.find('#' + this.fieldToSelectorMap['individual_end_hours']).val(this.model.get('individual_end_hours'));
+            this.$el.find('#' + this.fieldToSelectorMap['individual_end_minutes']).val(this.model.get('individual_end_minutes'));
+            this.$el.find('#course-end').hide();
+            this.$el.find('#individual-course-end').show();
+        } else {
+            this.$el.find('#individual-course-end').hide();
+            this.$el.find('#course-end').show();
+        }
+
+        this.changeBackgroundColor();
+
         return this;
     },
     fieldToSelectorMap : {
@@ -160,7 +176,10 @@ var DetailsView = ValidatingView.extend({
         'course_canonical_name' : 'course-canonical-name',
         'course_contents_provider' : 'course-contents-provider',
         'teacher_name' : 'course-teacher-name',
-        'course_span' : 'course-span'
+        'course_span' : 'course-span',
+        'individual_end_days': 'individual-course-end-days',
+        'individual_end_hours': 'individual-course-end-hours',
+        'individual_end_minutes': 'individual-course-end-minutes'
     },
 
     updateTime : function(e) {
@@ -296,6 +315,9 @@ var DetailsView = ValidatingView.extend({
         case 'course-contents-provider':
         case 'course-teacher-name':
         case 'course-span':
+        case 'individual-course-end-days':
+        case 'individual-course-end-hours':
+        case 'individual-course-end-minutes':
             this.setField(event);
             break;
         default: // Everything else is handled by datepickers and CodeMirror.
@@ -410,6 +432,32 @@ var DetailsView = ValidatingView.extend({
     handleLicenseChange: function() {
         this.showNotificationBar()
         this.model.set("license", this.licenseModel.toString())
+    },
+
+    handleCoursePaceChange: function() {
+        var courseEnd = this.$el.find('#course-end'),
+            individualCourseEnd = this.$el.find('#individual-course-end');
+        if (this.model.get('self_paced')) {
+            courseEnd.find('input.date').val(null).trigger('change');
+            courseEnd.find('input.time').val(null).trigger('change');
+            courseEnd.hide();
+            individualCourseEnd.show();
+        } else {
+            this.$el.find('#' + this.fieldToSelectorMap['individual_end_days']).val(null).trigger('change');
+            this.$el.find('#' + this.fieldToSelectorMap['individual_end_hours']).val(null).trigger('change');
+            this.$el.find('#' + this.fieldToSelectorMap['individual_end_minutes']).val(null).trigger('change');
+            individualCourseEnd.hide();
+            courseEnd.show();
+        }
+        this.changeBackgroundColor();
+    },
+
+    changeBackgroundColor: function() {
+        if (this.model.get('self_paced')) {
+            $('body').addClass('self-paced');
+        } else {
+            $('body').removeClass('self-paced');
+        }
     }
 });
 

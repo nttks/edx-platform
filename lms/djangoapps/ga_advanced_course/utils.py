@@ -4,43 +4,8 @@ Utility methods for advanced courses
 import logging
 
 from ga_shoppingcart.models import AdvancedCourseItem
-from ga_shoppingcart.utils import get_order_keep_time
-from ga_advanced_course.exceptions import InvalidOrder
 
 log = logging.getLogger(__name__)
-
-
-def check_order_can_purchase(order):
-    """
-    Check whether available for purchase processing of the specified Order.
-
-    - Order status must be `paying`
-    - Within SC_SESSION_TIMEOUT from all of the OrderItem has been created
-    """
-    if order.status != 'paying':
-        log.warn("Order status is not paying. user_id={user_id}, order_id={order_id}".format(
-            user_id=order.user.id, order_id=order.id
-        ))
-        raise InvalidOrder()
-
-    order_items = order.orderitem_set.all()
-
-    is_paying = (order.status == 'paying') and all([item.status == 'paying' for item in order_items])
-
-    if not is_paying:
-        log.warn("Order status is not paying. user_id={user_id}, order_id={order_id}".format(
-            user_id=order.user.id, order_id=order.id
-        ))
-        raise InvalidOrder()
-
-    _order_keep_time = get_order_keep_time()
-    is_alive = all([item.created >= _order_keep_time for item in order_items])
-
-    if not is_alive:
-        log.warn("Order has invalid item. user_id={user_id}, order_id={order_id}".format(
-            user_id=order.user.id, order_id=order.id
-        ))
-        raise InvalidOrder()
 
 
 def get_advanced_course_purchased_order(user, advanced_course):

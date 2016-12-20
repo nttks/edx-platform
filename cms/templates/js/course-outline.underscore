@@ -140,6 +140,26 @@ if (is_proctored_exam) {
                             <% if (xblockInfo.get('release_date')) { %>
                                 <%= xblockInfo.get('release_date') %>
                             <% } %>
+                        <% } else { %>
+                            <% if (xblockInfo.isChapter()) { %>
+                                <% if (xblockInfo.get('individual_released_to_students')) { %>
+                                    <i class="icon fa fa-check-square-o"></i>
+                                    <%= gettext('Released:') %>
+                                <% } else if (xblockInfo.get('individual_release_date')) { %>
+                                    <i class="icon fa fa-clock-o"></i>
+                                    <%= gettext('Scheduled:') %>
+                                <% } else { %>
+                                    <i class="icon fa fa-clock-o"></i>
+                                    <%= gettext('Unscheduled') %>
+                                <% } %>
+                                <% if (xblockInfo.get('individual_release_date')) { %>
+                                    <%=
+                                        interpolate(
+                                            gettext('After %(date)s'), {date: xblockInfo.get('individual_release_date')}, true
+                                        )
+                                    %>
+                                <% } %>
+                            <% } %>
                         <% } %>
                     </span>
                 </p>
@@ -167,6 +187,23 @@ if (is_proctored_exam) {
                         <span class="status-grading-value"> <%= gradingType %> </span>
                         <% if (xblockInfo.get('due_date') && !course.get('self_paced')) { %>
                             <span class="status-grading-date"> <%= gettext('Due:') %> <%= xblockInfo.get('due_date') %> </span>
+                        <% } else if (course.get('self_paced') && xblockInfo.isSequential()) { %>
+                            <% if (
+                                xblockInfo.get('individual_due_days') !== null ||
+                                xblockInfo.get('individual_due_hours') !== null ||
+                                xblockInfo.get('individual_due_minutes') !== null
+                            ) { %>
+                            <span class="status-grading-date">
+                                <%= gettext('Due:') %> <%= interpolate(
+                                    gettext('After %(days)s days %(hours)s hours %(minutes)s minutes from the enrollment start date and time'),
+                                    {
+                                        days: xblockInfo.get('individual_due_days') || 0,
+                                        hours: xblockInfo.get('individual_due_hours') || 0,
+                                        minutes: xblockInfo.get('individual_due_minutes') || 0
+                                    }, true
+                                ) %>
+                            </span>
+                            <% } %>
                         <% } %>
                     </p>
                 </div>

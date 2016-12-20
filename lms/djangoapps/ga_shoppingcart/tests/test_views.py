@@ -1,7 +1,9 @@
+# -*- coding: utf-8 -*-
 
 from collections import OrderedDict
 import ddt
 import json
+from datetime import timedelta
 from mock import patch
 
 from django.conf import settings
@@ -10,16 +12,21 @@ from django.test import TestCase
 from django.test.utils import override_settings
 from django.utils.translation import get_language
 
+from course_modes.models import CourseMode
+from courseware.tests.helpers import LoginEnrollmentTestCase
 from dark_lang.models import DarkLangConfig
 from lang_pref import LANGUAGE_KEY
 from opaque_keys.edx.keys import CourseKey
 from openedx.core.djangoapps.user_api.preferences.api import set_user_preference
 from shoppingcart.models import Order, OrderItem
 from shoppingcart.processors.GMO import create_order_id
-from student.tests.factories import UserFactory
+from student.tests.factories import CourseModeFactory, UserFactory
+from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
+from xmodule.modulestore.tests.factories import CourseFactory
 
 from ga_advanced_course.tests.factories import AdvancedF2FCourseFactory, AdvancedCourseTicketFactory
-from ga_shoppingcart.models import AdvancedCourseItem
+from ga_shoppingcart.models import AdvancedCourseItem, PersonalInfo, PersonalInfoSetting
+from ga_shoppingcart.tests.utils import get_order_from_advanced_course, get_order_from_paid_course
 
 
 @override_settings(
@@ -326,3 +333,288 @@ class NotificationViewTest(TestCase):
         response = self._access_notify(self.params)
 
         self._assert_response(response, v_logger, success=False)
+
+
+class GaShoppingcartViewTest(LoginEnrollmentTestCase, ModuleStoreTestCase):
+    def __init__(self, method_name):
+        super(GaShoppingcartViewTest, self).__init__(methodName=method_name)
+        self.valid_params = {
+            'full_name': 'test',
+            'kana': u'カナ',
+            'postal_code': '1234567',
+            'address_line_1': 'address1',
+            'address_line_2': 'address2',
+            'phone_number': '0312345678',
+            'gaccatz_check': True,
+            'free_entry_field_1': 'field1',
+            'free_entry_field_2': 'field2',
+            'free_entry_field_3': 'field3',
+            'free_entry_field_4': 'field4',
+            'free_entry_field_5': 'field5',
+        }
+        self.invalid_params = {}
+
+    def setUp(self):
+        """ Create a user and course. """
+        super(GaShoppingcartViewTest, self).setUp()
+        self.course_for_advanced = CourseFactory.create(
+            metadata={
+                'is_f2f_course': True,
+                'is_f2f_course_sell': True,
+            }
+        )
+        self.course_for_paid = CourseFactory.create()
+        self.course_mode = CourseModeFactory(mode_slug='no-id-professional',
+                                             course_id=self.course_for_paid.id,
+                                             min_price=1, sku='')
+
+    @staticmethod
+    def _create_personal_input_setting(order_id):
+        item = OrderItem.objects.get_subclass(order_id=order_id)
+        p = PersonalInfoSetting()
+        if isinstance(item, AdvancedCourseItem):
+            p.advanced_course_id = item.advanced_course_ticket.advanced_course_id
+        else:
+            p.course_mode = CourseMode.objects.get(
+                course_id=item.course_id,
+                mode_slug=item.mode,
+            )
+        p.save()
+
+    def _get_choose_ticket(self, course, advanced_course_id):
+        return self._access_page(reverse('advanced_course:choose_ticket', args=[course.id, advanced_course_id]))
+
+    def _access_page(self, path, method='GET', data={}):
+        if method.upper() == 'POST':
+            return self.client.post(path, data)
+        elif method.upper() == 'GET':
+            return self.client.get(path)
+        else:
+            raise ValueError('Unknown Method {}'.format(method))
+
+    @staticmethod
+    def _form_view(order_id):
+        return reverse('ga_shoppingcart:input_personal_info', args=[order_id])
+
+    @staticmethod
+    def _create_ticket(advanced_course, count):
+        return [
+            AdvancedCourseTicketFactory.create(
+                advanced_course=advanced_course,
+                display_name='ticket {}'.format(i)
+            )
+            for i in range(count)
+        ]
+
+    @staticmethod
+    def _create_advanced_courses(course, count, active=True):
+        return [
+            AdvancedF2FCourseFactory.create(
+                course_id=course.id,
+                display_name='display_name {}'.format(i),
+                is_active=active
+            )
+            for i in range(count)
+        ]
+
+    @staticmethod
+    def _become_outdated_order_item(order):
+        order_items = order.orderitem_set.all()
+        try:
+            from shoppingcart.processors.helpers import get_processor_config
+            SC_SESSION_TIMEOUT = get_processor_config().get('SESSION_TIMEOUT', 600)
+        except:
+            SC_SESSION_TIMEOUT = 600
+        for item in order_items:
+            item.created = item.created - timedelta(seconds=SC_SESSION_TIMEOUT)
+            item.save()
+
+    def _get_expect_personal_info_data(self, order):
+        return {
+            'address_line_1': u'address1',
+            'address_line_2': u'address2',
+            'choice_id': 1,
+            'free_entry_field_1': None,
+            'free_entry_field_2': None,
+            'free_entry_field_3': None,
+            'free_entry_field_4': None,
+            'free_entry_field_5': None,
+            'full_name': u'test',
+            'kana': None,
+            'order_id': order.id,
+            'phone_number': u'0312345678',
+            'postal_code': u'1234567',
+            'user_id': self.user.id
+        }
+
+    @staticmethod
+    def _get_actual_personal_info_data(order):
+        p = PersonalInfo.objects.get(order_id=order.id)
+        actual_personal_info_data = p.__dict__.copy()
+        del actual_personal_info_data['_state']
+        del actual_personal_info_data['id']
+        return actual_personal_info_data
+
+    def _assert_personal_input(self, order):
+        actual_personal_info_data = self._get_actual_personal_info_data(order)
+        expect_personal_info_data = self._get_expect_personal_info_data(order)
+        self.assertDictEqual(actual_personal_info_data, expect_personal_info_data)
+
+
+class InputPersonalInfoFormPreviewTest(GaShoppingcartViewTest):
+    def test_preview_get_via_advanced_course(self):
+        self.setup_user()
+        self.enroll(self.course_for_advanced)
+        order, advanced_course = get_order_from_advanced_course(self.course_for_advanced, self.user)
+        self._create_personal_input_setting(order.id)
+        self._get_choose_ticket(self.course_for_advanced, advanced_course.id)
+
+        response = self._access_page(self._form_view(order.id))
+
+        self.assertEqual(200, response.status_code)
+
+    def test_preview_get_via_advanced_course_404(self):
+        self.setup_user()
+        self.enroll(self.course_for_advanced)
+        order, advanced_course = get_order_from_advanced_course(self.course_for_advanced, self.user)
+        self._create_personal_input_setting(order.id)
+        self._get_choose_ticket(self.course_for_advanced, advanced_course.id)
+        self._become_outdated_order_item(order)
+
+        response = self._access_page(self._form_view(order.id))
+
+        self.assertEqual(404, response.status_code)
+
+    def test_preview_get_via_paid_course(self):
+        self.setup_user()
+        self.enroll(self.course_for_paid)
+        order = get_order_from_paid_course(self.course_mode, self.course_for_paid, self.user)
+        self._create_personal_input_setting(order.id)
+
+        response = self._access_page(self._form_view(order.id))
+
+        self.assertEqual(200, response.status_code)
+
+    def test_preview_get_via_paid_course_404(self):
+        self.setup_user()
+        self.enroll(self.course_for_paid)
+        order = get_order_from_paid_course(self.course_mode, self.course_for_paid, self.user)
+        self._create_personal_input_setting(order.id)
+        self._become_outdated_order_item(order)
+
+        response = self._access_page(self._form_view(order.id))
+
+        self.assertEqual(404, response.status_code)
+
+    @patch('ga_shoppingcart.views.InputPersonalInfoFormPreview.security_hash', return_value='dummy_hash')
+    def test_preview_post_form_valid(self, security_hash_mock):
+        self.setup_user()
+        self.enroll(self.course_for_paid)
+        order = get_order_from_paid_course(self.course_mode, self.course_for_paid, self.user)
+        self._create_personal_input_setting(order.id)
+
+        response = self._access_page(self._form_view(order.id), 'POST', self.valid_params)
+
+        self.assertEquals(200, response.status_code)
+        self.assertTrue(security_hash_mock.called)
+        self.assertIn('name="hash"', response.content)
+        self.assertIn('value="dummy_hash"', response.content)
+
+    @patch('ga_shoppingcart.views.InputPersonalInfoFormPreview.security_hash', return_value='dummy_hash')
+    def test_preview_post_form_invalid(self, security_hash_mock):
+        self.setup_user()
+        self.enroll(self.course_for_paid)
+        order = get_order_from_paid_course(self.course_mode, self.course_for_paid, self.user)
+        self._create_personal_input_setting(order.id)
+
+        response = self._access_page(self._form_view(order.id), 'POST', self.invalid_params)
+
+        self.assertEqual(200, response.status_code)
+        self.assertFalse(security_hash_mock.called)
+        self.assertNotIn('name="hash"', response.content)
+        self.assertNotIn('value="dummy_hash"', response.content)
+
+    @patch('ga_shoppingcart.views.InputPersonalInfoFormPreview.security_hash', return_value='dummy_hash')
+    def test_preview_post_turn_back_input_form(self, security_hash_mock):
+        cancel_params = self.valid_params.copy()
+        cancel_params.update({'cancel': 'true'})
+        self.setup_user()
+        self.enroll(self.course_for_paid)
+        order = get_order_from_paid_course(self.course_mode, self.course_for_paid, self.user)
+        self._create_personal_input_setting(order.id)
+
+        response = self._access_page(self._form_view(order.id), 'POST', cancel_params)
+
+        self.assertEquals(200, response.status_code)
+        self.assertFalse(security_hash_mock.called)
+        self.assertNotIn('name="hash"', response.content)
+        self.assertNotIn('value="dummy_hash"', response.content)
+
+    @patch('ga_shoppingcart.views.InputPersonalInfoFormPreview._check_security_hash', return_value=True)
+    def test_post_post_form_valid_for_advanced_course(self, _check_security_hash_mock):
+        valid_params_stage2 = self.valid_params.copy()
+        valid_params_stage2.update({'stage': 2})
+        self.setup_user()
+        self.enroll(self.course_for_paid)
+        order, advanced_course = get_order_from_advanced_course(self.course_for_advanced, self.user)
+        self._create_personal_input_setting(order.id)
+
+        response = self._access_page(self._form_view(order.id), 'POST', valid_params_stage2)
+
+        self.assertEquals(200, response.status_code)
+        self.assertIn(str(reverse('advanced_course:checkout')), response.content)
+        _check_security_hash_mock.assert_called()
+        self._assert_personal_input(order)
+
+    @patch('ga_shoppingcart.views.InputPersonalInfoFormPreview._check_security_hash', return_value=True)
+    def test_post_post_form_valid_for_paid_course(self, _check_security_hash_mock):
+        valid_params_stage2 = self.valid_params.copy()
+        valid_params_stage2.update({'stage': 2})
+        self.setup_user()
+        self.enroll(self.course_for_paid)
+        order = get_order_from_paid_course(self.course_mode, self.course_for_paid, self.user)
+        self._create_personal_input_setting(order.id)
+
+        response = self._access_page(self._form_view(order.id), 'POST', valid_params_stage2)
+
+        self.assertEquals(200, response.status_code)
+        self.assertIn(str(reverse('verify_student_checkout')), response.content)
+        _check_security_hash_mock.assert_called()
+        self._assert_personal_input(order)
+
+    @patch('ga_shoppingcart.views.InputPersonalInfoFormPreview.done')
+    @patch('ga_shoppingcart.views.InputPersonalInfoFormPreview._check_security_hash', return_value=True)
+    def test_post_post_form_invalid(self, _check_security_hash_mock, done_mock):
+        invalid_params_stage2 = self.invalid_params.copy()
+        invalid_params_stage2.update({'stage': 2})
+        self.setup_user()
+        self.enroll(self.course_for_paid)
+        order = get_order_from_paid_course(self.course_mode, self.course_for_paid, self.user)
+        self._create_personal_input_setting(order.id)
+
+        response = self._access_page(self._form_view(order.id), 'POST', invalid_params_stage2)
+
+        self.assertEquals(200, response.status_code)
+        _check_security_hash_mock.assert_not_called()
+        done_mock.assert_not_called()
+        self.assertIn('name="stage"', response.content)
+        self.assertIn('value="1"', response.content)
+
+    @patch('ga_shoppingcart.views.InputPersonalInfoFormPreview.done')
+    @patch('ga_shoppingcart.views.InputPersonalInfoFormPreview._check_security_hash', return_value=False)
+    def test_post_post_security_hash_failed(self, _check_security_hash_mock, done_mock):
+        valid_params_stage2 = self.valid_params.copy()
+        valid_params_stage2.update({'stage': 2})
+        self.setup_user()
+        self.enroll(self.course_for_paid)
+        order, advanced_course = get_order_from_advanced_course(self.course_for_advanced, self.user)
+        self._create_personal_input_setting(order.id)
+
+        response = self._access_page(self._form_view(order.id), 'POST', valid_params_stage2)
+
+        self.assertEquals(200, response.status_code)
+        self.assertIn('name="stage"', response.content)
+        self.assertIn('value="2"', response.content)
+        _check_security_hash_mock.assert_called()
+        done_mock.assert_not_called()
+

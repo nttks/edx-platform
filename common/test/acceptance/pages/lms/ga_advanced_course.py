@@ -31,7 +31,7 @@ class AdvancedCourseChoosePage(PageObject):
     def _get_face_to_face_element(self, selector):
         elements = self.q(css='.course_select_area').results
         for element in elements:
-            if 'Face 2 Face Classroom (Fee-charging)' in element.find_element_by_css_selector('h3').text:
+            if 'Face-to-Face Course (Fee-charging)' in element.find_element_by_css_selector('h3').text:
                 return element.find_element_by_css_selector(selector)
         raise Exception("No face_to_face element was found on the choose page")
 

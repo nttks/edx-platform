@@ -48,10 +48,10 @@ Order Summary
 [${course.display_name_with_default}]
 
 Order ID: #${create_order_id(order)}
-Starting date: ${course.start_datetime_text()}
-Payment method: ${order.payment_method}
-Total amount: ¥${"{:,d}".format(int(order.total_cost + order.total_tax))}
-Purchase date: ${purchased_datetime.strftime('%Y/%m/%d %H:%M:%S')}
+Starting Date: ${course.start_datetime_text()}
+Payment Method: ${order.payment_method}
+Total Amount: ¥${"{:,d}".format(int(order.total_cost + order.total_tax))}
+Purchase Date: ${purchased_datetime.strftime('%Y/%m/%d %H:%M:%S')}
 
 
 You can attending the course from 3PM on the starting date in your gacco account

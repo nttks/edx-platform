@@ -157,7 +157,7 @@ FEATURES['ENABLE_DASHBOARD_SEARCH'] = True
 
 
 ########################## Certificates Web/HTML View #######################
-FEATURES['CERTIFICATES_HTML_VIEW'] = True
+FEATURES['CERTIFICATES_HTML_VIEW'] = False
 
 
 ########################## Course Discovery #######################

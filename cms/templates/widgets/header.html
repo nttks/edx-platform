@@ -4,6 +4,7 @@
   from django.core.urlresolvers import reverse
   from django.utils.translation import ugettext as _
   from contentstore.context_processors import doc_url
+  from contentstore.views.access import get_user_role
 %>
 <%page args="online_help_token"/>
 
@@ -33,6 +34,7 @@
             certificates_url = ''
             if settings.FEATURES.get("CERTIFICATES_HTML_VIEW") and context_course.cert_html_view_enabled:
                 certificates_url = reverse('contentstore.views.certificates.certificates_list_handler', kwargs={'course_key_string': unicode(course_key)})
+            has_access_instructor = get_user_role(request.user, course_key) == 'instructor'
       %>
       <h2 class="info-course">
         <span class="sr">${_("Current Course:")}</span>
@@ -63,6 +65,7 @@
                   <li class="nav-item nav-course-courseware-uploads">
                     <a href="${assets_url}">${_("Files &amp; Uploads")}</a>
                   </li>
+                %if has_access_instructor:
                   <li class="nav-item nav-course-courseware-textbooks">
                     <a href="${textbooks_url}">${_("Textbooks")}</a>
                   </li>
@@ -71,6 +74,7 @@
                     <a href="${videos_url}">${_("Video Uploads")}</a>
                   </li>
                   % endif
+                % endif
                 </ul>
               </div>
             </div>
@@ -82,12 +86,15 @@
             <div class="wrapper wrapper-nav-sub">
               <div class="nav-sub">
                 <ul>
+                %if has_access_instructor:
                   <li class="nav-item nav-course-settings-schedule">
                     <a href="${settings_url}">${_("Schedule &amp; Details")}</a>
                   </li>
+                % endif
                   <li class="nav-item nav-course-settings-grading">
                     <a href="${grading_url}">${_("Grading")}</a>
                   </li>
+                %if has_access_instructor:
                   <li class="nav-item nav-course-settings-team">
                     <a href="${course_team_url}">${_("Course Team")}</a>
                   </li>
@@ -102,11 +109,13 @@
                     <a href="${certificates_url}">${_("Certificates")}</a>
                   </li>
                   % endif
+                % endif
                 </ul>
               </div>
             </div>
           </li>
 
+        %if has_access_instructor:
           <li class="nav-item nav-course-tools">
             <h3 class="title"><span class="label">${_("Tools")}</span> <i class="icon fa fa-caret-down ui-toggle-dd" aria-hidden="true"></i></h3>
             <div class="wrapper wrapper-nav-sub">
@@ -127,6 +136,7 @@
               </div>
             </div>
           </li>
+        % endif
         </ol>
       </nav>
       % elif context_library:

@@ -117,6 +117,16 @@ urlpatterns = patterns(
         views.InCourseReverifyView.as_view(),
         name="verify_student_incourse_reverify"
     ),
+
+    url(
+        r'^checkout_course/(?P<order_id>.+)$',
+        views.checkout_course, name='verify_student_checkout_course'
+    ),
+
+    url(
+        r'^checkout/$', views.checkout,
+        name='verify_student_checkout'
+    ),
 )
 
 # Fake response page for incourse reverification ( software secure )

@@ -111,6 +111,7 @@ class CertificateDownloadableStatusTests(WebCertificateTestMixin, ModuleStoreTes
             {
                 'is_downloadable': False,
                 'is_generating': True,
+                'is_error': False,
                 'download_url': None,
                 'uuid': None,
             }
@@ -129,6 +130,7 @@ class CertificateDownloadableStatusTests(WebCertificateTestMixin, ModuleStoreTes
             {
                 'is_downloadable': False,
                 'is_generating': True,
+                'is_error': True,
                 'download_url': None,
                 'uuid': None
             }
@@ -140,6 +142,7 @@ class CertificateDownloadableStatusTests(WebCertificateTestMixin, ModuleStoreTes
             {
                 'is_downloadable': False,
                 'is_generating': False,
+                'is_error': False,
                 'download_url': None,
                 'uuid': None,
             }
@@ -163,6 +166,7 @@ class CertificateDownloadableStatusTests(WebCertificateTestMixin, ModuleStoreTes
             {
                 'is_downloadable': True,
                 'is_generating': False,
+                'is_error': False,
                 'download_url': 'www.google.com',
                 'uuid': cert.verify_uuid
             }
@@ -188,6 +192,7 @@ class CertificateDownloadableStatusTests(WebCertificateTestMixin, ModuleStoreTes
             {
                 'is_downloadable': True,
                 'is_generating': False,
+                'is_error': False,
                 'download_url': '/certificates/user/{user_id}/course/{course_id}'.format(
                     user_id=self.student.id,  # pylint: disable=no-member
                     course_id=self.course.id,

@@ -49,7 +49,7 @@ class PaidCourseTest(UniqueCourseTest, GaccoTestMixin):
 
     def _assert_purchase_email(self, display_name, price, payment_method):
         email_message = self.email_client.get_latest_message()
-        self.assertEqual(email_message['subject'], 'The order has been completed from edX')
+        self.assertEqual(email_message['subject'], 'Your course has been completed from edX')
         self.assertIn(display_name, email_message['body'])
         self.assertIn('{:,d}'.format(price), email_message['body'])
         self.assertIn(payment_method, email_message['body'])

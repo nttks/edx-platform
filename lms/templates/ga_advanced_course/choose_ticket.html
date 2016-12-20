@@ -13,7 +13,8 @@ from openedx.core.lib.ga_datetime_utils import to_timezone
 
 <div class="ticket_page_wrap">
   <ul id="breadcrumb">
-    <li class="active"><span><i class="fa fa-shopping-cart"></i><span class="text">${pgettext("payment_breadcrumb", "Select")}</span></span></li>
+    <li class="active"><span><i class="fa fa-shopping-cart"></i><span class="text">${pgettext("payment_breadcrumb", "Order")}</span></span></li>
+    <li><span><i class="fa fa-pencil-square-o"></i><span class="text">${pgettext("payment_breadcrumb", "Information")}</span></span></li>
     <li><span><i class="fa fa-credit-card"></i><span class="text">${pgettext("payment_breadcrumb", "Payment")}</span></span></li>
     <li><span><i class="fa fa-eye"></i><span class="text">${pgettext("payment_breadcrumb", "Confirm")}</span></span></li>
     <li><span><i class="fa fa-check"></i><span class="text">${pgettext("payment_breadcrumb", "Complete")}</span></span></li>
@@ -31,7 +32,7 @@ from openedx.core.lib.ga_datetime_utils import to_timezone
   <h3>${advanced_course.display_name | h}</h3>
   <section class="section">
     <div class="course_select_area clear">
-      <p>${_("Select a purchase ticket from blow.")}</p>
+      <p>${_("Select a purchase ticket from below.")}</p>
     </div>
     <div class="item_area clear">
       % for ticket in tickets:
@@ -43,7 +44,7 @@ from openedx.core.lib.ga_datetime_utils import to_timezone
         % else:
         <a href="${reverse('advanced_course:purchase_ticket', args=[course_id, ticket.id])}" class="t_btn apply">¥${'{:,d}'.format(ticket.price_with_tax)}</a>
         % endif
-        <p class="sell_by_date">${_("Sell-by date")} ${to_timezone(ticket.sell_by_date).strftime('%Y/%m/%d %H:%M')}</p>
+        <p class="sell_by_date">${_("Sell-by Date")} ${to_timezone(ticket.sell_by_date).strftime('%Y/%m/%d %H:%M')}</p>
       </div>
       % endfor
     </div>

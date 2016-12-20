@@ -692,6 +692,7 @@ PDFGEN_CERT_TITLE = ENV_TOKENS.get('PDFGEN_CERT_TITLE', 'gacco Certificate')
 
 ##### CELERY #####
 CELERY_TIMEZONE = ENV_TOKENS.get('CELERY_TIMEZONE', TIME_ZONE)
+PDFGEN_CELERY_DEFAULT_QUEUE = ENV_TOKENS.get('PDFGEN_CELERY_DEFAULT_QUEUE', CELERY_DEFAULT_QUEUE)
 
 ##### YOUTUBE #####
 YOUTUBE.update(ENV_TOKENS.get("YOUTUBE", {}))
@@ -740,7 +741,7 @@ if FEATURES.get('INDIVIDUAL_DUE_DATES'):
 
 ##### Self-Paced Course Due Dates #####
 FIELD_OVERRIDE_PROVIDERS += (
-    'courseware.self_paced_overrides.SelfPacedDateOverrideProvider',
+    'courseware.ga_self_paced_overrides.SelfPacedDateOverrideProvider',
 )
 
 # PROFILE IMAGE CONFIG

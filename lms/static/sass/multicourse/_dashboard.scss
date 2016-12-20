@@ -378,7 +378,7 @@
       .course-info {
         display: block;
         @include float(left);
-        width: flex-grid(4);
+        width: flex-grid(6);
         padding: 0;
         margin-top: ($baseline/2);
 
@@ -398,7 +398,7 @@
       .wrapper-course-actions {
         display: block;
         @include float(right);
-        width: flex-grid(8);
+        width: flex-grid(6);
         padding: 0;
         margin-top: ($baseline/2);
       }

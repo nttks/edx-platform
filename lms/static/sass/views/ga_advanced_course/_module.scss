@@ -23,12 +23,17 @@
     a {
       text-decoration: none;
     }
+
+    &.info {
+      width: 8rem;
+    }
   }
 
   .t_btn.apply {
     background-color: #ff5233;
     color: #fff;
     border-color: #c4721a;
+    width: 8rem;
 
     &:hover {
       opacity: 1;
@@ -110,6 +115,12 @@
     font-size: 0.9rem;
   }
 
+  @media only screen and (min-width: 1080px) {
+    .course_name .title {
+      width: 67%;
+    }
+  }
+
   @media only screen and (max-width: 1080px) {
     .course_name .title {
       width: 60%;
@@ -158,6 +169,9 @@
       display: block;
       margin: 8px auto 8px;
       font-size: 1.2rem;
+      &.info, &.apply {
+        width: 60%;
+      }
     }
 
     .t_btn.big {
@@ -170,7 +184,7 @@
     }
   }
 
-  @media only screen and (max-width: 640px) {
+  @media only screen and (max-width: 840px) {
     #breadcrumb {
       .text {
         display: none;
@@ -184,6 +198,7 @@
     list-style: none;
     display: inline-block;
     width: 100%;
+    margin-left: 12px;
 
     .text {
       padding-left: 5px;
@@ -193,7 +208,7 @@
 
     li {
       float: left;
-      width: 25%;
+      width: 20%;
 
       > span {
         color: #fff;

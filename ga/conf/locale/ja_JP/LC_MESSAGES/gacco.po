@@ -75,17 +75,29 @@ msgstr "trueかfalseを入力してください。trueにするとコースが�
 msgid "This course has been closed."
 msgstr "本講座のサービス提供は終了しました。"
 
+#: templates/dashboard/_dashboard_course_listing.html
+msgid "Classes Start - {start_date}"
+msgstr "受講開始日 - {start_date}"
+
 #: lms/templates/navigation.html lms/templates/original_navigation.html
 msgid "Log Out"
 msgstr "ログアウト"
 
 #: lms/templates/instructor/instructor_dashboard_2/data_download.html
 msgid "Click to download a CSV file that lists learners who purchased an advanced course (ex. face-to-face course)."
-msgstr "発展的講座（例：対面学習コース）を購入している受講者情報のCSVファイルを生成するにはクリックしてください。"
+msgstr "その他（対面学習コース、gaccatz等）を購入している受講者情報のCSVファイルを生成するにはクリックしてください。"
 
 #: lms/templates/instructor/instructor_dashboard_2/data_download.html
 msgid "Download purchaser information of advanced courses as a CSV"
-msgstr "発展的講座購入者情報をCSVとしてダウンロードする"
+msgstr "その他（対面学習コース、gaccatz等）を購入している受講者情報をCSVとしてダウンロードする"
+
+#: lms/templates/instructor/instructor_dashboard_2/data_download.html
+msgid "Click to download a CSV file that lists learners who purchased a paid course."
+msgstr "有料講座を購入している受講者情報のCSVファイルを生成するにはクリックしてください。"
+
+#: lms/templates/instructor/instructor_dashboard_2/data_download.html
+msgid "Download purchaser information of paid courses as a CSV"
+msgstr "有料講座を購入している受講者情報をCSVとしてダウンロードする"
 
 #-#-#-#-#  Original messages in gacco  #-#-#-#-#
 
@@ -448,12 +460,12 @@ msgstr "コースカテゴリ"
 
 #: common/lib/xmodule/xmodule/course_module.py
 #: cms/templates/settings.html
-msgid "Face 2 Face Classroom"
+msgid "Face-to-Face Course"
 msgstr "対面学習コース"
 
 #: common/lib/xmodule/xmodule/course_module.py
 #: cms/templates/settings.html
-msgid "Sell Face 2 Face Classroom"
+msgid "Sell Face-to-Face Course"
 msgstr "対面学習コースの販売"
 
 #: common/lib/xmodule/xmodule/course_module.py
@@ -528,6 +540,30 @@ msgstr "対面学習コースがある場合はチェックを入れてくださ
 msgid "Please check if sell a reversal classes."
 msgstr "対面学習コースをgacco上で販売する場合はチェックを入れてください。"
 
+#: cms/templates/settings.html
+msgid "Individual Course End Days"
+msgstr "個別講座終了日数"
+
+#: cms/templates/settings.html
+msgid "Hours"
+msgstr "時"
+
+#: cms/templates/settings.html
+msgid "Minutes"
+msgstr "分"
+
+#: cms/templates/settings.html
+msgid "Days up to the course available period"
+msgstr "受講可能期間までの日数"
+
+#: cms/templates/settings.html
+msgid "Hours up to the course available period"
+msgstr "受講可能期間までの時間"
+
+#: cms/templates/settings.html
+msgid "Minutes up to the course available period"
+msgstr "受講可能期間までの分"
+
 #: cms/djangoapps/contentstore/views/entrance_exam.py
 #: lms/djangoapps/courseware/tabs.py
 msgid "Entrance Exam"
@@ -564,9 +600,48 @@ msgstr "学習リスト"
 msgid "Open"
 msgstr "開く"
 
-#: templates/courseware/progress.html
-msgid "Grade graph"
-msgstr "成績グラフ"
+#: lms/templates/courseware/progress.html
+msgid "Your certificate is available"
+msgstr "修了書発行が完了しました"
+
+#: lms/templates/courseware/progress.html
+msgid "You can download your certificate by clicking 'Download Your Certificate' button, and you can also download it on your dashboard."
+msgstr "「修了書をダウンロード (PDF)」ボタンからダウンロードができます。また、マイページからもダウンロードができます。"
+
+#: lms/templates/courseware/progress.html
+msgid "Download Your Certificate"
+msgstr "修了証をダウンロード (PDF)"
+
+#: lms/templates/courseware/progress.html
+msgid "We're working on it..."
+msgstr "修了書発行中..."
+
+#: lms/templates/courseware/progress.html
+msgid ""
+"We're creating your certificate. You can keep working in your courses and a "
+"link to it will appear here and on your Dashboard when it is ready."
+msgstr "修了証を発行中です。今しばらくお待ちください。"
+
+#: lms/templates/courseware/progress.html
+msgid "Congratulations, you qualified for a certificate!"
+msgstr "修了証が発行できます"
+
+#: lms/templates/courseware/progress.html
+msgid ""
+"You can keep working for a higher grade, or request your certificate now."
+msgstr "修了条件を満たしましたので、修了証を発行することができます。「修了証発行」ボタンを押してください。"
+
+#: lms/templates/courseware/progress.html
+msgid "Request Certificate"
+msgstr "修了書発行"
+
+#: lms/templates/courseware/progress.html
+msgid "An error has occurred"
+msgstr "エラーが発生しました"
+
+#: lms/templates/courseware/progress.html
+msgid "An error has occurred while creating your certificate. Please wait a moment and try again."
+msgstr "修了証が発行できませんでした。しばらくたってから再度、修了証を発行してください。"
 
 #: templates/courseware/course_about.html
 msgid "[fee-charging]"
@@ -685,7 +760,7 @@ msgid "Biz Manager Dashboard"
 msgstr "法人管理ダッシュボード"
 
 #: templates/dashboard/_dashboard_course_listing.html
-msgid "This course, we recommend face-to-face course. Please consider all means."
+msgid "This course, we recommend face-to-face course. Please consider the course."
 msgstr "この講座は、対面学習をお奨めしています。ぜひご検討ください。"
 
 #: templates/dashboard/_dashboard_course_listing.html
@@ -697,24 +772,24 @@ msgid "here"
 msgstr "こちら"
 
 #: templates/dashboard/_dashboard_course_listing.html
-msgid "Subscription"
-msgstr "申込"
+msgid "Face-to-Face Course Subscription"
+msgstr "対面学習コース申込"
 
 #: templates/dashboard/_dashboard_course_listing.html
-msgid "There is face-to-face course"
+msgid "There is Face-to-Face Course"
 msgstr "対面学習コースあり"
 
 #: templates/dashboard/_dashboard_course_listing.html
-msgid "View your order"
+msgid "View Your Order"
 msgstr "申込内容確認"
 
 #: templates/dashboard/_dashboard_course_listing.html
-msgid "Paid Course"
-msgstr "有料講座"
+msgid "Purchased Paid Course"
+msgstr "有料講座 購入済み"
 
 #: templates/dashboard/_dashboard_course_listing.html
-msgid "Purchase completed"
-msgstr "購入済み"
+msgid "Purchased Face-to-Face Course"
+msgstr "対面学習コース 購入済み"
 
 #: templates/ga_advanced_course/choose.html
 msgid "Recommended: Online and Face-to-face course"
@@ -769,15 +844,18 @@ msgid "See next"
 msgstr "続きを見る"
 
 #: templates/ga_advanced_course/courses.html
-msgid "Details of Face to face course"
+msgctxt "face_to_face_course"
+msgid "Details of Face-to-Face Course"
 msgstr "対面学習コース詳細"
 
 #: templates/ga_advanced_course/courses.html
-msgid "List of Face to face classroom"
+msgctxt "face_to_face_classroom"
+msgid "List of Face-to-face course"
 msgstr "対面授業一覧"
 
 #: templates/ga_advanced_course/courses.html
-msgid "Details of Face to face classroom"
+msgctxt "face_to_face_classroom"
+msgid "Details of Face-to-face course"
 msgstr "対面授業詳細"
 
 #: templates/ga_advanced_course/courses.html
@@ -817,7 +895,7 @@ msgid "Access"
 msgstr "アクセス"
 
 #: templates/ga_advanced_course/courses.html
-msgid "Other information"
+msgid "Other Information"
 msgstr "その他情報"
 
 #: templates/ga_advanced_course/courses.html
@@ -835,6 +913,11 @@ msgstr "申込内容選択"
 
 #: templates/ga_advanced_course/choose_ticket.html
 msgctxt "payment_breadcrumb"
+msgid "Information"
+msgstr "お客様情報入力"
+
+#: templates/ga_advanced_course/choose_ticket.html
+msgctxt "payment_breadcrumb"
 msgid "Payment"
 msgstr "支払方法選択"
 
@@ -849,7 +932,7 @@ msgid "Complete"
 msgstr "購入完了"
 
 #: templates/ga_advanced_course/choose_ticket.html
-msgid "Sell-by date"
+msgid "Sell-by Date"
 msgstr "販売期限"
 
 #: templates/ga_advanced_course/choose_ticket.html
@@ -857,28 +940,24 @@ msgid "* Display price will be tax included."
 msgstr "※表示価格は税込となります。"
 
 #: templates/ga_advanced_course/choose_ticket.html
-msgid "Select a purchase ticket from blow."
+msgid "Select a purchase ticket from below."
 msgstr "下記から購入チケットを選択してください。"
 
 #: templates/ga_advanced_course/receipt.html
-msgid "Purchase tickets at the following content was completed."
-msgstr "下記内容にてチケットの購入が完了いたしました。"
+msgid "Your order has been completed."
+msgstr "チケットの購入が完了いたしました。"
 
 #: templates/ga_advanced_course/receipt.html
-msgid "To the email address that you registered, we automatically send a confirmation e-mail of the ticket purchase is complete."
+msgid "We automatically send the confirmation email that you registered."
 msgstr "ご登録いただいているメールアドレス宛てに、チケット購入完了の確認メールを自動送信いたしました。"
-
-#: templates/ga_advanced_course/receipt.html
-msgid "On the day, Please present this ticket screen (printable) or e-mail screen at the time of acceptance."
-msgstr "当日は、受付時に本チケット画面（印刷可）またはメール画面をご提示ください。"
 
 #: templates/ga_advanced_course/receipt.html
 msgid "Subscription Details"
 msgstr "お申し込み内容"
 
 #: templates/ga_advanced_course/receipt.html
-msgid "{course_name} course"
-msgstr "「{course_name}」講座"
+msgid "{course_name} Face-to-Face Course"
+msgstr "「{course_name}」講座 対面学習コース"
 
 #: templates/ga_advanced_course/receipt.html
 msgid "Ticket Number"
@@ -897,7 +976,7 @@ msgid "Request Details"
 msgstr "申し込み詳細"
 
 #: templates/ga_advanced_course/receipt.html
-msgid "Payment method"
+msgid "Payment Method"
 msgstr "お支払い方法"
 
 #: templates/ga_advanced_course/receipt.html
@@ -909,15 +988,15 @@ msgid "Docomo Mobile Payment"
 msgstr "ドコモケータイ払い"
 
 #: templates/ga_advanced_course/receipt.html
-msgid "Payment amount"
+msgid "Payment Amount"
 msgstr "お支払い金額"
 
 #: templates/ga_advanced_course/receipt.html
-msgid "Buy the ticket"
+msgid "Your Ticket"
 msgstr "購入チケット"
 
 #: templates/ga_advanced_course/receipt.html
-msgid "Price of ticket"
+msgid "Price of Ticket"
 msgstr "チケット料金"
 
 #: templates/ga_advanced_course/receipt.html
@@ -933,10 +1012,10 @@ msgid "This ticket has been cancelled."
 msgstr "このチケットはキャンセルされました。"
 
 #: templates/ga_advanced_course/receipt.html
-msgid "Cancellation is <a href=\"{cancel_page_link}\">here</a>"
-msgstr "※キャンセルは<a href=\"{cancel_page_link}\">こちら</a>"
+msgid "If you would like to cancel, please contact <a href=\"{cancel_page_link}\">HERE</a> (language is Japanese only)"
+msgstr "キャンセルは<a href=\"{cancel_page_link}\">こちら</a>"
 
-#: templates/ga_advanced_course/checkout_ticket.html
+#: templates/ga_shoppingcart/checkout.html
 msgid "Processing"
 msgstr "処理中"
 
@@ -1001,8 +1080,12 @@ msgid "If enabled, for all of the user who answered or viewed the problem, and a
 msgstr "有効にした場合、問題を回答または閲覧した全てのユーザーに対して、問題に正解したとみなして加点されます。"
 
 #: lms/templates/emails/paid_course_order_confirmation_email_subject.txt
-msgid "The order has been completed from {platform_name}"
+msgid "Your course has been completed from {platform_name}"
 msgstr "{platform_name} 受講登録完了のお知らせ"
+
+#: lms/templates/emails/advanced_course_order_confirmation_email_subject.txt
+msgid "Your ticket has been completed from {platform_name}"
+msgstr "{platform_name} チケット購入完了のお知らせ"
 
 #: lms/templates/registration/activate_account_notice.html
 msgid "You're almost there!"
@@ -1146,6 +1229,40 @@ msgstr "講座番号はあなたの組織内で一意になるように設定し
 msgid "The term in which your course will run."
 msgstr "講座の開講時期。YYYY_MM等の形式で設定してください。"
 
+#: cms/templates/course_outline.html
+msgid "Course Pacing:"
+msgstr "講座の種類："
+
+#: cms/templates/course_outline.html
+msgid "Self-Paced"
+msgstr "開始日可変型講座"
+
+#: cms/templates/course_outline.html
+msgid "Instructor-Paced"
+msgstr "通常講座"
+
+#: cms/templates/settings.html
+msgid "Course Pacing"
+msgstr "講座の種類"
+
+#: cms/templates/settings.html
+msgid "Set the pacing for this course"
+msgstr "提供する講座の種類を設定します"
+
+#: cms/templates/settings.html
+msgid ""
+"Instructor-paced courses progress at the pace that the course author sets. "
+"You can configure release dates for course content and due dates for "
+"assignments."
+msgstr "通常講座は講座提供者が講座の受講開始日や課題提出の期日を決めることができます。"
+
+#: cms/templates/settings.html
+msgid ""
+"Self-paced courses do not have release dates for course content or due dates"
+" for assignments. Learners can complete course material at any time before "
+"the course end date."
+msgstr "開始日可変型講座は講座提供者が受講開始日や課題提出の期日を決めることができません。講座が閉講するまで、受講者が開始したいタイミングで講座を受講し始めることができます。課題提出までの期間は講座提供者が事前に決めることができます。"
+
 #: cms/templates/settings.html
 msgid "Course Language"
 msgstr ""
@@ -1251,3 +1368,125 @@ msgstr "お使いのブラウザソフトのcookie（クッキー）設定を有
 #: lms/templates/ga_csrf_failure.html
 msgid "If not resolve your sign in problem, please try other browser."
 msgstr "それでも解決しない場合は、他のブラウザでお試しください。"
+
+#: lms/templates/ga_shoppingcart/input_personal_info.html
+msgid "Your Personal Information"
+msgstr "お客様情報入力"
+
+#: lms/djangoapps/ga_shoppingcart/forms.py
+msgid "gacco taro"
+msgstr "学校　太郎"
+
+#: lms/djangoapps/ga_shoppingcart/forms.py
+msgid "Kana"
+msgstr "フリガナ"
+
+#: lms/djangoapps/ga_shoppingcart/forms.py
+msgid "ガッコウ　タロウ"
+msgstr "ガッコウ　タロウ"
+
+#: lms/djangoapps/ga_shoppingcart/forms.py
+msgid "Postal/Zip Code"
+msgstr "郵便番号"
+
+#: lms/djangoapps/ga_shoppingcart/forms.py
+msgid "Address Line"
+msgstr "住所"
+
+#: lms/djangoapps/ga_shoppingcart/forms.py
+msgid "Urbannet Azabu Building 1-6-15 Minamiazabu"
+msgstr "東京都港区"
+
+#: lms/djangoapps/ga_shoppingcart/forms.py
+msgid "Minato-Ku Tokyo Japan"
+msgstr "南麻布一丁目6番15号 アーバンネット麻布ビル"
+
+#: lms/djangoapps/ga_shoppingcart/forms.py
+msgid "Phone Number"
+msgstr "電話番号"
+
+#: lms/djangoapps/ga_shoppingcart/forms.py
+msgid "0312345678 (Except Hyphen)"
+msgstr "0312345678 (ハイフン無し)"
+
+#: lms/djangoapps/ga_shoppingcart/forms.py
+msgid "We agree to the precondition for participation in gaccatz."
+msgstr "gaccatz参加に必要な全ての注意事項を確認し、同意します。"
+
+#: lms/djangoapps/ga_shoppingcart/forms.py
+msgid "Please check {link_start}HERE{link_end} from the precondition for more information."
+msgstr "gaccatz参加に必要な注意事項は{link_start}こちら{link_end}"
+
+#: lms/djangoapps/ga_shoppingcart/forms.py
+msgid "Please type using full-width katakana and space."
+msgstr "全角カナとスペース以外の文字が含まれています"
+
+#: lms/djangoapps/ga_shoppingcart/forms.py
+msgid "Please type using half-width numbers."
+msgstr "半角数字以外の文字が含まれています"
+
+#: lms/templates/ga_shoppingcart/input_personal_info.html
+msgid "Information"
+msgstr "お客様情報入力"
+
+#: lms/templates/ga_shoppingcart/input_personal_info.html
+msgid "Please fill out your information below and click \"Next\"."
+msgstr "お客様情報を入力して「次へ」ボタンを押してください。"
+
+#: lms/templates/ga_shoppingcart/input_personal_info.html
+msgid "* gacco Privacy Policy is "
+msgstr "※個人情報の取り扱いおよびプライバシーポリシーは"
+
+#: lms/templates/ga_shoppingcart/input_personal_info.html
+msgid "HERE"
+msgstr "こちら"
+
+#: lms/templates/ga_shoppingcart/input_personal_info.html
+msgid "* Our shipment is only provided domestically in Japan."
+msgstr "※商品のお届け先は、日本国内に限ります。"
+
+#: lms/templates/ga_shoppingcart/input_personal_info.html
+msgid "Asterisk(*) marked fields are required."
+msgstr "* は入力必須項目です。"
+
+#: lms/templates/ga_shoppingcart/input_personal_info.html
+msgid "(ex: 1010001 except hyphen)"
+msgstr "（例：1010001 ハイフン無し）"
+
+#: lms/templates/ga_shoppingcart/input_personal_info.html
+msgid "Full-width Kana"
+msgstr "全角カナ"
+
+#: lms/templates/ga_shoppingcart/input_personal_info.html
+msgid "Half-width number"
+msgstr "半角数字"
+
+#: lms/templates/ga_shoppingcart/input_personal_info.html
+msgid "Our shipment is only provided domestically in Japan"
+msgstr "配送先は日本国内に限ります"
+
+#: lms/templates/ga_shoppingcart/input_personal_info.html
+msgctxt "personal_input_form"
+msgid "Next"
+msgstr "次へ"
+
+#: lms/templates/ga_shoppingcart/input_personal_info.html
+msgctxt "personal_input_form"
+msgid "Back"
+msgstr "戻る"
+
+#: lms/templates/ga_shoppingcart/input_personal_info_preview.html
+msgid "Confirm your personal information"
+msgstr "お客様情報の確認"
+
+#: lms/templates/ga_shoppingcart/input_personal_info_preview.html
+msgid "Please confirm your information bellow and click \"Next\"<br>DO NOT PRESS \"Browser Back Button.\" Please use the \"Back\" button on the bottom of this screen."
+msgstr "入力内容ご確認の上、「次へ」ボタンを押してください。<br>内容を修正したい場合は、「戻る」ボタンを押してください。<br>ブラウザの「戻る」ボタンは押さないでください。"
+
+#. Translators: the translation for "DATE_TIME_FORMAT" must be a format
+#. string for formatting dates with times.  For example, the American
+#. English form is "%b %d, %Y at %H:%M".
+#. See http://strftime.org for details.
+#: common/djangoapps/util/date_utils.py
+msgid "DATE_TIME_FORMAT"
+msgstr "%Y年%b%d日 %H:%M"

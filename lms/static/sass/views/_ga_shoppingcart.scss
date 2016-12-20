@@ -1,0 +1,322 @@
+div.item_area {
+    padding: 0;
+    input[type="submit"] {
+        background: #4293D5;
+        box-shadow: inset 0px -3px 0px 0px #144168;
+        border-radius: 8px;
+        display: block;
+        float: right;
+        width: 176px;
+        height: 50px;
+        &:hover {
+            background-color: #0072D0 !important;
+        }
+        &:focus {
+            outline: none;
+        }
+    }
+    input.cancel-button {
+        background: #A4A6A8;
+        box-shadow: inset 0px -3px 0px 0px #8A8D8F;
+        border-radius: 8px;
+        width: 112px;
+        height: 50px;
+        &:hover {
+            background-color: #4F5052 !important;
+        }
+        &:focus, :active {
+            outline: none;
+        }
+    }
+    @media only screen and (max-width: 800px) {
+        input[type="submit"] {
+            width: 100%;
+        }
+        input.cancel-button {
+            width: 100%;
+            margin: 20px 0 20px 0;
+        }
+    }
+}
+
+$default_width: 700px;
+$default_line_height: 44px;
+
+form#personal_input_form {
+    ul {
+        padding: 0;
+        margin: 0 auto;
+        width: $default_width;
+        li {
+            list-style: none;
+            float: left;
+            &.address_line_1 {
+                margin-bottom: 10px;
+            }
+            &.gaccatz_check div {
+                height: 100px;
+                border: 1px solid #979797;
+                + span {
+                    width: 700px;
+                    text-align: right;
+                }
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            label {
+                font: inherit;
+                font-weight: bold;
+                float: left;
+                width: 220px;
+                font-size: 18px;
+                color: #3C3C3C;
+                line-height: $default_line_height;
+                cursor: default;
+            }
+            label[for='free_entry_field_1'],
+            label[for='free_entry_field_2'],
+            label[for='free_entry_field_3'],
+            label[for='free_entry_field_4'],
+            label[for='free_entry_field_5'] {
+                font-weight: normal;
+                width: 100%;
+                line-height: 1.5em;
+                margin-bottom: 5px;
+            }
+            span.gaccatz_additional_description {
+                margin-top: 5px;
+                margin-bottom: 20px;
+                float: right;
+            }
+            input {
+                font: inherit;
+                width: 480px;
+                height: 44px;
+                border: 1px solid #979797;
+                box-shadow: inset 0 1px 2px 0 rgba(0, 0, 0, 0.36);
+                border-radius: 0;
+                line-height: normal;
+                @include placeholder {
+                    color: #ababab;
+                }
+            }
+            input.postal_code_field {
+                width: 120px;
+                height: 44px;
+                & + span.postal_code_msg {
+                    line-height: $default_line_height;
+                    margin: 0 20px 0 20px;
+                    font-size: 18px;
+                    color: #9D9D9D;
+                }
+            }
+            input.address_line_2_field {
+                & + span.note {
+                    margin-left: 220px;
+                }
+            }
+            textarea {
+                width: 700px;
+                height: 146px;
+                box-shadow: 0 -1px 2px 0 rgba(0, 0, 0, 0.16);
+                font: normal 1.2em/1.2em $sans-serif;
+                margin-bottom: 30px;
+            }
+        }
+        li:first-child {
+            margin: 20px 0 20px 0;
+        }
+        li.note {
+            span.err-msg {
+                line-height: 1.5em;
+            }
+            font-size: 16px;
+            line-height: 30px;
+            margin-left: 220px;
+            padding-bottom: 30px;
+            color: #3C3C3C;
+        }
+        li.note_address_line_1 {
+            padding-bottom: 0;
+            margin-top: -10px;
+            margin-bottom: 20px;
+        }
+        li.note_gaccatz_check,
+        li.note_free_entry_field_1,
+        li.note_free_entry_field_2,
+        li.note_free_entry_field_3,
+        li.note_free_entry_field_4,
+        li.note_free_entry_field_5 {
+            margin-top: -20px;
+            margin-left: 0;
+        }
+    }
+    span.gaccatz_checkbox {
+        label {
+            display: inline-block;
+            user-select: none;
+            position: relative;
+            width: 38px;
+            height: 39px;
+            border: 2px solid rgba(0, 0, 0, 0.3);
+            @include border-radius(2px);
+            @include transition-duration(0.25s);
+            cursor: pointer;
+            overflow: hidden;
+            color: rgba(0, 0, 0, 0.1);
+            text-align: center;
+            margin: 0 20px 0 60px;
+            &:after {
+                content: '';
+                display: block;
+                margin-left: 12px;
+                width: 9px;
+                height: 25px;
+                border: solid rgba(0, 0, 0, 0.1);
+                border-width: 0 6px 6px 0;
+                @include transform(rotate(45deg));
+            }
+            &:active {
+                @include transition-duration(0);
+                -webkit-filter: brightness(0.8);
+            }
+        }
+        input {
+            display: none;
+            &:checked + {
+                label {
+                    color: #fff;
+                }
+                .checkbox_background {
+                    border-color: #676767;
+                    background: #fff;
+                    &:after {
+                        content: '';
+                        display: block;
+                        margin-left: 12px;
+                        width: 9px;
+                        height: 25px;
+                        border: solid #00B4E6;
+                        border-width: 0 6px 6px 0;
+                        @include transform(rotate(45deg));
+                    }
+                }
+            }
+        }
+        & + label {
+            width: 572px;
+            line-height: 30px;
+            @include user-select(none)
+        }
+    }
+    @media only screen and (max-width: 800px) {
+        ul {
+            width: 100%;
+            li {
+                width: 100%;
+                input {
+                    width: 100%;
+                }
+                input.postal_code_field {
+                    width: 100%;
+                    & + span.postal_code_msg {
+                        line-height: 1.5em;
+                    }
+                }
+                input.address_line_2_field {
+                    & + span.note {
+                        display: block;
+                        margin-left: 0;
+                    }
+                }
+                label {
+                    float: none;
+                    width: 100%;
+                    margin-bottom: 5px;
+                }
+                textarea {
+                    width: 100%;
+                    margin-bottom: 0;
+                }
+                span.gaccatz_additional_description {
+                    width: 100%;
+                    float: none;
+                    line-height: 2em;
+                }
+            }
+            li.note {
+                margin-top: 5px;
+                margin-left: 0;
+                padding-bottom: 20px;
+            }
+            li:last-child {
+                padding-bottom: 40px;
+            }
+        }
+        span.gaccatz_checkbox {
+            label {
+                margin: 0 10px 0 10px;
+                float: left;
+            }
+            & + label {
+                width: 100%;
+                line-height: 18px;
+                font-size: 16px;
+                font-weight: normal;
+            }
+        }
+    }
+}
+
+form#personal_input_preview_form {
+    @extend #personal_input_form;
+    li {
+        width: 100%;
+        &:not(.address_line_1) {
+            margin-bottom: 40px;
+        }
+        label {
+            font-weight: bold;
+            width: 100%;
+            line-height: 1.5em;
+            margin-bottom: 5px;
+        }
+        @media only screen and(max-width: 800px) {
+            label {
+                border-left: solid 3px #555;
+                padding-left: 10px;
+                display: block;
+            }
+        }
+        label[for="free_entry_field_1"],
+        label[for="free_entry_field_2"],
+        label[for="free_entry_field_3"],
+        label[for="free_entry_field_4"],
+        label[for="free_entry_field_5"] {
+            border-left: solid 3px #555;
+            padding-left: 10px;
+            display: block;
+            box-sizing: border-box;
+            & + span {
+                line-height: 1.5em;
+            }
+        }
+        span {
+            line-height: $default_line_height;
+        }
+    }
+}
+
+form#cancel_form {
+    float: left;
+    @media only screen and(max-width: 800px) {
+        float: none;
+    }
+}
+
+@media only screen and(max-width: 800px) {
+    .ticket_page_wrap .section {
+        padding: 0.5rem 1.5rem;
+    }
+}

@@ -1,5 +1,8 @@
-<%! from shoppingcart.processors.GMO import create_order_id %>
-
+<%!
+    from django.utils.translation import get_language
+    from shoppingcart.processors.GMO import create_order_id
+%>
+% if get_language() in ['ja', 'ja-jp']:  ## ------------------------------------------------------------------------- ja
 ${recipient_name} 様
 
 gaccoをご利用いただき、ありがとうございます。
@@ -19,10 +22,8 @@ gaccoをご利用いただき、ありがとうございます。
 お支払い金額: ¥${"{:,d}".format(int(item.unit_cost + item.tax))}
 購入日時: ${purchased_datetime.strftime('%Y/%m/%d %H:%M:%S')}
 
-チケットはこちらからご確認ください。
+チケットは以下のURLからご確認ください。
 https://${site_name}/shoppingcart/receipt/${order.id}/
-
-当日は、受付時にチケット画面または本メール画面をご提示ください。
 
 
 このメールは自動送信しています。ご返信いただいても
@@ -33,3 +34,37 @@ https://support.gacco.org/hc/ja/requests/new
 
 
 gacco運営チーム
+% else:  ## --------------------------------------------------------------------------------------------------------- en
+Dear ${recipient_name}
+
+Thank you for your order, we hope you enjoy learning with gacco!
+We will inform you that your order has been completed.
+
+------------------------------------
+Order Summary
+------------------------------------
+[${course_name}]
+
+Your Ticket: ${item.line_desc}
+Ticket Number: #${create_order_id(order)}
+Opening Time: ${advanced_course.opening_datetime_str}
+Meeting Place: ${advanced_course.place_name}
+QTY: 1
+Payment Method: ${item.payment_method}
+Payment Amount: ¥${"{:,d}".format(int(item.unit_cost + item.tax))}
+Purchase Date: ${purchased_datetime.strftime('%Y/%m/%d %H:%M:%S')}
+
+Please refer to your ticket from the following link.
+https://${site_name}/shoppingcart/receipt/${order.id}/
+
+This email was automatically sent by gacco.org.
+Please do not reply to this email.
+
+==================
+If you need help, please contact to:
+https://support.gacco.org/hc/ja/requests/new
+
+Thank you for learning the gacco!
+
+The gacco Team
+% endif

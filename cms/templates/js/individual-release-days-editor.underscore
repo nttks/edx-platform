@@ -1,0 +1,21 @@
+<h3 class="modal-section-title"><%= gettext('Individual Release Days') %></h3>
+<div class="modal-section-content has-actions">
+    <ul class="list-fields list-input">
+        <li class="field field-text">
+            <label for="individual_start_days" class="label"><%= gettext('Days:') %></label>
+            <input type="number" min="0" max="999" id="individual_start_days" name="individual_start_days" value=""
+              placeholder="DD" class="individual-days" data-label="<%= gettext('Days:') %>" autocomplete="off" />
+        </li>
+        <li class="field field-text">
+            <label for="individual_start_hours" class="label"><%= gettext('Hours:') %></label>
+            <input type="number" min="0" max="23" id="individual_start_hours" name="individual_start_hours" value=""
+              placeholder="HH" class="individual-days" data-label="<%= gettext('Hours:') %>" autocomplete="off" />
+        </li>
+        <li class="field field-text">
+            <label for="individual_start_minutes" class="label"><%= gettext('Minutes:') %></label>
+            <input type="number" min="0" max="59" id="individual_start_minutes" name="individual_start_minutes" value=""
+              placeholder="MM" class="individual-days" data-label="<%= gettext('Minutes:') %>" autocomplete="off" />
+        </li>
+    </ul>
+    <ul id="individual-start-error" class="individual-error"></ul>
+</div>

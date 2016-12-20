@@ -1,6 +1,6 @@
 <%!
 from django.core.urlresolvers import reverse
-from django.utils.translation import ugettext as _
+from django.utils.translation import pgettext, ugettext as _
 from util.date_utils import strftime_localized
 from ga_advanced_course.models import AdvancedCourseTypes
 from openedx.core.lib.ga_datetime_utils import to_timezone
@@ -10,7 +10,7 @@ from openedx.core.lib.ga_datetime_utils import to_timezone
 
 <%block name="pagetitle">
 % if advanced_course_type == AdvancedCourseTypes.F2F:
-${_("Details of Face to face course")}
+${pgettext("face_to_face_course", "Details of Face-to-Face Course")}
 % else:
 ${_("Advanced Course List")}
 % endif
@@ -48,7 +48,7 @@ $(function(){
 
 <div class="ticket_page_wrap">
   % if advanced_course_type == AdvancedCourseTypes.F2F:
-  <h2>${_("Details of Face to face course")}</h2>
+  <h2>${pgettext("face_to_face_course", "Details of Face-to-Face Course")}</h2>
   % endif
 
   % if messages:
@@ -60,7 +60,7 @@ $(function(){
   % endif
 
   % if advanced_course_type == AdvancedCourseTypes.F2F:
-  <h3>${_("List of Face to face classroom")}</h3>
+  <h3>${pgettext("face_to_face_classroom", "List of Face-to-face course")}</h3>
   % endif
   <div class="section clear">
     <ul class="course_list course_name">
@@ -87,7 +87,7 @@ $(function(){
   </div>
 
   % if advanced_course_type == AdvancedCourseTypes.F2F:
-  <h3>${_("Details of Face to face classroom")}</h3>
+  <h3>${pgettext("face_to_face_classroom", "Details of Face-to-face course")}</h3>
   % endif
   % for i, status in enumerate(advanced_courses_with_status.advanced_courses.values(), start=1):
   <%
@@ -117,7 +117,7 @@ $(function(){
       % for ticket in advanced_course.tickets:
       <p class="course-ticket">
         ${ticket.display_name | h} ¥${'{:,d}'.format(ticket.price_with_tax)} (${_("Including tax")})<br>
-        <span class="sell_by_date">${_("Sell-by date")} ${strftime_localized(to_timezone(ticket.sell_by_date), '%Y/%m/%d %H:%M')}</span>
+        <span class="sell_by_date">${_("Sell-by Date")} ${strftime_localized(to_timezone(ticket.sell_by_date), '%Y/%m/%d %H:%M')}</span>
       </p>
       % endfor
     </div>
@@ -127,7 +127,7 @@ $(function(){
       <h6>${_("Access")}</h6>
       <p class="course-access">${advanced_course.place_access | h}</p>
       % if advanced_course.content:
-      <h6>${_("Other information")}</h6>
+      <h6>${_("Other Information")}</h6>
       <p class="course-other-content">${advanced_course.content}</p>
       % endif
     </div>

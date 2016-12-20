@@ -190,6 +190,20 @@ class CourseFields(object):
         scope=Scope.settings
     )
     end = Date(help=_("Date that this class ends"), scope=Scope.settings)
+
+    individual_end_days = Integer(
+        help=_("Number of days from the base date to the course ends"),
+        scope=Scope.settings
+    )
+    individual_end_hours = Integer(
+        help=_("Number of hours from the base date to the course ends"),
+        scope=Scope.settings
+    )
+    individual_end_minutes = Integer(
+        help=_("Number of minutes from the base date to the course ends"),
+        scope=Scope.settings
+    )
+
     cosmetic_display_price = Integer(
         display_name=_("Cosmetic Course Display Price"),
         help=_(
@@ -692,13 +706,13 @@ class CourseFields(object):
         scope=Scope.settings,
     )
     is_f2f_course = Boolean(
-        display_name=_("Face 2 Face Classroom"),
+        display_name=_("Face-to-Face Course"),
         default=False,
         help=_("Enter true or false. If true, course is f2f classroom."),
         scope=Scope.settings,
     )
     is_f2f_course_sell = Boolean(
-        display_name=_("Sell Face 2 Face Classroom"),
+        display_name=_("Sell Face-to-Face Course"),
         default=False,
         help=_("Enter true or false. If true, f2f classroom is for sale."),
         scope=Scope.settings,

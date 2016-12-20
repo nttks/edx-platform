@@ -672,6 +672,10 @@
         .due-time {
           width: ($baseline*7);
         }
+        
+        .individual-days {
+          width: ($baseline*3);
+        }
       }
 
       // CASE: select input
@@ -690,6 +694,13 @@
           width: 100%;
         }
       }
+    }
+
+    .individual-error {
+        margin-bottom: $baseline/2;
+        li {
+            color: #b20610;
+        }
     }
 
     .edit-settings-grading {

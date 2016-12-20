@@ -129,6 +129,7 @@ from openedx.core.djangoapps.programs.utils import get_programs_for_dashboard
 
 from ga_advanced_course.status import AdvancedCourseStatus
 from openedx.core.djangoapps.course_global.models import CourseGlobalSetting
+from openedx.core.djangoapps.ga_self_paced import api as self_paced_api
 
 
 log = logging.getLogger("edx.student")
@@ -320,16 +321,17 @@ def _cert_info(user, course_overview, cert_status, course_mode):  # pylint: disa
     if cert_status is None:
         return default_info
 
+    status = template_state.get(cert_status['status'], default_status)
+
     hidden_status = {
-        'early_no_info': ('unavailable', 'processing', 'generating', 'notpassing', 'auditing'),
-        'early_with_info': ('unavailable', 'processing', 'generating', 'auditing'),
+        'early_no_info': ('processing', 'generating', 'notpassing', 'auditing'),
+        'early_with_info': ('processing', 'generating', 'auditing'),
     }
 
+    # Note: Compare status with template_state, NOT status of GeneratedCertificate(Model). Modify from edX!
     if (course_overview.certificates_display_behavior in hidden_status and
-            cert_status['status'] in hidden_status[course_overview.certificates_display_behavior]):
+            status in hidden_status[course_overview.certificates_display_behavior]):
         return {}
-
-    status = template_state.get(cert_status['status'], default_status)
 
     status_dict = {
         'status': status,
@@ -677,7 +679,11 @@ def dashboard(request):
                 registrationcoderedemption__redeemed_by=request.user
             ),
             enrollment.course_id
-        ) or (enrollment.course_overview.extra and enrollment.course_overview.extra.has_terminated and not staff_access)
+        ) or (
+            enrollment.course_overview.extra and enrollment.course_overview.extra.has_terminated and not staff_access
+        ) or (
+            enrollment.is_individual_closed() and not staff_access
+        )
     )
 
     enrolled_courses_either_paid = frozenset(

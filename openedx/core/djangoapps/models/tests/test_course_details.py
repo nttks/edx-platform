@@ -42,6 +42,9 @@ class CourseDetailsTestCase(ModuleStoreTestCase):
         self.assertIsNone(details.effort, "effort somehow initialized" + str(details.effort))
         self.assertIsNone(details.language, "language somehow initialized" + str(details.language))
         self.assertFalse(details.self_paced)
+        self.assertIsNone(details.individual_end_days, "individual_end_days somehow initialized " + str(details.individual_end_days))
+        self.assertIsNone(details.individual_end_hours, "individual_end_hours somehow initialized " + str(details.individual_end_hours))
+        self.assertIsNone(details.individual_end_minutes, "individual_end_minutes somehow initialized " + str(details.individual_end_minutes))
 
     def test_update_and_fetch(self):
         SelfPacedConfiguration(enabled=True).save()
@@ -97,6 +100,21 @@ class CourseDetailsTestCase(ModuleStoreTestCase):
             self.assertEqual(
                 CourseDetails.update_from_json(self.course.id, jsondetails.__dict__, self.user).language,
                 jsondetails.language
+            )
+            jsondetails.individual_end_days = 1
+            self.assertEqual(
+                CourseDetails.update_from_json(self.course.id, jsondetails.__dict__, self.user).individual_end_days,
+                jsondetails.individual_end_days
+            )
+            jsondetails.individual_end_hours = 2
+            self.assertEqual(
+                CourseDetails.update_from_json(self.course.id, jsondetails.__dict__, self.user).individual_end_hours,
+                jsondetails.individual_end_hours
+            )
+            jsondetails.individual_end_minutes = 3
+            self.assertEqual(
+                CourseDetails.update_from_json(self.course.id, jsondetails.__dict__, self.user).individual_end_minutes,
+                jsondetails.individual_end_minutes
             )
 
     def test_toggle_pacing_during_course_run(self):

@@ -23,10 +23,18 @@ class CourseOverviewExtraTest(ModuleStoreTestCase):
         self.assertFalse(overview.extra.has_terminated)
         self.assertFalse(overview.extra.is_f2f_course)
         self.assertFalse(overview.extra.is_f2f_course_sell)
+        self.assertFalse(overview.extra.self_paced)
+        self.assertIsNone(overview.extra.individual_end_days)
+        self.assertIsNone(overview.extra.individual_end_hours)
+        self.assertIsNone(overview.extra.individual_end_minutes)
 
         self.course.terminate_start = datetime.now() - timedelta(seconds=1)
         self.course.is_f2f_course = True
         self.course.is_f2f_course_sell = True
+        self.course.self_paced = True
+        self.course.individual_end_days = 1
+        self.course.individual_end_hours = 2
+        self.course.individual_end_minutes = 3
         # This fires a course_published signal, which should be caught in signals.py, which should in turn
         # delete the corresponding CourseOverviewExtra from the cache.
         self.update_course(self.course, self.user.id)
@@ -36,6 +44,10 @@ class CourseOverviewExtraTest(ModuleStoreTestCase):
         self.assertTrue(overview.extra.has_terminated)
         self.assertTrue(overview.extra.is_f2f_course)
         self.assertTrue(overview.extra.is_f2f_course_sell)
+        self.assertTrue(overview.extra.self_paced)
+        self.assertEqual(1, overview.extra.individual_end_days)
+        self.assertEqual(2, overview.extra.individual_end_hours)
+        self.assertEqual(3, overview.extra.individual_end_minutes)
 
     def test_extra_stale_cache(self):
         overview = CourseOverview.get_from_id(self.course.id)

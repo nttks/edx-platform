@@ -1,0 +1,94 @@
+<%inherit file="../main.html" />
+<%namespace name='static' file='/static_content.html'/>
+
+<%!
+    from django.core.urlresolvers import reverse
+    from django.utils.translation import pgettext, ugettext as _
+    from openedx.core.lib.ga_datetime_utils import to_timezone
+%>
+
+<%block name="pagetitle">${_("Your Personal Information")}</%block>
+
+<%block name="bodyclass">ticket option</%block>
+
+<%block name="headextra"><meta name="format-detection" content="telephone=no" /></%block>
+
+<div class="ticket_page_wrap">
+    <ul id="breadcrumb">
+        <li><span><i class="fa fa-shopping-cart"></i><span class="text">${pgettext("payment_breadcrumb", "Order")}</span></span></li>
+        <li class="active"><span><i class="fa fa-pencil-square-o"></i><span class="text">${pgettext("payment_breadcrumb", "Information")}</span></span></li>
+        <li><span><i class="fa fa-credit-card"></i><span class="text">${pgettext("payment_breadcrumb", "Payment")}</span></span></li>
+        <li><span><i class="fa fa-eye"></i><span class="text">${pgettext("payment_breadcrumb", "Confirm")}</span></span></li>
+        <li><span><i class="fa fa-check"></i><span class="text">${pgettext("payment_breadcrumb", "Complete")}</span></span></li>
+    </ul>
+    <h2>${_("Your Personal Information")}</h2>
+
+    % if messages:
+        <div class="purchase_error">
+            % for message in messages:
+                <p>${message}</p>
+            % endfor
+        </div>
+    % endif
+
+    <section class="section">
+        <div class="course_select_area clear">
+            <p>${_("Please fill out your information below and click \"Next\".")}</p>
+            <p>${_("* gacco Privacy Policy is ")} <a href="https://support.gacco.org/hc/ja/articles/200749314-%E3%83%97%E3%83%A9%E3%82%A4%E3%83%90%E3%82%B7%E3%83%BC%E3%83%9D%E3%83%AA%E3%82%B7%E3%83%BC" target="_blank">${_("HERE")}</a></p>
+        </div>
+        <div class="item_area">
+            <form method="POST" id="personal_input_form">
+                <ul class="clear">
+                    <li><span class="required-msg red">${_('Asterisk(*) marked fields are required.')}</span></li>
+                    % for field in form:
+                        <li class="${field.name}">
+                            % if field.name == 'gaccatz_check':
+                                <div>
+                                    <span class="gaccatz_checkbox">
+                                        ${field}
+                                        <label class="checkbox_background" for="formtools_${field.name}"></label>
+                                    </span>
+                                    <label for="formtools_${field.name}">${_(field.label)} <span class="red">*</span></label>
+                                </div>
+                                <span class="gaccatz_additional_description">
+                                    ${_("Please check {link_start}HERE{link_end} from the precondition for more information.").format(link_start="<a href=\"http://gacco.org/gaccatz/envcheck.html#spec\" target=\"_blank\">", link_end="</a>")}
+                                </span>
+                            % else:
+                                <label for="${field.name}">
+                                    ${_(field.label)}
+                                    % if field.field.required and field.label:
+                                    <span class="red">*</span>
+                                    % endif
+                                </label>
+                                % if field.name == 'postal_code':
+                                    ${field}<span class="postal_code_msg">${_('(ex: 1010001 except hyphen)')}</span><br>
+                                % else:
+                                    ${field}
+                                % endif
+                            %endif
+                        </li>
+                        <li class="note note_${field.name}">
+                            % if field.errors:
+                                <span class="err-msg red">
+                                    ${field.errors[0]}
+                                </span>
+                            % else:
+                                % if field.name == 'kana':
+                                    ${_("Full-width Kana")}
+                                % elif field.name == 'postal_code' or field.name == 'phone_number':
+                                    ${_("Half-width number")}
+                                % elif field.name == 'address_line_2':
+                                    ${_("Our shipment is only provided domestically in Japan")}
+                                % endif
+                            % endif
+                        </li>
+                    % endfor
+                </ul>
+                <input type="hidden" name="csrfmiddlewaretoken" value="${csrf_token}" />
+                <input type="hidden" name="${stage_field}" value="1" />
+                <input type="submit" name="submit" value="${pgettext("personal_input_form", "Next")}" />
+                <input  class="cancel-button" type="button" name="back" value="${pgettext("personal_input_form", "Back")}" onclick="history.back();">
+            </form>
+        </div>
+    </section>
+</div>

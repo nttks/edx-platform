@@ -55,6 +55,32 @@ class SequenceFields(object):
         scope=Scope.settings,
     )
 
+    individual_start_days = Integer(
+        help=_("Number of days from the base date to the chapter starts"),
+        scope=Scope.settings
+    )
+    individual_start_hours = Integer(
+        help=_("Number of hours from the base date to the chapter starts"),
+        scope=Scope.settings
+    )
+    individual_start_minutes = Integer(
+        help=_("Number of minutes from the base date to the chapter starts"),
+        scope=Scope.settings
+    )
+
+    individual_due_days = Integer(
+        help=_("Number of days from the base date to the due"),
+        scope=Scope.settings
+    )
+    individual_due_hours = Integer(
+        help=_("Number of hours from the base date to the due"),
+        scope=Scope.settings
+    )
+    individual_due_minutes = Integer(
+        help=_("Number of minutes from the base date to the due"),
+        scope=Scope.settings
+    )
+
 
 class ProctoringFields(object):
     """

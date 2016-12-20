@@ -191,7 +191,27 @@ CMS.URL.UPLOAD_ASSET = '${upload_asset_url}';
               </div>
             </li>
 
-            <li class="field-group field-group-course-end" id="course-end">
+            <li class="field-group field-group-course-end" id="individual-course-end" style="display: none;">
+              <div class="field individual-date" id="field-course-end-days">
+                <label for="individual-course-end-days">${_("Individual Course End Days")}</label>
+                <input type="text" class="end-date end" id="individual-course-end-days" placeholder="DD" autocomplete="off" />
+                <span class="tip tip-stacked">${_("Days up to the course available period")}</span>
+              </div>
+
+              <div class="field individual-date" id="field-course-end-hours">
+                <label for="individual-course-end-hours">${_("Hours")}</label>
+                <input type="text" class="end" id="individual-course-end-hours" value="" placeholder="HH" autocomplete="off" />
+                <span class="tip tip-stacked">${_("Hours up to the course available period")}</span>
+              </div>
+
+              <div class="field individual-date" id="field-course-end-minutes">
+                <label for="individual-course-end-minutes">${_("Minutes")}</label>
+                <input type="text" class="end" id="individual-course-end-minutes" value="" placeholder="MM" autocomplete="off" />
+                <span class="tip tip-stacked">${_("Minutes up to the course available period")}</span>
+              </div>
+            </li>
+
+            <li class="field-group field-group-course-end" id="course-end" style="display: none;">
               <div class="field date" id="field-course-end-date">
                 <label for="course-end-date">${_("Course End Date")}</label>
                 <input type="text" class="end-date date end" id="course-end-date" placeholder="MM/DD/YYYY" autocomplete="off" />
@@ -345,12 +365,12 @@ CMS.URL.UPLOAD_ASSET = '${upload_asset_url}';
                   <span class="tip tip-stacked">${_("Please enter the enrollment period of the course.(Example:4 weeks)")}</span>
                 </li>
                 <li class="field" id="field-face2face-course">
-                  <label for="face2face-course">${_("Face 2 Face Classroom")}</label>
+                  <label for="face2face-course">${_("Face-to-Face Course")}</label>
                   <input type="checkbox" class="placeholder" id="face2face-course" value="true" autocomplete="off" />
                   <span class="tip tip-stacked">${_("Please check if there is a reversal classes.")}</span>
                 </li>
                 <li class="field" id="field-face2face-course-sell">
-                  <label for="face2face-course-sell">${_("Sell Face 2 Face Classroom")}</label>
+                  <label for="face2face-course-sell">${_("Sell Face-to-Face Course")}</label>
                   <input type="checkbox" class="placeholder" id="face2face-course-sell" value="true" autocomplete="off" />
                   <span class="tip tip-stacked">${_("Please check if sell a reversal classes.")}</span>
                 </li>
@@ -493,12 +513,12 @@ CMS.URL.UPLOAD_ASSET = '${upload_asset_url}';
               <ol class="list-input">
                 <li class="field">
                   <input type="radio" class="field-radio" name="self-paced" id="course-pace-instructor-paced" value="false"/>
-                  <label class="course-pace-label" for="course-pace-instructor-paced">Instructor-Paced</label>
+                  <label class="course-pace-label" for="course-pace-instructor-paced">${_("Instructor-Paced")}</label>
                   <span class="tip">${_("Instructor-paced courses progress at the pace that the course author sets. You can configure release dates for course content and due dates for assignments.")}</span>
                 </li>
                 <li class="field">
                   <input type="radio" class="field-radio" name="self-paced" id="course-pace-self-paced" value="true"/>
-                  <label class="course-pace-label" for="course-pace-self-paced">Self-Paced</label>
+                  <label class="course-pace-label" for="course-pace-self-paced">${_("Self-Paced")}</label>
                   <span class="tip">${_("Self-paced courses do not have release dates for course content or due dates for assignments. Learners can complete course material at any time before the course end date.")}</span>
                 </li>
               </ol>

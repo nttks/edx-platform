@@ -36,7 +36,7 @@ from openedx.core.lib.js_utils import (
     <%block name="header_extras"></%block>
   </head>
 
-  <body class="${static.dir_rtl()} <%block name='bodyclass'></%block> lang_${LANGUAGE_CODE}">
+  <body class="${static.dir_rtl()} <%block name='bodyclass'></%block> lang_${LANGUAGE_CODE} ${'self-paced' if context_course and context_course.self_paced else ''}">
     <%block name="view_notes"></%block>
 
     <a class="nav-skip" href="#content">${_("Skip to main content")}</a>
