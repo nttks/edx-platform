@@ -14,7 +14,7 @@ from django.core.management.base import BaseCommand, CommandError
 from django.utils import timezone
 
 from biz.djangoapps.ga_contract.models import Contract, CONTRACT_TYPE_PF, CONTRACT_TYPE_GACCO_SERVICE, CONTRACT_TYPE_OWNER_SERVICE
-from biz.djangoapps.ga_invitation.models import ContractRegisterHistory, UNREGISTER_INVITATION_CODE
+from biz.djangoapps.ga_invitation.models import ContractRegisterHistory, REGISTER_INVITATION_CODE
 from biz.djangoapps.util.datetime_utils import timezone_today
 from biz.djangoapps.util.decorators import handle_command_exception
 from lms.djangoapps.instructor.enrollment import render_message_to_string
@@ -111,18 +111,37 @@ def _create_report_data(target_date, last_target_date):
         end_date__gt=last_target_date
     ):
 
-        # Select input, register without userstanding, unregistered in last target month.
+        # Select register without userstanding, unregistered in last target month.
         contract.contract_register_list = list(ContractRegisterHistory.objects.raw('''
-            SELECT id, user_id, contract_id, status, created, MAX(modified) AS modified FROM ga_invitation_contractregisterhistory
-            WHERE contract_id = {} AND modified < '{}' AND user_id NOT IN ({})
-            GROUP BY user_id
-            HAVING NOT (status = '{}' AND modified < '{}')
+            SELECT 0 AS id, user_id, contract_id FROM ga_invitation_contractregisterhistory
+                WHERE id IN (
+                    SELECT
+                        max(id) AS max_id
+                    FROM
+                        ga_invitation_contractregisterhistory
+                    WHERE
+                        status = '{status}' AND contract_id = {contract_id} AND modified >= '{last_target_date}' AND modified < '{target_date}' AND user_id NOT IN ({user_disabled_list})
+                    GROUP BY
+                        user_id
+                )
+            UNION
+            SELECT 0 AS id, user_id, contract_id FROM ga_invitation_contractregisterhistory
+                WHERE status = '{status}' AND id IN (
+                    SELECT
+                        max(id) AS max_id
+                    FROM
+                        ga_invitation_contractregisterhistory
+                    WHERE
+                        contract_id = {contract_id} AND modified < '{last_target_date}' AND user_id NOT IN ({user_disabled_list})
+                    GROUP BY
+                        user_id
+                )
         '''.format(
-            contract.id,
-            target_date.strftime('%Y-%m-%d %H:%M:%S'),
-            ','.join(user_disabled_list),
-            UNREGISTER_INVITATION_CODE,
-            last_target_date.strftime('%Y-%m-%d %H:%M:%S'),
+            contract_id=contract.id,
+            target_date=target_date.strftime('%Y-%m-%d %H:%M:%S'),
+            user_disabled_list=','.join(user_disabled_list),
+            status=REGISTER_INVITATION_CODE,
+            last_target_date=last_target_date.strftime('%Y-%m-%d %H:%M:%S'),
         )))
 
         if contract.contract_type == CONTRACT_TYPE_OWNER_SERVICE[0]:

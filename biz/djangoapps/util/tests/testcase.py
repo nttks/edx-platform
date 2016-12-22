@@ -14,7 +14,7 @@ from biz.djangoapps.ga_contract.tests.factories import (
 )
 from biz.djangoapps.ga_contract_operation.tests.factories import ContractTaskHistoryFactory
 from biz.djangoapps.ga_invitation.tests.factories import AdditionalInfoSettingFactory, ContractRegisterFactory
-from biz.djangoapps.ga_invitation.models import INPUT_INVITATION_CODE, REGISTER_INVITATION_CODE, UNREGISTER_INVITATION_CODE
+from biz.djangoapps.ga_invitation.models import ContractRegister, INPUT_INVITATION_CODE, REGISTER_INVITATION_CODE, UNREGISTER_INVITATION_CODE
 from biz.djangoapps.ga_manager.models import ManagerPermission
 from biz.djangoapps.ga_manager.tests.factories import ManagerFactory
 from biz.djangoapps.ga_organization.models import Organization
@@ -82,7 +82,13 @@ class BizTestBase(TestCase):
         return contract
 
     def _input_contract(self, contract, user):
-        return ContractRegisterFactory.create(user=user, contract=contract, status=INPUT_INVITATION_CODE)
+        register = ContractRegister.get_by_user_contract(user, contract)
+        if register:
+            register.status = INPUT_INVITATION_CODE
+            register.save()
+            return register
+        else:
+            return ContractRegisterFactory.create(user=user, contract=contract, status=INPUT_INVITATION_CODE)
 
     def _register_contract(self, contract, user, additional_value=''):
         for additional_info in contract.additional_info.all():
@@ -94,10 +100,22 @@ class BizTestBase(TestCase):
             )
         for detail in contract.details.all():
             CourseEnrollment.enroll(user, detail.course_id)
-        return ContractRegisterFactory.create(user=user, contract=contract, status=REGISTER_INVITATION_CODE)
+        register = ContractRegister.get_by_user_contract(user, contract)
+        if register:
+            register.status = REGISTER_INVITATION_CODE
+            register.save()
+            return register
+        else:
+            return ContractRegisterFactory.create(user=user, contract=contract, status=REGISTER_INVITATION_CODE)
 
     def _unregister_contract(self, contract, user):
-        return ContractRegisterFactory.create(user=user, contract=contract, status=UNREGISTER_INVITATION_CODE)
+        register = ContractRegister.get_by_user_contract(user, contract)
+        if register:
+            register.status = UNREGISTER_INVITATION_CODE
+            register.save()
+            return register
+        else:
+            return ContractRegisterFactory.create(user=user, contract=contract, status=UNREGISTER_INVITATION_CODE)
 
     def _account_disable(self, user):
         return UserStandingFactory.create(user=user, account_status=UserStanding.ACCOUNT_DISABLED, changed_by=user)

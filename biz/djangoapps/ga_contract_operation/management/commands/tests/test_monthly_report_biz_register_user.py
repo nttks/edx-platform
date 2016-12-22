@@ -91,13 +91,13 @@ class MonthlyReportBizRegisterUser(BizTestBase, ModuleStoreTestCase, LoginEnroll
     @patch('biz.djangoapps.ga_contract_operation.management.commands.monthly_report_biz_register_user.send_mail')
     @patch('biz.djangoapps.util.decorators.log.info')
     @patch('biz.djangoapps.util.decorators.log.error')
-    @ddt.unpack
     @ddt.data(
         (None, ['recipient@test.com']),
         ('', ['recipient@test.com']),
         ('from@test.com', None),
         ('from@test.com', []),
     )
+    @ddt.unpack
     def test_call_command_illegal_settings(self, from_email, recipient_list, fn_log_error, fn_log_info, fn_senf_mail, fn_render_message, fn_create_report_data):
         with override_settings(
             BIZ_FROM_EMAIL=from_email,
@@ -121,34 +121,15 @@ class MonthlyReportBizRegisterUser(BizTestBase, ModuleStoreTestCase, LoginEnroll
             self.assertEqual(len(os_contract_list[0].contract_register_list), assert_len_register_os)
 
     def _mod_register_history_modified(self, contract, user, modified):
-        history = ContractRegisterHistory.objects.get(contract=contract, user=user)
-        history.modified = modified
-        history.save()
+        ContractRegisterHistory.objects.filter(contract=contract, user=user).update(modified=modified)
 
-    @ddt.unpack
     @ddt.data(
         ('PF', 1, 0, 0, None),
         ('GS', 1, 0, 0, None),
         ('OS', 0, 1, None, 0),
         ('O', 0, 0, None, None),
     )
-    def _test_create_report_data_unregister(self, contract_type, assert_len_pfgs, assert_len_os, assert_len_register_pfgs, assert_len_register_os):
-        contract = self._create_contract(contract_type=contract_type)
-        self._unregister_contract(contract, self.user)
-        self._mod_register_history_modified(contract, self.user, self.first_day_of_this_month_jst_00)
-
-        _, _, target_date, last_target_date = _target_date(self.today.year, self.today.month)
-        pfgs_contract_list, os_contract_list = _create_report_data(target_date, last_target_date)
-
-        self.assert_create_report_data(pfgs_contract_list, os_contract_list, assert_len_pfgs, assert_len_os, assert_len_register_pfgs, assert_len_register_os)
-
     @ddt.unpack
-    @ddt.data(
-        ('PF', 1, 0, 1, None),
-        ('GS', 1, 0, 1, None),
-        ('OS', 0, 1, None, 1),
-        ('O', 0, 0, None, None),
-    )
     def test_create_report_data_input(self, contract_type, assert_len_pfgs, assert_len_os, assert_len_register_pfgs, assert_len_register_os):
         contract = self._create_contract(contract_type=contract_type)
         self._input_contract(contract, self.user)
@@ -159,15 +140,16 @@ class MonthlyReportBizRegisterUser(BizTestBase, ModuleStoreTestCase, LoginEnroll
 
         self.assert_create_report_data(pfgs_contract_list, os_contract_list, assert_len_pfgs, assert_len_os, assert_len_register_pfgs, assert_len_register_os)
 
-    @ddt.unpack
     @ddt.data(
         ('PF', 1, 0, 1, None),
         ('GS', 1, 0, 1, None),
         ('OS', 0, 1, None, 1),
         ('O', 0, 0, None, None),
     )
+    @ddt.unpack
     def test_create_report_data_register(self, contract_type, assert_len_pfgs, assert_len_os, assert_len_register_pfgs, assert_len_register_os):
         contract = self._create_contract(contract_type=contract_type)
+        self._input_contract(contract, self.user)
         self._register_contract(contract, self.user)
         self._mod_register_history_modified(contract, self.user, self.first_day_of_this_month_jst_00)
 
@@ -176,15 +158,16 @@ class MonthlyReportBizRegisterUser(BizTestBase, ModuleStoreTestCase, LoginEnroll
 
         self.assert_create_report_data(pfgs_contract_list, os_contract_list, assert_len_pfgs, assert_len_os, assert_len_register_pfgs, assert_len_register_os)
 
-    @ddt.unpack
     @ddt.data(
-        ('PF', 1, 0, 1, None),
-        ('GS', 1, 0, 1, None),
-        ('OS', 0, 1, None, 1),
+        ('PF', 1, 0, 0, None),
+        ('GS', 1, 0, 0, None),
+        ('OS', 0, 1, None, 0),
         ('O', 0, 0, None, None),
     )
+    @ddt.unpack
     def test_create_report_data_unregister(self, contract_type, assert_len_pfgs, assert_len_os, assert_len_register_pfgs, assert_len_register_os):
         contract = self._create_contract(contract_type=contract_type)
+        self._input_contract(contract, self.user)
         self._unregister_contract(contract, self.user)
         self._mod_register_history_modified(contract, self.user, self.first_day_of_this_month_jst_00)
 
@@ -193,13 +176,32 @@ class MonthlyReportBizRegisterUser(BizTestBase, ModuleStoreTestCase, LoginEnroll
 
         self.assert_create_report_data(pfgs_contract_list, os_contract_list, assert_len_pfgs, assert_len_os, assert_len_register_pfgs, assert_len_register_os)
 
-    @ddt.unpack
     @ddt.data(
         ('PF', 1, 0, 1, None),
         ('GS', 1, 0, 1, None),
         ('OS', 0, 1, None, 1),
         ('O', 0, 0, None, None),
     )
+    @ddt.unpack
+    def test_create_report_data_unregister_from_register(self, contract_type, assert_len_pfgs, assert_len_os, assert_len_register_pfgs, assert_len_register_os):
+        contract = self._create_contract(contract_type=contract_type)
+        self._input_contract(contract, self.user)
+        self._register_contract(contract, self.user)
+        self._unregister_contract(contract, self.user)
+        self._mod_register_history_modified(contract, self.user, self.first_day_of_this_month_jst_00)
+
+        _, _, target_date, last_target_date = _target_date(self.today.year, self.today.month)
+        pfgs_contract_list, os_contract_list = _create_report_data(target_date, last_target_date)
+
+        self.assert_create_report_data(pfgs_contract_list, os_contract_list, assert_len_pfgs, assert_len_os, assert_len_register_pfgs, assert_len_register_os)
+
+    @ddt.data(
+        ('PF', 1, 0, 0, None),
+        ('GS', 1, 0, 0, None),
+        ('OS', 0, 1, None, 0),
+        ('O', 0, 0, None, None),
+    )
+    @ddt.unpack
     def test_create_report_data_input_last_month(self, contract_type, assert_len_pfgs, assert_len_os, assert_len_register_pfgs, assert_len_register_os):
         contract = self._create_contract(contract_type=contract_type)
         self._input_contract(contract, self.user)
@@ -210,15 +212,16 @@ class MonthlyReportBizRegisterUser(BizTestBase, ModuleStoreTestCase, LoginEnroll
 
         self.assert_create_report_data(pfgs_contract_list, os_contract_list, assert_len_pfgs, assert_len_os, assert_len_register_pfgs, assert_len_register_os)
 
-    @ddt.unpack
     @ddt.data(
         ('PF', 1, 0, 1, None),
         ('GS', 1, 0, 1, None),
         ('OS', 0, 1, None, 1),
         ('O', 0, 0, None, None),
     )
+    @ddt.unpack
     def test_create_report_data_register_last_month(self, contract_type, assert_len_pfgs, assert_len_os, assert_len_register_pfgs, assert_len_register_os):
         contract = self._create_contract(contract_type=contract_type)
+        self._input_contract(contract, self.user)
         self._register_contract(contract, self.user)
         self._mod_register_history_modified(contract, self.user, self.last_day_of_last_month_jst_59)
 
@@ -227,15 +230,16 @@ class MonthlyReportBizRegisterUser(BizTestBase, ModuleStoreTestCase, LoginEnroll
 
         self.assert_create_report_data(pfgs_contract_list, os_contract_list, assert_len_pfgs, assert_len_os, assert_len_register_pfgs, assert_len_register_os)
 
-    @ddt.unpack
     @ddt.data(
         ('PF', 1, 0, 0, None),
         ('GS', 1, 0, 0, None),
         ('OS', 0, 1, None, 0),
         ('O', 0, 0, None, None),
     )
+    @ddt.unpack
     def test_create_report_data_unregister_last_month(self, contract_type, assert_len_pfgs, assert_len_os, assert_len_register_pfgs, assert_len_register_os):
         contract = self._create_contract(contract_type=contract_type)
+        self._input_contract(contract, self.user)
         self._unregister_contract(contract, self.user)
         self._mod_register_history_modified(contract, self.user, self.last_day_of_last_month_jst_59)
 
@@ -244,13 +248,32 @@ class MonthlyReportBizRegisterUser(BizTestBase, ModuleStoreTestCase, LoginEnroll
 
         self.assert_create_report_data(pfgs_contract_list, os_contract_list, assert_len_pfgs, assert_len_os, assert_len_register_pfgs, assert_len_register_os)
 
+    @ddt.data(
+        ('PF', 1, 0, 0, None),
+        ('GS', 1, 0, 0, None),
+        ('OS', 0, 1, None, 0),
+        ('O', 0, 0, None, None),
+    )
     @ddt.unpack
+    def test_create_report_data_unregister_from_register_last_month(self, contract_type, assert_len_pfgs, assert_len_os, assert_len_register_pfgs, assert_len_register_os):
+        contract = self._create_contract(contract_type=contract_type)
+        self._input_contract(contract, self.user)
+        self._register_contract(contract, self.user)
+        self._unregister_contract(contract, self.user)
+        self._mod_register_history_modified(contract, self.user, self.last_day_of_last_month_jst_59)
+
+        _, _, target_date, last_target_date = _target_date(self.today.year, self.today.month)
+        pfgs_contract_list, os_contract_list = _create_report_data(target_date, last_target_date)
+
+        self.assert_create_report_data(pfgs_contract_list, os_contract_list, assert_len_pfgs, assert_len_os, assert_len_register_pfgs, assert_len_register_os)
+
     @ddt.data(
         ('PF', 0, 0, None, None),
         ('GS', 0, 0, None, None),
         ('OS', 0, 0, None, None),
         ('O', 0, 0, None, None),
     )
+    @ddt.unpack
     def test_create_report_data_input_contract_ended(self, contract_type, assert_len_pfgs, assert_len_os, assert_len_register_pfgs, assert_len_register_os):
         contract = self._create_contract(contract_type=contract_type, end_date=self.last_day_of_last_month_utc)
         self._input_contract(contract, self.user)
@@ -260,15 +283,16 @@ class MonthlyReportBizRegisterUser(BizTestBase, ModuleStoreTestCase, LoginEnroll
 
         self.assert_create_report_data(pfgs_contract_list, os_contract_list, assert_len_pfgs, assert_len_os, assert_len_register_pfgs, assert_len_register_os)
 
-    @ddt.unpack
     @ddt.data(
         ('PF', 0, 0, None, None),
         ('GS', 0, 0, None, None),
         ('OS', 0, 0, None, None),
         ('O', 0, 0, None, None),
     )
+    @ddt.unpack
     def test_create_report_data_register_contract_ended(self, contract_type, assert_len_pfgs, assert_len_os, assert_len_register_pfgs, assert_len_register_os):
         contract = self._create_contract(contract_type=contract_type, end_date=self.last_day_of_last_month_utc)
+        self._input_contract(contract, self.user)
         self._register_contract(contract, self.user)
 
         _, _, target_date, last_target_date = _target_date(self.today.year, self.today.month)
@@ -276,15 +300,34 @@ class MonthlyReportBizRegisterUser(BizTestBase, ModuleStoreTestCase, LoginEnroll
 
         self.assert_create_report_data(pfgs_contract_list, os_contract_list, assert_len_pfgs, assert_len_os, assert_len_register_pfgs, assert_len_register_os)
 
-    @ddt.unpack
     @ddt.data(
         ('PF', 0, 0, None, None),
         ('GS', 0, 0, None, None),
         ('OS', 0, 0, None, None),
         ('O', 0, 0, None, None),
     )
+    @ddt.unpack
     def test_create_report_data_unregister_contract_ended(self, contract_type, assert_len_pfgs, assert_len_os, assert_len_register_pfgs, assert_len_register_os):
         contract = self._create_contract(contract_type=contract_type, end_date=self.last_day_of_last_month_utc)
+        self._input_contract(contract, self.user)
+        self._unregister_contract(contract, self.user)
+
+        _, _, target_date, last_target_date = _target_date(self.today.year, self.today.month)
+        pfgs_contract_list, os_contract_list = _create_report_data(target_date, last_target_date)
+
+        self.assert_create_report_data(pfgs_contract_list, os_contract_list, assert_len_pfgs, assert_len_os, assert_len_register_pfgs, assert_len_register_os)
+
+    @ddt.data(
+        ('PF', 0, 0, None, None),
+        ('GS', 0, 0, None, None),
+        ('OS', 0, 0, None, None),
+        ('O', 0, 0, None, None),
+    )
+    @ddt.unpack
+    def test_create_report_data_unregister_from_register_contract_ended(self, contract_type, assert_len_pfgs, assert_len_os, assert_len_register_pfgs, assert_len_register_os):
+        contract = self._create_contract(contract_type=contract_type, end_date=self.last_day_of_last_month_utc)
+        self._input_contract(contract, self.user)
+        self._register_contract(contract, self.user)
         self._unregister_contract(contract, self.user)
 
         _, _, target_date, last_target_date = _target_date(self.today.year, self.today.month)
@@ -297,13 +340,13 @@ class MonthlyReportBizRegisterUser(BizTestBase, ModuleStoreTestCase, LoginEnroll
             UPDATE student_userstanding SET standing_last_changed_at = %s WHERE user_id = %s
         ''', [modified.strftime('%Y-%m-%d %H:%M:%S'), str(user.id)])
 
-    @ddt.unpack
     @ddt.data(
-        ('PF', 1, 0, 1, None),
-        ('GS', 1, 0, 1, None),
-        ('OS', 0, 1, None, 1),
+        ('PF', 1, 0, 0, None),
+        ('GS', 1, 0, 0, None),
+        ('OS', 0, 1, None, 0),
         ('O', 0, 0, None, None),
     )
+    @ddt.unpack
     def test_create_report_data_input_userstanding(self, contract_type, assert_len_pfgs, assert_len_os, assert_len_register_pfgs, assert_len_register_os):
         contract = self._create_contract(contract_type=contract_type)
         self._input_contract(contract, self.user)
@@ -315,15 +358,16 @@ class MonthlyReportBizRegisterUser(BizTestBase, ModuleStoreTestCase, LoginEnroll
 
         self.assert_create_report_data(pfgs_contract_list, os_contract_list, assert_len_pfgs, assert_len_os, assert_len_register_pfgs, assert_len_register_os)
 
-    @ddt.unpack
     @ddt.data(
         ('PF', 1, 0, 1, None),
         ('GS', 1, 0, 1, None),
         ('OS', 0, 1, None, 1),
         ('O', 0, 0, None, None),
     )
+    @ddt.unpack
     def test_create_report_data_register_userstanding(self, contract_type, assert_len_pfgs, assert_len_os, assert_len_register_pfgs, assert_len_register_os):
         contract = self._create_contract(contract_type=contract_type)
+        self._input_contract(contract, self.user)
         self._register_contract(contract, self.user)
         self._account_disable(self.user)
         self._mod_userstanding_last_changed_at(self.user, self.first_day_of_this_month_jst_00)
@@ -333,15 +377,16 @@ class MonthlyReportBizRegisterUser(BizTestBase, ModuleStoreTestCase, LoginEnroll
 
         self.assert_create_report_data(pfgs_contract_list, os_contract_list, assert_len_pfgs, assert_len_os, assert_len_register_pfgs, assert_len_register_os)
 
-    @ddt.unpack
     @ddt.data(
-        ('PF', 1, 0, 1, None),
-        ('GS', 1, 0, 1, None),
-        ('OS', 0, 1, None, 1),
+        ('PF', 1, 0, 0, None),
+        ('GS', 1, 0, 0, None),
+        ('OS', 0, 1, None, 0),
         ('O', 0, 0, None, None),
     )
+    @ddt.unpack
     def test_create_report_data_unregister_userstanding(self, contract_type, assert_len_pfgs, assert_len_os, assert_len_register_pfgs, assert_len_register_os):
         contract = self._create_contract(contract_type=contract_type)
+        self._input_contract(contract, self.user)
         self._unregister_contract(contract, self.user)
         self._account_disable(self.user)
         self._mod_userstanding_last_changed_at(self.user, self.first_day_of_this_month_jst_00)
@@ -351,13 +396,33 @@ class MonthlyReportBizRegisterUser(BizTestBase, ModuleStoreTestCase, LoginEnroll
 
         self.assert_create_report_data(pfgs_contract_list, os_contract_list, assert_len_pfgs, assert_len_os, assert_len_register_pfgs, assert_len_register_os)
 
+    @ddt.data(
+        ('PF', 1, 0, 1, None),
+        ('GS', 1, 0, 1, None),
+        ('OS', 0, 1, None, 1),
+        ('O', 0, 0, None, None),
+    )
     @ddt.unpack
+    def test_create_report_data_unregister_from_register_userstanding(self, contract_type, assert_len_pfgs, assert_len_os, assert_len_register_pfgs, assert_len_register_os):
+        contract = self._create_contract(contract_type=contract_type)
+        self._input_contract(contract, self.user)
+        self._register_contract(contract, self.user)
+        self._unregister_contract(contract, self.user)
+        self._account_disable(self.user)
+        self._mod_userstanding_last_changed_at(self.user, self.first_day_of_this_month_jst_00)
+
+        _, _, target_date, last_target_date = _target_date(self.today.year, self.today.month)
+        pfgs_contract_list, os_contract_list = _create_report_data(target_date, last_target_date)
+
+        self.assert_create_report_data(pfgs_contract_list, os_contract_list, assert_len_pfgs, assert_len_os, assert_len_register_pfgs, assert_len_register_os)
+
     @ddt.data(
         ('PF', 1, 0, 0, None),
         ('GS', 1, 0, 0, None),
         ('OS', 0, 1, None, 0),
         ('O', 0, 0, None, None),
     )
+    @ddt.unpack
     def test_create_report_data_input_userstanding_last_month(self, contract_type, assert_len_pfgs, assert_len_os, assert_len_register_pfgs, assert_len_register_os):
         contract = self._create_contract(contract_type=contract_type)
         self._input_contract(contract, self.user)
@@ -378,15 +443,16 @@ class MonthlyReportBizRegisterUser(BizTestBase, ModuleStoreTestCase, LoginEnroll
         print('{}'.format(rrr.modified))
         print('{}'.format(sss.standing_last_changed_at))
 
-    @ddt.unpack
     @ddt.data(
         ('PF', 1, 0, 0, None),
         ('GS', 1, 0, 0, None),
         ('OS', 0, 1, None, 0),
         ('O', 0, 0, None, None),
     )
+    @ddt.unpack
     def test_create_report_data_register_userstanding_last_month(self, contract_type, assert_len_pfgs, assert_len_os, assert_len_register_pfgs, assert_len_register_os):
         contract = self._create_contract(contract_type=contract_type)
+        self._input_contract(contract, self.user)
         self._register_contract(contract, self.user)
         self._account_disable(self.user)
         self._mod_userstanding_last_changed_at(self.user, self.last_day_of_last_month_jst_59)
@@ -396,15 +462,36 @@ class MonthlyReportBizRegisterUser(BizTestBase, ModuleStoreTestCase, LoginEnroll
 
         self.assert_create_report_data(pfgs_contract_list, os_contract_list, assert_len_pfgs, assert_len_os, assert_len_register_pfgs, assert_len_register_os)
 
-    @ddt.unpack
     @ddt.data(
         ('PF', 1, 0, 0, None),
         ('GS', 1, 0, 0, None),
         ('OS', 0, 1, None, 0),
         ('O', 0, 0, None, None),
     )
+    @ddt.unpack
     def test_create_report_data_unregister_userstanding_last_month(self, contract_type, assert_len_pfgs, assert_len_os, assert_len_register_pfgs, assert_len_register_os):
         contract = self._create_contract(contract_type=contract_type)
+        self._input_contract(contract, self.user)
+        self._unregister_contract(contract, self.user)
+        self._account_disable(self.user)
+        self._mod_userstanding_last_changed_at(self.user, self.last_day_of_last_month_jst_59)
+
+        _, _, target_date, last_target_date = _target_date(self.today.year, self.today.month)
+        pfgs_contract_list, os_contract_list = _create_report_data(target_date, last_target_date)
+
+        self.assert_create_report_data(pfgs_contract_list, os_contract_list, assert_len_pfgs, assert_len_os, assert_len_register_pfgs, assert_len_register_os)
+
+    @ddt.data(
+        ('PF', 1, 0, 0, None),
+        ('GS', 1, 0, 0, None),
+        ('OS', 0, 1, None, 0),
+        ('O', 0, 0, None, None),
+    )
+    @ddt.unpack
+    def test_create_report_data_unregister_from_register_userstanding_last_month(self, contract_type, assert_len_pfgs, assert_len_os, assert_len_register_pfgs, assert_len_register_os):
+        contract = self._create_contract(contract_type=contract_type)
+        self._input_contract(contract, self.user)
+        self._register_contract(contract, self.user)
         self._unregister_contract(contract, self.user)
         self._account_disable(self.user)
         self._mod_userstanding_last_changed_at(self.user, self.last_day_of_last_month_jst_59)
