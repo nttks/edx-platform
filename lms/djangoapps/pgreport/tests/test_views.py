@@ -1,35 +1,37 @@
-from django.test import TestCase
+import ddt
+import json
 from mock import MagicMock, patch, ANY
-from pgreport.views import (
-    ProgressReportBase, ProblemReport, SubmissionReport, OpenAssessmentReport)
-from django.test.utils import override_settings
+
 from django.core.urlresolvers import reverse
+from django.test import TestCase
 
 from opaque_keys.edx.keys import CourseKey
 from opaque_keys.edx.locator import CourseLocator
-from xmodule.modulestore.tests.factories import CourseFactory, ItemFactory
-from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
-from capa.tests.response_xml_factory import OptionResponseXMLFactory
-
-from student.tests.factories import (
-    UserFactory, UserStandingFactory, CourseEnrollmentFactory)
-from courseware.tests.factories import (
-    InstructorFactory, StaffFactory, StudentModuleFactory)
-from student.models import UserStanding
-from courseware.tests.factories import StaffFactory, InstructorFactory
-
-from courseware.courses import get_course
-from capa.correctmap import CorrectMap
-
-import json
-
+from openassessment.assessment.api import peer as peer_api
 from openassessment.assessment.models import Assessment, AssessmentPart
 from openassessment.assessment.serializers import rubric_from_dict
-from submissions import api as sub_api
-from openassessment.assessment.api import peer as peer_api
 from openassessment.workflow import api as workflow_api
+from submissions import api as sub_api
+
+from capa.correctmap import CorrectMap
+from capa.tests.response_xml_factory import OptionResponseXMLFactory
+from courseware.courses import get_course
+from courseware.tests.factories import (
+    InstructorFactory, StaffFactory, StudentModuleFactory
+)
+from student.models import UserStanding
+from student.tests.factories import (
+    CourseEnrollmentFactory, UserFactory, UserStandingFactory
+)
+from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
+from xmodule.modulestore.tests.factories import CourseFactory, ItemFactory
+
+from pgreport.views import (
+    get_active_students, ProgressReportBase, ProblemReport, SubmissionReport, OpenAssessmentReport
+)
 
 
+@ddt.ddt
 class ProgressReportBaseTestCase(TestCase):
     """ Test ProgressReportBase"""
 
@@ -37,41 +39,58 @@ class ProgressReportBaseTestCase(TestCase):
         self.course_id = 'course-v1:org+cn+run'
         self.progress = ProgressReportBase(self.course_id)
 
-    def tearDown(self):
-        pass
-
     def test_get_course_id(self):
-        course_id = self.progress.get_course_id(self.course_id)
+        course_id = self.progress._get_course_id(self.course_id)
         self.assertIsInstance(course_id, CourseKey)
 
     def test_get_course_id_by_course_key(self):
         course_key = CourseKey.from_string(self.course_id)
-        course_id = self.progress.get_course_id(course_key)
+        course_id = self.progress._get_course_id(course_key)
         self.assertIsInstance(course_id, CourseKey)
 
     def test_get_course_location(self):
-        course_location = self.progress.get_course_location(self.course_id)
+        course_location = self.progress._get_course_location(self.course_id)
         self.assertIsInstance(course_location, CourseLocator)
 
     def test_get_course_location_by_course_locator(self):
         course_locator = CourseLocator.from_string(self.course_id)
-        course_location = self.progress.get_course_location(course_locator)
+        course_location = self.progress._get_course_location(course_locator)
         self.assertIsInstance(course_location, CourseLocator)
 
+    @patch('pgreport.views.UsageKey.from_string')
     @patch('pgreport.views.modulestore')
-    def test_get_display_name(self, mod_mock):
+    def test_get_display_name(self, mod_mock, ukfs_modk):
         name_mock = MagicMock()
         name_mock.display_name_with_default = "test_name"
         name_mock.scope_ids.usage_id = "item_id"
-        mod_mock.return_value.get_items.return_value = [name_mock]
+        mod_mock.return_value.get_item.return_value = name_mock
+        ukfs_modk.return_value = "usage_key"
 
-        name = self.progress.get_display_name(
-            self.course_id, "item_id")
+        self.assertEquals("test_name", self.progress.get_display_name("item_id"))
 
         mod_mock.assert_called_with()
-        mod_mock().get_items.assert_called_with(
-            self.course_id, qualifiers={'category': "openassessment"})
-        self.assertEquals(name, "test_name")
+        mod_mock().get_item.assert_called_with("usage_key")
+        ukfs_modk.assert_called_with("item_id")
+
+    @ddt.data(
+        (["staff-assessment"], True),
+        (["peer-assessment", "self-assessment"], False),
+    )
+    @ddt.unpack
+    @patch('pgreport.views.UsageKey.from_string')
+    @patch('pgreport.views.modulestore')
+    def test_has_staff_assessment(self, assessment_steps, has_staff, mod_mock, ukfs_modk):
+        name_mock = MagicMock()
+        name_mock.assessment_steps = assessment_steps
+        name_mock.location = "item_id"
+        mod_mock.return_value.get_item.return_value = name_mock
+        ukfs_modk.return_value = "usage_key"
+
+        self.assertEqual(has_staff, self.progress.has_staff_assessment("item_id"))
+
+        mod_mock.assert_called_with()
+        mod_mock().get_item.assert_called_with("usage_key")
+        ukfs_modk.assert_called_with("item_id")
 
 
 class ProblemReportTestCase(ModuleStoreTestCase):
@@ -279,29 +298,26 @@ class ProblemReportTestCase(ModuleStoreTestCase):
             },
         ]
 
-    def tearDown(self):
-        pass
-
     def test_get_active_students(self):
-        counts, actives = self.pgreport.get_active_students()
+        counts, actives = get_active_students(self.course.id)
         self.assertEquals(counts, 7)
         self.assertEquals(actives, 6)
 
     @patch('pgreport.views.ProblemReport._get_children_module')
     def test_get_course_structure(self, getcm_mock):
         course = get_course(self.course.id)
-        self.pgreport.get_course_structure()
-        getcm_mock.assert_called_once_with(course)
+        self.pgreport._get_course_structure()
+        getcm_mock.assert_called_once_with([], course)
 
     def test_get_children_module(self):
-        course = get_course(self.course.id)
-        self.pgreport._get_children_module(course)
-        self.assertEquals(self.pgreport.location_list, self.course_structure)
+        location_list = []
+        self.pgreport._get_children_module(location_list, get_course(self.course.id))
+        self.assertEquals(location_list, self.course_structure)
 
     @patch('pgreport.views.ProblemReport._get_student_answers_data')
     @patch('pgreport.views.ProblemReport._get_correctmap_data')
     def test_get_problem_data(self, gc_mock, gsa_mock):
-        problem_data = self.pgreport.get_problem_data()
+        problem_data = self.pgreport._get_problem_data()
         self.assertEquals(
             problem_data, {
                 unicode(self.problems[0].location): {
@@ -376,8 +392,8 @@ class ProblemReportTestCase(ModuleStoreTestCase):
             '1_2_1': {'abcd': 2}, '1_2_3': {'xyz': 2}, '1_2_2': {'abcd': 1, 'xyz': 1},
             '2_2_1': {'abc': 1, 'def': 1}, '2_2_2': {'xyz': 1}})
 
-    @patch('pgreport.views.ProblemReport.get_problem_data')
-    @patch('pgreport.views.ProblemReport.get_course_structure')
+    @patch('pgreport.views.ProblemReport._get_problem_data')
+    @patch('pgreport.views.ProblemReport._get_course_structure')
     def test_get_pgreport(self, getcs_mock, getpd_mock):
         getcs_mock.return_value = self.course_structure
         getpd_mock.return_value = {
@@ -478,6 +494,7 @@ class ProblemReportTestCase(ModuleStoreTestCase):
         self.assertItemsEqual(return_list, result)
 
 
+@ddt.ddt
 class OpenAssessmentReportTestCase(TestCase):
     """ Test OpenAssessmentReport """
     RUBRIC_OPTIONS = [
@@ -546,39 +563,43 @@ class OpenAssessmentReportTestCase(TestCase):
         )
         self.oa = OpenAssessmentReport('course-v1:org+cn+run')
 
-    def tearDown(self):
-        pass
-
+    @ddt.data(True, False)
+    @patch('pgreport.views.ProgressReportBase.has_staff_assessment')
     @patch(
         'pgreport.views.ProgressReportBase.get_display_name',
         return_value="display_name")
     @patch('pgreport.views.PeerWorkflow')
-    def test_get_pgreport(self, pw_mock, gdn_mock):
+    def test_get_pgreport(self, has_staff, pw_mock, gdn_mock, hsa_mock):
+        hsa_mock.return_value = has_staff
         mock = MagicMock()
         mock.item_id = "item_id"
         mock.submission_uuid = "block@openassessment@999"
         pw_mock.objects.filter.return_value = [mock]
         scores, cache_date, in_progress = self.oa.get_pgreport(force=True)
         self.assertFalse(in_progress)
-        self.assertEquals(scores, {
-            "item_id": {
-                'display_name': 'display_name',
-                'rubrics': {
-                    u'Content': {
-                        u'Poor': [1, 0],
-                        u'Good': [0, 1],
-                        u'Excellent': [1, 2],
-                    },
-                    u'Ideas': {
-                        u'Poor': [0, 0],
-                        u'Good': [2, 1],
-                        u'Excellent': [0, 2],
+        if has_staff:
+            self.assertEquals(scores, {})
+        else:
+            self.assertEquals(scores, {
+                "item_id": {
+                    'display_name': 'display_name',
+                    'rubrics': {
+                        u'Content': {
+                            u'Poor': [1, 0],
+                            u'Good': [0, 1],
+                            u'Excellent': [1, 2],
+                        },
+                        u'Ideas': {
+                            u'Poor': [0, 0],
+                            u'Good': [2, 1],
+                            u'Excellent': [0, 2],
+                        }
                     }
                 }
-            }
-        })
+            })
 
 
+@ddt.ddt
 class SubmissionReportTestCase(TestCase):
     """Test SubmissionReport"""
     course_id = 'course-v1:org+cn+run'
@@ -616,50 +637,56 @@ class SubmissionReportTestCase(TestCase):
 
         return submission, new_student_item
 
+    @ddt.data(True, False)
+    @patch('pgreport.views.ProgressReportBase.has_staff_assessment')
     @patch(
         'pgreport.views.ProgressReportBase.get_display_name',
         return_value="display_name")
-    def test_get_pgreport(self, gdn_mock):
+    def test_get_pgreport(self, has_staff, gdn_mock, hsa_mock):
+        hsa_mock.return_value = has_staff
         scores, cache_date, in_progress = self.submission.get_pgreport(force=True)
         self.assertFalse(in_progress)
-        self.assertEquals(scores, {
-            u'block@openassessment@000': {
-                'display_name': 'display_name',
-                'rubrics': {
-                    'Final_Score': {
-                        u'0-5': [0, 0],
-                        u'6-10': [0, 1],
-                        u'11-15': [0, 2],
-                        u'16-20': [0, 3],
-                        u'21-25': [1, 4],
-                        u'26-30': [0, 5],
-                        u'31-35': [0, 6],
-                        u'36-40': [0, 7],
-                        u'41-45': [0, 8],
-                        u'46-50': [0, 9]
+        if has_staff:
+            self.assertEquals(scores, {})
+        else:
+            self.assertEquals(scores, {
+                u'block@openassessment@000': {
+                    'display_name': 'display_name',
+                    'rubrics': {
+                        'Final_Score': {
+                            u'0-5': [0, 0],
+                            u'6-10': [0, 1],
+                            u'11-15': [0, 2],
+                            u'16-20': [0, 3],
+                            u'21-25': [1, 4],
+                            u'26-30': [0, 5],
+                            u'31-35': [0, 6],
+                            u'36-40': [0, 7],
+                            u'41-45': [0, 8],
+                            u'46-50': [0, 9]
+                        }
+                    }
+                },
+                u'block@openassessment@999': {
+                    'display_name': 'display_name',
+                    'rubrics': {
+                        'Final_Score': {
+                            u'0-1': [0, 0],
+                            u'2-2': [0, 1],
+                            u'3-3': [0, 2],
+                            u'4-4': [0, 3],
+                            u'5-5': [1, 4],
+                            u'6-6': [0, 5],
+                            u'7-7': [0, 6],
+                            u'8-8': [1, 7]
+                        }
                     }
                 }
-            },
-            u'block@openassessment@999': {
-                'display_name': 'display_name',
-                'rubrics': {
-                    'Final_Score': {
-                        u'0-1': [0, 0],
-                        u'2-2': [0, 1],
-                        u'3-3': [0, 2],
-                        u'4-4': [0, 3],
-                        u'5-5': [1, 4],
-                        u'6-6': [0, 5],
-                        u'7-7': [0, 6],
-                        u'8-8': [1, 7]
-                    }
-                }
-            }
-        })
+            })
 
 
 class AjaxRequestTestCase(ModuleStoreTestCase):
-    """"""
+
     def setUp(self):
         super(AjaxRequestTestCase, self).setUp()
 

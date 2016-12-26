@@ -1,36 +1,48 @@
 """
 Function to grasp the progress of the course.
 """
-from django.views.decorators.http import require_POST
-from django.views.decorators.cache import cache_control
-from django.core.cache import cache
-from instructor.views.api import require_level
-from util.json_request import JsonResponse
-from django.conf import settings
-
-from opaque_keys.edx.keys import CourseKey
-from opaque_keys.edx.locator import CourseLocator
-
-from django.contrib.auth.models import User
-from student.models import UserStanding
-from courseware.models import StudentModule
-from submissions.models import ScoreSummary
-from openassessment.assessment.models import (
-    AssessmentPart, PeerWorkflow, CriterionOption)
-
-from xmodule.modulestore.django import modulestore
-from courseware.courses import get_course
-
 from datetime import datetime
-import pytz
-import logging
 import json
+import logging
+import pytz
+
+from django.conf import settings
+from django.contrib.auth.models import User
+from django.core.cache import cache
+from django.views.decorators.cache import cache_control
+from django.views.decorators.http import require_POST
+
+from opaque_keys.edx.keys import CourseKey, UsageKey
+from opaque_keys.edx.locator import CourseLocator
+from openassessment.assessment.models import (
+    AssessmentPart, CriterionOption, PeerWorkflow
+)
+from submissions.models import ScoreSummary
+
+from courseware.courses import get_course
+from courseware.models import StudentModule
+from instructor.views.api import require_level
+from student.models import UserStanding
+from util.json_request import JsonResponse
+from xmodule.modulestore.django import modulestore
+from xmodule.modulestore.exceptions import ItemNotFoundError
 
 
 log = logging.getLogger("progress_report")
 
 
+def get_active_students(course_id):
+    """Get active enrolled students."""
+    enrollments = User.objects.filter(courseenrollment__course_id__exact=course_id)
+
+    active_students = enrollments.filter(is_active=1).exclude(
+        standing__account_status__exact=UserStanding.ACCOUNT_DISABLED)
+
+    return (enrollments.count(), active_students.count())
+
+
 class ProgressReportCache(object):
+
     def __init__(self, prefix):
         self.key_prefix = prefix
         self.timeout = 1200
@@ -51,7 +63,6 @@ class ProgressReportCache(object):
                 result = func(*args, **kwargs)
                 #max limit, 30 days
                 cache.set(key, (result, now, False), 2592000)
-                cache_data = now
 
             log.debug("### result {}, date {}".format(result, cache_date))
             return result, cache_date, in_progress
@@ -59,63 +70,44 @@ class ProgressReportCache(object):
 
 
 class ProgressReportBase(object):
-    """"""
+
     def __init__(self, course_id):
         """Initialize."""
-        self.course_id = self.get_course_id(course_id)
-        self.course_location = self.get_course_location(course_id)
-        self.location_list = []
+        self.course_id = self._get_course_id(course_id)
+        self.course_location = self._get_course_location(course_id)
 
-    def get_course_id(self, course_id):
+    def _get_course_id(self, course_id):
         if not isinstance(course_id, CourseKey):
             return CourseKey.from_string(course_id)
-
         return course_id
 
-    def get_course_location(self, course_id):
+    def _get_course_location(self, course_id):
         if not isinstance(course_id, CourseLocator):
             return CourseLocator.from_string(course_id)
-
         return course_id
 
-    def get_display_name(self, course_location, item_id):
-        display_name = None
-        module = modulestore()
-        module_list = module.get_items(
-            course_location, qualifiers={'category': 'openassessment'})
+    def get_display_name(self, oa_item_id):
+        try:
+            return modulestore().get_item(UsageKey.from_string(oa_item_id)).display_name_with_default
+        except ItemNotFoundError:
+            return None
 
-        for module in module_list:
-            if unicode(module.scope_ids.usage_id) == item_id:
-                display_name = module.display_name_with_default
-
-        return display_name
+    def has_staff_assessment(self, oa_item_id):
+        try:
+            return 'staff-assessment' in modulestore().get_item(UsageKey.from_string(oa_item_id)).assessment_steps
+        except ItemNotFoundError:
+            return False
 
 
 class ProblemReport(ProgressReportBase):
     """Problems report"""
 
-    def __init__(self, course_id):
-        """Initialize."""
-        super(ProblemReport, self).__init__(course_id)
+    def _get_course_structure(self):
+        location_list = []
+        self._get_children_module(location_list, get_course(self.course_id))
+        return location_list
 
-    def get_active_students(self):
-        """Get active enrolled students."""
-        enrollments = User.objects.filter(
-            courseenrollment__course_id__exact=self.course_id)
-
-        active_students = enrollments.filter(is_active=1).exclude(
-            standing__account_status__exact=UserStanding.ACCOUNT_DISABLED)
-
-        return (enrollments.count(), active_students.count())
-
-    def get_course_structure(self):
-        self.location_list = []
-        course = get_course(self.course_id)
-        self._get_children_module(course)
-
-        return self.location_list
-
-    def _get_children_module(self, course, parent=None):
+    def _get_children_module(self, location_list, course, parent=None):
         if parent is None:
             parent = []
 
@@ -124,7 +116,7 @@ class ProblemReport(ProgressReportBase):
                     "chapter", "sequential", "vertical", "problem"):
                 continue
 
-            module = {
+            location_list.append({
                 "usage_id": child.scope_ids.usage_id.to_deprecated_string(),
                 "category": child.category,
                 "display_name": child.display_name_with_default,
@@ -132,18 +124,16 @@ class ProblemReport(ProgressReportBase):
                 "module_size": 0,
                 "has_children": child.has_children,
                 "parent": list(parent),
-            }
-
-            self.location_list.append(module)
+            })
 
             if child.has_children:
                 parent.append(child.scope_ids.usage_id.to_deprecated_string())
-                self._get_children_module(child, parent)
+                self._get_children_module(location_list, child, parent)
                 parent.pop()
             else:
-                self.location_list[-1]["module_size"] += 1
+                location_list[-1]["module_size"] += 1
 
-    def get_problem_data(self):
+    def _get_problem_data(self):
         problem_data = {}
         for module in StudentModule.all_submitted_problems_read_only(self.course_id):
             key = str(module.module_state_key)
@@ -213,8 +203,8 @@ class ProblemReport(ProgressReportBase):
 
     @ProgressReportCache('pgreport-structure')
     def get_pgreport(self, force=False):
-        structure = self.get_course_structure()
-        problems = self.get_problem_data()
+        structure = self._get_course_structure()
+        problems = self._get_problem_data()
         result = []
 
         for idx in xrange(0, len(structure)):
@@ -227,7 +217,6 @@ class ProblemReport(ProgressReportBase):
             if usage_id not in problems:
                 continue
 
-            i = 0
             for key, value in sorted(problems[usage_id]["student_answers"].items()):
                 module = structure[idx].copy()
                 module["module_id"] = key
@@ -245,10 +234,6 @@ class ProblemReport(ProgressReportBase):
 
 class OpenAssessmentReport(ProgressReportBase):
     """Problem report class."""
-
-    def __init__(self, course_id):
-        """Initialize."""
-        super(OpenAssessmentReport, self).__init__(course_id)
 
     @ProgressReportCache('pgreport-openassessment')
     def get_pgreport(self, force=False):
@@ -271,6 +256,8 @@ class OpenAssessmentReport(ProgressReportBase):
         for part in AssessmentPart.objects.filter(assessment__submission_uuid__in=peer_list).select_related():
 
             item_id = peer_dict[part.assessment.submission_uuid]
+            if self.has_staff_assessment(item_id):
+                continue
             criterion_name = unicode(part.criterion.label)
             criterion_id = part.criterion.id
             option_order_num = part.option.order_num
@@ -284,8 +271,7 @@ class OpenAssessmentReport(ProgressReportBase):
             except KeyError:
                 if item_id not in scores:
                     scores.update({item_id: {}})
-                    scores[item_id]['display_name'] = self.get_display_name(
-                        self.course_location, item_id)
+                    scores[item_id]['display_name'] = self.get_display_name(item_id)
                     scores[item_id]['rubrics'] = {}
 
                 if criterion_name not in scores[item_id]['rubrics']:
@@ -306,9 +292,6 @@ class OpenAssessmentReport(ProgressReportBase):
 
 class SubmissionReport(ProgressReportBase):
     """Problem report class."""
-    def __init__(self, course_id):
-        """Initialize."""
-        super(SubmissionReport, self).__init__(course_id)
 
     @ProgressReportCache('pgreport-submission')
     def get_pgreport(self, force=False):
@@ -332,6 +315,8 @@ class SubmissionReport(ProgressReportBase):
 
         for summary in score_summaries:
             item_id = summary.student_item.item_id
+            if self.has_staff_assessment(item_id):
+                continue
 
             if not summary.latest.is_hidden():
                 if item_id in scores:
@@ -348,8 +333,7 @@ class SubmissionReport(ProgressReportBase):
                         incr = 1
 
                     scores.update({item_id: {}})
-                    scores[item_id]['display_name'] = self.get_display_name(
-                        self.course_location, item_id)
+                    scores[item_id]['display_name'] = self.get_display_name(item_id)
                     scores[item_id]['rubrics'] = {}
                     scores[item_id]['rubrics'][cname] = {}
 
@@ -376,7 +360,7 @@ def ajax_get_pgreport(request, course_id, pgreport):
     progress = pgreport(course_id)
     result, cache_date, in_progress = progress.get_pgreport(force=force)
 
-    if in_progress is True:
+    if in_progress:
         response = JsonResponse(result, status=202)
     else:
         response = JsonResponse(result)

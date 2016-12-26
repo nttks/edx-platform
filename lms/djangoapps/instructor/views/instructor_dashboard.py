@@ -50,7 +50,7 @@ from util.date_utils import get_default_time_display
 from class_dashboard.dashboard_data import get_section_display_name, get_array_section_has_problem
 from .tools import get_units_with_due_date, title_or_url, bulk_email_is_enabled_for_course
 from opaque_keys.edx.locations import SlashSeparatedCourseKey
-from pgreport.views import ProblemReport
+from pgreport.views import get_active_students
 from ga_advanced_course.models import AdvancedCourse
 
 log = logging.getLogger(__name__)
@@ -679,8 +679,7 @@ def _section_survey(course, access):
 def _section_progress_report(course, access):
     """Report progress"""
     course_id = course.id
-    progress = ProblemReport(course_id)
-    enrollement_count, active_count = progress.get_active_students()
+    enrollement_count, active_count = get_active_students(course_id)
 
     section_data = {
         'section_key': 'progress_report',
