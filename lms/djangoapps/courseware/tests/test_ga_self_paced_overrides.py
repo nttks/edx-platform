@@ -3,6 +3,7 @@ Tests for ga-self-paced course overrides.
 """
 from datetime import datetime, timedelta
 from dateutil.tz import tzutc
+import ddt
 
 from django.test.utils import override_settings
 
@@ -11,6 +12,7 @@ from courseware.tests.test_field_overrides import inject_field_overrides
 from openedx.core.djangoapps.self_paced.models import SelfPacedConfiguration
 from student.roles import CourseStaffRole
 from student.tests.factories import CourseEnrollmentFactory, UserFactory
+from xmodule.course_metadata_utils import DEFAULT_START_DATE
 from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
 from xmodule.modulestore.tests.factories import CourseFactory, ItemFactory
 
@@ -18,6 +20,7 @@ from xmodule.modulestore.tests.factories import CourseFactory, ItemFactory
 @override_settings(
     FIELD_OVERRIDE_PROVIDERS=('courseware.ga_self_paced_overrides.SelfPacedDateOverrideProvider',)
 )
+@ddt.ddt
 class SelfPacedDateOverrideTest(ModuleStoreTestCase):
 
     def setUp(self):
@@ -25,12 +28,7 @@ class SelfPacedDateOverrideTest(ModuleStoreTestCase):
         super(SelfPacedDateOverrideTest, self).setUp()
         self.start = datetime(2016, 1, 1, 0, 0, 0).replace(tzinfo=tzutc())
         self.due_date = datetime(2016, 2, 1, 0, 0, 0).replace(tzinfo=tzutc())
-        self.individual_start_days = 1
-        self.individual_start_hours = 2
-        self.individual_start_minutes = 3
-        self.individual_due_days = 4
-        self.individual_due_hours = 5
-        self.individual_due_minutes = 6
+        self.terminate_start = datetime(2017, 1, 1, 0, 0, 0).replace(tzinfo=tzutc())
 
     def tearDown(self):
         super(SelfPacedDateOverrideTest, self).tearDown()
@@ -46,7 +44,9 @@ class SelfPacedDateOverrideTest(ModuleStoreTestCase):
         Creates a child block with a start date and a due date and individual data,
         and ensures that field overrides are correctly applied for both blocks.
         """
-        course = CourseFactory.create(display_name=display_name, self_paced=self_paced, start=self.start)
+        course = CourseFactory.create(
+            display_name=display_name, self_paced=self_paced, start=self.start, terminate_start=self.terminate_start
+        )
         user = UserFactory.create()
         enrollment = CourseEnrollmentFactory.create(user=user, course_id=course.id)
         if staff:
@@ -71,33 +71,34 @@ class SelfPacedDateOverrideTest(ModuleStoreTestCase):
         """
         Tests that individual data does not effect to the instructor-paced course.
         """
-        _, chapter, section = self.setup_course(
-            "Instructor Paced Course", False, True,
-            self.individual_start_days, self.individual_start_hours, self.individual_start_minutes,
-            self.individual_due_days, self.individual_due_hours, self.individual_due_minutes
-        )
+        _, chapter, section = self.setup_course("Instructor Paced Course", False, True, 1, 2, 3, 4, 5, 6)
         self.assertEqual(self.start, chapter.start)
         self.assertEqual(self.start, section.start)
         self.assertEqual(self.due_date, section.due)
 
-    def test_self_paced(self):
+    @ddt.data(
+        (1, 2, 3, 4, 5, 6),
+        (0, None, None, 0, None, None),
+        (None, 0, None, None, 0, None),
+        (None, None, 0, None, None, 0),
+    )
+    @ddt.unpack
+    def test_self_paced(self, start_days, start_hours, start_minutes, due_days, due_hours, due_minutes):
         """
         Tests that individual data apply to the self-paced course.
         """
         enrollment, chapter, section = self.setup_course(
-            "Self-Paced Course", True, False,
-            self.individual_start_days, self.individual_start_hours, self.individual_start_minutes,
-            self.individual_due_days, self.individual_due_hours, self.individual_due_minutes
+            "Self-Paced Course", True, False, start_days, start_hours, start_minutes, due_days, due_hours, due_minutes
         )
 
         expected_start = enrollment.created + timedelta(
-            days=self.individual_start_days, hours=self.individual_start_hours, minutes=self.individual_start_minutes
+            days=start_days or 0, hours=start_hours or 0, minutes=start_minutes or 0
         )
         self.assertEqual(expected_start, chapter.start)
         self.assertEqual(expected_start, section.start)
 
         expected_due = enrollment.created + timedelta(
-            days=self.individual_due_days, hours=self.individual_due_hours, minutes=self.individual_due_minutes
+            days=due_days or 0, hours=due_hours or 0, minutes=due_minutes or 0
         )
         self.assertEqual(expected_due, section.due)
 
@@ -105,11 +106,7 @@ class SelfPacedDateOverrideTest(ModuleStoreTestCase):
         """
         Tests that a start date and a due date to be None if accessing by staff.
         """
-        _, chapter, section = self.setup_course(
-            "Self-Paced Course", True, True,
-            self.individual_start_days, self.individual_start_hours, self.individual_start_minutes,
-            self.individual_due_days, self.individual_due_hours, self.individual_due_minutes
-        )
+        _, chapter, section = self.setup_course("Self-Paced Course", True, True, 1, 2, 3, 4, 5, 6)
         self.assertIsNone(chapter.start)
         self.assertIsNone(section.start)
         self.assertIsNone(section.due)
@@ -119,20 +116,16 @@ class SelfPacedDateOverrideTest(ModuleStoreTestCase):
         Tests that a start date and a due date to be None if individual data has not been configured.
         """
         _, chapter, section = self.setup_course("Self-Paced Course", True, False)
-        self.assertIsNone(chapter.start)
-        self.assertIsNone(section.start)
-        self.assertIsNone(section.due)
+        self.assertEqual(DEFAULT_START_DATE, chapter.start)
+        self.assertEqual(DEFAULT_START_DATE, section.start)
+        self.assertEqual(self.terminate_start, section.due)
 
     def test_self_paced_disabled(self):
         """
         Tests that individual data does not effect if SelfPacedConfiguration is disabled.
         """
         SelfPacedConfiguration(enabled=False).save()
-        _, chapter, section = self.setup_course(
-            "Self-Paced Course", True, False,
-            self.individual_start_days, self.individual_start_hours, self.individual_start_minutes,
-            self.individual_due_days, self.individual_due_hours, self.individual_due_minutes
-        )
+        _, chapter, section = self.setup_course("Self-Paced Course", True, False, 1, 2, 3, 4, 5, 6)
         self.assertEqual(self.start, chapter.start)
         self.assertEqual(self.start, section.start)
         self.assertEqual(self.due_date, section.due)
