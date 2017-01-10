@@ -68,8 +68,8 @@ class UploadToS3CommandIntegrationTestCase(ModuleStoreTestCase):
             'start': datetime(2015, 1, 1, 0, 0, 0, tzinfo=pytz.utc),
             'end': datetime(2020, 1, 1, 0, 0, 0, tzinfo=pytz.utc),
             'enrollment_start': datetime(2014, 1, 1, 0, 0, 0, tzinfo=pytz.utc),
-            'enrollment_end': datetime(2018, 1, 1, 0, 0, 0, tzinfo=pytz.utc),
-            'deadline_start': datetime(2019, 1, 1, 0, 0, 0, tzinfo=pytz.utc),
+            'enrollment_end': datetime(2028, 1, 1, 0, 0, 0, tzinfo=pytz.utc),
+            'deadline_start': datetime(2029, 1, 1, 0, 0, 0, tzinfo=pytz.utc),
             'terminate_start': datetime(2030, 1, 1, 0, 0, 0, tzinfo=pytz.utc),
             'course_category': [],
             'course_card_path': 'course_card_path',
@@ -126,7 +126,7 @@ class UploadToS3CommandIntegrationTestCase(ModuleStoreTestCase):
         self.course_cn7 = create_course({
             'number': "cn7",
             'course_category': ['cat1'],
-            'start': datetime(2017, 1, 1, 0, 0, 0, tzinfo=pytz.utc),
+            'start': datetime(2027, 1, 1, 0, 0, 0, tzinfo=pytz.utc),
         })
         # over deadline
         self.course_cn8 = create_course({
