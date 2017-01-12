@@ -1195,6 +1195,9 @@ MIDDLEWARE_CLASSES = (
 
     'course_wiki.middleware.WikiAccessMiddleware',
 
+    # block the access to '/courses/{COURSE_ID_PATTERN}/.*' exclude COURSE_TERMINATED_CHECK_EXCLUDE_PATH
+    'courseware.ga_middleware.CourseTerminatedCheckMiddleware',
+
     # This must be last
     'microsite_configuration.middleware.MicrositeSessionCookieDomainMiddleware',
 )
@@ -2771,6 +2774,13 @@ FORMAT_MODULE_PATH = ['conf.formats']
 
 ##### CSRF #####
 CSRF_FAILURE_VIEW = 'openedx.core.djangoapps.ga_csrf.views.csrf_failure'
+
+##### Course Terminated Check #####
+# Configure a list of dict of tab_type and path as below.
+# COURSE_TERMINATED_CHECK_EXCLUDE_PATH = [
+#    {'tab': 'course_info', 'path': '/info'},
+# ]
+COURSE_TERMINATED_CHECK_EXCLUDE_PATH = []
 
 ##### Settings for Biz #####
 from biz.envs.common import *

@@ -325,7 +325,6 @@ def index(request, course_id, chapter=None, section=None,
     """
 
     course_key = CourseKey.from_string(course_id)
-    course = get_course_with_access(request.user, 'load', course_key)
 
     # Gather metrics for New Relic so we can slice data in New Relic Insights
     newrelic.agent.add_custom_parameter('course_id', unicode(course_key))
@@ -337,10 +336,6 @@ def index(request, course_id, chapter=None, section=None,
         course_id=course_key,
         registrationcoderedemption__redeemed_by=request.user
     )
-
-    enrollment = CourseEnrollment.get_enrollment(user, course_key)
-    if (course.has_terminated() or (enrollment and enrollment.is_individual_closed())) and not has_access(request.user, 'staff', course):
-        return redirect(reverse('dashboard'))
 
     # Redirect to dashboard if the course is blocked due to non-payment.
     if is_course_blocked(request, redeemed_registration_codes, course_key):

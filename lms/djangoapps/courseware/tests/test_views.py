@@ -460,55 +460,6 @@ class ViewsTestCase(ModuleStoreTestCase):
             # Verify that the email opt-in checkbox does not appear
             self.assertNotContains(response, checkbox_html, html=True)
 
-    def test_course_has_been_terminated(self):
-        course = CourseFactory.create(
-            start=datetime(2013, 9, 16, 7, 17, 28),
-            terminate_start=datetime(2013, 9, 18, 7, 17, 28),
-        )
-        admin = AdminFactory()
-        enrollment = CourseEnrollment.enroll(self.user, course.id)
-        enrollment = CourseEnrollment.enroll(admin, course.id)
-        enrollment.save()
-        request_url = '/'.join([
-            '/courses',
-            course.id.to_deprecated_string(),
-            'courseware/'
-        ])
-
-        self.client.login(username=self.user.username, password="123456")
-        user_response = self.client.get(request_url)
-        self.assertEqual(user_response.status_code, 302)
-        self.assertEqual(user_response['Location'], 'http://testserver/dashboard')
-        self.client.logout()
-
-        self.client.login(username=admin.username, password="test")
-        staff_response = self.client.get(request_url)
-        self.assertEqual(staff_response.status_code, 200)
-
-    def test_self_paced_course_has_been_closed(self):
-        course = CourseFactory.create(
-            start=datetime(2016, 1, 1, 0, 0, 0).replace(tzinfo=UTC),
-            self_paced=True,
-            individual_end_days=10
-        )
-        admin = AdminFactory()
-        # Create enrollment data and set the created to the past than individual_end_days
-        for enrollment in [CourseEnrollment.enroll(self.user, course.id), CourseEnrollment.enroll(admin, course.id)]:
-            enrollment.created = enrollment.created - timedelta(days=10)
-            enrollment.save()
-
-        request_url = '/courses/{}/courseware/'.format(unicode(course.id))
-
-        self.client.login(username=self.user.username, password="123456")
-        user_response = self.client.get(request_url)
-        self.assertEqual(user_response.status_code, 302)
-        self.assertEqual(user_response['Location'], 'http://testserver/dashboard')
-        self.client.logout()
-
-        self.client.login(username=admin.username, password="test")
-        staff_response = self.client.get(request_url)
-        self.assertEqual(staff_response.status_code, 200)
-
     def test_financial_assistance_page(self):
         self.client.login(username=self.user.username, password=self.password)
         url = reverse('financial_assistance')
@@ -998,7 +949,7 @@ class ProgressPageTests(ModuleStoreTestCase):
         self.assertContains(resp, u"Download Your Certificate")
 
     @ddt.data(
-        *itertools.product(((43, 5, True), (42, 5, False)), (True, False))
+        *itertools.product(((67, 5, True), (42, 5, False)), (True, False))
     )
     @ddt.unpack
     def test_query_counts(self, (sql_calls, mongo_calls, self_paced), self_paced_enabled):
