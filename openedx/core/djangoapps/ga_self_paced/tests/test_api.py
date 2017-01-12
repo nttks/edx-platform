@@ -56,7 +56,7 @@ class TestApi(ModuleStoreTestCase):
         self.assertIsNone(api.get_individual_date(None, {}))
 
     @ddt.data(
-        ('course',     1, 0),
+        ('course', 1, 0),
         ('enrollment', 0, 1),
     )
     @ddt.unpack
@@ -103,22 +103,28 @@ class TestApi(ModuleStoreTestCase):
     def test_get_base_date_none(self):
         self.assertIsNone(api.get_base_date(None))
 
-    def test_get_course_end_date(self):
+    @ddt.data(
+        (1, 2, 3),
+        (1, None, None),
+        (None, 1, None),
+        (None, None, 1),
+    )
+    @ddt.unpack
+    def test_get_course_end_date(self, days, hours, minutes):
         # Fixed start date to the future in this test
         course_start_date = timezone.now().replace(microsecond=0) + datetime.timedelta(days=1)
-        days, hours, minutes = 1, 2, 3
 
         self._update_course(course_start_date, True, days, hours, minutes)
 
         enrollment = CourseEnrollmentFactory.create(user=self.user, course_id=self.course.id)
         end_date = api.get_course_end_date(enrollment)
-        expected_date = course_start_date + datetime.timedelta(days=days, hours=hours, minutes=minutes)
+        expected_date = course_start_date + datetime.timedelta(days=days or 0, hours=hours or 0, minutes=minutes or 0)
 
         self.assertEqual(expected_date, end_date)
 
     @ddt.data(
         (False, 1, 2, 3),
-        (True, 0, 0, 0),
+        (True, None, None, None),
     )
     @ddt.unpack
     def test_get_course_end_date_none_date(self, self_paced, days, hours, minutes):
@@ -133,12 +139,14 @@ class TestApi(ModuleStoreTestCase):
 
     @ddt.data(
         # boundary
-        (True,   61, True,  0, 0, 1),
-        (False,  60, True,  0, 0, 1),
-        (False,  59, True,  0, 0, 1),
+        (True, 61, True, 0, 0, 1),
+        (False, 60, True, 0, 0, 1),
+        (False, 59, True, 0, 0, 1),
+        # 0 time-width
+        (True, 1, True, 0, None, None),
         # no end_date
-        (False,  0,  False, 1, 2, 3),
-        (False,  0,  True,  0, 0, 0),
+        (False, 1, False, 0, 0, 0),
+        (False, 1, True, None, None, None),
     )
     @ddt.unpack
     def test_is_course_closed(self, expected, delay, self_paced, days, hours, minutes):

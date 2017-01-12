@@ -146,13 +146,13 @@ class CertificateProgressPageTest(UniqueCourseTest):
 
         self.course_fixture.add_children(
             XBlockFixtureDesc('static_tab', 'Test Static Tab'),
-            XBlockFixtureDesc('chapter', 'Test Section').add_children(
+            XBlockFixtureDesc('chapter', 'Test Section', metadata={'individual_start_days': 0}).add_children(
                 XBlockFixtureDesc('sequential', 'Test Subsection', grader_type='Final Exam').add_children(
                     XBlockFixtureDesc('problem', 'Test Problem 1', data=load_data_str('multiple_choice.xml')),
                     XBlockFixtureDesc('html', 'Test HTML'),
                 )
             ),
-            XBlockFixtureDesc('chapter', 'Test Section 2').add_children(
+            XBlockFixtureDesc('chapter', 'Test Section 2', metadata={'individual_start_days': 0}).add_children(
                 XBlockFixtureDesc('sequential', 'Test Subsection 2', grader_type='Midterm Exam').add_children(
                     XBlockFixtureDesc('problem', 'Test Problem 2', data=load_data_str('formula_problem.xml')),
                 )

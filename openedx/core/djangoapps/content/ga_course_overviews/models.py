@@ -63,4 +63,8 @@ class CourseOverviewExtra(models.Model):
 
     @property
     def has_individual_end(self):
-        return self.individual_end_days or self.individual_end_hours or self.individual_end_minutes
+        return (
+            self.individual_end_days is not None or
+            self.individual_end_hours is not None or
+            self.individual_end_minutes is not None
+        )
