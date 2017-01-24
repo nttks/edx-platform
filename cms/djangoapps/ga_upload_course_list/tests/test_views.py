@@ -216,8 +216,8 @@ class CourseListTestCase(ModuleStoreTestCase):
         ret = self.course_list._get_short_description(self.course)
         self.assertEquals(ret, '')
 
-    @patch('ga_upload_course_list.views.imghdr.what', return_value="jpg")
-    def test_set_course_contents_get_course_card(self, imgh_m):
+    def test_set_course_contents_get_course_card(self):
+        self.course_list.content_store.find.return_value.location.path = self.course.course_image
         course = self.course_list._set_course_contents(self.course)
         ret = self.course_list._get_course_card([course])
 
@@ -226,7 +226,6 @@ class CourseListTestCase(ModuleStoreTestCase):
                 self.course.location.course_key, self.course.course_image
             )
         )
-        imgh_m.assert_called_with('dummy', h=self.course_list.content_store.find().data)
         self. assertEquals(ret, {
             IMAGE_DIR + 'org/cn1/run.jpg': self.course_list.content_store.find().data
         })
