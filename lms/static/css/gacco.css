@@ -1194,6 +1194,31 @@ form input[type="submit"],
   background-color: #525252;
 }
 
+/* purple button */
+.xmodule_display.xmodule_CapaModule div.problem div.action .show {
+  background-color: #b62567;
+  background-image: none;
+  border-radius: 3px;
+  border: transparent solid 1px;
+  box-shadow: 0px 0px 0px #666;
+  color: #fff;
+  text-shadow: none;
+  text-transform: none;
+  border-left-width: 0px;
+  border-bottom-width: 0px;
+  border-right-width: 0px;
+  border-top-width: 0px;
+  padding-top: 0px;
+  padding-bottom: 0px;
+}
+.xmodule_display.xmodule_CapaModule div.problem div.action .show .show-label {
+  color: #fff;
+  font-weight: bold;
+}
+.xmodule_display.xmodule_CapaModule div.problem div.action .show:hover {
+  background-color: #90235f;
+}
+
 @media screen and (max-width: 800px) {
   header.global .nav-courseware li .cta-register{
     padding: 0;
