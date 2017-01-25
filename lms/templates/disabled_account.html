@@ -3,8 +3,16 @@
 
 <%block name="pagetitle">${_("Disabled Account")}</%block>
 
+<%block name="headextra">
+<style>
+section.outside-app h1 {
+  text-transform: none;
+}
+</style>
+</%block>
+
 <section class="outside-app">
-<h1>${_("Disabled Account")}</h1>
-<p>${_('Your account has been disabled. If you believe this was done in error, please contact us at {link_start}{support_email}{link_end}').format(
-    link_start=u'<a href="mailto:{address}?subject={subject_line}">'.format(address=settings.DEFAULT_FEEDBACK_EMAIL, subject_line=_("Disabled Account")), link_end=u'</a>', support_email=settings.DEFAULT_FEEDBACK_EMAIL)}</p>
+<h1>${_("Account is not valid anymore")}</h1>
+<p>${_("The log-in email address is already withdrawn from gacco.")}</p>
+<p>${_("The email address which is withdrawn can't be used again, please register as new member with other email address.")}</p>
 </section>

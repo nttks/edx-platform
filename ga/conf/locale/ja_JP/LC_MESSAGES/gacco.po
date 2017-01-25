@@ -31,12 +31,6 @@ msgstr "要求されるページは数値である必要があります"
 msgid "Requested page must be greater than zero"
 msgstr "養教されるページは０より大きい数値としてください"
 
-#: common/djangoapps/student/middleware.py
-msgid ""
-"Your account has been disabled. If you believe this was done in error, "
-"please contact us at {link_start}{support_email}{link_end}"
-msgstr "このアカウントは無効化されています。これがエラーだと考えられる場合、{link_start}{support_email}{link_end}へご連絡ください。"
-
 #: common/djangoapps/student/views.py
 msgid ""
 "Too many failed login attempts. Try again later.<br/><br/>At the time of "
@@ -1490,3 +1484,15 @@ msgstr "入力内容ご確認の上、「次へ」ボタンを押してくださ
 #: common/djangoapps/util/date_utils.py
 msgid "DATE_TIME_FORMAT"
 msgstr "%Y年%b%d日 %H:%M"
+
+#: lms/templates/disabled_account.html
+msgid "Account is not valid anymore"
+msgstr "このアカウントは既に退会しています"
+
+#: lms/templates/disabled_account.html
+msgid "The log-in email address is already withdrawn from gacco."
+msgstr "ログイン時に利用されたメールアドレスは既に退会されています。"
+
+#: lms/templates/disabled_account.html
+msgid "The email address which is withdrawn can't be used again, please register as new member with other email address."
+msgstr "同じメールアドレスでの再登録はできません。別のメールアドレスで新規登録をしてください。"
