@@ -64,7 +64,7 @@
           <% } else { %>
             <p style="text-align: right;">
             <%= interpolate(
-                    gettext( "If you would like to cancel, please contact <a href=\"%(cancelUrl)s\">HERE</a> (language is Japanese only)" ),
+                    gettext( "If you need help, please contact <a href=\"%(cancelUrl)s\">HERE</a> (language is Japanese only)" ),
                     {cancelUrl: cancelUrl}, true
                 )
             %>

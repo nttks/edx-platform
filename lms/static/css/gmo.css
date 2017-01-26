@@ -549,12 +549,16 @@ h3 {
 }
 
 #card-form .card-description ul li {
+  display: inline-block;
   vertical-align: top;
 }
 
+#card-form .card-description ul li p {
+  margin: 10px 0;
+}
+
 #card-form .card-description ul li img {
-  display: inline-block;
-  padding: 10px 10px;
+  margin: 10px;
   width: 100%;
 }
 
@@ -581,5 +585,43 @@ h3 {
 @media only screen and (max-width: 840px) {
   #breadcrumb span.text {
     display: none;
+  }
+}
+
+/* Terms of Service & Act on Specified Commercial Transactions */
+.colophon {
+  padding: 50px 0 30px 20px;
+}
+
+.colophon .nav-colophon li {
+  float: left;
+  margin-right: 15px;
+}
+
+.colophon .nav-colophon li > a {
+  text-decoration: none !important;
+  color: #333;
+  font-size: 0.95em;
+}
+
+.colophon .nav-colophon li > a:hover,
+.colophon .nav-colophon li > a:focus,
+.colophon .nav-colophon li > a:active {
+  color: #0078b0;
+}
+
+.colophon .nav-colophon li > a > i {
+  padding-right: 5px;
+}
+
+@media screen and (max-width: 480px) {
+  .colophon .nav-colophon li {
+    float: none !important;
+    margin: 0;
+  }
+
+  .colophon .nav-colophon li > a {
+    display: block;
+    padding: 10px 0;
   }
 }

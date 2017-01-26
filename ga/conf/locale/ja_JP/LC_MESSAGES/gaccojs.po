@@ -362,11 +362,11 @@ msgstr "会員登録が完了しておりません。"
 msgid "We've sent an email to %(email)s with instructions for activating your account. Please try again."
 msgstr "ご登録いただいた%(email)s宛に会員登録のご案内メールを送信しております。メール内のURLをクリックし、会員登録を行ってからお申込ください。"
 
-#: lms/templates/verify_student/payment_confirmation_step.underscore.underscore
+#: lms/templates/verify_student/payment_confirmation_step.underscore
 msgid "You have successfully completed your order."
 msgstr "講座の受講登録は完了しています。"
 
-#: lms/templates/verify_student/payment_confirmation_step.underscore.underscore
+#: lms/templates/verify_student/payment_confirmation_step.underscore
 msgid "We send a confirmation email to you."
 msgstr "この画面は、マイページからいつでも確認いただけます。また、同様の情報をメールでもお送りしています。"
 
@@ -374,21 +374,21 @@ msgstr "この画面は、マイページからいつでも確認いただけま
 msgid "Course Title"
 msgstr "講座名"
 
-#: lms/templates/verify_student/payment_confirmation_step.underscore.underscore
+#: lms/templates/verify_student/payment_confirmation_step.underscore
 msgid "Order Date"
 msgstr "購入日時"
 
-#: lms/templates/verify_student/payment_confirmation_step.underscore.underscore
+#: lms/templates/verify_student/payment_confirmation_step.underscore
 msgid "Payment Method"
 msgstr "お支払い方法"
 
-#: lms/templates/verify_student/payment_confirmation_step.underscore.underscore
+#: lms/templates/verify_student/payment_confirmation_step.underscore
 msgid "Payment Amount"
 msgstr "お支払い金額"
 
-#: lms/templates/verify_student/payment_confirmation_step.underscore.underscore
-msgid "If you would like to cancel, please contact <a href=\"%(cancelUrl)s\">HERE</a> (language is Japanese only)"
-msgstr "キャンセルは<a href=\"%(cancelUrl)s\">こちら</a>"
+#: lms/templates/verify_student/payment_confirmation_step.underscore
+msgid "If you need help, please contact <a href=\"%(cancelUrl)s\">HERE</a> (language is Japanese only)"
+msgstr "お問い合わせは<a href=\"%(cancelUrl)s\">こちら</a>"
 
 #-#-#-#-#  Deleted or revised messages between Cypress and Dogwood on Transifex  #-#-#-#-#
 
