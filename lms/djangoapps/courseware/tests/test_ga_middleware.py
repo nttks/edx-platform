@@ -146,12 +146,18 @@ class CourseTerminatedCheckViewTest(LoginEnrollmentTestCase, ModuleStoreTestCase
         else:
             self.assertEqual(response.status_code, 200)
 
-    def _access_page(self, is_staff):
-        self.setup_user()
-        self.enroll(self.course)
-        if is_staff:
-            self.user.is_staff = True
-            self.user.save()
+    def _assert_redirect_login(self, response):
+        next_path = '/courses/{}/progress'.format(unicode(self.course.id))
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response['Location'], 'http://testserver/login?next={}'.format(next_path))
+
+    def _access_page(self, is_staff, is_anonymous=False):
+        if not is_anonymous:
+            self.setup_user()
+            self.enroll(self.course)
+            if is_staff:
+                self.user.is_staff = True
+                self.user.save()
         path = '/courses/{}/progress'.format(unicode(self.course.id))
         return self.client.get(path)
 
@@ -161,6 +167,10 @@ class CourseTerminatedCheckViewTest(LoginEnrollmentTestCase, ModuleStoreTestCase
         response = self._access_page(is_staff)
         self._assert_response(is_blocked, response)
 
+    def test_course_opened_not_logged_in(self):
+        response = self._access_page(False, True)
+        self._assert_redirect_login(response)
+
     @ddt.data((True, False), (False, True))
     @ddt.unpack
     def test_course_terminated(self, is_blocked, is_staff):
@@ -169,6 +179,13 @@ class CourseTerminatedCheckViewTest(LoginEnrollmentTestCase, ModuleStoreTestCase
 
         response = self._access_page(is_staff)
         self._assert_response(is_blocked, response)
+
+    def test_course_terminated_not_logged_in(self):
+        self.course.terminate_start = timezone.now() - timedelta(days=1)
+        self.update_course(self.course, self.user.id)
+
+        response = self._access_page(False, True)
+        self._assert_response(True, response)
 
     @patch('openedx.core.djangoapps.ga_self_paced.api.is_course_closed', return_value=True)
     @ddt.data((True, False), (False, True))
@@ -182,3 +199,10 @@ class CourseTerminatedCheckViewTest(LoginEnrollmentTestCase, ModuleStoreTestCase
 
         if is_blocked and not is_staff:
             self.assertEqual(mock_is_course_closed.call_count, 1)
+
+    def test_self_paced_course_closed_not_logged_in(self):
+        self.course.self_paced = True
+        self.update_course(self.course, self.user.id)
+
+        response = self._access_page(False, True)
+        self._assert_redirect_login(response)

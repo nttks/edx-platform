@@ -33,5 +33,9 @@ def _is_individual_closed(courselike, user):
         (isinstance(courselike, CourseOverview) and courselike.extra and courselike.extra.self_paced)
     ):
         return False
+
+    if not user.is_authenticated():
+        return False
+
     enrollment = CourseEnrollment.get_enrollment(user, courselike.id)
     return enrollment and enrollment.is_individual_closed()
