@@ -2,9 +2,9 @@
 upload course list
 """
 from datetime import timedelta
-import imghdr
 import json
 import logging
+import os
 
 from boto.s3 import connect_to_region
 from boto.s3.connection import Location, OrdinaryCallingFormat
@@ -105,7 +105,7 @@ class CourseList(object):
                     ),
                 )
                 log.debug(course_image.data)
-                course.course_card_path = IMAGE_DIR + course.id.to_deprecated_string() + "." + imghdr.what('dummy', h=course_image.data)
+                course.course_card_path = IMAGE_DIR + course.id.to_deprecated_string() + os.path.splitext(course_image.location.path)[-1]
                 course.course_card_data = course_image.data
             except NotFoundError:
                 raise CourseCardNotFound('Course card is not found: {} {}'.format(

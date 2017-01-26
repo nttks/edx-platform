@@ -165,11 +165,6 @@ class UploadToS3CommandIntegrationTestCase(ModuleStoreTestCase):
         self.s3key = patcher2.start()
         self.addCleanup(patcher2.stop)
 
-        patcher3 = patch(
-            'ga_upload_course_list.views.imghdr.what', return_value='gif')
-        self.imghdr = patcher3.start()
-        self.addCleanup(patcher3.stop)
-
     def assertEqualCourseDict(self, course_dict, course):
         if isinstance(course_dict, list) and isinstance(course, list):
             self.assertEqual(len(course_dict), len(course))
