@@ -136,6 +136,10 @@ div.course-wrapper > a[href="#course-accordion-modal"] span i {
 .xmodule_display.xmodule_SequenceModule .sequence-nav .sequence-list-wrapper {
   z-index: auto;
 }
+.xmodule_display.xmodule_SequenceModule .sequence-nav .sequence-list-wrapper ol li a:hover,
+.xmodule_display.xmodule_SequenceModule .sequence-nav .sequence-list-wrapper ol li a.active {
+  border-bottom: solid 3px #008cba;
+}
 
 #course-accordion-modal .course-index {
   background-color: #f6f6f6;

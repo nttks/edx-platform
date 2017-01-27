@@ -106,7 +106,6 @@ $sequence--border-color: #C8C8C8;
         margin: 0;
         background-position: center 14px;
         background-repeat: no-repeat;
-        border: 1px solid transparent;
         display: block;
         padding: 0;
         position: relative;
@@ -251,6 +250,7 @@ $sequence--border-color: #C8C8C8;
   width: ($baseline*2);
   height: 46px;
   padding: 0;
+  background: #282c2e;
 
   &.button-previous {
     @include border-radius(35px, 0, 0, 35px);
@@ -264,11 +264,13 @@ $sequence--border-color: #C8C8C8;
 
   &:hover,
   &:active {
-
+    background: #eef1f4;
   }
 
   &.disabled {
     cursor: normal;
+    background: #50575b;
+    opacity: 1.0;
   }
 }
 
