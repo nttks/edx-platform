@@ -244,6 +244,16 @@ define(['jquery', 'backbone', 'underscore', 'gettext', 'js/views/baseview',
         className: 'edit-settings-release scheduled-date-input',
         startingReleaseDate: null,
 
+        events: {
+            'input #start_date': 'validate',
+            'change #start_date': 'validate'
+        },
+
+        initialize: function() {
+            BaseDateEditor.prototype.initialize.call(this);
+            this.events = _.extend({}, BaseDateEditor.prototype.events, this.events);
+        },
+
         afterRender: function () {
             BaseDateEditor.prototype.afterRender.call(this);
             // Store the starting date and time so that we can determine if the user
@@ -257,7 +267,7 @@ define(['jquery', 'backbone', 'underscore', 'gettext', 'js/views/baseview',
 
         clearValue: function (event) {
             event.preventDefault();
-            this.$('#start_time, #start_date').val('');
+            this.$('#start_time, #start_date').val('').trigger('change');
         },
 
         getRequestData: function () {
@@ -270,6 +280,24 @@ define(['jquery', 'backbone', 'underscore', 'gettext', 'js/views/baseview',
                     'start': newReleaseDate
                 }
             };
+        },
+
+        validate: function() {
+            var errorMessages = this.$('#release-date-error-message'),
+                isValid = true,
+                value = this.getValue();
+            errorMessages.empty();
+            if (value && value.getYear() < 0) {
+                isValid = false;
+                errorMessages.append(
+                    $('<li>').text(gettext('Please enter the date on and after 1900.'))
+                );
+            }
+            if (isValid) {
+                this.model.trigger('valid');
+            } else {
+                this.model.trigger('invalid');
+            }
         }
     });
     BaseIndividualDaysEditor = AbstractEditor.extend({
