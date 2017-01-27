@@ -11,9 +11,9 @@ gaccoをご利用いただき、ありがとうございます。
 ------------------------------------
 購入内容
 ------------------------------------
-「${course.display_name_with_default}」講座
+「${course.display_name_with_default}」
 
-注文番号: #${create_order_id(order)}
+申込番号: #${create_order_id(order)}
 開講日: ${course.start_datetime_text()}
 お支払い方法: ${order.payment_method}
 お支払い金額: ¥${"{:,d}".format(int(order.total_cost + order.total_tax))}
@@ -21,7 +21,6 @@ gaccoをご利用いただき、ありがとうございます。
 
 
 マイページに講座が登録されていることをご確認ください。
-講座は、開講日１５時から受講できます。
 https://${site_name}/dashboard
 
 講座詳細
@@ -31,7 +30,7 @@ https://${site_name}/courses/${unicode(course.id)}/about
 このメールは自動送信しています。ご返信いただいても
 お答えできかねますのでご了承ください。
 ==================
-・お問い合わせやキャンセルはこちらから
+・お問い合わせはこちらから
 https://support.gacco.org/hc/ja/requests/new
 
 
@@ -47,14 +46,14 @@ Order Summary
 ------------------------------------
 [${course.display_name_with_default}]
 
-Order ID: #${create_order_id(order)}
+Order No.: #${create_order_id(order)}
 Starting Date: ${course.start_datetime_text()}
 Payment Method: ${order.payment_method}
 Total Amount: ¥${"{:,d}".format(int(order.total_cost + order.total_tax))}
 Purchase Date: ${purchased_datetime.strftime('%Y/%m/%d %H:%M:%S')}
 
 
-You can attending the course from 3PM on the starting date in your gacco account
+You can attending the course on the starting date in your gacco account.
 
 Your dashboard page: https://${site_name}/dashboard
 
