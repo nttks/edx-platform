@@ -25,5 +25,4 @@
           </li>
       </ul>
     <% } %>
-    <ul id="release-date-error-message" class="error-message"></ul>
 </div>

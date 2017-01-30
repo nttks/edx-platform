@@ -122,14 +122,6 @@ define(["jquery", "common/js/spec_helpers/ajax_helpers", "common/js/components/u
                 }
             };
 
-            verifyModalSaveButtonEnabled = function(enabled) {
-                if (enabled) {
-                    expect($('.wrapper-modal-window .action-save')).not.toHaveClass('is-disabled');
-                } else {
-                    expect($('.wrapper-modal-window .action-save')).toHaveClass('is-disabled');
-                }
-            };
-
             expandItemsAndVerifyState = function(type) {
                 getItemHeaders(type).find('.ui-toggle-expansion').click();
                 verifyItemsExpanded(type, true);
@@ -546,27 +538,6 @@ define(["jquery", "common/js/spec_helpers/ajax_helpers", "common/js/components/u
                     expect($(".outline-section .status-release-value")).toContainText("Jan 02, 2015 at 00:00 UTC");
                 });
 
-                it('Input date before 1900 should result in error', function() {
-                    var errorMessage = 'Please enter the date on and after 1900.';
-                    createCourseOutlinePage(this, mockCourseJSON, false);
-                    outlinePage.$('.section-header-actions .configure-button').click();
-
-                    // Allow empty date
-                    $("#start_date").val("").trigger('change');
-                    expect($('#release-date-error-message')).not.toContainText(errorMessage);
-                    verifyModalSaveButtonEnabled(true);
-
-                    // Disallow date before 1900
-                    $("#start_date").val("12/31/1899").trigger('change');
-                    expect($('#release-date-error-message')).toContainText(errorMessage);
-                    verifyModalSaveButtonEnabled(false);
-
-                    // Allow date after 1900
-                    $("#start_date").val("1/1/1900").trigger('change');
-                    expect($('#release-date-error-message')).not.toContainText(errorMessage);
-                    verifyModalSaveButtonEnabled(true);
-                });
-
                 verifyTypePublishable('section', function (options) {
                     return createMockCourseJSON({}, [
                         createMockSectionJSON(options, [
@@ -706,98 +677,74 @@ define(["jquery", "common/js/spec_helpers/ajax_helpers", "common/js/components/u
 
                     it('Input non integer days should result in error', function() {
                         expect($('#individual-start-error')).not.toContainText(daysErrorMessage);
-                        verifyModalSaveButtonEnabled(true);
                         $('#individual_start_days').val('a').trigger('change');
                         expect($('#individual-start-error')).toContainText(daysErrorMessage);
-                        verifyModalSaveButtonEnabled(false);
                         $('#individual_start_days').val('1.0').trigger('change');
                         expect($('#individual-start-error')).toContainText(daysErrorMessage);
-                        verifyModalSaveButtonEnabled(false);
                         $('#individual_start_days').val(0).trigger('change');
                         expect($('#individual-start-error')).not.toContainText(daysErrorMessage);
-                        verifyModalSaveButtonEnabled(true);
                     });
 
                     it('Input negative days should result in error', function () {
                         $('#individual_start_days').val(0).trigger('change');
                         expect($('#individual-start-error')).not.toContainText(daysErrorMessage);
-                        verifyModalSaveButtonEnabled(true);
                         $('#individual_start_days').val(-1).trigger('change');
                         expect($('#individual-start-error')).toContainText(daysErrorMessage);
-                        verifyModalSaveButtonEnabled(false);
                     });
 
                     it('Input too big days should result in error', function () {
                         $('#individual_start_days').val(999).trigger('change');
                         expect($('#individual-start-error')).not.toContainText(daysErrorMessage);
-                        verifyModalSaveButtonEnabled(true);
                         $('#individual_start_days').val(1000).trigger('change');
                         expect($('#individual-start-error')).toContainText(daysErrorMessage);
-                        verifyModalSaveButtonEnabled(false);
                     });
 
                     it('Input non integer hours should result in error', function() {
                         expect($('#individual-start-error')).not.toContainText(hoursErrorMessage);
-                        verifyModalSaveButtonEnabled(true);
                         $('#individual_start_hours').val('a').trigger('change');
                         expect($('#individual-start-error')).toContainText(hoursErrorMessage);
-                        verifyModalSaveButtonEnabled(false);
                         $('#individual_start_hours').val('1.0').trigger('change');
                         expect($('#individual-start-error')).toContainText(hoursErrorMessage);
-                        verifyModalSaveButtonEnabled(false);
                         $('#individual_start_hours').val(0).trigger('change');
                         expect($('#individual-start-error')).not.toContainText(hoursErrorMessage);
-                        verifyModalSaveButtonEnabled(true);
                     });
 
                     it('Input negative hours should result in error', function () {
                         $('#individual_start_hours').val(0).trigger('change');
                         expect($('#individual-start-error')).not.toContainText(hoursErrorMessage);
-                        verifyModalSaveButtonEnabled(true);
                         $('#individual_start_hours').val(-1).trigger('change');
                         expect($('#individual-start-error')).toContainText(hoursErrorMessage);
-                        verifyModalSaveButtonEnabled(false);
                     });
 
                     it('Input too big hours should result in error', function () {
                         $('#individual_start_hours').val(23).trigger('change');
                         expect($('#individual-start-error')).not.toContainText(hoursErrorMessage);
-                        verifyModalSaveButtonEnabled(true);
                         $('#individual_start_hours').val(24).trigger('change');
                         expect($('#individual-start-error')).toContainText(hoursErrorMessage);
-                        verifyModalSaveButtonEnabled(false);
                     });
 
                     it('Input non integer minutes should result in error', function() {
                         expect($('#individual-start-error')).not.toContainText(minutesErrorMessage);
-                        verifyModalSaveButtonEnabled(true);
                         $('#individual_start_minutes').val('a').trigger('change');
                         expect($('#individual-start-error')).toContainText(minutesErrorMessage);
-                        verifyModalSaveButtonEnabled(false);
                         $('#individual_start_minutes').val('1.0').trigger('change');
                         expect($('#individual-start-error')).toContainText(minutesErrorMessage);
-                        verifyModalSaveButtonEnabled(false);
                         $('#individual_start_minutes').val(0).trigger('change');
                         expect($('#individual-start-error')).not.toContainText(minutesErrorMessage);
-                        verifyModalSaveButtonEnabled(true);
                     });
 
                     it('Input negative minutes should result in error', function () {
                         $('#individual_start_minutes').val(0).trigger('change');
                         expect($('#individual-start-error')).not.toContainText(minutesErrorMessage);
-                        verifyModalSaveButtonEnabled(true);
                         $('#individual_start_minutes').val(-1).trigger('change');
                         expect($('#individual-start-error')).toContainText(minutesErrorMessage);
-                        verifyModalSaveButtonEnabled(false);
                     });
 
                     it('Input too big hours should result in error', function () {
                         $('#individual_start_minutes').val(59).trigger('change');
                         expect($('#individual-start-error')).not.toContainText(minutesErrorMessage);
-                        verifyModalSaveButtonEnabled(true);
                         $('#individual_start_minutes').val(60).trigger('change');
                         expect($('#individual-start-error')).toContainText(minutesErrorMessage);
-                        verifyModalSaveButtonEnabled(false);
                     });
                 });
             });
@@ -976,36 +923,6 @@ define(["jquery", "common/js/spec_helpers/ajax_helpers", "common/js/components/u
                     expect($("#id_not_timed").is(":checked")).toBe(false);
                     expect($("#id_practice_exam").is(":checked")).toBe(false);
                     expect($("#id_time_limit").val()).toBe("02:30");
-                });
-
-                it('Input date before 1900 should result in error', function() {
-                    var errorMessage = 'Please enter the date on and after 1900.';
-                    createCourseOutlinePage(this, mockCourseJSON, false);
-                    outlinePage.$('.outline-subsection .configure-button').click();
-
-                    // Allow empty date
-                    $("#start_date").val("").trigger('change');
-                    expect($('#release-date-error-message')).not.toContainText(errorMessage);
-                    verifyModalSaveButtonEnabled(true);
-
-                    // Disallow date before 1900
-                    $("#start_date").val("12/31/1899").trigger('change');
-                    expect($('#release-date-error-message')).toContainText(errorMessage);
-                    verifyModalSaveButtonEnabled(false);
-
-                    // Allow date after 1900
-                    $("#start_date").val("1/1/1900").trigger('change');
-                    expect($('#release-date-error-message')).not.toContainText(errorMessage);
-                    verifyModalSaveButtonEnabled(true);
-
-                    // Confirm that the error is cleared when clearing the date
-                    $("#start_date").val("12/31/1899").trigger('change');
-                    expect($('#release-date-error-message')).toContainText(errorMessage);
-                    verifyModalSaveButtonEnabled(false);
-                    $(".wrapper-modal-window .scheduled-date-input .action-clear").click();
-                    expect($("#start_date").val()).toBe('');
-                    expect($('#release-date-error-message')).not.toContainText(errorMessage);
-                    verifyModalSaveButtonEnabled(true);
                 });
 
                 it('can hide the time limit field when the None radio box is selected', function() {
@@ -1377,98 +1294,74 @@ define(["jquery", "common/js/spec_helpers/ajax_helpers", "common/js/components/u
 
                     it('Input non integer days should result in error', function() {
                         expect($('#individual-due-error')).not.toContainText(daysErrorMessage);
-                        verifyModalSaveButtonEnabled(true);
                         $('#individual_due_days').val('a').trigger('change');
                         expect($('#individual-due-error')).toContainText(daysErrorMessage);
-                        verifyModalSaveButtonEnabled(false);
                         $('#individual_due_days').val('1.0').trigger('change');
                         expect($('#individual-due-error')).toContainText(daysErrorMessage);
-                        verifyModalSaveButtonEnabled(false);
                         $('#individual_due_days').val(0).trigger('change');
                         expect($('#individual-due-error')).not.toContainText(daysErrorMessage);
-                        verifyModalSaveButtonEnabled(true);
                     });
 
                     it('Input negative days should result in error', function() {
                         $('#individual_due_days').val(0).trigger('change');
                         expect($('#individual-due-error')).not.toContainText(daysErrorMessage);
-                        verifyModalSaveButtonEnabled(true);
                         $('#individual_due_days').val(-1).trigger('change');
                         expect($('#individual-due-error')).toContainText(daysErrorMessage);
-                        verifyModalSaveButtonEnabled(false);
                     });
 
                     it('Input too big days should result in error', function() {
                         $('#individual_due_days').val(999).trigger('change');
                         expect($('#individual-due-error')).not.toContainText(daysErrorMessage);
-                        verifyModalSaveButtonEnabled(true);
                         $('#individual_due_days').val(1000).trigger('change');
                         expect($('#individual-due-error')).toContainText(daysErrorMessage);
-                        verifyModalSaveButtonEnabled(false);
                     });
 
                     it('Input non integer hours should result in error', function() {
                         expect($('#individual-due-error')).not.toContainText(hoursErrorMessage);
-                        verifyModalSaveButtonEnabled(true);
                         $('#individual_due_hours').val('a').trigger('change');
                         expect($('#individual-due-error')).toContainText(hoursErrorMessage);
-                        verifyModalSaveButtonEnabled(false);
                         $('#individual_due_hours').val('1.0').trigger('change');
                         expect($('#individual-due-error')).toContainText(hoursErrorMessage);
-                        verifyModalSaveButtonEnabled(false);
                         $("#individual_due_hours").val(0).trigger('change');
                         expect($('#individual-due-error')).not.toContainText(hoursErrorMessage);
-                        verifyModalSaveButtonEnabled(true);
                     });
 
                     it('Input negative hours should result in error', function() {
                         $('#individual_due_hours').val(0).trigger('change');
                         expect($('#individual-due-error')).not.toContainText(hoursErrorMessage);
-                        verifyModalSaveButtonEnabled(true);
                         $('#individual_due_hours').val(-1).trigger('change');
                         expect($('#individual-due-error')).toContainText(hoursErrorMessage);
-                        verifyModalSaveButtonEnabled(false);
                     });
 
                     it('Input too big hours should result in error', function() {
                         $('#individual_due_hours').val(23).trigger('change');
                         expect($('#individual-due-error')).not.toContainText(hoursErrorMessage);
-                        verifyModalSaveButtonEnabled(true);
                         $('#individual_due_hours').val(24).trigger('change');
                         expect($('#individual-due-error')).toContainText(hoursErrorMessage);
-                        verifyModalSaveButtonEnabled(false);
                     });
 
                     it('Input non integer minutes should result in error', function() {
                         expect($('#individual-due-error')).not.toContainText(minutesErrorMessage);
-                        verifyModalSaveButtonEnabled(true);
                         $('#individual_due_minutes').val('a').trigger('change');
                         expect($('#individual-due-error')).toContainText(minutesErrorMessage);
-                        verifyModalSaveButtonEnabled(false);
                         $('#individual_due_minutes').val('1.0').trigger('change');
                         expect($('#individual-due-error')).toContainText(minutesErrorMessage);
-                        verifyModalSaveButtonEnabled(false);
                         $('#individual_due_minutes').val(0).trigger('change');
                         expect($('#individual-due-error')).not.toContainText(minutesErrorMessage);
-                        verifyModalSaveButtonEnabled(true);
                     });
 
                     it('Input negative minutes should result in error', function() {
                         $('#individual_due_minutes').val(0).trigger('change');
                         expect($('#individual-due-error')).not.toContainText(minutesErrorMessage);
-                        verifyModalSaveButtonEnabled(true);
                         $('#individual_due_minutes').val(-1).trigger('change');
                         expect($('#individual-due-error')).toContainText(minutesErrorMessage);
-                        verifyModalSaveButtonEnabled(false);
                     });
 
                     it('Input too big minutes should result in error', function() {
                         $('#individual_due_minutes').val(59).trigger('change');
                         expect($('#individual-due-error')).not.toContainText(minutesErrorMessage);
-                        verifyModalSaveButtonEnabled(true);
                         $('#individual_due_minutes').val(60).trigger('change');
                         expect($('#individual-due-error')).toContainText(minutesErrorMessage);
-                        verifyModalSaveButtonEnabled(false);
                     });
                 });
             });

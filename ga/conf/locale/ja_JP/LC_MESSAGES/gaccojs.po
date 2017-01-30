@@ -473,7 +473,3 @@ msgstr "時："
 #: cms/templates/js/individual-release-days-editor.underscore
 msgid "Minutes:"
 msgstr "分："
-
-#: cms/static/js/views/modals/course_outline_modals.js
-msgid "Please enter the date on and after 1900."
-msgstr "1900年以降の日付を入力して下さい。"
