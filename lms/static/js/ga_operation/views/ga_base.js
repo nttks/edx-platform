@@ -51,7 +51,7 @@
                     });
                 }
             },
-            downloadFileWithCourseId: function (url) {
+            downloadFileWithCourseId: function (url, event) {
                 event.preventDefault();
                 var course_id = $('input[name="course_id"]').val();
                 window.open('/ga_operation/api/' + url + '/?course_id=' + encodeURIComponent(course_id), '_blank');

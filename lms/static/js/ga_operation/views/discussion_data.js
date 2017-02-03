@@ -12,7 +12,7 @@
                 this.post(event, 'discussion_data');
             },
             clickDiscussionDataDownload: function (event) {
-                this.downloadFileWithCourseId('discussion_data_download');
+                this.downloadFileWithCourseId('discussion_data_download', event);
             }
         });
     });

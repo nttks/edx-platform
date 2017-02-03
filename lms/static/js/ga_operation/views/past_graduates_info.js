@@ -7,8 +7,8 @@
             events:{
                 "click #past_graduates_info": "clickPastGraduatesInfo"
             },
-            clickPastGraduatesInfo: function () {
-                this.downloadFileWithCourseId('past_graduates_info');
+            clickPastGraduatesInfo: function (event) {
+                this.downloadFileWithCourseId('past_graduates_info', event);
             }
         });
     });

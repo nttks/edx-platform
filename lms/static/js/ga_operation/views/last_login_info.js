@@ -8,7 +8,7 @@
                 "click #last_login_info": "clickLastLoginInfo"
             },
             clickLastLoginInfo: function (event) {
-                this.downloadFileWithCourseId('last_login_info');
+                this.downloadFileWithCourseId('last_login_info', event);
             }
         });
     });
