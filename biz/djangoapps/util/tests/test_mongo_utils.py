@@ -31,6 +31,7 @@ class BizStoreTest(BizStoreTestBase):
         od1 = OrderedDict()
         od1[ScoreStore.FIELD_CONTRACT_ID] = 1
         od1[ScoreStore.FIELD_COURSE_ID] = 'test'
+        od1[ScoreStore.FIELD_LOGIN_CODE] = 'test_login_code1'
         od1[ScoreStore.FIELD_FULL_NAME] = 'test1'
         od1[ScoreStore.FIELD_USERNAME] = 'user_test1'
         od1[ScoreStore.FIELD_EMAIL] = 'test1@example.com'
@@ -38,6 +39,7 @@ class BizStoreTest(BizStoreTestBase):
         od2 = OrderedDict()
         od2[ScoreStore.FIELD_CONTRACT_ID] = 1
         od2[ScoreStore.FIELD_COURSE_ID] = 'test'
+        od2[ScoreStore.FIELD_LOGIN_CODE] = 'test_login_code2'
         od2[ScoreStore.FIELD_FULL_NAME] = 'test2'
         od2[ScoreStore.FIELD_USERNAME] = 'user_test2'
         od2[ScoreStore.FIELD_EMAIL] = 'test2@example.com'
@@ -74,6 +76,7 @@ class BizStoreTest(BizStoreTestBase):
         self._bizstore.set_documents(self._documents)
         get_document = self._bizstore.get_document({ScoreStore.FIELD_FULL_NAME: 'test2'})
 
+        self.assertEqual(self._documents[1][ScoreStore.FIELD_LOGIN_CODE], get_document[ScoreStore.FIELD_LOGIN_CODE])
         self.assertEqual(self._documents[1][ScoreStore.FIELD_FULL_NAME], get_document[ScoreStore.FIELD_FULL_NAME])
         self.assertEqual(self._documents[1][ScoreStore.FIELD_USERNAME], get_document[ScoreStore.FIELD_USERNAME])
         self.assertEqual(self._documents[1][ScoreStore.FIELD_EMAIL], get_document[ScoreStore.FIELD_EMAIL])
@@ -88,6 +91,7 @@ class BizStoreTest(BizStoreTestBase):
         get_documents = self._bizstore.get_documents()
 
         for i, item in enumerate(get_documents):
+            self.assertEqual(self._documents[i][ScoreStore.FIELD_LOGIN_CODE], item[ScoreStore.FIELD_LOGIN_CODE])
             self.assertEqual(self._documents[i][ScoreStore.FIELD_FULL_NAME], item[ScoreStore.FIELD_FULL_NAME])
             self.assertEqual(self._documents[i][ScoreStore.FIELD_USERNAME], item[ScoreStore.FIELD_USERNAME])
             self.assertEqual(self._documents[i][ScoreStore.FIELD_EMAIL], item[ScoreStore.FIELD_EMAIL])
@@ -137,6 +141,7 @@ class BizStoreTest(BizStoreTestBase):
         get_documents = self._bizstore.get_documents()
 
         for i, item in enumerate(get_documents):
+            self.assertEqual(self._documents[i][ScoreStore.FIELD_LOGIN_CODE], item[ScoreStore.FIELD_LOGIN_CODE])
             self.assertEqual(self._documents[i][ScoreStore.FIELD_FULL_NAME], item[ScoreStore.FIELD_FULL_NAME])
             self.assertEqual(self._documents[i][ScoreStore.FIELD_USERNAME], item[ScoreStore.FIELD_USERNAME])
             self.assertEqual(self._documents[i][ScoreStore.FIELD_EMAIL], item[ScoreStore.FIELD_EMAIL])
@@ -188,6 +193,7 @@ class BizStoreTest(BizStoreTestBase):
         get_documents = self._bizstore.get_documents()
 
         for i, item in enumerate(get_documents):
+            self.assertEqual(self._documents[i][ScoreStore.FIELD_LOGIN_CODE], item[ScoreStore.FIELD_LOGIN_CODE])
             self.assertEqual(self._documents[i][ScoreStore.FIELD_FULL_NAME], item[ScoreStore.FIELD_FULL_NAME])
             self.assertEqual(self._documents[i][ScoreStore.FIELD_USERNAME], item[ScoreStore.FIELD_USERNAME])
             self.assertEqual(self._documents[i][ScoreStore.FIELD_EMAIL], item[ScoreStore.FIELD_EMAIL])

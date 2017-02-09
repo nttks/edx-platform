@@ -111,6 +111,9 @@ class Command(BaseCommand):
                     record = OrderedDict()
                     record[ScoreStore.FIELD_CONTRACT_ID] = contract_id
                     record[ScoreStore.FIELD_COURSE_ID] = unicode(course_key)
+                    if hasattr(contract_register.user, 'bizuser'):
+                        # Only in the case of a contract using login code, setting processing of data is performed.
+                        record[_(ScoreStore.FIELD_LOGIN_CODE)] = contract_register.user.bizuser.login_code
                     record[_(ScoreStore.FIELD_FULL_NAME)] = user.profile.name \
                         if hasattr(user, 'profile') and user.profile else None
                     record[_(ScoreStore.FIELD_USERNAME)] = user.username

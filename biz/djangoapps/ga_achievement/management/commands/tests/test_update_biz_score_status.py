@@ -4,6 +4,7 @@ when you run "manage.py test".
 
 Replace this with more appropriate tests for your application.
 """
+import ddt
 import logging
 from mock import patch
 import tempfile
@@ -16,6 +17,7 @@ from django.test.utils import override_settings
 from biz.djangoapps.ga_achievement.achievement_store import ScoreStore
 from biz.djangoapps.ga_achievement.management.commands import update_biz_score_status
 from biz.djangoapps.ga_achievement.models import ScoreBatchStatus, BATCH_STATUS_STARTED, BATCH_STATUS_FINISHED, BATCH_STATUS_ERROR
+from biz.djangoapps.ga_login.tests.factories import BizUserFactory
 from biz.djangoapps.util.mongo_utils import DEFAULT_DATETIME
 from biz.djangoapps.util.tests.testcase import BizStoreTestBase
 from certificates.models import CertificateStatuses, GeneratedCertificate
@@ -36,6 +38,7 @@ ADDITIONAL_SETTINGS_VALUE = 'test_value'
 DEFAULT_KEY = [
     ScoreStore.FIELD_CONTRACT_ID,
     ScoreStore.FIELD_COURSE_ID,
+    ScoreStore.FIELD_LOGIN_CODE,
     ScoreStore.FIELD_FULL_NAME,
     ScoreStore.FIELD_USERNAME,
     ScoreStore.FIELD_EMAIL,
@@ -78,6 +81,7 @@ class TestArgParsing(TestCase):
             self.command.handle._original(self.command, 99999999)
 
 
+@ddt.ddt
 @override_settings(BIZ_SET_SCORE_COMMAND_OUTPUT=command_output_file.name)
 class UpdateBizScoreStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEnrollmentTestCase):
 
@@ -95,6 +99,10 @@ class UpdateBizScoreStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEnrol
 
     def _unenroll(self, user, course):
         CourseEnrollment.unenroll(user, course.id)
+
+    def _biz_user(self, user, login_code):
+        if login_code:
+            BizUserFactory.create(user=user, login_code=login_code)
 
     def setUp(self):
         super(UpdateBizScoreStatusTest, self).setUp()
@@ -143,8 +151,13 @@ class UpdateBizScoreStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEnrol
         self.assert_finished(0, self.contract, self.course1)
         self.assert_finished(0, self.contract, self.course2)
 
-    def test_contract_with_not_enrolled_user(self):
+    @ddt.data(
+        'test_login_code',
+        None,
+    )
+    def test_contract_with_not_enrolled_user(self, login_code):
         self._input_contract(self.contract, self.user)
+        self._biz_user(self.user, login_code)
 
         call_command('update_biz_score_status')
 
@@ -154,6 +167,10 @@ class UpdateBizScoreStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEnrol
             score_dict = score_list[0]
             self.assertEquals(score_dict[ScoreStore.FIELD_CONTRACT_ID], self.contract.id)
             self.assertEquals(score_dict[ScoreStore.FIELD_COURSE_ID], unicode(course.id))
+            if login_code:
+                self.assertEquals(score_dict[ScoreStore.FIELD_LOGIN_CODE], login_code)
+            else:
+                self.assertIsNone(score_dict.get(ScoreStore.FIELD_LOGIN_CODE))
             self.assertIsNone(score_dict[ScoreStore.FIELD_FULL_NAME])
             self.assertEquals(score_dict[ScoreStore.FIELD_USERNAME], self.user.username)
             self.assertEquals(score_dict[ScoreStore.FIELD_EMAIL], self.user.email)
@@ -168,9 +185,14 @@ class UpdateBizScoreStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEnrol
         assert_score(self.course1)
         assert_score(self.course2)
 
-    def test_contract_with_enrolled_user(self):
+    @ddt.data(
+        'test_login_code',
+        None,
+    )
+    def test_contract_with_enrolled_user(self, login_code):
         self._profile(self.user)
         self._register_contract(self.contract, self.user, additional_value=ADDITIONAL_SETTINGS_VALUE)
+        self._biz_user(self.user, login_code)
 
         call_command('update_biz_score_status')
 
@@ -180,6 +202,10 @@ class UpdateBizScoreStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEnrol
             score_dict = score_list[0]
             self.assertEquals(score_dict[ScoreStore.FIELD_CONTRACT_ID], self.contract.id)
             self.assertEquals(score_dict[ScoreStore.FIELD_COURSE_ID], unicode(course.id))
+            if login_code:
+                self.assertEquals(score_dict[ScoreStore.FIELD_LOGIN_CODE], login_code)
+            else:
+                self.assertIsNone(score_dict.get(ScoreStore.FIELD_LOGIN_CODE))
             self.assertEquals(score_dict[ScoreStore.FIELD_FULL_NAME], self.user.profile.name)
             self.assertEquals(score_dict[ScoreStore.FIELD_USERNAME], self.user.username)
             self.assertEquals(score_dict[ScoreStore.FIELD_EMAIL], self.user.email)
@@ -194,7 +220,11 @@ class UpdateBizScoreStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEnrol
         assert_score(self.course1)
         assert_score(self.course2)
 
-    def test_contract_with_grade(self):
+    @ddt.data(
+        'test_login_code',
+        None,
+    )
+    def test_contract_with_grade(self, login_code):
         self._profile(self.user)
         self._register_contract(self.contract, self.user, additional_value=ADDITIONAL_SETTINGS_VALUE)
         self._certificate(self.user, self.course1)
@@ -212,6 +242,9 @@ class UpdateBizScoreStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEnrol
             'percent': 88.8888888888
         }
         self.mock_grade.return_value = grade_return_value
+
+        self._biz_user(self.user, login_code)
+
         call_command('update_biz_score_status')
 
         def assert_score(course):
@@ -220,6 +253,10 @@ class UpdateBizScoreStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEnrol
             score_dict = score_list[0]
             self.assertEquals(score_dict[ScoreStore.FIELD_CONTRACT_ID], self.contract.id)
             self.assertEquals(score_dict[ScoreStore.FIELD_COURSE_ID], unicode(course.id))
+            if login_code:
+                self.assertEquals(score_dict[ScoreStore.FIELD_LOGIN_CODE], login_code)
+            else:
+                self.assertIsNone(score_dict.get(ScoreStore.FIELD_LOGIN_CODE))
             self.assertEquals(score_dict[ScoreStore.FIELD_FULL_NAME], self.user.profile.name)
             self.assertEquals(score_dict[ScoreStore.FIELD_USERNAME], self.user.username)
             self.assertEquals(score_dict[ScoreStore.FIELD_EMAIL], self.user.email)
@@ -241,13 +278,18 @@ class UpdateBizScoreStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEnrol
         assert_score(self.course1)
         assert_score(self.course2)
 
-    def test_contract_with_unenrolled_user(self):
+    @ddt.data(
+        'test_login_code',
+        None,
+    )
+    def test_contract_with_unenrolled_user(self, login_code):
         self._profile(self.user)
         self._register_contract(self.contract, self.user, additional_value=ADDITIONAL_SETTINGS_VALUE)
         self._certificate(self.user, self.course1)
         self._certificate(self.user, self.course2)
         self._unenroll(self.user, self.course1)
         self._unenroll(self.user, self.course2)
+        self._biz_user(self.user, login_code)
 
         call_command('update_biz_score_status')
 
@@ -257,6 +299,10 @@ class UpdateBizScoreStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEnrol
             score_dict = score_list[0]
             self.assertEquals(score_dict[ScoreStore.FIELD_CONTRACT_ID], self.contract.id)
             self.assertEquals(score_dict[ScoreStore.FIELD_COURSE_ID], unicode(course.id))
+            if login_code:
+                self.assertEquals(score_dict[ScoreStore.FIELD_LOGIN_CODE], login_code)
+            else:
+                self.assertIsNone(score_dict.get(ScoreStore.FIELD_LOGIN_CODE))
             self.assertEquals(score_dict[ScoreStore.FIELD_FULL_NAME], self.user.profile.name)
             self.assertEquals(score_dict[ScoreStore.FIELD_USERNAME], self.user.username)
             self.assertEquals(score_dict[ScoreStore.FIELD_EMAIL], self.user.email)
@@ -271,12 +317,17 @@ class UpdateBizScoreStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEnrol
         assert_score(self.course1)
         assert_score(self.course2)
 
-    def test_contract_with_disabled_user(self):
+    @ddt.data(
+        'test_login_code',
+        None,
+    )
+    def test_contract_with_disabled_user(self, login_code):
         self._profile(self.user)
         self._register_contract(self.contract, self.user, additional_value=ADDITIONAL_SETTINGS_VALUE)
         self._certificate(self.user, self.course1)
         self._certificate(self.user, self.course2)
         self._account_disable(self.user)
+        self._biz_user(self.user, login_code)
 
         call_command('update_biz_score_status')
 
@@ -286,6 +337,10 @@ class UpdateBizScoreStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEnrol
             score_dict = score_list[0]
             self.assertEquals(score_dict[ScoreStore.FIELD_CONTRACT_ID], self.contract.id)
             self.assertEquals(score_dict[ScoreStore.FIELD_COURSE_ID], unicode(course.id))
+            if login_code:
+                self.assertEquals(score_dict[ScoreStore.FIELD_LOGIN_CODE], login_code)
+            else:
+                self.assertIsNone(score_dict.get(ScoreStore.FIELD_LOGIN_CODE))
             self.assertEquals(score_dict[ScoreStore.FIELD_FULL_NAME], self.user.profile.name)
             self.assertEquals(score_dict[ScoreStore.FIELD_USERNAME], self.user.username)
             self.assertEquals(score_dict[ScoreStore.FIELD_EMAIL], self.user.email)
