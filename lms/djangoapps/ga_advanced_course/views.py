@@ -291,6 +291,16 @@ def purchase_ticket(request, course, ticket_id):
     advanced_course = _get_advanced_course(ticket.advanced_course.id)
     _verify_course_integrity(course, advanced_course)
 
+    if not request.user.is_active:
+        log.warning(
+            'Inactive user ({user_id}) try to choose ticket ({ticket_id}).'.format(
+                user_id=request.user.id, ticket_id=ticket.id
+            )
+        )
+        return redirect(reverse(
+            'advanced_course:choose_ticket', args=[advanced_course.course_id, advanced_course.id]
+        ))
+
     # check status of target ticket
     if ticket.is_end_of_sale():
         log.warning(

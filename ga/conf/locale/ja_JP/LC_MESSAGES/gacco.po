@@ -1496,3 +1496,11 @@ msgstr "ログイン時に利用されたメールアドレスは既に退会さ
 #: lms/templates/disabled_account.html
 msgid "The email address which is withdrawn can't be used again, please register as new member with other email address."
 msgstr "同じメールアドレスでの再登録はできません。別のメールアドレスで新規登録をしてください。"
+
+#: lms/templates/ga_advanced_course/choose_ticket.html
+msgid "Before you enroll in a course, you need to activate your account."
+msgstr "会員登録が完了しておりません。"
+
+#: lms/templates/ga_advanced_course/choose_ticket.html
+msgid "We've sent an email to {email} with instructions for activating your account. Please try again."
+msgstr "ご登録いただいた{email}宛に会員登録のご案内メールを送信しております。メール内のURLをクリックし、会員登録を行ってからお申込ください。"

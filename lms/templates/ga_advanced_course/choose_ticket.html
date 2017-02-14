@@ -19,6 +19,7 @@ from openedx.core.lib.ga_datetime_utils import to_timezone
     <li><span><i class="fa fa-eye"></i><span class="text">${pgettext("payment_breadcrumb", "Confirm")}</span></span></li>
     <li><span><i class="fa fa-check"></i><span class="text">${pgettext("payment_breadcrumb", "Complete")}</span></span></li>
   </ul>
+% if user.is_active:
   <h2>${_("Ticket Selection")}</h2>
 
   % if messages:
@@ -50,4 +51,18 @@ from openedx.core.lib.ga_datetime_utils import to_timezone
     </div>
     <p class="purchase_annotation">${_("* Display price will be tax included.")}</p>
   </section>
+% else:
+  <div class="wrapper-msg urgency-high" style="border: 0; margin: 3px;">
+    <div class="msg" style="min-width: 0;">
+      <div class="msg-content">
+        <h2 class="title" style="padding: 0; margin-top: 0; width: 100%; position: inherit; text-align: left;">${_("Before you enroll in a course, you need to activate your account.")}</h2>
+        <div class="copy">
+          <p class="activation-message">
+          ${_("We've sent an email to {email} with instructions for activating your account. Please try again.").format(email=user.email)}
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+% endif
 </div>

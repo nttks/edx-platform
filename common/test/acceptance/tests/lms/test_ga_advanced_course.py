@@ -6,6 +6,7 @@ from bok_choy.web_app_test import WebAppTest
 from ...fixtures.course import CourseFixture
 from ...pages.common.logout import LogoutPage
 from ...pages.lms.auto_auth import AutoAuthPage
+from ...pages.lms.login_and_register import CombinedLoginAndRegisterPage
 from lms.envs.bok_choy import EMAIL_FILE_PATH
 
 from ..ga_helpers import GaccoTestMixin
@@ -279,6 +280,51 @@ class AdvancedCourseTest(WebAppTest, GaccoTestMixin):
         self.assertEqual(
             u"If you unenroll, ticket, such as face-to-face classroom you have purchased will not be canceled. Please contact us through the Help If you would like to cancel the ticket.",
             dashboard_page.get_refund_info_message()
+        )
+
+    def test_purchase_flow_inactive_user(self):
+        """
+        Scenario:
+        Inactive user can access until ticket option page, but cannot purchase.
+
+        1. Register user (not activate)
+        2. Visit course about page and enroll
+        3. Show advanced course choose and click view-detail button
+        4. Show advanced course list page and select one of these
+        5. Show advanced course ticket option page and verify inactive message has been shown
+        """
+
+        # Register user (not activate)
+        username = self.unique_id[0:6]
+        CombinedLoginAndRegisterPage(self.browser).visit().register(
+            email='{}@example.com'.format(username), password='abcdefG1', username=username,
+            full_name=username, terms_of_service=True
+        )
+        DashboardPage(self.browser).wait_for_page()
+
+        # Visit course about page and enroll
+        course_about_page = CourseAboutPage(self.browser, self.course_id).visit()
+        choose_page = course_about_page.enroll()
+
+        # Verify choose page has two track
+        self.assertTrue(choose_page.has_face_to_face_track())
+        self.assertTrue(choose_page.has_online_track())
+
+        f2f_courses_page = choose_page.show_face_to_face_courses_page()
+
+        # Verify advanced course list page
+        self.assertFalse(f2f_courses_page.get_error_message())
+        ## Verify three advanced course exists and check button status
+        self._assert_course_name_and_button(f2f_courses_page, 'Test Advance Course 21')
+
+        ## subscribe
+        choose_ticket_page = f2f_courses_page.subscribe_by_summary('Test Advance Course 21')
+
+        # Verify inactive message has been shown in ticket page
+        self._assert_ticket(choose_ticket_page, 'test ticket name 21', exists=False)
+        self.assertEqual(
+            choose_ticket_page.get_inactive_message_title(),
+            'Before you enroll in a course, you need to activate your account.'
         )
 
     def test_not_logged_in_and_register(self):

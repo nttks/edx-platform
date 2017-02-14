@@ -57,6 +57,20 @@
     }
   },
   {
+    "pk": 21,
+    "model": "ga_advanced_course.advancedcourse",
+    "fields": {
+      "course_id": "course-v1:test_advanced_course_org+test_purchase_flow_inactive_user+test_run",
+      "display_name": "Test Advance Course 21",
+      "start_date": "2026-01-01",
+      "start_time": "00:00:00",
+      "end_time": "12:00:00",
+      "capacity": 100,
+      "description": "test advanced course description",
+      "is_active": true
+    }
+  },
+  {
     "pk": 11,
     "model": "ga_advanced_course.advancedcourse",
     "fields": {
@@ -168,6 +182,17 @@
     }
   },
   {
+    "pk": 21,
+    "model": "ga_advanced_course.advancedf2fcourse",
+    "fields": {
+      "advancedcourse_ptr": 21,
+      "place_name": "test place 21",
+      "place_link": "http://example21.com/",
+      "place_address": "test address 21",
+      "place_access": "test access 21"
+    }
+  },
+  {
     "pk": 101,
     "model": "ga_advanced_course.advancedf2fcourse",
     "fields": {
@@ -253,6 +278,17 @@
       "price": 4000,
       "sell_by_date": "2026-01-01 00:00:00",
       "description": "ticket description 11"
+    }
+  },
+  {
+    "pk": 21,
+    "model": "ga_advanced_course.advancedcourseticket",
+    "fields": {
+      "advanced_course": 21,
+      "display_name": "test ticket name 21",
+      "price": 4000,
+      "sell_by_date": "2026-01-01 00:00:00",
+      "description": "ticket description 21"
     }
   },
   {

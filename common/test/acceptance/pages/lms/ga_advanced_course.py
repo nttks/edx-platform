@@ -179,7 +179,7 @@ class AdvancedCourseChooseTicketPage(PageObject):
     url = None
 
     def is_browser_on_page(self):
-        return self.q(css='.ticket_page_wrap .items').present
+        return self.browser.title.startswith("Ticket Selection |")
 
     def _get_element_in_ticket(self, ticket_name, selector):
         ticket_listing = self.q(css='.items').filter(lambda el: ticket_name in el.text).results
@@ -216,6 +216,8 @@ class AdvancedCourseChooseTicketPage(PageObject):
         self.wait_for_ajax()
         return FakePaymentPage(self.browser).wait_for_page()
 
+    def get_inactive_message_title(self):
+        return self.q(css='.wrapper-msg h2.title')[0].text
 
 class AdvancedCourseReceiptPage(PageObject):
 

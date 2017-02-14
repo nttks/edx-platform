@@ -486,6 +486,24 @@ class AdvancedCoursePurchaseTicketViewTest(CourseCheckMixin, TicketCheckMixin, A
 
         self._assert_purchase_ticket_response(response, ticket, self.user, 'ga_shoppingcart:input_personal_info')
 
+    def test_purchase_ticket_inactive_user(self):
+        advanced_course = self._create_advanced_courses(self.course, 2)[0]
+        ticket = self._create_ticket(advanced_course, 2)[0]
+
+        # Make advanced_course to full just before
+        for _ in range(advanced_course.capacity - 1):
+            purchase_ticket(UserFactory.create(), ticket)
+
+        self.setup_user()
+        self.enroll(self.course)
+        # Make user to be inactive
+        self.user.is_active = False
+        self.user.save()
+
+        response = self._get_purchase_ticket(self.course, ticket.id)
+
+        self._assert_redirect_to_choose_ticket(response, ticket)
+
     def test_purchase_ticket_not_exists(self):
         advanced_course = self._create_advanced_courses(self.course, 2, active=False)[0]
         ticket = self._create_ticket(advanced_course, 2)[0]
