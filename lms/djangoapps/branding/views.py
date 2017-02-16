@@ -303,7 +303,10 @@ def footer(request):
         footer_dict = cache.get(cache_key)
         if footer_dict is None:
             with translation.override(language):
-                footer_dict = branding_api.get_footer(is_secure=request.is_secure())
+                footer_dict = branding_api.get_footer(
+                    is_secure=request.is_secure(),
+                    language=language,
+                )
                 cache.set(cache_key, footer_dict, settings.FOOTER_CACHE_TIMEOUT)
         return JsonResponse(footer_dict, 200, content_type="application/json; charset=utf-8")
 

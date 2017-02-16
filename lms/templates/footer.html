@@ -3,8 +3,9 @@
   from django.core.urlresolvers import reverse
   from django.utils.translation import ugettext as _
   from branding.api import get_footer
+  from django.utils.translation import get_language
 %>
-<% footer = get_footer(is_secure=is_secure) %>
+<% footer = get_footer(is_secure=is_secure,language=get_language()) %>
 <%namespace name='static' file='static_content.html'/>
 
 <div class="wrapper wrapper-footer">
@@ -21,7 +22,7 @@
         <ol>
             % for item_num, link in enumerate(footer['navigation_links'], start=1):
             <li class="nav-colophon-0${item_num}">
-              <a id="${link['name']}" href="${link['url']}"><i class="fa fa-chevron-circle-right"></i>${link['title']}</a>
+              <a id="${link['name']}" href="${link['url']}" ${link['tag']}><i class="fa fa-chevron-circle-right"></i>${link['title']}</a>
             </li>
             % endfor
             <li class="nav-colophon-0${len(footer['navigation_links']) + 1} help-tab">

@@ -43,3 +43,10 @@ class FooterPage(PageObject):
         Returns the url of navigation link by specified class name.
         """
         return self.q(css='#footer-openedx nav.nav-colophon .{} a'.format(class_name)).attrs('href')[0]
+
+    def get_navigation_link_ja(self, class_name):
+        """
+        Returns the ja-url of navigation link by specified English class name.
+        """
+        en_url = self.q(css='#footer-openedx nav.nav-colophon .{} a'.format(class_name)).attrs('href')[0]
+        return en_url.split("-en")[0]

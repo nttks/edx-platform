@@ -198,9 +198,11 @@ if os.environ.get('ENABLE_BOKCHOY_GA'):
         "FAQ": "gacco-support",
         "NEWS": "gacco-news",
         "PRIVACY": "gacco-privacy",
+        "PRIVACY_EN": "gacco-privacy-en",
         "HONOR": "gacco-privacy",
         "ROOT": "gacco-root",
-        "TOS": "gacco-tos"
+        "TOS": "gacco-tos",
+        "TOS_EN": "gacco-tos-en"
     }
 
     MKTG_URL_LINK_MAP_URLS = {
@@ -209,9 +211,11 @@ if os.environ.get('ENABLE_BOKCHOY_GA'):
         "gacco-courses": "http://gacco.org/list.html",
         "gacco-news": "https://support.gacco.org/hc/ja/categories/200033520",
         "gacco-privacy": "https://support.gacco.org/hc/ja/articles/200749314",
+        "gacco-privacy-en": "https://support.gacco.org/hc/ja/articles/204245440",
         "gacco-root": "/",
         "gacco-support": "https://support.gacco.org/",
-        "gacco-tos": "https://support.gacco.org/hc/ja/articles/200749224"
+        "gacco-tos": "https://support.gacco.org/hc/ja/articles/200749224",
+        "gacco-tos-en": "https://support.gacco.org/hc/ja/articles/204058544"
     }
 
     # Use old Login and Register page

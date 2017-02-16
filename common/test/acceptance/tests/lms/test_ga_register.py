@@ -79,18 +79,30 @@ class RegistrationTest(WebAppTest, GaccoTestMixin):
         ## Footer links
         # Check link of terms of service
         self.assertEqual(
-            'https://support.gacco.org/hc/ja/articles/200749224',
+            'https://support.gacco.org/hc/ja/articles/204058544',
             requests.get(self.footer_page.get_navigation_link('nav-colophon-01'), allow_redirects=False).headers['Location']
         )
         # Check link of privacy policy
         self.assertEqual(
-            'https://support.gacco.org/hc/ja/articles/200749314',
+            'https://support.gacco.org/hc/ja/articles/204245440',
             requests.get(self.footer_page.get_navigation_link('nav-colophon-02'), allow_redirects=False).headers['Location']
         )
         # Check link of FAQ
         self.assertEqual(
             'https://support.gacco.org/',
             requests.get(self.footer_page.get_navigation_link('nav-colophon-03'), allow_redirects=False).headers['Location']
+        )
+
+        # bok-choy test can't change language, so generate other language url by en url
+        # Check link of terms of service(ja)
+        self.assertEqual(
+            'https://support.gacco.org/hc/ja/articles/200749224',
+            requests.get(self.footer_page.get_navigation_link_ja('nav-colophon-01'), allow_redirects=False).headers['Location']
+        )
+        # Check link of privacy policy(ja)
+        self.assertEqual(
+            'https://support.gacco.org/hc/ja/articles/200749314',
+            requests.get(self.footer_page.get_navigation_link_ja('nav-colophon-02'), allow_redirects=False).headers['Location']
         )
 
     def test_register_and_activate(self):

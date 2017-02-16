@@ -52,11 +52,17 @@ class TestFooter(TestCase):
         self.assertIn(content, resp.content)
 
     @mock.patch.dict(settings.FEATURES, {'ENABLE_FOOTER_MOBILE_APP_LINKS': True})
-    @ddt.data(True, False)
-    def test_footer_json(self, is_edx_domain):
+    @ddt.data(
+        (True, "en"),
+        (True, "ja"),
+        (False, "en"),
+        (False, "ja"),
+    )
+    @ddt.unpack
+    def test_footer_json(self, is_edx_domain, language):
         self._set_feature_flag(True)
         with self._set_is_edx_domain(is_edx_domain):
-            resp = self._get_footer()
+            resp = self._get_footer(params={'language': language})
 
         self.assertEqual(resp.status_code, 200)
         json_data = json.loads(resp.content)
@@ -71,6 +77,17 @@ class TestFooter(TestCase):
             self.assertIn("name", link)
             self.assertIn("title", link)
             self.assertIn("url", link)
+            self.assertIn("tag", link)
+            if language == "en":
+                if link['name'] == "terms_of_service":
+                    self.assertEqual(link["url"], "/tos_en")
+                elif link['name'] == "privacy_policy":
+                    self.assertEqual(link["url"], "/privacy_en")
+            else:
+                if link['name'] == "terms_of_service":
+                    self.assertEqual(link["url"], "/tos")
+                elif link['name'] == "privacy_policy":
+                    self.assertEqual(link["url"], "/privacy")
 
         # Social links
         self.assertIn("social_links", json_data)

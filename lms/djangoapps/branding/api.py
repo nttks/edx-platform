@@ -32,7 +32,7 @@ def is_enabled():
     return BrandingApiConfig.current().enabled
 
 
-def get_footer(is_secure=True):
+def get_footer(is_secure=True, language=""):
     """Retrieve information used to render the footer.
 
     This will handle both the OpenEdX and EdX.org versions
@@ -97,7 +97,7 @@ def get_footer(is_secure=True):
         "copyright": _footer_copyright(),
         "logo_image": _footer_logo_img(is_secure),
         "social_links": _footer_social_links(),
-        "navigation_links": _footer_navigation_links(),
+        "navigation_links": _footer_navigation_links(language),
         "mobile_links": _footer_mobile_links(is_secure),
         "legal_links": _footer_legal_links(),
         "openedx_link": _footer_openedx_link(),
@@ -166,21 +166,40 @@ def _footer_social_links():
     return links
 
 
-def _footer_navigation_links():
+def _footer_navigation_links(language=""):
     """Return the navigation links to display in the footer. """
-    return [
-        {
-            "name": link_name,
-            "title": link_title,
-            "url": link_url,
-        }
-        for link_name, link_url, link_title in [
-            ("terms_of_service", marketing_link("TOS"), _("Terms of Service")),
-            ("privacy_policy", marketing_link("PRIVACY"), _("Privacy Policy")),
-            ("faq", marketing_link("FAQ"), _("FAQ")),
+    # en
+    if language in ['en', 'en-us']:
+        return [
+            {
+                "name": link_name_en,
+                "title": link_title_en,
+                "url": link_url_en,
+                "tag": link_tag_en,
+            }
+            for link_name_en, link_url_en, link_title_en, link_tag_en in [
+                ("terms_of_service", marketing_link("TOS_EN"), _("Terms of Service"), "onclick=\"ga('send', 'event', 'lms-footer', 'click', 'terms-en', true);\""),
+                ("privacy_policy", marketing_link("PRIVACY_EN"), _("Privacy Policy"), "onclick=\"ga('send', 'event', 'lms-footer', 'click', 'privacy-en', true);\""),
+                ("faq", marketing_link("FAQ"), _("FAQ"), ""),
+            ]
+            if link_url_en and link_url_en != "#"
         ]
-        if link_url and link_url != "#"
-    ]
+    # ja
+    else:
+        return [
+            {
+                "name": link_name,
+                "title": link_title,
+                "url": link_url,
+                "tag": link_tag,
+            }
+            for link_name, link_url, link_title, link_tag in [
+                ("terms_of_service", marketing_link("TOS"), _("Terms of Service"), "onclick=\"ga('send', 'event', 'lms-footer', 'click', 'terms-jp', true);\""),
+                ("privacy_policy", marketing_link("PRIVACY"), _("Privacy Policy"), "onclick=\"ga('send', 'event', 'lms-footer', 'click', 'privacy-jp', true);\""),
+                ("faq", marketing_link("FAQ"), _("FAQ"), ""),
+            ]
+            if link_url and link_url != "#"
+        ]
 
 
 def _footer_legal_links():
