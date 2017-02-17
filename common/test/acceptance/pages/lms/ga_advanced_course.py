@@ -217,7 +217,7 @@ class AdvancedCourseChooseTicketPage(PageObject):
         return FakePaymentPage(self.browser).wait_for_page()
 
     def get_inactive_message_title(self):
-        return self.q(css='.wrapper-msg h2.title')[0].text
+        return self.q(css='.wrapper-msg p.title')[0].text
 
 class AdvancedCourseReceiptPage(PageObject):
 
