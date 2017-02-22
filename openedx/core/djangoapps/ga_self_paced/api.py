@@ -39,6 +39,8 @@ def get_base_date(enrollment):
 
 
 def get_course_end_date(enrollment):
+    if not enrollment:
+        return None
     _extra = enrollment.course_overview.extra
     if not (_extra and _extra.self_paced and _extra.has_individual_end):
         return None

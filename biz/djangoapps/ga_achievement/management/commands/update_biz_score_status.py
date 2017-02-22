@@ -19,6 +19,7 @@ from biz.djangoapps.util.decorators import handle_command_exception
 from biz.djangoapps.util.mongo_utils import DEFAULT_DATETIME
 from certificates.models import CertificateStatuses, GeneratedCertificate
 from courseware import grades, courses
+from openedx.core.djangoapps.ga_self_paced import api as self_paced_api
 from student.management.commands.get_grades import RequestMock
 from student.models import UserStanding, CourseEnrollment
 from xmodule.modulestore.django import modulestore
@@ -80,7 +81,8 @@ class Command(BaseCommand):
                 ScoreBatchStatus.save_for_started(contract_id, course_key)
 
                 # Check if course exists in modulestore
-                if not modulestore().get_course(course_key):
+                course = modulestore().get_course(course_key)
+                if not course:
                     raise CourseDoesNotExist()
 
                 # Records
@@ -95,6 +97,8 @@ class Command(BaseCommand):
                         student_status = _(ScoreStore.FIELD_STUDENT_STATUS__DISABLED)
                     elif not course_enrollment:
                         student_status = _(ScoreStore.FIELD_STUDENT_STATUS__NOT_ENROLLED)
+                    elif self_paced_api.is_course_closed(course_enrollment):
+                        student_status = _(ScoreStore.FIELD_STUDENT_STATUS__EXPIRED)
                     elif course_enrollment.is_active:
                         student_status = _(ScoreStore.FIELD_STUDENT_STATUS__ENROLLED)
                     else:
@@ -126,6 +130,9 @@ class Command(BaseCommand):
                     record[_(ScoreStore.FIELD_CERTIFICATE_STATUS)] = certificate_status
                     record[_(ScoreStore.FIELD_ENROLL_DATE)] = course_enrollment.created \
                         if course_enrollment else DEFAULT_DATETIME
+                    # Add Expire Date only if course is self-paced
+                    if course.self_paced:
+                        record[_(ScoreStore.FIELD_EXPIRE_DATE)] = self_paced_api.get_course_end_date(course_enrollment)
                     record[_(ScoreStore.FIELD_CERTIFICATE_ISSUE_DATE)] = generated_certificate.created_date \
                         if generated_certificate else DEFAULT_DATETIME
                     grade = get_grade(course_key, user)

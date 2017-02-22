@@ -105,6 +105,10 @@ msgid "Disabled"
 msgstr "退会"
 
 #: biz/djangoapps/ga_achievement/achievement_store.py
+msgid "Expired"
+msgstr "受講期間終了"
+
+#: biz/djangoapps/ga_achievement/achievement_store.py
 msgid "Certificate Status"
 msgstr "修了証ステータス"
 
@@ -119,6 +123,10 @@ msgstr "未公開"
 #: biz/djangoapps/ga_achievement/achievement_store.py
 msgid "Enroll Date"
 msgstr "受講登録日"
+
+#: biz/djangoapps/ga_achievement/achievement_store.py
+msgid "Expire Date"
+msgstr "受講期日"
 
 #: biz/djangoapps/ga_achievement/achievement_store.py
 msgid "Certificate Issue Date"
