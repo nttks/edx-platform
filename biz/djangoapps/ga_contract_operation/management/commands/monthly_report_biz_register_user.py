@@ -113,16 +113,6 @@ def _render_message(year, month, pfgs_contract_list, os_contract_list):
 
 
 def _create_report_data(target_date, last_target_date):
-
-    # userstanding disabled list
-    user_disabled_list = [
-        str(x.user_id)
-        for x in UserStanding.objects.filter(
-            account_status=UserStanding.ACCOUNT_DISABLED,
-            standing_last_changed_at__lt=last_target_date
-        )
-    ]
-
     # PF and gacco service list
     pfgs_contract_list = []
     # Owner service list
@@ -145,11 +135,15 @@ def _create_report_data(target_date, last_target_date):
             SELECT 0 AS id, user_id, contract_id FROM ga_invitation_contractregisterhistory
                 WHERE id IN (
                     SELECT
-                        max(id) AS max_id
+                        MAX(id)
                     FROM
                         ga_invitation_contractregisterhistory
                     WHERE
-                        status = '{status}' AND contract_id = {contract_id} AND modified >= '{last_target_date}' AND modified < '{target_date}' AND user_id NOT IN ({user_disabled_list})
+                        status = '{status}' AND contract_id = {contract_id} AND
+                        '{last_target_date}' <= modified AND modified < '{target_date}' AND
+                        NOT EXISTS (
+                            SELECT id FROM student_userstanding WHERE student_userstanding.user_id = ga_invitation_contractregisterhistory.user_id AND account_status = 'disabled' AND standing_last_changed_at < '{last_target_date}'
+                        )
                     GROUP BY
                         user_id
                 )
@@ -157,18 +151,21 @@ def _create_report_data(target_date, last_target_date):
             SELECT 0 AS id, user_id, contract_id FROM ga_invitation_contractregisterhistory
                 WHERE status = '{status}' AND id IN (
                     SELECT
-                        max(id) AS max_id
+                        MAX(id)
                     FROM
                         ga_invitation_contractregisterhistory
                     WHERE
-                        contract_id = {contract_id} AND modified < '{last_target_date}' AND user_id NOT IN ({user_disabled_list})
+                        contract_id = {contract_id} AND
+                        modified < '{last_target_date}' AND
+                        NOT EXISTS (
+                            SELECT id FROM student_userstanding WHERE student_userstanding.user_id = ga_invitation_contractregisterhistory.user_id AND account_status = 'disabled' AND standing_last_changed_at < '{last_target_date}'
+                        )
                     GROUP BY
                         user_id
                 )
         '''.format(
             contract_id=contract.id,
             target_date=target_date.strftime('%Y-%m-%d %H:%M:%S'),
-            user_disabled_list=','.join(user_disabled_list),
             status=REGISTER_INVITATION_CODE,
             last_target_date=last_target_date.strftime('%Y-%m-%d %H:%M:%S'),
         )))
