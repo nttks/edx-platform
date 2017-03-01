@@ -4,6 +4,7 @@ from django.utils.translation import ugettext as _
 
 from biz.djangoapps.ga_contract.models import (
     CONTRACT_TYPE_PF, CONTRACT_TYPE_OWNER_SERVICE, CONTRACT_TYPE_OWNERS, CONTRACT_TYPE_GACCO_SERVICE,
+    REGISTER_TYPE,
 )
 from biz.djangoapps.ga_contract.models import Contract
 from biz.djangoapps.ga_organization.models import Organization
@@ -19,7 +20,7 @@ class ContractForm(forms.ModelForm):
     class Meta:
         model = Contract
         fields = (
-            'contract_name', 'contract_type', 'invitation_code', 'contractor_organization', 'start_date', 'end_date'
+            'contract_name', 'contract_type', 'register_type', 'invitation_code', 'contractor_organization', 'start_date', 'end_date'
         )
 
     def __init__(self, org, *args, **kwargs):
@@ -32,6 +33,7 @@ class ContractForm(forms.ModelForm):
                         self.fields['invitation_code'].min_length,
                         self.fields['invitation_code'].max_length)})
         self.fields['contract_type'].label = 'Contract Type'
+        self.fields['register_type'].label = 'Register Type'
         self.fields['contractor_organization'].label = 'Contractor Organization Name'
         self.fields['contractor_organization'].empty_label = None
         self.fields['start_date'].label = 'Contract Start Date'
@@ -45,6 +47,8 @@ class ContractForm(forms.ModelForm):
             self.fields['contract_type'].choices = (CONTRACT_TYPE_PF, CONTRACT_TYPE_OWNERS, CONTRACT_TYPE_GACCO_SERVICE)
         else:
             self.fields['contract_type'].choices = (CONTRACT_TYPE_OWNER_SERVICE,)
+
+        self.fields['register_type'].choices = REGISTER_TYPE
 
         # init contractor select list
         self.fields['contractor_organization'].queryset = Organization.find_by_creator_org_without_itself(org)

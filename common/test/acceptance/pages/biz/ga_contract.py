@@ -64,13 +64,14 @@ class BizContractDetailPage(BizNavPage, W2uiMixin):
     def is_browser_on_page(self):
         return 'Contract Detail' in self.browser.title
 
-    def input(self, contract_name='', contract_type='', invitation_code='', start_date='', end_date='',
+    def input(self, contract_name='', contract_type='', register_type='', invitation_code='', start_date='', end_date='',
               contractor_organization=''):
         """
         Input contract info
         """
         self.q(css='input#id_contract_name').fill(contract_name)
         self.q(css='select#id_contract_type>option[value="{}"]'.format(contract_type)).first.click()
+        self.q(css='select#id_register_type>option[value="{}"]'.format(register_type)).first.click()
         self.q(css='input#id_start_date').fill(start_date)
         self.q(css='input#id_end_date').fill(end_date)
         self.q(css='input#id_invitation_code').fill(invitation_code)

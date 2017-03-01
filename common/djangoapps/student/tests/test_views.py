@@ -24,6 +24,8 @@ from xmodule.modulestore.tests.factories import CourseFactory
 from openedx.core.djangoapps.content.course_overviews.models import CourseOverview
 from openedx.core.djangoapps.course_global.tests.factories import CourseGlobalSettingFactory
 
+from biz.djangoapps.ga_invitation.tests.test_views import BizContractTestBase
+
 
 @ddt.ddt
 @unittest.skipUnless(settings.ROOT_URLCONF == 'lms.urls', 'Test only valid in lms')
@@ -246,3 +248,22 @@ class TestCertInfo(ModuleStoreTestCase):
             self.assertEqual(cert_info_status, status_dict['status']);
         else:
             self.assertEqual({}, status_dict);
+
+
+@unittest.skipUnless(settings.ROOT_URLCONF == 'lms.urls', 'Test only valid in lms')
+class TestBizStudentDashboardUnenrollments(BizContractTestBase):
+    """
+    Test to unenroll course of biz.
+    """
+    @patch.object(CourseEnrollment, 'unenroll')
+    def test_unenroll_available(self, course_enrollment):
+        self.setup_user()
+        CourseEnrollmentFactory(course_id=self.course_spoc7.id, user=self.user)
+        response = self.client.get(reverse('dashboard'))
+        self.assertEqual(pq(response.content)("#actions-item-unenroll-0").length, 0)
+
+        response = self.client.post(
+            reverse('change_enrollment'),
+            {'enrollment_action': 'unenroll', 'course_id': self.course_spoc7.id}
+        )
+        course_enrollment.assert_not_called()

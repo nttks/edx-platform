@@ -158,6 +158,10 @@ msgid "Contract Type"
 msgstr "契約形態名"
 
 #: biz/templates/ga_contract/index.html
+msgid "Register Type"
+msgstr "受講コード登録方法"
+
+#: biz/templates/ga_contract/index.html
 msgid "Invitation Code"
 msgstr "受講コード"
 
@@ -264,6 +268,14 @@ msgstr "gaccoサービス契約"
 #: biz/djangoapps/ga_contract/models.py
 msgid "Owner Service Contract"
 msgstr "オーナーサービス契約"
+
+#: biz/djangoapps/ga_contract/models.py
+msgid "Disable to register by student-self"
+msgstr "受講ユーザによる登録不可"
+
+#: biz/djangoapps/ga_contract/models.py
+msgid "Enable to register by student-self"
+msgstr "受講ユーザによる登録可"
 
 #: biz/djangoapps/ga_contract/forms.py
 msgid "The invitation code has been used."
@@ -557,6 +569,14 @@ msgstr "username1@domain.com,gaccotarou,学校 太郎"
 #: biz/templates/ga_contract_operation/register_students.html
 msgid "username1@domain.com,gaccotarou,gacco taro,gacco,Gacco12345"
 msgstr "username1@domain.com,gaccotarou,学校 太郎,gaccoCode,Gacco12345"
+
+#: biz/templates/ga_contract_operation/register_students.html
+msgid "Register invitation code at the same time."
+msgstr "受講コードも同時に登録する"
+
+#: biz/templates/ga_contract_operation/register_students.html
+msgid "Warning: The students will be ready to start taking lectures immediately."
+msgstr "警告：受講ユーザーが直ちに受講が開始できる状態となります。"
 
 #: biz/templates/ga_contract_operation/register_students.html
 msgid "No messages."

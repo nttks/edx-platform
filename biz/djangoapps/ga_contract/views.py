@@ -12,7 +12,7 @@ from django.views.decorators.http import require_GET, require_POST
 from xmodule.modulestore.django import modulestore
 
 from biz.djangoapps.ga_contract.forms import ContractForm
-from biz.djangoapps.ga_contract.models import Contract, ContractDetail, AdditionalInfo, CONTRACT_TYPE
+from biz.djangoapps.ga_contract.models import Contract, ContractDetail, AdditionalInfo, CONTRACT_TYPE, REGISTER_TYPE
 from biz.djangoapps.ga_organization.models import Organization
 from biz.djangoapps.util.datetime_utils import format_for_w2ui
 from biz.djangoapps.util.decorators import check_course_selection
@@ -44,6 +44,7 @@ def index(request):
             'recid': i + 1,
             'contract_name': contract.contract_name,
             'contract_type': dict(CONTRACT_TYPE).get(contract.contract_type, contract.contract_type),
+            'register_type': dict(REGISTER_TYPE).get(contract.register_type, contract.register_type),
             'invitation_code': contract.invitation_code,
             'contractor_organization': contract.contractor_organization.org_name,
             'owner_organization': contract.owner_organization.org_name,

@@ -15,12 +15,12 @@ from xmodule.modulestore.tests.factories import CourseFactory
 
 from lms.djangoapps.courseware.courses import get_course_by_id
 
-from biz.djangoapps.ga_contract.models import CONTRACT_TYPE_PF, CONTRACT_TYPE_GACCO_SERVICE
+from biz.djangoapps.ga_contract.models import CONTRACT_TYPE_PF, CONTRACT_TYPE_GACCO_SERVICE, REGISTER_TYPE_DISABLE_REGISTER_BY_STUDENT, REGISTER_TYPE_ENABLE_REGISTER_BY_STUDENT
 from biz.djangoapps.ga_contract.tests.factories import (
     AdditionalInfoFactory, ContractAuthFactory, ContractDetailFactory, ContractFactory)
 from biz.djangoapps.ga_invitation.models import (
     AdditionalInfoSetting, ContractRegister,
-    INPUT_INVITATION_CODE, REGISTER_INVITATION_CODE)
+    INPUT_INVITATION_CODE, REGISTER_INVITATION_CODE, UNREGISTER_INVITATION_CODE)
 from biz.djangoapps.ga_invitation.tests.factories import AdditionalInfoSettingFactory, ContractRegisterFactory
 from biz.djangoapps.ga_invitation.views import ADDITIONAL_NAME
 from biz.djangoapps.ga_organization.tests.factories import OrganizationFactory
@@ -30,11 +30,12 @@ from biz.djangoapps.util.tests.testcase import BizTestBase, BizViewTestBase
 
 class BizContractTestBase(BizViewTestBase, ModuleStoreTestCase):
 
-    def _create_contract(self, contract_name='test contract', contract_type=CONTRACT_TYPE_PF[0], contractor_organization=None,
+    def _create_contract(self, contract_name='test contract', contract_type=CONTRACT_TYPE_PF[0], register_type=REGISTER_TYPE_ENABLE_REGISTER_BY_STUDENT[0], contractor_organization=None,
                          end_date=None, course_ids=[], display_names=[], url_code=None):
         contract = ContractFactory.create(
             contract_name=contract_name,
             contract_type=contract_type,
+            register_type=register_type,
             contractor_organization=contractor_organization if contractor_organization else self.gacco_organization,
             owner_organization=self.gacco_organization,
             created_by=UserFactory.create(),
@@ -70,6 +71,10 @@ class BizContractTestBase(BizViewTestBase, ModuleStoreTestCase):
             org=self.gacco_organization.org_code, number='spoc5', run='run5')
         self.course_spoc6 = CourseFactory.create(
             org=self.gacco_organization.org_code, number='spoc6', run='run6')
+        self.course_spoc7 = CourseFactory.create(
+            org=self.gacco_organization.org_code, number='spoc7', run='run7')
+        self.course_spoc8 = CourseFactory.create(
+            org=self.gacco_organization.org_code, number='spoc8', run='run8')
         self.course_mooc1 = CourseFactory.create(
             org=self.gacco_organization.org_code, number='mooc1', run='run5')
         self.no_contract_course = CourseFactory.create(
@@ -113,6 +118,19 @@ class BizContractTestBase(BizViewTestBase, ModuleStoreTestCase):
             end_date=(timezone_today() - timedelta(days=1)),
             course_ids=[self.course_spoc6.id],
             url_code='testAuthDisabled')
+        self.contract_student_cannot_register = self._create_contract(
+            register_type=REGISTER_TYPE_DISABLE_REGISTER_BY_STUDENT[0],
+            contract_name='test contract student cannot register',
+            contractor_organization=self.contract_org,
+            course_ids=[self.course_spoc7.id],
+            display_names=['country', 'dept'])
+        self.contract_auth_student_cannot_register = self._create_contract(
+            register_type=REGISTER_TYPE_DISABLE_REGISTER_BY_STUDENT[0],
+            contract_name='test contract auth student cannot register',
+            contractor_organization=self.contract_org,
+            course_ids=[self.course_spoc8.id],
+            display_names=['country', 'dept'],
+            url_code='testAuthRegisterDirector')
 
     def create_contract_register(self, user, contract, status=REGISTER_INVITATION_CODE):
         register = ContractRegisterFactory.create(user=user, contract=contract, status=status)
@@ -205,6 +223,37 @@ class InvitationViewsVerifyTest(InvitationViewsTest):
         self.assertFalse(content['result'])
         self.assertEqual(content['message'], 'Invitation code is invalid.')
 
+    def test_student_cannot_register_no_register(self):
+        self.setup_user()
+        response = self.assert_request_status_code(200, self._url_verify(), 'POST', data={'invitation_code': self.contract_student_cannot_register.invitation_code})
+        content = json.loads(response.content)
+        self.assertFalse(content['result'])
+        self.assertEqual(content['message'], 'Invitation code is invalid.')
+
+    def test_student_cannot_register_yes_register_input(self):
+        self.setup_user()
+        self.create_contract_register(self.user, self.contract_student_cannot_register, INPUT_INVITATION_CODE)
+        response = self.assert_request_status_code(200, self._url_verify(), 'POST', data={'invitation_code': self.contract_student_cannot_register.invitation_code})
+        content = json.loads(response.content)
+        self.assertFalse(content['result'])
+        self.assertEqual(content['message'], 'Invitation code is invalid.')
+
+    def test_student_cannot_register_yes_register_register(self):
+        self.setup_user()
+        self.create_contract_register(self.user, self.contract_student_cannot_register, REGISTER_INVITATION_CODE)
+        response = self.assert_request_status_code(200, self._url_verify(), 'POST', data={'invitation_code': self.contract_student_cannot_register.invitation_code})
+        content = json.loads(response.content)
+        self.assertTrue(content['result'])
+        self.assertEqual(content['href'], self._url_confirm(self.contract_student_cannot_register.invitation_code))
+
+    def test_student_cannot_register_yes_register_unregister(self):
+        self.setup_user()
+        self.create_contract_register(self.user, self.contract_student_cannot_register, UNREGISTER_INVITATION_CODE)
+        response = self.assert_request_status_code(200, self._url_verify(), 'POST', data={'invitation_code': self.contract_student_cannot_register.invitation_code})
+        content = json.loads(response.content)
+        self.assertFalse(content['result'])
+        self.assertEqual(content['message'], 'Invitation code is invalid.')
+
     def test_no_detail(self):
         self.setup_user()
         response = self.assert_request_status_code(200, self._url_verify(), 'POST', data={'invitation_code': self.contract_nodetail.invitation_code})
@@ -251,6 +300,30 @@ class InvitationViewsConfirmTest(InvitationViewsTest):
         response = self.assert_request_status_code(404, self._url_confirm(self.contract_auth.invitation_code))
         with self.assertRaises(ContractRegister.DoesNotExist):
             ContractRegister.objects.get(user=self.user)
+
+    def test_student_cannot_register_no_register(self):
+        self.setup_user()
+        response = self.assert_request_status_code(404, self._url_confirm(self.contract_student_cannot_register.invitation_code))
+        with self.assertRaises(ContractRegister.DoesNotExist):
+            ContractRegister.objects.get(user=self.user)
+
+    def test_student_cannot_register_yes_register_input(self):
+        self.setup_user()
+        self.create_contract_register(self.user, self.contract_student_cannot_register, INPUT_INVITATION_CODE)
+        response = self.assert_request_status_code(404, self._url_confirm(self.contract_student_cannot_register.invitation_code))
+        self.assertEqual(ContractRegister.objects.get(user=self.user).status, INPUT_INVITATION_CODE)
+
+    def test_student_cannot_register_yes_register_register(self):
+        self.setup_user()
+        self.create_contract_register(self.user, self.contract_student_cannot_register, REGISTER_INVITATION_CODE)
+        response = self.assert_request_status_code(200, self._url_confirm(self.contract_student_cannot_register.invitation_code))
+        self.assertEqual(ContractRegister.objects.get(user=self.user).status, REGISTER_INVITATION_CODE)
+
+    def test_student_cannot_register_yes_register_unregister(self):
+        self.setup_user()
+        self.create_contract_register(self.user, self.contract_student_cannot_register, UNREGISTER_INVITATION_CODE)
+        response = self.assert_request_status_code(404, self._url_confirm(self.contract_student_cannot_register.invitation_code))
+        self.assertEqual(ContractRegister.objects.get(user=self.user).status, UNREGISTER_INVITATION_CODE)
 
     def test_no_detail(self):
         self.setup_user()
@@ -316,6 +389,43 @@ class InvitationViewsRegisterTest(InvitationViewsTest):
         self.setup_user()
         self.assert_request_status_code(200, self._url_confirm(self.contract.invitation_code))
         response = self.assert_request_status_code(200, self._url_register(), 'POST', data={'invitation_code': self.contract_auth.invitation_code})
+        content = json.loads(response.content)
+        self.assertFalse(content['result'])
+        self.assertIn(self._url_index(), content['message'])
+
+    def test_student_cannot_register_no_register(self):
+        self.setup_user()
+        response = self.assert_request_status_code(200, self._url_register(), 'POST', data={'invitation_code': self.contract_student_cannot_register.invitation_code})
+        content = json.loads(response.content)
+        self.assertFalse(content['result'])
+        self.assertIn(self._url_index(), content['message'])
+
+    def test_student_cannot_register_yes_register_input(self):
+        self.setup_user()
+        self.create_contract_register(self.user, self.contract_student_cannot_register, INPUT_INVITATION_CODE)
+        response = self.assert_request_status_code(200, self._url_register(), 'POST', data={'invitation_code': self.contract_student_cannot_register.invitation_code})
+        content = json.loads(response.content)
+        self.assertFalse(content['result'])
+        self.assertIn(self._url_index(), content['message'])
+
+    def test_student_cannot_register_yes_register_register(self):
+        self.setup_user()
+        self.create_contract_register(self.user, self.contract_student_cannot_register, REGISTER_INVITATION_CODE)
+        data={'invitation_code': self.contract_student_cannot_register.invitation_code}
+        for a in self.contract_student_cannot_register.additional_info.all():
+            data[ADDITIONAL_NAME.format(additional_id=a.id)] = 'input_value'
+        response = self.assert_request_status_code(200, self._url_register(), 'POST', data=data)
+        content = json.loads(response.content)
+        self.assertTrue(content['result'])
+        self.assertEqual(content['href'], reverse('dashboard'))
+        self.assertEqual(ContractRegister.objects.get(user=self.user).status, REGISTER_INVITATION_CODE)
+        for a in self.contract_student_cannot_register.additional_info.all():
+            self.assertEqual('input_value', AdditionalInfoSetting.get_value(self.user, self.contract_student_cannot_register, a))
+
+    def test_student_cannot_register_yes_register_unregister(self):
+        self.setup_user()
+        self.create_contract_register(self.user, self.contract_student_cannot_register, UNREGISTER_INVITATION_CODE)
+        response = self.assert_request_status_code(200, self._url_register(), 'POST', data={'invitation_code': self.contract_student_cannot_register.invitation_code})
         content = json.loads(response.content)
         self.assertFalse(content['result'])
         self.assertIn(self._url_index(), content['message'])

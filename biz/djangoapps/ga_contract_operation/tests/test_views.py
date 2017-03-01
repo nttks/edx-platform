@@ -125,7 +125,41 @@ class ContractOperationViewTest(BizContractTestBase):
         self.assertEqual(self.contract.id, task_input['contract_id'])
         history = ContractTaskHistory.objects.get(pk=task_input['history_id'])
         self.assertEqual(history.task_id, task.task_id)
-        self.assertItemsEqual(csv_content.splitlines(), [target.student for target in history.studentregistertasktarget_set.all()])
+        self.assertItemsEqual(['Input,{}'.format(s) for s in csv_content.splitlines()], [target.student for target in history.studentregistertasktarget_set.all()])
+
+    def test_register_student_submit_successful_register(self):
+        self.setup_user()
+        csv_content = "test_student1@example.com,test_student_1,tester1\n" \
+                      "test_student2@example.com,test_student_1,tester2"
+
+        with self.skip_check_course_selection(current_contract=self.contract):
+            response = self.client.post(self._url_register_students_ajax(), {'contract_id': self.contract.id, 'students_list': csv_content, 'register_status': REGISTER_INVITATION_CODE})
+
+        self.assertEqual(200, response.status_code)
+        data = json.loads(response.content)
+        self.assertEqual("Began the processing of Student Register.Execution status, please check from the task history.", data['info'])
+
+        # get latest task and assert
+        task = Task.objects.all().order_by('-id')[0]
+        self.assertEqual('student_register', task.task_type)
+
+        task_input = json.loads(task.task_input)
+        self.assertEqual(self.contract.id, task_input['contract_id'])
+        history = ContractTaskHistory.objects.get(pk=task_input['history_id'])
+        self.assertEqual(history.task_id, task.task_id)
+        self.assertItemsEqual(['Register,{}'.format(s) for s in csv_content.splitlines()], [target.student for target in history.studentregistertasktarget_set.all()])
+
+    def test_register_student_submit_illegal_register(self):
+        self.setup_user()
+        csv_content = "test_student1@example.com,test_student_1,tester1\n" \
+                      "test_student2@example.com,test_student_1,tester2"
+
+        with self.skip_check_course_selection(current_contract=self.contract):
+            response = self.client.post(self._url_register_students_ajax(), {'contract_id': self.contract.id, 'students_list': csv_content, 'register_status': UNREGISTER_INVITATION_CODE})
+
+        self.assertEqual(400, response.status_code)
+        data = json.loads(response.content)
+        self.assertEquals(data['error'], 'Invalid access.')
 
     def test_register_student_submit_duplicated(self):
         TaskFactory.create(task_type='student_register', task_key=hashlib.md5(str(self.contract.id)).hexdigest())

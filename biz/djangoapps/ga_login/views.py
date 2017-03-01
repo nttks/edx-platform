@@ -97,6 +97,9 @@ def _validate_and_get_user_contract_register(login_code, contract):
     if contract_register.is_unregistered():
         log.warning(u"Unregister status user:{} with contract:{}".format(contract_register.user.id, contract.id))
         return (None, None)
+    if not contract.enabled_register_by_studentself and not contract_register.is_registered():
+        log.warning(u"Student can not be registerd, status is not register:{} user:{} contract:{}".format(contract_register.status, contract_register.user.id, contract.id))
+        return (None, None)
 
     return (contract_register.user, contract_register)
 

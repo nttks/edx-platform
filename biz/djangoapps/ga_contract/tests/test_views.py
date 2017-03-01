@@ -7,7 +7,7 @@ from biz.djangoapps.ga_invitation.models import REGISTER_INVITATION_CODE
 
 from biz.djangoapps.ga_invitation.tests.factories import ContractRegisterFactory
 
-from biz.djangoapps.ga_contract.models import Contract, ContractDetail, AdditionalInfo, CONTRACT_TYPE_GACCO_SERVICE
+from biz.djangoapps.ga_contract.models import Contract, ContractDetail, AdditionalInfo, CONTRACT_TYPE_GACCO_SERVICE, REGISTER_TYPE_DISABLE_REGISTER_BY_STUDENT, REGISTER_TYPE_ENABLE_REGISTER_BY_STUDENT
 from biz.djangoapps.ga_contract.tests.factories import ContractFactory, ContractDetailFactory, AdditionalInfoFactory
 from biz.djangoapps.util.tests.testcase import BizViewTestBase
 from django.core.urlresolvers import reverse
@@ -137,6 +137,7 @@ class ContractViewTest(BizViewTestBase, ModuleStoreTestCase):
         data = {
             'contract_name': '',
             'contract_type': 'PF',
+            'register_type': REGISTER_TYPE_DISABLE_REGISTER_BY_STUDENT[0],
             'invitation_code': '',
             'contractor_organization': self.org_tac.id,
             'start_date': '',
@@ -161,6 +162,7 @@ class ContractViewTest(BizViewTestBase, ModuleStoreTestCase):
             01234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456\
             7890123456789012345678901234567890123456789012345678901234567890',
             'contract_type': 'PF',
+            'register_type': REGISTER_TYPE_DISABLE_REGISTER_BY_STUDENT[0],
             'invitation_code': '666666',
             'contractor_organization': self.org_tac.id,
             'start_date': '2016/03/31',
@@ -186,6 +188,7 @@ class ContractViewTest(BizViewTestBase, ModuleStoreTestCase):
         data = {
             'contract_name': 'name',
             'contract_type': 'PF',
+            'register_type': REGISTER_TYPE_DISABLE_REGISTER_BY_STUDENT[0],
             'invitation_code': self.contract_a.invitation_code,
             'contractor_organization': self.org_tac.id,
             'start_date': '2016/03/01',
@@ -208,6 +211,7 @@ class ContractViewTest(BizViewTestBase, ModuleStoreTestCase):
         data = {
             'contract_name': 'owner contract for tac',
             'contract_type': 'O',
+            'register_type': REGISTER_TYPE_DISABLE_REGISTER_BY_STUDENT[0],
             'invitation_code': 'invitation_code_tac',
             'contractor_organization': self.org_tac.id,
             'start_date': '2016/03/01',
@@ -233,6 +237,7 @@ class ContractViewTest(BizViewTestBase, ModuleStoreTestCase):
         data = {
             'contract_name': 'owner contract for tac',
             'contract_type': 'O',
+            'register_type': REGISTER_TYPE_DISABLE_REGISTER_BY_STUDENT[0],
             'invitation_code': 'invitation_code_tac',
             'contractor_organization': self.org_tac.id,
             'start_date': '2016/03/01',
@@ -261,6 +266,7 @@ class ContractViewTest(BizViewTestBase, ModuleStoreTestCase):
         data = {
             'contract_name': 'owner contract for tac',
             'contract_type': 'O',
+            'register_type': REGISTER_TYPE_DISABLE_REGISTER_BY_STUDENT[0],
             'invitation_code': 'invitationcodetac',
             'contractor_organization': self.org_tac.id,
             'start_date': '2016/03/01',
@@ -291,6 +297,7 @@ class ContractViewTest(BizViewTestBase, ModuleStoreTestCase):
         data = {
             'contract_name': 'owner service contract for org_e',
             'contract_type': 'OS',
+            'register_type': REGISTER_TYPE_DISABLE_REGISTER_BY_STUDENT[0],
             'invitation_code': 'invitationcodee',
             'contractor_organization': self.org_e.id,
             'start_date': '2016/03/01',
@@ -353,6 +360,7 @@ class ContractViewTest(BizViewTestBase, ModuleStoreTestCase):
         data = {
             'contract_name': self.contract_a.contract_name,
             'contract_type': self.contract_a.contract_type,
+            'register_type':self.contract_a.register_type,
             'invitation_code': self.contract_a.invitation_code,
             'contractor_organization': self.org_a.id,
             'start_date': self.contract_a.start_date,
@@ -375,6 +383,7 @@ class ContractViewTest(BizViewTestBase, ModuleStoreTestCase):
         data = {
             'contract_name': '',
             'contract_type': 'PF',
+            'register_type': REGISTER_TYPE_ENABLE_REGISTER_BY_STUDENT[0],
             'invitation_code': '',
             'contractor_organization': self.org_a.id,
             'start_date': '',
@@ -401,6 +410,7 @@ class ContractViewTest(BizViewTestBase, ModuleStoreTestCase):
             01234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456\
             7890123456789012345678901234567890123456789012345678901234567890',
             'contract_type': 'PF',
+            'register_type': REGISTER_TYPE_ENABLE_REGISTER_BY_STUDENT[0],
             'invitation_code': '123456',
             'contractor_organization': self.org_a.id,
             'start_date': '2016/03/31',
@@ -427,6 +437,7 @@ class ContractViewTest(BizViewTestBase, ModuleStoreTestCase):
         data = {
             'contract_name': 'owner contract for tac',
             'contract_type': 'PF',
+            'register_type': REGISTER_TYPE_ENABLE_REGISTER_BY_STUDENT[0],
             'invitation_code': 'invitationcodea',
             'contractor_organization': self.org_a.id,
             'start_date': '2016/03/01',
@@ -454,6 +465,7 @@ class ContractViewTest(BizViewTestBase, ModuleStoreTestCase):
         data = {
             'contract_name': 'owner contract for tac',
             'contract_type': 'O',
+            'register_type': REGISTER_TYPE_ENABLE_REGISTER_BY_STUDENT[0],
             'invitation_code': 'invitationcodea',
             'contractor_organization': self.org_a.id,
             'start_date': '2016/03/01',
@@ -490,6 +502,7 @@ class ContractViewTest(BizViewTestBase, ModuleStoreTestCase):
         data = {
             'contract_name': _new_contract_name,
             'contract_type': _new_contract_type[0],
+            'register_type': REGISTER_TYPE_ENABLE_REGISTER_BY_STUDENT[0],
             'invitation_code': _new_invitation_code,
             'contractor_organization': self.org_a.id,
             'start_date': _new_start_date.strftime("%Y/%m/%d"),
@@ -524,6 +537,7 @@ class ContractViewTest(BizViewTestBase, ModuleStoreTestCase):
         data = {
             'contract_name': _new_contract_name,
             'contract_type': _new_contract_type[0],
+            'register_type': REGISTER_TYPE_ENABLE_REGISTER_BY_STUDENT[0],
             'invitation_code': _new_invitation_code,
             'contractor_organization': self.org_a.id,
             'start_date': _new_start_date.strftime("%Y/%m/%d"),
@@ -561,6 +575,7 @@ class ContractViewTest(BizViewTestBase, ModuleStoreTestCase):
         data = {
             'contract_name': _new_contract_name,
             'contract_type': _new_contract_type[0],
+            'register_type': REGISTER_TYPE_ENABLE_REGISTER_BY_STUDENT[0],
             'invitation_code': _new_invitation_code,
             'contractor_organization': self.org_b.id,
             'start_date': _new_start_date.strftime("%Y/%m/%d"),
@@ -597,6 +612,7 @@ class ContractViewTest(BizViewTestBase, ModuleStoreTestCase):
         data = {
             'contract_name': self.contract_b.contract_name,
             'contract_type': self.contract_b.contract_type,
+            'register_type': self.contract_b.register_type,
             'invitation_code': self.contract_b.invitation_code,
             'contractor_organization': self.org_b.id,
             'start_date': self.contract_b.start_date,
@@ -630,6 +646,7 @@ class ContractViewTest(BizViewTestBase, ModuleStoreTestCase):
         data = {
             'contract_name': self.contract_b.contract_name,
             'contract_type': self.contract_b.contract_type,
+            'register_type': self.contract_b.register_type,
             'invitation_code': self.contract_b.invitation_code,
             'contractor_organization': self.org_b.id,
             'start_date': self.contract_b.start_date.strftime("%Y/%m/%d"),
