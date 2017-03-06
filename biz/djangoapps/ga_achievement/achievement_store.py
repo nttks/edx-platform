@@ -34,6 +34,7 @@ class AchievementStoreBase(BizStore):
     FIELD_STUDENT_STATUS__ENROLLED = 'Enrolled'
     FIELD_STUDENT_STATUS__UNENROLLED = 'Unenrolled'
     FIELD_STUDENT_STATUS__DISABLED = 'Disabled'
+    FIELD_STUDENT_STATUS__EXPIRED = 'Expired'
     COLUMN_TYPE__TEXT = 'text'
     COLUMN_TYPE__DATE = 'date'
     COLUMN_TYPE__TIME = 'time'
@@ -225,6 +226,7 @@ class ScoreStore(AchievementStoreBase):
     FIELD_CERTIFICATE_STATUS__DOWNLOADABLE = 'Downloadable'
     FIELD_CERTIFICATE_STATUS__UNPUBLISHED = 'Unpublished'
     FIELD_ENROLL_DATE = 'Enroll Date'
+    FIELD_EXPIRE_DATE = 'Expire Date'
     FIELD_CERTIFICATE_ISSUE_DATE = 'Certificate Issue Date'
     FIELD_TOTAL_SCORE = 'Total Score'
 

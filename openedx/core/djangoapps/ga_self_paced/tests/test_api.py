@@ -137,6 +137,9 @@ class TestApi(ModuleStoreTestCase):
 
         self.assertIsNone(api.get_course_end_date(enrollment))
 
+    def test_get_course_end_date_if_enrollment_is_none(self):
+        self.assertIsNone(api.get_course_end_date(None))
+
     @ddt.data(
         # boundary
         (True, 61, True, 0, 0, 1),

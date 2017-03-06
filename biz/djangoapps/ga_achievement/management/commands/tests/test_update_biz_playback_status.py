@@ -4,6 +4,8 @@ when you run "manage.py test".
 
 Replace this with more appropriate tests for your application.
 """
+from datetime import datetime, timedelta
+from dateutil.tz import tzutc
 from collections import namedtuple
 import logging
 from mock import patch
@@ -149,6 +151,14 @@ class UpdateBizPlaybackStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEn
         self.no_spoc_video_course = self._create_course(self.gacco_organization.org_code, 'no_spoc_video_course', 'run', no_spoc_video_block)
         self.single_spoc_video_course = self._create_course(self.gacco_organization.org_code, 'single_spoc_video_course', 'run', single_spoc_video_block)
         self.multiple_spoc_video_course = self._create_course(self.gacco_organization.org_code, 'multiple_spoc_video_course', 'run', multiple_spoc_video_block)
+        # Self-paced course
+        self.individual_end_days = 10
+        self.self_paced_course = self._create_course(self.gacco_organization.org_code, 'self_paced_course', 'run', no_spoc_video_block)
+        self.self_paced_course.start = datetime(2016, 1, 1, 0, 0, 0, tzinfo=tzutc())  # must be the past date
+        self.self_paced_course.self_paced = True
+        self.self_paced_course.individual_end_days = self.individual_end_days
+        self.update_course(self.self_paced_course, self.user.id)
+
         # Contract with no SPOC video course
         self.no_spoc_video_contract = self._create_contract(
             detail_courses=[self.no_spoc_video_course],
@@ -173,6 +183,12 @@ class UpdateBizPlaybackStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEn
             detail_courses=[self.single_spoc_video_course, self.multiple_spoc_video_course],
             additional_display_names=[ADDITIONAL_DISPLAY_NAME1, ADDITIONAL_DISPLAY_NAME2],
         )
+        # Contract with self-paced course
+        self.self_paced_contract = self._create_contract(
+            detail_courses=[self.self_paced_course],
+            additional_display_names=[ADDITIONAL_DISPLAY_NAME1, ADDITIONAL_DISPLAY_NAME2],
+        )
+
         # Setup mock
         patcher_aggregate = patch.object(update_biz_playback_status.PlaybackLogStore, 'aggregate')
         self.mock_aggregate = patcher_aggregate.start()
@@ -525,6 +541,53 @@ class UpdateBizPlaybackStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEn
             self.assertEquals(record_items.next(), ('chapter_y' + PlaybackStore.FIELD_DELIMITER + PlaybackStore.FIELD_SECTION_PLAYBACK_TIME, 400.0))
 
         assert_playback(self.multiple_spoc_video_contract, self.multiple_spoc_video_course)
+
+    def test_contract_with_expired_self_paced_course(self):
+        """
+        When:
+            - The contract includes a self-paced course.
+            - The self-paced course has already expired for the user (today is later than the end date).
+        Then:
+            - 'Student Status' is set to 'Expired'.
+        """
+        self._profile(self.user)
+        self._register_contract(self.self_paced_contract, self.user, additional_value=ADDITIONAL_SETTINGS_VALUE)
+
+        # Update enrollment.created to simulate a scenario that the self-paced course has expired
+        enrollment = CourseEnrollment.get_enrollment(self.user, self.self_paced_course.id)
+        enrollment.created = enrollment.created - timedelta(days=self.individual_end_days + 1)
+        enrollment.save()
+
+        call_command('update_biz_playback_status', self.self_paced_contract.id)
+
+        def assert_playback(contract, course):
+            column_list, record_list = self.assert_finished(1, contract, course)
+
+            column_dict = column_list[0]
+            column_items = column_dict.iteritems()
+            self.assertEquals(column_items.next(), (PlaybackStore.FIELD_CONTRACT_ID, contract.id))
+            self.assertEquals(column_items.next(), (PlaybackStore.FIELD_COURSE_ID, unicode(course.id)))
+            self.assertEquals(column_items.next(), (PlaybackStore.FIELD_DOCUMENT_TYPE, PlaybackStore.FIELD_DOCUMENT_TYPE__COLUMN))
+            self.assertEquals(column_items.next(), (PlaybackStore.FIELD_FULL_NAME, PlaybackStore.COLUMN_TYPE__TEXT))
+            self.assertEquals(column_items.next(), (PlaybackStore.FIELD_USERNAME, PlaybackStore.COLUMN_TYPE__TEXT))
+            self.assertEquals(column_items.next(), (PlaybackStore.FIELD_EMAIL, PlaybackStore.COLUMN_TYPE__TEXT))
+            self.assertEquals(column_items.next(), (PlaybackStore.FIELD_ADDITIONAL_INFO + PlaybackStore.FIELD_DELIMITER + ADDITIONAL_DISPLAY_NAME1, PlaybackStore.COLUMN_TYPE__TEXT))
+            self.assertEquals(column_items.next(), (PlaybackStore.FIELD_ADDITIONAL_INFO + PlaybackStore.FIELD_DELIMITER + ADDITIONAL_DISPLAY_NAME2, PlaybackStore.COLUMN_TYPE__TEXT))
+            self.assertEquals(column_items.next(), (PlaybackStore.FIELD_STUDENT_STATUS, PlaybackStore.COLUMN_TYPE__TEXT))
+
+            record_dict = record_list[0]
+            record_items = record_dict.iteritems()
+            self.assertEquals(record_items.next(), (PlaybackStore.FIELD_CONTRACT_ID, contract.id))
+            self.assertEquals(record_items.next(), (PlaybackStore.FIELD_COURSE_ID, unicode(course.id)))
+            self.assertEquals(record_items.next(), (PlaybackStore.FIELD_DOCUMENT_TYPE, PlaybackStore.FIELD_DOCUMENT_TYPE__RECORD))
+            self.assertEquals(record_items.next(), (PlaybackStore.FIELD_FULL_NAME, self.user.profile.name))
+            self.assertEquals(record_items.next(), (PlaybackStore.FIELD_USERNAME, self.user.username))
+            self.assertEquals(record_items.next(), (PlaybackStore.FIELD_EMAIL, self.user.email))
+            self.assertEquals(record_items.next(), (PlaybackStore.FIELD_ADDITIONAL_INFO + PlaybackStore.FIELD_DELIMITER + ADDITIONAL_DISPLAY_NAME1, '{}_{}'.format(ADDITIONAL_DISPLAY_NAME1, ADDITIONAL_SETTINGS_VALUE)))
+            self.assertEquals(record_items.next(), (PlaybackStore.FIELD_ADDITIONAL_INFO + PlaybackStore.FIELD_DELIMITER + ADDITIONAL_DISPLAY_NAME2, '{}_{}'.format(ADDITIONAL_DISPLAY_NAME2, ADDITIONAL_SETTINGS_VALUE)))
+            self.assertEquals(record_items.next(), (PlaybackStore.FIELD_STUDENT_STATUS, PlaybackStore.FIELD_STUDENT_STATUS__EXPIRED))
+
+        assert_playback(self.self_paced_contract, self.self_paced_course)
 
     def test_target_user_count(self):
         for var in range(0, 50):

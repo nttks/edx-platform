@@ -18,6 +18,7 @@ from biz.djangoapps.ga_contract.models import ContractDetail, AdditionalInfo
 from biz.djangoapps.ga_invitation.models import ContractRegister, AdditionalInfoSetting
 from biz.djangoapps.util.decorators import handle_command_exception
 from biz.djangoapps.util.hash_utils import to_target_id
+from openedx.core.djangoapps.ga_self_paced import api as self_paced_api
 from student.models import UserStanding, CourseEnrollment
 from xmodule.modulestore.django import modulestore
 
@@ -157,6 +158,8 @@ class Command(BaseCommand):
                         student_status = _(PlaybackStore.FIELD_STUDENT_STATUS__DISABLED)
                     elif not course_enrollment:
                         student_status = _(PlaybackStore.FIELD_STUDENT_STATUS__NOT_ENROLLED)
+                    elif self_paced_api.is_course_closed(course_enrollment):
+                        student_status = _(PlaybackStore.FIELD_STUDENT_STATUS__EXPIRED)
                     elif course_enrollment.is_active:
                         student_status = _(PlaybackStore.FIELD_STUDENT_STATUS__ENROLLED)
                     else:

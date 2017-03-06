@@ -4,6 +4,8 @@ when you run "manage.py test".
 
 Replace this with more appropriate tests for your application.
 """
+from datetime import datetime, timedelta
+from dateutil.tz import tzutc
 import ddt
 import logging
 from mock import patch
@@ -112,6 +114,20 @@ class UpdateBizScoreStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEnrol
             detail_courses=[self.course1, self.course2],
             additional_display_names=[ADDITIONAL_DISPLAY_NAME1, ADDITIONAL_DISPLAY_NAME2],
         )
+
+        # Contract with self-paced course
+        self.individual_end_days = 10
+        self.self_paced_course = CourseFactory.create(
+            org=self.gacco_organization.org_code, number='self_paced_course', run='run',
+            start=datetime(2016, 1, 1, 0, 0, 0, tzinfo=tzutc()),  # must be the past date
+            self_paced=True,
+            individual_end_days=self.individual_end_days,
+        )
+        self.self_paced_contract = self._create_contract(
+            detail_courses=[self.self_paced_course],
+            additional_display_names=[ADDITIONAL_DISPLAY_NAME1, ADDITIONAL_DISPLAY_NAME2],
+        )
+
         # Setup mock
         patcher_grade = patch.object(grades, 'grade')
         self.mock_grade = patcher_grade.start()
@@ -181,6 +197,7 @@ class UpdateBizScoreStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEnrol
             self.assertEquals(score_dict[ScoreStore.FIELD_TOTAL_SCORE], 0)
             self.assertIsNone(score_dict[ADDITIONAL_DISPLAY_NAME1])
             self.assertIsNone(score_dict[ADDITIONAL_DISPLAY_NAME2])
+            self.assertTrue(ScoreStore.FIELD_EXPIRE_DATE not in score_dict)
 
         assert_score(self.course1)
         assert_score(self.course2)
@@ -216,6 +233,7 @@ class UpdateBizScoreStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEnrol
             self.assertEquals(score_dict[ScoreStore.FIELD_TOTAL_SCORE], 0)
             self.assertEquals(score_dict[ADDITIONAL_DISPLAY_NAME1], '{}_{}'.format(ADDITIONAL_DISPLAY_NAME1, ADDITIONAL_SETTINGS_VALUE))
             self.assertEquals(score_dict[ADDITIONAL_DISPLAY_NAME2], '{}_{}'.format(ADDITIONAL_DISPLAY_NAME2, ADDITIONAL_SETTINGS_VALUE))
+            self.assertTrue(ScoreStore.FIELD_EXPIRE_DATE not in score_dict)
 
         assert_score(self.course1)
         assert_score(self.course2)
@@ -267,6 +285,7 @@ class UpdateBizScoreStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEnrol
             self.assertEquals(score_dict[ScoreStore.FIELD_TOTAL_SCORE], 88.89)
             self.assertEquals(score_dict[ADDITIONAL_DISPLAY_NAME1], '{}_{}'.format(ADDITIONAL_DISPLAY_NAME1, ADDITIONAL_SETTINGS_VALUE))
             self.assertEquals(score_dict[ADDITIONAL_DISPLAY_NAME2], '{}_{}'.format(ADDITIONAL_DISPLAY_NAME2, ADDITIONAL_SETTINGS_VALUE))
+            self.assertTrue(ScoreStore.FIELD_EXPIRE_DATE not in score_dict)
 
             self.assertEquals(score_dict['First'], 11.11)
             self.assertEquals(score_dict['Second'], 22.22)
@@ -313,6 +332,7 @@ class UpdateBizScoreStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEnrol
             self.assertEquals(score_dict[ScoreStore.FIELD_TOTAL_SCORE], 0)
             self.assertEquals(score_dict[ADDITIONAL_DISPLAY_NAME1], '{}_{}'.format(ADDITIONAL_DISPLAY_NAME1, ADDITIONAL_SETTINGS_VALUE))
             self.assertEquals(score_dict[ADDITIONAL_DISPLAY_NAME2], '{}_{}'.format(ADDITIONAL_DISPLAY_NAME2, ADDITIONAL_SETTINGS_VALUE))
+            self.assertTrue(ScoreStore.FIELD_EXPIRE_DATE not in score_dict)
 
         assert_score(self.course1)
         assert_score(self.course2)
@@ -351,9 +371,127 @@ class UpdateBizScoreStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEnrol
             self.assertEquals(score_dict[ScoreStore.FIELD_TOTAL_SCORE], 0)
             self.assertEquals(score_dict[ADDITIONAL_DISPLAY_NAME1], '{}_{}'.format(ADDITIONAL_DISPLAY_NAME1, ADDITIONAL_SETTINGS_VALUE))
             self.assertEquals(score_dict[ADDITIONAL_DISPLAY_NAME2], '{}_{}'.format(ADDITIONAL_DISPLAY_NAME2, ADDITIONAL_SETTINGS_VALUE))
+            self.assertTrue(ScoreStore.FIELD_EXPIRE_DATE not in score_dict)
 
         assert_score(self.course1)
         assert_score(self.course2)
+
+    def test_contract_with_self_paced_course_if_user_not_enrolled(self):
+        """
+        When:
+            - The contract includes a self-paced course.
+            - The user has not enrolled in the course.
+        Then:
+            - 'Student Status' is set to 'Not Enrolled'.
+            - 'Expire Date' is stored and set to None.
+        """
+        self._profile(self.user)
+        self._register_contract(self.self_paced_contract, self.user, additional_value=ADDITIONAL_SETTINGS_VALUE)
+
+        # Delete enrollment to simulate a scenario that the user has not enrolled in the course
+        enrollment = CourseEnrollment.get_enrollment(self.user, self.self_paced_course.id)
+        enrollment.delete()
+
+        call_command('update_biz_score_status')
+
+        def assert_score(contract, course):
+            score_list = self.assert_finished(1, contract, course)
+
+            score_dict = score_list[0]
+            self.assertEquals(score_dict[ScoreStore.FIELD_CONTRACT_ID], contract.id)
+            self.assertEquals(score_dict[ScoreStore.FIELD_COURSE_ID], unicode(course.id))
+            self.assertIsNone(score_dict.get(ScoreStore.FIELD_LOGIN_CODE))
+            self.assertEquals(score_dict[ScoreStore.FIELD_FULL_NAME], self.user.profile.name)
+            self.assertEquals(score_dict[ScoreStore.FIELD_USERNAME], self.user.username)
+            self.assertEquals(score_dict[ScoreStore.FIELD_EMAIL], self.user.email)
+            self.assertEquals(score_dict[ScoreStore.FIELD_STUDENT_STATUS], ScoreStore.FIELD_STUDENT_STATUS__NOT_ENROLLED)
+            self.assertEquals(score_dict[ScoreStore.FIELD_CERTIFICATE_STATUS], ScoreStore.FIELD_CERTIFICATE_STATUS__UNPUBLISHED)
+            self.assertEquals(score_dict[ScoreStore.FIELD_ENROLL_DATE], DEFAULT_DATETIME)
+            self.assertEquals(score_dict[ScoreStore.FIELD_CERTIFICATE_ISSUE_DATE], DEFAULT_DATETIME)
+            self.assertEquals(score_dict[ScoreStore.FIELD_TOTAL_SCORE], 0)
+            self.assertEquals(score_dict[ADDITIONAL_DISPLAY_NAME1], '{}_{}'.format(ADDITIONAL_DISPLAY_NAME1, ADDITIONAL_SETTINGS_VALUE))
+            self.assertEquals(score_dict[ADDITIONAL_DISPLAY_NAME2], '{}_{}'.format(ADDITIONAL_DISPLAY_NAME2, ADDITIONAL_SETTINGS_VALUE))
+            self.assertIsNone(score_dict[ScoreStore.FIELD_EXPIRE_DATE])
+
+        assert_score(self.self_paced_contract, self.self_paced_course)
+
+    def test_contract_with_self_paced_course(self):
+        """
+        When:
+            - The contract includes a self-paced course.
+            - The user had already enrolled in the course.
+            - The self-paced course is available for the user (today is earlier than the end date).
+        Then:
+            - 'Student Status' is set to 'Enrolled'.
+            - 'Expire Date' is stored and set to the end date for the user.
+        """
+        self._profile(self.user)
+        self._register_contract(self.self_paced_contract, self.user, additional_value=ADDITIONAL_SETTINGS_VALUE)
+
+        call_command('update_biz_score_status')
+
+        def assert_score(contract, course):
+            score_list = self.assert_finished(1, contract, course)
+
+            score_dict = score_list[0]
+            self.assertEquals(score_dict[ScoreStore.FIELD_CONTRACT_ID], contract.id)
+            self.assertEquals(score_dict[ScoreStore.FIELD_COURSE_ID], unicode(course.id))
+            self.assertIsNone(score_dict.get(ScoreStore.FIELD_LOGIN_CODE))
+            self.assertEquals(score_dict[ScoreStore.FIELD_FULL_NAME], self.user.profile.name)
+            self.assertEquals(score_dict[ScoreStore.FIELD_USERNAME], self.user.username)
+            self.assertEquals(score_dict[ScoreStore.FIELD_EMAIL], self.user.email)
+            self.assertEquals(score_dict[ScoreStore.FIELD_STUDENT_STATUS], ScoreStore.FIELD_STUDENT_STATUS__ENROLLED)
+            self.assertEquals(score_dict[ScoreStore.FIELD_CERTIFICATE_STATUS], ScoreStore.FIELD_CERTIFICATE_STATUS__UNPUBLISHED)
+            self.assert_datetime(score_dict[ScoreStore.FIELD_ENROLL_DATE], CourseEnrollment.get_enrollment(self.user, course.id).created)
+            self.assertEquals(score_dict[ScoreStore.FIELD_CERTIFICATE_ISSUE_DATE], DEFAULT_DATETIME)
+            self.assertEquals(score_dict[ScoreStore.FIELD_TOTAL_SCORE], 0)
+            self.assertEquals(score_dict[ADDITIONAL_DISPLAY_NAME1], '{}_{}'.format(ADDITIONAL_DISPLAY_NAME1, ADDITIONAL_SETTINGS_VALUE))
+            self.assertEquals(score_dict[ADDITIONAL_DISPLAY_NAME2], '{}_{}'.format(ADDITIONAL_DISPLAY_NAME2, ADDITIONAL_SETTINGS_VALUE))
+            enrollment = CourseEnrollment.get_enrollment(self.user, course.id)
+            self.assert_datetime(score_dict[ScoreStore.FIELD_EXPIRE_DATE], enrollment.created + timedelta(self.individual_end_days))
+
+        assert_score(self.self_paced_contract, self.self_paced_course)
+
+    def test_contract_with_expired_self_paced_course(self):
+        """
+        When:
+            - The contract includes a self-paced course.
+            - The self-paced course has already expired for the user (today is later than the end date).
+        Then:
+            - 'Student Status' is set to 'Expired'.
+            - 'Expire Date' is stored and set to the end date for the user.
+        """
+        self._profile(self.user)
+        self._register_contract(self.self_paced_contract, self.user, additional_value=ADDITIONAL_SETTINGS_VALUE)
+
+        # Update enrollment.created to simulate a scenario that the self-paced course has expired
+        enrollment = CourseEnrollment.get_enrollment(self.user, self.self_paced_course.id)
+        enrollment.created = enrollment.created - timedelta(days=self.individual_end_days + 1)
+        enrollment.save()
+
+        call_command('update_biz_score_status')
+
+        def assert_score(contract, course):
+            score_list = self.assert_finished(1, contract, course)
+
+            score_dict = score_list[0]
+            self.assertEquals(score_dict[ScoreStore.FIELD_CONTRACT_ID], contract.id)
+            self.assertEquals(score_dict[ScoreStore.FIELD_COURSE_ID], unicode(course.id))
+            self.assertIsNone(score_dict.get(ScoreStore.FIELD_LOGIN_CODE))
+            self.assertEquals(score_dict[ScoreStore.FIELD_FULL_NAME], self.user.profile.name)
+            self.assertEquals(score_dict[ScoreStore.FIELD_USERNAME], self.user.username)
+            self.assertEquals(score_dict[ScoreStore.FIELD_EMAIL], self.user.email)
+            self.assertEquals(score_dict[ScoreStore.FIELD_STUDENT_STATUS], ScoreStore.FIELD_STUDENT_STATUS__EXPIRED)
+            self.assertEquals(score_dict[ScoreStore.FIELD_CERTIFICATE_STATUS], ScoreStore.FIELD_CERTIFICATE_STATUS__UNPUBLISHED)
+            self.assert_datetime(score_dict[ScoreStore.FIELD_ENROLL_DATE], CourseEnrollment.get_enrollment(self.user, course.id).created)
+            self.assertEquals(score_dict[ScoreStore.FIELD_CERTIFICATE_ISSUE_DATE], DEFAULT_DATETIME)
+            self.assertEquals(score_dict[ScoreStore.FIELD_TOTAL_SCORE], 0)
+            self.assertEquals(score_dict[ADDITIONAL_DISPLAY_NAME1], '{}_{}'.format(ADDITIONAL_DISPLAY_NAME1, ADDITIONAL_SETTINGS_VALUE))
+            self.assertEquals(score_dict[ADDITIONAL_DISPLAY_NAME2], '{}_{}'.format(ADDITIONAL_DISPLAY_NAME2, ADDITIONAL_SETTINGS_VALUE))
+            enrollment = CourseEnrollment.get_enrollment(self.user, course.id)
+            self.assert_datetime(score_dict[ScoreStore.FIELD_EXPIRE_DATE], enrollment.created + timedelta(self.individual_end_days))
+
+        assert_score(self.self_paced_contract, self.self_paced_course)
 
     def test_target_user_count(self):
         for var in range(0, 50):
