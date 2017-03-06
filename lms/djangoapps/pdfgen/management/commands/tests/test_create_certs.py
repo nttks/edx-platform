@@ -2,6 +2,7 @@ import datetime
 from mock import patch, ANY
 import os
 from random import randint
+import tempfile
 from StringIO import StringIO
 
 from boto.s3.connection import Location
@@ -132,7 +133,7 @@ class GenerateCertCommandTestCase(TestCase):
 @override_settings(
     PDFGEN_BUCKET_NAME='bucket', PDFGEN_ACCESS_KEY_ID='akey',
     PDFGEN_SECRET_ACCESS_KEY='skey', PDFGEN_CERT_AUTHOR='author',
-    PDFGEN_CERT_TITLE='title', PDFGEN_BASE_PDF_DIR='/tmp')
+    PDFGEN_CERT_TITLE='title')
 class GenerateCertCommandIntegrationTestCase(ModuleStoreTestCase):
 
     def setUp(self):
@@ -182,11 +183,11 @@ class GenerateCertCommandIntegrationTestCase(ModuleStoreTestCase):
         self.addCleanup(patcher2.stop)
         self.s3key_mock().generate_url.return_value = "http://example.com"
 
-        self.pdf_path = settings.PDFGEN_BASE_PDF_DIR + "/" + self.kwargs['prefix'] + "-".join(
-            [self.course.id.org, self.course.id.course, self.course.id.run]) + ".pdf"
-        self.base_pdf = canvas.Canvas(self.pdf_path, pagesize=landscape(A4))
-        self.base_pdf.showPage()
-        self.base_pdf.save()
+        self.base_pdf = tempfile.NamedTemporaryFile()
+        self.addCleanup(self.base_pdf.close)
+        _base_pdf = canvas.Canvas(self.base_pdf.name, pagesize=landscape(A4))
+        _base_pdf.showPage()
+        _base_pdf.save()
 
     def _create_course(self, org, number, run, display_name, start, end):
         """
@@ -196,12 +197,11 @@ class GenerateCertCommandIntegrationTestCase(ModuleStoreTestCase):
             org=org, number=number, run=run, display_name=display_name,
             start=start, end=end)
 
-    def tearDown(self):
-        os.remove(self.pdf_path)
-
+    @patch('pdfgen.views.get_file_from_s3')
     @patch('pdfgen.certificate.grades.grade')
-    def test_create(self, grade_mock):
+    def test_create(self, grade_mock, get_file_from_s3_mock):
         grade_mock.return_value = {"grade": "Pass", "percent": 1}
+        get_file_from_s3_mock.return_value = self.base_pdf
         with patch('sys.stdout', new_callable=StringIO) as std_mock:
             call_command(self.prog_name, *self.args_create, **self.kwargs)
 

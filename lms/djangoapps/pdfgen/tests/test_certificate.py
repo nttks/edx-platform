@@ -1,22 +1,28 @@
-from django.test import TestCase
-from mock import MagicMock, patch, ANY, mock_open
-from django.contrib.auth.models import User
-from opaque_keys.edx.locator import CourseLocator
-from student.tests.factories import UserFactory, UserProfileFactory
-from pdfgen.tests.factories import GeneratedCertificateFactory
-from pdfgen.certificate import CertificatePDF, CertPDFException
-from django.test.client import RequestFactory
-from student.models import UserStanding
-from certificates.models import CertificateStatuses
-from django.test.utils import override_settings
-import json
+
 import itertools
+import json
+from mock import MagicMock, patch, ANY, mock_open
+import tempfile
+
+from django.contrib.auth.models import User
+from django.test import TestCase
+from django.test.client import RequestFactory
+from django.test.utils import override_settings
+
+from certificates.models import CertificateStatuses
+from opaque_keys.edx.locator import CourseKey
+from pdfgen.tests.factories import GeneratedCertificateFactory
+from pdfgen.certificate import CertificatePDF, CertPDFException, CertPDFUserNotFoundException
+from student.models import UserStanding
+from student.tests.factories import (
+    CourseEnrollmentFactory, UserFactory, UserProfileFactory, UserStandingFactory
+)
 
 
 class CertificatePDF_create_TestCase(TestCase):
     def setUp(self):
         self.user = "testusername"
-        self.course_id = CourseLocator.from_string("org/num/run")
+        self.course_id = CourseKey.from_string("org/num/run")
         self.debug = False
         self.noop = False
         self.student = UserFactory.create()
@@ -229,7 +235,7 @@ class CertificatePDF_delete_TestCase(TestCase):
 
     def setUp(self):
         self.user = "testusername"
-        self.course_id = CourseLocator.from_string("org/num/run")
+        self.course_id = CourseKey.from_string("org/num/run")
         self.debug = False
         self.noop = False
         self.file_prefix = ""
@@ -316,7 +322,7 @@ class CertificatePDF_report_TestCase(TestCase):
 
     def setUp(self):
         self.user = "testusername"
-        self.course_id = CourseLocator.from_string("org/num/run")
+        self.course_id = CourseKey.from_string("org/num/run")
         self.debug = False
         self.noop = False
         self.file_prefix = ""
@@ -419,7 +425,7 @@ class CertificatePDF_report_TestCase(TestCase):
 class CertificatePDF_publish_TestCase(TestCase):
     def setUp(self):
         self.user = "testusername"
-        self.course_id = CourseLocator.from_string("org/num/run")
+        self.course_id = CourseKey.from_string("org/num/run")
         self.debug = False
         self.noop = False
         self.file_prefix = ""
@@ -488,7 +494,7 @@ class CertificatePDF_publish_TestCase(TestCase):
 class CertificatePDF_other_TestCase(TestCase):
     def setUp(self):
         self.user = "testusername"
-        self.course_id = CourseLocator.from_string("org/num/run")
+        self.course_id = CourseKey.from_string("org/num/run")
         self.debug = False
         self.noop = False
         self.file_prefix = ""
@@ -525,125 +531,105 @@ class CertificatePDF_other_TestCase(TestCase):
 
 class CertificatePDF_get_students_TestCase(TestCase):
     def setUp(self):
-        self.user = "testusername"
-        self.course_id = CourseLocator.from_string("org/num/run")
+        self.course_id = CourseKey.from_string("course-v1:org+course+run")
         self.debug = False
         self.noop = False
         self.file_prefix = ""
         self.exclude = None
 
-        self.mail = "testusername@example.com"
+        # target students
         self.students = UserFactory.create_batch(3)
+        for student in self.students:
+            CourseEnrollmentFactory.create(user=student, course_id=self.course_id)
 
-    @patch('pdfgen.certificate.User.objects.filter')
-    def test_get_students_all(self, user_mock):
-        user_mock().filter().exclude.return_value = self.students
+        # not target students
+        students_other = UserFactory.create_batch(4)
+        ## Enroll other course
+        CourseEnrollmentFactory.create(
+            user=students_other[0], course_id=CourseKey.from_string("course-v1:org+course2+run")
+        )
+        ## Enroll target course. But user is inactive
+        CourseEnrollmentFactory.create(user=students_other[1], course_id=self.course_id)
+        students_other[1].is_active = False
+        students_other[1].save()
+        ## Unenrolled target course
+        # CourseEnrollmentFactory.create(user=students_other[2], course_id=self.course_id, is_active=False)
+        ## Enroll target course. But user has been resigned
+        CourseEnrollmentFactory.create(user=students_other[3], course_id=self.course_id)
+        UserStandingFactory.create(
+            user=students_other[3], account_status=UserStanding.ACCOUNT_DISABLED, changed_by=students_other[2]
+        )
+
+        self.include_file = tempfile.TemporaryFile()
+        self.include_file.write(self.students[0].username + '\n')
+        self.include_file.write(self.students[1].email + '\n')
+        self.include_file.seek(0)
+        self.addCleanup(self.include_file.close)
+
+        self.exclude_file = tempfile.TemporaryFile()
+        self.exclude_file.write(self.students[0].username + '\n')
+        self.exclude_file.write(self.students[1].email + '\n')
+        self.exclude_file.seek(0)
+        self.addCleanup(self.exclude_file.close)
+
+    def test_get_students_all(self):
         cert = CertificatePDF(None, self.course_id, self.debug,
                               self.noop, self.file_prefix, self.exclude)
         return_students = cert._get_students()
 
-        self.assertEqual(return_students, self.students)
-        user_mock.assert_called_with(
-            courseenrollment__course_id__exact=self.course_id)
-        user_mock().filter.assert_called_with(is_active=1)
-        user_mock().filter().exclude.assert_called_with(
-            standing__account_status__exact=UserStanding.ACCOUNT_DISABLED)
+        self.assertItemsEqual(return_students, self.students)
 
-    @patch('pdfgen.certificate.User.objects.filter')
-    def test_get_students_by_username(self, user_mock):
-        user_mock.return_value = self.students
-        cert = CertificatePDF(self.user, self.course_id, self.debug,
+    def test_get_students_by_username(self):
+        cert = CertificatePDF(self.students[0].username, self.course_id, self.debug,
                               self.noop, self.file_prefix, self.exclude)
         return_students = cert._get_students()
 
-        self.assertEqual(return_students, self.students)
-        user_mock.assert_called_once_with(
-            username=self.user, courseenrollment__course_id=self.course_id)
+        self.assertItemsEqual(return_students, [self.students[0]])
 
-    @patch('pdfgen.certificate.User.objects.filter')
-    def test_get_students_by_email(self, user_mock):
-        user_mock.return_value = self.students
-        cert = CertificatePDF(self.mail, self.course_id, self.debug,
+    def test_get_students_by_email(self):
+        cert = CertificatePDF(self.students[0].email, self.course_id, self.debug,
                               self.noop, self.file_prefix, self.exclude)
         return_students = cert._get_students()
 
-        self.assertEqual(return_students, self.students)
-        user_mock.assert_called_once_with(
-            email=self.mail, courseenrollment__course_id=self.course_id)
+        self.assertItemsEqual(return_students, [self.students[0]])
 
-    @override_settings(PDFGEN_BASE_PDF_DIR="/tmp")
-    @patch('pdfgen.certificate.CertificatePDF._get_students_list')
-    @patch('pdfgen.certificate.User.objects.filter')
-    def test_get_students_with_include_list(self, user_mock, list_mock):
-        act_mock = MagicMock()
-        act_mock.filter.return_value = self.students
-        user_mock().filter().exclude.return_value = act_mock
+    @patch('pdfgen.certificate.get_file_from_s3')
+    def test_get_students_with_include_list(self, get_file_from_s3_mock):
+        get_file_from_s3_mock.return_value = self.include_file
 
         cert = CertificatePDF(None, self.course_id, self.debug,
                               self.noop, "prefix-", self.exclude)
         return_students = cert._get_students()
 
-        self.assertEqual(return_students, self.students)
-        list_mock.assert_called_with("/tmp/prefix-org-num-run.list")
-        user_mock.assert_called_with(
-            courseenrollment__course_id__exact=self.course_id)
+        self.assertItemsEqual(return_students, [self.students[0], self.students[1]])
+        get_file_from_s3_mock.assert_called_once_with('prefix-org-course-run.list')
 
-    @override_settings(PDFGEN_BASE_PDF_DIR="/tmp")
-    @patch('pdfgen.certificate.CertificatePDF._get_students_list')
-    @patch('pdfgen.certificate.User.objects.filter')
-    def test_get_students_with_exclude_list(self, user_mock, list_mock):
-        act_mock = MagicMock()
-        act_mock.exclude.return_value = self.students
-        user_mock().filter().exclude.return_value = act_mock
+    @patch('pdfgen.certificate.get_file_from_s3')
+    def test_get_students_with_exclude_list(self, get_file_from_s3_mock):
+        get_file_from_s3_mock.return_value = self.include_file
 
         cert = CertificatePDF(None, self.course_id, self.debug,
-                              self.noop, self.file_prefix, "/tmp/exclude")
+                              self.noop, self.file_prefix, "exclude.txt")
         return_students = cert._get_students()
 
-        self.assertEqual(return_students, self.students)
-        list_mock.assert_called_with("/tmp/exclude")
-        user_mock.assert_called_with(
-            courseenrollment__course_id__exact=self.course_id)
+        self.assertItemsEqual(return_students, [self.students[2]])
+        get_file_from_s3_mock.assert_called_once_with("exclude.txt")
 
-    @patch('pdfgen.certificate.User.objects.filter')
-    def test_get_students_dose_not_exists(self, user_mock):
-        user_mock().filter().exclude.return_value = []
-
-        with self.assertRaises(CertPDFException) as e:
-            cert = CertificatePDF(None, self.course_id, self.debug,
+    def test_get_students_dose_not_exists(self):
+        with self.assertRaises(CertPDFUserNotFoundException) as e:
+            cert = CertificatePDF('no-exists-user', self.course_id, self.debug,
                                   self.noop, self.file_prefix, self.exclude)
             return_students = cert._get_students()
 
         self.assertEqual(e.exception.message,
                          "A user targeted for the issuance of certificate does not exist.")
-        user_mock.assert_called_with(
-            courseenrollment__course_id__exact=self.course_id)
-        user_mock().filter.assert_called_with(is_active=1)
-        user_mock().filter().exclude.assert_called_with(
-            standing__account_status__exact=UserStanding.ACCOUNT_DISABLED)
 
-    @patch('pdfgen.certificate.os.path.isfile', return_value=True)
-    def test_get_students_list(self, isf_mock):
-        with patch('pdfgen.certificate.open',
-                   mock_open(), create=True) as open_mock:
-
-            open_mock().__iter__.return_value = iter(
-                ['user1\n', 'user2\n', 'user3\n'])
-            cert = CertificatePDF(
-                None, self.course_id, self.debug,
-                self.noop, self.file_prefix, self.exclude)
-            return_list = cert._get_students_list("/tmp/dummy")
-
-        isf_mock.assert_called_once_with("/tmp/dummy")
-        open_mock.assert_called_with("/tmp/dummy", 'r')
-        self.assertEqual(return_list, ['user1', 'user2', 'user3'])
-
-    @patch('pdfgen.certificate.os.path.isfile', return_value=False)
-    def test_get_students_list_file_not_found(self, isf_mock):
+    @patch('pdfgen.certificate.get_file_from_s3', return_value=None)
+    def test_get_students_list_file_not_found(self, get_file_from_s3_mock):
         with self.assertRaises(CertPDFException) as e:
             cert = CertificatePDF(None, self.course_id, self.debug,
                                   self.noop, self.file_prefix, self.exclude)
-            cert._get_students_list("/tmp/dummy")
+            cert._get_students_list("dummy")
 
-        isf_mock.assert_called_once_with("/tmp/dummy")
-        self.assertEqual(e.exception.message, '/tmp/dummy is not found.')
+        get_file_from_s3_mock.assert_called_once_with("dummy")
+        self.assertEqual(e.exception.message, 'dummy is not found.')

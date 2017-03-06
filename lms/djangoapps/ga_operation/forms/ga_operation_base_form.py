@@ -20,6 +20,14 @@ class GaOperationBaseForm(forms.Form):
         return val
 
 
+class GaOperationCertsBaseForm(GaOperationBaseForm):
+    student_ids = forms.CharField(required=False)
+
+    def clean_student_ids(self):
+        from instructor.views.api import _split_input_list
+        return _split_input_list(self.cleaned_data.get('student_ids'))
+
+
 class GaOperationEmailField(forms.EmailField):
     def clean(self, value):
         super(GaOperationEmailField, self).clean(value)

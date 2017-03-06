@@ -6,6 +6,7 @@
         return Backbone.Router.extend({
             routes: {
                 "": "mutualGradingReport",
+                "upload_certs_template": "uploadCertsTemplate",
                 "create_certs": "createCerts",
                 "create_certs_meeting": "createCertsMeeting",
                 "publish_certs": "publishCerts",
@@ -15,6 +16,9 @@
                 "past_graduates_info": "pastGraduatesInfo",
                 "last_login_info": "lastLoginInfo",
                 "aggregate_g1528": "aggregateG1528"
+            },
+            uploadCertsTemplate: function() {
+                this._render('upload_certs_template_tmpl');
             },
             createCerts: function() {
                 this._render('create_certs_tmpl')

@@ -1,9 +1,5 @@
-# -*- coding: utf-8 -*-
-from django import forms
-
-from ga_operation.forms.ga_operation_base_form import GaOperationBaseForm, GaOperationEmailField
+from ga_operation.forms.ga_operation_base_form import GaOperationCertsBaseForm, GaOperationEmailField
 
 
-class CreateCertsForm(GaOperationBaseForm):
-    cert_pdf_tmpl = forms.FileField(required=True)
+class CreateCertsForm(GaOperationCertsBaseForm):
     email = GaOperationEmailField(required=True)

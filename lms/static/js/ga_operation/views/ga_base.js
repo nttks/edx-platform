@@ -5,7 +5,7 @@
 
         return Backbone.View.extend({
             el: '#right_content_main',
-            post: function (event, url) {
+            post: function (event, url, callback) {
                 function _setMsg(responseText) {
                     var response_dict;
                     if (_.isString(responseText)) {
@@ -43,6 +43,7 @@
                         }
                     }).done(function (response) {
                         _setMsg(response);
+                        if (callback && _.isFunction(callback)) callback(response);
                     }).fail(function (response) {
                         _setMsg(response.responseText);
                     }).always(function () {

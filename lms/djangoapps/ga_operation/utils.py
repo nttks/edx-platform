@@ -9,6 +9,7 @@ from exceptions import OSError
 from django.conf import settings
 from django.http import HttpResponse
 
+from util.file import course_filename_prefix_generator
 from util.json_request import JsonResponse
 from boto.s3 import connect_to_region
 from boto.s3.connection import OrdinaryCallingFormat, Location
@@ -39,30 +40,22 @@ def get_s3_connection():
     )
 
 
-def handle_downloaded_file_from_s3(file_name_list, bucket_name):
-    """Download files from AWS S3 and mount to the disk."""
+def handle_file_from_s3(key_name, bucket_name):
     with open_bucket_from_s3(bucket_name) as bucket:
-        for key_name in file_name_list:
-            key = bucket.get_key(key_name)
-            if not key.exists():
-                raise Exception("File:{} was not found from AWS S3.".format(key.name))
-            else:
-                if not os.path.exists(settings.PDFGEN_BASE_PDF_DIR):
-                    os.mkdir(settings.PDFGEN_BASE_PDF_DIR)
-                key.get_contents_to_filename(settings.PDFGEN_BASE_PDF_DIR + "/" + key.name)
+        key = bucket.get_key(key_name)
+        if key and key.exists():
+            return key
+        else:
+            return None
 
 
-def handle_uploaded_received_file_to_s3(form, file_name_keys, bucket_name):
+def handle_uploaded_received_file_to_s3(file_obj, key_name, bucket_name):
     """Send received files to AWS S3"""
-    file_name_list = []
     with open_bucket_from_s3(bucket_name) as bucket:
-        for k in file_name_keys:
-            file_data = form.cleaned_data[k]
-            f_s3 = Key(bucket)
-            f_s3.key = file_data.name
-            f_s3.set_contents_from_file(file_data)
-            file_name_list.append(file_data.name)
-    return file_name_list
+        f_s3 = Key(bucket)
+        f_s3.key = key_name
+        f_s3.set_contents_from_file(file_obj)
+        return f_s3
 
 
 def handle_uploaded_generated_file_to_s3(file_path_list, bucket_name):
@@ -144,6 +137,10 @@ def get_std_info_from_local_storage():
     with open(settings.GA_OPERATION_STD_ERR, 'r') as err, open(settings.GA_OPERATION_STD_OUT, 'r') as out:
         err_msg, out_msg = err.read(), out.read()
     return err_msg, out_msg
+
+
+def course_filename(course_key):
+    return course_filename_prefix_generator(course_key, '-')
 
 
 class CSVResponse(HttpResponse):

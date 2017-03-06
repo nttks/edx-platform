@@ -4,6 +4,12 @@ from django.conf.urls import patterns, url
 urlpatterns = patterns(
     '',
 
+    url(r'^confirm_certs_template$',
+        'ga_operation.views.api.confirm_certs_template', name="confirm_certs_template"),
+
+    url(r'^upload_certs_template$',
+        'ga_operation.views.api.upload_certs_template', name="upload_certs_template"),
+
     url(r'^create_certs$',
         'ga_operation.views.api.create_certs', name="create_certs"),
 

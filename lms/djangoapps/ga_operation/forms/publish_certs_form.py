@@ -1,6 +1,5 @@
-# -*- coding: utf-8 -*-
-from ga_operation.forms.ga_operation_base_form import GaOperationBaseForm
+from ga_operation.forms.ga_operation_base_form import GaOperationCertsBaseForm
 
 
-class PublishCertsForm(GaOperationBaseForm):
+class PublishCertsForm(GaOperationCertsBaseForm):
     pass

@@ -1,31 +1,26 @@
 """
 pdfgen views
 """
-from reportlab.pdfgen import canvas
-from reportlab.pdfbase import pdfmetrics
-from reportlab.pdfbase.ttfonts import TTFont
-from reportlab.lib.utils import ImageReader
-from reportlab.lib.pagesizes import A4, landscape
-from PyPDF2 import PdfFileWriter, PdfFileReader
-from django.conf import settings
+from datetime import datetime
+import json
+import logging
+import os
+import StringIO
+from tempfile import mkstemp
+
+from boto.exception import BotoClientError, BotoServerError, S3ResponseError
 from boto.s3 import connect_to_region
 from boto.s3.connection import Location, OrdinaryCallingFormat
 from boto.s3.key import Key
-from boto.exception import BotoClientError, BotoServerError, S3ResponseError
-from tempfile import mkstemp
-import os
-import json
-import logging
-import StringIO
-from datetime import datetime
-"""
-from django.http import HttpResponse
-from reportlab.pdfbase.cidfonts import UnicodeCIDFont
-from django.contrib.auth.decorators import login_required
-from django.views.decorators.http import require_POST
-from django.core.context_processors import csrf
-from django_future.csrf import ensure_csrf_cookie
-"""
+from django.conf import settings
+from PyPDF2 import PdfFileWriter, PdfFileReader
+from reportlab.lib.pagesizes import A4, landscape
+from reportlab.lib.utils import ImageReader
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+from reportlab.pdfgen import canvas
+
+from pdfgen.utils import course_filename, get_file_from_s3
 
 log = logging.getLogger("pdfgen")
 
@@ -138,8 +133,6 @@ class CertPDF(object):
         self.course_name = course_name
         self.author = settings.PDFGEN_CERT_AUTHOR
         self.title = settings.PDFGEN_CERT_TITLE
-        self.base_pdf_dir = settings.PDFGEN_BASE_PDF_DIR
-        #self.base_img_dir = settings.PDFGEN_BASE_IMG_DIR
         self.prefix = file_prefix
 
         pdfmetrics.registerFont(
@@ -153,36 +146,20 @@ class CertPDF(object):
 
     def create_pdf(self):
         """ crate pdf """
-        if os.path.isdir(self.base_pdf_dir):
-            base_pdf = self.base_pdf_dir + "/" + self.prefix + "-".join(
-                [self.course_id.org, self.course_id.course, self.course_id.run]) + ".pdf"
-            self.create_based_on_pdf(base_pdf)
-            return
+        base_pdf_name = course_filename(self.course_id) + '.pdf'
+        if self.prefix:
+            base_pdf_name = self.prefix + base_pdf_name
 
-        """
-        if os.path.isdir(self.base_img_dir):
-            base_img = self.base_img_dir + "/" + self.prefix + "-".join(
-                self.course_id.to_deprecated_string().split('/')) + ".pdf"
-            self.create_based_on_image(base_pdf)
-            return
-
-        msg = "settings.PDFGEN_BASE_PDF_DIR" + \
-            "({}) and settings.PDFGEN_BASE_IMG_DIR({}) dose not exists.".format(
-            self.base_pdf_dir, self.base_img_dir)
-        """
-
-        msg = "settings.PDFGEN_BASE_PDF_DIR ({}) dose not exists.".format(
-            self.base_pdf_dir)
-        log.error(msg)
-        raise PDFBaseNotFound(msg)
-
-    def create_based_on_pdf(self, base_pdf):
-        """create pdf based on pdf"""
-        if not os.path.isfile(base_pdf):
-            msg = "{} is not exists.".format(base_pdf)
+        base_pdf = get_file_from_s3(base_pdf_name)
+        if base_pdf is None:
+            msg = "{} is not exists.".format(base_pdf_name)
             log.error(msg)
             raise PDFBaseNotFound(msg)
 
+        self.create_based_on_pdf(base_pdf)
+
+    def create_based_on_pdf(self, base_pdf):
+        """create pdf based on pdf"""
         fileobj = StringIO.StringIO()
         pdf = canvas.Canvas(
             fileobj, bottomup=True,
@@ -201,7 +178,7 @@ class CertPDF(object):
         merge = PdfFileReader(fileobj)
 
         try:
-            base = PdfFileReader(file(base_pdf, "rb"))
+            base = PdfFileReader(base_pdf)
             page = base.getPage(0)
             page.mergePage(merge.getPage(0))
 
@@ -212,40 +189,9 @@ class CertPDF(object):
 
             output.addPage(page)
             output.write(self.fp)
-        except (TypeError, AssertionError), e:
+        except (IOError, TypeError, AssertionError), e:
             log.error(e)
             raise PDFBaseIsNotPDF(e)
-
-    def create_based_on_image(self, base_img):
-        """create pdf based on image"""
-        if not os.path.isfile(base_img):
-            msg = "{} is not exists.".format(base_img)
-            log.error(msg)
-            raise PDFBaseNotFound(msg)
-
-        pdf = canvas.Canvas(
-            self.fp, bottomup=True,
-            pageCompression=1, pagesize=landscape(A4))
-        pdf.setAuthor(self.author)
-        pdf.setTitle(self.title)
-        pdf.setSubject(u"{}".format(self.course_name))
-
-        try:
-            bg = ImageReader(base_img)
-            pdf.drawImage(bg, 0, 0)
-        except IOError, e:
-            log.error(e)
-            raise PDFBaseIsNotImage(e)
-
-        pdf.setFont("VL-Gothic-Regular", 27)
-        pdf.drawString(260, 440, self.username)
-
-        now = datetime.now()
-        pdf.setFont("Ubuntu-R", 15)
-        pdf.drawRightString(740, 115, now.strftime('%B %d, %Y'))
-
-        pdf.showPage()
-        pdf.save()
 
 
 class CertStoreBase(object):
@@ -370,36 +316,3 @@ def delete_cert_pdf(username, course_id, key):
         contents = json.dumps({"error": "{}".format(e)})
 
     return contents
-
-
-"""
-@require_POST
-@ensure_csrf_cookie
-def pdfgen(request):
-    log.info("csrf = %s", csrf(request))
-    post = request.POST
-    username = post.get('username', '')
-    display_name = post.get('display_name', '')
-    course_id = post.get('course_id', '')
-    course_name  = post.get('course_name', '')
-    grade = post.get('grade', '')
-    key = post.get('key', '')
-
-    if not (username and course_id and course_name and grade):
-        msg = "Invalid Post data."
-        contents = json.dumps({'error':msg})
-        return HttpResponse(contents, mimetype='application/json')
-
-    try:
-        cert = CertificateHonor(username, display_name, course_id,
-            course_name, grade, key)
-        contents = cert.create()
-    except BotoServerError as e:
-        log.error("Cannot get bucket: BotoServerError = %s", e)
-        contents = json.dumps({"error":e})
-    except BotoClientError as e:
-        log.error("Cannot access S3: BotoClientError = %s", e)
-        contents = json.dumps({"error":e})
-
-    return HttpResponse(contents, mimetype='application/json')
-"""

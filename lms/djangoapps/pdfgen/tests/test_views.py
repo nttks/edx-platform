@@ -1,7 +1,9 @@
+import ddt
 import hashlib
 import json
 from mock import Mock, patch, ANY, create_autospec, mock_open
 import StringIO
+import tempfile
 
 from boto.exception import BotoClientError, BotoServerError, S3ResponseError
 from boto.s3.connection import S3Connection, Location
@@ -41,9 +43,7 @@ class CertificationBaseTestCase(TestCase):
             self.cert.verify()
 
 
-@override_settings(
-    PDFGEN_CERT_AUTHOR="author", PDFGEN_CERT_TITLE="title",
-    PDFGEN_BASE_IMG_DIR="/tmp", PDFGEN_BASE_PDF_DIR="/tmp")
+@override_settings(PDFGEN_CERT_AUTHOR="author", PDFGEN_CERT_TITLE="title")
 class CertificateHonorTestCase(TestCase):
 
     def setUp(self):
@@ -132,9 +132,8 @@ class CertificateHonorTestCase(TestCase):
             "_".join([self.username, self.key[:5]]), self.course_id)
 
 
-@override_settings(
-    PDFGEN_CERT_AUTHOR="author", PDFGEN_CERT_TITLE="title",
-    PDFGEN_BASE_IMG_DIR="/tmp", PDFGEN_BASE_PDF_DIR="/tmp")
+@ddt.ddt
+@override_settings(PDFGEN_CERT_AUTHOR="author", PDFGEN_CERT_TITLE="title")
 class CertPDFTestCase(TestCase):
 
     def setUp(self):
@@ -148,100 +147,71 @@ class CertPDFTestCase(TestCase):
         self.log_mock = patcher0.start()
         self.addCleanup(patcher0.stop)
 
+        self.base_pdf = tempfile.TemporaryFile()
+        self.base_pdf.write(b'test\n')
+        self.addCleanup(self.base_pdf.close)
+
+    @patch('pdfgen.views.get_file_from_s3', return_value=None)
     @patch('pdfgen.views.CertPDF.create_based_on_pdf')
-    def test_create_pdf(self, pdf_mock):
+    @ddt.data(True, False)
+    def test_create_pdf(self, has_prefix, pdf_mock, get_file_from_s3_mock):
+        prefix = self.file_prefix if has_prefix else ''
+        get_file_from_s3_mock.return_value = self.base_pdf
         certpdf = CertPDF(
             self.fp, self.username, self.course_id,
-            self.course_name, self.file_prefix)
+            self.course_name, prefix)
         certpdf.create_pdf()
-        pdf_mock.assert_called_once_with("/tmp/prefix-org-num-run.pdf")
 
-    """
-    @patch('pdfgen.views.CertPDF.create_based_on_image')
-    @patch.multiple(settings, PDFGEN_BASE_PDF_DIR="not found",
-        PDFGEN_BASE_IMG_DIR="/tmp")
-    def test_create_based_on_image(self, img_mock):
-        certpdf = CertPDF(self.fp, self.username, self.course_id,
-            self.course_name, self.file_prefix)
-        certpdf.create_pdf()
-        img_mock.assert_called_once_with("/tmp/prefix-org-num-run.pdf")
-    """
+        if has_prefix:
+            get_file_from_s3_mock.assert_called_once_with('prefix-org-num-run.pdf')
+        else:
+            get_file_from_s3_mock.assert_called_once_with('org-num-run.pdf')
+        pdf_mock.assert_called_once_with(self.base_pdf)
 
-    @patch.multiple(
-        settings, PDFGEN_BASE_PDF_DIR="not found",
-        PDFGEN_BASE_IMG_DIR="not found")
-    def test_create_pdf_directory_not_found(self):
+    @patch('pdfgen.views.get_file_from_s3', return_value=None)
+    def test_create_pdf_base_pdf_not_found(self, get_file_from_s3_mock):
         with self.assertRaises(PDFBaseNotFound):
             certpdf = CertPDF(
                 self.fp, self.username, self.course_id,
                 self.course_name, self.file_prefix)
             certpdf.create_pdf()
 
-    @patch('__builtin__.file')
     @patch('pdfgen.views.PdfFileWriter')
     @patch('pdfgen.views.PdfFileReader')
     @patch('pdfgen.views.canvas')
-    @patch('pdfgen.views.os.path.isfile', return_value=True)
-    @patch.multiple(settings, PDFGEN_BASE_PDF_DIR="/tmp")
-    def test_create_based_on_pdf(
-            self, isfile_mock, cavs_mock, reader_mock, writer_mock, file_mock):
+    def test_create_based_on_pdf(self, cavs_mock, reader_mock_class, writer_mock_class):
+        writer_mock = Mock()
+        writer_mock_class.return_value = writer_mock
+        merge_reader_mock = Mock()
+        base_reader_mock = Mock()
+        reader_mock_class.side_effect = [merge_reader_mock, base_reader_mock]
+        merge_page_mock = Mock()
+        merge_reader_mock.getPage.return_value = merge_page_mock
+        base_page_mock = Mock()
+        base_reader_mock.getPage.return_value = base_page_mock
 
         certpdf = CertPDF(
             self.fp, self.username, self.course_id,
             self.course_name, self.file_prefix)
-        certpdf.create_based_on_pdf(self.fp)
+        certpdf.create_based_on_pdf(self.base_pdf)
 
-        isfile_mock.assert_called_once_with(self.fp)
         cavs_mock.Canvas.assert_called_once_with(
             ANY, bottomup=True, pageCompression=1, pagesize=ANY)
-        reader_mock.assert_called_with(ANY)
-        writer_mock.assert_called_once_with()
+        self.assertEqual(reader_mock_class.call_count, 2)
+        writer_mock_class.assert_called_once_with()
+        merge_reader_mock.getPage.assert_called_once_with(0)
+        base_reader_mock.getPage.assert_called_once_with(0)
+        base_page_mock.mergePage.assert_called_once_with(merge_page_mock)
+        writer_mock.addMetadata.assert_called_once_with({'/Title': 'title', '/Author': 'author', '/Subject': self.course_name})
+        writer_mock.addPage.assert_called_once_with(base_page_mock)
+        writer_mock.write.assert_called_once_with(self.fp)
 
-    @patch('pdfgen.views.os.path.isfile', return_value=False)
-    def test_create_based_on_pdf_not_exists(self, isfile_mock):
-        with self.assertRaises(PDFBaseNotFound):
-            certpdf = CertPDF(
-                self.fp, self.username, self.course_id,
-                self.course_name, self.file_prefix)
-            certpdf.create_based_on_pdf(self.fp)
-
-    @patch('pdfgen.views.os.path.isfile', return_value=True)
-    def test_create_based_on_pdf_not_file(self, isfile_mock):
+    def test_create_based_on_pdf_not_file(self):
         with self.assertRaises(PDFBaseIsNotPDF):
             certpdf = CertPDF(
                 self.fp, self.username, self.course_id,
                 self.course_name, self.file_prefix)
-            certpdf.create_based_on_pdf(self.fp)
-
-    @patch('pdfgen.views.ImageReader')
-    @patch('pdfgen.views.canvas')
-    @patch('pdfgen.views.os.path.isfile', return_value=True)
-    def test_create_based_on_image(self, isfile_mock, cavs_mock, reader_mock):
-        certpdf = CertPDF(
-            self.fp, self.username, self.course_id,
-            self.course_name, self.file_prefix)
-        certpdf.create_based_on_image(self.fp)
-
-        isfile_mock.assert_called_once_with(self.fp)
-        cavs_mock.Canvas.assert_called_once_with(
-            self.fp, bottomup=True, pageCompression=1, pagesize=ANY)
-        reader_mock.assert_called_once_with(self.fp)
-
-    @patch('pdfgen.views.os.path.isfile', return_value=False)
-    def test_create_based_on_image_not_exists(self, isfile_mock):
-        with self.assertRaises(PDFBaseNotFound):
-            certpdf = CertPDF(
-                self.fp, self.username, self.course_id,
-                self.course_name, self.file_prefix)
-            certpdf.create_based_on_image(self.fp)
-
-    @patch('pdfgen.views.os.path.isfile', return_value=True)
-    def test_create_based_on_image_isnot_image(self, isfile_mock):
-        with self.assertRaises(PDFBaseIsNotImage):
-            certpdf = CertPDF(
-                self.fp, self.username, self.course_id,
-                self.course_name, self.file_prefix)
-            certpdf.create_based_on_image(self.fp)
+            certpdf.create_based_on_pdf(self.base_pdf)
 
 
 class CertStoreBaseTestCase(TestCase):

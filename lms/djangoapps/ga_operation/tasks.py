@@ -6,12 +6,13 @@ from django.core.mail import send_mail
 from django.core.management import call_command
 from django.conf import settings
 
-from pdfgen.certificate import CertPDFException
+from pdfgen.certificate import CertPDFException, CertPDFUserNotFoundException
+from pdfgen.views import CertException
 from lms import CELERY_APP
 from opaque_keys.edx.keys import CourseKey
 from certificates.models import GeneratedCertificate
 from xmodule.modulestore.django import modulestore
-from ga_operation.utils import (handle_downloaded_file_from_s3, delete_files, change_behavior_sys,
+from ga_operation.utils import (delete_files, change_behavior_sys,
                                 get_std_info_from_local_storage, handle_uploaded_generated_file_to_s3)
 
 log = logging.getLogger(__name__)
@@ -58,57 +59,50 @@ class TaskBase(object):
 
 
 @CELERY_APP.task
-def create_certs_task(course_id, email, file_name_list, is_meeting=False):
+def create_certs_task(course_id, email, student_ids, prefix=""):
     """create_certs_task main."""
-    CreateCerts(course_id, email, file_name_list, is_meeting).run()
+    CreateCerts(course_id, email, student_ids, prefix).run()
 
 
 class CreateCerts(TaskBase):
     """Generate certificate class"""
 
-    def __init__(self, course_id, email, file_name_list, is_meeting=False):
+    def __init__(self, course_id, email, student_ids, prefix):
         super(CreateCerts, self).__init__(email)
+        self.student_ids = student_ids
+        self.prefix = prefix
         self.course_id = course_id
         self.operation = "create"
-        self.is_meeting = is_meeting
-        self.file_name_list = file_name_list
 
     def run(self):
         try:
-            handle_downloaded_file_from_s3(self.file_name_list, settings.GA_OPERATION_CERTIFICATE_BUCKET_NAME)
-            if self.is_meeting:
-                # normal : prefix='verified-', exclude=None
-                # meeting: prefix='', exclude='../verified-course-v1:gacco+gaXXX+YYYY_MM.list'
-                for prefix, exclude in zip(["verified-", ""], [None, settings.PDFGEN_BASE_PDF_DIR + "/verified-{}.list".format(self.course_id)]):
-                    self._call_commands(prefix, exclude)
+            if self.student_ids:
+                for student in self.student_ids:
+                    try:
+                        call_command(
+                            self.get_command_name(), self.operation, self.course_id,
+                            username=student, debug=False, noop=False, prefix=self.prefix
+                        )
+                    except CertPDFUserNotFoundException:
+                        # continue the process when got error that not found certificate user.
+                        log.warning("User({}) was not found".format(student))
+                        continue
             else:
                 call_command(self.get_command_name(),
                              self.operation, self.course_id,
-                             username=False, debug=False, noop=False, prefix='', exclude=None)
-        except CertPDFException as e:
-            log.exception("Failure to generate the PDF files from create_certs command")
-            self.err_msg = "{}".format(e)
+                             username=False, debug=False, noop=False, prefix=self.prefix)
+        except (CertException, CertPDFException) as e:
+            msg = 'Failure to generate the PDF files from create_certs command.'
+            log.exception(msg)
+            self.err_msg = "{} {}".format(msg, e)
         except Exception as e:
-            log.exception('Caught the exception: ' + type(e).__name__)
-            self.err_msg = "{}".format(e)
+            msg = 'Caught the exception: ' + type(e).__name__
+            log.exception(msg)
+            self.err_msg = "{} {}".format(msg, e)
         finally:
             if not self.err_msg:
                 self.out_msg = self._get_download_urls_text()
             self._send_email()
-            delete_files(self.file_name_list, settings.PDFGEN_BASE_PDF_DIR)
-
-    def _call_commands(self, prefix, exclude):
-        try:
-            call_command(self.get_command_name(),
-                         self.operation, self.course_id,
-                         username=False, debug=False, noop=False, prefix=prefix, exclude=exclude)
-        except CertPDFException as e:
-            # If you can continue the process when got error that not found certificate user.
-            if "certificate does not exist." in "{}".format(e):
-                log.info("{}".format(e))
-                pass
-            else:
-                raise
 
     def _get_download_urls_text(self):
         result = ""

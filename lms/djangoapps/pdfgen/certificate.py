@@ -1,21 +1,27 @@
 """Django management command to force certificate generation"""
-from django.contrib.auth.models import User
-from django.conf import settings
-from student.models import UserProfile
-from student.models import UserStanding
-from django.test.client import RequestFactory
-from certificates.models import (
-    GeneratedCertificate, CertificateStatuses, CertificateWhitelist)
-from django.db.models import Q
-from courseware import grades, courses
 import json
 import random
 import hashlib
 import os
+
+from django.conf import settings
+from django.contrib.auth.models import User
+from django.db.models import Q
+from django.test.client import RequestFactory
+
+from certificates.models import (
+    GeneratedCertificate, CertificateStatuses, CertificateWhitelist)
+from courseware import grades, courses
 from pdfgen.views import create_cert_pdf, delete_cert_pdf
+from pdfgen.utils import course_filename, get_file_from_s3
+from student.models import UserProfile, UserStanding
 
 
 class CertPDFException(Exception):
+    pass
+
+
+class CertPDFUserNotFoundException(CertPDFException):
     pass
 
 
@@ -265,9 +271,7 @@ class CertificatePDF(object):
                 standing__account_status__exact=UserStanding.ACCOUNT_DISABLED)
 
             if self.file_prefix:
-                base_dir = settings.PDFGEN_BASE_PDF_DIR
-                include_file = base_dir + "/" + self.file_prefix + "-".join(
-                    self.course_id.to_deprecated_string().split('/')) + ".list"
+                include_file = self.file_prefix + course_filename(self.course_id) + '.list'
 
                 include_list = self._get_students_list(include_file)
                 students = active_students.filter(
@@ -291,22 +295,21 @@ class CertificatePDF(object):
                 courseenrollment__course_id=self.course_id)
 
         if not students:
-            raise CertPDFException(
+            raise CertPDFUserNotFoundException(
                 "A user targeted for the issuance of certificate does not exist.")
 
         return students
 
     def _get_students_list(self, filepath):
-        if not os.path.isfile(filepath):
+        list_file = get_file_from_s3(filepath)
+        if list_file is None:
             msg = "{} is not found.".format(filepath)
             raise CertPDFException(msg)
 
-        students_list = []
-        with open(filepath, 'r') as fp:
-            for line in fp:
-                students_list.append(line.rstrip('\r\n'))
-
-        return students_list
+        try:
+            return [line.rstrip('\r\n') for line in list_file]
+        finally:
+            list_file.close()
 
     def _make_hashkey(self, seed):
         """

@@ -1,19 +1,16 @@
 # -*- coding: utf-8 -*-
-import logging
 import csv
+from functools import wraps
+import logging
 
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 from django.conf import settings
+from django.core.management import call_command
+from django.http import HttpResponseForbidden, HttpResponseBadRequest
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.http import require_POST, require_GET
-from django.core.management import call_command
-from django.contrib.auth.models import User
-from django.http import HttpResponseForbidden, HttpResponseBadRequest
 
-from opaque_keys.edx.keys import CourseKey
-from opaque_keys import InvalidKeyError
-from util.json_request import JsonResponse
-from pdfgen.certificate import CertPDFException
 from certificates.models import GeneratedCertificate
 from ga_operation.forms.move_videos_form import MoveVideosForm
 from ga_operation.forms.create_certs_form import CreateCertsForm
@@ -23,11 +20,18 @@ from ga_operation.forms.mutual_grading_report import MutualGradingReportForm
 from ga_operation.forms.last_login_info_form import LastLoginInfoForm
 from ga_operation.forms.discussion_data_form import DiscussionDataForm
 from ga_operation.forms.past_graduates_info_form import PastGraduatesInfoForm
+from ga_operation.forms.upload_certs_template_form import ConfirmCertsTemplateForm, UploadCertsTemplateForm
 from ga_operation.forms.aggregate_g1528_form import AggregateG1528Form
 from ga_operation.tasks import (CreateCerts, create_certs_task, dump_oa_scores_task, ga_get_grades_g1528_task)
-from ga_operation.utils import (handle_uploaded_received_file_to_s3, get_s3_bucket,
-                                get_s3_connection, CSVResponse, JSONFileResponse)
+from ga_operation.utils import (
+    course_filename, handle_file_from_s3,
+    get_s3_bucket, get_s3_connection, CSVResponse, JSONFileResponse
+)
 from ga_operation.mongo_utils import CommentStore
+from opaque_keys.edx.keys import CourseKey
+from opaque_keys import InvalidKeyError
+from pdfgen.certificate import CertPDFException, CertPDFUserNotFoundException
+from util.json_request import JsonResponse
 
 log = logging.getLogger(__name__)
 RESPONSE_FIELD_ID = 'right_content_response'
@@ -42,91 +46,133 @@ def staff_only(view_func):
     return _wrapped_view_func
 
 
+def handle_operation(form_class, has_file=False):
+    def _handle_operation(view_func):
+        @wraps(view_func)
+        def wrapper(request):
+            try:
+                f = form_class(data=request.POST, files=request.FILES) if has_file else form_class(data=request.POST)
+                if not f.is_valid():
+                    f.errors[RESPONSE_FIELD_ID] = u'入力したフォームの内容が不正です。'
+                    log.info(f.errors)
+                    return JsonResponse(f.errors, status=400)
+                return view_func(request, f)
+            except Exception as e:
+                log.exception('Caught the exception: {}'.format(type(e).__name__))
+                return JsonResponse({
+                    RESPONSE_FIELD_ID: "{}".format(e)
+                }, status=500)
+            finally:
+                log.info('path:{}, user.id:{} End.'.format(request.path, request.user.id))
+        return wrapper
+    return _handle_operation
+
+
 @staff_only
 @login_required
 @require_POST
 @ensure_csrf_cookie
-def create_certs(request):
+@handle_operation(ConfirmCertsTemplateForm)
+def confirm_certs_template(request, form_instance):
+    course_key = CourseKey.from_string(form_instance.cleaned_data.get('course_id'))
+    _bucket_name = settings.PDFGEN_BASE_BUCKET_NAME
+    templates = [
+        {
+            'label': label,
+            'url': template.generate_url(expires_in=300),
+            'name': template.name,
+        } for label, template in [
+            (u'通常テンプレート', handle_file_from_s3('{}.pdf'.format(course_filename(course_key)), _bucket_name)),
+            (u'対面学習テンプレート', handle_file_from_s3('verified-{}.pdf'.format(course_filename(course_key)), _bucket_name)),
+        ] if template is not None
+    ]
+    return JsonResponse({
+        'templates': templates,
+    })
+
+
+@staff_only
+@login_required
+@require_POST
+@ensure_csrf_cookie
+@handle_operation(UploadCertsTemplateForm, has_file=True)
+def upload_certs_template(request, form_instance):
+    form_instance.upload()
+    return JsonResponse({
+        RESPONSE_FIELD_ID: u'テンプレートのアップロードが完了しました。'
+    })
+
+
+@staff_only
+@login_required
+@require_POST
+@ensure_csrf_cookie
+@handle_operation(CreateCertsForm)
+def create_certs(request, form_instance):
     """Ajax call to create certificates for normal."""
-    f = CreateCertsForm(data=request.POST, files=request.FILES)
-    if not f.is_valid():
-        f.errors[RESPONSE_FIELD_ID] = u'入力したフォームの内容が不正です。'
-        log.info(f.errors)
-        return JsonResponse(f.errors, status=400)
-    email = f.cleaned_data['email']
-    course_id = f.cleaned_data['course_id']
-    try:
-        file_name_list = handle_uploaded_received_file_to_s3(form=f,
-                                                             file_name_keys=['cert_pdf_tmpl'],
-                                                             bucket_name=settings.GA_OPERATION_CERTIFICATE_BUCKET_NAME)
-        create_certs_task.delay(course_id=course_id,
-                                email=email,
-                                file_name_list=file_name_list)
-    except Exception as e:
-        log.exception('Caught the exception: ' + type(e).__name__)
-        return JsonResponse({
-            RESPONSE_FIELD_ID: "{}".format(e)
-        }, status=400)
-    else:
-        return JsonResponse({
-            RESPONSE_FIELD_ID: u'修了証の作成（対面なし）を開始しました。\n処理が完了したら{}のアドレスに処理の完了通知が来ます。'.format(email)
-        })
-    finally:
-        log.info('path:{}, user.id:{} End.'.format(request.path, request.user.id))
+    email = form_instance.cleaned_data['email']
+    course_id = form_instance.cleaned_data['course_id']
+    student_ids = form_instance.cleaned_data['student_ids']
+
+    create_certs_task.delay(
+        course_id=course_id,
+        email=email,
+        student_ids=student_ids
+    )
+    return JsonResponse({
+        RESPONSE_FIELD_ID: u'修了証の作成（対面なし）を開始しました。\n処理が完了したら{}のアドレスに処理の完了通知が来ます。'.format(email)
+    })
 
 
 @staff_only
 @login_required
 @require_POST
 @ensure_csrf_cookie
-def create_certs_meeting(request):
-    """Ajax call to create certificates for normal and meeting."""
-    f = CreateCertsMeetingForm(data=request.POST, files=request.FILES)
-    if not f.is_valid():
-        f.errors[RESPONSE_FIELD_ID] = u'入力したフォームの内容が不正です。'
-        log.info(f.errors)
-        return JsonResponse(f.errors, status=400)
-    email = f.cleaned_data['email']
-    course_id = f.cleaned_data['course_id']
-    try:
-        tmpl_list = ['cert_pdf_tmpl', 'cert_pdf_meeting_tmpl', 'cert_lists']
-        file_name_list = handle_uploaded_received_file_to_s3(form=f,
-                                                             file_name_keys=tmpl_list,
-                                                             bucket_name=settings.GA_OPERATION_CERTIFICATE_BUCKET_NAME)
-        create_certs_task.delay(course_id=course_id,
-                                email=email,
-                                file_name_list=file_name_list,
-                                is_meeting=True)
-    except Exception as e:
-        log.exception('Caught the exception: ' + type(e).__name__)
-        return JsonResponse({
-            RESPONSE_FIELD_ID: "{}".format(e)
-        }, status=400)
-    else:
-        return JsonResponse({
-            RESPONSE_FIELD_ID: u'修了証の作成（対面あり）を開始しました。\n処理が完了したら{}のアドレスに処理の完了通知が来ます。'.format(email)
-        })
-    finally:
-        log.info('path:{}, user.id:{} End.'.format(request.path, request.user.id))
+@handle_operation(CreateCertsMeetingForm)
+def create_certs_meeting(request, form_instance):
+    """Ajax call to create certificates for meeting."""
+    email = form_instance.cleaned_data['email']
+    course_id = form_instance.cleaned_data['course_id']
+    student_ids = form_instance.cleaned_data['student_ids']
+
+    create_certs_task.delay(
+        course_id=course_id,
+        email=email,
+        student_ids=student_ids,
+        prefix='verified-'
+    )
+    return JsonResponse({
+        RESPONSE_FIELD_ID: u'修了証の作成（対面あり）を開始しました。\n処理が完了したら{}のアドレスに処理の完了通知が来ます。'.format(email)
+    })
 
 
 @staff_only
 @login_required
 @require_POST
 @ensure_csrf_cookie
-def publish_certs(request):
+@handle_operation(PublishCertsForm)
+def publish_certs(request, form_instance):
     """Ajax call to publish certificates."""
-    f = PublishCertsForm(request.POST)
-    if not f.is_valid():
-        f.errors[RESPONSE_FIELD_ID] = u'入力したフォームの内容が不正です。'
-        log.info(f.errors)
-        return JsonResponse(f.errors, status=400)
-    course_id = f.cleaned_data['course_id']
+    course_id = form_instance.cleaned_data['course_id']
+    student_ids = form_instance.cleaned_data['student_ids']
     response_msg = "--CertificateStatuses--\n\n"
     try:
-        call_command(CreateCerts.get_command_name(),
-                     'publish', course_id,
-                     username=False, debug=False, noop=False, prefix='', exclude=None)
+        if student_ids:
+            for student in student_ids:
+                try:
+                    call_command(
+                        CreateCerts.get_command_name(),
+                        'publish', course_id,
+                        username=student, debug=False, noop=False, prefix='', exclude=None
+                    )
+                except CertPDFUserNotFoundException:
+                    # continue the process when got error that not found certificate user.
+                    log.warning("User({}) was not found".format(student))
+                    continue
+        else:
+            call_command(CreateCerts.get_command_name(),
+                         'publish', course_id,
+                         username=False, debug=False, noop=False, prefix='', exclude=None)
         course_key = CourseKey.from_string(course_id)
         attr_list = ['deleted', 'deleting', 'downloadable',
                      'error', 'generating', 'notpassing',
@@ -138,20 +184,13 @@ def publish_certs(request):
                 status=status
             ).count())
     except CertPDFException as e:
-        log.exception("Failure to publish certificates from create_certs command")
-        return JsonResponse({
-            RESPONSE_FIELD_ID: "{}".format(e)
-        }, status=400)
-    except Exception as e:
-        log.exception('Caught the exception: ' + type(e).__name__)
+        log.exception("Failure to publish certificates from create_certs command.")
         return JsonResponse({
             RESPONSE_FIELD_ID: "{}".format(e)
         }, status=500)
     else:
         return JsonResponse(
             {RESPONSE_FIELD_ID: u'対象講座ID: {} の修了証公開処理が完了しました。\n\n{}'.format(course_id, response_msg)})
-    finally:
-        log.info('path:{}, user.id:{} End.'.format(request.path, request.user.id))
 
 
 @staff_only
