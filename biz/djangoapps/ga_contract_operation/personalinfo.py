@@ -10,7 +10,7 @@ from django.utils.crypto import get_random_string
 from social.apps.django_app import utils as social_utils
 
 from bulk_email.models import Optout
-from certificates.models import GeneratedCertificate
+from certificates.models import CertificateStatuses, GeneratedCertificate
 from student.models import (
     CourseEnrollment, CourseEnrollmentAllowed, ManualEnrollmentAudit, PendingEmailChange,
 )
@@ -22,6 +22,7 @@ from biz.djangoapps.ga_invitation.models import AdditionalInfoSetting
 from openedx.core.djangoapps.course_global.models import CourseGlobalSetting
 from openedx.core.djangoapps.ga_task.models import Task
 from openedx.core.djangoapps.ga_task.task import TaskProgress
+from pdfgen.certificate import CertificatePDF
 
 log = logging.getLogger(__name__)
 
@@ -88,6 +89,7 @@ class _PersonalinfoMaskExecutor(object):
         self._mask_name(user)
         self._mask_email(user)
         self._mask_login_code(user)
+        self._delete_certificates(user)
 
     def disable_additional_info(self, user):
         """
@@ -144,6 +146,20 @@ class _PersonalinfoMaskExecutor(object):
             strategy = social_utils.load_strategy()
             backend = social_utils.load_backend(strategy, state.provider.backend_name, None)
             backend.disconnect(user=user, association_id=state.association_id)
+
+    def _delete_certificates(self, user):
+        raises_exception = False
+        for certificate in GeneratedCertificate.objects.filter(user_id=user.id):
+            # Use username since email may has been already masked.
+            CertificatePDF(user.username, certificate.course_id, False, False).delete()
+            # Certificate's status should be `deleted` after deleting.
+            if GeneratedCertificate.objects.filter(pk=certificate.id).exclude(status=CertificateStatuses.deleted).exists():
+                log.error('Failed to delete certificate. user={user_id}, course_id={course_id}'.format(
+                    user_id=user.id, course_id=certificate.course_id
+                ))
+                raises_exception = True
+        if raises_exception:
+            raise Exception('Failed to delete certificates of User {user_id}.'.format(user_id=user.id))
 
 
 def _validate_and_get_arguments(task_id, task_input):

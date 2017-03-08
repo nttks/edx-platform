@@ -9,7 +9,7 @@ from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
 
 from bulk_email.models import Optout
-from certificates.models import GeneratedCertificate
+from certificates.models import CertificateStatuses, GeneratedCertificate
 from certificates.tests.factories import GeneratedCertificateFactory
 from student.models import CourseEnrollmentAllowed, ManualEnrollmentAudit, PendingEmailChange
 from student.tests.factories import (
@@ -32,12 +32,30 @@ from biz.djangoapps.ga_login.tests.factories import BizUserFactory
 from biz.djangoapps.util.datetime_utils import timezone_today
 from biz.djangoapps.util.tests.testcase import BizTestBase
 from openedx.core.djangoapps.course_global.tests.factories import CourseGlobalSettingFactory
+from openedx.core.djangoapps.ga_task.models import Task
 from openedx.core.djangoapps.ga_task.tests.test_task import TaskTestMixin
 
 
 class PersonalinfoMaskTaskTest(BizTestBase, ModuleStoreTestCase, ThirdPartyAuthTestMixin, TaskTestMixin):
 
-    random_value = ''
+    def setUp(self):
+        super(PersonalinfoMaskTaskTest, self).setUp()
+
+        self.random_value = 'test1'
+
+        patcher1 = patch('biz.djangoapps.ga_contract_operation.personalinfo.get_random_string')
+        self.mock_get_random_string = patcher1.start()
+        self.mock_get_random_string.return_value = self.random_value
+        self.addCleanup(patcher1.stop)
+
+        patcher2 = patch('pdfgen.certificate.delete_cert_pdf')
+        self.mock_delete_cert_pdf = patcher2.start()
+        self.mock_delete_cert_pdf.return_value = '{}'
+        self.addCleanup(patcher2.stop)
+
+        patcher3 = patch('biz.djangoapps.ga_contract_operation.personalinfo.log')
+        self.mock_log = patcher3.start()
+        self.addCleanup(patcher3.stop)
 
     def _setup_courses(self):
         # Setup courses. Some tests does not need course data. Therefore, call this function if need course data.
@@ -133,7 +151,10 @@ class PersonalinfoMaskTaskTest(BizTestBase, ModuleStoreTestCase, ThirdPartyAuthT
             for register in registers:
                 user = register.user
                 CourseEnrollmentFactory.create(user=user, course_id=course.id)
-                GeneratedCertificateFactory.create(user=user, course_id=course.id, name=user.profile.name)
+                GeneratedCertificateFactory.create(
+                    user=user, course_id=course.id, name=user.profile.name,
+                    status=CertificateStatuses.downloadable, key='key', download_url='http://dummy'
+                )
 
     def _create_targets(self, history, registers, completed=False):
         for register in registers:
@@ -185,10 +206,17 @@ class PersonalinfoMaskTaskTest(BizTestBase, ModuleStoreTestCase, ThirdPartyAuthT
     def _assert_cert_info(self, user_info, user, courses, masked=True):
         _name = user_info[user.id]['name']
         expected_name = _hash(_name) if masked else _name
+        # default values set in _create_enrollments.
+        expected_status = CertificateStatuses.deleted if masked else CertificateStatuses.downloadable
+        expected_key = '' if masked else 'key'
+        expected_download_url = '' if masked else 'http://dummy'
 
         for course in courses:
             cert = GeneratedCertificate.objects.get(user_id=user.id, course_id=course.id)
             self.assertEqual(expected_name, cert.name)
+            self.assertEqual(expected_status, cert.status)
+            self.assertEqual(expected_key, cert.key)
+            self.assertEqual(expected_download_url, cert.download_url)
 
     def _assert_global_courses(self, user_info, user, courses, masked=True):
         _email = user_info[user.id]['email']
@@ -217,6 +245,20 @@ class PersonalinfoMaskTaskTest(BizTestBase, ModuleStoreTestCase, ThirdPartyAuthT
             if masked:
                 expected_value = _hash(expected_value)
             self.assertEqual(expected_value, AdditionalInfoSetting.get_value_by_display_name(user, contract, display_name))
+
+    def _assert_success_message(self, registers):
+        task = Task.objects.latest('id')
+        for register in registers:
+            self.mock_log.info.assert_any_call(
+                'Task {}: Success to process of mask to User {}'.format(task.task_id, register.user_id)
+            )
+
+    def _assert_failed_message(self, registers):
+        task = Task.objects.latest('id')
+        for register in registers:
+            self.mock_log.exception.assert_any_call(
+                'Task {}: Failed to process of the personal information mask to User {}'.format(task.task_id, register.user_id)
+            )
 
     def test_missing_current_task(self):
         self._test_missing_current_task(personalinfo_mask)
@@ -305,9 +347,7 @@ class PersonalinfoMaskTaskTest(BizTestBase, ModuleStoreTestCase, ThirdPartyAuthT
         # ----------------------------------------------------------
         # Execute task
         # ----------------------------------------------------------
-        self.random_value = 'test1'
-        with patch('biz.djangoapps.ga_contract_operation.personalinfo.get_random_string', return_value=self.random_value):
-            self._test_run_with_task(personalinfo_mask, 'personalinfo_mask', 5, 0, 0, 5, 5, entry)
+        self._test_run_with_task(personalinfo_mask, 'personalinfo_mask', 5, 0, 0, 5, 5, entry)
 
         # ----------------------------------------------------------
         # Assertion
@@ -323,6 +363,9 @@ class PersonalinfoMaskTaskTest(BizTestBase, ModuleStoreTestCase, ThirdPartyAuthT
             self._assert_global_courses(user_info, register.user, self.global_courses, masked=False)
         # Assert all of target is completed
         self.assertEqual(5, ContractTaskTarget.objects.filter(history=history, completed=True).count())
+
+        self._assert_success_message(registers)
+        self.mock_log.exception.assert_not_called()
 
     def test_successful_login_code(self):
         # ----------------------------------------------------------
@@ -349,9 +392,7 @@ class PersonalinfoMaskTaskTest(BizTestBase, ModuleStoreTestCase, ThirdPartyAuthT
         # ----------------------------------------------------------
         # Execute task
         # ----------------------------------------------------------
-        self.random_value = 'test1'
-        with patch('biz.djangoapps.ga_contract_operation.personalinfo.get_random_string', return_value=self.random_value):
-            self._test_run_with_task(personalinfo_mask, 'personalinfo_mask', 5, 0, 0, 5, 5, entry)
+        self._test_run_with_task(personalinfo_mask, 'personalinfo_mask', 5, 0, 0, 5, 5, entry)
 
         # ----------------------------------------------------------
         # Assertion
@@ -368,6 +409,8 @@ class PersonalinfoMaskTaskTest(BizTestBase, ModuleStoreTestCase, ThirdPartyAuthT
         # Assert all of target is completed
         self.assertEqual(5, ContractTaskTarget.objects.filter(history=history, completed=True).count())
 
+        self._assert_success_message(registers)
+        self.mock_log.exception.assert_not_called()
 
     def test_successful_reuse_email(self):
         """
@@ -397,9 +440,8 @@ class PersonalinfoMaskTaskTest(BizTestBase, ModuleStoreTestCase, ThirdPartyAuthT
         # ----------------------------------------------------------
         # Execute task
         # ----------------------------------------------------------
-        self.random_value = 'test1'
-        with patch('biz.djangoapps.ga_contract_operation.personalinfo.get_random_string', return_value=self.random_value):
-            self._test_run_with_task(personalinfo_mask, 'personalinfo_mask', 5, 0, 0, 5, 5, entry)
+        self._test_run_with_task(personalinfo_mask, 'personalinfo_mask', 5, 0, 0, 5, 5, entry)
+
         # ----------------------------------------------------------
         # Assertion
         # ----------------------------------------------------------
@@ -433,8 +475,9 @@ class PersonalinfoMaskTaskTest(BizTestBase, ModuleStoreTestCase, ThirdPartyAuthT
         # Execute task for 2nd
         # ----------------------------------------------------------
         self.random_value = 'test2'
-        with patch('biz.djangoapps.ga_contract_operation.personalinfo.get_random_string', return_value=self.random_value):
-            self._test_run_with_task(personalinfo_mask, 'personalinfo_mask', 5, 0, 0, 5, 5, entry)
+        self.mock_get_random_string.return_value = self.random_value
+        self._test_run_with_task(personalinfo_mask, 'personalinfo_mask', 5, 0, 0, 5, 5, entry)
+
         # ----------------------------------------------------------
         # Assertion for 2nd
         # ----------------------------------------------------------
@@ -445,6 +488,9 @@ class PersonalinfoMaskTaskTest(BizTestBase, ModuleStoreTestCase, ThirdPartyAuthT
             self._assert_global_courses(user_info, register.user, self.global_courses)
         # Assert all of target is completed
         self.assertEqual(5, ContractTaskTarget.objects.filter(history=history, completed=True).count())
+
+        self._assert_success_message(registers)
+        self.mock_log.exception.assert_not_called()
 
     def test_successful_with_gacco_service(self):
         # ----------------------------------------------------------
@@ -473,9 +519,7 @@ class PersonalinfoMaskTaskTest(BizTestBase, ModuleStoreTestCase, ThirdPartyAuthT
         # ----------------------------------------------------------
         # Execute task
         # ----------------------------------------------------------
-        self.random_value = 'test1'
-        with patch('biz.djangoapps.ga_contract_operation.personalinfo.get_random_string', return_value=self.random_value):
-            self._test_run_with_task(personalinfo_mask, 'personalinfo_mask', 3, 2, 0, 5, 5, entry)
+        self._test_run_with_task(personalinfo_mask, 'personalinfo_mask', 3, 2, 0, 5, 5, entry)
 
         # ----------------------------------------------------------
         # Assertion
@@ -491,6 +535,9 @@ class PersonalinfoMaskTaskTest(BizTestBase, ModuleStoreTestCase, ThirdPartyAuthT
             self._assert_global_courses(user_info, register.user, self.global_courses, masked=False)
         # Assert all of target is completed
         self.assertEqual(5, ContractTaskTarget.objects.filter(history=history, completed=True).count())
+
+        self._assert_success_message(registers[:3])
+        self.mock_log.exception.assert_not_called()
 
     def test_successful_with_completed_target(self):
         # ----------------------------------------------------------
@@ -520,9 +567,7 @@ class PersonalinfoMaskTaskTest(BizTestBase, ModuleStoreTestCase, ThirdPartyAuthT
         # ----------------------------------------------------------
         # Execute task
         # ----------------------------------------------------------
-        self.random_value = 'test1'
-        with patch('biz.djangoapps.ga_contract_operation.personalinfo.get_random_string', return_value=self.random_value):
-            self._test_run_with_task(personalinfo_mask, 'personalinfo_mask', 3, 2, 0, 5, 5, entry)
+        self._test_run_with_task(personalinfo_mask, 'personalinfo_mask', 3, 2, 0, 5, 5, entry)
 
         # ----------------------------------------------------------
         # Assertion
@@ -539,6 +584,9 @@ class PersonalinfoMaskTaskTest(BizTestBase, ModuleStoreTestCase, ThirdPartyAuthT
             self._assert_global_courses(user_info, register.user, self.global_courses, masked=False)
         # Assert all of target is completed
         self.assertEqual(5, ContractTaskTarget.objects.filter(history=history, completed=True).count())
+
+        self._assert_success_message(registers[:3])
+        self.mock_log.exception.assert_not_called()
 
     def test_successful_with_other_course(self):
         # ----------------------------------------------------------
@@ -569,9 +617,7 @@ class PersonalinfoMaskTaskTest(BizTestBase, ModuleStoreTestCase, ThirdPartyAuthT
         # ----------------------------------------------------------
         # Execute task
         # ----------------------------------------------------------
-        self.random_value = 'test1'
-        with patch('biz.djangoapps.ga_contract_operation.personalinfo.get_random_string', return_value=self.random_value):
-            self._test_run_with_task(personalinfo_mask, 'personalinfo_mask', 4, 1, 0, 5, 5, entry)
+        self._test_run_with_task(personalinfo_mask, 'personalinfo_mask', 4, 1, 0, 5, 5, entry)
 
         # ----------------------------------------------------------
         # Assertion
@@ -593,6 +639,9 @@ class PersonalinfoMaskTaskTest(BizTestBase, ModuleStoreTestCase, ThirdPartyAuthT
                 self.assertFalse(target.completed)
             else:
                 self.assertTrue(target.completed)
+
+        self._assert_success_message(registers[:4])
+        self.mock_log.exception.assert_not_called()
 
     def test_successful_with_mooc_course(self):
         # ----------------------------------------------------------
@@ -621,9 +670,7 @@ class PersonalinfoMaskTaskTest(BizTestBase, ModuleStoreTestCase, ThirdPartyAuthT
         # ----------------------------------------------------------
         # Execute task
         # ----------------------------------------------------------
-        self.random_value = 'test1'
-        with patch('biz.djangoapps.ga_contract_operation.personalinfo.get_random_string', return_value=self.random_value):
-            self._test_run_with_task(personalinfo_mask, 'personalinfo_mask', 4, 1, 0, 5, 5, entry)
+        self._test_run_with_task(personalinfo_mask, 'personalinfo_mask', 4, 1, 0, 5, 5, entry)
 
         # ----------------------------------------------------------
         # Assertion
@@ -645,6 +692,9 @@ class PersonalinfoMaskTaskTest(BizTestBase, ModuleStoreTestCase, ThirdPartyAuthT
                 self.assertFalse(target.completed)
             else:
                 self.assertTrue(target.completed)
+
+        self._assert_success_message(registers[:4])
+        self.mock_log.exception.assert_not_called()
 
     def test_successful_with_failed(self):
         # ----------------------------------------------------------
@@ -674,9 +724,7 @@ class PersonalinfoMaskTaskTest(BizTestBase, ModuleStoreTestCase, ThirdPartyAuthT
         self.random_value = 'test1'
         with patch(
             'biz.djangoapps.ga_contract_operation.personalinfo._PersonalinfoMaskExecutor.check_enrollment'
-        ) as mock_check_enrollment, patch(
-            'biz.djangoapps.ga_contract_operation.personalinfo.get_random_string', return_value=self.random_value
-        ):
+        ) as mock_check_enrollment:
             # raise Exception at last call
             mock_check_enrollment.side_effect = [True, True, True, True, Exception]
             self._test_run_with_task(personalinfo_mask, 'personalinfo_mask', 4, 0, 1, 5, 5, entry)
@@ -697,3 +745,68 @@ class PersonalinfoMaskTaskTest(BizTestBase, ModuleStoreTestCase, ThirdPartyAuthT
         # Assert 4 target is completed
         self.assertEqual(4, ContractTaskTarget.objects.filter(history=history, completed=True).count())
         self.assertFalse(ContractTaskTarget.objects.get(history=history, register=registers[4]).completed)
+
+        self._assert_success_message(registers[:4])
+        self._assert_failed_message([registers[4]])
+
+    def test_successful_with_failed_cert_deletion(self):
+        # ----------------------------------------------------------
+        # Setup test data
+        # ----------------------------------------------------------
+        self._configure_dummy_provider(enabled=True)
+        self._setup_courses()
+        display_names = ['settting1', 'setting2', ]
+        contract = self._create_contract(courses=self.spoc_courses, display_names=display_names)
+        history = self._create_task_history(contract=contract)
+        # users: enrolled only target spoc courses
+        registers = [self._create_user_and_register(contract, display_names=display_names) for _ in range(5)]
+        self._create_targets(history, registers)
+        self._create_enrollments(registers, self.spoc_courses)
+        # This is `NOT` the target contract
+        other_contract = self._create_contract(courses=self.other_enabled_spoc_courses, display_names=display_names)
+        other_registers = [self._create_user_and_register(other_contract, display_names=display_names) for _ in range(5)]
+        self._create_contract(courses=self.other_not_enabled_spoc_courses, display_names=display_names, enabled=False)
+
+        entry = self._create_input_entry(contract=contract, history=history)
+
+        user_info = {register.user.id: self._create_user_info(register.user) for register in registers + other_registers}
+
+        # Make the deletion of second user failed, otherwise it makes successful.
+        self.mock_delete_cert_pdf.side_effect = [
+            '{}', '{}',  # user1's deletion
+            '{"error": "error"}', '{}',  # user2's deletion
+            '{}', '{}',  # user3's deletion
+            '{}', '{}',  # user4's deletion
+            '{}', '{}',  # user5's deletion
+        ]
+
+        # ----------------------------------------------------------
+        # Execute task
+        # ----------------------------------------------------------
+        self._test_run_with_task(personalinfo_mask, 'personalinfo_mask', 4, 0, 1, 5, 5, entry)
+
+        # ----------------------------------------------------------
+        # Assertion
+        # ----------------------------------------------------------
+        for i, register in enumerate(registers):
+            masked = i != 1
+            self._assert_additional_info(register.user, contract, display_names, masked=masked)
+            self._assert_user_info(user_info, register.user, masked=masked)
+            self._assert_cert_info(user_info, register.user, self.spoc_courses, masked=masked)
+            self._assert_global_courses(user_info, register.user, self.global_courses, masked=masked)
+        for register in other_registers:
+            self._assert_additional_info(register.user, other_contract, display_names, masked=False)
+            self._assert_user_info(user_info, register.user, masked=False)
+            self._assert_global_courses(user_info, register.user, self.global_courses, masked=False)
+        # Assert 4 target is completed
+        self.assertEqual(4, ContractTaskTarget.objects.filter(history=history, completed=True).count())
+        self.assertFalse(ContractTaskTarget.objects.get(history=history, register=registers[1]).completed)
+
+        # delete_cert_pdf should be called 10 times even if previous process had been failed.
+        self.assertEqual(10, self.mock_delete_cert_pdf.call_count)
+
+        self.mock_log.error.assert_any_call(
+            'Failed to delete certificate. user={}, course_id=spoc/course1/run'.format(registers[1].user_id)
+        )
+        self._assert_success_message([registers[0], registers[2], registers[3], registers[4]])
+        self._assert_failed_message([registers[1]])
