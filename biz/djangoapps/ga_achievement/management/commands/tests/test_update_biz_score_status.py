@@ -411,7 +411,7 @@ class UpdateBizScoreStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEnrol
             self.assertEquals(score_dict[ScoreStore.FIELD_TOTAL_SCORE], 0)
             self.assertEquals(score_dict[ADDITIONAL_DISPLAY_NAME1], '{}_{}'.format(ADDITIONAL_DISPLAY_NAME1, ADDITIONAL_SETTINGS_VALUE))
             self.assertEquals(score_dict[ADDITIONAL_DISPLAY_NAME2], '{}_{}'.format(ADDITIONAL_DISPLAY_NAME2, ADDITIONAL_SETTINGS_VALUE))
-            self.assertIsNone(score_dict[ScoreStore.FIELD_EXPIRE_DATE])
+            self.assertEquals(score_dict[ScoreStore.FIELD_EXPIRE_DATE], DEFAULT_DATETIME)
 
         assert_score(self.self_paced_contract, self.self_paced_course)
 

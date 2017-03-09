@@ -132,7 +132,7 @@ class Command(BaseCommand):
                         if course_enrollment else DEFAULT_DATETIME
                     # Add Expire Date only if course is self-paced
                     if course.self_paced:
-                        record[_(ScoreStore.FIELD_EXPIRE_DATE)] = self_paced_api.get_course_end_date(course_enrollment)
+                        record[_(ScoreStore.FIELD_EXPIRE_DATE)] = self_paced_api.get_course_end_date(course_enrollment) or DEFAULT_DATETIME
                     record[_(ScoreStore.FIELD_CERTIFICATE_ISSUE_DATE)] = generated_certificate.created_date \
                         if generated_certificate else DEFAULT_DATETIME
                     grade = get_grade(course_key, user)
