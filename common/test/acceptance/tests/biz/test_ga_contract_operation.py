@@ -79,8 +79,19 @@ class BizStudentRegisterMixin(object):
                 return send_message
         return None
 
+    def _assert_can_register_invitation_code(self):
+        self.account_settings_page.visit().click_on_link_in_link_field('invitation_code')
+        self.invitation_page.wait_for_page().input_invitation_code(self.new_invitation_code).click_register_button()
+        self.invitation_confirm_page.wait_for_page().click_register_button()
+        self.dashboard_page.wait_for_page()
 
-@attr('shard_ga_biz_1')
+    def _assert_cannot_register_invitation_code(self):
+        self.account_settings_page.visit().click_on_link_in_link_field('invitation_code')
+        self.invitation_page.wait_for_page().input_invitation_code(self.new_invitation_code).click_register_button()
+        self.assertIn('Invitation code is invalid.', self.invitation_page.messages)
+
+
+@attr('shard_ga_biz_3')
 @flaky
 class BizStudentRegisterTest(WebAppTest, GaccoBizTestMixin, BizStudentRegisterMixin):
     """
@@ -93,6 +104,11 @@ class BizStudentRegisterTest(WebAppTest, GaccoBizTestMixin, BizStudentRegisterMi
         # setup mail client
         self.setup_email_client(EMAIL_FILE_PATH)
 
+        # page
+        self.dashboard_page = DashboardPage(self.browser)
+        self.account_settings_page = AccountSettingsPage(self.browser)
+        self.invitation_page = BizInvitationPage(self.browser)
+
         # Register organization
         new_org_info = self.register_organization(PLATFORMER_USER_INFO)
 
@@ -101,8 +117,11 @@ class BizStudentRegisterTest(WebAppTest, GaccoBizTestMixin, BizStudentRegisterMi
         self.grant(PLATFORMER_USER_INFO, new_org_info['Organization Name'], 'director', self.new_director)
 
         # Register contract
-        new_course_key, _ = self.install_course(PLAT_COMPANY_CODE)
+        new_course_key, new_course_name = self.install_course(PLAT_COMPANY_CODE)
+        self.new_course_name = new_course_name
         new_contract = self.register_contract(PLATFORMER_USER_INFO, new_org_info['Organization Name'], detail_info=[new_course_key])
+        self.new_invitation_code = new_contract['Invitation Code']
+        self.invitation_confirm_page = BizInvitationConfirmPage(self.browser, self.new_invitation_code)
 
         # Test user
         self.existing_users = [self.register_user() for _ in range(3)]
@@ -356,8 +375,69 @@ class BizStudentRegisterTest(WebAppTest, GaccoBizTestMixin, BizStudentRegisterMi
         self._assert_no_send_email(self.existing_users[2])
         self._assert_no_send_email(self.new_users[2])
 
+    def test_register_students_checked_register_status(self):
+        """
+        Case, registered users and new users with checked register status
+        """
+        # Go to register
+        self.switch_to_user(self.new_director)
+        biz_register_students_page = BizNavPage(self.browser).visit().click_register_students()
+        biz_register_students_page.input_students(self._make_students([
+            self.existing_users[0],
+            self.existing_users[1],
+            self.new_users[0],
+            self.new_users[1],
+        ])).click_register_status().click_popup_ok().click_register_button().click_popup_yes()
 
-@attr('shard_ga_biz_1')
+        biz_register_students_page.wait_for_message(
+            u'Began the processing of Student Register.Execution status, please check from the task history.'
+        )
+
+        # Show task history
+        biz_register_students_page.click_show_history()
+
+        self._assert_register_student_task_history(
+            biz_register_students_page.task_history_grid_row,
+            4, 4, 0, 0,
+            self.new_director,
+        )
+        self.assertEqual(
+            [u'No messages.'],
+            biz_register_students_page.task_messages,
+        )
+        self._assert_send_email(self.existing_users[0], True)
+        self._assert_send_email(self.existing_users[1], True)
+        self._assert_send_email(self.new_users[0], False)
+        self._assert_send_email(self.new_users[1], False)
+
+        # Login existing user
+        self.switch_to_user(self.existing_users[0])
+        self.dashboard_page.visit()
+        self.assertIn(self.new_course_name, self.dashboard_page.current_courses_text)
+        self.assertTrue(self.dashboard_page.is_enable_unenroll(self.new_course_name))
+        self._assert_can_register_invitation_code()
+
+        self.switch_to_user(self.existing_users[1])
+        self.dashboard_page.visit()
+        self.assertIn(self.new_course_name, self.dashboard_page.current_courses_text)
+        self.assertTrue(self.dashboard_page.is_enable_unenroll(self.new_course_name))
+        self._assert_can_register_invitation_code()
+
+        # Login new user
+        self.switch_to_user(self.new_users[0])
+        self.dashboard_page.visit()
+        self.assertIn(self.new_course_name, self.dashboard_page.current_courses_text)
+        self.assertTrue(self.dashboard_page.is_enable_unenroll(self.new_course_name))
+        self._assert_can_register_invitation_code()
+
+        self.switch_to_user(self.new_users[1])
+        self.dashboard_page.visit()
+        self.assertIn(self.new_course_name, self.dashboard_page.current_courses_text)
+        self.assertTrue(self.dashboard_page.is_enable_unenroll(self.new_course_name))
+        self._assert_can_register_invitation_code()
+
+
+@attr('shard_ga_biz_3')
 @flaky
 class BizStudentRegisterWithContractAuthTest(WebAppTest, GaccoBizTestMixin, BizStudentRegisterMixin):
     """
@@ -380,6 +460,8 @@ class BizStudentRegisterWithContractAuthTest(WebAppTest, GaccoBizTestMixin, BizS
         self.login_page = CombinedLoginAndRegisterPage(self.browser, 'login')
         self.dashboard_page = DashboardPage(self.browser)
         self.django_admin_page = DjangoAdminPage(self.browser)
+        self.account_settings_page = AccountSettingsPage(self.browser)
+        self.invitation_page = BizInvitationPage(self.browser)
 
         self.biz_login_page = BizLoginPage(self.browser, self.new_url_code)
         self.biz_login_page_other = BizLoginPage(self.browser, self.new_url_code_other)
@@ -397,9 +479,11 @@ class BizStudentRegisterWithContractAuthTest(WebAppTest, GaccoBizTestMixin, BizS
         self.grant(PLATFORMER_USER_INFO, new_org_info_other['Organization Name'], 'director', self.new_director_other)
 
         # Register contract
-        new_course_key, _ = self.install_course(PLAT_COMPANY_CODE)
+        new_course_key, new_course_name = self.install_course(PLAT_COMPANY_CODE)
+        self.new_course_name = new_course_name
         self.new_contract = self.register_contract(PLATFORMER_USER_INFO, new_org_info['Organization Name'], detail_info=[new_course_key])
-        self.invitation_confirm_page = BizInvitationConfirmPage(self.browser, self.new_contract['Invitation Code'])
+        self.new_invitation_code = self.new_contract['Invitation Code']
+        self.invitation_confirm_page = BizInvitationConfirmPage(self.browser, self.new_invitation_code)
 
         # Register contract other
         new_course_key_other, _ = self.install_course(PLAT_COMPANY_CODE)
@@ -564,10 +648,7 @@ class BizStudentRegisterWithContractAuthTest(WebAppTest, GaccoBizTestMixin, BizS
             'password': new_password,
         })
         self.switch_to_user(self.new_users[0])
-        AccountSettingsPage(self.browser).visit().click_on_link_in_link_field('invitation_code')
-        BizInvitationPage(self.browser).wait_for_page().input_invitation_code(self.new_contract['Invitation Code']).click_register_button()
-        BizInvitationConfirmPage(self.browser, self.new_contract['Invitation Code']).wait_for_page().click_register_button()
-        DashboardPage(self.browser).wait_for_page()
+        self._assert_can_register_invitation_code()
 
     def test_19_20_21(self):
         """
@@ -1006,6 +1087,71 @@ class BizStudentRegisterWithContractAuthTest(WebAppTest, GaccoBizTestMixin, BizS
         self.logout()
         BizLoginPage(self.browser, modified_url_code, not_found=True).visit()
 
+    def test_register_students_checked_register_status(self):
+        """
+        Case, registered users and new users with checked register status
+        """
+        # Go to register
+        self.switch_to_user(self.new_director)
+        biz_register_students_page = BizNavPage(self.browser).visit().click_register_students()
+        biz_register_students_page.input_students(self._make_students_auth([
+            self.existing_users[0],
+            self.existing_users[1],
+            self.new_users[0],
+            self.new_users[1],
+        ])).click_register_status().click_popup_ok().click_register_button().click_popup_yes()
+
+        biz_register_students_page.wait_for_message(
+            u'Began the processing of Student Register.Execution status, please check from the task history.'
+        )
+
+        # Show task history
+        biz_register_students_page.click_show_history()
+
+        self._assert_register_student_task_history(
+            biz_register_students_page.task_history_grid_row,
+            4, 4, 0, 0,
+            self.new_director,
+        )
+        self.assertEqual(
+            [u'No messages.'],
+            biz_register_students_page.task_messages,
+        )
+        self._assert_send_email(self.existing_users[0], True)
+        self._assert_send_email(self.existing_users[1], True)
+        self._assert_send_email(self.new_users[0], False)
+        self._assert_send_email(self.new_users[1], False)
+
+        # Login existing user
+        self.logout()
+        self.biz_login_page.visit().input(self.existing_users[0]['username'], self.existing_users[0]['password']).click_login()
+        self.dashboard_page.wait_for_page()
+        self.assertIn(self.new_course_name, self.dashboard_page.current_courses_text)
+        self.assertTrue(self.dashboard_page.is_enable_unenroll(self.new_course_name))
+        self._assert_can_register_invitation_code()
+
+        self.logout()
+        self.biz_login_page.visit().input(self.existing_users[1]['username'], self.existing_users[1]['password']).click_login()
+        self.dashboard_page.wait_for_page()
+        self.assertIn(self.new_course_name, self.dashboard_page.current_courses_text)
+        self.assertTrue(self.dashboard_page.is_enable_unenroll(self.new_course_name))
+        self._assert_can_register_invitation_code()
+
+        # Login new user
+        self.logout()
+        self.biz_login_page.visit().input(self.new_users[0]['username'], self.new_users[0]['password']).click_login()
+        self.dashboard_page.wait_for_page()
+        self.assertIn(self.new_course_name, self.dashboard_page.current_courses_text)
+        self.assertTrue(self.dashboard_page.is_enable_unenroll(self.new_course_name))
+        self._assert_can_register_invitation_code()
+
+        self.logout()
+        self.biz_login_page.visit().input(self.new_users[1]['username'], self.new_users[1]['password']).click_login()
+        self.dashboard_page.wait_for_page()
+        self.assertIn(self.new_course_name, self.dashboard_page.current_courses_text)
+        self.assertTrue(self.dashboard_page.is_enable_unenroll(self.new_course_name))
+        self._assert_can_register_invitation_code()
+
 
 class BizStudentManagementTestBase(WebAppTest, GaccoBizTestMixin, BizStudentRegisterMixin):
 
@@ -1278,3 +1424,335 @@ class BizStudentUnregisterTest(BizStudentManagementTestBase):
 
         # Check unregistered user can not access to course about
         self._assert_access_course_about(self.users[0], False)
+
+
+@attr('shard_ga_biz_1')
+@flaky
+class BizStudentRegisterWithDisableRegisterStudentSelfTest(WebAppTest, GaccoBizTestMixin, BizStudentRegisterMixin):
+    """
+    Tests that the student register functionality with register type disable register student self of biz works
+    """
+
+    def setUp(self):
+        super(BizStudentRegisterWithDisableRegisterStudentSelfTest, self).setUp()
+
+        # setup mail client
+        self.setup_email_client(EMAIL_FILE_PATH)
+
+        # page
+        self.dashboard_page = DashboardPage(self.browser)
+        self.account_settings_page = AccountSettingsPage(self.browser)
+        self.invitation_page = BizInvitationPage(self.browser)
+
+        # Register organization
+        new_org_info = self.register_organization(PLATFORMER_USER_INFO)
+
+        # Register user as director
+        self.new_director = self.register_user()
+        self.grant(PLATFORMER_USER_INFO, new_org_info['Organization Name'], 'director', self.new_director)
+
+        # Register contract
+        new_course_key, new_course_name = self.install_course(PLAT_COMPANY_CODE)
+        self.new_course_name = new_course_name
+        new_contract = self.register_contract(PLATFORMER_USER_INFO, new_org_info['Organization Name'], register_type='DRS', detail_info=[new_course_key])
+        self.new_invitation_code = new_contract['Invitation Code']
+        self.invitation_confirm_page = BizInvitationConfirmPage(self.browser, self.new_invitation_code)
+
+        # Test user
+        self.existing_users = [self.register_user() for _ in range(3)]
+        self.new_users = [self.new_user_info for _ in range(3)]
+
+    def test_register_students_checked_register_status(self):
+        """
+        Case, registered users and new users with checked register status
+        """
+        # Go to register
+        self.switch_to_user(self.new_director)
+        biz_register_students_page = BizNavPage(self.browser).visit().click_register_students()
+        biz_register_students_page.input_students(self._make_students([
+            self.existing_users[0],
+            self.existing_users[1],
+            self.new_users[0],
+            self.new_users[1],
+        ])).click_register_status().click_popup_ok().click_register_button().click_popup_yes()
+
+        biz_register_students_page.wait_for_message(
+            u'Began the processing of Student Register.Execution status, please check from the task history.'
+        )
+
+        # Show task history
+        biz_register_students_page.click_show_history()
+
+        self._assert_register_student_task_history(
+            biz_register_students_page.task_history_grid_row,
+            4, 4, 0, 0,
+            self.new_director,
+        )
+        self.assertEqual(
+            [u'No messages.'],
+            biz_register_students_page.task_messages,
+        )
+        self._assert_send_email(self.existing_users[0], True)
+        self._assert_send_email(self.existing_users[1], True)
+        self._assert_send_email(self.new_users[0], False)
+        self._assert_send_email(self.new_users[1], False)
+
+        # Login existing user
+        self.switch_to_user(self.existing_users[0])
+        self.dashboard_page.visit()
+        self.assertIn(self.new_course_name, self.dashboard_page.current_courses_text)
+        self.dashboard_page.show_settings(self.new_course_name)
+        self.assertFalse(self.dashboard_page.is_enable_unenroll(self.new_course_name))
+        self._assert_can_register_invitation_code()
+
+        self.switch_to_user(self.existing_users[1])
+        self.dashboard_page.visit()
+        self.assertIn(self.new_course_name, self.dashboard_page.current_courses_text)
+        self.assertFalse(self.dashboard_page.is_enable_unenroll(self.new_course_name))
+        self._assert_can_register_invitation_code()
+
+        # Login new user
+        self.switch_to_user(self.new_users[0])
+        self.dashboard_page.visit()
+        self.assertIn(self.new_course_name, self.dashboard_page.current_courses_text)
+        self.assertFalse(self.dashboard_page.is_enable_unenroll(self.new_course_name))
+        self._assert_can_register_invitation_code()
+
+        self.switch_to_user(self.new_users[1])
+        self.dashboard_page.visit()
+        self.assertIn(self.new_course_name, self.dashboard_page.current_courses_text)
+        self.assertFalse(self.dashboard_page.is_enable_unenroll(self.new_course_name))
+        self._assert_can_register_invitation_code()
+
+    def test_register_students_nochecked_register_status(self):
+        """
+        Case, registered users and new users without checked register status
+        """
+        # Go to register
+        self.switch_to_user(self.new_director)
+        biz_register_students_page = BizNavPage(self.browser).visit().click_register_students()
+        biz_register_students_page.input_students(self._make_students([
+            self.existing_users[0],
+            self.existing_users[1],
+            self.new_users[0],
+            self.new_users[1],
+        ])).click_register_button().click_popup_yes()
+
+        biz_register_students_page.wait_for_message(
+            u'Began the processing of Student Register.Execution status, please check from the task history.'
+        )
+
+        # Show task history
+        biz_register_students_page.click_show_history()
+
+        self._assert_register_student_task_history(
+            biz_register_students_page.task_history_grid_row,
+            4, 4, 0, 0,
+            self.new_director,
+        )
+        self.assertEqual(
+            [u'No messages.'],
+            biz_register_students_page.task_messages,
+        )
+        self._assert_send_email(self.existing_users[0], True)
+        self._assert_send_email(self.existing_users[1], True)
+        self._assert_send_email(self.new_users[0], False)
+        self._assert_send_email(self.new_users[1], False)
+
+        # Login existing user
+        self.switch_to_user(self.existing_users[0])
+        self.dashboard_page.visit()
+        self.assertNotIn(self.new_course_name, self.dashboard_page.current_courses_text)
+        self._assert_cannot_register_invitation_code()
+
+        self.switch_to_user(self.existing_users[1])
+        self.dashboard_page.visit()
+        self.assertNotIn(self.new_course_name, self.dashboard_page.current_courses_text)
+        self._assert_cannot_register_invitation_code()
+
+        # Login new user
+        self.switch_to_user(self.new_users[0])
+        self.dashboard_page.visit()
+        self.assertNotIn(self.new_course_name, self.dashboard_page.current_courses_text)
+        self._assert_cannot_register_invitation_code()
+
+        self.switch_to_user(self.new_users[1])
+        self.dashboard_page.visit()
+        self.assertNotIn(self.new_course_name, self.dashboard_page.current_courses_text)
+        self._assert_cannot_register_invitation_code()
+
+
+@attr('shard_ga_biz_1')
+@flaky
+class BizStudentRegisterWithContractAuthAndDisableRegisterStudentSelfTest(WebAppTest, GaccoBizTestMixin, BizStudentRegisterMixin):
+    """
+    Tests that the student register functionality with contract auth of biz works
+    """
+
+    def setUp(self):
+        super(BizStudentRegisterWithContractAuthAndDisableRegisterStudentSelfTest, self).setUp()
+
+        # setup mail client
+        self.setup_email_client(EMAIL_FILE_PATH)
+
+        # url code
+        self.new_url_code = get_random_string(8)
+
+        # page
+        self.dashboard_page = DashboardPage(self.browser)
+        self.biz_login_page = BizLoginPage(self.browser, self.new_url_code)
+        self.account_settings_page = AccountSettingsPage(self.browser)
+        self.invitation_page = BizInvitationPage(self.browser)
+
+        # Register organization
+        new_org_info = self.register_organization(PLATFORMER_USER_INFO)
+
+        # Register user as director
+        self.new_director = self.register_user()
+        self.grant(PLATFORMER_USER_INFO, new_org_info['Organization Name'], 'director', self.new_director)
+
+        # Register contract
+        new_course_key, new_course_name = self.install_course(PLAT_COMPANY_CODE)
+        self.new_course_name = new_course_name
+        new_contract = self.register_contract(PLATFORMER_USER_INFO, new_org_info['Organization Name'], register_type='DRS', detail_info=[new_course_key])
+        self.new_invitation_code = new_contract['Invitation Code']
+        self.invitation_confirm_page = BizInvitationConfirmPage(self.browser, self.new_invitation_code)
+
+        # Make contract auth
+        self.switch_to_user(SUPER_USER_INFO)
+        django_admin_add_page = DjangoAdminPage(self.browser).visit().click_add('ga_contract', 'contractauth')
+        django_admin_list_page = django_admin_add_page.input({
+            'contract': new_contract['Contract Name'],
+            'url_code': self.new_url_code,
+            'send_mail': False,
+        }).save()
+
+        # Test user
+        self.existing_users = [self.register_user() for _ in range(3)]
+        self.new_users = [self.new_user_info for _ in range(3)]
+
+    def test_register_students_checked_register_status(self):
+        """
+        Case, registered users and new users with checked register status
+        """
+        # Go to register
+        self.switch_to_user(self.new_director)
+        biz_register_students_page = BizNavPage(self.browser).visit().click_register_students()
+        biz_register_students_page.input_students(self._make_students_auth([
+            self.existing_users[0],
+            self.existing_users[1],
+            self.new_users[0],
+            self.new_users[1],
+        ])).click_register_status().click_popup_ok().click_register_button().click_popup_yes()
+
+        biz_register_students_page.wait_for_message(
+            u'Began the processing of Student Register.Execution status, please check from the task history.'
+        )
+
+        # Show task history
+        biz_register_students_page.click_show_history()
+
+        self._assert_register_student_task_history(
+            biz_register_students_page.task_history_grid_row,
+            4, 4, 0, 0,
+            self.new_director,
+        )
+        self.assertEqual(
+            [u'No messages.'],
+            biz_register_students_page.task_messages,
+        )
+        self._assert_no_send_email(self.existing_users[0])
+        self._assert_no_send_email(self.existing_users[1])
+        self._assert_no_send_email(self.new_users[0])
+        self._assert_no_send_email(self.new_users[1])
+
+        # Login existing user
+        self.logout()
+        self.biz_login_page.visit().input(self.existing_users[0]['username'], self.existing_users[0]['password']).click_login()
+        self.dashboard_page.wait_for_page()
+        self.assertIn(self.new_course_name, self.dashboard_page.current_courses_text)
+        self.assertFalse(self.dashboard_page.is_enable_unenroll(self.new_course_name))
+        self._assert_can_register_invitation_code()
+
+        self.logout()
+        self.biz_login_page.visit().input(self.existing_users[1]['username'], self.existing_users[1]['password']).click_login()
+        self.dashboard_page.wait_for_page()
+        self.assertIn(self.new_course_name, self.dashboard_page.current_courses_text)
+        self.assertFalse(self.dashboard_page.is_enable_unenroll(self.new_course_name))
+        self._assert_can_register_invitation_code()
+
+        # Login new user
+        self.logout()
+        self.biz_login_page.visit().input(self.new_users[0]['username'], self.new_users[0]['password']).click_login()
+        self.dashboard_page.wait_for_page()
+        self.assertIn(self.new_course_name, self.dashboard_page.current_courses_text)
+        self.assertFalse(self.dashboard_page.is_enable_unenroll(self.new_course_name))
+        self._assert_can_register_invitation_code()
+
+        self.logout()
+        self.biz_login_page.visit().input(self.new_users[1]['username'], self.new_users[1]['password']).click_login()
+        self.dashboard_page.wait_for_page()
+        self.assertIn(self.new_course_name, self.dashboard_page.current_courses_text)
+        self.assertFalse(self.dashboard_page.is_enable_unenroll(self.new_course_name))
+        self._assert_can_register_invitation_code()
+
+    def test_register_students_nochecked_register_status(self):
+        """
+        Case, registered users and new users without checked register status
+        """
+        # Go to register
+        self.switch_to_user(self.new_director)
+        biz_register_students_page = BizNavPage(self.browser).visit().click_register_students()
+        biz_register_students_page.input_students(self._make_students_auth([
+            self.existing_users[0],
+            self.existing_users[1],
+            self.new_users[0],
+            self.new_users[1],
+        ])).click_register_button().click_popup_yes()
+
+        biz_register_students_page.wait_for_message(
+            u'Began the processing of Student Register.Execution status, please check from the task history.'
+        )
+
+        # Show task history
+        biz_register_students_page.click_show_history()
+
+        self._assert_register_student_task_history(
+            biz_register_students_page.task_history_grid_row,
+            4, 4, 0, 0,
+            self.new_director,
+        )
+        self.assertEqual(
+            [u'No messages.'],
+            biz_register_students_page.task_messages,
+        )
+        self._assert_no_send_email(self.existing_users[0])
+        self._assert_no_send_email(self.existing_users[1])
+        self._assert_no_send_email(self.new_users[0])
+        self._assert_no_send_email(self.new_users[1])
+
+        # Login existing user
+        self.logout()
+        self.biz_login_page.visit().input(self.existing_users[0]['username'], self.existing_users[0]['password']).click_login()
+        self.assertEqual([
+            u'Login code or password is incorrect.'
+        ], self.biz_login_page.error_messages)
+
+        self.logout()
+        self.biz_login_page.visit().input(self.existing_users[1]['username'], self.existing_users[1]['password']).click_login()
+        self.assertEqual([
+            u'Login code or password is incorrect.'
+        ], self.biz_login_page.error_messages)
+
+        # Login new user
+        self.logout()
+        self.biz_login_page.visit().input(self.new_users[0]['username'], self.new_users[0]['password']).click_login()
+        self.assertEqual([
+            u'Login code or password is incorrect.'
+        ], self.biz_login_page.error_messages)
+
+        self.logout()
+        self.biz_login_page.visit().input(self.new_users[1]['username'], self.new_users[1]['password']).click_login()
+        self.assertEqual([
+            u'Login code or password is incorrect.'
+        ], self.biz_login_page.error_messages)

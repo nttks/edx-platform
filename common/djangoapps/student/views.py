@@ -1085,7 +1085,7 @@ def change_enrollment(request, check_access=True):
 
         # cannot unenroll this course, register-type of contract is disable on biz.
         if course_id in [d.course_id for d in ContractDetail.find_register_type_disable()]:
-            return HttpResponseBadRequest(_("Student can not unenroll this course"))
+            return HttpResponseBadRequest(_("This course can not be unenrolled by user."))
 
         certificate_info = cert_info(user, enrollment.course_overview, enrollment.mode)
         if certificate_info.get('status') in DISABLE_UNENROLL_CERT_STATES:

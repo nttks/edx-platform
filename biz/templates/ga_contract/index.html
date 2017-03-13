@@ -27,7 +27,7 @@ from django.core.urlresolvers import reverse
             searches: [
                 {field: 'contract_name', caption: '${_("Contract Name")} ', type: 'text'},
                 {field: 'contract_type', caption: '${_("Contract Type")}', type: 'text'},
-                {field: 'register_type', caption: '${_("Register Type")}', type: 'text'},
+                {field: 'register_type', caption: '${_("Registration method of invitation code")}', type: 'text'},
                 {field: 'invitation_code', caption: '${_("Invitation Code")}', type: 'text'},
                 {field: 'contractor_organization', caption: '${_("Contractor Organization Name")}', type: 'text'},
                 {field: 'start_date', caption: '${_("Contract Start Date")}', type: 'date', options: {format: 'yyyy/mm/dd'}},
@@ -43,7 +43,7 @@ from django.core.urlresolvers import reverse
                     }
                 },
                 {field: 'contract_type', caption: '${_("Contract Type")}', size: '20%', sortable: true, hidden: false},
-                {field: 'register_type', caption: '${_("Register Type")}', size: '20%', sortable: true, hidden: false},
+                {field: 'register_type', caption: '${_("Registration method of invitation code")}', size: '20%', sortable: true, hidden: false},
                 {field: 'invitation_code', caption: '${_("Invitation Code")}', size: '20%', sortable: true, hidden: false},
                 {
                     field: 'contractor_organization', caption: '${_("Contractor Organization Name")}', size: '20%', sortable: true, hidden: false,

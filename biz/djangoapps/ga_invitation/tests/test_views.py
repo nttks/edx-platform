@@ -15,49 +15,24 @@ from xmodule.modulestore.tests.factories import CourseFactory
 
 from lms.djangoapps.courseware.courses import get_course_by_id
 
-from biz.djangoapps.ga_contract.models import CONTRACT_TYPE_PF, CONTRACT_TYPE_GACCO_SERVICE, REGISTER_TYPE_DISABLE_REGISTER_BY_STUDENT, REGISTER_TYPE_ENABLE_REGISTER_BY_STUDENT
-from biz.djangoapps.ga_contract.tests.factories import (
-    AdditionalInfoFactory, ContractAuthFactory, ContractDetailFactory, ContractFactory)
+from biz.djangoapps.ga_contract.models import CONTRACT_TYPE_GACCO_SERVICE, REGISTER_TYPE_DISABLE_REGISTER_BY_STUDENT
 from biz.djangoapps.ga_invitation.models import (
     AdditionalInfoSetting, ContractRegister,
     INPUT_INVITATION_CODE, REGISTER_INVITATION_CODE, UNREGISTER_INVITATION_CODE)
 from biz.djangoapps.ga_invitation.tests.factories import AdditionalInfoSettingFactory, ContractRegisterFactory
 from biz.djangoapps.ga_invitation.views import ADDITIONAL_NAME
-from biz.djangoapps.ga_organization.tests.factories import OrganizationFactory
 from biz.djangoapps.util.datetime_utils import timezone_today
 from biz.djangoapps.util.tests.testcase import BizTestBase, BizViewTestBase
 
 
 class BizContractTestBase(BizViewTestBase, ModuleStoreTestCase):
 
-    def _create_contract(self, contract_name='test contract', contract_type=CONTRACT_TYPE_PF[0], register_type=REGISTER_TYPE_ENABLE_REGISTER_BY_STUDENT[0], contractor_organization=None,
-                         end_date=None, course_ids=[], display_names=[], url_code=None):
-        contract = ContractFactory.create(
-            contract_name=contract_name,
-            contract_type=contract_type,
-            register_type=register_type,
-            contractor_organization=contractor_organization if contractor_organization else self.gacco_organization,
-            owner_organization=self.gacco_organization,
-            created_by=UserFactory.create(),
-            end_date=end_date if end_date else (timezone_today() + timedelta(days=1)),
-        )
-        for course_id in course_ids:
-            ContractDetailFactory.create(contract=contract, course_id=course_id)
-        for display_name in display_names:
-            AdditionalInfoFactory.create(contract=contract, display_name=display_name)
-        if url_code:
-            ContractAuthFactory.create(contract=contract, url_code=url_code)
-        return contract
-
     def setUp(self):
         super(BizContractTestBase, self).setUp()
 
-        self.contract_org = OrganizationFactory.create(
-            org_code='contractor', creator_org=self.gacco_organization, created_by=UserFactory.create())
-        self.contract_org_other = OrganizationFactory.create(
-            org_code='contractor_other', creator_org=self.gacco_organization, created_by=UserFactory.create())
-        self.no_contract_org = OrganizationFactory.create(
-            org_code='no_contractor', creator_org=self.gacco_organization, created_by=UserFactory.create())
+        self.contract_org = self._create_organization(org_code='contractor')
+        self.contract_org_other = self._create_organization(org_code='contractor_other')
+        self.no_contract_org = self._create_organization(org_code='no_contractor')
 
         self.course_spoc1 = CourseFactory.create(
             org=self.gacco_organization.org_code, number='spoc1', run='run1')
@@ -84,52 +59,52 @@ class BizContractTestBase(BizViewTestBase, ModuleStoreTestCase):
 
         self.contract = self._create_contract(
             contractor_organization=self.contract_org,
-            course_ids=[self.course_spoc1.id, self.course_spoc2.id],
-            display_names=['country', 'dept'])
+            detail_courses=[self.course_spoc1.id, self.course_spoc2.id],
+            additional_display_names=['country', 'dept'])
         self.contract_disabled = self._create_contract(
             contract_name='test contract disabled',
             contractor_organization=self.contract_org_other,
             end_date=(timezone_today() - timedelta(days=1)),
-            course_ids=[self.course_spoc3.id, self.course_spoc4.id],
-            display_names=['country', 'dept'])
+            detail_courses=[self.course_spoc3.id, self.course_spoc4.id],
+            additional_display_names=['country', 'dept'])
         self.contract_nodetail = self._create_contract(
             contract_name='test contract nodetail',
             contractor_organization=self.contract_org,
-            display_names=['country', 'dept'])
+            additional_display_names=['country', 'dept'])
         self.contract_nocourse = self._create_contract(
             contract_name='test contract nocourse',
             contractor_organization=self.contract_org,
-            course_ids=[self.no_course_id],
-            display_names=['country', 'dept'])
+            detail_courses=[self.no_course_id],
+            additional_display_names=['country', 'dept'])
         self.contract_mooc = self._create_contract(
             contract_name='test contract mooc',
             contract_type=CONTRACT_TYPE_GACCO_SERVICE[0],
             contractor_organization=self.contract_org,
-            course_ids=[self.course_mooc1.id],
-            display_names=['country', 'dept'])
+            detail_courses=[self.course_mooc1.id],
+            additional_display_names=['country', 'dept'])
         self.contract_auth = self._create_contract(
             contract_name='test contract auth',
             contractor_organization=self.contract_org,
-            course_ids=[self.course_spoc5.id],
+            detail_courses=[self.course_spoc5.id],
             url_code='testAuth')
         self.contract_auth_disabled = self._create_contract(
             contract_name='test contract auth disabled',
             contractor_organization=self.contract_org,
             end_date=(timezone_today() - timedelta(days=1)),
-            course_ids=[self.course_spoc6.id],
+            detail_courses=[self.course_spoc6.id],
             url_code='testAuthDisabled')
         self.contract_student_cannot_register = self._create_contract(
             register_type=REGISTER_TYPE_DISABLE_REGISTER_BY_STUDENT[0],
             contract_name='test contract student cannot register',
             contractor_organization=self.contract_org,
-            course_ids=[self.course_spoc7.id],
-            display_names=['country', 'dept'])
+            detail_courses=[self.course_spoc7.id],
+            additional_display_names=['country', 'dept'])
         self.contract_auth_student_cannot_register = self._create_contract(
             register_type=REGISTER_TYPE_DISABLE_REGISTER_BY_STUDENT[0],
             contract_name='test contract auth student cannot register',
             contractor_organization=self.contract_org,
-            course_ids=[self.course_spoc8.id],
-            display_names=['country', 'dept'],
+            detail_courses=[self.course_spoc8.id],
+            additional_display_names=['country', 'dept'],
             url_code='testAuthRegisterDirector')
 
     def create_contract_register(self, user, contract, status=REGISTER_INVITATION_CODE):

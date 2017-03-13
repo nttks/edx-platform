@@ -18,7 +18,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='contract',
             name='register_type',
-            field=models.CharField(default=b'DRS', max_length=255, choices=[(b'DRS', 'Disable to register by student-self'), (b'ERS', 'Enable to register by student-self')]),
+            field=models.CharField(default=b'DRS', max_length=255, choices=[(b'DRS', 'Register by director'), (b'ERS', 'Register by user or director')]),
         ),
         migrations.RunPython(forwards_func),
     ]

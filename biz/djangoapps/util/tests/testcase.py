@@ -25,6 +25,7 @@ from biz.djangoapps.util.datetime_utils import timezone_today
 from courseware.tests.helpers import LoginEnrollmentTestCase
 from student.models import CourseEnrollment, UserStanding
 from student.tests.factories import UserFactory, UserStandingFactory
+from xmodule.course_module import CourseDescriptor
 
 
 class BizTestBase(TestCase):
@@ -75,7 +76,8 @@ class BizTestBase(TestCase):
             created_by=UserFactory.create(),
         )
         for c in detail_courses:
-            ContractDetailFactory.create(contract=contract, course_id=c.id)
+            course_id = c.id if isinstance(c, CourseDescriptor) else c
+            ContractDetailFactory.create(contract=contract, course_id=course_id)
         for d in additional_display_names:
             AdditionalInfoFactory.create(contract=contract, display_name=d)
         if url_code:

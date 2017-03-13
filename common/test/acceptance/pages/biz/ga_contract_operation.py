@@ -103,6 +103,13 @@ class BizRegisterStudentsPage(BizNavPage, BizTaskHistoryMixin, W2uiMixin):
         self.q(css='textarea#list-students').fill(value)
         return self
 
+    def click_register_status(self):
+        """
+        Click the register status checkbox
+        """
+        self.q(css='#register-status').click()
+        return self
+
     def click_register_button(self):
         """
         Click the register button

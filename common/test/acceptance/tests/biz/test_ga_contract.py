@@ -32,13 +32,13 @@ class BizContractTest(WebAppTest, GaccoBizTestMixin):
     CONTRACT_TYPE = 'OS'
     CONTRACT_TYPE_NAME = 'Owner Service Contract'
     REGISTER_TYPE = 'DRS'
-    REGISTER_TYPE_NAME = 'Disable to register by student-self'
+    REGISTER_TYPE_NAME = 'Register by director'
 
     def assert_initial_columns(self, grid_columns):
         self.assertEqual(len(grid_columns), 7)
         self.assertIn(u'Contract Name', grid_columns)
         self.assertIn(u'Contract Type', grid_columns)
-        self.assertIn(u'Register Type', grid_columns)
+        self.assertIn(u'Registration method of invitation code', grid_columns)
         self.assertIn(u'Invitation Code', grid_columns)
         self.assertIn(u'Contractor Organization Name', grid_columns)
         self.assertIn(u'Contract Start Date', grid_columns)
@@ -111,7 +111,7 @@ class BizContractTest(WebAppTest, GaccoBizTestMixin):
                 {
                     'Contract Name': contract_name,
                     'Contract Type': self.CONTRACT_TYPE_NAME,
-                    'Register Type': self.REGISTER_TYPE_NAME,
+                    'Registration method of invitation code': self.REGISTER_TYPE_NAME,
                     'Invitation Code': invitation_code,
                     'Contract Start Date': start_date,
                     'Contract End Date': end_date,
@@ -153,7 +153,7 @@ class BizContractTest(WebAppTest, GaccoBizTestMixin):
                 {
                     'Contract Name': contract_name,
                     'Contract Type': self.CONTRACT_TYPE_NAME,
-                    'Register Type': self.REGISTER_TYPE_NAME,
+                    'Registration method of invitation code': self.REGISTER_TYPE_NAME,
                     'Invitation Code': invitation_code,
                     'Contract Start Date': start_date,
                     'Contract End Date': end_date,
@@ -196,7 +196,7 @@ class BizContractTest(WebAppTest, GaccoBizTestMixin):
                 {
                     'Contract Name': contract_name,
                     'Contract Type': self.CONTRACT_TYPE_NAME,
-                    'Register Type': self.REGISTER_TYPE_NAME,
+                    'Registration method of invitation code': self.REGISTER_TYPE_NAME,
                     'Invitation Code': invitation_code,
                     'Contract Start Date': start_date,
                     'Contract End Date': end_date,
@@ -439,7 +439,7 @@ class BizContractTest(WebAppTest, GaccoBizTestMixin):
                 {
                     'Contract Name': contract_name,
                     'Contract Type': self.CONTRACT_TYPE_NAME,
-                    'Register Type': self.REGISTER_TYPE_NAME,
+                    'Registration method of invitation code': self.REGISTER_TYPE_NAME,
                     'Invitation Code': invitation_code,
                     'Contract Start Date': start_date,
                     'Contract End Date': end_date,

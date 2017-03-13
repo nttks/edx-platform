@@ -14,7 +14,13 @@ from biz.djangoapps.ga_invitation.models import REGISTER_INVITATION_CODE
         $('#form').w2form({ name: 'form' });
         $('#register-status>input[type="checkbox"]').on('click', function() {
             if ($(this).prop('checked')) {
-                w2alert('${_("Warning: The students will be ready to start taking lectures immediately.")}');
+                w2popup.open({
+                    title: w2utils.lang('Confirmation'),
+                    body: '<div class="w2ui-centered">${_("The user will be taking courses, immediately.<br/>If you have several contracts, please confirm the detail before submit.")}</div>',
+                    width: 540,
+                    height: 240,
+                    buttons: '<button class="w2ui-popup-btn btn" onclick="w2popup.close();">'+w2utils.lang('Ok')+'</button>',
+                });
             }
         });
         $('.w2ui-buttons').on('click', '#register-btn', function () {
@@ -74,7 +80,7 @@ from biz.djangoapps.ga_invitation.models import REGISTER_INVITATION_CODE
             <textarea id="list-students" name="students_list" rows="12" placeholder="${_("username1@domain.com,gaccotarou,gacco taro,gacco,Gacco12345") if hasattr(request.current_contract, 'contractauth') else _("username1@domain.com,gaccotarou,gacco taro")}"></textarea>
         </div>
         <div class="field">
-            <label id="register-status"><input type="checkbox" name="register_status" value="${REGISTER_INVITATION_CODE}"/>${_("Register invitation code at the same time.")}</label>
+            <label id="register-status"><input type="checkbox" name="register_status" value="${REGISTER_INVITATION_CODE}"/>${_("Register with the invitation code. (Unnecessary invitation code by user)")}</label>
         </div>
     </div>
     <div class="w2ui-buttons">

@@ -13,8 +13,8 @@ CONTRACT_TYPE_GACCO_SERVICE = ('GS', _('Gacco Service Contract'))
 CONTRACT_TYPE_OWNER_SERVICE = ('OS', _('Owner Service Contract'))
 CONTRACT_TYPE = (CONTRACT_TYPE_PF, CONTRACT_TYPE_OWNERS, CONTRACT_TYPE_GACCO_SERVICE, CONTRACT_TYPE_OWNER_SERVICE)
 
-REGISTER_TYPE_DISABLE_REGISTER_BY_STUDENT = ('DRS', _('Disable to register by student-self'))
-REGISTER_TYPE_ENABLE_REGISTER_BY_STUDENT = ('ERS', _('Enable to register by student-self'))
+REGISTER_TYPE_DISABLE_REGISTER_BY_STUDENT = ('DRS', _('Register by director'))
+REGISTER_TYPE_ENABLE_REGISTER_BY_STUDENT = ('ERS', _('Register by user or director'))
 REGISTER_TYPE = (REGISTER_TYPE_DISABLE_REGISTER_BY_STUDENT, REGISTER_TYPE_ENABLE_REGISTER_BY_STUDENT)
 
 URL_CODE_MIN_LENGTH = 8
@@ -308,7 +308,7 @@ class ContractDetail(models.Model):
     @classmethod
     def find_register_type_disable(cls):
         """
-        Returns contract details even if register-type of contact is disable.
+        Returns contract which register-type is disabled.
 
         :return: ContractDetails objects
         """

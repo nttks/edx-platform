@@ -33,7 +33,7 @@ class ContractForm(forms.ModelForm):
                         self.fields['invitation_code'].min_length,
                         self.fields['invitation_code'].max_length)})
         self.fields['contract_type'].label = 'Contract Type'
-        self.fields['register_type'].label = 'Register Type'
+        self.fields['register_type'].label = 'Registration method of invitation code'
         self.fields['contractor_organization'].label = 'Contractor Organization Name'
         self.fields['contractor_organization'].empty_label = None
         self.fields['start_date'].label = 'Contract Start Date'

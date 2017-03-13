@@ -252,7 +252,7 @@ class BizW2uiTest(WebAppTest, GaccoBizTestMixin):
         """
         self.switch_to_user(AGGREGATOR_USER_INFO)
 
-        searchable_fields = [u'Contract Name', u'Contract Type', u'Register Type', u'Invitation Code', u'Contractor Organization Name',
+        searchable_fields = [u'Contract Name', u'Contract Type', u'Registration method of invitation code', u'Invitation Code', u'Contractor Organization Name',
                              u'Contract Start Date', u'Contract End Date', u'Created By Name', u'Created Date']
 
         # view contract grid

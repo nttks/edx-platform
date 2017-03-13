@@ -113,6 +113,12 @@ class W2uiGrid(object):
         self.page_object.q(css='div#w2ui-popup>div.w2ui-msg-buttons>button#No').first.click()
         return cls_next_page(self.page_object.browser).wait_for_page() if cls_next_page else self.page_object.wait_for_popup_absence()
 
+    @retry
+    def click_popup_ok(self, cls_next_page=None):
+        self.wait_for_popup_enable()
+        self.page_object.q(css='div#w2ui-popup>div.w2ui-msg-buttons>button').first.click()
+        return self.page_object.wait_for_popup_absence()
+
     def click_grid_icon_columns(self):
         self.page_object.q(css='{}table.w2ui-button'.format(self.parent_css)).first.click()
         self.wait_for_overlay_visibility()
