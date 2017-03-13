@@ -75,6 +75,16 @@ class W2uiGrid(object):
 
         return cls_next_page(self.page_object.browser, href=anchor_href).wait_for_page() if cls_next_page else self.page_object
 
+    def click_grid_row_checkbox(self, search_dict):
+        checkbox = self.page_object.q(css='{}td.w2ui-grid-data>div>input[type=checkbox]'.format(self.parent_css)).nth(self.get_row(search_dict)[KEY_GRID_INDEX])
+        prev_flag = checkbox.selected
+        checkbox.click()
+        self.page_object.wait_for(
+            lambda: prev_flag != checkbox.selected,
+            'Checkbox is not clicked'
+        )
+        return self.page_object
+
     def wait_for_popup_enable(self):
         self.wait_for_element_visibility('div#w2ui-popup', 'W2ui popup is visible')
         # wait for animation of w2ui popup

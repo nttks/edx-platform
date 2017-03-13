@@ -35,6 +35,12 @@ class BizTaskHistoryMixin(object):
         with self.task_history_grid.click_expand(index=index) as expanded_grid:
             return expanded_grid.grid_rows
 
+    def wait_for_task_complete(self):
+        def _wait_for():
+            self.click_show_history()
+            return self.task_history_grid_row['State'] == 'Complete'
+        self.wait_for(_wait_for, 'Latest task state is not Complete')
+
 
 class BizStudentsPage(BizNavPage, BizTaskHistoryMixin, W2uiMixin):
     """
@@ -49,6 +55,27 @@ class BizStudentsPage(BizNavPage, BizTaskHistoryMixin, W2uiMixin):
 
     def is_browser_on_page(self):
         return self.pagetitle == u'Students List'
+
+    def click_unregister_button(self):
+        """
+        Click the unregister button
+        """
+        self.q(css='#unregister-btn').click()
+        self.wait_for_ajax()
+        return self
+
+    def click_personalinfo_mask_button(self):
+        """
+        Click the personalinfo mask button
+        """
+        self.q(css='#personalinfo-mask-btn').click()
+        self.wait_for_ajax()
+        return self
+
+    @property
+    def messages(self):
+        """Return a list of errors displayed to the list view. """
+        return self.q(css="div.main ul.messages li").text
 
 
 class BizRegisterStudentsPage(BizNavPage, BizTaskHistoryMixin, W2uiMixin):

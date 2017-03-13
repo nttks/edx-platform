@@ -14,6 +14,8 @@ from lms.envs.bok_choy import EMAIL_FILE_PATH
 
 from . import GaccoBizTestMixin, PLAT_COMPANY_CODE, PLATFORMER_USER_INFO
 from ..ga_helpers import NoEmailFileException, SUPER_USER_INFO
+from ...pages.biz.ga_contract_operation import BizStudentsPage
+from ...pages.biz.ga_course_about import CourseAboutPage
 from ...pages.biz.ga_invitation import BizInvitationPage, BizInvitationConfirmPage
 from ...pages.biz.ga_login import BizLoginPage
 from ...pages.biz.ga_navigation import BizNavPage
@@ -1003,3 +1005,276 @@ class BizStudentRegisterWithContractAuthTest(WebAppTest, GaccoBizTestMixin, BizS
         # Go to deleted url_code
         self.logout()
         BizLoginPage(self.browser, modified_url_code, not_found=True).visit()
+
+
+class BizStudentManagementTestBase(WebAppTest, GaccoBizTestMixin, BizStudentRegisterMixin):
+
+    def setUp(self):
+        super(BizStudentManagementTestBase, self).setUp()
+
+        # setup mail client
+        self.setup_email_client(EMAIL_FILE_PATH)
+
+        # Register organization
+        new_org_info = self.register_organization(PLATFORMER_USER_INFO)
+
+        # Register user as director
+        self.new_director = self.register_user()
+        self.grant(PLATFORMER_USER_INFO, new_org_info['Organization Name'], 'director', self.new_director)
+
+        # Register contract
+        self.new_course_key, _ = self.install_course(PLAT_COMPANY_CODE)
+        self.new_contract = self.register_contract(
+            PLATFORMER_USER_INFO, new_org_info['Organization Name'],
+            detail_info=[self.new_course_key],
+            additional_info=['info1', 'info2']
+        )
+
+        self.users = [self.register_user() for _ in range(3)]
+        self._register_student(self.users[0], do_register=True)
+        self._register_student(self.users[1])
+        self._register_student(self.users[2])
+
+        self.students_page = BizStudentsPage(self.browser)
+
+    def _register_student(self, user, do_register=False):
+        self.switch_to_user(user)
+        AccountSettingsPage(self.browser).visit().click_on_link_in_link_field('invitation_code')
+        BizInvitationPage(self.browser).wait_for_page().input_invitation_code(self.new_contract['Invitation Code']).click_register_button()
+        biz_invitation_confirm_page = BizInvitationConfirmPage(self.browser, self.new_contract['Invitation Code']).wait_for_page()
+        if do_register:
+            biz_invitation_confirm_page.input_additional_info(
+                'info1-{}'.format(user['username']), 0
+            ).input_additional_info(
+                'info2-{}'.format(user['username']), 1
+            ).click_register_button()
+            DashboardPage(self.browser).wait_for_page()
+            user['status'] = 'Register Invitation'
+        else:
+            user['status'] = 'Input Invitation'
+
+    def _assert_grid_row(self, grid_row, expected_user, expected_status=None):
+        if expected_status is None:
+            expected_status = expected_user['status']
+        expected_info1 = 'info1-{}'.format(expected_user['username']) if expected_user['status'] == 'Register Invitation' else ''
+        expected_info2 = 'info2-{}'.format(expected_user['username']) if expected_user['status'] == 'Register Invitation' else ''
+        self.assert_grid_row(grid_row, {
+            'Contract Register Status': expected_status,
+            'Email Address': expected_user['email'],
+            'Username': expected_user['username'],
+            'Full Name': expected_user['username'],
+            'info1': expected_info1,
+            'info2': expected_info2,
+        })
+
+    def _assert_task_history(self, grid_row, task_type, state, username, total=0, success=0, skipped=0, failed=0):
+        self.assertEqual(task_type, grid_row['Task Type'])
+        self.assertEqual(state, grid_row['State'])
+        self.assertEqual(
+            u'Total: {}, Success: {}, Skipped: {}, Failed: {}'.format(total, success, skipped, failed),
+            grid_row['Execution Result']
+        )
+        self.assertEqual(username, grid_row['Execution Username'])
+        self.assertIsNotNone(datetime.strptime(grid_row['Execution Datetime'], '%Y/%m/%d %H:%M:%S'))
+
+
+@attr('shard_ga_biz_3')
+class BizStudentListTest(BizStudentManagementTestBase):
+
+    def test_students_grid_column(self):
+        self.switch_to_user(self.new_director)
+        self.students_page.visit()
+
+        # Check data rows of student grid
+        for user in self.users:
+            self._assert_grid_row(self.students_page.student_grid.get_row({'Username': user['username']}), user)
+        # Task History should be empty.
+        self.assertFalse(self.students_page.task_history_grid.grid_rows)
+
+        # Check default columns
+        grid_columns = self.students_page.student_grid.grid_columns
+        self.assertItemsEqual(grid_columns, [
+            '', 'Contract Register Status', 'Full Name', 'Username', 'Email Address', 'info1', 'info2',
+        ])
+
+        # Check icon columns on/off
+        self.students_page.student_grid.click_grid_icon_columns()
+        for c in self.students_page.student_grid.grid_icon_columns:
+            if c in grid_columns:
+                self.assertTrue(self.students_page.student_grid.is_checked_grid_icon_columns(c))
+            else:
+                self.assertFalse(self.students_page.student_grid.is_checked_grid_icon_columns(c))
+
+        self.students_page.student_grid.click_grid_icon_columns_checkbox('Contract Register Status')
+
+        grid_columns = self.students_page.student_grid.grid_columns
+        self.assertItemsEqual(grid_columns, [
+            '', 'Full Name', 'Username', 'Email Address', 'info1', 'info2',
+        ])
+
+        self.students_page.student_grid.click_grid_icon_columns_checkbox('Contract Register Status')
+
+        grid_columns = self.students_page.student_grid.grid_columns
+        self.assertItemsEqual(grid_columns, [
+            '', 'Contract Register Status', 'Full Name', 'Username', 'Email Address', 'info1', 'info2',
+        ])
+
+        # Check columns of grid for search
+        self.students_page.student_grid.click_grid_icon_search()
+        grid_icon_search = self.students_page.student_grid.grid_icon_search
+        self.assertItemsEqual(grid_icon_search, [
+            'Contract Register Status', 'Full Name', 'Username', 'Email Address', 'info1', 'info2',
+        ])
+        self.assertTrue(self.students_page.student_grid.is_checked_grid_icon_search('Contract Register Status'))
+
+        # Check search
+        self.students_page.student_grid.click_grid_icon_search_label('Username')
+        self.students_page.student_grid.search(self.users[1]['username'])
+
+        grid_rows = self.students_page.student_grid.grid_rows
+        self.assertEqual(len(grid_rows), 1)
+        self._assert_grid_row(grid_rows[0], self.users[1])
+
+        self.students_page.student_grid.clear_search()
+        for user in self.users:
+            self._assert_grid_row(self.students_page.student_grid.get_row({'Username': user['username']}), user)
+
+        # Check sort
+        grid_rows = self.students_page.student_grid.grid_rows
+
+        # sort by Username
+        self.students_page.student_grid.click_sort('Username')
+        grid_rows.sort(key=lambda x: x['Username'])
+        self.assert_grid_row_equal(grid_rows, self.students_page.student_grid.grid_rows)
+        # sort by Username reverse
+        self.students_page.student_grid.click_sort('Username')
+        grid_rows.sort(key=lambda x: x['Username'], reverse=True)
+        self.assert_grid_row_equal(grid_rows, self.students_page.student_grid.grid_rows)
+
+
+@attr('shard_ga_biz_3')
+class BizPersonalinfoMaskTest(BizStudentManagementTestBase):
+
+    def _assert_masked_grid_row(self, grid_row, expected_user):
+        expected_status = expected_user.get('status', 'Input Invitation')
+        expected_info1 = 'info1-{}'.format(expected_user['username']) if expected_status == 'Register Invitation' else ''
+        expected_info2 = 'info2-{}'.format(expected_user['username']) if expected_status == 'Register Invitation' else ''
+        # not masked value
+        self.assertEqual(grid_row['Contract Register Status'], expected_status)
+        self.assertEqual(grid_row['Username'], expected_user['username'])
+        # masked value
+        self.assertNotEqual(grid_row['Email Address'], expected_user['email'])
+        self.assertNotEqual(grid_row['Full Name'], expected_user['username'])
+        if expected_status == 'Register Invitation':
+            self.assertNotEqual(grid_row['info1'], expected_info1)
+            self.assertNotEqual(grid_row['info2'], expected_info2)
+
+    def _assert_personalinfo_mask_task_history(self, grid_row, username, total=0, success=0, skipped=0, failed=0):
+        self._assert_task_history(grid_row,
+            task_type='Personal Information Mask',
+            state='Complete',
+            total=total, success=success, skipped=skipped, failed=failed,
+            username=username,
+        )
+
+    def _assert_login(self, user, can_login=True):
+        self.logout()
+        login_page = CombinedLoginAndRegisterPage(self.browser, 'login')
+        login_page.visit().login(user['email'], user['password'])
+        if can_login:
+            DashboardPage(self.browser).wait_for_page()
+        else:
+            login_page.wait_for_errors()
+
+    def test_success(self):
+        # Check that can login
+        for user in self.users:
+            self._assert_login(user)
+
+        self.switch_to_user(self.new_director)
+        self.students_page.visit()
+
+        # Check initial data rows of student grid
+        for user in self.users:
+            self._assert_grid_row(self.students_page.student_grid.get_row({'Username': user['username']}), user)
+
+        # Check error message when target is not selected.
+        self.students_page.click_personalinfo_mask_button()
+        self.assertEqual(['Please select a target.'], self.students_page.messages)
+
+        # Select target users and execute
+        self.students_page.student_grid.click_grid_row_checkbox({'Username': self.users[0]['username']})
+        self.students_page.student_grid.click_grid_row_checkbox({'Username': self.users[2]['username']})
+
+        self.students_page.click_personalinfo_mask_button().click_popup_yes()
+        self.students_page.wait_for_ajax()
+
+        self.assertEqual(
+            ['Began the processing of Personal Information Mask.Execution status, please check from the task history.'],
+            self.students_page.messages
+        )
+
+        # Check task histories
+        self.students_page.wait_for_task_complete()
+        self._assert_personalinfo_mask_task_history(
+            self.students_page.task_history_grid_row,
+            self.new_director['username'], 2, 2, 0, 0
+        )
+
+        self.students_page.visit()
+
+        # Check unmasked data rows of student grid
+        self._assert_grid_row(self.students_page.student_grid.get_row({'Username': self.users[1]['username']}), self.users[1])
+        # Check masked data rows of student grid
+        self._assert_masked_grid_row(self.students_page.student_grid.get_row({'Username': self.users[0]['username']}), self.users[0])
+        self._assert_masked_grid_row(self.students_page.student_grid.get_row({'Username': self.users[2]['username']}), self.users[2])
+
+        # Check that masked user cannot login
+        self._assert_login(self.users[0], False)
+        self._assert_login(self.users[1])
+        self._assert_login(self.users[2], False)
+
+
+@attr('shard_ga_biz_3')
+class BizStudentUnregisterTest(BizStudentManagementTestBase):
+
+    def _assert_access_course_about(self, user, can_access=True):
+        self.switch_to_user(user)
+        CourseAboutPage(self.browser, self.new_course_key, not can_access).visit()
+
+    def test_success(self):
+        # Check registered user can access to course about
+        self._assert_access_course_about(self.users[0])
+
+        self.switch_to_user(self.new_director)
+        self.students_page.visit()
+
+        # Check initial data rows of student grid
+        for user in self.users:
+            self._assert_grid_row(self.students_page.student_grid.get_row({'Username': user['username']}), user)
+
+        # Check error message when target is not selected.
+        self.students_page.click_unregister_button()
+        self.assertEqual(['Please select a target.'], self.students_page.messages)
+
+        # Select target users and execute
+        self.students_page.student_grid.click_grid_row_checkbox({'Username': self.users[0]['username']})
+        self.students_page.student_grid.click_grid_row_checkbox({'Username': self.users[2]['username']})
+
+        self.students_page.click_unregister_button().click_popup_yes()
+        self.students_page.wait_for_ajax()
+
+        self.assertEqual(
+            ['Succeed to unregister 2 users.'],
+            self.students_page.messages
+        )
+
+        self.students_page.visit()
+
+        # Check data rows after unregister
+        self._assert_grid_row(self.students_page.student_grid.get_row({'Username': self.users[0]['username']}), self.users[0], expected_status='Unregister Invitation')
+        self._assert_grid_row(self.students_page.student_grid.get_row({'Username': self.users[1]['username']}), self.users[1])
+        self._assert_grid_row(self.students_page.student_grid.get_row({'Username': self.users[2]['username']}), self.users[2], expected_status='Unregister Invitation')
+
+        # Check unregistered user can not access to course about
+        self._assert_access_course_about(self.users[0], False)
