@@ -139,7 +139,7 @@ class LoginViewsIndexTest(LoginViewsTestBase):
         self.assert_request_status_code(404, self._url_index(self.url_code_student_cannot_register))
 
         self._assert_call(warning_log, [
-            "Student can not be registerd, status is not register:{} user:{} contract:{}".format(INPUT_INVITATION_CODE, self.user.id, self.contract_auth_student_cannot_register.id)
+            "Student can not be registered, status is input, user:{} contract:{}".format(self.user.id, self.contract_auth_student_cannot_register.id)
         ])
 
     @patch('biz.djangoapps.ga_login.views.log.warning')
@@ -348,13 +348,12 @@ class LoginViewsSubmitTest(LoginViewsTestBase):
         response = self.assert_request_status_code(403, self._url_submit(), 'POST', data={
             'url_code': self.url_code_student_cannot_register,
             'login_code': self.login_code,
-            'password': 'hoge',
+            'password': self.password,
         })
-        self.assertEqual(response.content, u"Login code or password is incorrect.")
+        self.assertEqual(response.content, u"The invitation code has not been registered yet. Please ask your director to register invitation code.")
 
         self._assert_call(warning_log, [
-            "Student can not be registerd, status is not register:{} user:{} contract:{}".format(INPUT_INVITATION_CODE, self.user.id, self.contract_auth_student_cannot_register.id),
-            "Login failed contract:{0} - Unknown user".format(self.contract_auth_student_cannot_register.id),
+            "Student can not be registered, status is input, contract:{0}, user.id:{1}".format(self.contract_auth_student_cannot_register.id, self.user.id),
         ])
         self._assert_call(audit_warning_log)
         self._assert_call(critical_log)
@@ -371,13 +370,12 @@ class LoginViewsSubmitTest(LoginViewsTestBase):
         response = self.assert_request_status_code(403, self._url_submit(), 'POST', data={
             'url_code': self.url_code_student_cannot_register,
             'login_code': self.login_code,
-            'password': 'hoge',
+            'password': self.password,
         })
-        self.assertEqual(response.content, u"Login code or password is incorrect.")
+        self.assertEqual(response.content, u"The invitation code has not been registered yet. Please ask your director to register invitation code.")
 
         self._assert_call(warning_log, [
-            "Student can not be registerd, status is not register:{} user:{} contract:{}".format(INPUT_INVITATION_CODE, self.user.id, self.contract_auth_student_cannot_register.id),
-            "Login failed contract:{0} - Unknown user {1}".format(self.contract_auth_student_cannot_register.id, self.login_code),
+            "Student can not be registered, status is input, contract:{0}, user {1}".format(self.contract_auth_student_cannot_register.id, self.login_code),
         ])
         self._assert_call(audit_warning_log)
         self._assert_call(critical_log)

@@ -53,8 +53,13 @@ def index(request, url_code):
 
         # redirect
         if contract_register.is_input():
-            # input -> biz/invitation(302)
-            return redirect(reverse('biz:invitation:confirm', kwargs={'invitation_code': contract.invitation_code}))
+            if contract.enabled_register_by_studentself:
+                # input -> biz/invitation(302)
+                return redirect(reverse('biz:invitation:confirm', kwargs={'invitation_code': contract.invitation_code}))
+            else:
+                # input(disable by studentself) -> (404)
+                log.warning(u"Student can not be registered, status is input, user:{} contract:{}".format(contract_register.user.id, contract.id))
+                raise Http404()
         else:
             # register -> lms/dashboard(302)
             return redirect(reverse('dashboard'))
@@ -96,9 +101,6 @@ def _validate_and_get_user_contract_register(login_code, contract):
         return (None, None)
     if contract_register.is_unregistered():
         log.warning(u"Unregister status user:{} with contract:{}".format(contract_register.user.id, contract.id))
-        return (None, None)
-    if not contract.enabled_register_by_studentself and not contract_register.is_registered():
-        log.warning(u"Student can not be registerd, status is not register:{} user:{} contract:{}".format(contract_register.status, contract_register.user.id, contract.id))
         return (None, None)
 
     return (contract_register.user, contract_register)
@@ -173,7 +175,7 @@ def submit(request):
     login_code = request.POST['login_code']
 
     # validate and get user, contract-register
-    user_found_by_login_code, __ = _validate_and_get_user_contract_register(login_code, contract)
+    user_found_by_login_code, contract_register = _validate_and_get_user_contract_register(login_code, contract)
     if not user_found_by_login_code:
         if settings.FEATURES['SQUELCH_PII_IN_LOGS']:
             log.warning(u"Login failed contract:{0} - Unknown user".format(contract.id))
@@ -239,6 +241,13 @@ def submit(request):
                 }
             }
         )
+
+    if not contract.enabled_register_by_studentself and contract_register.is_input():
+        if settings.FEATURES['SQUELCH_PII_IN_LOGS']:
+            log.warning(u"Student can not be registered, status is input, contract:{0}, user.id:{1}".format(contract.id, authenticated_user.id))
+        else:
+            log.warning(u"Student can not be registered, status is input, contract:{0}, user {1}".format(contract.id, login_code))
+        return HttpResponse(_("The invitation code has not been registered yet. Please ask your director to register invitation code."), status=403)
 
     if authenticated_user.is_active:
         try:

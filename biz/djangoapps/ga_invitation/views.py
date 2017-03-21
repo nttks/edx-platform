@@ -68,7 +68,7 @@ def verify(request):
 
     register = ContractRegister.get_by_user_contract(request.user, contract)
 
-    # If contract has contract-auth, allow only registerd user. Ref: Issue #1082
+    # If contract has contract-auth, allow only registered user. Ref: Issue #1082
     if hasattr(contract, 'contractauth') and not register:
         log.warning(
             'Contract has auth, but not found contract register, invitation_code(%s), contract_id(%s), user_id(%s)',
@@ -78,10 +78,13 @@ def verify(request):
 
     if not contract.enabled_register_by_studentself and (not register or not register.is_registered()):
         log.warning(
-            'Student can not be registerd, but not found contract register or status is not register, invitation_code(%s), contract_id(%s), user_id(%s), register_status(%s)',
+            'Student can not be registered, but not found contract register or status is not register, invitation_code(%s), contract_id(%s), user_id(%s), register_status(%s)',
             invitation_code, contract.id, request.user.id, register.status if register else 'None',
         )
-        return JsonResponse({'result': False, 'message': _('Invitation code is invalid.')})
+        if register and register.is_input():
+            return JsonResponse({'result': False, 'message': _('Please ask your director to register invitation code.')})
+        else:
+            return JsonResponse({'result': False, 'message': _('Invitation code is invalid.')})
 
     contract_details = contract.details.all()
     if not contract_details:
@@ -114,14 +117,14 @@ def confirm(request, invitation_code):
 
     register = ContractRegister.get_by_user_contract(request.user, contract)
 
-    # If contract has contract-auth, allow only registerd user. Ref: Issue #1082
+    # If contract has contract-auth, allow only registered user. Ref: Issue #1082
     if hasattr(contract, 'contractauth') and not register:
         log.warning('Contract has auth, but not found contract register.')
         raise Http404()
 
     if not contract.enabled_register_by_studentself and (not register or not register.is_registered()):
         log.warning(
-            'Student can not be registerd, but not found contract register or status is not register.')
+            'Student can not be registered, but not found contract register or status is not register.')
         raise Http404()
 
     courses = [get_course_by_id(detail.course_id) for detail in contract.details.all()]
@@ -181,7 +184,7 @@ def register(request):
 
     register = ContractRegister.get_by_user_contract(request.user, contract)
 
-    # If contract has contract-auth, allow only registerd user. Ref: Issue #1082
+    # If contract has contract-auth, allow only registered user. Ref: Issue #1082
     if hasattr(contract, 'contractauth') and not register:
         log.warning(
             'Contract has auth, but not found contract register, invitation_code(%s), contract_id(%s), user_id(%s)',
@@ -196,7 +199,7 @@ def register(request):
 
     if not contract.enabled_register_by_studentself and (not register or not register.is_registered()):
         log.warning(
-            'Student can not be registerd, but not found contract register or status is not register, invitation_code(%s), contract_id(%s), user_id(%s), register_status(%s)',
+            'Student can not be registered, but not found contract register or status is not register, invitation_code(%s), contract_id(%s), user_id(%s), register_status(%s)',
             invitation_code, contract.id, request.user.id, register.status if register else 'None',
         )
         return JsonResponse({
