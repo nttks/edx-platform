@@ -362,6 +362,11 @@ msgstr "{display_name}が必要です。"
 msgid "Failed to register the invitation code. Please operate again from <a href=\"{index_url}\">here</a>."
 msgstr "受講コードの登録に失敗しました。<a href=\"{index_url}\">ここから</a>再度操作してください。"
 
+#: biz/djangoapps/ga_invitation/views.py
+#: biz/djangoapps/ga_login/views.py
+msgid "Please ask your administrator to register the invitation code."
+msgstr "本受講コードの登録を管理者へ依頼してください。"
+
 #: biz/templates/ga_invitation/index.html
 msgid "Please check the course content by entering the invitation code."
 msgstr "受講コードを入力して受講内容を確認してください"

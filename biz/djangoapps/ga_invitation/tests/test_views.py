@@ -211,7 +211,7 @@ class InvitationViewsVerifyTest(InvitationViewsTest):
         response = self.assert_request_status_code(200, self._url_verify(), 'POST', data={'invitation_code': self.contract_student_cannot_register.invitation_code})
         content = json.loads(response.content)
         self.assertFalse(content['result'])
-        self.assertEqual(content['message'], 'Please ask your director to register invitation code.')
+        self.assertEqual(content['message'], 'Please ask your administrator to register the invitation code.')
 
     def test_student_cannot_register_yes_register_register(self):
         self.setup_user()

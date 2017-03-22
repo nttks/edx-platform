@@ -88,7 +88,7 @@ class BizStudentRegisterMixin(object):
     def _assert_cannot_register_invitation_code(self):
         self.account_settings_page.visit().click_on_link_in_link_field('invitation_code')
         self.invitation_page.wait_for_page().input_invitation_code(self.new_invitation_code).click_register_button()
-        self.assertIn('Please ask your director to register invitation code.', self.invitation_page.messages)
+        self.assertIn('Please ask your administrator to register the invitation code.', self.invitation_page.messages)
 
 
 @attr('shard_ga_biz_3')
@@ -1735,24 +1735,24 @@ class BizStudentRegisterWithContractAuthAndDisableRegisterStudentSelfTest(WebApp
         self.logout()
         self.biz_login_page.visit().input(self.existing_users[0]['username'], self.existing_users[0]['password']).click_login()
         self.assertEqual([
-            u'The invitation code has not been registered yet. Please ask your director to register invitation code.'
+            u'Please ask your administrator to register the invitation code.'
         ], self.biz_login_page.error_messages)
 
         self.logout()
         self.biz_login_page.visit().input(self.existing_users[1]['username'], self.existing_users[1]['password']).click_login()
         self.assertEqual([
-            u'The invitation code has not been registered yet. Please ask your director to register invitation code.'
+            u'Please ask your administrator to register the invitation code.'
         ], self.biz_login_page.error_messages)
 
         # Login new user
         self.logout()
         self.biz_login_page.visit().input(self.new_users[0]['username'], self.new_users[0]['password']).click_login()
         self.assertEqual([
-            u'The invitation code has not been registered yet. Please ask your director to register invitation code.'
+            u'Please ask your administrator to register the invitation code.'
         ], self.biz_login_page.error_messages)
 
         self.logout()
         self.biz_login_page.visit().input(self.new_users[1]['username'], self.new_users[1]['password']).click_login()
         self.assertEqual([
-            u'The invitation code has not been registered yet. Please ask your director to register invitation code.'
+            u'Please ask your administrator to register the invitation code.'
         ], self.biz_login_page.error_messages)

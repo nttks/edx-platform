@@ -350,7 +350,7 @@ class LoginViewsSubmitTest(LoginViewsTestBase):
             'login_code': self.login_code,
             'password': self.password,
         })
-        self.assertEqual(response.content, u"The invitation code has not been registered yet. Please ask your director to register invitation code.")
+        self.assertEqual(response.content, u"Please ask your administrator to register the invitation code.")
 
         self._assert_call(warning_log, [
             "Student can not be registered, status is input, contract:{0}, user.id:{1}".format(self.contract_auth_student_cannot_register.id, self.user.id),
@@ -372,7 +372,7 @@ class LoginViewsSubmitTest(LoginViewsTestBase):
             'login_code': self.login_code,
             'password': self.password,
         })
-        self.assertEqual(response.content, u"The invitation code has not been registered yet. Please ask your director to register invitation code.")
+        self.assertEqual(response.content, u"Please ask your administrator to register the invitation code.")
 
         self._assert_call(warning_log, [
             "Student can not be registered, status is input, contract:{0}, user {1}".format(self.contract_auth_student_cannot_register.id, self.login_code),

@@ -247,7 +247,7 @@ def submit(request):
             log.warning(u"Student can not be registered, status is input, contract:{0}, user.id:{1}".format(contract.id, authenticated_user.id))
         else:
             log.warning(u"Student can not be registered, status is input, contract:{0}, user {1}".format(contract.id, login_code))
-        return HttpResponse(_("The invitation code has not been registered yet. Please ask your director to register invitation code."), status=403)
+        return HttpResponse(_("Please ask your administrator to register the invitation code."), status=403)
 
     if authenticated_user.is_active:
         try:

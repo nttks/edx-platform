@@ -82,7 +82,7 @@ def verify(request):
             invitation_code, contract.id, request.user.id, register.status if register else 'None',
         )
         if register and register.is_input():
-            return JsonResponse({'result': False, 'message': _('Please ask your director to register invitation code.')})
+            return JsonResponse({'result': False, 'message': _('Please ask your administrator to register the invitation code.')})
         else:
             return JsonResponse({'result': False, 'message': _('Invitation code is invalid.')})
 
