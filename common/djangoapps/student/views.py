@@ -131,6 +131,8 @@ from ga_advanced_course.status import AdvancedCourseStatus
 from openedx.core.djangoapps.course_global.models import CourseGlobalSetting
 from openedx.core.djangoapps.ga_self_paced import api as self_paced_api
 
+from biz.djangoapps.ga_contract.models import ContractDetail
+
 
 log = logging.getLogger("edx.student")
 AUDIT_LOG = logging.getLogger("audit")
@@ -649,10 +651,11 @@ def dashboard(request):
         )
     )
 
-    # only show unenroll settings for not global course.
+    # only show unenroll settings for not global course and register-type of contract is not register on biz.
+    cannot_unenroll_courses = global_courses + [d.course_id for d in ContractDetail.find_register_type_disable()]
     show_unenroll_settings_for = frozenset(
         enrollment.course_id for enrollment in course_enrollments if (
-            enrollment.course_id not in global_courses and
+            enrollment.course_id not in cannot_unenroll_courses and
             not CourseMode.has_professional_mode(course_modes_by_course[enrollment.course_id])
         )
     )
@@ -1079,6 +1082,10 @@ def change_enrollment(request, check_access=True):
         enrollment = CourseEnrollment.get_enrollment(user, course_id)
         if not enrollment:
             return HttpResponseBadRequest(_("You are not enrolled in this course"))
+
+        # cannot unenroll this course, register-type of contract is disable on biz.
+        if course_id in [d.course_id for d in ContractDetail.find_register_type_disable()]:
+            return HttpResponseBadRequest(_("This course can not be unenrolled by user."))
 
         certificate_info = cert_info(user, enrollment.course_overview, enrollment.mode)
         if certificate_info.get('status') in DISABLE_UNENROLL_CERT_STATES:

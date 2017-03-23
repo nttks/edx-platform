@@ -31,11 +31,14 @@ class BizContractTest(WebAppTest, GaccoBizTestMixin):
     CONTRACTOR_ORGANIZATION_NAME = 'C company'
     CONTRACT_TYPE = 'OS'
     CONTRACT_TYPE_NAME = 'Owner Service Contract'
+    REGISTER_TYPE = 'DRS'
+    REGISTER_TYPE_NAME = 'Register by director'
 
     def assert_initial_columns(self, grid_columns):
-        self.assertEqual(len(grid_columns), 6)
+        self.assertEqual(len(grid_columns), 7)
         self.assertIn(u'Contract Name', grid_columns)
         self.assertIn(u'Contract Type', grid_columns)
+        self.assertIn(u'Registration method of invitation code', grid_columns)
         self.assertIn(u'Invitation Code', grid_columns)
         self.assertIn(u'Contractor Organization Name', grid_columns)
         self.assertIn(u'Contract Start Date', grid_columns)
@@ -86,7 +89,9 @@ class BizContractTest(WebAppTest, GaccoBizTestMixin):
         invitation_code = self.unique_id[0:8]
         start_date = '2016/01/01'
         end_date = '2100/01/01'
-        detail_page.input(contract_name=contract_name, contract_type=self.CONTRACT_TYPE,
+        detail_page.input(contract_name=contract_name,
+                          contract_type=self.CONTRACT_TYPE,
+                          register_type=self.REGISTER_TYPE,
                           invitation_code=invitation_code,
                           start_date=start_date, end_date=end_date,
                           contractor_organization=self.CONTRACTOR_ORGANIZATION) \
@@ -106,6 +111,7 @@ class BizContractTest(WebAppTest, GaccoBizTestMixin):
                 {
                     'Contract Name': contract_name,
                     'Contract Type': self.CONTRACT_TYPE_NAME,
+                    'Registration method of invitation code': self.REGISTER_TYPE_NAME,
                     'Invitation Code': invitation_code,
                     'Contract Start Date': start_date,
                     'Contract End Date': end_date,
@@ -127,7 +133,9 @@ class BizContractTest(WebAppTest, GaccoBizTestMixin):
         invitation_code = self.unique_id[0:8]
         start_date = '2016/01/01'
         end_date = '2100/01/01'
-        detail_page.input(contract_name=contract_name, contract_type=self.CONTRACT_TYPE,
+        detail_page.input(contract_name=contract_name,
+                          contract_type=self.CONTRACT_TYPE,
+                          register_type=self.REGISTER_TYPE,
                           invitation_code=invitation_code,
                           start_date=start_date, end_date=end_date,
                           contractor_organization=self.CONTRACTOR_ORGANIZATION) \
@@ -145,6 +153,7 @@ class BizContractTest(WebAppTest, GaccoBizTestMixin):
                 {
                     'Contract Name': contract_name,
                     'Contract Type': self.CONTRACT_TYPE_NAME,
+                    'Registration method of invitation code': self.REGISTER_TYPE_NAME,
                     'Invitation Code': invitation_code,
                     'Contract Start Date': start_date,
                     'Contract End Date': end_date,
@@ -166,7 +175,9 @@ class BizContractTest(WebAppTest, GaccoBizTestMixin):
         invitation_code = self.unique_id[0:8]
         start_date = '2016/01/01'
         end_date = '2100/01/01'
-        detail_page.input(contract_name=contract_name, contract_type=self.CONTRACT_TYPE,
+        detail_page.input(contract_name=contract_name,
+                          contract_type=self.CONTRACT_TYPE,
+                          register_type=self.REGISTER_TYPE,
                           invitation_code=invitation_code,
                           start_date=start_date, end_date=end_date,
                           contractor_organization=self.CONTRACTOR_ORGANIZATION) \
@@ -185,6 +196,7 @@ class BizContractTest(WebAppTest, GaccoBizTestMixin):
                 {
                     'Contract Name': contract_name,
                     'Contract Type': self.CONTRACT_TYPE_NAME,
+                    'Registration method of invitation code': self.REGISTER_TYPE_NAME,
                     'Invitation Code': invitation_code,
                     'Contract Start Date': start_date,
                     'Contract End Date': end_date,
@@ -208,7 +220,7 @@ class BizContractTest(WebAppTest, GaccoBizTestMixin):
         # Verify that required errors are displayed
         required_error = 'The field is required.'
         self.assertEqual(detail_page.contract_field_errors,
-                         [required_error, '', required_error, '', required_error, required_error])
+                         [required_error, '', '', required_error, '', required_error, required_error])
 
     def test_register_invitation_code_field_error(self):
         """
@@ -223,28 +235,35 @@ class BizContractTest(WebAppTest, GaccoBizTestMixin):
         contract_name = self.CONTRACTOR_ORGANIZATION_NAME + self.unique_id[0:8]
         start_date = '2016/01/01'
         end_date = '2100/01/01'
-        detail_page.input(contract_name=contract_name, contract_type=self.CONTRACT_TYPE, invitation_code='&%&%&&&&%',
+        detail_page.input(contract_name=contract_name,
+                          contract_type=self.CONTRACT_TYPE,
+                          invitation_code='&%&%&&&&%',
                           start_date=start_date, end_date=end_date,
                           contractor_organization=self.CONTRACTOR_ORGANIZATION) \
             .click_register_button().wait_for_page()
         bok_choy.browser.save_screenshot(self.browser, 'test_register_invitation_code_invalid_error_1')
         # Verify that error is displayed
-        self.assertEqual(detail_page.contract_field_errors, ['', '', 'Enter a valid value.', '', '', ''])
+        self.assertEqual(detail_page.contract_field_errors, ['', '', '', 'Enter a valid value.', '', '', ''])
 
         # Case 44
         # input short invitation_code
-        detail_page.input(contract_name=contract_name, contract_type=self.CONTRACT_TYPE, invitation_code='E00000',
+        detail_page.input(contract_name=contract_name,
+                          contract_type=self.CONTRACT_TYPE,
+                          register_type=self.REGISTER_TYPE,
+                          invitation_code='E00000',
                           start_date=start_date, end_date=end_date,
                           contractor_organization=self.CONTRACTOR_ORGANIZATION) \
             .click_register_button().wait_for_page()
         bok_choy.browser.save_screenshot(self.browser, 'test_register_invitation_code_length_error_1')
         # Verify that error is displayed
         self.assertEqual(detail_page.contract_field_errors,
-                         ['', '', 'Ensure this value has at least 8 characters (it has 6).', '', '', ''])
+                         ['', '', '', 'Ensure this value has at least 8 characters (it has 6).', '', '', ''])
 
         # Register a contract
         invitation_code = self.unique_id[0:8]
-        detail_page.input(contract_name=contract_name, contract_type=self.CONTRACT_TYPE,
+        detail_page.input(contract_name=contract_name,
+                          contract_type=self.CONTRACT_TYPE,
+                          register_type=self.REGISTER_TYPE,
                           invitation_code=invitation_code,
                           start_date=start_date, end_date=end_date,
                           contractor_organization=self.CONTRACTOR_ORGANIZATION) \
@@ -256,13 +275,15 @@ class BizContractTest(WebAppTest, GaccoBizTestMixin):
 
         # Case 49
         # input used invitation_code
-        detail_page.input(contract_name=contract_name, contract_type=self.CONTRACT_TYPE,
+        detail_page.input(contract_name=contract_name,
+                          contract_type=self.CONTRACT_TYPE,
+                          register_type=self.REGISTER_TYPE,
                           invitation_code=invitation_code,
                           start_date=start_date, end_date=end_date,
                           contractor_organization=self.CONTRACTOR_ORGANIZATION).click_register_button().wait_for_page()
         bok_choy.browser.save_screenshot(self.browser, 'test_register_invitation_code_used_error_1')
         # Verify that error is displayed
-        self.assertEqual(detail_page.contract_field_errors, ['', '', 'The invitation code has been used.', '', '', ''])
+        self.assertEqual(detail_page.contract_field_errors, ['', '', '', 'The invitation code has been used.', '', '', ''])
 
     def test_register_date_field_error(self):
         """
@@ -276,27 +297,33 @@ class BizContractTest(WebAppTest, GaccoBizTestMixin):
         # input invalid start date
         contract_name = self.CONTRACTOR_ORGANIZATION_NAME + self.unique_id[0:8]
         invitation_code = self.unique_id[0:8]
-        detail_page.input(contract_name=contract_name, contract_type=self.CONTRACT_TYPE,
+        detail_page.input(contract_name=contract_name,
+                          contract_type=self.CONTRACT_TYPE,
+                          register_type=self.REGISTER_TYPE,
                           invitation_code=invitation_code,
                           start_date='2016/01/01/01',
                           end_date='2100/01/01').click_register_button().wait_for_page()
         bok_choy.browser.save_screenshot(self.browser, 'test_register_date_field_error_1')
         # Verify that error is displayed
-        self.assertEqual(detail_page.contract_field_errors, ['', '', '', '', 'Enter a valid value.', ''])
+        self.assertEqual(detail_page.contract_field_errors, ['', '', '', '', '', 'Enter a valid value.', ''])
 
         # Case 46
         # input invalid end date
-        detail_page.input(contract_name=contract_name, contract_type=self.CONTRACT_TYPE,
+        detail_page.input(contract_name=contract_name,
+                          contract_type=self.CONTRACT_TYPE,
+                          register_type=self.REGISTER_TYPE,
                           invitation_code=invitation_code,
                           start_date='2016/01/01',
                           end_date='2100/01/01/01').click_register_button().wait_for_page()
         bok_choy.browser.save_screenshot(self.browser, 'test_register_date_field_error_2')
         # Verify that error is displayed
-        self.assertEqual(detail_page.contract_field_errors, ['', '', '', '', '', 'Enter a valid value.'])
+        self.assertEqual(detail_page.contract_field_errors, ['', '', '', '', '','',  'Enter a valid value.'])
 
         # Case 47,48
         # input end date before start date
-        detail_page.input(contract_name=contract_name, contract_type=self.CONTRACT_TYPE,
+        detail_page.input(contract_name=contract_name,
+                          contract_type=self.CONTRACT_TYPE,
+                          register_type=self.REGISTER_TYPE,
                           invitation_code=invitation_code,
                           start_date='2016/01/02',
                           end_date='2016/01/01').click_register_button().wait_for_page()
@@ -316,7 +343,10 @@ class BizContractTest(WebAppTest, GaccoBizTestMixin):
         # input duplicate detail info
         contract_name = self.CONTRACTOR_ORGANIZATION_NAME + self.unique_id[0:8]
         invitation_code = self.unique_id[0:8]
-        detail_page.input(contract_name=contract_name, contract_type=self.CONTRACT_TYPE, invitation_code=invitation_code,
+        detail_page.input(contract_name=contract_name,
+                          contract_type=self.CONTRACT_TYPE,
+                          register_type=self.REGISTER_TYPE,
+                          invitation_code=invitation_code,
                           start_date='2016/01/01',
                           end_date='2100/01/01') \
             .add_detail_info(self.course_id, 1) \
@@ -339,7 +369,10 @@ class BizContractTest(WebAppTest, GaccoBizTestMixin):
         # input duplicate detail info
         contract_name = self.CONTRACTOR_ORGANIZATION_NAME + self.unique_id[0:8]
         invitation_code = self.unique_id[0:8]
-        detail_page.input(contract_name=contract_name, contract_type=self.CONTRACT_TYPE, invitation_code=invitation_code,
+        detail_page.input(contract_name=contract_name,
+                          contract_type=self.CONTRACT_TYPE,
+                          register_type=self.REGISTER_TYPE,
+                          invitation_code=invitation_code,
                           start_date='2016/01/01',
                           end_date='2100/01/01') \
             .add_additional_info(u'部署', 1) \
@@ -366,7 +399,9 @@ class BizContractTest(WebAppTest, GaccoBizTestMixin):
         invitation_code = self.unique_id[0:8]
         start_date = '2016/01/01'
         end_date = '2100/01/01'
-        detail_page.input(contract_name=contract_name, contract_type=self.CONTRACT_TYPE,
+        detail_page.input(contract_name=contract_name,
+                          contract_type=self.CONTRACT_TYPE,
+                          register_type=self.REGISTER_TYPE,
                           invitation_code=invitation_code,
                           start_date=start_date, end_date=end_date) \
             .add_detail_info(self.course_id, 1) \
@@ -384,7 +419,9 @@ class BizContractTest(WebAppTest, GaccoBizTestMixin):
         invitation_code += '2'
         start_date = '2016/01/02'
         end_date = '2100/01/02'
-        detail_page.input(contract_name=contract_name, contract_type=self.CONTRACT_TYPE,
+        detail_page.input(contract_name=contract_name,
+                          contract_type=self.CONTRACT_TYPE,
+                          register_type=self.REGISTER_TYPE,
                           invitation_code=invitation_code,
                           start_date=start_date, end_date=end_date) \
             .input_detail_info(course2._course_key, 1) \
@@ -402,6 +439,7 @@ class BizContractTest(WebAppTest, GaccoBizTestMixin):
                 {
                     'Contract Name': contract_name,
                     'Contract Type': self.CONTRACT_TYPE_NAME,
+                    'Registration method of invitation code': self.REGISTER_TYPE_NAME,
                     'Invitation Code': invitation_code,
                     'Contract Start Date': start_date,
                     'Contract End Date': end_date,
@@ -424,7 +462,9 @@ class BizContractTest(WebAppTest, GaccoBizTestMixin):
         invitation_code = self.unique_id[0:8]
         start_date = '2016/01/01'
         end_date = '2100/01/01'
-        detail_page.input(contract_name=contract_name, contract_type=self.CONTRACT_TYPE,
+        detail_page.input(contract_name=contract_name,
+                          contract_type=self.CONTRACT_TYPE,
+                          register_type=self.REGISTER_TYPE,
                           invitation_code=invitation_code,
                           start_date=start_date, end_date=end_date) \
             .add_detail_info(self.course_id, 1) \

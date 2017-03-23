@@ -33,6 +33,10 @@ class LoginViewsTestBase(BizContractTestBase):
     def url_code_disabled(self):
         return ContractAuth.objects.get(contract=self.contract_auth_disabled).url_code
 
+    @property
+    def url_code_student_cannot_register(self):
+        return ContractAuth.objects.get(contract=self.contract_auth_student_cannot_register).url_code
+
     def _assert_call(self, mock_patch, call_withes=None):
         call_withes = call_withes or []
 
@@ -58,6 +62,7 @@ class LoginViewsTestBase(BizContractTestBase):
             self.login(self.email, self.password)
 
         return self.user
+
 
 class LoginViewsIndexTest(LoginViewsTestBase):
 
@@ -125,6 +130,35 @@ class LoginViewsIndexTest(LoginViewsTestBase):
 
         self._assert_call(warning_log, [
             "Unregister status user:{} with contract:{}".format(self.user.id, self.contract_auth.id)
+        ])
+
+    @patch('biz.djangoapps.ga_login.views.log.warning')
+    def test_logined_with_contract_register_type_director_input(self, warning_log):
+        self.setup_user('test-login-code')
+        self.create_contract_register(self.user, self.contract_auth_student_cannot_register, INPUT_INVITATION_CODE)
+        self.assert_request_status_code(404, self._url_index(self.url_code_student_cannot_register))
+
+        self._assert_call(warning_log, [
+            "Student can not be registered, status is input, user:{} contract:{}".format(self.user.id, self.contract_auth_student_cannot_register.id)
+        ])
+
+    @patch('biz.djangoapps.ga_login.views.log.warning')
+    def test_logined_with_contract_register_type_director_register(self, warning_log):
+        self.setup_user('test-login-code')
+        self.create_contract_register(self.user, self.contract_auth_student_cannot_register, REGISTER_INVITATION_CODE)
+        response = self.assert_request_status_code(302, self._url_index(self.url_code_student_cannot_register))
+        self.assertTrue(response.url.endswith(reverse('dashboard')))
+
+        self._assert_call(warning_log)
+
+    @patch('biz.djangoapps.ga_login.views.log.warning')
+    def test_logined_with_contract_register_type_director_unregister(self, warning_log):
+        self.setup_user('test-login-code')
+        self.create_contract_register(self.user, self.contract_auth_student_cannot_register, UNREGISTER_INVITATION_CODE)
+        self.assert_request_status_code(404, self._url_index(self.url_code_student_cannot_register))
+
+        self._assert_call(warning_log, [
+            "Unregister status user:{} with contract:{}".format(self.user.id, self.contract_auth_student_cannot_register.id)
         ])
 
 
@@ -298,6 +332,120 @@ class LoginViewsSubmitTest(LoginViewsTestBase):
         self._assert_call(warning_log, [
             "Unregister status user:{} with contract:{}".format(self.user.id, self.contract_auth.id),
             "Login failed contract:{0} - Unknown user {1}".format(self.contract_auth.id, self.login_code),
+        ])
+        self._assert_call(audit_warning_log)
+        self._assert_call(critical_log)
+        self._assert_call(audit_critical_log)
+
+    @override_settings(FEATURES=FEATURES_SQUELCH_PII_IN_LOGS_ENABLED)
+    @patch('biz.djangoapps.ga_login.views.AUDIT_LOG.critical')
+    @patch('biz.djangoapps.ga_login.views.log.critical')
+    @patch('biz.djangoapps.ga_login.views.AUDIT_LOG.warning')
+    @patch('biz.djangoapps.ga_login.views.log.warning')
+    def test_found_contract_register_type_director_input_squelch_on(self, warning_log, audit_warning_log, critical_log, audit_critical_log):
+        self.setup_user('Test-Login-Code', do_login=False)
+        self.create_contract_register(self.user, self.contract_auth_student_cannot_register, INPUT_INVITATION_CODE)
+        response = self.assert_request_status_code(403, self._url_submit(), 'POST', data={
+            'url_code': self.url_code_student_cannot_register,
+            'login_code': self.login_code,
+            'password': self.password,
+        })
+        self.assertEqual(response.content, u"Please ask your administrator to register the invitation code.")
+
+        self._assert_call(warning_log, [
+            "Student can not be registered, status is input, contract:{0}, user.id:{1}".format(self.contract_auth_student_cannot_register.id, self.user.id),
+        ])
+        self._assert_call(audit_warning_log)
+        self._assert_call(critical_log)
+        self._assert_call(audit_critical_log)
+
+    @override_settings(FEATURES=FEATURES_SQUELCH_PII_IN_LOGS_DISABLED)
+    @patch('biz.djangoapps.ga_login.views.AUDIT_LOG.critical')
+    @patch('biz.djangoapps.ga_login.views.log.critical')
+    @patch('biz.djangoapps.ga_login.views.AUDIT_LOG.warning')
+    @patch('biz.djangoapps.ga_login.views.log.warning')
+    def test_found_contract_register_type_director_input_squelch_off(self, warning_log, audit_warning_log, critical_log, audit_critical_log):
+        self.setup_user('Test-Login-Code', do_login=False)
+        self.create_contract_register(self.user, self.contract_auth_student_cannot_register, INPUT_INVITATION_CODE)
+        response = self.assert_request_status_code(403, self._url_submit(), 'POST', data={
+            'url_code': self.url_code_student_cannot_register,
+            'login_code': self.login_code,
+            'password': self.password,
+        })
+        self.assertEqual(response.content, u"Please ask your administrator to register the invitation code.")
+
+        self._assert_call(warning_log, [
+            "Student can not be registered, status is input, contract:{0}, user {1}".format(self.contract_auth_student_cannot_register.id, self.login_code),
+        ])
+        self._assert_call(audit_warning_log)
+        self._assert_call(critical_log)
+        self._assert_call(audit_critical_log)
+
+    @patch('biz.djangoapps.ga_login.views.AUDIT_LOG.critical')
+    @patch('biz.djangoapps.ga_login.views.log.critical')
+    @patch('biz.djangoapps.ga_login.views.AUDIT_LOG.warning')
+    @patch('biz.djangoapps.ga_login.views.log.warning')
+    @patch('biz.djangoapps.ga_login.views.log.debug')
+    def test_found_contract_register_type_director_register(self, debug_log, warning_log, audit_warning_log, critical_log, audit_critical_log):
+        self.setup_user('Test-Login-Code', do_login=False)
+        self.create_contract_register(self.user, self.contract_auth_student_cannot_register, REGISTER_INVITATION_CODE)
+        response = self.assert_request_status_code(204, self._url_submit(), 'POST', data={
+            'url_code': self.url_code_student_cannot_register,
+            'login_code': self.login_code,
+            'password': self.password,
+        })
+        self.assertEqual(response.content, u"")
+
+        self.assertEqual(0, self.mock_tracker.identify.call_count)
+        self.assertEqual(0, self.mock_tracker.track.call_count)
+
+        self._assert_call(debug_log)
+        self._assert_call(warning_log)
+        self._assert_call(audit_warning_log)
+        self._assert_call(critical_log)
+        self._assert_call(audit_critical_log)
+
+    @override_settings(FEATURES=FEATURES_SQUELCH_PII_IN_LOGS_ENABLED)
+    @patch('biz.djangoapps.ga_login.views.AUDIT_LOG.critical')
+    @patch('biz.djangoapps.ga_login.views.log.critical')
+    @patch('biz.djangoapps.ga_login.views.AUDIT_LOG.warning')
+    @patch('biz.djangoapps.ga_login.views.log.warning')
+    def test_found_contract_register_type_director_unregister_squelch_on(self, warning_log, audit_warning_log, critical_log, audit_critical_log):
+        self.setup_user('Test-Login-Code', do_login=False)
+        self.create_contract_register(self.user, self.contract_auth_student_cannot_register, UNREGISTER_INVITATION_CODE)
+        response = self.assert_request_status_code(403, self._url_submit(), 'POST', data={
+            'url_code': self.url_code_student_cannot_register,
+            'login_code': self.login_code,
+            'password': 'hoge',
+        })
+        self.assertEqual(response.content, u"Login code or password is incorrect.")
+
+        self._assert_call(warning_log, [
+            "Unregister status user:{} with contract:{}".format(self.user.id, self.contract_auth_student_cannot_register.id),
+            "Login failed contract:{0} - Unknown user".format(self.contract_auth_student_cannot_register.id),
+        ])
+        self._assert_call(audit_warning_log)
+        self._assert_call(critical_log)
+        self._assert_call(audit_critical_log)
+
+    @override_settings(FEATURES=FEATURES_SQUELCH_PII_IN_LOGS_DISABLED)
+    @patch('biz.djangoapps.ga_login.views.AUDIT_LOG.critical')
+    @patch('biz.djangoapps.ga_login.views.log.critical')
+    @patch('biz.djangoapps.ga_login.views.AUDIT_LOG.warning')
+    @patch('biz.djangoapps.ga_login.views.log.warning')
+    def test_found_contract_register_type_director_unregister_squelch_off(self, warning_log, audit_warning_log, critical_log, audit_critical_log):
+        self.setup_user('Test-Login-Code', do_login=False)
+        self.create_contract_register(self.user, self.contract_auth_student_cannot_register, UNREGISTER_INVITATION_CODE)
+        response = self.assert_request_status_code(403, self._url_submit(), 'POST', data={
+            'url_code': self.url_code_student_cannot_register,
+            'login_code': self.login_code,
+            'password': 'hoge',
+        })
+        self.assertEqual(response.content, u"Login code or password is incorrect.")
+
+        self._assert_call(warning_log, [
+            "Unregister status user:{} with contract:{}".format(self.user.id, self.contract_auth_student_cannot_register.id),
+            "Login failed contract:{0} - Unknown user {1}".format(self.contract_auth_student_cannot_register.id, self.login_code),
         ])
         self._assert_call(audit_warning_log)
         self._assert_call(critical_log)

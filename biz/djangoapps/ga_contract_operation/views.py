@@ -17,7 +17,14 @@ from django.views.decorators.http import require_GET, require_POST
 
 from biz.djangoapps.ga_contract_operation.models import ContractTaskHistory, ContractTaskTarget, StudentRegisterTaskTarget
 from biz.djangoapps.ga_contract_operation.tasks import personalinfo_mask, student_register, TASKS, STUDENT_REGISTER, PERSONALINFO_MASK
-from biz.djangoapps.ga_invitation.models import AdditionalInfoSetting, ContractRegister, STATUS as CONTRACT_REGISTER_STATUS, UNREGISTER_INVITATION_CODE
+from biz.djangoapps.ga_invitation.models import (
+    AdditionalInfoSetting,
+    ContractRegister,
+    STATUS as CONTRACT_REGISTER_STATUS,
+    INPUT_INVITATION_CODE,
+    REGISTER_INVITATION_CODE,
+    UNREGISTER_INVITATION_CODE
+)
 from biz.djangoapps.util.access_utils import has_staff_access
 from biz.djangoapps.util.decorators import check_course_selection
 from biz.djangoapps.util.json_utils import EscapedEdxJSONEncoder
@@ -228,6 +235,15 @@ def register_students_ajax(request):
         return _error_response(_(
             "The number of lines per line has exceeded the {biz_max_char_length_register_line} lines."
         ).format(biz_max_char_length_register_line=settings.BIZ_MAX_CHAR_LENGTH_REGISTER_LINE))
+
+    register_status = request.POST.get('register_status')
+    if register_status and register_status != REGISTER_INVITATION_CODE:
+        return _error_response(_("Invalid access."))
+
+    register_status = register_status or INPUT_INVITATION_CODE
+
+    # To register status. Register or Input
+    students = ['{},{}'.format(register_status, s) for s in students]
 
     history = ContractTaskHistory.create(request.current_contract, request.user)
     StudentRegisterTaskTarget.bulk_create(history, students)

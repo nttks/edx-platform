@@ -66,13 +66,25 @@ def verify(request):
     if not contract or not contract.is_enabled():
         return JsonResponse({'result': False, 'message': _('Invitation code is invalid.')})
 
-    # If contract has contract-auth, allow only registerd user. Ref: Issue #1082
-    if hasattr(contract, 'contractauth') and not ContractRegister.get_by_user_contract(request.user, contract):
+    register = ContractRegister.get_by_user_contract(request.user, contract)
+
+    # If contract has contract-auth, allow only registered user. Ref: Issue #1082
+    if hasattr(contract, 'contractauth') and not register:
         log.warning(
             'Contract has auth, but not found contract register, invitation_code(%s), contract_id(%s), user_id(%s)',
             invitation_code, contract.id, request.user.id,
         )
         return JsonResponse({'result': False, 'message': _('Invitation code is invalid.')})
+
+    if not contract.enabled_register_by_studentself and (not register or not register.is_registered()):
+        log.warning(
+            'Student can not be registered, but not found contract register or status is not register, invitation_code(%s), contract_id(%s), user_id(%s), register_status(%s)',
+            invitation_code, contract.id, request.user.id, register.status if register else 'None',
+        )
+        if register and register.is_input():
+            return JsonResponse({'result': False, 'message': _('Please ask your administrator to register the invitation code.')})
+        else:
+            return JsonResponse({'result': False, 'message': _('Invitation code is invalid.')})
 
     contract_details = contract.details.all()
     if not contract_details:
@@ -103,9 +115,16 @@ def confirm(request, invitation_code):
         log.warning('Contract is None or disabled.')
         raise Http404()
 
-    # If contract has contract-auth, allow only registerd user. Ref: Issue #1082
-    if hasattr(contract, 'contractauth') and not ContractRegister.get_by_user_contract(request.user, contract):
+    register = ContractRegister.get_by_user_contract(request.user, contract)
+
+    # If contract has contract-auth, allow only registered user. Ref: Issue #1082
+    if hasattr(contract, 'contractauth') and not register:
         log.warning('Contract has auth, but not found contract register.')
+        raise Http404()
+
+    if not contract.enabled_register_by_studentself and (not register or not register.is_registered()):
+        log.warning(
+            'Student can not be registered, but not found contract register or status is not register.')
         raise Http404()
 
     courses = [get_course_by_id(detail.course_id) for detail in contract.details.all()]
@@ -163,9 +182,26 @@ def register(request):
             ).format(index_url=reverse('biz:invitation:index'))
         })
 
-    # If contract has contract-auth, allow only registerd user. Ref: Issue #1082
-    if hasattr(contract, 'contractauth') and not ContractRegister.get_by_user_contract(request.user, contract):
-        log.warning('Not found contract detail, invitation_code(%s), contract_id(%s)', invitation_code, contract.id)
+    register = ContractRegister.get_by_user_contract(request.user, contract)
+
+    # If contract has contract-auth, allow only registered user. Ref: Issue #1082
+    if hasattr(contract, 'contractauth') and not register:
+        log.warning(
+            'Contract has auth, but not found contract register, invitation_code(%s), contract_id(%s), user_id(%s)',
+            invitation_code, contract.id, request.user.id,
+        )
+        return JsonResponse({
+            'result': False,
+            'message': _(
+                'Invitation code is invalid. Please operate again from <a href="{index_url}">here</a>.'
+            ).format(index_url=reverse('biz:invitation:index'))
+        })
+
+    if not contract.enabled_register_by_studentself and (not register or not register.is_registered()):
+        log.warning(
+            'Student can not be registered, but not found contract register or status is not register, invitation_code(%s), contract_id(%s), user_id(%s), register_status(%s)',
+            invitation_code, contract.id, request.user.id, register.status if register else 'None',
+        )
         return JsonResponse({
             'result': False,
             'message': _(

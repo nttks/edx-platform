@@ -26,7 +26,7 @@ from certificates.models import CertificateStatuses, GeneratedCertificate
 from certificates.tests.factories import GeneratedCertificateFactory
 from courseware import grades
 from courseware.tests.helpers import LoginEnrollmentTestCase
-from opaque_keys.edx.locator import CourseLocator
+from opaque_keys.edx.keys import CourseKey
 from student.models import CourseEnrollment
 from student.tests.factories import UserFactory, UserProfileFactory
 from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
@@ -149,11 +149,11 @@ class UpdateBizScoreStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEnrol
         self.assertEquals(len(score_list), count)
         return score_list
 
-    def assert_error(self, contract, course):
-        ScoreBatchStatus.objects.get(contract=contract, course_id=course.id, status=BATCH_STATUS_STARTED)
-        ScoreBatchStatus.objects.get(contract=contract, course_id=course.id, status=BATCH_STATUS_ERROR, student_count=None)
+    def assert_error(self, contract, course_id):
+        ScoreBatchStatus.objects.get(contract=contract, course_id=course_id, status=BATCH_STATUS_STARTED)
+        ScoreBatchStatus.objects.get(contract=contract, course_id=course_id, status=BATCH_STATUS_ERROR, student_count=None)
 
-        score_list = ScoreStore(contract.id, unicode(course.id)).get_documents()
+        score_list = ScoreStore(contract.id, unicode(course_id)).get_documents()
         self.assertEquals(len(score_list), 0)
         return score_list
 
@@ -511,18 +511,14 @@ class UpdateBizScoreStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEnrol
 
     def test_course_does_not_exist(self):
 
-        class DummyCourseDescriptor(object):
-            def __init__(self, org, course, run):
-                self.id = CourseLocator(org, course, run)
-
-        not_exist_course = DummyCourseDescriptor('not', 'exist', 'course')
+        not_exist_course_id = CourseKey.from_string('course-v1:not+exist+course')
         not_exist_course_contract = self._create_contract(
-            detail_courses=[not_exist_course],
+            detail_courses=[not_exist_course_id],
         )
 
         call_command('update_biz_score_status', not_exist_course_contract.id)
 
-        self.assert_error(not_exist_course_contract, not_exist_course)
+        self.assert_error(not_exist_course_contract, not_exist_course_id)
         self.mock_log.warning.assert_called_once()
 
     def test_error(self):
@@ -531,6 +527,6 @@ class UpdateBizScoreStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEnrol
 
         call_command('update_biz_score_status')
 
-        self.assert_error(self.contract, self.course1)
-        self.assert_error(self.contract, self.course2)
+        self.assert_error(self.contract, self.course1.id)
+        self.assert_error(self.contract, self.course2.id)
         self.mock_log.error.assert_called_once()

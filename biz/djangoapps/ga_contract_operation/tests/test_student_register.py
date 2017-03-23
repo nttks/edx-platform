@@ -20,6 +20,7 @@ from biz.djangoapps.ga_login.tests.factories import BizUserFactory
 from biz.djangoapps.util.tests.testcase import BizViewTestBase
 from openedx.core.djangoapps.course_global.tests.factories import CourseGlobalSettingFactory
 from openedx.core.djangoapps.ga_task.tests.test_task import TaskTestMixin
+from student.models import CourseEnrollment
 
 
 @ddt.ddt
@@ -44,8 +45,8 @@ class StudentRegisterTaskTest(BizViewTestBase, ModuleStoreTestCase, TaskTestMixi
             BizUserFactory.create(user=self.user, login_code=login_code)
 
     @ddt.data(
-        (None, ["test_student1@example.com,t,t"]),
-        ('contract-url-code', ["test_student1@example.com,t,t,Test_Student_1,TestStudent1"]),
+        (None, ["Input,test_student1@example.com,t,t"]),
+        ('contract-url-code', ["Input,test_student1@example.com,t,t,Test_Student_1,TestStudent1"]),
     )
     @ddt.unpack
     def test_register_validation(self, url_code, students):
@@ -85,7 +86,7 @@ class StudentRegisterTaskTest(BizViewTestBase, ModuleStoreTestCase, TaskTestMixi
         # ----------------------------------------------------------
         # Setup test data
         # ----------------------------------------------------------
-        students = ["test_student@example.com,test_student_1,tester1,{login_code},TestStudent1".format(login_code=login_code)]
+        students = ["Input,test_student@example.com,test_student_1,tester1,{login_code},TestStudent1".format(login_code=login_code)]
 
         contract = self._create_contract(url_code='contract-url-code')
         history = self._create_task_history(contract=contract)
@@ -128,7 +129,7 @@ class StudentRegisterTaskTest(BizViewTestBase, ModuleStoreTestCase, TaskTestMixi
         # ----------------------------------------------------------
         # Setup test data
         # ----------------------------------------------------------
-        students = ["test_student@example.com,test_student_1,tester1,Test_Student_1,{password}".format(password=password)]
+        students = ["Input,test_student@example.com,test_student_1,tester1,Test_Student_1,{password}".format(password=password)]
 
         contract = self._create_contract(url_code='contract-url-code')
         history = self._create_task_history(contract=contract)
@@ -159,8 +160,8 @@ class StudentRegisterTaskTest(BizViewTestBase, ModuleStoreTestCase, TaskTestMixi
         self.assertFalse(ContractRegister.objects.filter(contract=contract).exists())
 
     @ddt.data(
-        (None, ["test_student@example.com,test_student_1,tester1"]),
-        ('contract-url-code', ["test_student@example.com,test_student_1,tester1,Test_Student_1,TestStudent1"]),
+        (None, ["Input,test_student@example.com,test_student_1,tester1"]),
+        ('contract-url-code', ["Input,test_student@example.com,test_student_1,tester1,Test_Student_1,TestStudent1"]),
     )
     @ddt.unpack
     def test_register_account_creation(self, url_code, students):
@@ -200,8 +201,8 @@ class StudentRegisterTaskTest(BizViewTestBase, ModuleStoreTestCase, TaskTestMixi
             self.assertEqual('Test_Student_1', BizUser.objects.get(user=user).login_code)
 
     @ddt.data(
-        (None, ["test_student@example.com,test_student_1,tester1"]),
-        ('contract-url-code', ["test_student@example.com,test_student_1,tester1,Test_Student_1,TestStudent1"]),
+        (None, ["Input,test_student@example.com,test_student_1,tester1"]),
+        ('contract-url-code', ["Input,test_student@example.com,test_student_1,tester1,Test_Student_1,TestStudent1"]),
     )
     @ddt.unpack
     def test_register_account_creation_with_global_course(self, url_code, students):
@@ -242,8 +243,8 @@ class StudentRegisterTaskTest(BizViewTestBase, ModuleStoreTestCase, TaskTestMixi
             self.assertEqual('Test_Student_1', BizUser.objects.get(user=user).login_code)
 
     @ddt.data(
-        (None, ["", "test_student@example.com,test_student_1,tester1", "", ""]),
-        ('contract-url-code', ["", "test_student@example.com,test_student_1,tester1,Test_Student_1,TestStudent1", "", ""]),
+        (None, ["Input,", "Input,test_student@example.com,test_student_1,tester1", "Register,", "Input,"]),
+        ('contract-url-code', ["Input,", "Input,test_student@example.com,test_student_1,tester1,Test_Student_1,TestStudent1", "Register,", "Input,"]),
     )
     @ddt.unpack
     def test_register_account_creation_with_blank_lines(self, url_code, students):
@@ -282,12 +283,12 @@ class StudentRegisterTaskTest(BizViewTestBase, ModuleStoreTestCase, TaskTestMixi
 
     @ddt.data(
         (None, [
-            "test_student@example.com,test_student_1,tester1",
-            "test_student@example.com,test_student_1,tester2",
+            "Input,test_student@example.com,test_student_1,tester1",
+            "Input,test_student@example.com,test_student_1,tester2",
         ]),
         ('contract-url-code', [
-            "test_student@example.com,test_student_1,tester1,Test_Student_1,TestStudent1",
-            "test_student@example.com,test_student_1,tester2,Test_Student_1,TestStudent1",
+            "Input,test_student@example.com,test_student_1,tester1,Test_Student_1,TestStudent1",
+            "Input,test_student@example.com,test_student_1,tester2,Test_Student_1,TestStudent1",
         ]),
     )
     @ddt.unpack
@@ -327,12 +328,12 @@ class StudentRegisterTaskTest(BizViewTestBase, ModuleStoreTestCase, TaskTestMixi
     @ddt.data(
         (
             None,
-            ["test_student@example.com,test_student_1,tester1,Test_Student_1,TestStudent1", ""],
+            ["Input,test_student@example.com,test_student_1,tester1,Test_Student_1,TestStudent1", "Input,"],
             "Line 1:Data must have exactly three columns: email, username, and full name."
         ),
         (
             'contract-url-code',
-            ["test_student@example.com,test_student_1,tester1", ""],
+            ["Input,test_student@example.com,test_student_1,tester1", "Input,"],
             "Line 1:Data must have exactly five columns: email, username, full name, login code and password."
         ),
     )
@@ -372,8 +373,8 @@ class StudentRegisterTaskTest(BizViewTestBase, ModuleStoreTestCase, TaskTestMixi
         self.assertFalse(ContractRegister.objects.filter(contract=contract).exists())
 
     @ddt.data(
-        (None, ["test_student.example.com,test_student_1,tester1"]),
-        ('contract-url-code', ["test_student.example.com,test_student_1,tester1,Test_Student_1,TestStudent1"]),
+        (None, ["Input,test_student.example.com,test_student_1,tester1"]),
+        ('contract-url-code', ["Input,test_student.example.com,test_student_1,tester1,Test_Student_1,TestStudent1"]),
     )
     @ddt.unpack
     def test_register_invalid_email(self, url_code, students):
@@ -409,8 +410,8 @@ class StudentRegisterTaskTest(BizViewTestBase, ModuleStoreTestCase, TaskTestMixi
         self.assertFalse(ContractRegister.objects.filter(contract=contract).exists())
 
     @ddt.data(
-        (None, ["{email},test_student_1,tester1"]),
-        ('contract-url-code', ["{email},test_student_1,tester1,Test_Student_1,TestStudent1"]),
+        (None, ["Input,{email},test_student_1,tester1"]),
+        ('contract-url-code', ["Input,{email},test_student_1,tester1,Test_Student_1,TestStudent1"]),
     )
     @ddt.unpack
     def test_register_user_with_already_existing_email(self, url_code, students):
@@ -460,8 +461,8 @@ class StudentRegisterTaskTest(BizViewTestBase, ModuleStoreTestCase, TaskTestMixi
             self.assertEqual('Test_Student_1', BizUser.objects.get(user=self.user).login_code)
 
     @ddt.data(
-        (None, ["{email},test_student_1,tester1"]),
-        ('contract-url-code', ["{email},test_student_1,tester1,Test_Student_1,TestStudent1"]),
+        (None, ["Input,{email},test_student_1,tester1"]),
+        ('contract-url-code', ["Input,{email},test_student_1,tester1,Test_Student_1,TestStudent1"]),
     )
     @ddt.unpack
     def test_register_user_with_already_existing_contract_register_input(self, url_code, students):
@@ -512,8 +513,8 @@ class StudentRegisterTaskTest(BizViewTestBase, ModuleStoreTestCase, TaskTestMixi
             self.assertEqual('Test_Student_1', BizUser.objects.get(user=self.user).login_code)
 
     @ddt.data(
-        (None, ["{email},test_student_1,tester1"]),
-        ('contract-url-code', ["{email},test_student_1,tester1,Test_Student_1,TestStudent1"]),
+        (None, ["Input,{email},test_student_1,tester1"]),
+        ('contract-url-code', ["Input,{email},test_student_1,tester1,Test_Student_1,TestStudent1"]),
     )
     @ddt.unpack
     def test_register_user_with_already_existing_contract_register_register(self, url_code, students):
@@ -568,7 +569,7 @@ class StudentRegisterTaskTest(BizViewTestBase, ModuleStoreTestCase, TaskTestMixi
         # Setup test data
         # ----------------------------------------------------------
         self.setup_user('Test_Student_1')
-        students = ["{email},{username},username,{login_code},{password}".format(
+        students = ["Input,{email},{username},username,{login_code},{password}".format(
             email=self.email,
             username=self.username,
             login_code=self.login_code,
@@ -604,7 +605,7 @@ class StudentRegisterTaskTest(BizViewTestBase, ModuleStoreTestCase, TaskTestMixi
         # Setup test data
         # ----------------------------------------------------------
         self.setup_user('Test_Student_1')
-        students = ["{email},{username},username,{login_code},{password}".format(
+        students = ["Input,{email},{username},username,{login_code},{password}".format(
             email=self.email,
             username=self.username,
             login_code='Test_Student_12',
@@ -645,7 +646,7 @@ class StudentRegisterTaskTest(BizViewTestBase, ModuleStoreTestCase, TaskTestMixi
         # Setup test data
         # ----------------------------------------------------------
         self.setup_user('Test_Student_1')
-        students = ["{email},{username},username,{login_code},{password}".format(
+        students = ["Input,{email},{username},username,{login_code},{password}".format(
             email=self.email,
             username=self.username,
             login_code=self.login_code,
@@ -686,7 +687,7 @@ class StudentRegisterTaskTest(BizViewTestBase, ModuleStoreTestCase, TaskTestMixi
         # Setup test data
         # ----------------------------------------------------------
         self.setup_user('Test_Student_1')
-        students = ["{email},{username},username,{login_code},{password}".format(
+        students = ["Input,{email},{username},username,{login_code},{password}".format(
             email=self.email,
             username=self.username,
             login_code='Test_Student_12',
@@ -732,8 +733,8 @@ class StudentRegisterTaskTest(BizViewTestBase, ModuleStoreTestCase, TaskTestMixi
         # ----------------------------------------------------------
         self.setup_user('Test_Student_1')
         students = [
-            "test_student1@example.com,test_student_1,tester1,Test_Student_1,TestStudent1",
-            "{email},{username},tester2,Test_Student_1,{password}".format(email=self.email, username=self.username, password=self.password),
+            "Input,test_student1@example.com,test_student_1,tester1,Test_Student_1,TestStudent1",
+            "Input,{email},{username},tester2,Test_Student_1,{password}".format(email=self.email, username=self.username, password=self.password),
         ]
 
         contract = self._create_contract(url_code='contract-url-code')
@@ -771,12 +772,12 @@ class StudentRegisterTaskTest(BizViewTestBase, ModuleStoreTestCase, TaskTestMixi
 
     @ddt.data(
         (None, [
-            "test_student1@example.com,test_student_1,tester1",
-            "test_student2@example.com,test_student_1,tester2",
+            "Input,test_student1@example.com,test_student_1,tester1",
+            "Input,test_student2@example.com,test_student_1,tester2",
         ]),
         ('contract-url-code', [
-            "test_student1@example.com,test_student_1,tester1,Test_Student_1,TestStudent1",
-            "test_student2@example.com,test_student_1,tester2,Test_Student_2,TestStudent2",
+            "Input,test_student1@example.com,test_student_1,tester1,Test_Student_1,TestStudent1",
+            "Input,test_student2@example.com,test_student_1,tester2,Test_Student_2,TestStudent2",
         ]),
     )
     @ddt.unpack
@@ -820,8 +821,8 @@ class StudentRegisterTaskTest(BizViewTestBase, ModuleStoreTestCase, TaskTestMixi
         # Setup test data
         # ----------------------------------------------------------
         students =  [
-            "test_student1@example.com,test_student_1,tester1,Test_Student_1,TestStudent1",
-            "test_student2@example.com,test_student_2,tester2,Test_Student_1,TestStudent2",
+            "Input,test_student1@example.com,test_student_1,tester1,Test_Student_1,TestStudent1",
+            "Input,test_student2@example.com,test_student_2,tester2,Test_Student_1,TestStudent2",
         ]
 
         contract = self._create_contract(url_code='contract-url-code')
@@ -857,12 +858,12 @@ class StudentRegisterTaskTest(BizViewTestBase, ModuleStoreTestCase, TaskTestMixi
 
     @ddt.data(
         (None, [
-            "test_student1@example.com,test_student_1,tester1",
-            "test_student2@example.com,test_student_1,tester2",
+            "Input,test_student1@example.com,test_student_1,tester1",
+            "Input,test_student2@example.com,test_student_1,tester2",
         ]),
         ('contract-url-code', [
-            "test_student1@example.com,test_student_1,tester1,Test_Student_1,TestStudent1",
-            "test_student2@example.com,test_student_1,tester2,Test_Student_2,TestStudent2",
+            "Input,test_student1@example.com,test_student_1,tester1,Test_Student_1,TestStudent1",
+            "Input,test_student2@example.com,test_student_1,tester2,Test_Student_2,TestStudent2",
         ]),
     )
     @ddt.unpack
@@ -904,14 +905,14 @@ class StudentRegisterTaskTest(BizViewTestBase, ModuleStoreTestCase, TaskTestMixi
 
     @ddt.data(
         (None, [
-            "test_student1@example.com,test_student_1,tester1",
-            "test_student3@example.com,test_student_1,tester3",
-            "test_student2@example.com,test_student_2,tester2",
+            "Input,test_student1@example.com,test_student_1,tester1",
+            "Input,test_student3@example.com,test_student_1,tester3",
+            "Input,test_student2@example.com,test_student_2,tester2",
         ]),
         ('contract-url-code', [
-            "test_student1@example.com,test_student_1,tester1,Test_Student_1,TestStudent1",
-            "test_student3@example.com,test_student_1,tester3,Test_Student_3,TestStudent3",
-            "test_student2@example.com,test_student_2,tester2,Test_Student_2,TestStudent2",
+            "Input,test_student1@example.com,test_student_1,tester1,Test_Student_1,TestStudent1",
+            "Input,test_student3@example.com,test_student_1,tester3,Test_Student_3,TestStudent3",
+            "Input,test_student2@example.com,test_student_2,tester2,Test_Student_2,TestStudent2",
         ]),
     )
     @ddt.unpack
@@ -952,16 +953,73 @@ class StudentRegisterTaskTest(BizViewTestBase, ModuleStoreTestCase, TaskTestMixi
         self.assertEqual(ContractRegister.objects.get(user__email='test_student2@example.com', contract=contract).status, INPUT_INVITATION_CODE)
         self.assertFalse(ContractRegister.objects.filter(user__email='test_student3@example.com', contract=contract).exists())
 
+    @patch('biz.djangoapps.ga_contract_operation.student_register.log.error')
     @ddt.data(
         (None, [
-            "test_student1test_student1test_student1test_student1test_student@example.com,test_student_1,tester1",
-            "test_student3@example.com,test_student_1test_student_1test_stu,tester3",
-            "test_student2@example.com,test_student_2,tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2test",
+            "Register,test_student1@example.com,test_student_1,tester1",
+            "Unregister,test_student3@example.com,test_student_3,tester3",
+            "Register,test_student2@example.com,test_student_2,tester2",
         ]),
         ('contract-url-code', [
-            "test_student1test_student1test_student1test_student1test_student@example.com,test_student_1,tester1,Test_Student_1,TestStudent1",
-            "test_student3@example.com,test_student_1test_student_1test_stu,tester3,Test_Student_3,TestStudent3",
-            "test_student2@example.com,test_student_2,tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2test,Test_Student_2,TestStudent2",
+            "Register,test_student1@example.com,test_student_1,tester1,Test_Student_1,TestStudent1",
+            "Unregister,test_student3@example.com,test_student_3,tester3,Test_Student_3,TestStudent3",
+            "Register,test_student2@example.com,test_student_2,tester2,Test_Student_2,TestStudent2",
+        ]),
+    )
+    @ddt.unpack
+    def test_register_users_created_successfully_if_others_fail_register(self, url_code, students, error_log):
+        # ----------------------------------------------------------
+        # Setup test data
+        # ----------------------------------------------------------
+        course = CourseFactory.create()
+        contract = self._create_contract(url_code=url_code, detail_courses=[course])
+        history = self._create_task_history(contract=contract)
+        self._create_targets(history, students)
+
+        # ----------------------------------------------------------
+        # Execute task
+        # ----------------------------------------------------------
+        self._test_run_with_task(
+            student_register,
+            'student_register',
+            task_entry=self._create_input_entry(contract=contract, history=history),
+            expected_attempted=3,
+            expected_num_succeeded=2,
+            expected_num_failed=1,
+            expected_total=3,
+        )
+
+        # ----------------------------------------------------------
+        # Assertion
+        # ----------------------------------------------------------
+        self.assertEqual(0, StudentRegisterTaskTarget.objects.filter(history=history, completed=False).count())
+        self.assertEqual(3, StudentRegisterTaskTarget.objects.filter(history=history, completed=True).count())
+        self.assertIsNone(StudentRegisterTaskTarget.objects.get(history=history, student=students[0]).message)
+        error_log.assert_any_call('Invalid status: Unregister.')
+        self.assertEqual(
+            "Line 2:Failed to register. Please operation again after a time delay.",
+            StudentRegisterTaskTarget.objects.get(history=history, student=students[1]).message
+        )
+        self.assertIsNone(StudentRegisterTaskTarget.objects.get(history=history, student=students[2]).message)
+
+        self.assertEqual(ContractRegister.objects.get(user__email='test_student1@example.com', contract=contract).status, REGISTER_INVITATION_CODE)
+        self.assertEqual(ContractRegister.objects.get(user__email='test_student2@example.com', contract=contract).status, REGISTER_INVITATION_CODE)
+        self.assertFalse(ContractRegister.objects.filter(user__email='test_student3@example.com', contract=contract).exists())
+
+        self.assertTrue(CourseEnrollment.objects.get(user__email='test_student1@example.com', course_id=course.id).is_active)
+        self.assertTrue(CourseEnrollment.objects.get(user__email='test_student2@example.com', course_id=course.id).is_active)
+        self.assertFalse(CourseEnrollment.objects.filter(user__email='test_student3@example.com', course_id=course.id).exists())
+
+    @ddt.data(
+        (None, [
+            "Input,test_student1test_student1test_student1test_student1test_student@example.com,test_student_1,tester1",
+            "Input,test_student3@example.com,test_student_1test_student_1test_stu,tester3",
+            "Input,test_student2@example.com,test_student_2,tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2test",
+        ]),
+        ('contract-url-code', [
+            "Input,test_student1test_student1test_student1test_student1test_student@example.com,test_student_1,tester1,Test_Student_1,TestStudent1",
+            "Input,test_student3@example.com,test_student_1test_student_1test_stu,tester3,Test_Student_3,TestStudent3",
+            "Input,test_student2@example.com,test_student_2,tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2tester2test,Test_Student_2,TestStudent2",
         ]),
     )
     @ddt.unpack
@@ -1008,13 +1066,13 @@ class StudentRegisterTaskTest(BizViewTestBase, ModuleStoreTestCase, TaskTestMixi
 
     @ddt.data(
         (None, None, [
-            "test_student@example.com,test_student_1,tester1",
+            "Input,test_student@example.com,test_student_1,tester1",
         ], 1),
         ("contract-url-code", True, [
-            "test_student@example.com,test_student_1,tester1,Test_Student_1,TestStudent1",
+            "Input,test_student@example.com,test_student_1,tester1,Test_Student_1,TestStudent1",
         ], 1),
         ("contract-url-code", False, [
-            "test_student@example.com,test_student_1,tester1,Test_Student_1,TestStudent1",
+            "Input,test_student@example.com,test_student_1,tester1,Test_Student_1,TestStudent1",
         ], 0),
     )
     @ddt.unpack

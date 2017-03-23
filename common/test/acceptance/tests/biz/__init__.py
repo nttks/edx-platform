@@ -115,7 +115,7 @@ class GaccoBizTestMixin(GaccoTestMixin):
 
     def create_contract(self, biz_contract_page, contract_type, start_date, end_date, contractor_organization='', contractor_organization_name=None,
                         detail_info=None,
-                        additional_info=None):
+                        additional_info=None, register_type='ERS'):
         """
         Register a contract.
         """
@@ -123,7 +123,7 @@ class GaccoBizTestMixin(GaccoTestMixin):
         biz_contract_detail_page = BizContractDetailPage(self.browser).wait_for_page()
         contract_name = 'test_contract_' + self.unique_id[0:8]
         invitation_code = self.unique_id[0:8]
-        biz_contract_detail_page.input(contract_name=contract_name, contract_type=contract_type,
+        biz_contract_detail_page.input(contract_name=contract_name, contract_type=contract_type, register_type=register_type,
                                        invitation_code=invitation_code, start_date=start_date,
                                        end_date=end_date, contractor_organization=contractor_organization)
         if contractor_organization_name:
@@ -197,7 +197,7 @@ class GaccoBizTestMixin(GaccoTestMixin):
             course_name,
         )
 
-    def register_contract(self, operator, contractor_organization_name, contract_type='PF',
+    def register_contract(self, operator, contractor_organization_name, contract_type='PF', register_type='ERS',
                           start_date='2000/01/01', end_date='2100/12/31', detail_info=None, additional_info=None):
         self.switch_to_user(operator)
         return self.create_contract(
@@ -208,6 +208,7 @@ class GaccoBizTestMixin(GaccoTestMixin):
             contractor_organization_name=contractor_organization_name,
             detail_info=detail_info,
             additional_info=additional_info,
+            register_type=register_type,
         )
 
     def register_organization(self, operator):

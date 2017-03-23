@@ -6,7 +6,7 @@ from factory.django import DjangoModelFactory
 from student.tests.factories import UserFactory
 
 from biz.djangoapps.ga_contract.models import (
-    AdditionalInfo, Contract, ContractAuth, ContractDetail, CONTRACT_TYPE_PF
+    AdditionalInfo, Contract, ContractAuth, ContractDetail, CONTRACT_TYPE_PF, REGISTER_TYPE_ENABLE_REGISTER_BY_STUDENT
 )
 from biz.djangoapps.util.datetime_utils import timezone_today
 
@@ -18,6 +18,7 @@ class ContractFactory(DjangoModelFactory):
 
     contract_name = 'test contract'
     contract_type = CONTRACT_TYPE_PF[0]
+    register_type = REGISTER_TYPE_ENABLE_REGISTER_BY_STUDENT[0]
     invitation_code = factory.Sequence(lambda n: 'invitation{0}'.format(n))
     start_date = timezone_today() - timedelta(days=1)
     end_date = timezone_today() + timedelta(days=1)

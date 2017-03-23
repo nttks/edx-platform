@@ -35,7 +35,7 @@
         "All Fields" : "全ての検索項目",
         "Multi Fields" : "マルチフィールド",
         "Delete Confirmation" : "削除の確認",
-        "Ok" : "Ok",
+        "Ok" : "OK",
         "Yes" : "Yes",
         "No" : "いいえ",
         "Reload data in the list" : " データを更新する",

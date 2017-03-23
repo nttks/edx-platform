@@ -158,6 +158,10 @@ msgid "Contract Type"
 msgstr "契約形態名"
 
 #: biz/templates/ga_contract/index.html
+msgid "Registration method of invitation code"
+msgstr "受講コード登録方法"
+
+#: biz/templates/ga_contract/index.html
 msgid "Invitation Code"
 msgstr "受講コード"
 
@@ -265,6 +269,14 @@ msgstr "gaccoサービス契約"
 msgid "Owner Service Contract"
 msgstr "オーナーサービス契約"
 
+#: biz/djangoapps/ga_contract/models.py
+msgid "Register by director"
+msgstr "管理者による登録のみ可能"
+
+#: biz/djangoapps/ga_contract/models.py
+msgid "Register by user or director"
+msgstr "受講者または管理者による登録が可能"
+
 #: biz/djangoapps/ga_contract/forms.py
 msgid "The invitation code has been used."
 msgstr "受講コードが既に使われています。"
@@ -349,6 +361,11 @@ msgstr "{display_name}が必要です。"
 #: biz/djangoapps/ga_invitation/views.py
 msgid "Failed to register the invitation code. Please operate again from <a href=\"{index_url}\">here</a>."
 msgstr "受講コードの登録に失敗しました。<a href=\"{index_url}\">ここから</a>再度操作してください。"
+
+#: biz/djangoapps/ga_invitation/views.py
+#: biz/djangoapps/ga_login/views.py
+msgid "Please ask your administrator to register the invitation code."
+msgstr "本受講コードの登録を管理者へ依頼してください。"
 
 #: biz/templates/ga_invitation/index.html
 msgid "Please check the course content by entering the invitation code."
@@ -557,6 +574,16 @@ msgstr "username1@domain.com,gaccotarou,学校 太郎"
 #: biz/templates/ga_contract_operation/register_students.html
 msgid "username1@domain.com,gaccotarou,gacco taro,gacco,Gacco12345"
 msgstr "username1@domain.com,gaccotarou,学校 太郎,gaccoCode,Gacco12345"
+
+#: biz/templates/ga_contract_operation/register_students.html
+msgid "Register with the invitation code. (Unnecessary invitation code by user)"
+msgstr "受講コードも同時に登録する（受講者による受講コードの登録が不要です）"
+
+#: biz/templates/ga_contract_operation/register_students.html
+msgid "The user will be taking courses, immediately.<br/>"
+"If you have several contracts, please confirm the detail before submit."
+msgstr "受講ユーザーが直ちに受講が開始できる状態となります。<br/>"
+"複数の契約をお申込みいただいている場合、現在選択している契約が正しい事を再度ご確認ください。"
 
 #: biz/templates/ga_contract_operation/register_students.html
 msgid "No messages."

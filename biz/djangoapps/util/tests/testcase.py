@@ -25,6 +25,7 @@ from biz.djangoapps.util.datetime_utils import timezone_today
 from courseware.tests.helpers import LoginEnrollmentTestCase
 from student.models import CourseEnrollment, UserStanding
 from student.tests.factories import UserFactory, UserStandingFactory
+from xmodule.course_module import CourseDescriptor
 
 
 class BizTestBase(TestCase):
@@ -63,18 +64,20 @@ class BizTestBase(TestCase):
             created_by=created_by or UserFactory.create(),
         )
 
-    def _create_contract(self, contract_name='test contract', contract_type='PF', contractor_organization=None, owner_organization=None, end_date=None,
+    def _create_contract(self, contract_name='test contract', contract_type='PF', register_type='ERS', contractor_organization=None, owner_organization=None, end_date=None,
                          detail_courses=[], additional_display_names=[], url_code=None, send_mail=False):
         contract = ContractFactory.create(
             contract_name=contract_name,
             contract_type=contract_type,
+            register_type=register_type,
             contractor_organization=contractor_organization or self._create_organization(),
             owner_organization=owner_organization or self.gacco_organization,
             end_date=end_date or timezone_today() + timedelta(days=1),
             created_by=UserFactory.create(),
         )
         for c in detail_courses:
-            ContractDetailFactory.create(contract=contract, course_id=c.id)
+            course_id = c.id if isinstance(c, CourseDescriptor) else c
+            ContractDetailFactory.create(contract=contract, course_id=course_id)
         for d in additional_display_names:
             AdditionalInfoFactory.create(contract=contract, display_name=d)
         if url_code:
@@ -220,15 +223,19 @@ class BizViewTestBase(BizTestBase, LoginEnrollmentTestCase):
         ), patch('biz.djangoapps.util.decorators.require_survey', side_effect=_mock_func):
             yield
 
+
 def _biz_store_config():
     """
     Replace db name to test_biz. db that begin with test_ will be removed by
     scripts/delete-mongo-test-dbs.js in the end of the test process.
     """
-    _biz_mongo = settings.BIZ_MONGO.copy()
-    for key, conf in _biz_mongo.items():
-        _biz_mongo[key]['db'] = 'test_biz'
-    return _biz_mongo
+    if hasattr(settings, 'BIZ_MONGO'):
+        _biz_mongo = settings.BIZ_MONGO.copy()
+        for key, conf in _biz_mongo.items():
+            _biz_mongo[key]['db'] = 'test_biz'
+        return _biz_mongo
+    else:
+        return None
 
 
 class BizStoreTestBase(BizTestBase):
@@ -236,11 +243,12 @@ class BizStoreTestBase(BizTestBase):
     BIZ_MONGO = _biz_store_config()
 
     def setUp(self):
-        settings_override = override_settings(BIZ_MONGO=self.BIZ_MONGO)
-        settings_override.__enter__()
-        self.addCleanup(settings_override.__exit__, None, None, None)
+        if self.BIZ_MONGO:
+            settings_override = override_settings(BIZ_MONGO=self.BIZ_MONGO)
+            settings_override.__enter__()
+            self.addCleanup(settings_override.__exit__, None, None, None)
 
-        self.addCleanup(self._drop_mongo_collections)
+            self.addCleanup(self._drop_mongo_collections)
 
         super(BizStoreTestBase, self).setUp()
 

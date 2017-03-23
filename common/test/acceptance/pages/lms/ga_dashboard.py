@@ -60,7 +60,7 @@ class DashboardPage(EdXDashboardPage):
         Return whether unenroll link is displayed
         """
         try:
-            self._get_element_in_course(course_name, ".unenroll")
+            self._get_element_in_course(course_name, ".action-unenroll")
             return True
         except NoSuchElementException:
             return False

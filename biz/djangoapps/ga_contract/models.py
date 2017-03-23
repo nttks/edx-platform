@@ -13,6 +13,10 @@ CONTRACT_TYPE_GACCO_SERVICE = ('GS', _('Gacco Service Contract'))
 CONTRACT_TYPE_OWNER_SERVICE = ('OS', _('Owner Service Contract'))
 CONTRACT_TYPE = (CONTRACT_TYPE_PF, CONTRACT_TYPE_OWNERS, CONTRACT_TYPE_GACCO_SERVICE, CONTRACT_TYPE_OWNER_SERVICE)
 
+REGISTER_TYPE_DISABLE_REGISTER_BY_STUDENT = ('DRS', _('Register by director'))
+REGISTER_TYPE_ENABLE_REGISTER_BY_STUDENT = ('ERS', _('Register by user or director'))
+REGISTER_TYPE = (REGISTER_TYPE_DISABLE_REGISTER_BY_STUDENT, REGISTER_TYPE_ENABLE_REGISTER_BY_STUDENT)
+
 URL_CODE_MIN_LENGTH = 8
 URL_CODE_MAX_LENGTH = 255
 URL_CODE_PATTERN = '(?P<url_code>[a-zA-Z0-9]{{{min_length},{max_length}}})'.format(
@@ -39,6 +43,7 @@ class Contract(models.Model):
     """
     contract_name = models.CharField(max_length=255)
     contract_type = models.CharField(max_length=255, choices=CONTRACT_TYPE)
+    register_type = models.CharField(max_length=255, choices=REGISTER_TYPE, default=REGISTER_TYPE_DISABLE_REGISTER_BY_STUDENT[0])
     invitation_code = models.CharField(max_length=255, unique=True)
     contractor_organization = models.ForeignKey(Organization, related_name='org_contractor_contracts')
     owner_organization = models.ForeignKey(Organization, related_name='org_owner_contracts')
@@ -88,6 +93,13 @@ class Contract(models.Model):
             CONTRACT_TYPE_OWNERS[0],
             CONTRACT_TYPE_OWNER_SERVICE[0],
         ]
+
+    @property
+    def enabled_register_by_studentself(self):
+        """
+        Returns whether student can register to this contract.
+        """
+        return self.register_type == REGISTER_TYPE_ENABLE_REGISTER_BY_STUDENT[0]
 
     @classmethod
     def get_contract_types(cls, manager):
@@ -292,6 +304,18 @@ class ContractDetail(models.Model):
                 CONTRACT_TYPE_OWNER_SERVICE[0],
             ]
         ).select_related('contract')
+
+    @classmethod
+    def find_register_type_disable(cls):
+        """
+        Returns contract which register-type is disabled.
+
+        :return: ContractDetails objects
+        """
+        return cls.objects.filter(
+            contract__register_type=REGISTER_TYPE_DISABLE_REGISTER_BY_STUDENT[0]
+        )
+
 
 
 class AdditionalInfo(models.Model):

@@ -56,6 +56,10 @@ msgstr "有効"
 msgid "disabled"
 msgstr "失効"
 
+#: common/djangoapps/student/views.py
+msgid "This course can not be unenrolled by user."
+msgstr "本講座はユーザーが受講取消しを行うことはできません"
+
 #: common/lib/xmodule/xmodule/course_module.py
 msgid "Course Is Hidden"
 msgstr "コース非表示"

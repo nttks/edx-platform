@@ -21,7 +21,7 @@ from biz.djangoapps.ga_achievement.management.commands import update_biz_playbac
 from biz.djangoapps.ga_achievement.models import PlaybackBatchStatus, BATCH_STATUS_STARTED, BATCH_STATUS_FINISHED, BATCH_STATUS_ERROR
 from biz.djangoapps.util.tests.testcase import BizStoreTestBase
 from lms.djangoapps.courseware.tests.helpers import LoginEnrollmentTestCase
-from opaque_keys.edx.locator import CourseLocator
+from opaque_keys.edx.keys import CourseKey
 from student.models import CourseEnrollment
 from student.tests.factories import UserFactory, UserProfileFactory
 from xmodule.modulestore import ModuleStoreEnum
@@ -199,18 +199,15 @@ class UpdateBizPlaybackStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEn
         self.mock_log = patcher_log.start()
         self.addCleanup(patcher_log.stop)
 
-    def _create_course(self, org, course, run, block_info_tree):
-        location = self.create_sample_course(org, course, run, block_info_tree=block_info_tree)
-        return self.store.get_course(CourseLocator(location.org, location.course, location.run))
-
     # Note: this is removed since Dogwood release,
     #       so we restore it from common/lib/xmodule/xmodule/modulestore/tests/django_utils.py (Cypress ver.)
-    def create_sample_course(self, org, course, run, block_info_tree=None, course_fields=None):
+    #       Modify to return course. (Gacco ver.)
+    def _create_course(self, org, course, run, block_info_tree=None, course_fields=None):
         """
         create a course in the default modulestore from the collection of BlockInfo
         records defining the course tree
         Returns:
-            course_loc: the CourseKey for the created course
+            course: the course of created
         """
         with self.store.branch_setting(ModuleStoreEnum.Branch.draft_preferred, None):
             course = self.store.create_course(org, course, run, self.user.id, fields=course_fields)
@@ -234,7 +231,8 @@ class UpdateBizPlaybackStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEn
 
             # remove version_agnostic when bulk write works
             self.store.publish(self.course_loc.version_agnostic(), self.user.id)
-        return self.course_loc.course_key.version_agnostic()
+        # mod to return course
+        return course
 
     def _profile(self, user):
         UserProfileFactory.create(user=user, name='profile_name')
@@ -260,11 +258,11 @@ class UpdateBizPlaybackStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEn
             self.assertEquals(len(record_list), count)
         return column_list, record_list
 
-    def assert_error(self, contract, course):
-        PlaybackBatchStatus.objects.get(contract=contract, course_id=course.id, status=BATCH_STATUS_STARTED)
-        PlaybackBatchStatus.objects.get(contract=contract, course_id=course.id, status=BATCH_STATUS_ERROR, student_count=None)
+    def assert_error(self, contract, course_id):
+        PlaybackBatchStatus.objects.get(contract=contract, course_id=course_id, status=BATCH_STATUS_STARTED)
+        PlaybackBatchStatus.objects.get(contract=contract, course_id=course_id, status=BATCH_STATUS_ERROR, student_count=None)
 
-        playback_list = PlaybackStore(contract.id, unicode(course.id)).get_documents()
+        playback_list = PlaybackStore(contract.id, unicode(course_id)).get_documents()
         self.assertEquals(len(playback_list), 0)
         return playback_list
 
@@ -608,18 +606,14 @@ class UpdateBizPlaybackStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEn
 
     def test_course_does_not_exist(self):
 
-        class DummyCourseDescriptor(object):
-            def __init__(self, org, course, run):
-                self.id = CourseLocator(org, course, run)
-
-        not_exist_course = DummyCourseDescriptor('not', 'exist', 'course')
+        not_exist_course_id = CourseKey.from_string('course-v1:not+exist+course')
         not_exist_course_contract = self._create_contract(
-            detail_courses=[not_exist_course],
+            detail_courses=[not_exist_course_id],
         )
 
         call_command('update_biz_playback_status', not_exist_course_contract.id)
 
-        self.assert_error(not_exist_course_contract, not_exist_course)
+        self.assert_error(not_exist_course_contract, not_exist_course_id)
         self.mock_log.warning.assert_called_once()
 
     def test_error(self):
@@ -628,5 +622,5 @@ class UpdateBizPlaybackStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEn
 
         call_command('update_biz_playback_status', self.single_spoc_video_contract.id)
 
-        self.assert_error(self.single_spoc_video_contract, self.single_spoc_video_course)
+        self.assert_error(self.single_spoc_video_contract, self.single_spoc_video_course.id)
         self.mock_log.error.assert_called_once()

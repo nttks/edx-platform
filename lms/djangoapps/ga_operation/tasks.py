@@ -5,12 +5,13 @@ from smtplib import SMTPException
 from django.core.mail import send_mail
 from django.core.management import call_command
 from django.conf import settings
+from django.db.models import Q
 
 from pdfgen.certificate import CertPDFException, CertPDFUserNotFoundException
 from pdfgen.views import CertException
 from lms import CELERY_APP
 from opaque_keys.edx.keys import CourseKey
-from certificates.models import GeneratedCertificate
+from certificates.models import CertificateStatuses, GeneratedCertificate
 from xmodule.modulestore.django import modulestore
 from ga_operation.utils import (delete_files, change_behavior_sys,
                                 get_std_info_from_local_storage, handle_uploaded_generated_file_to_s3)
@@ -100,16 +101,7 @@ class CreateCerts(TaskBase):
             log.exception(msg)
             self.err_msg = "{} {}".format(msg, e)
         finally:
-            if not self.err_msg:
-                self.out_msg = self._get_download_urls_text()
             self._send_email()
-
-    def _get_download_urls_text(self):
-        result = ""
-        for gc in GeneratedCertificate.objects.filter(course_id=CourseKey.from_string(self.course_id),
-                                                      status="generating"):
-            result += "\n" + gc.download_url
-        return result
 
     def _get_email_body(self):
         if self.err_msg:
@@ -117,9 +109,24 @@ class CreateCerts(TaskBase):
                                                      self.operation,
                                                      self.err_msg)
         else:
-            return "{}({}) was success{}".format(self.get_command_name(),
-                                                 self.operation,
-                                                 self._get_download_urls_text())
+            all_certs = GeneratedCertificate.objects.filter(
+                course_id=CourseKey.from_string(self.course_id),
+                status=CertificateStatuses.generating).order_by('id')
+            if self.student_ids:
+                # When specifying a target, separate the URL we created now and all the already created URLs.
+                created_certs = GeneratedCertificate.objects.filter(
+                    Q(course_id=CourseKey.from_string(self.course_id)),
+                    Q(user__email__in=self.student_ids) | Q(user__username__in=self.student_ids),
+                    Q(status=CertificateStatuses.generating)).order_by('id')
+
+                created_message = u"{}件の修了証を発行しました\n{}\n\n".format(
+                    len(created_certs), "\n".join([gc.download_url for gc in created_certs]))
+                all_message = u"{}件の修了証はまだ公開されていません\n{}".format(
+                    len(all_certs), "\n".join([gc.download_url for gc in all_certs]))
+                return created_message + all_message
+            else:
+                return u"{}件の修了証を発行しました\n{}".format(
+                    len(all_certs), "\n".join([gc.download_url for gc in all_certs]))
 
     @staticmethod
     def get_command_name():
