@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Test for contract_operation feature
 """
@@ -44,8 +45,8 @@ class ContractOperationViewTest(BizContractTestBase):
 
     def test_register_contract_unmatch(self):
         self.setup_user()
-        csv_content = "test_student1@example.com,test_student_1,tester1\n" \
-                      "test_student2@example.com,test_student_1,tester2"
+        csv_content = u"test_student1@example.com,test_student_1,テスター１\n" \
+                      u"test_student2@example.com,test_student_1,テスター２"
 
         with self.skip_check_course_selection(current_contract=self.contract):
             response = self.client.post(self._url_register_students_ajax(), {'contract_id': self.contract_mooc.id, 'students_list': csv_content})
@@ -56,8 +57,8 @@ class ContractOperationViewTest(BizContractTestBase):
 
     def test_register_no_param(self):
         self.setup_user()
-        csv_content = "test_student1@example.com,test_student_1,tester1\n" \
-                      "test_student2@example.com,test_student_1,tester2"
+        csv_content = u"test_student1@example.com,test_student_1,テスター１\n" \
+                      u"test_student2@example.com,test_student_1,テスター２"
 
         with self.skip_check_course_selection(current_contract=self.contract):
             response = self.client.post(self._url_register_students_ajax(), {})
@@ -68,8 +69,8 @@ class ContractOperationViewTest(BizContractTestBase):
 
     def test_register_no_param_students_list(self):
         self.setup_user()
-        csv_content = "test_student1@example.com,test_student_1,tester1\n" \
-                      "test_student2@example.com,test_student_1,tester2"
+        csv_content = u"test_student1@example.com,test_student_1,テスター１\n" \
+                      u"test_student2@example.com,test_student_1,テスター２"
 
         with self.skip_check_course_selection(current_contract=self.contract):
             response = self.client.post(self._url_register_students_ajax(), {'contract_id': self.contract_mooc.id})
@@ -80,8 +81,8 @@ class ContractOperationViewTest(BizContractTestBase):
 
     def test_register_no_param_contract_id(self):
         self.setup_user()
-        csv_content = "test_student1@example.com,test_student_1,tester1\n" \
-                      "test_student2@example.com,test_student_1,tester2"
+        csv_content = u"test_student1@example.com,test_student_1,テスター１\n" \
+                      u"test_student2@example.com,test_student_1,テスター２"
 
         with self.skip_check_course_selection(current_contract=self.contract):
             response = self.client.post(self._url_register_students_ajax(), {'students_list': csv_content})
@@ -107,8 +108,8 @@ class ContractOperationViewTest(BizContractTestBase):
 
     def test_register_student_submit_successful(self):
         self.setup_user()
-        csv_content = "test_student1@example.com,test_student_1,tester1\n" \
-                      "test_student2@example.com,test_student_1,tester2"
+        csv_content = u"test_student1@example.com,test_student_1,テスター１\n" \
+                      u"test_student2@example.com,test_student_1,テスター２"
 
         with self.skip_check_course_selection(current_contract=self.contract):
             response = self.client.post(self._url_register_students_ajax(), {'contract_id': self.contract.id, 'students_list': csv_content})
@@ -125,12 +126,12 @@ class ContractOperationViewTest(BizContractTestBase):
         self.assertEqual(self.contract.id, task_input['contract_id'])
         history = ContractTaskHistory.objects.get(pk=task_input['history_id'])
         self.assertEqual(history.task_id, task.task_id)
-        self.assertItemsEqual(['Input,{}'.format(s) for s in csv_content.splitlines()], [target.student for target in history.studentregistertasktarget_set.all()])
+        self.assertItemsEqual([u'Input,{}'.format(s) for s in csv_content.splitlines()], [target.student for target in history.studentregistertasktarget_set.all()])
 
     def test_register_student_submit_successful_register(self):
         self.setup_user()
-        csv_content = "test_student1@example.com,test_student_1,tester1\n" \
-                      "test_student2@example.com,test_student_1,tester2"
+        csv_content = u"test_student1@example.com,test_student_1,テスター１\n" \
+                      u"test_student2@example.com,test_student_1,テスター２"
 
         with self.skip_check_course_selection(current_contract=self.contract):
             response = self.client.post(self._url_register_students_ajax(), {'contract_id': self.contract.id, 'students_list': csv_content, 'register_status': REGISTER_INVITATION_CODE})
@@ -147,12 +148,12 @@ class ContractOperationViewTest(BizContractTestBase):
         self.assertEqual(self.contract.id, task_input['contract_id'])
         history = ContractTaskHistory.objects.get(pk=task_input['history_id'])
         self.assertEqual(history.task_id, task.task_id)
-        self.assertItemsEqual(['Register,{}'.format(s) for s in csv_content.splitlines()], [target.student for target in history.studentregistertasktarget_set.all()])
+        self.assertItemsEqual([u'Register,{}'.format(s) for s in csv_content.splitlines()], [target.student for target in history.studentregistertasktarget_set.all()])
 
     def test_register_student_submit_illegal_register(self):
         self.setup_user()
-        csv_content = "test_student1@example.com,test_student_1,tester1\n" \
-                      "test_student2@example.com,test_student_1,tester2"
+        csv_content = u"test_student1@example.com,test_student_1,テスター１\n" \
+                      u"test_student2@example.com,test_student_1,テスター２"
 
         with self.skip_check_course_selection(current_contract=self.contract):
             response = self.client.post(self._url_register_students_ajax(), {'contract_id': self.contract.id, 'students_list': csv_content, 'register_status': UNREGISTER_INVITATION_CODE})
@@ -164,8 +165,8 @@ class ContractOperationViewTest(BizContractTestBase):
     def test_register_student_submit_duplicated(self):
         TaskFactory.create(task_type='student_register', task_key=hashlib.md5(str(self.contract.id)).hexdigest())
         self.setup_user()
-        csv_content = "test_student1@example.com,test_student_1,tester1\n" \
-                      "test_student2@example.com,test_student_1,tester2"
+        csv_content = u"test_student1@example.com,test_student_1,テスター１\n" \
+                      u"test_student2@example.com,test_student_1,テスター２"
 
         with self.skip_check_course_selection(current_contract=self.contract):
             response = self.client.post(self._url_register_students_ajax(), {'contract_id': self.contract.id, 'students_list': csv_content})
@@ -180,9 +181,9 @@ class ContractOperationViewTest(BizContractTestBase):
     def test_register_students_over_max_number(self):
 
         self.setup_user()
-        csv_content = "test_student1@example.com,test_student_1,tester1\n" \
-                      "test_student2@example.com,test_student_2,tester2\n" \
-                      "test_student3@example.com,test_student_3,tester3"
+        csv_content = u"test_student1@example.com,test_student_1,テスター１\n" \
+                      u"test_student2@example.com,test_student_2,テスター２\n" \
+                      u"test_student3@example.com,test_student_3,テスター３"
 
         with self.skip_check_course_selection(current_contract=self.contract):
             response = self.client.post(self._url_register_students_ajax(), {'contract_id': self.contract.id, 'students_list': csv_content})
@@ -199,20 +200,20 @@ class ContractOperationViewTest(BizContractTestBase):
         self.assertFalse(ContractRegister.objects.filter(user__email='test_student2@example.com', contract=self.contract).exists())
         self.assertFalse(ContractRegister.objects.filter(user__email='test_student3@example.com', contract=self.contract).exists())
 
-    @override_settings(BIZ_MAX_CHAR_LENGTH_REGISTER_LINE=47)
+    @override_settings(BIZ_MAX_CHAR_LENGTH_REGISTER_LINE=45)
     def test_register_students_over_max_char_length(self):
 
         self.setup_user()
-        csv_content = "test_student1@example.com,test_student_1,tester1\n" \
-                      "test_student2@example.com,test_student_2,tester2\n" \
-                      "test_student3@example.com,test_student_3,tester3"
+        csv_content = u"test_student1@example.com,test_student_1,テスター１\n" \
+                      u"test_student2@example.com,test_student_2,テスター２\n" \
+                      u"test_student3@example.com,test_student_3,テスター３"
 
         with self.skip_check_course_selection(current_contract=self.contract):
             response = self.client.post(self._url_register_students_ajax(), {'contract_id': self.contract.id, 'students_list': csv_content})
 
         self.assertEqual(400, response.status_code)
         data = json.loads(response.content)
-        self.assertEqual("The number of lines per line has exceeded the 47 lines.", data['error'])
+        self.assertEqual("The number of lines per line has exceeded the 45 lines.", data['error'])
 
         self.assertFalse(User.objects.filter(username='test_student_1', email='test_student1@example.com').exists())
         self.assertFalse(User.objects.filter(username='test_student_2', email='test_student2@example.com').exists())

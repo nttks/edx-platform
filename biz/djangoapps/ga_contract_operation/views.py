@@ -243,7 +243,7 @@ def register_students_ajax(request):
     register_status = register_status or INPUT_INVITATION_CODE
 
     # To register status. Register or Input
-    students = ['{},{}'.format(register_status, s) for s in students]
+    students = [u'{},{}'.format(register_status, s) for s in students]
 
     history = ContractTaskHistory.create(request.current_contract, request.user)
     StudentRegisterTaskTarget.bulk_create(history, students)
