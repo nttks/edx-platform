@@ -10,6 +10,8 @@ from ga_operation.tasks import create_certs_task
 from opaque_keys.edx.keys import CourseKey
 from pdfgen.certificate import CertPDFException, CertPDFUserNotFoundException
 from pdfgen.views import CertException
+from student.models import UserStanding
+from student.tests.factories import CourseEnrollmentFactory, UserStandingFactory
 from student.tests.factories import UserFactory
 
 
@@ -37,6 +39,13 @@ class CreateCertsTest(TestCase):
         course_key = CourseKey.from_string(course_id)
         return GeneratedCertificateFactory.create(user=user, course_id=course_key, status=status, download_url=download_url)
 
+    def _create_course_enrollment(self, user, course_id):
+        course_key = CourseKey.from_string(course_id)
+        return CourseEnrollmentFactory.create(user=user, course_id=course_key)
+
+    def _create_user_standing(self, user, account_status):
+        return UserStandingFactory.create(user=user, account_status=account_status, changed_by=UserFactory.create())
+
     @patch('ga_operation.tasks.log')
     @patch('ga_operation.tasks.send_mail')
     @patch('ga_operation.tasks.call_command')
@@ -53,8 +62,14 @@ class CreateCertsTest(TestCase):
         )
         expected_urls_text = '\n'.join(['{}-url'.format(user.username) for user in self.users])
         mock_send_mail.assert_called_once_with(
-            'create_certs was completed.',
-            u'3件の修了証を発行しました\n{}'.format(expected_urls_text),
+            'create_certs was completed. ({})'.format(self.course_id),
+            (u'修了証発行数： 3\n'
+             u'※受講解除者0人を含みます（受講解除ユーザー名：）\n'
+             u'※退会者0人を含みます（退会ユーザー名：）\n'
+             u'---\n'
+             u'修了判定データに含まれる合格かつ未アクティベート者数：0（未アクティベートユーザー名：）\n'
+             u'\n'
+             u'---\n{}').format(expected_urls_text),
             'sender@example.com',
             ['test@example.com'],
             fail_silently=False
@@ -85,7 +100,7 @@ class CreateCertsTest(TestCase):
         expected_created_urls_text = '\n'.join(['{}-url'.format(user.username) for user in [self.users[0], self.users[2]]])
         expected_all_urls_text = '\n'.join(['{}-url'.format(user.username) for user in self.users])
         mock_send_mail.assert_called_once_with(
-            'create_certs was completed.',
+            'create_certs was completed. ({})'.format(self.course_id),
             u'2件の修了証を発行しました\n{}\n\n3件の修了証はまだ公開されていません\n{}'.format(
                 expected_created_urls_text, expected_all_urls_text),
             'sender@example.com',
@@ -117,7 +132,7 @@ class CreateCertsTest(TestCase):
         )
 
         mock_send_mail.assert_called_once_with(
-            'create_certs was failure',
+            'create_certs was failure ({})'.format(self.course_id),
             'create_certs(create) was failed.\n\nFailure to generate the PDF files from create_certs command. ',
             'sender@example.com',
             ['test@example.com'],
@@ -146,10 +161,148 @@ class CreateCertsTest(TestCase):
         )
 
         mock_send_mail.assert_called_once_with(
-            'create_certs was failure',
+            'create_certs was failure ({})'.format(self.course_id),
             'create_certs(create) was failed.\n\nCaught the exception: Exception ',
             'sender@example.com',
             ['test@example.com'],
             fail_silently=False
         )
         mock_log.exception.assert_called_once_with('Caught the exception: Exception')
+
+    @patch('ga_operation.tasks.log')
+    @patch('ga_operation.tasks.send_mail')
+    @patch('ga_operation.tasks.call_command')
+    def test_run_include_unenroll_student(self, mock_call_command, mock_send_mail, mock_log):
+        enrollment_list = []
+        unenroll_student_count = 2
+        for i in range(unenroll_student_count):
+            enrollment = self._create_course_enrollment(self.users[i], self.course_id)
+            enrollment.is_active = False
+            enrollment.save()
+            enrollment_list.append(enrollment)
+
+        self._setup_certificate(self.course_id)
+        for user in self.users:
+            self._create_certificate(self.course_id, 'generating', '{}-url'.format(user.username), user)
+
+        create_certs_task(self.course_id, 'test@example.com', [])
+
+        mock_call_command.assert_called_once_with(
+            'create_certs', 'create', self.course_id,
+            username=False, debug=False, noop=False, prefix=''
+        )
+        expected_urls_text = '\n'.join(['{}-url'.format(user.username) for user in self.users])
+        mock_send_mail.assert_called_once_with(
+            'create_certs was completed. ({})'.format(self.course_id),
+            (u'修了証発行数： 3\n'
+             u'※受講解除者2人を含みます（受講解除ユーザー名：{}）\n'
+             u'※退会者0人を含みます（退会ユーザー名：）\n'
+             u'---\n'
+             u'修了判定データに含まれる合格かつ未アクティベート者数：0（未アクティベートユーザー名：）\n'
+             u'\n'
+             u'---\n{}').format(
+                ", ".join([e.user.username for e in enrollment_list]),
+                expected_urls_text
+            ),
+            'sender@example.com',
+            ['test@example.com'],
+            fail_silently=False
+        )
+        mock_log.exception.assert_not_called()
+
+    @patch('ga_operation.tasks.log')
+    @patch('ga_operation.tasks.send_mail')
+    @patch('ga_operation.tasks.call_command')
+    def test_run_include_disabled_account(self, mock_call_command, mock_send_mail, mock_log):
+        disabled_account_count = 2
+        disabled_account_list = []
+        for i in range(disabled_account_count):
+            user = self.users[i]
+            self._create_user_standing(user, UserStanding.ACCOUNT_DISABLED)
+            disabled_account_list.append(user)
+
+        self._setup_certificate(self.course_id)
+        for user in self.users:
+            enrollment = self._create_course_enrollment(user, self.course_id)
+            enrollment.is_active = True
+            enrollment.save()
+            self._create_certificate(self.course_id, 'generating', '{}-url'.format(user.username), user)
+
+        create_certs_task(self.course_id, 'test@example.com', [])
+
+        mock_call_command.assert_called_once_with(
+            'create_certs', 'create', self.course_id,
+            username=False, debug=False, noop=False, prefix=''
+        )
+        expected_urls_text = '\n'.join(['{}-url'.format(user.username) for user in self.users])
+        mock_send_mail.assert_called_once_with(
+            'create_certs was completed. ({})'.format(self.course_id),
+            (u'修了証発行数： 3\n'
+             u'※受講解除者0人を含みます（受講解除ユーザー名：）\n'
+             u'※退会者2人を含みます（退会ユーザー名：{}）\n'
+             u'---\n'
+             u'修了判定データに含まれる合格かつ未アクティベート者数：0（未アクティベートユーザー名：）\n'
+             u'\n'
+             u'---\n{}').format(
+                ", ".join([u.username for u in disabled_account_list]),
+                expected_urls_text
+            ),
+            'sender@example.com',
+            ['test@example.com'],
+            fail_silently=False
+        )
+        mock_log.exception.assert_not_called()
+
+    @patch('ga_operation.tasks.get_course_by_id')
+    @patch('ga_operation.tasks.is_course_passed')
+    @patch('ga_operation.tasks.log')
+    @patch('ga_operation.tasks.send_mail')
+    @patch('ga_operation.tasks.call_command')
+    def test_run_include_not_activate_and_course_passed(self, mock_call_command, mock_send_mail, mock_log,
+                                                        is_course_passed_mock, get_course_by_id_mock):
+        not_activate_and_course_passed_count = 2
+        not_activate_and_course_passed_list = []
+        for i in range(not_activate_and_course_passed_count):
+            user = self.users[i]
+            user.is_active = False
+            user.save()
+            not_activate_and_course_passed_list.append(user)
+
+        for user in self.users:
+            enrollment = self._create_course_enrollment(user, self.course_id)
+            enrollment.is_active = True
+            enrollment.save()
+
+        self._setup_certificate(self.course_id)
+        created_cert_user = self.users[-1]
+        self._create_certificate(
+            self.course_id, 'generating', '{}-url'.format(created_cert_user.username), created_cert_user
+        )
+
+        is_course_passed_mock.return_value = True
+
+        create_certs_task(self.course_id, 'test@example.com', [])
+
+        mock_call_command.assert_called_once_with(
+            'create_certs', 'create', self.course_id,
+            username=False, debug=False, noop=False, prefix=''
+        )
+        expected_urls_text = '{}-url'.format(created_cert_user.username)
+        mock_send_mail.assert_called_once_with(
+            'create_certs was completed. ({})'.format(self.course_id),
+            (u'修了証発行数： 1\n'
+             u'※受講解除者0人を含みます（受講解除ユーザー名：）\n'
+             u'※退会者0人を含みます（退会ユーザー名：）\n'
+             u'---\n'
+             u'修了判定データに含まれる合格かつ未アクティベート者数：2（未アクティベートユーザー名：{}）\n'
+             u'\n'
+             u'---\n{}').format(
+                ", ".join([u.username for u in not_activate_and_course_passed_list]),
+                expected_urls_text
+            ),
+            'sender@example.com',
+            ['test@example.com'],
+            fail_silently=False
+        )
+        get_course_by_id_mock.assert_call_count(not_activate_and_course_passed_count)
+        mock_log.exception.assert_not_called()

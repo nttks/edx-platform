@@ -12,6 +12,9 @@ from pdfgen.views import CertException
 from lms import CELERY_APP
 from opaque_keys.edx.keys import CourseKey
 from certificates.models import CertificateStatuses, GeneratedCertificate
+from courseware.courses import get_course_by_id
+from courseware.views import is_course_passed
+from student.models import CourseEnrollment, UserStanding
 from xmodule.modulestore.django import modulestore
 from ga_operation.utils import (delete_files, change_behavior_sys,
                                 get_std_info_from_local_storage, handle_uploaded_generated_file_to_s3)
@@ -125,8 +128,61 @@ class CreateCerts(TaskBase):
                     len(all_certs), "\n".join([gc.download_url for gc in all_certs]))
                 return created_message + all_message
             else:
-                return u"{}件の修了証を発行しました\n{}".format(
-                    len(all_certs), "\n".join([gc.download_url for gc in all_certs]))
+                return self._get_email_body_for_all_certs(all_certs)
+
+    def _get_email_body_for_all_certs(self, all_certs):
+        def _get_unenroll_username_list(_course_key):
+            return [
+                enrollment.user.username for enrollment in CourseEnrollment.objects.filter(
+                    course_id=_course_key, is_active=False)
+            ]
+
+        def _get_disabled_account_list(_course_key):
+            return [
+                userstanding.user.username for userstanding in UserStanding.objects.filter(
+                    user__in=[c.user for c in CourseEnrollment.objects.filter(course_id=_course_key)],
+                    account_status=UserStanding.ACCOUNT_DISABLED
+                )
+            ]
+
+        def _get_not_activate_and_course_passed_username_list(_course_key):
+            return [
+                enrollment.user.username for enrollment in CourseEnrollment.objects.filter(course_id=_course_key)
+                if not enrollment.user.is_active and is_course_passed(
+                    course=get_course_by_id(course_key=_course_key),
+                    student=enrollment.user
+                )
+            ]
+
+        course_key = CourseKey.from_string(self.course_id)
+        unenroll_username_list = _get_unenroll_username_list(course_key)
+        disabled_username_list = _get_disabled_account_list(course_key)
+        not_activate_username_list = _get_not_activate_and_course_passed_username_list(course_key)
+
+        return (
+            u"修了証発行数： {all_certs_count}\n"
+            u"※受講解除者{unenroll_count}人を含みます（受講解除ユーザー名：{unenroll_username_list}）\n"
+            u"※退会者{disabled_account_count}人を含みます（退会ユーザー名：{disabled_username_list}）\n"
+            u"---\n"
+            u"修了判定データに含まれる合格かつ未アクティベート者数：{not_activate_username_count}（未アクティベートユーザー名：{not_activate_username_list}）\n"
+            u"\n"
+            u"---\n{cert_list}"
+        ).format(
+            all_certs_count=len(all_certs),
+            unenroll_count=len(unenroll_username_list),
+            unenroll_username_list=", ".join(unenroll_username_list),
+            disabled_account_count=len(disabled_username_list),
+            disabled_username_list=", ".join(disabled_username_list),
+            not_activate_username_count=len(not_activate_username_list),
+            not_activate_username_list=", ".join(not_activate_username_list),
+            cert_list="\n".join([gc.download_url for gc in all_certs]),
+        )
+
+    def _get_email_subject(self):
+        if self.err_msg:
+            return "{} was failure ({})".format(self.get_command_name(), self.course_id)
+        else:
+            return "{} was completed. ({})".format(self.get_command_name(), self.course_id)
 
     @staticmethod
     def get_command_name():
