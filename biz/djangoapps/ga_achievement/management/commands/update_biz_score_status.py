@@ -5,6 +5,7 @@ for all biz students who registered any SPOC course.
 from collections import OrderedDict
 import logging
 from optparse import make_option
+import time
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
@@ -39,7 +40,7 @@ class Command(BaseCommand):
     Generate a list of grade summary for all biz students who registered any SPOC course.
     """
     help = """
-    Usage: python manage.py lms --settings=aws update_biz_score_status [--debug] [<contract_id>]
+    Usage: python manage.py lms --settings=aws update_biz_score_status [--debug] [--excludes=<exclude_ids>] [<contract_id>]
     """
 
     option_list = BaseCommand.option_list + (
@@ -47,6 +48,10 @@ class Command(BaseCommand):
                     default=False,
                     action='store_true',
                     help='Use debug log'),
+        make_option('--excludes',
+                    default=None,
+                    action='store',
+                    help='Specify contract ids to exclude as comma-delimited integers (like 1 or 1,2)'),
     )
 
     @handle_command_exception(settings.BIZ_SET_SCORE_COMMAND_OUTPUT)
@@ -60,16 +65,24 @@ class Command(BaseCommand):
             log.addHandler(stream)
             log.setLevel(logging.DEBUG)
 
+        exclude_ids = options.get('excludes') or []
+        if exclude_ids:
+            try:
+                exclude_ids = map(int, exclude_ids.split(','))
+            except ValueError:
+                raise CommandError("excludes should be specified as comma-delimited integers (like 1 or 1,2).")
+        log.debug(u"exclude_ids={}".format(exclude_ids))
+
         if len(args) > 1:
             raise CommandError("This command requires one or no arguments: |<contract_id>|")
 
         contract_id = args[0] if len(args) > 0 else None
         if contract_id:
-            contract_details = ContractDetail.find_enabled_by_contract_id(contract_id)
+            contract_details = ContractDetail.find_enabled_by_contract_id(contract_id).exclude(contract__in=exclude_ids)
             if not contract_details:
                 raise CommandError("The specified contract does not exist or is not active.")
         else:
-            contract_details = ContractDetail.find_enabled()
+            contract_details = ContractDetail.find_enabled().exclude(contract__in=exclude_ids)
 
         error_flag = False
         for contract_detail in contract_details:
@@ -135,7 +148,10 @@ class Command(BaseCommand):
                         record[_(ScoreStore.FIELD_EXPIRE_DATE)] = self_paced_api.get_course_end_date(course_enrollment) or DEFAULT_DATETIME
                     record[_(ScoreStore.FIELD_CERTIFICATE_ISSUE_DATE)] = generated_certificate.created_date \
                         if generated_certificate else DEFAULT_DATETIME
+                    start = time.clock()
                     grade = get_grade(course_key, user)
+                    end = time.clock()
+                    log.debug(u"Processing time for get_grade() ... {:.2f}s".format(end - start))
                     for section in grade['section_breakdown']:
                         record[section['label']] = float('{:.2f}'.format(section['percent']))
                     record[_(ScoreStore.FIELD_TOTAL_SCORE)] = float('{:.2f}'.format(grade['percent']))
