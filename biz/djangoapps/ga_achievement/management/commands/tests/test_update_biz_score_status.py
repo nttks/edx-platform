@@ -66,6 +66,26 @@ class TestArgParsing(TestCase):
         self.command.execute(debug=True)
         self.assertEquals(update_biz_score_status.log.level, logging.DEBUG)
 
+    def test_excludes_as_empty_string(self):
+        with patch('django.db.models.query.QuerySet.exclude', return_value='[]') as mock_exclude:
+            self.command.execute(excludes='')
+            mock_exclude.assert_called_once_with(contract__in=[])
+
+    def test_excludes_as_integer(self):
+        with patch('django.db.models.query.QuerySet.exclude', return_value='[]') as mock_exclude:
+            self.command.execute(excludes='1')
+            mock_exclude.assert_called_once_with(contract__in=[1])
+
+    def test_excludes_as_comma_delimited_integers(self):
+        with patch('django.db.models.query.QuerySet.exclude', return_value='[]') as mock_exclude:
+            self.command.execute(excludes='1,2')
+            mock_exclude.assert_called_once_with(contract__in=[1, 2])
+
+    def test_invalid_excludes(self):
+        errstring = "excludes should be specified as comma-delimited integers \(like 1 or 1,2\)."
+        with self.assertRaisesRegexp(CommandError, errstring):
+            self.command.handle._original(self.command, excludes='a')
+
     def test_too_much_args(self):
         """
         Tests for the case when too much args are specified
