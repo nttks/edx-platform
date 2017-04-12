@@ -19,6 +19,7 @@ from django.test.utils import override_settings
 from biz.djangoapps.ga_achievement.achievement_store import ScoreStore
 from biz.djangoapps.ga_achievement.management.commands import update_biz_score_status
 from biz.djangoapps.ga_achievement.models import ScoreBatchStatus, BATCH_STATUS_STARTED, BATCH_STATUS_FINISHED, BATCH_STATUS_ERROR
+from biz.djangoapps.ga_achievement.tests.factories import ScoreBatchStatusFactory
 from biz.djangoapps.ga_login.tests.factories import BizUserFactory
 from biz.djangoapps.util.mongo_utils import DEFAULT_DATETIME
 from biz.djangoapps.util.tests.testcase import BizStoreTestBase
@@ -69,22 +70,27 @@ class TestArgParsing(TestCase):
     def test_excludes_as_empty_string(self):
         with patch('django.db.models.query.QuerySet.exclude', return_value='[]') as mock_exclude:
             self.command.execute(excludes='')
-            mock_exclude.assert_called_once_with(contract__in=[])
+            mock_exclude.assert_called_once_with(id__in=[])
 
     def test_excludes_as_integer(self):
         with patch('django.db.models.query.QuerySet.exclude', return_value='[]') as mock_exclude:
             self.command.execute(excludes='1')
-            mock_exclude.assert_called_once_with(contract__in=[1])
+            mock_exclude.assert_called_once_with(id__in=[1])
 
     def test_excludes_as_comma_delimited_integers(self):
         with patch('django.db.models.query.QuerySet.exclude', return_value='[]') as mock_exclude:
             self.command.execute(excludes='1,2')
-            mock_exclude.assert_called_once_with(contract__in=[1, 2])
+            mock_exclude.assert_called_once_with(id__in=[1, 2])
 
     def test_invalid_excludes(self):
         errstring = "excludes should be specified as comma-delimited integers \(like 1 or 1,2\)."
         with self.assertRaisesRegexp(CommandError, errstring):
             self.command.handle._original(self.command, excludes='a')
+
+    def test_exclude_ids_and_contract_ids(self):
+        errstring = "Cannot specify exclude_ids and contract_id at the same time."
+        with self.assertRaisesRegexp(CommandError, errstring):
+            self.command.handle._original(self.command, 1, excludes='2')
 
     def test_too_much_args(self):
         """
@@ -550,3 +556,34 @@ class UpdateBizScoreStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEnrol
         self.assert_error(self.contract, self.course1.id)
         self.assert_error(self.contract, self.course2.id)
         self.mock_log.error.assert_called_once()
+
+    def _create_batch_status(self, contract, course, status, count=None):
+        self.batch_status = ScoreBatchStatusFactory.create(contract=contract,
+                                                           course_id=unicode(course.id),
+                                                           status=status,
+                                                           student_count=count)
+
+    def test_if_batch_status_exist_today(self):
+        self._create_batch_status(self.contract, self.course1, BATCH_STATUS_ERROR)
+        self._register_contract(self.contract, self.user)
+
+        call_command('update_biz_score_status')
+
+        def assert_not_started(contract, course):
+            self.assertFalse(ScoreBatchStatus.objects.filter(contract=contract, course_id=course.id,
+                                                             status=BATCH_STATUS_STARTED).exists())
+            self.assertFalse(ScoreBatchStatus.objects.filter(contract=contract, course_id=course.id,
+                                                             status=BATCH_STATUS_FINISHED).exists())
+            self.assertEquals(len(ScoreStore(contract.id, unicode(course.id)).get_documents()), 0)
+
+        assert_not_started(self.contract, self.course1)
+        assert_not_started(self.contract, self.course2)
+
+    def test_force_if_batch_status_exist_today(self):
+        self._create_batch_status(self.contract, self.course1, BATCH_STATUS_ERROR)
+        self._register_contract(self.contract, self.user)
+
+        call_command('update_biz_score_status', force=True)
+
+        self.assert_finished(1, self.contract, self.course1)
+        self.assert_finished(1, self.contract, self.course2)

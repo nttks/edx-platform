@@ -1,6 +1,8 @@
 """
 Models for achievement feature
 """
+import datetime
+
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
@@ -45,6 +47,18 @@ class BatchStatusBase(models.Model):
             return obj[0]
         else:
             return None
+
+    @classmethod
+    def exists_today(cls, contract_id):
+        """
+        Return whether today's record exists for the specified Contract id
+
+        :param contract_id: Contract id
+        :return: True if today's record exists for the specified Contract id
+        """
+        today_min = datetime.datetime.combine(datetime.date.today(), datetime.time.min)
+        today_max = datetime.datetime.combine(datetime.date.today(), datetime.time.max)
+        return cls.objects.filter(contract_id=contract_id, created__gte=today_min, created__lte=today_max).exists()
 
     @classmethod
     def save_for_started(cls, contract_id, course_id):
