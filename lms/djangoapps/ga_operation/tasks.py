@@ -131,33 +131,41 @@ class CreateCerts(TaskBase):
                 return self._get_email_body_for_all_certs(all_certs)
 
     def _get_email_body_for_all_certs(self, all_certs):
-        def _get_unenroll_username_list(_course_key):
+        def _get_unenroll_and_course_passed_username_list(_course):
             return [
                 enrollment.user.username for enrollment in CourseEnrollment.objects.filter(
-                    course_id=_course_key, is_active=False)
-            ]
-
-        def _get_disabled_account_list(_course_key):
-            return [
-                userstanding.user.username for userstanding in UserStanding.objects.filter(
-                    user__in=[c.user for c in CourseEnrollment.objects.filter(course_id=_course_key)],
-                    account_status=UserStanding.ACCOUNT_DISABLED
-                )
-            ]
-
-        def _get_not_activate_and_course_passed_username_list(_course_key):
-            return [
-                enrollment.user.username for enrollment in CourseEnrollment.objects.filter(course_id=_course_key)
-                if not enrollment.user.is_active and is_course_passed(
-                    course=get_course_by_id(course_key=_course_key),
+                    course_id=_course.id, is_active=False)
+                if is_course_passed(
+                    course=_course,
                     student=enrollment.user
                 )
             ]
 
-        course_key = CourseKey.from_string(self.course_id)
-        unenroll_username_list = _get_unenroll_username_list(course_key)
-        disabled_username_list = _get_disabled_account_list(course_key)
-        not_activate_username_list = _get_not_activate_and_course_passed_username_list(course_key)
+        def _get_disabled_account_and_course_passed_username_list(_course):
+            return [
+                userstanding.user.username for userstanding in UserStanding.objects.filter(
+                    user__in=[c.user for c in CourseEnrollment.objects.filter(course_id=_course.id)],
+                    account_status=UserStanding.ACCOUNT_DISABLED
+                )
+                if is_course_passed(
+                    course=_course,
+                    student=userstanding.user
+                )
+            ]
+
+        def _get_not_activate_and_course_passed_username_list(_course):
+            return [
+                enrollment.user.username for enrollment in CourseEnrollment.objects.filter(course_id=_course.id)
+                if not enrollment.user.is_active and is_course_passed(
+                    course=_course,
+                    student=enrollment.user
+                )
+            ]
+
+        course = get_course_by_id(course_key=CourseKey.from_string(self.course_id))
+        unenroll_username_list = _get_unenroll_and_course_passed_username_list(course)
+        disabled_username_list = _get_disabled_account_and_course_passed_username_list(course)
+        not_activate_username_list = _get_not_activate_and_course_passed_username_list(course)
 
         return (
             u"修了証発行数： {all_certs_count}\n"
