@@ -131,40 +131,57 @@ class CreateCerts(TaskBase):
                 return self._get_email_body_for_all_certs(all_certs)
 
     def _get_email_body_for_all_certs(self, all_certs):
-        def _get_unenroll_username_list(_course_key):
-            return [
-                enrollment.user.username for enrollment in CourseEnrollment.objects.filter(
-                    course_id=_course_key, is_active=False)
-            ]
-
-        def _get_disabled_account_list(_course_key):
+        def _get_disabled_account_and_course_passed_username_list(_course):
             return [
                 userstanding.user.username for userstanding in UserStanding.objects.filter(
-                    user__in=[c.user for c in CourseEnrollment.objects.filter(course_id=_course_key)],
+                    user__in=[c.user for c in CourseEnrollment.objects.filter(course_id=_course.id)],
                     account_status=UserStanding.ACCOUNT_DISABLED
+                )
+                if is_course_passed(
+                    course=_course,
+                    student=userstanding.user
                 )
             ]
 
-        def _get_not_activate_and_course_passed_username_list(_course_key):
+        def _get_not_activate_and_course_passed_username_list(_course):
             return [
-                enrollment.user.username for enrollment in CourseEnrollment.objects.filter(course_id=_course_key)
+                enrollment.user.username for enrollment in CourseEnrollment.objects.filter(course_id=_course.id)
                 if not enrollment.user.is_active and is_course_passed(
-                    course=get_course_by_id(course_key=_course_key),
+                    course=_course,
                     student=enrollment.user
                 )
             ]
 
-        course_key = CourseKey.from_string(self.course_id)
-        unenroll_username_list = _get_unenroll_username_list(course_key)
-        disabled_username_list = _get_disabled_account_list(course_key)
-        not_activate_username_list = _get_not_activate_and_course_passed_username_list(course_key)
+        def _get_unenroll_and_course_passed_username_list(_course, _disabled_username_list,
+                                                          _not_activate_username_list):
+            return [
+                enrollment.user.username for enrollment in CourseEnrollment.objects.filter(
+                    course_id=_course.id, is_active=False)
+                if is_course_passed(
+                    course=_course,
+                    student=enrollment.user
+                )
+                # The following user's counts are not included in the number of unenroll user's count
+                # * disabled and course passed user's count(_disabled_username_list)
+                # * not activate and course passed user's count(_not_activate_username_list)
+                and enrollment.user.username not in _disabled_username_list
+                and enrollment.user.username not in _not_activate_username_list
+            ]
+
+        course = get_course_by_id(course_key=CourseKey.from_string(self.course_id))
+        not_activate_username_list = _get_not_activate_and_course_passed_username_list(course)
+        disabled_username_list = _get_disabled_account_and_course_passed_username_list(course)
+        unenroll_username_list = _get_unenroll_and_course_passed_username_list(course,
+                                                                               disabled_username_list,
+                                                                               not_activate_username_list)
 
         return (
             u"修了証発行数： {all_certs_count}\n"
             u"※受講解除者{unenroll_count}人を含みます（受講解除ユーザー名：{unenroll_username_list}）\n"
-            u"※退会者{disabled_account_count}人を含みます（退会ユーザー名：{disabled_username_list}）\n"
             u"---\n"
-            u"修了判定データに含まれる合格かつ未アクティベート者数：{not_activate_username_count}（未アクティベートユーザー名：{not_activate_username_list}）\n"
+            u"修了判定データに含まれる\n"
+            u"　* 合格かつ未アクティベート者数：{not_activate_username_count}（未アクティベートユーザー名：{not_activate_username_list}）\n"
+            u"　* 合格かつ退会者数：{disabled_account_count}（退会ユーザー名：{disabled_username_list}）\n"
             u"\n"
             u"---\n{cert_list}"
         ).format(
