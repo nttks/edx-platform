@@ -55,10 +55,20 @@ from openedx.core.lib.ga_datetime_utils import to_timezone
   <div class="wrapper-msg urgency-high" style="border: 0; margin: 3px;">
     <div class="msg" style="min-width: 0;">
       <div class="msg-content">
-        <p class="title" style="padding: 0; width: 100%; font-weight: normal;">${_("Before you enroll in a course, you need to activate your account.")}</p>
+        <p class="title" style="padding: 0; width: 100%; font-weight: normal;">${_("You're almost there!")}</p>
         <div class="copy">
           <p class="activation-message">
-          ${_("We've sent an email to {email} with instructions for activating your account. Please try again.").format(email=user.email)}
+          ${_(
+            "Before you enroll in a course, you need to activate your account. We've "
+            "sent an e-mail to {email} with instructions for activating your account."
+          ).format(email=user.email)}
+          </p>
+          <p class="activation-message">
+          ${_(
+            "*If you lost the e-mail of \"Information of gacco Member registration,\" "
+            "please log-out and sign in again. "
+            "We will you resend the activation e-mail after entering your registered e-mail address and password."
+          )}
           </p>
         </div>
       </div>

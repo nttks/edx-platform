@@ -6,8 +6,14 @@
             <div class="copy">
                 <p class='activation-message'>${_(
                         "Before you enroll in a course, you need to activate your account. We've "
-                        "sent an email to {email} with instructions for activating your account."
+                        "sent an e-mail to {email} with instructions for activating your account."
                         ).format(email="<strong>{}</strong>".format(email)
+                    )}
+                </p>
+                <p class='activation-message'>${_(
+                        "*If you lost the e-mail of \"Information of gacco Member registration,\" "
+                        "please log-out and sign in again. "
+                        "We will you resend the activation e-mail after entering your registered e-mail address and password."
                     )}
                 </p>
             </div>

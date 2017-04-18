@@ -121,12 +121,24 @@
   <div class="wrapper-msg urgency-high" style="border: 0;">
     <div class="msg" style="min-width: 0;">
       <div class="msg-content">
-        <h2 class="title"><%- gettext("Before you enroll in a course, you need to activate your account.") %></h2>
+        <h2 class="title"><%- gettext("You're almost there!") %></h2>
         <div class="copy">
           <p class="activation-message">
             <%= interpolate(
-              gettext("We've sent an email to %(email)s with instructions for activating your account. Please try again."),
+              gettext(
+                "Before you enroll in a course, you need to activate your account. We've "
+                + "sent an e-mail to %(email)s with instructions for activating your account."
+              ),
               {email: email}, true
+            ) %>
+          </p>
+          <p class="activation-message">
+            <%= interpolate(
+              gettext(
+                "*If you lost the e-mail of \"Information of gacco Member registration,\" "
+                + "please log-out and sign in again. "
+                + "We will you resend the activation e-mail after entering your registered e-mail address and password."
+              )
             ) %>
           </p>
         </div>

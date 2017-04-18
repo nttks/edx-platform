@@ -355,12 +355,24 @@ msgid "Including tax"
 msgstr "税込"
 
 #: lms/templates/verify_student/make_payment_step.underscore
-msgid "Before you enroll in a course, you need to activate your account."
+msgid "You're almost there!"
 msgstr "会員登録が完了しておりません。"
 
 #: lms/templates/verify_student/make_payment_step.underscore
-msgid "We've sent an email to %(email)s with instructions for activating your account. Please try again."
-msgstr "ご登録いただいた%(email)s宛に会員登録のご案内メールを送信しております。メール内のURLをクリックし、会員登録を行ってからお申込ください。"
+msgid ""
+"Before you enroll in a course, you need to activate your account. We've "
+"sent an e-mail to %(email)s with instructions for activating your account."
+msgstr ""
+"入力された%(email)s宛に会員登録のご案内メールを送信しました。メール内のURLをクリックし、会員登録を必ず行ってください。"
+
+#: lms/templates/verify_student/make_payment_step.underscore
+msgid ""
+"*If you lost the e-mail of \"Information of gacco Member registration,\" "
+"please log-out and sign in again. "
+"We will you resend the activation e-mail after entering your registered e-mail address and password."
+msgstr ""
+"※「会員登録のご案内メール」を紛失された場合は、右上に表示されている▼ボタンをクリックして「ログアウト」した後、再度登録したメールアドレスとパスワードで、ログインをしてください。"
+"改めて「会員登録のご案内メール」をお送りいたします。"
 
 #: lms/templates/verify_student/payment_confirmation_step.underscore
 msgid "You have successfully completed your order."

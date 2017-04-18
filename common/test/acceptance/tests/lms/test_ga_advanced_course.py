@@ -324,7 +324,7 @@ class AdvancedCourseTest(WebAppTest, GaccoTestMixin):
         self._assert_ticket(choose_ticket_page, 'test ticket name 21', exists=False)
         self.assertEqual(
             choose_ticket_page.get_inactive_message_title(),
-            'Before you enroll in a course, you need to activate your account.'
+            'You\'re almost there!'
         )
 
     def test_not_logged_in_and_register(self):
