@@ -194,8 +194,8 @@ class Command(BaseCommand):
                     log.error(u"Unexpected error occurred: {}".format(ex))
                     ScoreBatchStatus.save_for_error(contract.id, course_key)
 
-            if error_flag:
-                raise CommandError("Error occurred while handling update_biz_score_status command.")
+        if error_flag:
+            raise CommandError("Error occurred while handling update_biz_score_status command.")
 
 
 def get_grade(course_key, student):

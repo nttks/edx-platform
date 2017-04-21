@@ -263,5 +263,5 @@ class Command(BaseCommand):
                     log.error(u"Unexpected error occurred: {}".format(ex))
                     PlaybackBatchStatus.save_for_error(contract.id, course_key)
 
-            if error_flag:
-                raise CommandError("Error occurred while handling update_biz_playback_status command.")
+        if error_flag:
+            raise CommandError("Error occurred while handling update_biz_playback_status command.")

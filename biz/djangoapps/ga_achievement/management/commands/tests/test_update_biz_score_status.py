@@ -551,10 +551,16 @@ class UpdateBizScoreStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEnrol
         self.mock_grade.side_effect = Exception()
         self._input_contract(self.contract, self.user)
 
+        # Setup another contract
+        another_course = CourseFactory.create(org=self.gacco_organization.org_code, number='another_course', run='run')
+        another_contract = self._create_contract(detail_courses=[another_course])
+        self._input_contract(another_contract, self.user)
+
         call_command('update_biz_score_status')
 
         self.assert_error(self.contract, self.course1.id)
         self.assert_error(self.contract, self.course2.id)
+        self.assert_error(another_contract, another_course.id)
         self.mock_log.error.assert_called_once()
 
     def _create_batch_status(self, contract, course, status, count=None):

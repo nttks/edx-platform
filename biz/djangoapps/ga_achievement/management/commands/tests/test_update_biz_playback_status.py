@@ -645,10 +645,12 @@ class UpdateBizPlaybackStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEn
     def test_error(self):
         self.mock_aggregate.side_effect = Exception()
         self._input_contract(self.single_spoc_video_contract, self.user)
+        self._input_contract(self.multiple_spoc_video_contract, self.user)
 
-        call_command('update_biz_playback_status', self.single_spoc_video_contract.id)
+        call_command('update_biz_playback_status')
 
         self.assert_error(self.single_spoc_video_contract, self.single_spoc_video_course.id)
+        self.assert_error(self.multiple_spoc_video_contract, self.multiple_spoc_video_course.id)
         self.mock_log.error.assert_called_once()
 
     def _create_batch_status(self, contract, course, status, count=None):
