@@ -582,3 +582,68 @@ class PublishCertsTest(ApiTestBase, ApiTestMixin):
         self.assertEqual(content[RESPONSE_FIELD_ID], 'pdf error')
         mock_log.exception.assert_called_with('Failure to publish certificates from create_certs command.')
         self._assert_audit_log(mock_log)
+
+
+@ddt.ddt
+@override_settings(GA_OPERATION_MONGO={
+    "comment": {
+        "collection": "contents",
+        "db": "cs_comments_service",
+        "host": ["localhost"],
+        "password": "password",
+        "port": 27017,
+        "user": "cs_comments_service"
+    }
+})
+class DiscussionDataDownloadTest(ApiTestBase):
+
+    @property
+    def url(self):
+        return 'discussion_data_download'
+
+    @patch('ga_operation.views.api.log')
+    def test_success(self, mock_log):
+
+        _url = reverse(self.url)
+        data = {
+            'course_id': 'course-v1:org+course+run',
+        }
+        response = self.client.get(_url, data)
+        self.assertEqual(response.status_code, 200)
+        content = json.loads(response.content)
+
+        # nodate case
+        # If you want to do with data, rewrite it
+        self.assertEqual(content,[])
+
+        mock_log.exception.assert_not_called()
+        self._assert_audit_log(mock_log)
+
+    @patch('ga_operation.views.api.log')
+    def test_no_course_id(self, mock_log):
+        _url = reverse(self.url)
+        response = self.client.get(_url)
+
+        self.assertEqual(response.status_code, 400)
+        content = json.loads(response.content)
+        self.assertEqual(content[RESPONSE_FIELD_ID], u'入力したフォームの内容が不正です。')
+        self.assertEqual(content['course_id'], [u'This field is required.'])
+
+        mock_log.info.assert_called_with({'course_id': [u'This field is required.'], 'right_content_response':u'入力したフォームの内容が不正です。'})
+        mock_log.exception.assert_not_called()
+
+    @patch('ga_operation.views.api.log')
+    @patch('ga_operation.views.api.CommentStore')
+    def test_error(self, mock_CommentStore, mock_log):
+        mock_CommentStore().get_documents.side_effect = self.exception
+
+        _url = reverse(self.url)
+        data = {
+            'course_id': 'course-v1:org+course+run',
+        }
+
+        response = self.client.get(_url, data)
+
+        self.assertEqual(response.status_code, 400)
+        mock_log.exception.assert_called_with('Caught the exception: Exception')
+        self._assert_audit_log(mock_log)

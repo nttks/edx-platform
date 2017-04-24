@@ -309,7 +309,7 @@ def discussion_data_download(request):
         return JsonResponse(f.errors, status=400)
     course_id = f.cleaned_data['course_id']
     try:
-        all_documents = CommentStore().get_documents(dict(course_id=course_id))
+        all_documents = CommentStore().get_documents(dict(course_id=course_id), excludes=None)
     except Exception as e:
         log.exception('Caught the exception: ' + type(e).__name__)
         return HttpResponseBadRequest(u'{}'.format(e))
