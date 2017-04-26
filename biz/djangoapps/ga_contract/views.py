@@ -35,8 +35,7 @@ def index(request):
     :return: HttpResponse
     """
     search_contract_list = Contract.find_by_owner(request.current_organization).select_related(
-            'contractor_organization', 'owner_organization', 'created_by').prefetch_related(
-            'contract_register', 'additional_info')
+            'contractor_organization', 'owner_organization', 'created_by').prefetch_related('additional_info')
 
     show_contract_list = []
     for i, contract in enumerate(search_contract_list):
@@ -52,7 +51,6 @@ def index(request):
             'end_date': format_for_w2ui(contract.end_date),
             'created_by': contract.created_by.profile.name,
             'created': format_for_w2ui(contract.created),
-            'user_count': contract.contract_register.count(),
             'course_count': contract.details.count(),
             'additional_info_count': contract.additional_info.count(),
             'detail_url': reverse('biz:contract:detail', kwargs={'selected_contract_id': contract.id}),
