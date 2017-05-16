@@ -40,6 +40,28 @@ class DateTimeUtilsTest(BizTestBase):
             self.assertEqual(date(2016, 1, 1), datetime_utils.timezone_today())
 
     @override_settings(TIME_ZONE='Asia/Tokyo')
+    def test_min_and_max_of_today(self):
+        _timezone = pytz.timezone('Asia/Tokyo')
+        with patch(
+            'django.utils.timezone.now',
+            side_effect=lambda: datetime(2015, 12, 31, 20, 0, 0).replace(tzinfo=pytz.utc)
+        ):
+            today_min, today_max = datetime_utils.min_and_max_of_today()
+            self.assertEqual(datetime(2016, 1, 1, 0, 0, 0, tzinfo=_timezone), today_min)
+            self.assertEqual(datetime(2016, 1, 1, 23, 59, 59, 999999, tzinfo=_timezone), today_max)
+
+    @override_settings(TIME_ZONE='Asia/Tokyo')
+    def test_min_and_max_of_date(self):
+        target_day_min, target_day_max = datetime_utils.min_and_max_of_date(
+            datetime(2015, 12, 31, 20, 0, 0, tzinfo=pytz.utc).date(), 5)
+        self.assertEqual(datetime(2016, 1, 5, 0, 0, 0, tzinfo=pytz.timezone('Asia/Tokyo')), target_day_min)
+        self.assertEqual(datetime(2016, 1, 5, 23, 59, 59, 999999, tzinfo=pytz.timezone('Asia/Tokyo')), target_day_max)
+
+        # TypeError
+        with self.assertRaises(TypeError):
+            datetime_utils.min_and_max_of_date(datetime(2015, 12, 31, 20, 0, 0, tzinfo=pytz.utc), 5)
+
+    @override_settings(TIME_ZONE='Asia/Tokyo')
     def test_to_jst(self):
         _timezone = pytz.timezone('Asia/Tokyo')
         self.assertEqual(
