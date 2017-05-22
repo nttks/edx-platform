@@ -293,3 +293,9 @@ FEATURES['DISABLE_START_DATES'] = True
 
 ### Max character length of course display name for test long name
 MAX_LENGTH_COURSE_DISPLAY_NAME = 1024
+
+# Add apps to Installed apps for testing with biz
+INSTALLED_APPS += (
+    'biz.djangoapps.ga_organization',
+    'biz.djangoapps.ga_contract',
+)

@@ -184,7 +184,7 @@ class ConfirmCertsTemplateTest(ApiTestBase, ApiTestMixin):
     def url(self):
         return 'confirm_certs_template'
 
-    @patch('ga_operation.views.api.log')
+    @patch('openedx.core.djangoapps.ga_operation.utils.log')
     @patch('ga_operation.views.api.handle_file_from_s3')
     @ddt.data(
         (True, True),
@@ -216,7 +216,7 @@ class ConfirmCertsTemplateTest(ApiTestBase, ApiTestMixin):
         mock_handle_file_from_s3.assert_any_call('verified-org-course-run.pdf', settings.PDFGEN_BASE_BUCKET_NAME)
         self._assert_audit_log(mock_log)
 
-    @patch('ga_operation.views.api.log')
+    @patch('openedx.core.djangoapps.ga_operation.utils.log')
     @patch('ga_operation.views.api.handle_file_from_s3')
     def test_error(self, mock_handle_file_from_s3, mock_log):
         mock_handle_file_from_s3.side_effect = self.exception
@@ -242,7 +242,7 @@ class UploadCertsTemplateTest(ApiTestBase, ApiTestMixin):
     def url(self):
         return 'upload_certs_template'
 
-    @patch('ga_operation.views.api.log')
+    @patch('openedx.core.djangoapps.ga_operation.utils.log')
     @patch('ga_operation.forms.upload_certs_template_form.handle_uploaded_received_file_to_s3')
     @ddt.data(
         (True, True),
@@ -272,7 +272,7 @@ class UploadCertsTemplateTest(ApiTestBase, ApiTestMixin):
         self._assert_success_message(content, u'テンプレートのアップロードが完了しました。')
         self._assert_audit_log(mock_log)
 
-    @patch('ga_operation.views.api.log')
+    @patch('openedx.core.djangoapps.ga_operation.utils.log')
     @patch('ga_operation.forms.upload_certs_template_form.handle_uploaded_received_file_to_s3')
     def test_no_files(self, mock_handle_uploaded_received_file_to_s3, mock_log):
         _url = reverse(self.url)
@@ -285,7 +285,7 @@ class UploadCertsTemplateTest(ApiTestBase, ApiTestMixin):
         error_message = u'通常テンプレートと対面学習テンプレートのどちらか一方または両方を選択してください。'
         self.assertEqual(content['cert_pdf_tmpl_error'], error_message)
 
-    @patch('ga_operation.views.api.log')
+    @patch('openedx.core.djangoapps.ga_operation.utils.log')
     @patch('ga_operation.forms.upload_certs_template_form.handle_uploaded_received_file_to_s3')
     def test_error(self, mock_handle_uploaded_received_file_to_s3, mock_log):
         mock_handle_uploaded_received_file_to_s3.side_effect = self.exception
@@ -307,7 +307,7 @@ class CreateCertsTest(ApiTestBase, ApiTestMixin):
     def url(self):
         return 'create_certs'
 
-    @patch('ga_operation.views.api.log')
+    @patch('openedx.core.djangoapps.ga_operation.utils.log')
     @patch('ga_operation.views.api.create_certs_task')
     @ddt.data(None, ['user1', 'user2'])
     def test_success(self, student_ids, mock_create_certs_task, mock_log):
@@ -348,9 +348,9 @@ class CreateCertsTest(ApiTestBase, ApiTestMixin):
 
         mock_create_certs_task.assert_not_called()
 
-    @patch('ga_operation.views.api.log')
+    @patch('openedx.core.djangoapps.ga_operation.utils.log')
     @patch('ga_operation.views.api.create_certs_task')
-    def test_error(self, mock_create_certs_task, mock_log):
+    def test_error(self, mock_create_certs_task, mock_utils_log):
         mock_create_certs_task.delay.side_effect = self.exception
 
         _url = reverse(self.url)
@@ -358,8 +358,8 @@ class CreateCertsTest(ApiTestBase, ApiTestMixin):
             'course_id': 'course-v1:org+course+run',
             'email': 'test@example.com',
         })
-        self._assert_exception(response, mock_log)
-        self._assert_audit_log(mock_log)
+        self._assert_exception(response, mock_utils_log)
+        self._assert_audit_log(mock_utils_log)
 
 
 @override_settings(GA_OPERATION_VALID_DOMAINS_LIST=['example.com'])
@@ -369,7 +369,7 @@ class CreateCertsMeetingTest(ApiTestBase, ApiTestMixin):
     def url(self):
         return 'create_certs_meeting'
 
-    @patch('ga_operation.views.api.log')
+    @patch('openedx.core.djangoapps.ga_operation.utils.log')
     @patch('ga_operation.views.api.create_certs_task')
     def test_success(self, mock_create_certs_task, mock_log):
         _url = reverse(self.url)
@@ -426,9 +426,9 @@ class CreateCertsMeetingTest(ApiTestBase, ApiTestMixin):
 
         mock_create_certs_task.assert_not_called()
 
-    @patch('ga_operation.views.api.log')
+    @patch('openedx.core.djangoapps.ga_operation.utils.log')
     @patch('ga_operation.views.api.create_certs_task')
-    def test_error(self, mock_create_certs_task, mock_log):
+    def test_error(self, mock_create_certs_task, mock_utils_log):
         mock_create_certs_task.delay.side_effect = self.exception
 
         _url = reverse(self.url)
@@ -437,8 +437,8 @@ class CreateCertsMeetingTest(ApiTestBase, ApiTestMixin):
             'email': 'test@example.com',
             'student_ids': ','.join(['user1', 'user2'])
         })
-        self._assert_exception(response, mock_log)
-        self._assert_audit_log(mock_log)
+        self._assert_exception(response, mock_utils_log)
+        self._assert_audit_log(mock_utils_log)
 
 
 @ddt.ddt
@@ -454,10 +454,11 @@ class PublishCertsTest(ApiTestBase, ApiTestMixin):
         course_key = CourseKey.from_string(course_id)
         return GeneratedCertificateFactory.create(user=user, course_id=course_key, status=status)
 
+    @patch('openedx.core.djangoapps.ga_operation.utils.log')
     @patch('ga_operation.views.api.log')
     @patch('ga_operation.views.api.call_command')
     @ddt.data(None, ['user1', 'user2'])
-    def test_success(self, student_ids, mock_call_command, mock_log):
+    def test_success(self, student_ids, mock_call_command, mock_log, mock_utils_log):
         # Create certificate data
         for status, target_count, no_target_count in [
             ('deleted', 1, 2),
@@ -512,11 +513,12 @@ class PublishCertsTest(ApiTestBase, ApiTestMixin):
         self._assert_success_message(
             content, u'対象講座ID: course-v1:org+course+run の修了証公開処理が完了しました。\n\n{}'.format(status_counts)
         )
-        self._assert_audit_log(mock_log)
+        self._assert_audit_log(mock_utils_log)
 
+    @patch('openedx.core.djangoapps.ga_operation.utils.log')
     @patch('ga_operation.views.api.log')
     @patch('ga_operation.views.api.call_command')
-    def test_success_with_wrong_user(self, mock_call_command, mock_log):
+    def test_success_with_wrong_user(self, mock_call_command, mock_log, mock_utils_log):
         student_ids = ['user1', 'user2', 'user3']
         mock_call_command.side_effect = [None, CertPDFUserNotFoundException, None]
 
@@ -553,24 +555,25 @@ class PublishCertsTest(ApiTestBase, ApiTestMixin):
         self._assert_success_message(
             content, u'対象講座ID: course-v1:org+course+run の修了証公開処理が完了しました。\n\n{}'.format(status_counts)
         )
-        self._assert_audit_log(mock_log)
+        self._assert_audit_log(mock_utils_log)
         mock_log.warning.assert_any_call('User(user2) was not found')
 
-    @patch('ga_operation.views.api.log')
+    @patch('openedx.core.djangoapps.ga_operation.utils.log')
     @patch('ga_operation.views.api.call_command')
-    def test_pdf_error(self, mock_call_command, mock_log):
+    def test_pdf_error(self, mock_call_command, mock_utils_log):
         mock_call_command.side_effect = self.exception
 
         _url = reverse(self.url)
         response = self.client.post(_url, {
             'course_id': 'course-v1:org+course+run',
         })
-        self._assert_exception(response, mock_log)
-        self._assert_audit_log(mock_log)
+        self._assert_exception(response, mock_utils_log)
+        self._assert_audit_log(mock_utils_log)
 
+    @patch('openedx.core.djangoapps.ga_operation.utils.log')
     @patch('ga_operation.views.api.log')
     @patch('ga_operation.views.api.call_command')
-    def test_error(self, mock_call_command, mock_log):
+    def test_error(self, mock_call_command, mock_log, mock_utils_log):
         mock_call_command.side_effect = CertPDFException('pdf error')
 
         _url = reverse(self.url)
@@ -581,7 +584,7 @@ class PublishCertsTest(ApiTestBase, ApiTestMixin):
         content = json.loads(response.content)
         self.assertEqual(content[RESPONSE_FIELD_ID], 'pdf error')
         mock_log.exception.assert_called_with('Failure to publish certificates from create_certs command.')
-        self._assert_audit_log(mock_log)
+        self._assert_audit_log(mock_utils_log)
 
 
 @ddt.ddt

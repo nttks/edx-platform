@@ -59,7 +59,7 @@ class CreateCertsTest(TestCase):
 
     @patch('ga_operation.tasks.get_course_by_id')
     @patch('ga_operation.tasks.log')
-    @patch('ga_operation.tasks.send_mail')
+    @patch('openedx.core.djangoapps.ga_operation.task_base.send_mail')
     @patch('ga_operation.tasks.call_command')
     def test_run(self, mock_call_command, mock_send_mail, mock_log, get_course_by_id_mock):
         self._setup_certificate(self.course_id)
@@ -93,7 +93,7 @@ class CreateCertsTest(TestCase):
         get_course_by_id_mock.assert_called_once_with(course_key=CourseKey.from_string(self.course_id))
 
     @patch('ga_operation.tasks.log')
-    @patch('ga_operation.tasks.send_mail')
+    @patch('openedx.core.djangoapps.ga_operation.task_base.send_mail')
     @patch('ga_operation.tasks.call_command')
     def test_run_with_student_ids(self, mock_call_command, mock_send_mail, mock_log):
         # CertPDFUserNotFoundException occur at first, but still should be continue
@@ -127,7 +127,7 @@ class CreateCertsTest(TestCase):
         mock_log.exception.assert_not_called()
 
     @patch('ga_operation.tasks.log')
-    @patch('ga_operation.tasks.send_mail')
+    @patch('openedx.core.djangoapps.ga_operation.task_base.send_mail')
     @patch('ga_operation.tasks.call_command')
     @ddt.data(CertException, CertPDFException)
     def test_run_generate_error(self, exception, mock_call_command, mock_send_mail, mock_log):
@@ -157,7 +157,7 @@ class CreateCertsTest(TestCase):
         mock_log.exception.assert_called_once_with('Failure to generate the PDF files from create_certs command.')
 
     @patch('ga_operation.tasks.log')
-    @patch('ga_operation.tasks.send_mail')
+    @patch('openedx.core.djangoapps.ga_operation.task_base.send_mail')
     @patch('ga_operation.tasks.call_command')
     def test_run_unknown_error(self, mock_call_command, mock_send_mail, mock_log):
         # Exception occur at second, then should not be continue
@@ -188,7 +188,7 @@ class CreateCertsTest(TestCase):
     @patch('ga_operation.tasks.get_course_by_id')
     @patch('ga_operation.tasks.is_course_passed')
     @patch('ga_operation.tasks.log')
-    @patch('ga_operation.tasks.send_mail')
+    @patch('openedx.core.djangoapps.ga_operation.task_base.send_mail')
     @patch('ga_operation.tasks.call_command')
     @ddt.data(
         ((u'修了証発行数： 1\n'
@@ -252,7 +252,7 @@ class CreateCertsTest(TestCase):
     @patch('ga_operation.tasks.get_course_by_id')
     @patch('ga_operation.tasks.is_course_passed')
     @patch('ga_operation.tasks.log')
-    @patch('ga_operation.tasks.send_mail')
+    @patch('openedx.core.djangoapps.ga_operation.task_base.send_mail')
     @patch('ga_operation.tasks.call_command')
     @ddt.data(
         ((u'修了証発行数： 3\n'
@@ -312,7 +312,7 @@ class CreateCertsTest(TestCase):
     @patch('ga_operation.tasks.get_course_by_id')
     @patch('ga_operation.tasks.is_course_passed')
     @patch('ga_operation.tasks.log')
-    @patch('ga_operation.tasks.send_mail')
+    @patch('openedx.core.djangoapps.ga_operation.task_base.send_mail')
     @patch('ga_operation.tasks.call_command')
     @ddt.data(
         ((u'修了証発行数： 3\n'

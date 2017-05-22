@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import csv
-from functools import wraps
 import logging
 
 from django.contrib.auth.decorators import login_required
@@ -23,49 +22,18 @@ from ga_operation.forms.past_graduates_info_form import PastGraduatesInfoForm
 from ga_operation.forms.upload_certs_template_form import ConfirmCertsTemplateForm, UploadCertsTemplateForm
 from ga_operation.forms.aggregate_g1528_form import AggregateG1528Form
 from ga_operation.tasks import (CreateCerts, create_certs_task, dump_oa_scores_task, ga_get_grades_g1528_task)
-from ga_operation.utils import (
-    course_filename, handle_file_from_s3,
-    get_s3_bucket, get_s3_connection, CSVResponse, JSONFileResponse
-)
 from ga_operation.mongo_utils import CommentStore
 from opaque_keys.edx.keys import CourseKey
 from opaque_keys import InvalidKeyError
+from openedx.core.djangoapps.ga_operation.utils import (
+    staff_only, course_filename, handle_file_from_s3,
+    get_s3_bucket, get_s3_connection, CSVResponse, JSONFileResponse,
+    handle_operation, RESPONSE_FIELD_ID
+)
 from pdfgen.certificate import CertPDFException, CertPDFUserNotFoundException
 from util.json_request import JsonResponse
 
 log = logging.getLogger(__name__)
-RESPONSE_FIELD_ID = 'right_content_response'
-
-
-def staff_only(view_func):
-    """Prevent invasion from other roll's user."""
-    def _wrapped_view_func(request, *args, **kwargs):
-        if not request.user.is_staff:
-            return JsonResponse({}, status=403)
-        return view_func(request, *args, **kwargs)
-    return _wrapped_view_func
-
-
-def handle_operation(form_class, has_file=False):
-    def _handle_operation(view_func):
-        @wraps(view_func)
-        def wrapper(request):
-            try:
-                f = form_class(data=request.POST, files=request.FILES) if has_file else form_class(data=request.POST)
-                if not f.is_valid():
-                    f.errors[RESPONSE_FIELD_ID] = u'入力したフォームの内容が不正です。'
-                    log.info(f.errors)
-                    return JsonResponse(f.errors, status=400)
-                return view_func(request, f)
-            except Exception as e:
-                log.exception('Caught the exception: {}'.format(type(e).__name__))
-                return JsonResponse({
-                    RESPONSE_FIELD_ID: "{}".format(e)
-                }, status=500)
-            finally:
-                log.info('path:{}, user.id:{} End.'.format(request.path, request.user.id))
-        return wrapper
-    return _handle_operation
 
 
 @staff_only

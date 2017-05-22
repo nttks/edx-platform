@@ -1,23 +1,36 @@
 # -*- coding: utf-8 -*-
-import os
-import logging
 import json
-from datetime import datetime
+import logging
+import os
 from contextlib import contextmanager
+from datetime import datetime
 from exceptions import OSError
+from functools import wraps
 
 from django.conf import settings
 from django.http import HttpResponse
 
-from util.file import course_filename_prefix_generator
-from util.json_request import JsonResponse
+from boto.exception import S3ResponseError
 from boto.s3 import connect_to_region
 from boto.s3.connection import OrdinaryCallingFormat, Location
-from boto.exception import S3ResponseError
 from boto.s3.key import Key
 from bson import ObjectId
+from util.file import course_filename_prefix_generator
+from util.json_request import JsonResponse
 
 log = logging.getLogger(__name__)
+RESPONSE_FIELD_ID = 'right_content_response'
+
+
+def staff_only(view_func):
+    """Prevent invasion from other roll's user."""
+
+    def _wrapped_view_func(request, *args, **kwargs):
+        if not request.user.is_staff:
+            return JsonResponse({}, status=403)
+        return view_func(request, *args, **kwargs)
+
+    return _wrapped_view_func
 
 
 def get_s3_bucket(conn, bucket_name):
@@ -95,12 +108,13 @@ def delete_files(file_name_list, base_dir):
 
 
 @contextmanager
-def change_behavior_sys():
+def change_behavior_sys(input_func):
     import sys
     import __builtin__
 
     def exit_dummy(_):
         pass
+
     tmp_exit = tmp_stderr = tmp_stdout = tmp_raw_input = None
     try:
         with open(settings.GA_OPERATION_STD_ERR, 'w') as err, open(settings.GA_OPERATION_STD_OUT, 'w') as out:
@@ -111,7 +125,7 @@ def change_behavior_sys():
             tmp_stdout = sys.stdout
             sys.stdout = out
             tmp_raw_input = __builtin__.raw_input
-            __builtin__.raw_input = get_dummy_raw_input()
+            __builtin__.raw_input = input_func()
             yield
     finally:
         if tmp_exit:
@@ -130,7 +144,22 @@ def get_dummy_raw_input():
     def counter(_):
         x[0] += 1
         return x[0]
+
     return counter
+
+
+def get_dummy_raw_input_list(input_list):
+    input_list.reverse()
+
+    def wrapper():
+        x = input_list.pop() if input_list else ''
+
+        def counter():
+            return x
+
+        return counter
+
+    return wrapper
 
 
 def get_std_info_from_local_storage():
@@ -145,6 +174,7 @@ def course_filename(course_key):
 
 class CSVResponse(HttpResponse):
     """ Return to csv response. """
+
     def __init__(self, filename, *args, **kwargs):
         super(CSVResponse, self).__init__(content_type='text/csv', *args, **kwargs)
         self['Content-Disposition'] = 'attachment; filename={}'.format(filename)
@@ -161,7 +191,29 @@ class JSONEncoder(json.JSONEncoder):
 
 class JSONFileResponse(JsonResponse):
     """ Return to json file response. """
+
     def __init__(self, resp_obj=None, filename=None, encoder=JSONEncoder, *args, **kwargs):
         super(JSONFileResponse, self).__init__(resp_obj=resp_obj, encoder=encoder, *args, **kwargs)
         self['Content-Disposition'] = 'attachment; filename={}'.format(filename)
 
+
+def handle_operation(form_class, has_file=False):
+    def _handle_operation(view_func):
+        @wraps(view_func)
+        def wrapper(request):
+            try:
+                f = form_class(data=request.POST, files=request.FILES) if has_file else form_class(data=request.POST)
+                if not f.is_valid():
+                    f.errors[RESPONSE_FIELD_ID] = u'入力したフォームの内容が不正です。'
+                    log.info(f.errors)
+                    return JsonResponse(f.errors, status=400)
+                return view_func(request, f)
+            except Exception as e:
+                log.exception('Caught the exception: {}'.format(type(e).__name__))
+                return JsonResponse({
+                    RESPONSE_FIELD_ID: "{}".format(e)
+                }, status=500)
+            finally:
+                log.info('path:{}, user.id:{} End.'.format(request.path, request.user.id))
+        return wrapper
+    return _handle_operation

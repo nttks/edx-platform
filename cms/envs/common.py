@@ -856,6 +856,9 @@ INSTALLED_APPS = (
 
     # Management optional function
     'openedx.core.djangoapps.ga_optional',
+
+    # Several operations for gacco.org's staff
+    'cms.djangoapps.ga_operation',
 )
 
 

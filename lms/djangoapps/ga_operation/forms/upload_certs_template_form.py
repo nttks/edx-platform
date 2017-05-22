@@ -4,8 +4,8 @@ from django.conf import settings
 
 from opaque_keys.edx.keys import CourseKey
 
-from ga_operation.forms.ga_operation_base_form import GaOperationBaseForm
-from ga_operation.utils import course_filename, handle_uploaded_received_file_to_s3
+from openedx.core.djangoapps.ga_operation.utils import course_filename, handle_uploaded_received_file_to_s3
+from openedx.core.djangoapps.ga_operation.ga_operation_base_form import GaOperationBaseForm
 
 
 class ConfirmCertsTemplateForm(GaOperationBaseForm):

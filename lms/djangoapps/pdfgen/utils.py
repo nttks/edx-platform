@@ -9,7 +9,7 @@ def get_file_from_s3(key_name, bucket_name=None):
     """
     Returns temporary file created from S3 object by specified key_name.
     """
-    from ga_operation.utils import open_bucket_from_s3
+    from openedx.core.djangoapps.ga_operation.utils import open_bucket_from_s3
 
     if bucket_name is None:
         bucket_name = settings.PDFGEN_BASE_BUCKET_NAME

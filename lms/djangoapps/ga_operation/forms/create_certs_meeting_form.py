@@ -1,6 +1,6 @@
 from django import forms
 
-from ga_operation.forms.ga_operation_base_form import GaOperationCertsBaseForm, GaOperationEmailField
+from openedx.core.djangoapps.ga_operation.ga_operation_base_form import GaOperationCertsBaseForm, GaOperationEmailField
 
 
 class CreateCertsMeetingForm(GaOperationCertsBaseForm):

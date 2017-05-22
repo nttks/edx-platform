@@ -5,7 +5,7 @@ from django.forms import ValidationError
 from django.test import TestCase
 from django.test.utils import override_settings
 
-from ga_operation.forms.ga_operation_base_form import (
+from openedx.core.djangoapps.ga_operation.ga_operation_base_form import (
     GaOperationBaseForm, GaOperationCertsBaseForm, GaOperationEmailField
 )
 

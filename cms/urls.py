@@ -5,6 +5,7 @@ from ratelimitbackend import admin
 
 from cms.djangoapps.contentstore.views.program import ProgramAuthoringView, ProgramsIdTokenView
 from cms.djangoapps.contentstore.views.organization import OrganizationListView
+from cms.djangoapps.ga_operation.views.ga_operation_dashboard import ga_operation_dashboard
 
 admin.autodiscover()
 
@@ -52,6 +53,14 @@ urlpatterns = patterns(
     url(r'^heartbeat$', include('heartbeat.urls')),
 
     url(r'^user_api/', include('openedx.core.djangoapps.user_api.legacy_urls')),
+)
+
+# Several operations for a gacco.org's staff
+urlpatterns += patterns(
+    '',
+
+    url(r'^ga_operation$', ga_operation_dashboard, name="ga_operation_dashboard"),
+    url(r'^ga_operation/api/', include('cms.djangoapps.ga_operation.views.api_urls', namespace="ga_operation_api")),
 )
 
 # User creation and updating views

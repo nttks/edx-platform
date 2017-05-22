@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from django import forms
 
-from ga_operation.forms.ga_operation_base_form import GaOperationBaseForm
+from openedx.core.djangoapps.ga_operation.ga_operation_base_form import GaOperationBaseForm
 
 
 class MutualGradingReportForm(GaOperationBaseForm):

@@ -1,0 +1,121 @@
+<%inherit file="/base.html" />
+<%block name="title">簡易ツール</%block>
+<%namespace name='static' file='/static_content.html'/>
+<%! from django.utils.translation import ugettext as _ %>
+<%block name="header_extras">
+</%block>
+<%block name="content">
+    <div class="main_content">
+        <div class="left_content panel">
+            <div class="side-nav">
+                <h1>Menu</h1>
+                <ul id="nav">
+                    <li><p><strong>講座</strong></p></li>
+                    <li>
+                        <ul>
+                            <li><a href="#delete_course"><i class="fa fa-file-text-o"></i>講座削除</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div> <!-- left_content -->
+
+        <div class="right_content panel">
+            <form id="input_form">
+                <div id="right_content_main"></div>
+            </form>
+            <div id="right_content_response"></div>
+        </div>
+
+    </div> <!-- main_content -->
+
+    <script id="delete_course_tmpl" type="text/template">
+        <h3>◎講座削除</h3>
+        <ul>
+            <li>
+                <label for="text">対象講座ID</label>
+                <input type="text" name="course_id">
+                <label id="course_id" for="text" class="error"></label>
+            </li>
+            <li>
+                <label for="email">結果返却用Eメールアドレス</label>
+                <input type="email" name="email" value="${callback_email}">
+                <label id="email" for="text" class="error"></label>
+            </li>
+            <li>
+                <div class="form_action">
+                    <button id="delete_course" class="button" name="delete_course">実行</button>
+                    <img id="indicator" src="${static.url('images/spinner.gif')}" alt="実行中..." hidden>
+                </div>
+            </li>
+        </ul>
+    </script>
+
+    <style type="text/css">
+        li {
+            list-style: none;
+            margin-top: 0.5em;
+            margin-bottom: 0.5em;
+            margin-left: 2.0em;
+        }
+
+        input[name="course_id"], input[name="email"] {
+            min-width: 300px;
+        }
+
+        .side-nav > h1 {
+            font-size: 20px;
+            text-align: center;
+        }
+
+        .main_content {
+            max-width: 980px;
+            min-width: 300px;
+            padding-bottom: 100px;
+            margin: 30px auto 0;
+        }
+
+        .left_content {
+            float: left;
+            width: 300px;
+            max-width: 660px;
+            min-height: 520px;
+            margin: 0;
+            border: 1px solid;
+            border-radius: 10px;
+        }
+
+        .right_content {
+            max-width: 660px;
+            min-height: 520px;
+            margin-top: 20px;
+            margin-left: 320px;
+            border: 1px solid;
+            border-radius: 10px;
+        }
+
+        #right_content_response {
+            margin-left: 10px;
+        }
+
+        .error {
+            color: red;
+        }
+
+        .form_action {
+            margin: 100px 0 0;
+            text-align: center;
+        }
+
+        .button {
+            min-width: 200px;
+        }
+    </style>
+</%block>
+
+<%block name="jsextra">
+    <script type="text/javascript" src="${static.url('js/vendor/jquery.min.js')}"></script>
+    <script type="text/javascript" src="${static.url('js/vendor/jquery.leanModal.min.js')}"></script>
+    <script type="text/javascript" src="${static.url('js/vendor/jquery.cookie.js')}"></script>
+    <script type="text/javascript" src="${static.url('js/ga_operation/main.js')}"></script>
+</%block>

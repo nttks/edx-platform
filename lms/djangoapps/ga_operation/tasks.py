@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
-from smtplib import SMTPException
 
-from django.core.mail import send_mail
 from django.core.management import call_command
 from django.conf import settings
 from django.db.models import Q
@@ -14,52 +12,15 @@ from opaque_keys.edx.keys import CourseKey
 from certificates.models import CertificateStatuses, GeneratedCertificate
 from courseware.courses import get_course_by_id
 from courseware.views import is_course_passed
+from openedx.core.djangoapps.ga_operation.task_base import TaskBase
+from openedx.core.djangoapps.ga_operation.utils import (
+    change_behavior_sys, delete_files, get_dummy_raw_input, get_std_info_from_local_storage,
+    handle_uploaded_generated_file_to_s3
+)
 from student.models import CourseEnrollment, UserStanding
 from xmodule.modulestore.django import modulestore
-from ga_operation.utils import (delete_files, change_behavior_sys,
-                                get_std_info_from_local_storage, handle_uploaded_generated_file_to_s3)
 
 log = logging.getLogger(__name__)
-
-
-class TaskBase(object):
-    """ Each Task Class's BaseClass """
-
-    def __init__(self, email):
-        super(TaskBase, self).__init__()
-        self.err_msg = ''
-        self.out_msg = ''
-        self.email = email
-
-    def _send_email(self):
-        try:
-            subject, body = self._get_email_subject(), self._get_email_body()
-            send_mail(subject,
-                      body,
-                      settings.GA_OPERATION_EMAIL_SENDER,
-                      [self.email],
-                      fail_silently=False)
-        except SMTPException:
-            log.warning("Failure sending e-mail address: {}".format(self.email))
-            log.exception("Failed to send a email to a staff.")
-        except Exception as e:
-            log.exception('Caught the exception: ' + type(e).__name__)
-
-    def _get_email_subject(self):
-        if self.err_msg:
-            return "{} was failure".format(self.get_command_name())
-        else:
-            return "{} was completed.".format(self.get_command_name())
-
-    def _get_email_body(self):
-        if self.err_msg:
-            return self.err_msg
-        else:
-            return "{} was succeeded.\n\n{}".format(self.get_command_name(), self.out_msg)
-
-    @staticmethod
-    def get_command_name():
-        raise NotImplementedError
 
 
 @CELERY_APP.task
@@ -224,7 +185,7 @@ class DumpOaScores(TaskBase):
         try:
             course_key = CourseKey.from_string(self.course_id)
             oa_items = modulestore().get_items(course_key, qualifiers={'category': 'openassessment'})
-            with change_behavior_sys():
+            with change_behavior_sys(get_dummy_raw_input):
                 # Change behavior raw_input method while take the all dump files
                 # The raw_input's behavior has been changed and if call it, return the increment value.
                 for _ in range(0, len(oa_items)):

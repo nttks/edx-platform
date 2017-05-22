@@ -5,8 +5,7 @@ import tempfile
 from django.test import TestCase
 
 from opaque_keys.edx.keys import CourseKey
-
-from ga_operation.utils import (
+from openedx.core.djangoapps.ga_operation.utils import (
     course_filename, handle_file_from_s3, handle_uploaded_received_file_to_s3
 )
 
@@ -21,7 +20,7 @@ class UtilsTest(TestCase):
         self.mock_bucket = Mock()
         self.mock_conn.get_bucket.return_value = self.mock_bucket
 
-        patch_get_s3_connection = patch('ga_operation.utils.get_s3_connection')
+        patch_get_s3_connection = patch('openedx.core.djangoapps.ga_operation.utils.get_s3_connection')
         mock_get_s3_connection = patch_get_s3_connection.start()
         mock_get_s3_connection.return_value = self.mock_conn
         self.addCleanup(patch_get_s3_connection.stop)
@@ -47,7 +46,7 @@ class UtilsTest(TestCase):
         self.mock_bucket.get_key.assert_called_once_with('test_key')
         mock_key.exists.assert_called_once()
 
-    @patch('ga_operation.utils.Key')
+    @patch('openedx.core.djangoapps.ga_operation.utils.Key')
     def test_handle_uploaded_received_file_to_s3(self, mock_key):
         file_obj = tempfile.TemporaryFile()
         ret = handle_uploaded_received_file_to_s3(file_obj, 'test_key', self.bucket_name)
