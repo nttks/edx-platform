@@ -212,6 +212,8 @@ from microsite_configuration import microsite
                 current_feature = 'organization'
             elif re.match('^/biz/contract/', request.path):
                 current_feature = 'contract'
+            elif re.match('^/biz/contract_operation/mail', request.path):
+                current_feature = 'contract_operation/mail'
             elif re.match('^/biz/contract_operation/students', request.path):
                 current_feature = 'contract_operation/students'
             elif re.match('^/biz/contract_operation/register_students', request.path):
@@ -377,8 +379,17 @@ from microsite_configuration import microsite
 
                     ## Student
                     % if current_manager.can_handle_contract_operation():
-                    <li class="${'current' if current_feature == 'contract_operation/register_students' else ''}"><a href="${reverse('biz:contract_operation:register_students')}">${_("Register User Management")}</a></li>
-                    <li class="${'current' if current_feature == 'contract_operation/students' else ''}"><a href="${reverse('biz:contract_operation:students')}">${_("Contract Register Management")}</a></li>
+                        % if current_contract.can_customize_mail:
+                    <li class="${'current' if current_feature == 'contract_operation/register_mail' else ''}">
+                        <a href="${reverse('biz:contract_operation:register_mail')}">${_("E-Mail Management")}</a>
+                    </li>
+                        % endif
+                    <li class="${'current' if current_feature == 'contract_operation/register_students' else ''}">
+                        <a href="${reverse('biz:contract_operation:register_students')}">${_("Register User Management")}</a>
+                    </li>
+                    <li class="${'current' if current_feature == 'contract_operation/students' else ''}">
+                        <a href="${reverse('biz:contract_operation:students')}">${_("Contract Register Management")}</a>
+                    </li>
                     % endif
 
                     ## Manager

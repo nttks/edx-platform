@@ -395,14 +395,6 @@ def send_mail_to_student(student, param_dict, language=None):
             'emails/enroll_email_enrolledsubject.txt',
             'emails/account_creation_and_enroll_emailMessage.txt'
         ),
-        'biz_account_notice': (
-            'ga_contract_operation/emails/account_notice_subject.txt',
-            'ga_contract_operation/emails/account_notice_message.txt'
-        ),
-        'biz_account_creation': (
-            'ga_contract_operation/emails/account_creation_subject.txt',
-            'ga_contract_operation/emails/account_creation_message.txt'
-        ),
     }
 
     subject_template, message_template = email_template_dict.get(message_type, (None, None))

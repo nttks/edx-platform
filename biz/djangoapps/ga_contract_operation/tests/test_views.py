@@ -14,7 +14,14 @@ from django.core.urlresolvers import reverse
 from django.db import IntegrityError
 from django.test.utils import override_settings
 
-from biz.djangoapps.ga_contract_operation.models import ContractTaskHistory
+from biz.djangoapps.ga_contract_operation.models import (
+    ContractMail,
+    ContractTaskHistory,
+    MAIL_TYPE_REGISTER_NEW_USER,
+    MAIL_TYPE_REGISTER_EXISTING_USER,
+    MAIL_TYPE_REGISTER_NEW_USER_WITH_LOGINCODE,
+    MAIL_TYPE_REGISTER_EXISTING_USER_WITH_LOGINCODE,
+)
 from biz.djangoapps.ga_contract_operation.tests.factories import ContractTaskHistoryFactory
 from biz.djangoapps.ga_invitation.models import ContractRegister, INPUT_INVITATION_CODE, REGISTER_INVITATION_CODE, UNREGISTER_INVITATION_CODE
 from biz.djangoapps.ga_invitation.tests.factories import ContractRegisterFactory
@@ -570,3 +577,586 @@ class ContractOperationViewTest(BizContractTestBase):
     def test_task_history_not_allowed_method(self):
         response = self.client.get(self._url_task_history_ajax)
         self.assertEqual(405, response.status_code)
+
+
+@ddt.ddt
+class ContractOperationMailViewTest(BizContractTestBase):
+
+    def setUp(self):
+        super(ContractOperationMailViewTest, self).setUp()
+
+        self._create_contract_mail_default()
+
+        self.contract_customize_mail = self._create_contract(
+            contract_name='test contract customize mail',
+            contractor_organization=self.contract_org,
+            detail_courses=[self.course_spoc1.id, self.course_spoc2.id],
+            additional_display_names=['country', 'dept'],
+            customize_mail=True,
+        )
+        self.contract_auth_customize_mail = self._create_contract(
+            contract_name='test contract auth customize mail',
+            contractor_organization=self.contract_org,
+            detail_courses=[self.course_spoc5.id],
+            url_code='testAuthCustomizeMail',
+            send_mail=True,
+            customize_mail=True,
+        )
+
+    # ------------------------------------------------------------
+    # Mail
+    # ------------------------------------------------------------
+    def _url_mail(self):
+        return reverse('biz:contract_operation:register_mail')
+
+    def test_mail_404(self):
+        self.setup_user()
+        with self.skip_check_course_selection(current_contract=self.contract):
+            self.assert_request_status_code(404, self._url_mail())
+
+    def test_mail_404_auth(self):
+        self.setup_user()
+        with self.skip_check_course_selection(current_contract=self.contract_auth):
+            self.assert_request_status_code(404, self._url_mail())
+
+    def test_mail(self):
+        self.setup_user()
+        with self.skip_check_course_selection(current_contract=self.contract_customize_mail):
+            response = self.assert_request_status_code(200, self._url_mail())
+
+        self.assertIn('Test Subject New User Without Logincode', response.content)
+        self.assertIn('Test Body New User Without Logincode', response.content)
+        self.assertIn('Test Subject Exists User Without Logincode', response.content)
+        self.assertIn('Test Body Exists User Without Logincode', response.content)
+        self.assertNotIn('Test Subject New User With Logincode', response.content)
+        self.assertNotIn('Test Body New User With Logincode', response.content)
+        self.assertNotIn('Test Subject Exists User With Logincode', response.content)
+        self.assertNotIn('Test Body Exists User With Logincode', response.content)
+
+    def test_mail_auth(self):
+        self.setup_user()
+        with self.skip_check_course_selection(current_contract=self.contract_auth_customize_mail):
+            response = self.assert_request_status_code(200, self._url_mail())
+
+        self.assertNotIn('Test Subject New User Without Logincode', response.content)
+        self.assertNotIn('Test Body New User Without Logincode', response.content)
+        self.assertNotIn('Test Subject Exists User Without Logincode', response.content)
+        self.assertNotIn('Test Body Exists User Without Logincode', response.content)
+        self.assertIn('Test Subject New User With Logincode', response.content)
+        self.assertIn('Test Body New User With Logincode', response.content)
+        self.assertIn('Test Subject Exists User With Logincode', response.content)
+        self.assertIn('Test Body Exists User With Logincode', response.content)
+
+    # ------------------------------------------------------------
+    # Register mail ajax
+    # ------------------------------------------------------------
+    def _url_register_mail_ajax(self):
+        return reverse('biz:contract_operation:register_mail_ajax')
+
+    def test_register_mail_no_param(self):
+        self.setup_user()
+        with self.skip_check_course_selection(current_contract=self.contract_customize_mail):
+            response = self.client.post(self._url_register_mail_ajax(), {})
+
+        self.assertEqual(400, response.status_code)
+        data = json.loads(response.content)
+        self.assertEquals(data['error'], 'Unauthorized access.')
+
+    @ddt.data(MAIL_TYPE_REGISTER_NEW_USER, MAIL_TYPE_REGISTER_EXISTING_USER)
+    def test_register_mail_can_not_customize(self, mail_type):
+        self.setup_user()
+        with self.skip_check_course_selection(current_contract=self.contract):
+            response = self.client.post(self._url_register_mail_ajax(), {
+                'contract_id': self.contract.id,
+                'mail_type': mail_type,
+                'mail_subject': 'Test Subject',
+                'mail_body': 'Test Body',
+            })
+
+        self.assertEqual(400, response.status_code)
+        data = json.loads(response.content)
+        self.assertEquals(data['error'], 'Unauthorized access.')
+
+    @ddt.data(MAIL_TYPE_REGISTER_NEW_USER_WITH_LOGINCODE, MAIL_TYPE_REGISTER_EXISTING_USER_WITH_LOGINCODE)
+    def test_register_mail_can_not_customize_auth(self, mail_type):
+        self.setup_user()
+        with self.skip_check_course_selection(current_contract=self.contract_auth):
+            response = self.client.post(self._url_register_mail_ajax(), {
+                'contract_id': self.contract_auth.id,
+                'mail_type': mail_type,
+                'mail_subject': 'Test Subject',
+                'mail_body': 'Test Body',
+            })
+
+        self.assertEqual(400, response.status_code)
+        data = json.loads(response.content)
+        self.assertEquals(data['error'], 'Unauthorized access.')
+
+    def test_register_mail_illegal_mail_type(self):
+        self.setup_user()
+        with self.skip_check_course_selection(current_contract=self.contract_customize_mail), patch('biz.djangoapps.ga_contract_operation.views.log.warning') as warning_log:
+            response = self.client.post(self._url_register_mail_ajax(), {
+                'contract_id': self.contract_customize_mail.id,
+                'mail_type': 'NoneType',
+                'mail_subject': 'Test Subject',
+                'mail_body': 'Test Body',
+            })
+
+        warning_log.assert_called_with("Illegal mail-type: NoneType")
+
+        self.assertEqual(400, response.status_code)
+        data = json.loads(response.content)
+        self.assertEquals(data['error'], 'Unauthorized access.')
+
+    def test_register_mail_illegal_mail_type_auth(self):
+        self.setup_user()
+        with self.skip_check_course_selection(current_contract=self.contract_auth_customize_mail), patch('biz.djangoapps.ga_contract_operation.views.log.warning') as warning_log:
+            response = self.client.post(self._url_register_mail_ajax(), {
+                'contract_id': self.contract_auth_customize_mail.id,
+                'mail_type': 'NoneType',
+                'mail_subject': 'Test Subject',
+                'mail_body': 'Test Body',
+            })
+
+        warning_log.assert_called_with("Illegal mail-type: NoneType")
+
+        self.assertEqual(400, response.status_code)
+        data = json.loads(response.content)
+        self.assertEquals(data['error'], 'Unauthorized access.')
+
+    @ddt.data(MAIL_TYPE_REGISTER_NEW_USER, MAIL_TYPE_REGISTER_EXISTING_USER)
+    def test_register_mail_illegal_mail_subject(self, mail_type):
+        self.setup_user()
+        with self.skip_check_course_selection(current_contract=self.contract_customize_mail):
+            response = self.client.post(self._url_register_mail_ajax(), {
+                'contract_id': self.contract_customize_mail.id,
+                'mail_type': mail_type,
+                'mail_subject': 'Test Subject,Test Subject,Test Subject,Test Subject,Test Subject,Test Subject,Test Subject,Test Subject,Test Subject,Test Subject',
+                'mail_body': 'Test Body',
+            })
+
+        self.assertEqual(400, response.status_code)
+        data = json.loads(response.content)
+        self.assertEquals(data['error'], 'Subject within 128 characters.')
+
+    @ddt.data(MAIL_TYPE_REGISTER_NEW_USER_WITH_LOGINCODE, MAIL_TYPE_REGISTER_EXISTING_USER_WITH_LOGINCODE)
+    def test_register_mail_illegal_mail_subject_auth(self, mail_type):
+        self.setup_user()
+        with self.skip_check_course_selection(current_contract=self.contract_auth_customize_mail):
+            response = self.client.post(self._url_register_mail_ajax(), {
+                'contract_id': self.contract_auth_customize_mail.id,
+                'mail_type': mail_type,
+                'mail_subject': 'Test Subject,Test Subject,Test Subject,Test Subject,Test Subject,Test Subject,Test Subject,Test Subject,Test Subject,Test Subject',
+                'mail_body': 'Test Body',
+            })
+
+        self.assertEqual(400, response.status_code)
+        data = json.loads(response.content)
+        self.assertEquals(data['error'], 'Subject within 128 characters.')
+
+    @ddt.data(MAIL_TYPE_REGISTER_NEW_USER, MAIL_TYPE_REGISTER_EXISTING_USER)
+    def test_register_mail_contract_unmatch(self, mail_type):
+        self.setup_user()
+        with self.skip_check_course_selection(current_contract=self.contract_customize_mail):
+            response = self.client.post(self._url_register_mail_ajax(), {
+                'contract_id': self.contract.id,
+                'mail_type': mail_type,
+                'mail_subject': 'Test Subject',
+                'mail_body': 'Test Body',
+            })
+
+    @ddt.data(MAIL_TYPE_REGISTER_NEW_USER_WITH_LOGINCODE, MAIL_TYPE_REGISTER_EXISTING_USER_WITH_LOGINCODE)
+    def test_register_mail_contract_unmatch_auth(self, mail_type):
+        self.setup_user()
+        with self.skip_check_course_selection(current_contract=self.contract_auth_customize_mail):
+            response = self.client.post(self._url_register_mail_ajax(), {
+                'contract_id': self.contract_auth.id,
+                'mail_type': mail_type,
+                'mail_subject': 'Test Subject',
+                'mail_body': 'Test Body',
+            })
+
+        self.assertEqual(400, response.status_code)
+        data = json.loads(response.content)
+        self.assertEquals(data['error'], 'Current contract is changed. Please reload this page.')
+
+    @ddt.data(MAIL_TYPE_REGISTER_NEW_USER, MAIL_TYPE_REGISTER_EXISTING_USER)
+    def test_register_mail_success(self, mail_type):
+        self.setup_user()
+        with self.skip_check_course_selection(current_contract=self.contract_customize_mail):
+            response = self.client.post(self._url_register_mail_ajax(), {
+                'contract_id': self.contract_customize_mail.id,
+                'mail_type': mail_type,
+                'mail_subject': 'Test Subject',
+                'mail_body': 'Test Body',
+            })
+
+        self.assertEqual(200, response.status_code)
+        data = json.loads(response.content)
+        self.assertEqual(data['info'], 'Successfully to save the template e-mail.')
+
+        contract_mail = ContractMail.objects.get(contract=self.contract_customize_mail, mail_type=mail_type)
+        self.assertEquals(contract_mail.mail_subject, 'Test Subject')
+        self.assertEquals(contract_mail.mail_body, 'Test Body')
+
+    @ddt.data(MAIL_TYPE_REGISTER_NEW_USER_WITH_LOGINCODE, MAIL_TYPE_REGISTER_EXISTING_USER_WITH_LOGINCODE)
+    def test_register_mail_success_auth(self, mail_type):
+        self.setup_user()
+        with self.skip_check_course_selection(current_contract=self.contract_auth_customize_mail):
+            response = self.client.post(self._url_register_mail_ajax(), {
+                'contract_id': self.contract_auth_customize_mail.id,
+                'mail_type': mail_type,
+                'mail_subject': 'Test Subject',
+                'mail_body': 'Test Body',
+            })
+
+        self.assertEqual(200, response.status_code)
+        data = json.loads(response.content)
+        self.assertEqual(data['info'], 'Successfully to save the template e-mail.')
+
+        contract_mail = ContractMail.objects.get(contract=self.contract_auth_customize_mail, mail_type=mail_type)
+        self.assertEquals(contract_mail.mail_subject, 'Test Subject')
+        self.assertEquals(contract_mail.mail_body, 'Test Body')
+
+    @ddt.data(MAIL_TYPE_REGISTER_NEW_USER, MAIL_TYPE_REGISTER_EXISTING_USER)
+    def test_register_mail_error(self, mail_type):
+        self.setup_user()
+        with self.skip_check_course_selection(current_contract=self.contract_customize_mail), patch('biz.djangoapps.ga_contract_operation.views.ContractMail.objects.get_or_create', side_effect=Exception('test')):
+            response = self.client.post(self._url_register_mail_ajax(), {
+                'contract_id': self.contract_customize_mail.id,
+                'mail_type': mail_type,
+                'mail_subject': 'Test Subject',
+                'mail_body': 'Test Body',
+            })
+
+        self.assertEqual(400, response.status_code)
+        data = json.loads(response.content)
+        self.assertEquals(data['error'], 'Failed to save the template e-mail.')
+
+    @ddt.data(MAIL_TYPE_REGISTER_NEW_USER_WITH_LOGINCODE, MAIL_TYPE_REGISTER_EXISTING_USER_WITH_LOGINCODE)
+    def test_register_mail_error_auth(self, mail_type):
+        self.setup_user()
+        with self.skip_check_course_selection(current_contract=self.contract_auth_customize_mail), patch('biz.djangoapps.ga_contract_operation.views.ContractMail.objects.get_or_create', side_effect=Exception('test')):
+            response = self.client.post(self._url_register_mail_ajax(), {
+                'contract_id': self.contract_auth_customize_mail.id,
+                'mail_type': mail_type,
+                'mail_subject': 'Test Subject',
+                'mail_body': 'Test Body',
+            })
+
+        self.assertEqual(400, response.status_code)
+        data = json.loads(response.content)
+        self.assertEquals(data['error'], 'Failed to save the template e-mail.')
+
+    # ------------------------------------------------------------
+    # Send mail ajax
+    # ------------------------------------------------------------
+    def _url_send_mail_ajax(self):
+        return reverse('biz:contract_operation:send_mail_ajax')
+
+    def test_send_mail_no_param(self):
+        self.setup_user()
+        with self.skip_check_course_selection(current_contract=self.contract_customize_mail):
+            response = self.client.post(self._url_send_mail_ajax(), {})
+
+        self.assertEqual(400, response.status_code)
+        data = json.loads(response.content)
+        self.assertEquals(data['error'], 'Unauthorized access.')
+
+    @ddt.data(MAIL_TYPE_REGISTER_NEW_USER, MAIL_TYPE_REGISTER_EXISTING_USER)
+    def test_send_mail_can_not_customize(self, mail_type):
+        self.setup_user()
+        with self.skip_check_course_selection(current_contract=self.contract):
+            response = self.client.post(self._url_send_mail_ajax(), {
+                'contract_id': self.contract.id,
+                'mail_type': mail_type,
+                'mail_subject': 'Test Subject',
+                'mail_body': 'Test Body',
+            })
+
+        self.assertEqual(400, response.status_code)
+        data = json.loads(response.content)
+        self.assertEquals(data['error'], 'Unauthorized access.')
+
+    @ddt.data(MAIL_TYPE_REGISTER_NEW_USER_WITH_LOGINCODE, MAIL_TYPE_REGISTER_EXISTING_USER_WITH_LOGINCODE)
+    def test_send_mail_can_not_customize_auth(self, mail_type):
+        self.setup_user()
+        with self.skip_check_course_selection(current_contract=self.contract_auth):
+            response = self.client.post(self._url_send_mail_ajax(), {
+                'contract_id': self.contract_auth.id,
+                'mail_type': mail_type,
+                'mail_subject': 'Test Subject',
+                'mail_body': 'Test Body',
+            })
+
+        self.assertEqual(400, response.status_code)
+        data = json.loads(response.content)
+        self.assertEquals(data['error'], 'Unauthorized access.')
+
+    def test_send_mail_illegal_mail_type(self):
+        self.setup_user()
+        with self.skip_check_course_selection(current_contract=self.contract_customize_mail), patch('biz.djangoapps.ga_contract_operation.views.log.warning') as warning_log:
+            response = self.client.post(self._url_send_mail_ajax(), {
+                'contract_id': self.contract_customize_mail.id,
+                'mail_type': 'NoneType',
+                'mail_subject': 'Test Subject',
+                'mail_body': 'Test Body',
+            })
+
+        warning_log.assert_called_with("Illegal mail-type: NoneType")
+
+        self.assertEqual(400, response.status_code)
+        data = json.loads(response.content)
+        self.assertEquals(data['error'], 'Unauthorized access.')
+
+    def test_send_mail_illegal_mail_type_auth(self):
+        self.setup_user()
+        with self.skip_check_course_selection(current_contract=self.contract_auth_customize_mail), patch('biz.djangoapps.ga_contract_operation.views.log.warning') as warning_log:
+            response = self.client.post(self._url_send_mail_ajax(), {
+                'contract_id': self.contract_auth_customize_mail.id,
+                'mail_type': 'NoneType',
+                'mail_subject': 'Test Subject',
+                'mail_body': 'Test Body',
+            })
+
+        warning_log.assert_called_with("Illegal mail-type: NoneType")
+
+        self.assertEqual(400, response.status_code)
+        data = json.loads(response.content)
+        self.assertEquals(data['error'], 'Unauthorized access.')
+
+    @ddt.data(MAIL_TYPE_REGISTER_NEW_USER, MAIL_TYPE_REGISTER_EXISTING_USER)
+    def test_send_mail_contract_unmatch(self, mail_type):
+        self.setup_user()
+        with self.skip_check_course_selection(current_contract=self.contract_customize_mail):
+            response = self.client.post(self._url_send_mail_ajax(), {
+                'contract_id': self.contract.id,
+                'mail_type': mail_type,
+                'mail_subject': 'Test Subject',
+                'mail_body': 'Test Body',
+            })
+
+        self.assertEqual(400, response.status_code)
+        data = json.loads(response.content)
+        self.assertEquals(data['error'], 'Current contract is changed. Please reload this page.')
+
+    @ddt.data(MAIL_TYPE_REGISTER_NEW_USER_WITH_LOGINCODE, MAIL_TYPE_REGISTER_EXISTING_USER_WITH_LOGINCODE)
+    def test_send_mail_contract_unmatch_auth(self, mail_type):
+        self.setup_user()
+        with self.skip_check_course_selection(current_contract=self.contract_auth_customize_mail):
+            response = self.client.post(self._url_send_mail_ajax(), {
+                'contract_id': self.contract_auth.id,
+                'mail_type': mail_type,
+                'mail_subject': 'Test Subject',
+                'mail_body': 'Test Body',
+            })
+
+        self.assertEqual(400, response.status_code)
+        data = json.loads(response.content)
+        self.assertEquals(data['error'], 'Current contract is changed. Please reload this page.')
+
+    @ddt.data(MAIL_TYPE_REGISTER_NEW_USER, MAIL_TYPE_REGISTER_EXISTING_USER)
+    def test_send_mail_pre_update(self, mail_type):
+        self.setup_user()
+        with self.skip_check_course_selection(current_contract=self.contract_customize_mail):
+            response = self.client.post(self._url_send_mail_ajax(), {
+                'contract_id': self.contract_customize_mail.id,
+                'mail_type': mail_type,
+                'mail_subject': 'Test Subject',
+                'mail_body': 'Test Body',
+            })
+
+        self.assertEqual(400, response.status_code)
+        data = json.loads(response.content)
+        self.assertEqual(data['error'], 'Please save the template e-mail before sending.')
+
+    @ddt.data(MAIL_TYPE_REGISTER_NEW_USER_WITH_LOGINCODE, MAIL_TYPE_REGISTER_EXISTING_USER_WITH_LOGINCODE)
+    def test_send_mail_pre_update_auth(self, mail_type):
+        self.setup_user()
+        with self.skip_check_course_selection(current_contract=self.contract_auth_customize_mail):
+            response = self.client.post(self._url_send_mail_ajax(), {
+                'contract_id': self.contract_auth_customize_mail.id,
+                'mail_type': mail_type,
+                'mail_subject': 'Test Subject',
+                'mail_body': 'Test Body',
+            })
+
+        self.assertEqual(400, response.status_code)
+        data = json.loads(response.content)
+        self.assertEqual(data['error'], 'Please save the template e-mail before sending.')
+
+    @ddt.data(MAIL_TYPE_REGISTER_NEW_USER, MAIL_TYPE_REGISTER_EXISTING_USER)
+    def test_send_mail_success(self, mail_type):
+        self.setup_user()
+
+        # Register
+        with self.skip_check_course_selection(current_contract=self.contract_customize_mail):
+            response = self.client.post(self._url_register_mail_ajax(), {
+                'contract_id': self.contract_customize_mail.id,
+                'mail_type': mail_type,
+                'mail_subject': 'Test Subject',
+                'mail_body': 'Test Body',
+            })
+
+        self.assertEqual(200, response.status_code)
+        data = json.loads(response.content)
+        self.assertEqual(data['info'], 'Successfully to save the template e-mail.')
+
+        contract_mail = ContractMail.objects.get(contract=self.contract_customize_mail, mail_type=mail_type)
+        self.assertEquals(contract_mail.mail_subject, 'Test Subject')
+        self.assertEquals(contract_mail.mail_body, 'Test Body')
+
+        # Send
+        with self.skip_check_course_selection(current_contract=self.contract_customize_mail), patch('biz.djangoapps.ga_contract_operation.views.send_mail') as send_mail:
+            response = self.client.post(self._url_send_mail_ajax(), {
+                'contract_id': self.contract_customize_mail.id,
+                'mail_type': mail_type,
+                'mail_subject': 'Test Subject',
+                'mail_body': 'Test Body',
+            })
+
+        mail_param = {
+            'username': self.user.username,
+            'password': 'dummyPassword',
+            'email_address': self.user.email,
+        }
+        if mail_type == MAIL_TYPE_REGISTER_EXISTING_USER:
+            mail_param.pop('password')
+        send_mail.assert_called_with(self.user, 'Test Subject', 'Test Body', mail_param)
+
+        self.assertEqual(200, response.status_code)
+        data = json.loads(response.content)
+        self.assertEqual(data['info'], 'Successfully to send the test e-mail.')
+
+    @ddt.data(MAIL_TYPE_REGISTER_NEW_USER_WITH_LOGINCODE, MAIL_TYPE_REGISTER_EXISTING_USER_WITH_LOGINCODE)
+    def test_send_mail_success_auth(self, mail_type):
+        self.setup_user()
+
+        # Register
+        with self.skip_check_course_selection(current_contract=self.contract_auth_customize_mail):
+            response = self.client.post(self._url_register_mail_ajax(), {
+                'contract_id': self.contract_auth_customize_mail.id,
+                'mail_type': mail_type,
+                'mail_subject': 'Test Subject',
+                'mail_body': 'Test Body',
+            })
+
+        self.assertEqual(200, response.status_code)
+        data = json.loads(response.content)
+        self.assertEqual(data['info'], 'Successfully to save the template e-mail.')
+
+        contract_mail = ContractMail.objects.get(contract=self.contract_auth_customize_mail, mail_type=mail_type)
+        self.assertEquals(contract_mail.mail_subject, 'Test Subject')
+        self.assertEquals(contract_mail.mail_body, 'Test Body')
+
+        # Send
+        with self.skip_check_course_selection(current_contract=self.contract_auth_customize_mail), patch('biz.djangoapps.ga_contract_operation.views.send_mail') as send_mail:
+            response = self.client.post(self._url_send_mail_ajax(), {
+                'contract_id': self.contract_auth_customize_mail.id,
+                'mail_type': mail_type,
+                'mail_subject': 'Test Subject',
+                'mail_body': 'Test Body',
+            })
+
+        mail_param = {
+            'username': self.user.username,
+            'password': 'dummyPassword',
+            'email_address': self.user.email,
+            'logincode': 'dummyLoginCode',
+            'urlcode': self.contract_auth_customize_mail.contractauth.url_code,
+        }
+        if mail_type == MAIL_TYPE_REGISTER_EXISTING_USER_WITH_LOGINCODE:
+            mail_param.pop('password')
+        send_mail.assert_called_with(self.user, 'Test Subject', 'Test Body', mail_param)
+
+        self.assertEqual(200, response.status_code)
+        data = json.loads(response.content)
+        self.assertEqual(data['info'], 'Successfully to send the test e-mail.')
+
+    @ddt.data(MAIL_TYPE_REGISTER_NEW_USER, MAIL_TYPE_REGISTER_EXISTING_USER)
+    def test_send_mail_error(self, mail_type):
+        self.setup_user()
+
+        # Register
+        with self.skip_check_course_selection(current_contract=self.contract_customize_mail):
+            response = self.client.post(self._url_register_mail_ajax(), {
+                'contract_id': self.contract_customize_mail.id,
+                'mail_type': mail_type,
+                'mail_subject': 'Test Subject',
+                'mail_body': 'Test Body',
+            })
+
+        self.assertEqual(200, response.status_code)
+        data = json.loads(response.content)
+        self.assertEqual(data['info'], 'Successfully to save the template e-mail.')
+
+        contract_mail = ContractMail.objects.get(contract=self.contract_customize_mail, mail_type=mail_type)
+        self.assertEquals(contract_mail.mail_subject, 'Test Subject')
+        self.assertEquals(contract_mail.mail_body, 'Test Body')
+
+        # Send
+        with self.skip_check_course_selection(current_contract=self.contract_customize_mail), patch('biz.djangoapps.ga_contract_operation.views.send_mail', side_effect=Exception('test')) as send_mail:
+            response = self.client.post(self._url_send_mail_ajax(), {
+                'contract_id': self.contract_customize_mail.id,
+                'mail_type': mail_type,
+                'mail_subject': 'Test Subject',
+                'mail_body': 'Test Body',
+            })
+
+        mail_param = {
+            'username': self.user.username,
+            'password': 'dummyPassword',
+            'email_address': self.user.email,
+        }
+        if mail_type == MAIL_TYPE_REGISTER_EXISTING_USER:
+            mail_param.pop('password')
+        send_mail.assert_called_with(self.user, 'Test Subject', 'Test Body', mail_param)
+
+        self.assertEqual(400, response.status_code)
+        data = json.loads(response.content)
+        self.assertEquals(data['error'], 'Failed to send the test e-mail.')
+
+    @ddt.data(MAIL_TYPE_REGISTER_NEW_USER_WITH_LOGINCODE, MAIL_TYPE_REGISTER_EXISTING_USER_WITH_LOGINCODE)
+    def test_send_mail_error_auth(self, mail_type):
+        self.setup_user()
+
+        # Register
+        with self.skip_check_course_selection(current_contract=self.contract_auth_customize_mail):
+            response = self.client.post(self._url_register_mail_ajax(), {
+                'contract_id': self.contract_auth_customize_mail.id,
+                'mail_type': mail_type,
+                'mail_subject': 'Test Subject',
+                'mail_body': 'Test Body',
+            })
+
+        self.assertEqual(200, response.status_code)
+        data = json.loads(response.content)
+        self.assertEqual(data['info'], 'Successfully to save the template e-mail.')
+
+        contract_mail = ContractMail.objects.get(contract=self.contract_auth_customize_mail, mail_type=mail_type)
+        self.assertEquals(contract_mail.mail_subject, 'Test Subject')
+        self.assertEquals(contract_mail.mail_body, 'Test Body')
+
+        # Send
+        with self.skip_check_course_selection(current_contract=self.contract_auth_customize_mail), patch('biz.djangoapps.ga_contract_operation.views.send_mail', side_effect=Exception('test')) as send_mail:
+            response = self.client.post(self._url_send_mail_ajax(), {
+                'contract_id': self.contract_auth_customize_mail.id,
+                'mail_type': mail_type,
+                'mail_subject': 'Test Subject',
+                'mail_body': 'Test Body',
+            })
+
+        mail_param = {
+            'username': self.user.username,
+            'password': 'dummyPassword',
+            'email_address': self.user.email,
+            'logincode': 'dummyLoginCode',
+            'urlcode': self.contract_auth_customize_mail.contractauth.url_code,
+        }
+        if mail_type == MAIL_TYPE_REGISTER_EXISTING_USER_WITH_LOGINCODE:
+            mail_param.pop('password')
+        send_mail.assert_called_with(self.user, 'Test Subject', 'Test Body', mail_param)
+
+        self.assertEqual(400, response.status_code)
+        data = json.loads(response.content)
+        self.assertEquals(data['error'], 'Failed to send the test e-mail.')

@@ -8,7 +8,7 @@ from django.contrib import admin
 from django.utils.crypto import get_random_string
 from django.utils.translation import ugettext as _
 
-from biz.djangoapps.ga_contract.models import ContractAuth, URL_CODE_PATTERN, URL_CODE_MIN_LENGTH, URL_CODE_MAX_LENGTH
+from biz.djangoapps.ga_contract.models import ContractAuth, ContractOption, URL_CODE_PATTERN, URL_CODE_MIN_LENGTH, URL_CODE_MAX_LENGTH
 
 
 class ContractAuthForm(forms.ModelForm):
@@ -42,4 +42,14 @@ class ContractAuthAdmin(admin.ModelAdmin):
         obj.save()
 
 
+class ContractOptionAdmin(admin.ModelAdmin):
+
+    exclude = ('modified_by',)
+
+    def save_model(self, request, obj, form, change):
+        obj.modified_by = request.user
+        obj.save()
+
+
 admin.site.register(ContractAuth, ContractAuthAdmin)
+admin.site.register(ContractOption, ContractOptionAdmin)

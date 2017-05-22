@@ -161,6 +161,13 @@ class BizNavPage(PageObject):
         self.q(css='nav.side-menu>ul.menu>li>a[href="/biz/contract_operation/students"]').first.click()
         return BizStudentsPage(self.browser).wait_for_page()
 
+    def click_mail_management(self):
+        # Import in func for cross reference
+        from .ga_contract_operation import BizMailPage
+
+        self.q(css='nav.side-menu>ul.menu>li>a[href="/biz/contract_operation/register_mail"]').first.click()
+        return BizMailPage(self.browser).wait_for_page()
+
     def change_role(self, org_id, contract_name, course_id):
         # Show role selection modal
         self.q(css='.change-role-button').first.click()

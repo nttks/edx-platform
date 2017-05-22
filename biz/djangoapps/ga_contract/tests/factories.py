@@ -6,7 +6,7 @@ from factory.django import DjangoModelFactory
 from student.tests.factories import UserFactory
 
 from biz.djangoapps.ga_contract.models import (
-    AdditionalInfo, Contract, ContractAuth, ContractDetail, CONTRACT_TYPE_PF, REGISTER_TYPE_ENABLE_REGISTER_BY_STUDENT
+    AdditionalInfo, Contract, ContractAuth, ContractDetail, ContractOption, CONTRACT_TYPE_PF, REGISTER_TYPE_ENABLE_REGISTER_BY_STUDENT
 )
 from biz.djangoapps.util.datetime_utils import timezone_today
 
@@ -40,5 +40,13 @@ class ContractAuthFactory(DjangoModelFactory):
     """Factory for the ContractAuth model"""
     class Meta(object):
         model = ContractAuth
+
+    modified_by = factory.SubFactory(UserFactory)
+
+
+class ContractOptionFactory(DjangoModelFactory):
+    """Factory for the ContractAuth model"""
+    class Meta(object):
+        model = ContractOption
 
     modified_by = factory.SubFactory(UserFactory)

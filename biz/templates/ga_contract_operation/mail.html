@@ -1,0 +1,132 @@
+<%inherit file="../main_biz.html" />
+<%!
+from django.utils.translation import ugettext as _
+from django.core.urlresolvers import reverse
+
+from biz.djangoapps.ga_invitation.models import REGISTER_INVITATION_CODE
+%>
+
+<%block name="pagetitle">${_("E-Mail Management")}</%block>
+
+<%block name="js_extra">
+<script type="text/javascript">
+    $(function () {
+        $('#form').w2form({
+            name: 'form',
+            tabs: [
+                % for i, mail_info in enumerate(mail_info_list):
+                    { id: 'tab${i}', caption: '${mail_info.mail_type_name}' },
+                % endfor
+            ]
+        });
+        $('.content-wrapper').on('change keydown', 'textarea,input', function () {
+            $(this).parents('.w2ui-page').find('.test-send-btn').prop('disabled', true);
+        });
+        $('.content-wrapper').on('click', '.register-btn,.test-send-btn', function () {
+            var clickButton = $(this),
+                messages = $('.messages'),
+                mailForm = $('#form'),
+                dataList = clickButton.parents('.w2ui-page').find('textarea,input'),
+                isRegister = clickButton.hasClass('register-btn');
+            console.log($(this));
+            messages.empty();
+            w2confirm({
+                msg: clickButton.data('confirm-message'),
+                yes_class: 'btn-right',
+                no_class: 'btn-left'
+            }).yes(function () {
+                w2utils.lock(mailForm, '', true);
+                $.ajax({
+                    url: clickButton.data('endpoint'),
+                    type: 'POST',
+                    data: dataList.serializeArray(),
+                }).done(function (data) {
+                    messages.append('<li class="info">' + data.info + '</li>');
+                    if (isRegister) {
+                        clickButton.parents('.w2ui-page').find('.test-send-btn').prop('disabled', false);
+                    }
+                }).fail(function(jqXHR) {
+                    var data = JSON.parse(jqXHR.responseText);
+                    messages.append('<li class="error">' + data.error + '</li>');
+                }).always(function () {
+                    w2utils.unlock(mailForm);
+                });
+            });
+        });
+    });
+</script>
+<style>
+  .content-wrapper {
+    min-height: 750px;
+  }
+  .operation {
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+  }
+  .w2ui-page .operation:nth-of-type(n+2) {
+    padding-left: 1rem;
+  }
+  .operation.align-right {
+    text-align: right;
+  }
+  .field > label {
+    display: block;
+    font-style: normal;
+    margin: 1rem 0rem 0.5rem;
+  }
+  .field > div > * {
+    font-size: 1rem;
+    width: 100%;
+  }
+  .field > .register-btn {
+    background-color: #43ac6a;
+    transition: background-color 0.15s ease-in-out 0s;
+  }
+  .field > .test-send-btn {
+    float: right;
+  }
+</style>
+</%block>
+
+<%block name="custom_content">
+<div class="operation">${_("Either new user or existing user will be identified automatically in our system.")}</div>
+<div id="form" class="field-area">
+    % for i, mail_info in enumerate(mail_info_list):
+    <div class="w2ui-page page-${i}">
+        <div class="operation">${_("The following logograph will be replaced other word. Do not change the logograph.")}</div>
+        % for k, v in mail_info.mail_params.items():
+            <div class="operation">{${k}}:${v}</div>
+        % endfor
+        <div class="field">
+            <label for="subject-${i}">${_(u"Subject:")}</label>
+            <div>
+                <input id="subject-${i}" name="mail_subject" maxlength="128" value="${mail_info.mail_subject}" />
+            </div>
+        </div>
+        <div class="field">
+            <label for="body-${i}">${_(u"Send a Message:")}</label>
+            <div>
+                <textarea id="body-${i}" name="mail_body" rows="20">${mail_info.mail_body}</textarea>
+            </div>
+        </div>
+        <div class="field">
+            <input type="hidden" name="mail_type" value="${mail_info.mail_type}" />
+            <input type="hidden" name="contract_id" value="${request.current_contract.id}" />
+            <input type="button" class="register-btn" data-endpoint="${reverse('biz:contract_operation:register_mail_ajax')}"
+                   data-confirm-message="${_("The template e-mail will be saved, overwriting the original e-mail. Is it OK?Yes, I will be overwrite it./No, I do not overwrite it.")}"
+                   value="&#xf044 ${_("Save the template e-mail")}"/>
+            % if request.current_contract.has_auth:
+            <input type="button" class="test-send-btn" data-endpoint="${reverse('biz:contract_operation:send_mail_ajax')}"
+                   data-confirm-message="${_("Are you sure you want to send the test e-mail?*The password and login code are dummy in the test e-mail.")}"
+                   value="&#xf003 ${_("Send the test e-mail")}"/>
+            % else:
+            <input type="button" class="test-send-btn" data-endpoint="${reverse('biz:contract_operation:send_mail_ajax')}"
+                   data-confirm-message="${_("Are you sure you want to send the test e-mail?*The password is dummy in the test e-mail.")}"
+                   value="&#xf003 ${_("Send the test e-mail")}"/>
+            % endif
+        </div>
+        <div class="operation align-right">${_("The test e-mail was send to yourself")}</div>
+    </div>
+    % endfor
+</div>
+</%block>

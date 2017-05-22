@@ -11,14 +11,13 @@ from django.contrib.auth.models import User
 from django.db import IntegrityError, transaction
 from django.utils.translation import ugettext as _
 
-from biz.djangoapps.ga_contract_operation.models import ContractTaskHistory, StudentRegisterTaskTarget
+from biz.djangoapps.ga_contract_operation.models import ContractMail, ContractTaskHistory, StudentRegisterTaskTarget
+from biz.djangoapps.ga_contract_operation.utils import send_mail
 from biz.djangoapps.ga_invitation.models import ContractRegister, INPUT_INVITATION_CODE, REGISTER_INVITATION_CODE
 from biz.djangoapps.ga_login.models import BizUser, LOGIN_CODE_MIN_LENGTH, LOGIN_CODE_MAX_LENGTH
 from biz.djangoapps.ga_contract.models import ContractAuth
 from bulk_email.models import Optout
-from lms.djangoapps.instructor.enrollment import send_mail_to_student
 from lms.djangoapps.instructor.views.api import generate_unique_password
-from microsite_configuration import microsite
 from openedx.core.djangoapps.course_global.models import CourseGlobalSetting
 from openedx.core.djangoapps.ga_task.models import Task
 from openedx.core.djangoapps.ga_task.task import TaskProgress
@@ -71,7 +70,7 @@ def perform_delegate_student_register(entry_id, task_input, action_name):
 
     contract, targets = _validate_and_get_arguments(task_id, task_input)
     contract_details = contract.details.all()
-    has_contractauth = hasattr(contract, 'contractauth')
+    has_contractauth = contract.has_auth
 
     task_progress = TaskProgress(action_name, len(targets), time.time())
     task_progress.update_task_state()
@@ -79,7 +78,7 @@ def perform_delegate_student_register(entry_id, task_input, action_name):
     generated_passwords = []
 
     def _fail(message):
-        return (message, None, None, None)
+        return (message, None, None, None, None)
 
     def _validate_student_and_get_or_create_user(status, email, username, name, login_code=None, password=None):
         # validate status
@@ -100,7 +99,7 @@ def perform_delegate_student_register(entry_id, task_input, action_name):
                 "Name cannot be more than {name_max_length} characters long"
             ).format(name_max_length=name_max_length))
 
-        if login_code and password:
+        if has_contractauth:
             # validate login_code
             if not re.match(
                 r'^[-\w]{{{min_length},{max_length}}}$'.format(
@@ -120,11 +119,8 @@ def perform_delegate_student_register(entry_id, task_input, action_name):
 
         messages = []
         user = None
-        email_params = {
-            'site_name': microsite.get_value('SITE_NAME', settings.SITE_NAME),
-            'platform_name': microsite.get_value('platform_name', settings.PLATFORM_NAME),
-            'email_address': email,
-        }
+        contract_mail = None
+        created_password = None
         if User.objects.filter(email=email).exists():
             user = User.objects.get(email=email)
             if user.username != username:
@@ -134,7 +130,7 @@ def perform_delegate_student_register(entry_id, task_input, action_name):
                 log.warning(u'email {email} already exist, but username is different.'.format(email=email))
 
             # Create BizUser?
-            if login_code and password:
+            if has_contractauth:
                 # validate duplicate login_code in contract
                 if contract_register_same_login_code and contract_register_same_login_code.user.id != user.id:
                     return _fail(_("Login code {login_code} already exists.").format(login_code=login_code))
@@ -152,8 +148,9 @@ def perform_delegate_student_register(entry_id, task_input, action_name):
                     ).format(email=email))
                     log.warning(u'email {email} already exist, but password is different.'.format(email=email))
 
-            email_params['message'] = 'biz_account_notice'
-            email_params['username'] = user.username
+                contract_mail = ContractMail.get_register_existing_user_logincode(contract)
+            else:
+                contract_mail = ContractMail.get_register_existing_user(contract)
         else:
             # validate duplicate login_code in contract
             if login_code and contract_register_same_login_code:
@@ -174,7 +171,7 @@ def perform_delegate_student_register(entry_id, task_input, action_name):
                 # Do activation for new user.
                 registration.activate()
                 # Create BizUser?
-                if login_code:
+                if has_contractauth:
                     BizUser.objects.create(user=user, login_code=login_code)
                 # Optout of bulk email(Global Courses) for only new user.
                 for global_course_id in CourseGlobalSetting.all_course_id():
@@ -184,10 +181,20 @@ def perform_delegate_student_register(entry_id, task_input, action_name):
             except ValidationError as ex:
                 return _fail(' '.join(ex.messages))
 
-            email_params['message'] = 'biz_account_creation'
-            email_params['password'] = password
+            if has_contractauth:
+                contract_mail = ContractMail.get_register_new_user_logincode(contract)
+            else:
+                contract_mail = ContractMail.get_register_new_user(contract)
 
-        return (''.join(messages), user, email_params, status)
+            created_password = password
+
+        return (
+            ''.join(messages),
+            user,
+            contract_mail,
+            ContractMail.register_replace_dict(user, contract, created_password),
+            status
+        )
 
     def _validate(student):
         student_columns = student.split(',') if student else []
@@ -196,7 +203,7 @@ def perform_delegate_student_register(entry_id, task_input, action_name):
         # 2 columns(status,) 1 line and second element is empty
         if len_student_columns == 2 and not student_columns[1]:
             # skip
-            return (None, None, None, None)
+            return (None, None, None, None, None)
 
         if has_contractauth and len_student_columns != 6:
             # status + 5 input columns(email,username,name,logincode,password) 1 line
@@ -212,9 +219,9 @@ def perform_delegate_student_register(entry_id, task_input, action_name):
 
         try:
             with transaction.atomic():
-                message, user, email_params, status = _validate(target.student)
+                message, user, contract_mail, replace_dict, status = _validate(target.student)
 
-                if user is None and email_params is None:
+                if user is None:
                     if message is None:
                         task_progress.skip()
                     else:
@@ -230,8 +237,8 @@ def perform_delegate_student_register(entry_id, task_input, action_name):
                         for detail in contract_details:
                             CourseEnrollment.enroll(user, detail.course_id)
 
-                    if not has_contractauth or contract.contractauth.send_mail:
-                        send_mail_to_student(user.email, email_params)
+                    if contract.can_send_mail:
+                        send_mail(user, contract_mail.mail_subject, contract_mail.mail_body, replace_dict)
 
                     log.info("Task {task_id}: Success to process of register to User {user_id}".format(task_id=task_id, user_id=user.id))
                     task_progress.success()

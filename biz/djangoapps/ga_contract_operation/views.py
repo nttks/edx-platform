@@ -12,11 +12,13 @@ from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.db import transaction
+from django.http import Http404
 from django.utils.translation import ugettext as _
 from django.views.decorators.http import require_GET, require_POST
 
-from biz.djangoapps.ga_contract_operation.models import ContractTaskHistory, ContractTaskTarget, StudentRegisterTaskTarget
+from biz.djangoapps.ga_contract_operation.models import ContractMail, ContractTaskHistory, ContractTaskTarget, StudentRegisterTaskTarget
 from biz.djangoapps.ga_contract_operation.tasks import personalinfo_mask, student_register, TASKS, STUDENT_REGISTER, PERSONALINFO_MASK
+from biz.djangoapps.ga_contract_operation.utils import send_mail
 from biz.djangoapps.ga_invitation.models import (
     AdditionalInfoSetting,
     ContractRegister,
@@ -339,3 +341,106 @@ def submit_personalinfo_mask(request, registers):
     ContractTaskTarget.bulk_create(history, registers)
 
     return _submit_task(request, PERSONALINFO_MASK, personalinfo_mask, history)
+
+
+@require_GET
+@login_required
+@check_course_selection
+def register_mail(request):
+
+    if not request.current_contract.can_customize_mail:
+        raise Http404()
+
+    if request.current_contract.has_auth:
+        register_new_user_mail = ContractMail.get_register_new_user_logincode(request.current_contract)
+        register_exists_mail = ContractMail.get_register_existing_user_logincode(request.current_contract)
+    else:
+        register_new_user_mail = ContractMail.get_register_new_user(request.current_contract)
+        register_exists_mail = ContractMail.get_register_existing_user(request.current_contract)
+
+    return render_to_response(
+        'ga_contract_operation/mail.html',
+        {
+            'mail_info_list': [
+                register_new_user_mail,
+                register_exists_mail,
+            ],
+        }
+    )
+
+
+@require_POST
+@login_required
+@check_course_selection
+def register_mail_ajax(request):
+
+    if not request.current_contract.can_customize_mail or any(k not in request.POST for k in ['mail_type', 'mail_subject', 'mail_body', 'contract_id']):
+        return _error_response(_("Unauthorized access."))
+
+    mail_type = request.POST['mail_type']
+    if not ContractMail.is_mail_type(mail_type):
+        log.warning('Illegal mail-type: {}'.format(mail_type))
+        return _error_response(_("Unauthorized access."))
+
+    if str(request.current_contract.id) != request.POST['contract_id']:
+        return _error_response(_("Current contract is changed. Please reload this page."))
+
+    mail_subject = request.POST['mail_subject']
+    mail_subject_max_length = ContractMail._meta.get_field('mail_subject').max_length
+    if len(mail_subject) > mail_subject_max_length:
+        return _error_response(_("Subject within {0} characters.").format(mail_subject_max_length))
+
+    try:
+        contract_mail, __ = ContractMail.objects.get_or_create(contract=request.current_contract, mail_type=mail_type)
+        contract_mail.mail_subject = mail_subject
+        contract_mail.mail_body = request.POST['mail_body']
+        contract_mail.save()
+    except:
+        log.exception('Failed to save the template e-mail.')
+        return _error_response(_("Failed to save the template e-mail."))
+    else:
+        return JsonResponse({
+            'info': _("Successfully to save the template e-mail."),
+        })
+
+
+@require_POST
+@login_required
+@check_course_selection
+def send_mail_ajax(request):
+
+    if not request.current_contract.can_customize_mail or any(k not in request.POST for k in ['mail_type', 'mail_subject', 'mail_body', 'contract_id']):
+        return _error_response(_("Unauthorized access."))
+
+    mail_type = request.POST['mail_type']
+    if not ContractMail.is_mail_type(mail_type):
+        log.warning('Illegal mail-type: {}'.format(mail_type))
+        return _error_response(_("Unauthorized access."))
+
+    if str(request.current_contract.id) != request.POST['contract_id']:
+        return _error_response(_("Current contract is changed. Please reload this page."))
+
+    contract_mail = ContractMail.get_or_default(request.current_contract, mail_type)
+    if contract_mail.mail_subject != request.POST['mail_subject'] or contract_mail.mail_body != request.POST['mail_body']:
+        return _error_response(_("Please save the template e-mail before sending."))
+
+    # Send mail
+    try:
+        send_mail(
+            request.user,
+            contract_mail.mail_subject,
+            contract_mail.mail_body,
+            ContractMail.register_replace_dict(
+                request.user,
+                request.current_contract,
+                password='dummyPassword' if contract_mail.has_mail_param_password else None,
+                login_code='dummyLoginCode' if request.current_contract.has_auth else None,
+            )
+        )
+    except:
+        log.exception('Failed to send the test e-mail.')
+        return _error_response(_("Failed to send the test e-mail."))
+    else:
+        return JsonResponse({
+            'info': _("Successfully to send the test e-mail."),
+        })

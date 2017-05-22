@@ -11,8 +11,15 @@ from mock import patch
 from biz.djangoapps.ga_contract.tests.factories import (
     AdditionalInfoFactory, ContractFactory,
     ContractAuthFactory, ContractDetailFactory,
+    ContractOptionFactory,
 )
-from biz.djangoapps.ga_contract_operation.tests.factories import ContractTaskHistoryFactory
+from biz.djangoapps.ga_contract_operation.models import (
+    MAIL_TYPE_REGISTER_NEW_USER,
+    MAIL_TYPE_REGISTER_EXISTING_USER,
+    MAIL_TYPE_REGISTER_NEW_USER_WITH_LOGINCODE,
+    MAIL_TYPE_REGISTER_EXISTING_USER_WITH_LOGINCODE,
+)
+from biz.djangoapps.ga_contract_operation.tests.factories import ContractMailFactory, ContractTaskHistoryFactory
 from biz.djangoapps.ga_invitation.tests.factories import AdditionalInfoSettingFactory, ContractRegisterFactory
 from biz.djangoapps.ga_invitation.models import ContractRegister, INPUT_INVITATION_CODE, REGISTER_INVITATION_CODE, UNREGISTER_INVITATION_CODE
 from biz.djangoapps.ga_manager.models import ManagerPermission
@@ -65,7 +72,7 @@ class BizTestBase(TestCase):
         )
 
     def _create_contract(self, contract_name='test contract', contract_type='PF', register_type='ERS', contractor_organization=None, owner_organization=None, end_date=None,
-                         detail_courses=[], additional_display_names=[], url_code=None, send_mail=False):
+                         detail_courses=[], additional_display_names=[], url_code=None, send_mail=False, customize_mail=None):
         contract = ContractFactory.create(
             contract_name=contract_name,
             contract_type=contract_type,
@@ -82,6 +89,8 @@ class BizTestBase(TestCase):
             AdditionalInfoFactory.create(contract=contract, display_name=d)
         if url_code:
             ContractAuthFactory.create(contract=contract, url_code=url_code, send_mail=send_mail)
+        if customize_mail is not None:
+            ContractOptionFactory.create(contract=contract, customize_mail=customize_mail)
         return contract
 
     def _input_contract(self, contract, user):
@@ -160,6 +169,32 @@ class BizTestBase(TestCase):
 
     def _create_task_history(self, contract):
         return ContractTaskHistoryFactory.create(contract=contract)
+
+    def _create_contract_mail_default(self):
+        ContractMailFactory.create(
+            contract=None,
+            mail_type=MAIL_TYPE_REGISTER_NEW_USER,
+            mail_subject='Test Subject New User Without Logincode',
+            mail_body='Test Body New User Without Logincode',
+        )
+        ContractMailFactory.create(
+            contract=None,
+            mail_type=MAIL_TYPE_REGISTER_EXISTING_USER,
+            mail_subject='Test Subject Exists User Without Logincode',
+            mail_body='Test Body Exists User Without Logincode',
+        )
+        ContractMailFactory.create(
+            contract=None,
+            mail_type=MAIL_TYPE_REGISTER_NEW_USER_WITH_LOGINCODE,
+            mail_subject='Test Subject New User With Logincode',
+            mail_body='Test Body New User With Logincode',
+        )
+        ContractMailFactory.create(
+            contract=None,
+            mail_type=MAIL_TYPE_REGISTER_EXISTING_USER_WITH_LOGINCODE,
+            mail_subject='Test Subject Exists User With Logincode',
+            mail_body='Test Body Exists User With Logincode',
+        )
 
 
 _current_feature = None
