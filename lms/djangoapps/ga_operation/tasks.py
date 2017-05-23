@@ -222,7 +222,7 @@ class GaGetGradesG1528(TaskBase):
         file_path_list = []
         try:
             file_path = self._get_output_file_path()
-            with change_behavior_sys():
+            with change_behavior_sys(get_dummy_raw_input):
                 call_command(self.get_command_name(), *self.course_list,
                              output=file_path,
                              sitename=self._get_company_key()["site_name"])
