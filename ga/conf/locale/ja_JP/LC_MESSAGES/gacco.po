@@ -600,11 +600,11 @@ msgstr "開く"
 
 #: lms/templates/courseware/progress.html
 msgid "Your certificate is available"
-msgstr "修了書発行が完了しました"
+msgstr "修了証発行が完了しました"
 
 #: lms/templates/courseware/progress.html
 msgid "You can download your certificate by clicking 'Download Your Certificate' button, and you can also download it on your dashboard."
-msgstr "「修了書をダウンロード (PDF)」ボタンからダウンロードができます。また、マイページからもダウンロードができます。"
+msgstr "「修了証をダウンロード (PDF)」ボタンからダウンロードができます。また、マイページからもダウンロードができます。"
 
 #: lms/templates/courseware/progress.html
 msgid "Download Your Certificate"
@@ -612,7 +612,7 @@ msgstr "修了証をダウンロード (PDF)"
 
 #: lms/templates/courseware/progress.html
 msgid "We're working on it..."
-msgstr "修了書発行中..."
+msgstr "修了証発行中..."
 
 #: lms/templates/courseware/progress.html
 msgid ""
@@ -631,7 +631,7 @@ msgstr "修了条件を満たしましたので、修了証を発行すること
 
 #: lms/templates/courseware/progress.html
 msgid "Request Certificate"
-msgstr "修了書発行"
+msgstr "修了証発行"
 
 #: lms/templates/courseware/progress.html
 msgid "An error has occurred"

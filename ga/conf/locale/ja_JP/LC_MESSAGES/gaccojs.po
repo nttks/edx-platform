@@ -152,7 +152,7 @@ msgstr "{email_address}宛に手続き用のメールを送信しました。メ
 
 #: lms/static/js/courseware/certificates_api.js
 msgid "We're working on it..."
-msgstr "修了書発行中..."
+msgstr "修了証発行中..."
 
 #: lms/static/js/courseware/certificates_api.js
 msgid ""
