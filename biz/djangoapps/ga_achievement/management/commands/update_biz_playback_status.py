@@ -2,7 +2,7 @@
 Management command to generate a list of playback summary
 for all biz students who registered any SPOC course.
 """
-from collections import OrderedDict
+from collections import defaultdict, OrderedDict
 import logging
 from optparse import make_option
 
@@ -11,9 +11,9 @@ from django.core.management.base import BaseCommand, CommandError
 from django.utils import translation
 from django.utils.translation import ugettext as _
 
-from biz.djangoapps.ga_achievement.models import PlaybackBatchStatus
 from biz.djangoapps.ga_achievement.achievement_store import PlaybackStore
 from biz.djangoapps.ga_achievement.log_store import PlaybackLogStore
+from biz.djangoapps.ga_achievement.models import PlaybackBatchStatus
 from biz.djangoapps.ga_contract.models import Contract, AdditionalInfo
 from biz.djangoapps.ga_invitation.models import ContractRegister, AdditionalInfoSetting
 from biz.djangoapps.util.decorators import handle_command_exception
@@ -21,6 +21,7 @@ from biz.djangoapps.util.hash_utils import to_target_id
 from openedx.core.djangoapps.ga_self_paced import api as self_paced_api
 from student.models import UserStanding, CourseEnrollment
 from xmodule.modulestore.django import modulestore
+from xmodule.vertical_block import VerticalBlock
 
 log = logging.getLogger(__name__)
 
@@ -33,25 +34,50 @@ class CourseDoesNotExist(Exception):
 
 
 class TargetVertical(object):
-    def __init__(self, section_descriptor, vertical_descriptor):
-        self.section_descriptor = section_descriptor
+    def __init__(self, vertical_descriptor):
+        if not isinstance(vertical_descriptor, VerticalBlock):
+            raise TypeError(u"vertical_descriptor must be a vertical object.")
         self.vertical_descriptor = vertical_descriptor
+        self.section_descriptor = self.vertical_descriptor.get_parent()
+        self.chapter_descriptor = self.section_descriptor.get_parent()
+
+    @property
+    def chapter_name(self):
+        return self.chapter_descriptor.display_name
 
     @property
     def vertical_id(self):
         return self.vertical_descriptor.location.block_id
 
     @property
-    def section_name(self):
-        return self.section_descriptor.display_name
-
-    @property
     def column_name(self):
+        """column_name MUST be unique in a course"""
         return u'{}{}{}'.format(
-            self.section_descriptor.display_name,
+            self.chapter_descriptor.display_name,
             PlaybackStore.FIELD_DELIMITER,
             self.vertical_descriptor.display_name,
         )
+
+
+class GroupedTargetVerticals(OrderedDict, defaultdict):
+    """
+    A list of TargetVertical object grouped by chapter
+
+    e.g.)
+    GroupedTargetVerticals([
+        (BlockUsageLocator(CourseLocator(u'TestX', u'TS101', u'T1', None, None), u'chapter', u'Week1'), [TargetVertical('Week1-1-1')]),
+        (BlockUsageLocator(CourseLocator(u'TestX', u'TS101', u'T1', None, None), u'chapter', u'Week2'), [TargetVertical('Week2-1-1'), TargetVertical('Week2-2-1'), TargetVertical('Week2-2-2')]),
+        :
+    ])
+    """
+    def __init__(self, *args, **kwargs):
+        super(GroupedTargetVerticals, self).__init__(*args, **kwargs)
+        self.default_factory = list
+
+    def append(self, target_vertical):
+        if not isinstance(target_vertical, TargetVertical):
+            raise TypeError(u"target_vertical must be a TargetVertical object.")
+        self[target_vertical.chapter_descriptor.location].append(target_vertical)
 
 
 class Command(BaseCommand):
@@ -138,23 +164,15 @@ class Command(BaseCommand):
                     if not course:
                         raise CourseDoesNotExist()
 
-                    # Get SPOC video components from course
-                    target_vertical_sections = []
-                    for section in course.get_children():
-                        target_verticals = []
-                        for subsection in section.get_children():
-                            for vertical in subsection.get_children():
-                                has_spoc_video = False
+                    # Get SPOC video verticals from course
+                    grouped_target_verticals = GroupedTargetVerticals()
+                    for chapter in course.get_children():
+                        for section in chapter.get_children():
+                            for vertical in section.get_children():
                                 for component in vertical.get_children():
                                     if component.location.block_type == 'jwplayerxblock':
-                                        has_spoc_video = True
+                                        grouped_target_verticals.append(TargetVertical(vertical))
                                         break
-                                if has_spoc_video:
-                                    target_verticals.append(TargetVertical(section, vertical))
-                        if len(target_verticals) > 0:
-                            target_vertical_sections.append(target_verticals)
-                    log.debug(u"course_id={}, target_vertical_sections={}".format(
-                        unicode(course_key), [[v.vertical_id for v in s] for s in target_vertical_sections]))
 
                     # Column
                     column = OrderedDict()
@@ -171,13 +189,14 @@ class Command(BaseCommand):
                             PlaybackStore.FIELD_DELIMITER,
                             additional_info.display_name)] = PlaybackStore.COLUMN_TYPE__TEXT
                     column[_(PlaybackStore.FIELD_STUDENT_STATUS)] = PlaybackStore.COLUMN_TYPE__TEXT
-                    if target_vertical_sections:
+                    if grouped_target_verticals.keys():
                         column[_(PlaybackStore.FIELD_TOTAL_PLAYBACK_TIME)] = PlaybackStore.COLUMN_TYPE__TIME
-                    for target_verticals in target_vertical_sections:
+                    for target_verticals in grouped_target_verticals.values():
                         for target_vertical in target_verticals:
                             column[target_vertical.column_name] = PlaybackStore.COLUMN_TYPE__TIME
+                            log.debug(u"column_name={}".format(target_vertical.column_name))
                         column[u'{}{}{}'.format(
-                            target_vertical.section_name,
+                            target_vertical.chapter_name,
                             PlaybackStore.FIELD_DELIMITER,
                             _(PlaybackStore.FIELD_SECTION_PLAYBACK_TIME))] = PlaybackStore.COLUMN_TYPE__TIME
 
@@ -216,7 +235,7 @@ class Command(BaseCommand):
                                 additional_info.display_name)] = AdditionalInfoSetting.get_value_by_display_name(
                                     user, contract.id, additional_info.display_name)
                         record[_(PlaybackStore.FIELD_STUDENT_STATUS)] = student_status
-                        if target_vertical_sections:
+                        if grouped_target_verticals.keys():
                             # Note: Set dummy value here to keep its order
                             record[_(PlaybackStore.FIELD_TOTAL_PLAYBACK_TIME)] = None
 
@@ -225,20 +244,17 @@ class Command(BaseCommand):
                             duration_summary = playback_log_store.aggregate_duration_by_vertical()
 
                             total_playback_time = 0
-                            for target_verticals in target_vertical_sections:
+                            for target_verticals in grouped_target_verticals.values():
                                 section_playback_time = 0
                                 for target_vertical in target_verticals:
                                     duration = duration_summary.get(target_vertical.vertical_id, 0)
                                     section_playback_time = section_playback_time + duration
                                     total_playback_time = total_playback_time + duration
-                                    log.debug(u"course_id={}, vertical={}, column_name={}, target_id={}, duration={}".format(
-                                        unicode(course_key), target_vertical.vertical_id, target_vertical.column_name,
-                                        to_target_id(user.id), duration))
                                     # Playback Time for each vertical
                                     record[target_vertical.column_name] = duration
                                 # Playback Time for each section
                                 record[u'{}{}{}'.format(
-                                    target_vertical.section_name,
+                                    target_vertical.chapter_name,
                                     PlaybackStore.FIELD_DELIMITER,
                                     _(PlaybackStore.FIELD_SECTION_PLAYBACK_TIME))] = section_playback_time
 
@@ -253,7 +269,6 @@ class Command(BaseCommand):
                         playback_store.set_documents(records)
                         playback_store.drop_indexes()
                         playback_store.ensure_indexes()
-                    PlaybackBatchStatus.save_for_finished(contract.id, course_key, len(records))
 
                 except CourseDoesNotExist:
                     log.warning(u"This course does not exist in modulestore. course_id={}".format(unicode(course_key)))
@@ -262,6 +277,8 @@ class Command(BaseCommand):
                     error_flag = True
                     log.error(u"Unexpected error occurred: {}".format(ex))
                     PlaybackBatchStatus.save_for_error(contract.id, course_key)
+                else:
+                    PlaybackBatchStatus.save_for_finished(contract.id, course_key, len(records))
 
         if error_flag:
             raise CommandError("Error occurred while handling update_biz_playback_status command.")

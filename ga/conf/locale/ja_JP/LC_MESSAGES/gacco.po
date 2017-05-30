@@ -1120,6 +1120,10 @@ msgstr "機能"
 msgid "Staff Assessment for Peer Grading"
 msgstr "相互採点のスタッフ採点"
 
+#: openedx/core/djangoapps/ga_optional/models.py
+msgid "Submission Reminder Email"
+msgstr "課題未提出督促メール"
+
 #-#-#-#-#  Deleted or revised messages between Cypress and Dogwood on Transifex  #-#-#-#-#
 #: lms/templates/dashboard.html
 msgid "Want to change your account settings?"

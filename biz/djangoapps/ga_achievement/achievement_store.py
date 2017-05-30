@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Get a course situation data from the MongoDB.
 Processed into w2ui data and csv data.
@@ -7,6 +8,7 @@ from datetime import datetime
 import numbers
 
 from django.conf import settings
+from django.utils.translation import ugettext as _
 
 from biz.djangoapps.util import datetime_utils
 from biz.djangoapps.util.mongo_utils import BizStore, DEFAULT_DATETIME
@@ -39,6 +41,7 @@ class AchievementStoreBase(BizStore):
     COLUMN_TYPE__DATE = 'date'
     COLUMN_TYPE__TIME = 'time'
     COLUMN_TYPE__PERCENT = 'percent'
+    VALUE__NOT_ATTEMPTED = u'―'  # U+2015
 
     def __init__(self, store_config, contract_id, course_id):
         """
@@ -73,6 +76,31 @@ class AchievementStoreBase(BizStore):
         """
         conditions = {
             self.FIELD_DOCUMENT_TYPE: self.FIELD_DOCUMENT_TYPE__COLUMN,
+        }
+        excludes = [
+            self.FIELD_ID,
+            self.FIELD_CONTRACT_ID,
+            self.FIELD_COURSE_ID,
+            self.FIELD_DOCUMENT_TYPE,
+        ]
+        return self.get_document(conditions=conditions, excludes=excludes)
+
+    def get_record_document_by_username(self, username):
+        """
+        Retrieve stored document which is matched to the given username
+
+        :return: a document for record
+            e.g.)
+            OrderedDict([
+                (u'\u6c0f\u540d', u'\u30c6\u30b9\u30c8\u30e6\u30fc\u30b6\u30fc1'),
+                (u'\u30e6\u30fc\u30b6\u30fc\u540d', u'testuser1'),
+                (u'\u30e1\u30fc\u30eb\u30a2\u30c9\u30ec\u30b9', u'testuser1@example.com'),
+                :
+            ]),
+        """
+        conditions = {
+            self.FIELD_DOCUMENT_TYPE: self.FIELD_DOCUMENT_TYPE__RECORD,
+            _(self.FIELD_USERNAME): username,
         }
         excludes = [
             self.FIELD_ID,
@@ -206,7 +234,10 @@ class AchievementStoreBase(BizStore):
                     else:
                         record.append('0:00')
                 elif column_type == self.COLUMN_TYPE__PERCENT:
-                    if isinstance(v, float):
+                    if v == self.VALUE__NOT_ATTEMPTED:
+                        # Note: '―'(U+2015) means 'Not Attempted' (#1816)
+                        record.append(v)
+                    elif isinstance(v, float):
                         record.append('{:.01%}'.format(v))
                     else:
                         record.append('')
@@ -243,6 +274,11 @@ class ScoreStore(AchievementStoreBase):
 
         :return: a data set for column
         """
+        # For backward compatibility
+        column_document = super(ScoreStore, self).get_column_document()
+        if column_document:
+            return column_document
+
         excludes = [
             self.FIELD_ID,
             self.FIELD_CONTRACT_ID,
@@ -269,6 +305,11 @@ class ScoreStore(AchievementStoreBase):
 
         :return: documents for record
         """
+        # For backward compatibility
+        record_documents = super(ScoreStore, self).get_record_documents()
+        if record_documents:
+            return record_documents
+
         excludes = [
             self.FIELD_ID,
             self.FIELD_CONTRACT_ID,

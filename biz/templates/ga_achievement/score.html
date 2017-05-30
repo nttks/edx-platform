@@ -11,53 +11,49 @@ from django.utils.translation import ugettext as _
 <script type="text/javascript">
     var grid;
     $(function () {
-        var scoreColumns = ${score_columns},
-            scoreRecords = ${score_records},
-            searches = [],
+        function createColumn(field, caption, type) {
+            var column = {
+                field: field,
+                caption: caption,
+                sortable: true,
+                size: '10%',
+                min: 80
+            };
+            switch (type) {
+                case 'text':
+                    column['searchable'] = true;
+                    break;
+                case 'date':
+                    column['type'] = 'date';
+                    column['render'] = 'date: yyyy/mm/dd';
+                    column['searchable'] = true;
+                    break;
+                case 'percent':
+                    column['render'] = renderPercent;
+                    column['style'] = 'text-align: right';
+                    break;
+            }
+            return column;
+        }
+
+        var responseColumns = ${score_columns},
+            responseRecords = ${score_records},
+            columnGroups = [],
             columns = [];
-        if (scoreRecords.length > 0) {
-            for (var i = 0; i < scoreColumns.length; i++) {
-                var scoreColumn = scoreColumns[i];
-                if (scoreColumn[1] === 'text') {
-                    searches.push({
-                        field: scoreColumn[0],
-                        caption: scoreColumn[0],
-                        type: "text"
-                    });
-                    columns.push({
-                        field: scoreColumn[0],
-                        caption: scoreColumn[0],
-                        searchable: true,
-                        sortable: true,
-                        size: "10%",
-                        min: 80
-                    });
-                } else if (scoreColumn[1] === 'date') {
-                    searches.push({
-                        field: scoreColumn[0],
-                        caption: scoreColumn[0],
-                        type: "date"
-                    });
-                    columns.push({
-                        field: scoreColumn[0],
-                        caption: scoreColumn[0],
-                        searchable: true,
-                        sortable: true,
-                        type: "date",
-                        render: "date: yyyy/mm/dd",
-                        size: "10%",
-                        min: 80
-                    });
-                } else if (scoreColumn[1] === 'percent') {
-                    columns.push({
-                        field: scoreColumn[0],
-                        caption: scoreColumn[0],
-                        sortable: true,
-                        render: renderPercent,
-                        style: "text-align: right",
-                        size: "10%",
-                        min: 80
-                    });
+        if (responseRecords.length > 0) {
+            for (var i = 0; i < responseColumns.length; i++) {
+                var responseColumn = responseColumns[i],
+                    splitNames = responseColumn[0].split('___', 2);
+                if (splitNames.length === 2) {
+                    if (columns.length > 0 && columns[columns.length - 1].field.split('___', 2)[0] === splitNames[0]) {
+                        columnGroups[columnGroups.length - 1].span++;
+                    } else {
+                        columnGroups.push({caption: splitNames[0], span: 1});
+                    }
+                    columns.push(createColumn(responseColumn[0], splitNames[1], responseColumn[1]));
+                } else {
+                    columnGroups.push({master: true});
+                    columns.push(createColumn(responseColumn[0], responseColumn[0], responseColumn[1]));
                 }
             }
         }
@@ -71,9 +67,9 @@ from django.utils.translation import ugettext as _
                 footer: true,
                 toolbarReload: false
             },
-            searches: searches,
+            columnGroups: columnGroups,
             columns: columns,
-            records: scoreRecords
+            records: responseRecords
         });
     });
 

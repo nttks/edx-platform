@@ -33,6 +33,7 @@ from courseware.tests.helpers import LoginEnrollmentTestCase
 from student.models import CourseEnrollment, UserStanding
 from student.tests.factories import UserFactory, UserStandingFactory
 from xmodule.course_module import CourseDescriptor
+from xmodule.modulestore import ModuleStoreEnum
 
 
 class BizTestBase(TestCase):
@@ -290,3 +291,38 @@ class BizStoreTestBase(BizTestBase):
     def _drop_mongo_collections(self):
         for config in settings.BIZ_MONGO.values():
             BizMongoConnection(**config).database.drop_collection(config['collection'])
+
+    # Note: This method had removed since Dogwood release.
+    #       So, we restored it from common/lib/xmodule/xmodule/modulestore/tests/django_utils.py (as Cypress ver.)
+    def _create_course(self, org, course, run, block_info_tree=None, course_fields=None):
+        """
+        create a course in the default modulestore from the collection of BlockInfo
+        records defining the course tree
+        Returns:
+            course: the course of created
+        """
+        with self.store.branch_setting(ModuleStoreEnum.Branch.draft_preferred, None):
+            course = self.store.create_course(org, course, run, self.user.id, fields=course_fields)
+            self.course_loc = course.location  # pylint: disable=attribute-defined-outside-init
+
+            def create_sub_tree(parent_loc, block_info):
+                """Recursively creates a sub_tree on this parent_loc with this block."""
+                block = self.store.create_child(
+                    self.user.id,
+                    # TODO remove version_agnostic() when we impl the single transaction
+                    parent_loc.version_agnostic(),
+                    block_info.category, block_id=block_info.block_id,
+                    fields=block_info.fields,
+                )
+                for tree in block_info.sub_tree:
+                    create_sub_tree(block.location, tree)
+                setattr(self, block_info.block_id, block.location.version_agnostic())
+
+            for tree in block_info_tree:
+                create_sub_tree(self.course_loc, tree)
+
+            # remove version_agnostic when bulk write works
+            self.store.publish(self.course_loc.version_agnostic(), self.user.id)
+        # mod to return course
+        # Note: Get course object to be able to use subtree by course.get_children()
+        return self.store.get_course(course.id)

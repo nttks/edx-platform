@@ -11,78 +11,45 @@ from django.utils.translation import ugettext as _
 <script type="text/javascript">
     var grid;
     $(function () {
-        var playbackColumns = ${playback_columns},
-            playbackRecords = ${playback_records},
+        function createColumn(field, caption, type) {
+            var column = {
+                field: field,
+                caption: caption,
+                sortable: true,
+                size: '10%',
+                min: 80
+            };
+            switch (type) {
+                case 'text':
+                    column['searchable'] = true;
+                    break;
+                case 'time':
+                    column['render'] = renderTime;
+                    column['style'] = 'text-align: right';
+                    break;
+            }
+            return column;
+        }
+
+        var responseColumns = ${playback_columns},
+            responseRecords = ${playback_records},
             columnGroups = [],
-            columns = [],
-            additionalColumns = [],
-            chapterColumns = [],
-            chapterColumnGroups = [];
-        if (playbackRecords.length > 0) {
-            for (var i = 0; i < playbackColumns.length; i++) {
-                var playbackColumn = playbackColumns[i];
-                var columnNames = playbackColumn[0].split('___', 2);
-                if (columnNames.length == 2) {
-                    if (columnNames[0] === "${_('Additional Info')}") {
-                        additionalColumns.push({
-                            field: playbackColumn[0],
-                            caption: columnNames[1],
-                            searchable: true,
-                            sortable: true,
-                            size: "10%",
-                            min: 80
-                        });
+            columns = [];
+        if (responseRecords.length > 0) {
+            for (var i = 0; i < responseColumns.length; i++) {
+                var responseColumn = responseColumns[i],
+                    splitNames = responseColumn[0].split('___', 2);
+                if (splitNames.length === 2) {
+                    if (columns.length > 0 && columns[columns.length - 1].field.split('___', 2)[0] === splitNames[0]) {
+                        columnGroups[columnGroups.length - 1].span++;
                     } else {
-                        chapterColumns.push({
-                            field: playbackColumn[0],
-                            caption: columnNames[1],
-                            sortable: true,
-                            render: renderTime,
-                            style: "text-align: right",
-                            size: "10%",
-                            min: 80
-                        });
-                        for (var j = 0; j < chapterColumnGroups.length; j++) {
-                            var chapterColumnGroup = chapterColumnGroups[j];
-                            if (chapterColumnGroup.caption === columnNames[0]) {
-                                chapterColumnGroup.span++;
-                                break;
-                            }
-                        }
-                        if (j == chapterColumnGroups.length) {
-                            chapterColumnGroups.push({
-                                caption: columnNames[0],
-                                span: 1
-                            });
-                        }
+                        columnGroups.push({caption: splitNames[0], span: 1});
                     }
+                    columns.push(createColumn(responseColumn[0], splitNames[1], responseColumn[1]));
+                } else {
+                    columnGroups.push({master: true});
+                    columns.push(createColumn(responseColumn[0], responseColumn[0], responseColumn[1]));
                 }
-            }
-            columnGroups = [
-                {master: true},
-                {master: true},
-                {master: true}
-            ];
-            if (additionalColumns.length > 0) {
-                columnGroups.push({caption: "${_('Additional Info')}", span: additionalColumns.length});
-            }
-            columnGroups.push({master: true});
-            if (chapterColumnGroups.length > 0) {
-                columnGroups.push({master: true});
-                columnGroups = columnGroups.concat(chapterColumnGroups);
-            }
-            columns = [
-                {field: "${_('Full Name')}", caption: "${_('Full Name')}", searchable: true, sortable: true, size: "10%", min: 80},
-                {field: "${_('Username')}", caption: "${_('Username')}", searchable: true, sortable: true, size: "10%", min: 80},
-                {field: "${_('Email')}", caption: "${_('Email')}", searchable: true, sortable: true, size: "10%", min: 80}
-            ];
-            if (additionalColumns.length > 0) {
-                columns = columns.concat(additionalColumns);
-            }
-            columns.push({field: "${_('Student Status')}", caption: "${_('Student Status')}", searchable: true, sortable: true, size: "10%", min: 80});
-            if (chapterColumns.length > 0) {
-                columns.push({field: "${_('Total Playback Time')}", caption: "${_('Total Playback Time')}", sortable: true, render: renderTime, style: "text-align: right", size: "10%", min: 80});
-                columns = columns.concat(chapterColumns);
             }
         }
 
@@ -97,7 +64,7 @@ from django.utils.translation import ugettext as _
             },
             columnGroups: columnGroups,
             columns: columns,
-            records: playbackRecords
+            records: responseRecords
         });
     });
 

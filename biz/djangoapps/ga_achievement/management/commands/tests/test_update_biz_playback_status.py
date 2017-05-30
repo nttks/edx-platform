@@ -4,9 +4,9 @@ when you run "manage.py test".
 
 Replace this with more appropriate tests for your application.
 """
+from collections import namedtuple
 from datetime import datetime, timedelta
 from dateutil.tz import tzutc
-from collections import namedtuple
 import logging
 from mock import patch
 import tempfile
@@ -18,6 +18,7 @@ from django.test.utils import override_settings
 
 from biz.djangoapps.ga_achievement.achievement_store import PlaybackStore
 from biz.djangoapps.ga_achievement.management.commands import update_biz_playback_status
+from biz.djangoapps.ga_achievement.management.commands.update_biz_playback_status import TargetVertical, GroupedTargetVerticals
 from biz.djangoapps.ga_achievement.models import PlaybackBatchStatus, BATCH_STATUS_STARTED, BATCH_STATUS_FINISHED, BATCH_STATUS_ERROR
 from biz.djangoapps.ga_achievement.tests.factories import PlaybackBatchStatusFactory
 from biz.djangoapps.util.tests.testcase import BizStoreTestBase
@@ -25,8 +26,8 @@ from lms.djangoapps.courseware.tests.helpers import LoginEnrollmentTestCase
 from opaque_keys.edx.keys import CourseKey
 from student.models import CourseEnrollment
 from student.tests.factories import UserFactory, UserProfileFactory
-from xmodule.modulestore import ModuleStoreEnum
 from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
+from xmodule.modulestore.tests.factories import CourseFactory, ItemFactory
 
 command_output_file = tempfile.NamedTemporaryFile()
 
@@ -225,41 +226,6 @@ class UpdateBizPlaybackStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEn
         self.mock_log = patcher_log.start()
         self.addCleanup(patcher_log.stop)
 
-    # Note: this is removed since Dogwood release,
-    #       so we restore it from common/lib/xmodule/xmodule/modulestore/tests/django_utils.py (Cypress ver.)
-    #       Modify to return course. (Gacco ver.)
-    def _create_course(self, org, course, run, block_info_tree=None, course_fields=None):
-        """
-        create a course in the default modulestore from the collection of BlockInfo
-        records defining the course tree
-        Returns:
-            course: the course of created
-        """
-        with self.store.branch_setting(ModuleStoreEnum.Branch.draft_preferred, None):
-            course = self.store.create_course(org, course, run, self.user.id, fields=course_fields)
-            self.course_loc = course.location  # pylint: disable=attribute-defined-outside-init
-
-            def create_sub_tree(parent_loc, block_info):
-                """Recursively creates a sub_tree on this parent_loc with this block."""
-                block = self.store.create_child(
-                    self.user.id,
-                    # TODO remove version_agnostic() when we impl the single transaction
-                    parent_loc.version_agnostic(),
-                    block_info.category, block_id=block_info.block_id,
-                    fields=block_info.fields,
-                )
-                for tree in block_info.sub_tree:
-                    create_sub_tree(block.location, tree)
-                setattr(self, block_info.block_id, block.location.version_agnostic())
-
-            for tree in block_info_tree:
-                create_sub_tree(self.course_loc, tree)
-
-            # remove version_agnostic when bulk write works
-            self.store.publish(self.course_loc.version_agnostic(), self.user.id)
-        # mod to return course
-        return course
-
     def _profile(self, user):
         UserProfileFactory.create(user=user, name='profile_name')
 
@@ -316,6 +282,7 @@ class UpdateBizPlaybackStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEn
             self.assertEquals(column_items.next(), (PlaybackStore.FIELD_ADDITIONAL_INFO + PlaybackStore.FIELD_DELIMITER + ADDITIONAL_DISPLAY_NAME1, PlaybackStore.COLUMN_TYPE__TEXT))
             self.assertEquals(column_items.next(), (PlaybackStore.FIELD_ADDITIONAL_INFO + PlaybackStore.FIELD_DELIMITER + ADDITIONAL_DISPLAY_NAME2, PlaybackStore.COLUMN_TYPE__TEXT))
             self.assertEquals(column_items.next(), (PlaybackStore.FIELD_STUDENT_STATUS, PlaybackStore.COLUMN_TYPE__TEXT))
+            self.assertRaises(StopIteration, column_items.next)
 
             record_dict = record_list[0]
             record_items = record_dict.iteritems()
@@ -328,6 +295,7 @@ class UpdateBizPlaybackStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEn
             self.assertEquals(record_items.next(), (PlaybackStore.FIELD_ADDITIONAL_INFO + PlaybackStore.FIELD_DELIMITER + ADDITIONAL_DISPLAY_NAME1, None))
             self.assertEquals(record_items.next(), (PlaybackStore.FIELD_ADDITIONAL_INFO + PlaybackStore.FIELD_DELIMITER + ADDITIONAL_DISPLAY_NAME2, None))
             self.assertEquals(record_items.next(), (PlaybackStore.FIELD_STUDENT_STATUS, PlaybackStore.FIELD_STUDENT_STATUS__NOT_ENROLLED))
+            self.assertRaises(StopIteration, record_items.next)
 
         assert_playback(self.no_spoc_video_contract, self.no_spoc_video_course)
 
@@ -351,6 +319,7 @@ class UpdateBizPlaybackStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEn
             self.assertEquals(column_items.next(), (PlaybackStore.FIELD_ADDITIONAL_INFO + PlaybackStore.FIELD_DELIMITER + ADDITIONAL_DISPLAY_NAME1, PlaybackStore.COLUMN_TYPE__TEXT))
             self.assertEquals(column_items.next(), (PlaybackStore.FIELD_ADDITIONAL_INFO + PlaybackStore.FIELD_DELIMITER + ADDITIONAL_DISPLAY_NAME2, PlaybackStore.COLUMN_TYPE__TEXT))
             self.assertEquals(column_items.next(), (PlaybackStore.FIELD_STUDENT_STATUS, PlaybackStore.COLUMN_TYPE__TEXT))
+            self.assertRaises(StopIteration, column_items.next)
 
             record_dict = record_list[0]
             record_items = record_dict.iteritems()
@@ -363,6 +332,7 @@ class UpdateBizPlaybackStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEn
             self.assertEquals(record_items.next(), (PlaybackStore.FIELD_ADDITIONAL_INFO + PlaybackStore.FIELD_DELIMITER + ADDITIONAL_DISPLAY_NAME1, '{}_{}'.format(ADDITIONAL_DISPLAY_NAME1, ADDITIONAL_SETTINGS_VALUE)))
             self.assertEquals(record_items.next(), (PlaybackStore.FIELD_ADDITIONAL_INFO + PlaybackStore.FIELD_DELIMITER + ADDITIONAL_DISPLAY_NAME2, '{}_{}'.format(ADDITIONAL_DISPLAY_NAME2, ADDITIONAL_SETTINGS_VALUE)))
             self.assertEquals(record_items.next(), (PlaybackStore.FIELD_STUDENT_STATUS, PlaybackStore.FIELD_STUDENT_STATUS__ENROLLED))
+            self.assertRaises(StopIteration, record_items.next)
 
         assert_playback(self.no_spoc_video_contract, self.no_spoc_video_course)
 
@@ -387,6 +357,7 @@ class UpdateBizPlaybackStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEn
             self.assertEquals(column_items.next(), (PlaybackStore.FIELD_ADDITIONAL_INFO + PlaybackStore.FIELD_DELIMITER + ADDITIONAL_DISPLAY_NAME1, PlaybackStore.COLUMN_TYPE__TEXT))
             self.assertEquals(column_items.next(), (PlaybackStore.FIELD_ADDITIONAL_INFO + PlaybackStore.FIELD_DELIMITER + ADDITIONAL_DISPLAY_NAME2, PlaybackStore.COLUMN_TYPE__TEXT))
             self.assertEquals(column_items.next(), (PlaybackStore.FIELD_STUDENT_STATUS, PlaybackStore.COLUMN_TYPE__TEXT))
+            self.assertRaises(StopIteration, column_items.next)
 
             record_dict = record_list[0]
             record_items = record_dict.iteritems()
@@ -399,6 +370,7 @@ class UpdateBizPlaybackStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEn
             self.assertEquals(record_items.next(), (PlaybackStore.FIELD_ADDITIONAL_INFO + PlaybackStore.FIELD_DELIMITER + ADDITIONAL_DISPLAY_NAME1, '{}_{}'.format(ADDITIONAL_DISPLAY_NAME1, ADDITIONAL_SETTINGS_VALUE)))
             self.assertEquals(record_items.next(), (PlaybackStore.FIELD_ADDITIONAL_INFO + PlaybackStore.FIELD_DELIMITER + ADDITIONAL_DISPLAY_NAME2, '{}_{}'.format(ADDITIONAL_DISPLAY_NAME2, ADDITIONAL_SETTINGS_VALUE)))
             self.assertEquals(record_items.next(), (PlaybackStore.FIELD_STUDENT_STATUS, PlaybackStore.FIELD_STUDENT_STATUS__UNENROLLED))
+            self.assertRaises(StopIteration, record_items.next)
 
         assert_playback(self.no_spoc_video_contract, self.no_spoc_video_course)
 
@@ -423,6 +395,7 @@ class UpdateBizPlaybackStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEn
             self.assertEquals(column_items.next(), (PlaybackStore.FIELD_ADDITIONAL_INFO + PlaybackStore.FIELD_DELIMITER + ADDITIONAL_DISPLAY_NAME1, PlaybackStore.COLUMN_TYPE__TEXT))
             self.assertEquals(column_items.next(), (PlaybackStore.FIELD_ADDITIONAL_INFO + PlaybackStore.FIELD_DELIMITER + ADDITIONAL_DISPLAY_NAME2, PlaybackStore.COLUMN_TYPE__TEXT))
             self.assertEquals(column_items.next(), (PlaybackStore.FIELD_STUDENT_STATUS, PlaybackStore.COLUMN_TYPE__TEXT))
+            self.assertRaises(StopIteration, column_items.next)
 
             record_dict = record_list[0]
             record_items = record_dict.iteritems()
@@ -435,6 +408,7 @@ class UpdateBizPlaybackStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEn
             self.assertEquals(record_items.next(), (PlaybackStore.FIELD_ADDITIONAL_INFO + PlaybackStore.FIELD_DELIMITER + ADDITIONAL_DISPLAY_NAME1, '{}_{}'.format(ADDITIONAL_DISPLAY_NAME1, ADDITIONAL_SETTINGS_VALUE)))
             self.assertEquals(record_items.next(), (PlaybackStore.FIELD_ADDITIONAL_INFO + PlaybackStore.FIELD_DELIMITER + ADDITIONAL_DISPLAY_NAME2, '{}_{}'.format(ADDITIONAL_DISPLAY_NAME2, ADDITIONAL_SETTINGS_VALUE)))
             self.assertEquals(record_items.next(), (PlaybackStore.FIELD_STUDENT_STATUS, PlaybackStore.FIELD_STUDENT_STATUS__DISABLED))
+            self.assertRaises(StopIteration, record_items.next)
 
         assert_playback(self.no_spoc_video_contract, self.no_spoc_video_course)
 
@@ -455,6 +429,7 @@ class UpdateBizPlaybackStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEn
             self.assertEquals(column_items.next(), (PlaybackStore.FIELD_USERNAME, PlaybackStore.COLUMN_TYPE__TEXT))
             self.assertEquals(column_items.next(), (PlaybackStore.FIELD_EMAIL, PlaybackStore.COLUMN_TYPE__TEXT))
             self.assertEquals(column_items.next(), (PlaybackStore.FIELD_STUDENT_STATUS, PlaybackStore.COLUMN_TYPE__TEXT))
+            self.assertRaises(StopIteration, column_items.next)
 
             record_dict = record_list[0]
             record_items = record_dict.iteritems()
@@ -465,6 +440,7 @@ class UpdateBizPlaybackStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEn
             self.assertEquals(record_items.next(), (PlaybackStore.FIELD_USERNAME, self.user.username))
             self.assertEquals(record_items.next(), (PlaybackStore.FIELD_EMAIL, self.user.email))
             self.assertEquals(record_items.next(), (PlaybackStore.FIELD_STUDENT_STATUS, PlaybackStore.FIELD_STUDENT_STATUS__NOT_ENROLLED))
+            self.assertRaises(StopIteration, record_items.next)
 
         assert_playback(self.no_additional_info_contract, self.no_spoc_video_course)
 
@@ -495,6 +471,7 @@ class UpdateBizPlaybackStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEn
             self.assertEquals(column_items.next(), (PlaybackStore.FIELD_TOTAL_PLAYBACK_TIME, PlaybackStore.COLUMN_TYPE__TIME))
             self.assertEquals(column_items.next(), ('chapter_x' + PlaybackStore.FIELD_DELIMITER + 'vertical_x1a', PlaybackStore.COLUMN_TYPE__TIME))
             self.assertEquals(column_items.next(), ('chapter_x' + PlaybackStore.FIELD_DELIMITER + PlaybackStore.FIELD_SECTION_PLAYBACK_TIME, PlaybackStore.COLUMN_TYPE__TIME))
+            self.assertRaises(StopIteration, column_items.next)
 
             record_dict = record_list[0]
             record_items = record_dict.iteritems()
@@ -510,6 +487,7 @@ class UpdateBizPlaybackStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEn
             self.assertEquals(record_items.next(), (PlaybackStore.FIELD_TOTAL_PLAYBACK_TIME, 100.0))
             self.assertEquals(record_items.next(), ('chapter_x' + PlaybackStore.FIELD_DELIMITER + 'vertical_x1a', 100.0))
             self.assertEquals(record_items.next(), ('chapter_x' + PlaybackStore.FIELD_DELIMITER + PlaybackStore.FIELD_SECTION_PLAYBACK_TIME, 100.0))
+            self.assertRaises(StopIteration, record_items.next)
 
         assert_playback(self.single_spoc_video_contract, self.single_spoc_video_course)
 
@@ -545,6 +523,7 @@ class UpdateBizPlaybackStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEn
             self.assertEquals(column_items.next(), ('chapter_x' + PlaybackStore.FIELD_DELIMITER + PlaybackStore.FIELD_SECTION_PLAYBACK_TIME, PlaybackStore.COLUMN_TYPE__TIME))
             self.assertEquals(column_items.next(), ('chapter_y' + PlaybackStore.FIELD_DELIMITER + 'vertical_y1a', PlaybackStore.COLUMN_TYPE__TIME))
             self.assertEquals(column_items.next(), ('chapter_y' + PlaybackStore.FIELD_DELIMITER + PlaybackStore.FIELD_SECTION_PLAYBACK_TIME, PlaybackStore.COLUMN_TYPE__TIME))
+            self.assertRaises(StopIteration, column_items.next)
 
             record_dict = record_list[0]
             record_items = record_dict.iteritems()
@@ -563,6 +542,7 @@ class UpdateBizPlaybackStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEn
             self.assertEquals(record_items.next(), ('chapter_x' + PlaybackStore.FIELD_DELIMITER + PlaybackStore.FIELD_SECTION_PLAYBACK_TIME, 300.0))
             self.assertEquals(record_items.next(), ('chapter_y' + PlaybackStore.FIELD_DELIMITER + 'vertical_y1a', 400.0))
             self.assertEquals(record_items.next(), ('chapter_y' + PlaybackStore.FIELD_DELIMITER + PlaybackStore.FIELD_SECTION_PLAYBACK_TIME, 400.0))
+            self.assertRaises(StopIteration, record_items.next)
 
         assert_playback(self.multiple_spoc_video_contract, self.multiple_spoc_video_course)
 
@@ -598,6 +578,7 @@ class UpdateBizPlaybackStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEn
             self.assertEquals(column_items.next(), (PlaybackStore.FIELD_ADDITIONAL_INFO + PlaybackStore.FIELD_DELIMITER + ADDITIONAL_DISPLAY_NAME1, PlaybackStore.COLUMN_TYPE__TEXT))
             self.assertEquals(column_items.next(), (PlaybackStore.FIELD_ADDITIONAL_INFO + PlaybackStore.FIELD_DELIMITER + ADDITIONAL_DISPLAY_NAME2, PlaybackStore.COLUMN_TYPE__TEXT))
             self.assertEquals(column_items.next(), (PlaybackStore.FIELD_STUDENT_STATUS, PlaybackStore.COLUMN_TYPE__TEXT))
+            self.assertRaises(StopIteration, column_items.next)
 
             record_dict = record_list[0]
             record_items = record_dict.iteritems()
@@ -610,6 +591,7 @@ class UpdateBizPlaybackStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEn
             self.assertEquals(record_items.next(), (PlaybackStore.FIELD_ADDITIONAL_INFO + PlaybackStore.FIELD_DELIMITER + ADDITIONAL_DISPLAY_NAME1, '{}_{}'.format(ADDITIONAL_DISPLAY_NAME1, ADDITIONAL_SETTINGS_VALUE)))
             self.assertEquals(record_items.next(), (PlaybackStore.FIELD_ADDITIONAL_INFO + PlaybackStore.FIELD_DELIMITER + ADDITIONAL_DISPLAY_NAME2, '{}_{}'.format(ADDITIONAL_DISPLAY_NAME2, ADDITIONAL_SETTINGS_VALUE)))
             self.assertEquals(record_items.next(), (PlaybackStore.FIELD_STUDENT_STATUS, PlaybackStore.FIELD_STUDENT_STATUS__EXPIRED))
+            self.assertRaises(StopIteration, record_items.next)
 
         assert_playback(self.self_paced_contract, self.self_paced_course)
 
@@ -683,3 +665,58 @@ class UpdateBizPlaybackStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEn
 
         self.assert_finished(1, self.multiple_courses_contract, self.single_spoc_video_course)
         self.assert_finished(1, self.multiple_courses_contract, self.multiple_spoc_video_course)
+
+
+class TestGroupedTargetVerticals(ModuleStoreTestCase):
+    """
+    Tests for TargetVertical and GroupedTargetVerticals
+    """
+    def setUp(self):
+        super(TestGroupedTargetVerticals, self).setUp()
+        self.course = CourseFactory.create(org='TestX', course='TS101', run='T1')
+        self.chapter_x = ItemFactory.create(parent=self.course, category='chapter', display_name='chapter_x')
+        self.chapter_y = ItemFactory.create(parent=self.course, category='chapter', display_name='chapter_y')
+        self.section_x1 = ItemFactory.create(parent=self.chapter_x, category='sequential', display_name='sequential_x1')
+        self.section_y1 = ItemFactory.create(parent=self.chapter_y, category='sequential', display_name='sequential_y1')
+        self.section_y2 = ItemFactory.create(parent=self.chapter_y, category='sequential', display_name='sequential_y2')
+        self.vertical_x1a = ItemFactory.create(parent=self.section_x1, category='vertical', display_name='vertical_x1a')
+        self.vertical_x1b = ItemFactory.create(parent=self.section_x1, category='vertical', display_name='vertical_x1b')
+        self.vertical_y1a = ItemFactory.create(parent=self.section_y1, category='vertical', display_name='vertical_y1a')
+        self.vertical_y2a = ItemFactory.create(parent=self.section_y2, category='vertical', display_name='vertical_y2a')
+        self.vertical_y2b = ItemFactory.create(parent=self.section_y2, category='vertical', display_name='vertical_y2b')
+        self.target_vertical_x1a = TargetVertical(self.vertical_x1a)
+        self.target_vertical_x1b = TargetVertical(self.vertical_x1b)
+        self.target_vertical_y1a = TargetVertical(self.vertical_y1a)
+        self.target_vertical_y2a = TargetVertical(self.vertical_y2a)
+        self.target_vertical_y2b = TargetVertical(self.vertical_y2b)
+
+    def test_target_vertical_init_invalid(self):
+        with self.assertRaises(TypeError):
+            TargetVertical('test')
+
+    def test_grouped_target_verticals_append_invalid(self):
+        grouped_target_verticals = GroupedTargetVerticals()
+        with self.assertRaises(TypeError):
+            grouped_target_verticals.append('test')
+
+    def test_grouped_target_verticals_with_no_element(self):
+        grouped_target_verticals = GroupedTargetVerticals()
+        self.assertEquals(grouped_target_verticals.keys(), [])
+        self.assertEquals(grouped_target_verticals.values(), [])
+
+    def test_grouped_target_verticals(self):
+        grouped_target_verticals = GroupedTargetVerticals()
+        grouped_target_verticals.append(self.target_vertical_x1a)
+        grouped_target_verticals.append(self.target_vertical_x1b)
+        grouped_target_verticals.append(self.target_vertical_y1a)
+        grouped_target_verticals.append(self.target_vertical_y2a)
+        grouped_target_verticals.append(self.target_vertical_y2b)
+
+        self.assertEquals(grouped_target_verticals.keys(), [self.chapter_x.location, self.chapter_y.location])
+        self.assertEquals(grouped_target_verticals.values(),
+                          [[self.target_vertical_x1a, self.target_vertical_x1b],
+                           [self.target_vertical_y1a, self.target_vertical_y2a, self.target_vertical_y2b]])
+        self.assertEquals(grouped_target_verticals.get(self.chapter_x.location),
+                          [self.target_vertical_x1a, self.target_vertical_x1b])
+        self.assertEquals(grouped_target_verticals.get(self.chapter_y.location),
+                          [self.target_vertical_y1a, self.target_vertical_y2a, self.target_vertical_y2b])

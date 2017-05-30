@@ -1,6 +1,6 @@
 # Compute grades using real division, with no integer truncation
 from __future__ import division
-from collections import defaultdict
+from collections import defaultdict, namedtuple
 from functools import partial
 import json
 import random
@@ -31,6 +31,9 @@ from openedx.core.djangoapps.signals.signals import GRADES_UPDATED
 
 
 log = logging.getLogger("edx.courseware")
+
+# Added 'attempted' to 'xmodule.graders.Score'
+_Score = namedtuple("_Score", "earned possible graded section module_id is_attempted")
 
 
 class MaxScoresCache(object):
@@ -405,6 +408,7 @@ def _grade(student, request, course, keep_raw_scores, field_data_cache, scores_c
                 # to grade it at all! We can assume 0%
                 if should_grade_section:
                     scores = []
+                    is_section_attempted = False
 
                     def create_module(descriptor):
                         '''creates an XModule instance given a descriptor'''
@@ -454,7 +458,20 @@ def _grade(student, request, course, keep_raw_scores, field_data_cache, scores_c
                             )
                         )
 
+                        # Set True if the student attempted any problem in a section
+                        if check_attempted(student, module_descriptor, create_module):
+                            is_section_attempted = True
+
                     __, graded_total = graders.aggregate_scores(scores, section_name)
+                    graded_total = _Score(
+                        graded_total.earned,
+                        graded_total.possible,
+                        graded_total.graded,
+                        graded_total.section,
+                        # Note: Set module_id to identify the section for update_biz_score_status (#1816)
+                        unicode(section_descriptor.location),
+                        is_section_attempted,
+                    )
                     if keep_raw_scores:
                         raw_scores += scores
                 else:
@@ -491,6 +508,20 @@ def _grade(student, request, course, keep_raw_scores, field_data_cache, scores_c
         max_scores_cache.push_to_remote()
 
     return grade_summary
+
+
+def check_attempted(user, problem_descriptor, module_creator):
+    """Check if the user has submitted the given problem."""
+    problem = module_creator(problem_descriptor)
+    if problem is None:
+        return False
+    if problem.category == 'openassessment':
+        return problem.submission_uuid is not None
+    elif problem.category == 'problem':
+        return problem.is_attempted()
+    else:
+        log.warning(u"Cannot check attempted for the problem. module_id={}".format(unicode(problem.location)))
+        return False
 
 
 def grade_for_percentage(grade_cutoffs, percentage):
