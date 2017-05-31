@@ -16,13 +16,16 @@ class Migration(migrations.Migration):
             name='ContractMail',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('mail_type', models.CharField(max_length=255, choices=[(b'RNU', 'Register new user'), (b'REU', 'Register exists user')])),
+                ('mail_type', models.CharField(max_length=255, choices=[(b'RNU', 'For New User'), (b'REU', 'For Existing User'), (b'RNUWLC', 'For New User with Login Code'), (b'REUWLC', 'For Existing User with Login Code')])),
                 ('mail_subject', models.CharField(max_length=128)),
                 ('mail_body', models.TextField()),
                 ('created', models.DateTimeField(auto_now_add=True)),
                 ('modified', models.DateTimeField(auto_now=True)),
                 ('contract', models.ForeignKey(default=None, blank=True, to='ga_contract.Contract', null=True)),
             ],
+            options={
+                'ordering': ['id'],
+            },
         ),
         migrations.AlterModelOptions(
             name='studentregistertasktarget',

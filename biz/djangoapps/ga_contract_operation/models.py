@@ -195,10 +195,11 @@ class ContractMail(models.Model):
     class Meta:
         app_label = 'ga_contract_operation'
         unique_together = ('contract', 'mail_type')
+        ordering = ['id']
 
     def __unicode__(self):
         return u'{}:{}'.format(
-            _("Default Template") if self.contract is None else contract.contract_name,
+            _("Default Template") if self.contract is None else self.contract.contract_name,
             self.mail_type_name,
         )
 
@@ -221,11 +222,12 @@ class ContractMail(models.Model):
     @classmethod
     def get_or_default(cls, contract, mail_type):
         if not contract.can_customize_mail:
-            return cls.objects.get(contract=None, mail_type=mail_type)
-        try:
-            return cls.objects.get(contract=contract, mail_type=mail_type)
-        except cls.DoesNotExist:
-            return cls.objects.get(contract=None, mail_type=mail_type)
+            return cls.objects.filter(contract=None, mail_type=mail_type)[0]
+        result = cls.objects.filter(contract=contract, mail_type=mail_type)
+        if result:
+            return result[0]
+        else:
+            return cls.objects.filter(contract=None, mail_type=mail_type)[0]
 
     @classmethod
     def get_register_new_user(cls, contract):

@@ -196,6 +196,31 @@ class BizTestBase(TestCase):
             mail_subject='Test Subject Exists User With Logincode',
             mail_body='Test Body Exists User With Logincode',
         )
+        # Following records are illegal, to confirm that be not gotten.
+        ContractMailFactory.create(
+            contract=None,
+            mail_type=MAIL_TYPE_REGISTER_NEW_USER,
+            mail_subject='[Illegal]Test Subject New User Without Logincode',
+            mail_body='[Illegal]Test Body New User Without Logincode',
+        )
+        ContractMailFactory.create(
+            contract=None,
+            mail_type=MAIL_TYPE_REGISTER_EXISTING_USER,
+            mail_subject='[Illegal]Test Subject Exists User Without Logincode',
+            mail_body='[Illegal]Test Body Exists User Without Logincode',
+        )
+        ContractMailFactory.create(
+            contract=None,
+            mail_type=MAIL_TYPE_REGISTER_NEW_USER_WITH_LOGINCODE,
+            mail_subject='[Illegal]Test Subject New User With Logincode',
+            mail_body='[Illegal]Test Body New User With Logincode',
+        )
+        ContractMailFactory.create(
+            contract=None,
+            mail_type=MAIL_TYPE_REGISTER_EXISTING_USER_WITH_LOGINCODE,
+            mail_subject='[Illegal]Test Subject Exists User With Logincode',
+            mail_body='[Illegal]Test Body Exists User With Logincode',
+        )
 
 
 _current_feature = None

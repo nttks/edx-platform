@@ -626,8 +626,16 @@ msgid "The number of lines per line has exceeded the {biz_max_char_length_regist
 msgstr "１行あたりの行数が{biz_max_char_length_register_line}行を超えています。"
 
 #: biz/djangoapps/ga_contract_operation/views.py
+msgid "Please enter the subject of an e-mail."
+msgstr "メール件名を入力してください。"
+
+#: biz/djangoapps/ga_contract_operation/views.py
 msgid "Subject within {0} characters."
 msgstr "件名は{0}文字以内で入力してください。"
+
+#: biz/djangoapps/ga_contract_operation/views.py
+msgid "Please enter the body of an e-mail."
+msgstr "メール本文を入力してください。"
 
 #: biz/djangoapps/ga_contract_operation/views.py
 msgid "Please save the template e-mail before sending."

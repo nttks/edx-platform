@@ -1808,7 +1808,7 @@ class BizMailTest(WebAppTest, GaccoBizTestMixin, BizStudentRegisterMixin):
 
         self.assertTrue('E-Mail Management' in nav.left_menu_items.keys())
 
-        # Mail Management for new user
+        # Mail Management
         mail_page = nav.click_mail_management()
         self.assertEqual([u'username', u'password', u'email_address'], mail_page.parameter_keys)
         self.assertEqual(u'オンライン学習「gacco」の受講予定者の方へ', mail_page.subject)
@@ -1828,27 +1828,7 @@ class BizMailTest(WebAppTest, GaccoBizTestMixin, BizStudentRegisterMixin):
         self.assertEqual(u'Test Body {} PW:dummyPassword'.format(self.new_director['email']), test_mail['body'].decode('utf-8'))
         self.email_client.clear_messages()
 
-        # Mail Management for existing user
-        mail_page.click_tab_for_existing_user()
-        self.assertEqual([u'username', u'email_address'], mail_page.parameter_keys)
-        self.assertEqual(u'オンライン学習「gacco」の受講予定者の方へ', mail_page.subject)
-        self.assertEqual(u'{username}様 Default Body For Existing User', mail_page.body)
-
-        mail_page.input('Existing Test Subject {username}', 'Existing Test Body {email_address} PW:{password}').click_save_template().click_popup_yes()
-        mail_page.wait_for_ajax()
-        self.assertEqual([u'Successfully to save the template e-mail.'], mail_page.messages)
-
-        mail_page.click_send_test_mail().click_popup_yes()
-        mail_page.wait_for_ajax()
-        self.assertEqual([u'Successfully to send the test e-mail.'], mail_page.messages)
-
-        test_mail = self._get_message(self.new_director['email'])
-        self.assertIsNotNone(test_mail)
-        self.assertEqual(u'Existing Test Subject {}'.format(self.new_director['username']), test_mail['subject'])
-        self.assertEqual(u'Existing Test Body {} PW:{{password}}'.format(self.new_director['email']), test_mail['body'].decode('utf-8'))
-        self.email_client.clear_messages()
-
-        # Register new user
+        # Register
         register_page = nav.click_register_students()
         register_page.input_students(self._make_students([
             self.new_user,
@@ -1873,33 +1853,6 @@ class BizMailTest(WebAppTest, GaccoBizTestMixin, BizStudentRegisterMixin):
         self.assertIsNotNone(register_mail)
         self.assertEqual(u'Test Subject {}'.format(self.new_user['username']), register_mail['subject'])
         self.assertIn(u'Test Body {} PW:'.format(self.new_user['email']), register_mail['body'].decode('utf-8'))
-        self.email_client.clear_messages()
-
-        # Register existing user
-        register = nav.click_register_students()
-        register_page.input_students(self._make_students([
-            self.new_user,
-        ])).click_register_button().click_popup_yes()
-
-        register_page.wait_for_message(
-            u'Began the processing of Student Register.Execution status, please check from the task history.'
-        )
-
-        register_page.click_show_history()
-
-        self._assert_register_student_task_history(
-            register_page.task_history_grid_row,
-            1, 1, 0, 0,
-            self.new_director,
-        )
-        self.assertEqual(
-            [u'No messages.'],
-            register_page.task_messages,
-        )
-        register_mail = self._get_message(self.new_user['email'])
-        self.assertIsNotNone(register_mail)
-        self.assertEqual(u'Existing Test Subject {}'.format(self.new_user['username']), register_mail['subject'])
-        self.assertEqual(u'Existing Test Body {} PW:{{password}}'.format(self.new_user['email']), register_mail['body'].decode('utf-8'))
 
     def test_auth(self):
         # Make contract auth
@@ -1931,7 +1884,7 @@ class BizMailTest(WebAppTest, GaccoBizTestMixin, BizStudentRegisterMixin):
 
         self.assertTrue('E-Mail Management' in nav.left_menu_items.keys())
 
-        # Mail Management for new user
+        # Mail Management
         mail_page = nav.click_mail_management()
         self.assertEqual([u'username', u'password', u'email_address', u'logincode', u'urlcode'], mail_page.parameter_keys)
         self.assertEqual(u'オンライン学習「gacco」の受講予定者の方へ', mail_page.subject)
@@ -1951,27 +1904,7 @@ class BizMailTest(WebAppTest, GaccoBizTestMixin, BizStudentRegisterMixin):
         self.assertEqual(u'Test Body {} PW:dummyPassword'.format(self.new_director['email']), test_mail['body'].decode('utf-8'))
         self.email_client.clear_messages()
 
-        # Mail Management for existing user
-        mail_page.click_tab_for_existing_user_login_code()
-        self.assertEqual([u'username', u'email_address', u'logincode', u'urlcode'], mail_page.parameter_keys)
-        self.assertEqual(u'オンライン学習「gacco」の受講予定者の方へ', mail_page.subject)
-        self.assertEqual(u'{username}様 Default Body Send Registration Mail for Existing User', mail_page.body)
-
-        mail_page.input('Existing Test Subject {username}', 'Existing Test Body {email_address} PW:{password}').click_save_template().click_popup_yes()
-        mail_page.wait_for_ajax()
-        self.assertEqual([u'Successfully to save the template e-mail.'], mail_page.messages)
-
-        mail_page.click_send_test_mail().click_popup_yes()
-        mail_page.wait_for_ajax()
-        self.assertEqual([u'Successfully to send the test e-mail.'], mail_page.messages)
-
-        test_mail = self._get_message(self.new_director['email'])
-        self.assertIsNotNone(test_mail)
-        self.assertEqual(u'Existing Test Subject {}'.format(self.new_director['username']), test_mail['subject'])
-        self.assertEqual(u'Existing Test Body {} PW:{{password}}'.format(self.new_director['email']), test_mail['body'].decode('utf-8'))
-        self.email_client.clear_messages()
-
-        # Register new user
+        # Register
         register_page = nav.click_register_students()
         register_page.input_students(self._make_students_auth([
             self.new_user,
@@ -1996,33 +1929,6 @@ class BizMailTest(WebAppTest, GaccoBizTestMixin, BizStudentRegisterMixin):
         self.assertIsNotNone(register_mail)
         self.assertEqual(u'Test Subject {}'.format(self.new_user['username']), register_mail['subject'])
         self.assertIn(u'Test Body {} PW:'.format(self.new_user['email']), register_mail['body'].decode('utf-8'))
-        self.email_client.clear_messages()
-
-        # Register existing user
-        register = nav.click_register_students()
-        register_page.input_students(self._make_students_auth([
-            self.new_user,
-        ])).click_register_button().click_popup_yes()
-
-        register_page.wait_for_message(
-            u'Began the processing of Student Register.Execution status, please check from the task history.'
-        )
-
-        register_page.click_show_history()
-
-        self._assert_register_student_task_history(
-            register_page.task_history_grid_row,
-            1, 1, 0, 0,
-            self.new_director,
-        )
-        self.assertEqual(
-            [u'No messages.'],
-            register_page.task_messages,
-        )
-        register_mail = self._get_message(self.new_user['email'])
-        self.assertIsNotNone(register_mail)
-        self.assertEqual(u'Existing Test Subject {}'.format(self.new_user['username']), register_mail['subject'])
-        self.assertEqual(u'Existing Test Body {} PW:{{password}}'.format(self.new_user['email']), register_mail['body'].decode('utf-8'))
 
     def test_auth_no_send(self):
         # Make contract auth
@@ -2053,3 +1959,148 @@ class BizMailTest(WebAppTest, GaccoBizTestMixin, BizStudentRegisterMixin):
         nav = BizNavPage(self.browser).visit()
 
         self.assertFalse('E-Mail Management' in nav.left_menu_items.keys())
+
+    @skip("This won't work with mod #1906")
+    def test_normal_existing_user(self):
+        # Can not customize
+        self.switch_to_user(self.new_director)
+        nav = BizNavPage(self.browser).visit()
+
+        self.assertFalse('E-Mail Management' in nav.left_menu_items.keys())
+
+        # Make contract auth
+        self.switch_to_user(SUPER_USER_INFO)
+        django_admin_add_page = self.django_admin_page.visit().click_add('ga_contract', 'contractoption')
+        django_admin_list_page = django_admin_add_page.input({
+            'contract': self.new_contract['Contract Name'],
+            'customize_mail': True,
+        }).save()
+
+        # Can customize
+        self.switch_to_user(self.new_director)
+        nav = BizNavPage(self.browser).visit()
+
+        self.assertTrue('E-Mail Management' in nav.left_menu_items.keys())
+
+        # Mail Management
+        mail_page = nav.click_mail_management().click_tab_for_existing_user()
+        self.assertEqual([u'username', u'email_address'], mail_page.parameter_keys)
+        self.assertEqual(u'オンライン学習「gacco」の受講予定者の方へ', mail_page.subject)
+        self.assertEqual(u'{username}様 Default Body For Existing User', mail_page.body)
+
+        mail_page.input('Existing Test Subject {username}', 'Existing Test Body {email_address} PW:{password}').click_save_template().click_popup_yes()
+        mail_page.wait_for_ajax()
+        self.assertEqual([u'Successfully to save the template e-mail.'], mail_page.messages)
+
+        mail_page.click_send_test_mail().click_popup_yes()
+        mail_page.wait_for_ajax()
+        self.assertEqual([u'Successfully to send the test e-mail.'], mail_page.messages)
+
+        test_mail = self._get_message(self.new_director['email'])
+        self.assertIsNotNone(test_mail)
+        self.assertEqual(u'Existing Test Subject {}'.format(self.new_director['username']), test_mail['subject'])
+        self.assertEqual(u'Existing Test Body {} PW:{{password}}'.format(self.new_director['email']), test_mail['body'].decode('utf-8'))
+        self.email_client.clear_messages()
+
+        # Register
+        register = nav.click_register_students()
+        register_page.input_students(self._make_students([
+            self.new_user,
+        ])).click_register_button().click_popup_yes()
+
+        register_page.wait_for_message(
+            u'Began the processing of Student Register.Execution status, please check from the task history.'
+        )
+
+        register_page.click_show_history()
+
+        self._assert_register_student_task_history(
+            register_page.task_history_grid_row,
+            1, 1, 0, 0,
+            self.new_director,
+        )
+        self.assertEqual(
+            [u'No messages.'],
+            register_page.task_messages,
+        )
+        register_mail = self._get_message(self.new_user['email'])
+        self.assertIsNotNone(register_mail)
+        self.assertEqual(u'Existing Test Subject {}'.format(self.new_user['username']), register_mail['subject'])
+        self.assertEqual(u'Existing Test Body {} PW:{{password}}'.format(self.new_user['email']), register_mail['body'].decode('utf-8'))
+
+    @skip("This won't work with mod #1906")
+    def test_auth_existing_user(self):
+        # Make contract auth
+        self.switch_to_user(SUPER_USER_INFO)
+        django_admin_add_page = DjangoAdminPage(self.browser).visit().click_add('ga_contract', 'contractauth')
+        django_admin_list_page = django_admin_add_page.input({
+            'contract': self.new_contract['Contract Name'],
+            'url_code': get_random_string(8),
+            'send_mail': True,
+        }).save()
+
+        # Can not customize
+        self.switch_to_user(self.new_director)
+        nav = BizNavPage(self.browser).visit()
+
+        self.assertFalse('E-Mail Management' in nav.left_menu_items.keys())
+
+        # Make contract auth
+        self.switch_to_user(SUPER_USER_INFO)
+        django_admin_add_page = self.django_admin_page.visit().click_add('ga_contract', 'contractoption')
+        django_admin_list_page = django_admin_add_page.input({
+            'contract': self.new_contract['Contract Name'],
+            'customize_mail': True,
+        }).save()
+
+        # Can customize
+        self.switch_to_user(self.new_director)
+        nav = BizNavPage(self.browser).visit()
+
+        self.assertTrue('E-Mail Management' in nav.left_menu_items.keys())
+
+        # Mail Management
+        mail_page = nav.click_mail_management().click_tab_for_existing_user_login_code()
+        self.assertEqual([u'username', u'email_address', u'logincode', u'urlcode'], mail_page.parameter_keys)
+        self.assertEqual(u'オンライン学習「gacco」の受講予定者の方へ', mail_page.subject)
+        self.assertEqual(u'{username}様 Default Body Send Registration Mail for Existing User', mail_page.body)
+
+        mail_page.input('Existing Test Subject {username}', 'Existing Test Body {email_address} PW:{password}').click_save_template().click_popup_yes()
+        mail_page.wait_for_ajax()
+        self.assertEqual([u'Successfully to save the template e-mail.'], mail_page.messages)
+
+        mail_page.click_send_test_mail().click_popup_yes()
+        mail_page.wait_for_ajax()
+        self.assertEqual([u'Successfully to send the test e-mail.'], mail_page.messages)
+
+        test_mail = self._get_message(self.new_director['email'])
+        self.assertIsNotNone(test_mail)
+        self.assertEqual(u'Existing Test Subject {}'.format(self.new_director['username']), test_mail['subject'])
+        self.assertEqual(u'Existing Test Body {} PW:{{password}}'.format(self.new_director['email']), test_mail['body'].decode('utf-8'))
+        self.email_client.clear_messages()
+
+        # Register
+        register = nav.click_register_students()
+        register_page.input_students(self._make_students_auth([
+            self.new_user,
+        ])).click_register_button().click_popup_yes()
+
+        register_page.wait_for_message(
+            u'Began the processing of Student Register.Execution status, please check from the task history.'
+        )
+
+        register_page.click_show_history()
+
+        self._assert_register_student_task_history(
+            register_page.task_history_grid_row,
+            1, 1, 0, 0,
+            self.new_director,
+        )
+        self.assertEqual(
+            [u'No messages.'],
+            register_page.task_messages,
+        )
+        register_mail = self._get_message(self.new_user['email'])
+        self.assertIsNotNone(register_mail)
+        self.assertEqual(u'Existing Test Subject {}'.format(self.new_user['username']), register_mail['subject'])
+        self.assertEqual(u'Existing Test Body {} PW:{{password}}'.format(self.new_user['email']), register_mail['body'].decode('utf-8'))

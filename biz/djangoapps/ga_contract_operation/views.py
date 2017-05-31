@@ -386,14 +386,21 @@ def register_mail_ajax(request):
         return _error_response(_("Current contract is changed. Please reload this page."))
 
     mail_subject = request.POST['mail_subject']
+    if not mail_subject:
+        return _error_response(_("Please enter the subject of an e-mail."))
+
     mail_subject_max_length = ContractMail._meta.get_field('mail_subject').max_length
     if len(mail_subject) > mail_subject_max_length:
         return _error_response(_("Subject within {0} characters.").format(mail_subject_max_length))
 
+    mail_body = request.POST['mail_body']
+    if not mail_body:
+        return _error_response(_("Please enter the body of an e-mail."))
+
     try:
         contract_mail, __ = ContractMail.objects.get_or_create(contract=request.current_contract, mail_type=mail_type)
         contract_mail.mail_subject = mail_subject
-        contract_mail.mail_body = request.POST['mail_body']
+        contract_mail.mail_body = mail_body
         contract_mail.save()
     except:
         log.exception('Failed to save the template e-mail.')
