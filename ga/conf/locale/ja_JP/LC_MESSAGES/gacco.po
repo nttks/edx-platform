@@ -598,6 +598,10 @@ msgstr "学習リスト"
 msgid "Open"
 msgstr "開く"
 
+#: lms/templates/dashboard.html
+msgid "Search..."
+msgstr "検索キーワードを入力"
+
 #: lms/templates/courseware/progress.html
 msgid "Your certificate is available"
 msgstr "修了証発行が完了しました"

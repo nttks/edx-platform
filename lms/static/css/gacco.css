@@ -1577,3 +1577,22 @@ div.wrapper-profile-section-three span {
     margin: 13px 5px 0 0;
   }
 }
+
+.search-box {
+  margin-bottom: 0.75rem;
+}
+@media screen and (min-width: 480px) {
+  .search-box {
+    float: right;
+    position: relative;
+    top: -2.6rem;
+    width: 100%;
+    text-align: right;
+  }
+  .search-box>input {
+    width: 30%;
+  }
+  .listing-courses {
+    clear: both;
+  }
+}

@@ -16,6 +16,7 @@ from django.utils.crypto import get_random_string
 from email import message_from_string
 from email.header import decode_header
 
+from ..fixtures.course import CourseFixture
 from ..pages.common.logout import LogoutPage
 from ..pages.lms.auto_auth import AutoAuthPage
 from ..pages.lms.ga_django_admin import DjangoAdminPage
@@ -113,8 +114,8 @@ class GaccoTestMixin(object):
             'email': username + '@example.com',
         }
 
-    def register_user(self):
-        return self.switch_to_user(self.new_user_info)
+    def register_user(self, course_id=None):
+        return self.switch_to_user(self.new_user_info, course_id)
 
     @contextmanager
     def setup_global_course(self, course_id):
@@ -147,6 +148,15 @@ class GaccoTestMixin(object):
 
         # Logout
         LogoutPage(self.browser).visit()
+
+    def install_course(self, org=None):
+        org = org or 'test_ga_org'
+        unique_value = self.unique_id
+        course_name = 'Test Course ' + unique_value
+        return (
+            CourseFixture(org, unique_value, 'test_run', course_name).install()._course_key,
+            course_name,
+        )
 
 
 class NoEmailFileException(Exception):

@@ -33,6 +33,10 @@ class DashboardPage(EdXDashboardPage):
             raise Exception("No course named {} was found on the dashboard".format(course_name))
 
     @property
+    def displayed_course_names(self):
+        return self.q(css='.course-title').filter(lambda el: el.is_displayed()).text
+
+    @property
     def activation_message(self):
         """
         Return the message about activation.
@@ -129,3 +133,10 @@ class DashboardPage(EdXDashboardPage):
             return self._get_element_in_course(course_name, ".messages-list>.message-status>p").text
         except NoSuchElementException:
             return ''
+
+    def input_search_box(self, search_text):
+        self.q(css='.search-box>input[type="search"]').fill(search_text)
+        return self
+
+    def clear_search_box(self):
+        return self.input_search_box('')

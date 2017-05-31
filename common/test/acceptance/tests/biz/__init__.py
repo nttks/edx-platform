@@ -3,7 +3,6 @@ from contextlib import contextmanager
 from django.utils.crypto import get_random_string
 
 from ..ga_helpers import GaccoTestMixin, SUPER_USER_INFO
-from ...fixtures.course import CourseFixture
 from ...pages.biz.ga_contract import BizContractDetailPage, BizContractPage
 from ...pages.biz.ga_dashboard import DashboardPage
 from ...pages.biz.ga_invitation import BizInvitationPage, BizInvitationConfirmPage
@@ -188,14 +187,6 @@ class GaccoBizTestMixin(GaccoTestMixin):
         biz_manager_page.refresh_page().select(organization_name, permission)
         self.assertIn(grant_to_user_info['username'], biz_manager_page.names)
         self.assertIn(grant_to_user_info['email'], biz_manager_page.emails)
-
-    def install_course(self, org):
-        unique_value = self.unique_id
-        course_name = 'Test Course ' + unique_value
-        return (
-            CourseFixture(org, unique_value, 'test_run', course_name).install()._course_key,
-            course_name,
-        )
 
     def register_contract(self, operator, contractor_organization_name, contract_type='PF', register_type='ERS',
                           start_date='2000/01/01', end_date='2100/12/31', detail_info=None, additional_info=None):
