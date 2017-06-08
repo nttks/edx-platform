@@ -293,8 +293,10 @@ class Command(BaseCommand):
                             else:
                                 weighted_score = float(earned) / float(possible)
                             # Note: Set '―'(U+2015) if user has not submitted any problem in the section (#1816)
+                            # Note: In case where any problem.whole_point_addition is set to enabled,
+                            #       is_attempted can be False, so 'earned > 0' is needed. (#1917)
                             record[target_section.column_name] = weighted_score \
-                                if is_attempted else ScoreStore.VALUE__NOT_ATTEMPTED
+                                if is_attempted or earned > 0 else ScoreStore.VALUE__NOT_ATTEMPTED
                         record[_(ScoreStore.FIELD_TOTAL_SCORE)] = score_calculator.get_total_score()
                         records.append(record)
 
