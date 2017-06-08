@@ -2769,6 +2769,9 @@ JWPLAYER_SECURE_TOKEN_EXPIRE = 24 * 60 * 60
 ##### RateLimitBackend #####
 RATE_LIMIT_REQUESTS = 30
 
+##### Interval day to mask #####
+INTERVAL_DAYS_TO_MASK_UNACTIVATED_USER = 1
+
 ##### Format #####
 FORMAT_MODULE_PATH = ['conf.formats']
 

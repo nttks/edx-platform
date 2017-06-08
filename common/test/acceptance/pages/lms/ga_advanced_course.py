@@ -7,7 +7,7 @@ from bok_choy.page_object import PageObject
 
 from . import BASE_URL
 from .course_about import CourseAboutPage as EdXCourseAboutPage
-from .login_and_register import CombinedLoginAndRegisterPage
+from .ga_login_and_register import CombinedLoginAndRegisterPage
 from .pay_and_verify import FakePaymentPage as EdXFakePaymentPage
 
 from .ga_dashboard import DashboardPage as GaDashboradPage

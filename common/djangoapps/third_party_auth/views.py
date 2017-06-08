@@ -28,6 +28,8 @@ def inactive_user_view(request):
     # 'next' may be set to '/account/finish_auth/.../' if this user needs to be auto-enrolled
     # in a course. Otherwise, just redirect them to the dashboard, which displays a message
     # about activating their account.
+    if not request.user.is_active:
+        return redirect(reverse('notice_unactivated'))
     return redirect(request.GET.get('next', 'dashboard'))
 
 

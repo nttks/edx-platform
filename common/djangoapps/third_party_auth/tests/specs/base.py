@@ -90,7 +90,7 @@ class IntegrationTestMixin(object):
         continue_response = self.client.get(tpa_context["finishAuthUrl"])
         # And we should be redirected to the dashboard:
         self.assertEqual(continue_response.status_code, 302)
-        self.assertEqual(continue_response['Location'], self.url_prefix + reverse('dashboard'))
+        self.assertEqual(continue_response['Location'], self.url_prefix + reverse('notice_unactivated'))
 
         # Now check that we can login again, whether or not we have yet verified the account:
         self.client.logout()
@@ -360,7 +360,7 @@ class IntegrationTest(testutil.TestCase, test.TestCase):
         self.assertEqual(200, response.status_code)  # Yes, it's a 200 even though it's a failure.
         payload = json.loads(response.content)
         self.assertFalse(payload.get('success'))
-        self.assertIn('This account has not been activated', payload.get('value'))
+        self.assertIn("You're almost there. Before you enroll in a course", payload.get('value'))
 
     def assert_json_failure_response_is_missing_social_auth(self, response):
         """Asserts failure on /login for missing social auth looks right."""

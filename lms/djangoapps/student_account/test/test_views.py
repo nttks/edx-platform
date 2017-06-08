@@ -257,7 +257,10 @@ class StudentAccountLoginAndRegistrationTest(ThirdPartyAuthTestMixin, UrlResetMi
         with mock.patch.dict(settings.FEATURES, {'IS_EDX_DOMAIN': is_edx_domain}):
             response = self.client.get(reverse(url_name), params)
 
-        expected_url = '/login?{}'.format(self._finish_auth_url_param(params + [('next', '/dashboard')]))
+        if url_name == 'signin_user':
+            expected_url = '/login?{}'.format(self._finish_auth_url_param(params + [('next', '/dashboard')]))
+        else:
+            expected_url = '/login?{}'.format(self._finish_auth_url_param(params + [('next', '/notice_unactivated')]))
         self.assertContains(response, expected_url)
 
         # Add additional parameters:

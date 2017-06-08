@@ -20,6 +20,15 @@
     <ul class="message-copy"></ul>
 </div>
 
+<div class="status activate-account-notice hidden" aria-live="polite">
+    <h4 class="message-title"><%- gettext("You're almost there!") %></h4>
+    <div class="message-copy">
+        <p>
+            <%- gettext("Before you enroll in a course, you need to activate your account. We've sent an e-mail to your registered e-mail address with instructions for activating your account.") %>
+        </p>
+    </div>
+</div>
+
 <% if (context.errorMessage) { %>
     <div class="status submission-error">
         <h4 class="message-title"><%- _.sprintf( gettext("An error occurred when signing you in to %(platformName)s."), context ) %></h4>

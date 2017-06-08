@@ -1300,7 +1300,7 @@ def login_user(request, error=""):  # pylint: disable=too-many-statements,unused
         AUDIT_LOG.warning(u"Login failed - Account not active for user {0}, resending activation".format(username))
 
     reactivation_email_for_user(user)
-    not_activated_msg = _("This account has not been activated. We have sent another activation message. Please check your email for the activation instructions.")
+    not_activated_msg = _("You're almost there. Before you enroll in a course, you need to activate your account. We've sent an e-mail to your registered e-mail address with instructions for activating your account.")
     return JsonResponse({
         "success": False,
         "value": not_activated_msg,
@@ -1361,6 +1361,17 @@ def logout_user(request):
     response = redirect(redirect_uri)
 
     delete_logged_in_cookies(response)
+    return response
+
+
+def notice_unactivated(request):
+    """
+    Call logout_user, add Param and redirect to login page.
+    """
+    logout_user(request)
+    redirect_uri = '{}?{}'.format('/login', 'unactivated=true')
+    response = redirect(redirect_uri)
+
     return response
 
 
@@ -1819,9 +1830,13 @@ def create_account_with_params(request, params):
         )
     )
     if send_email:
+        expiration_date = datetime.datetime.now() + datetime.timedelta(settings.INTERVAL_DAYS_TO_MASK_UNACTIVATED_USER)
         context = {
             'name': profile.name,
             'key': registration.activation_key,
+            'expiration_year': expiration_date.year,
+            'expiration_month': expiration_date.month,
+            'expiration_day': expiration_date.day,
         }
 
         # composes activation email
@@ -2111,13 +2126,16 @@ def activate_account(request, key):
                             manual_enrollment_audit.reason, enrollment
                         )
 
-        resp = render_to_response(
-            "registration/activation_complete.html",
-            {
-                'user_logged_in': user_logged_in,
-                'already_active': already_active
-            }
-        )
+        if regs[0].masked:
+            resp = render_to_response("registration/activation_expired.html")
+        else:
+            resp = render_to_response(
+                "registration/activation_complete.html",
+                {
+                    'user_logged_in': user_logged_in,
+                    'already_active': already_active
+                }
+            )
         return resp
     if len(regs) == 0:
         return render_to_response(
@@ -2381,9 +2399,13 @@ def reactivation_email_for_user(user):
             "error": _('No inactive user with this e-mail exists'),
         })  # TODO: this should be status code 400  # pylint: disable=fixme
 
+    expiration_date = datetime.datetime.now() + datetime.timedelta(settings.INTERVAL_DAYS_TO_MASK_UNACTIVATED_USER)
     context = {
         'name': user.profile.name,
         'key': reg.activation_key,
+        'expiration_year': expiration_date.year,
+        'expiration_month': expiration_date.month,
+        'expiration_day': expiration_date.day,
     }
 
     subject = render_to_string('emails/activation_email_subject.txt', context)
@@ -2398,6 +2420,9 @@ def reactivation_email_for_user(user):
             "success": False,
             "error": _('Unable to send reactivation email')
         })  # TODO: this should be status code 500  # pylint: disable=fixme
+
+    # After resend the email, update modified
+    reg.save()
 
     return JsonResponse({"success": True})
 

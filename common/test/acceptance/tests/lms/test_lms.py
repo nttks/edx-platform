@@ -18,25 +18,27 @@ from ..helpers import (
     select_option_by_value,
     element_has_text
 )
+from ...fixtures.course import CourseFixture, XBlockFixtureDesc, CourseUpdateDesc
+from ...pages.common.logout import LogoutPage
 from ...pages.lms import BASE_URL
 from ...pages.lms.account_settings import AccountSettingsPage
 from ...pages.lms.auto_auth import AutoAuthPage
-from ...pages.lms.create_mode import ModeCreationPage
-from ...pages.common.logout import LogoutPage
-from ...pages.lms.course_info import CourseInfoPage
-from ...pages.lms.tab_nav import TabNavPage
-from ...pages.lms.course_nav import CourseNavPage
-from ...pages.lms.progress import ProgressPage
-from ...pages.lms.dashboard import DashboardPage
-from ...pages.lms.problem import ProblemPage
-from ...pages.lms.video.video import VideoPage
 from ...pages.lms.courseware import CoursewarePage
-from ...pages.studio.settings import SettingsPage
-from ...pages.lms.login_and_register import CombinedLoginAndRegisterPage, ResetPasswordPage
-from ...pages.lms.track_selection import TrackSelectionPage
-from ...pages.lms.pay_and_verify import PaymentAndVerificationFlow, FakePaymentPage
+from ...pages.lms.course_info import CourseInfoPage
+from ...pages.lms.course_nav import CourseNavPage
 from ...pages.lms.course_wiki import CourseWikiPage, CourseWikiEditPage
-from ...fixtures.course import CourseFixture, XBlockFixtureDesc, CourseUpdateDesc
+from ...pages.lms.create_mode import ModeCreationPage
+from ...pages.lms.dashboard import DashboardPage
+from ...pages.lms.ga_login_and_register import CombinedLoginAndRegisterPage
+from ...pages.lms.login import LoginPage
+from ...pages.lms.login_and_register import ResetPasswordPage
+from ...pages.lms.pay_and_verify import PaymentAndVerificationFlow, FakePaymentPage
+from ...pages.lms.problem import ProblemPage
+from ...pages.lms.progress import ProgressPage
+from ...pages.lms.tab_nav import TabNavPage
+from ...pages.lms.track_selection import TrackSelectionPage
+from ...pages.lms.video.video import VideoPage
+from ...pages.studio.settings import SettingsPage
 
 
 @attr('shard_4')
@@ -258,16 +260,17 @@ class RegisterFromCombinedPageTest(UniqueCourseTest):
         email = "{user}@example.com".format(user=username)
         self.register_page.register(
             email=email,
-            password="password",
+            password="abcdefG1",
             username=username,
             full_name="Test User",
             country="US",
             terms_of_service=True
         )
 
-        # Expect that we reach the dashboard and we're auto-enrolled in the course
-        course_names = self.dashboard_page.wait_for_page().available_courses
-        self.assertIn(self.course_info["display_name"], course_names)
+        EmptyPromise(
+            lambda: u"You're almost there!" == self.register_page.register_complete_message(),
+            "waiting for login page message"
+        ).fulfill()
 
     def test_register_failure(self):
         # Navigate to the registration page
@@ -290,12 +293,13 @@ class RegisterFromCombinedPageTest(UniqueCourseTest):
         errors = self.register_page.wait_for_errors()
         self.assertIn(u'Please enter your Public username.', errors)
         self.assertIn(u'You must agree to the edX Terms of Service and Honor Code.', errors)
-        self.assertIn(u'Please select your Country.', errors)
+        # self.assertIn(u'Please select your Country.', errors)
 
     def test_toggle_to_login_form(self):
         self.register_page.visit().toggle_form()
         self.assertEqual(self.register_page.current_form, "login")
 
+    @skip("This won't work with mod #1867")
     def test_third_party_register(self):
         """
         Test that we can register using third party credentials, and that the
@@ -319,12 +323,8 @@ class RegisterFromCombinedPageTest(UniqueCourseTest):
         # Set username, country, accept the terms, and submit the form:
         self.register_page.register(username="Galactica1", country="US", terms_of_service=True)
 
-        # Expect that we reach the dashboard and we're auto-enrolled in the course
-        course_names = self.dashboard_page.wait_for_page().available_courses
-        self.assertIn(self.course_info["display_name"], course_names)
-
         # Now logout and check that we can log back in instantly (because the account is linked):
-        LogoutPage(self.browser).visit()
+        # LogoutPage(self.browser).visit()
 
         login_page = CombinedLoginAndRegisterPage(self.browser, start_page="login")
         login_page.visit()

@@ -23,3 +23,6 @@ class ActivationPage(PageObject):
     @property
     def complete_message(self):
         return self.q(css='section.message p').text[0]
+
+    def click_login_button(self):
+        self.q(css=".cta-login").click()

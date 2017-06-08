@@ -1,12 +1,14 @@
 """
 tests for advanced course
 """
+from bok_choy.promise import EmptyPromise
 from bok_choy.web_app_test import WebAppTest
+from unittest import skip
 
 from ...fixtures.course import CourseFixture
 from ...pages.common.logout import LogoutPage
 from ...pages.lms.auto_auth import AutoAuthPage
-from ...pages.lms.login_and_register import CombinedLoginAndRegisterPage
+from ...pages.lms.ga_login_and_register import CombinedLoginAndRegisterPage
 from lms.envs.bok_choy import EMAIL_FILE_PATH
 
 from ..ga_helpers import GaccoTestMixin
@@ -285,47 +287,24 @@ class AdvancedCourseTest(WebAppTest, GaccoTestMixin):
     def test_purchase_flow_inactive_user(self):
         """
         Scenario:
-        Inactive user can access until ticket option page, but cannot purchase.
+        Inactive user can't access ticket option page.
 
         1. Register user (not activate)
-        2. Visit course about page and enroll
-        3. Show advanced course choose and click view-detail button
-        4. Show advanced course list page and select one of these
-        5. Show advanced course ticket option page and verify inactive message has been shown
+        2. Visit login page
         """
 
         # Register user (not activate)
         username = self.unique_id[0:6]
-        CombinedLoginAndRegisterPage(self.browser).visit().register(
+        register_page = CombinedLoginAndRegisterPage(self.browser)
+        register_page.visit().register(
             email='{}@example.com'.format(username), password='abcdefG1', username=username,
             full_name=username, terms_of_service=True
         )
-        DashboardPage(self.browser).wait_for_page()
 
-        # Visit course about page and enroll
-        course_about_page = CourseAboutPage(self.browser, self.course_id).visit()
-        choose_page = course_about_page.enroll()
-
-        # Verify choose page has two track
-        self.assertTrue(choose_page.has_face_to_face_track())
-        self.assertTrue(choose_page.has_online_track())
-
-        f2f_courses_page = choose_page.show_face_to_face_courses_page()
-
-        # Verify advanced course list page
-        self.assertFalse(f2f_courses_page.get_error_message())
-        ## Verify three advanced course exists and check button status
-        self._assert_course_name_and_button(f2f_courses_page, 'Test Advance Course 21')
-
-        ## subscribe
-        choose_ticket_page = f2f_courses_page.subscribe_by_summary('Test Advance Course 21')
-
-        # Verify inactive message has been shown in ticket page
-        self._assert_ticket(choose_ticket_page, 'test ticket name 21', exists=False)
-        self.assertEqual(
-            choose_ticket_page.get_inactive_message_title(),
-            'You\'re almost there!'
-        )
+        EmptyPromise(
+            lambda: u"You're almost there!" == register_page.register_complete_message(),
+            "waiting for login page message"
+        ).fulfill()
 
     def test_not_logged_in_and_register(self):
         """
@@ -334,7 +313,7 @@ class AdvancedCourseTest(WebAppTest, GaccoTestMixin):
 
         1. Visit course about page and enroll
         2. Show register page and register
-        3. Show advanced course choose page
+        3. Show login page
         """
         course_about_page = CourseAboutPage(self.browser, self.course_id).visit()
         register_page = course_about_page.enroll(login=False)
@@ -345,8 +324,10 @@ class AdvancedCourseTest(WebAppTest, GaccoTestMixin):
             full_name=username, terms_of_service=True
         )
 
-        # Verify course choose page is shown
-        AdvancedCourseChoosePage(self.browser, self.course_id).wait_for_page()
+        EmptyPromise(
+            lambda: u"You're almost there!" == register_page.register_complete_message(),
+            "waiting for login page message"
+        ).fulfill()
 
     def test_not_logged_in_and_register_with_not_advanced_course(self):
         """
@@ -356,7 +337,7 @@ class AdvancedCourseTest(WebAppTest, GaccoTestMixin):
 
         1. Visit course about page and enroll
         2. Show register page and register
-        3. Show dashboard page
+        3. Show login page
         """
         _course_id = CourseFixture(
             self.COURSE_ORG, '{}_2'.format(self._testMethodName), self.COURSE_RUN, self.COURSE_DISPLAY
@@ -371,8 +352,10 @@ class AdvancedCourseTest(WebAppTest, GaccoTestMixin):
             full_name=username, terms_of_service=True
         )
 
-        # Verify dashboard page is shown
-        DashboardPage(self.browser).wait_for_page()
+        EmptyPromise(
+            lambda: u"You're almost there!" == register_page.register_complete_message(),
+            "waiting for login page message"
+        ).fulfill()
 
     def test_not_logged_in_and_login(self):
         """
@@ -382,7 +365,7 @@ class AdvancedCourseTest(WebAppTest, GaccoTestMixin):
         1. Visit course about page and enroll
         2. Show register page
         3. Toggle form and login
-        4. Show advanced course choose page
+        4. Show login page
         """
         # Create user and logout
         user = self._auto_auth()
@@ -394,8 +377,8 @@ class AdvancedCourseTest(WebAppTest, GaccoTestMixin):
         register_page.toggle_form()
         register_page.login(email=user['email'], password=user['username'])
 
-        # Verify course choose page is shown
-        AdvancedCourseChoosePage(self.browser, self.course_id).wait_for_page()
+        register_page.wait_for_page()
+        self.assertEquals(u"You're almost there!", register_page.register_complete_message())
 
     def test_not_logged_in_and_login_with_not_advanced_course(self):
         """
@@ -406,7 +389,7 @@ class AdvancedCourseTest(WebAppTest, GaccoTestMixin):
         1. Visit course about page and enroll
         2. Show register page
         3. Toggle form and login
-        4. Show dashboard page
+        4. Show login page
         """
         # Create user and logout
         user = self._auto_auth()
@@ -422,5 +405,5 @@ class AdvancedCourseTest(WebAppTest, GaccoTestMixin):
         register_page.toggle_form()
         register_page.login(email=user['email'], password=user['username'])
 
-        # Verify dashboard page is shown
-        DashboardPage(self.browser).wait_for_page()
+        register_page.wait_for_page()
+        self.assertEquals(u"You're almost there!", register_page.register_complete_message())

@@ -48,6 +48,7 @@ urlpatterns = (
         name="show_certificate_info_ajax"),
 
     url(r'^logout$', 'student.views.logout_user', name='logout'),
+    url(r'^notice_unactivated$', 'student.views.notice_unactivated', name='notice_unactivated'),
     url(r'^create_account$', 'student.views.create_account', name='create_account'),
     url(r'^activate/(?P<key>[^/]*)$', 'student.views.activate_account', name="activate"),
 

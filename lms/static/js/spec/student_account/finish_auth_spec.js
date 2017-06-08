@@ -131,6 +131,24 @@
                 expect( EnrollmentInterface.enroll ).toHaveBeenCalledWith(COURSE_KEY, '/dashboard');
             });
 
+            it('unactivated user redirect to notice_unactivated', function() {
+                // Simulate providing enrollment query string params
+                // AND specifying a next url.
+                setFakeQueryParams({
+                    '?enrollment_action': 'enroll',
+                    '?course_id': COURSE_KEY,
+                    '?course_mode': 'audit',
+                    '?next': '/notice_unactivated'
+                });
+
+                ajaxSpyAndInitialize(this);
+
+                // Expect that the view tried auto-enrolled the student
+                // and redirect to notice_unactivated
+                // (skipping the payment flow).
+                expect( EnrollmentInterface.enroll ).toHaveBeenCalledWith(COURSE_KEY, '/notice_unactivated');
+            });
+
             it('adds a white-label course to the shopping cart on auth complete', function() {
                 // Simulate providing "add to cart" query string params
                 setFakeQueryParams({

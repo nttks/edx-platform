@@ -142,6 +142,10 @@
                         redirectUrl = this.urls.payment + courseId + '/';
                     }
 
+                    if (this.nextUrl === '/notice_unactivated') {
+                        redirectUrl = this.nextUrl;
+                    }
+
                     /* Attempt to auto-enroll the user in a free mode of the course,
                     then redirect to the next location. */
                     enrollmentInterface.enroll( courseId, redirectUrl );

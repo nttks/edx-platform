@@ -1482,8 +1482,8 @@ class RegistrationViewTest(ThirdPartyAuthTestMixin, ApiTestCase):
         self.assertEqual(len(mail.outbox), 1)
         sent_email = mail.outbox[0]
         self.assertEqual(sent_email.to, [self.EMAIL])
-        self.assertEqual(sent_email.subject, "Activate Your edX Account")
-        self.assertIn("Thank you for creating an account with ", sent_email.body)
+        self.assertEqual(sent_email.subject, "Information of edX Member Registration")
+        self.assertIn("Thank you for your creating an account with ", sent_email.body)
 
     @ddt.data(
         {"email": ""},
