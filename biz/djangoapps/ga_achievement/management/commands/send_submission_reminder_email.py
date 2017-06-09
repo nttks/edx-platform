@@ -14,7 +14,7 @@ from xmodule.modulestore.django import modulestore
 from biz.djangoapps.ga_achievement.achievement_store import ScoreStore
 from biz.djangoapps.ga_achievement.management.commands.update_biz_score_status import TargetSection, GroupedTargetSections
 from biz.djangoapps.ga_achievement.models import ScoreBatchStatus, SubmissionReminderBatchStatus
-from biz.djangoapps.ga_contract.models import Contract, ContractAuth
+from biz.djangoapps.ga_contract.models import Contract
 from biz.djangoapps.ga_invitation.models import ContractRegister
 from biz.djangoapps.util import datetime_utils
 from biz.djangoapps.util.decorators import handle_command_exception
@@ -44,7 +44,7 @@ class Command(BaseCommand):
     Send reminder email for submission.
     """
     help = """
-    Usage: python manage.py lms --settings=aws update_biz_score_status [--debug] [--excludes=<exclude_ids>|<contract_id>]
+    Usage: python manage.py lms --settings=aws send_submission_reminder_email [--debug] [--excludes=<exclude_ids>|<contract_id>]
     """
 
     option_list = BaseCommand.option_list + (
@@ -219,7 +219,7 @@ class Command(BaseCommand):
                 SubmissionReminderBatchStatus.save_for_finished(contract.id, send_success, send_failure)
 
         if error_flag:
-            raise CommandError("Error occurred while handling update_biz_score_status command.")
+            raise CommandError("Error occurred while handling send_submission_reminder_email command.")
 
 
 def send_reminder_email(user, target_courses, debug):
