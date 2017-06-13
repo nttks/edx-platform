@@ -299,7 +299,7 @@ class RegisterFromCombinedPageTest(UniqueCourseTest):
         self.register_page.visit().toggle_form()
         self.assertEqual(self.register_page.current_form, "login")
 
-    @skip("This won't work with mod #1867")
+    @skip("gacco use test_ga_register")
     def test_third_party_register(self):
         """
         Test that we can register using third party credentials, and that the
@@ -323,8 +323,12 @@ class RegisterFromCombinedPageTest(UniqueCourseTest):
         # Set username, country, accept the terms, and submit the form:
         self.register_page.register(username="Galactica1", country="US", terms_of_service=True)
 
+        # Expect that we reach the dashboard and we're auto-enrolled in the course
+        course_names = self.dashboard_page.wait_for_page().available_courses
+        self.assertIn(self.course_info["display_name"], course_names)
+
         # Now logout and check that we can log back in instantly (because the account is linked):
-        # LogoutPage(self.browser).visit()
+        LogoutPage(self.browser).visit()
 
         login_page = CombinedLoginAndRegisterPage(self.browser, start_page="login")
         login_page.visit()

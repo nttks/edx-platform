@@ -299,3 +299,6 @@ INSTALLED_APPS += (
     'biz.djangoapps.ga_organization',
     'biz.djangoapps.ga_contract',
 )
+
+##### Interval day to mask #####
+INTERVAL_DAYS_TO_MASK_UNACTIVATED_USER = 1

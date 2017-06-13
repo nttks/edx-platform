@@ -26,10 +26,10 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         log.info(u"Command mask_user started at {}.".format(datetime_utils.timezone_now()))
 
-        min_datetime, max_datetime = datetime_utils.min_and_max_of_date(days_after=-settings.INTERVAL_DAYS_TO_MASK_UNACTIVATED_USER)
+        min_datetime, _ = datetime_utils.min_and_max_of_date(days_after=-settings.INTERVAL_DAYS_TO_MASK_UNACTIVATED_USER)
         mask_users = User.objects.filter(
             is_active=False,
-            email__contains='@',
+            email__contains='@',  # Do not mask users who have already masked by biz (#1908)
             registration__masked=False,
             registration__modified__isnull=False,
             registration__modified__lt=min_datetime,
@@ -42,7 +42,6 @@ class Command(BaseCommand):
             mask_utils.mask_name(user)
             mask_utils.mask_email(user)
             mask_utils.disconnect_third_party_auth(user)
-            reg = Registration.objects.get(user=user)
-            reg.update_masked()
+            Registration.objects.get(user=user).update_masked()
 
         log.info(u"Command mask_user finished at {}.".format(datetime_utils.timezone_now()))

@@ -355,8 +355,9 @@ msgid "Including tax"
 msgstr "税込"
 
 #: lms/templates/verify_student/make_payment_step.underscore
+#: lms/templates/student_account/login.underscore
 msgid "You're almost there!"
-msgstr "会員登録が完了しておりません。"
+msgstr "会員登録はまだ完了しておりません。"
 
 #: lms/templates/verify_student/make_payment_step.underscore
 msgid ""
@@ -489,10 +490,6 @@ msgstr "分："
 #: cms/static/js/views/modals/course_outline_modals.js
 msgid "Please enter the date on and after 1900."
 msgstr "1900年以降の日付を入力して下さい。"
-
-#: lms/templates/student_account/login.underscore
-msgid "You're almost there!"
-msgstr "会員登録はまだ完了しておりません。"
 
 #: lms/templates/student_account/login.underscore
 msgid "Before you enroll in a course, you need to activate your account. We've sent an e-mail to your registered e-mail address with instructions for activating your account."

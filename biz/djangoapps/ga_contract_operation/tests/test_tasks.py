@@ -808,8 +808,9 @@ class PersonalinfoMaskTaskTest(BizTestBase, ModuleStoreTestCase, ThirdPartyAuthT
 
         # delete_cert_pdf should be called 10 times even if previous process had been failed.
         self.assertEqual(10, self.mock_delete_cert_pdf.call_count)
-        self.mock_util_log.error.assert_any_call(
+        self.mock_util_log.error.assert_called_once_with(
             'Failed to delete certificate. user={}, course_id=spoc/course1/run'.format(registers[1].user_id)
         )
+
         self._assert_success_message([registers[0], registers[2], registers[3], registers[4]])
         self._assert_failed_message([registers[1]])

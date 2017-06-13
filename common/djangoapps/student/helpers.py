@@ -218,6 +218,7 @@ def get_next_url_for_login_page(request, initial_mode=None):
     redirect_to = request.GET.get('next', None)
     if not redirect_to:
         try:
+            # Users who already logged-in should always go to dashboard
             if initial_mode == 'register' and not request.user.is_authenticated():
                 redirect_to = reverse('notice_unactivated')
             else:
