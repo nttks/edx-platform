@@ -119,17 +119,11 @@ from biz.djangoapps.ga_invitation.models import REGISTER_INVITATION_CODE
             <input type="hidden" name="mail_type" value="${mail_info.mail_type}" />
             <input type="hidden" name="contract_id" value="${request.current_contract.id}" />
             <input type="button" class="register-btn" data-endpoint="${reverse('biz:contract_operation:register_mail_ajax')}"
-                   data-confirm-message="${_("The template e-mail will be saved, overwriting the original e-mail. Is it OK?Yes, I will be overwrite it./No, I do not overwrite it.")}"
+                   data-confirm-message="${_("The template e-mail will be saved, overwriting the original e-mail. Is it OK?")}"
                    value="&#xf044 ${_("Save the template e-mail")}"/>
-            % if request.current_contract.has_auth:
             <input type="button" class="test-send-btn" data-endpoint="${reverse('biz:contract_operation:send_mail_ajax')}"
-                   data-confirm-message="${_("Are you sure you want to send the test e-mail?*The password and login code are dummy in the test e-mail.")}"
+                   data-confirm-message="${_("Are you sure you want to send the test e-mail?")}"
                    value="&#xf003 ${_("Send the test e-mail")}"/>
-            % else:
-            <input type="button" class="test-send-btn" data-endpoint="${reverse('biz:contract_operation:send_mail_ajax')}"
-                   data-confirm-message="${_("Are you sure you want to send the test e-mail?*The password is dummy in the test e-mail.")}"
-                   value="&#xf003 ${_("Send the test e-mail")}"/>
-            % endif
         </div>
         <div class="operation align-right">${_("The test e-mail was send to yourself")}</div>
     </div>

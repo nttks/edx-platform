@@ -851,28 +851,14 @@ msgid "The test e-mail was send to yourself"
 msgstr "テストメールはあなた宛てに送信します。"
 
 #: biz/templates/ga_contract_operation/mail.html
-msgid ""
-"The template e-mail will be saved, overwriting the original e-mail. Is it OK?"
-"Yes, I will be overwrite it./No, I do not overwrite it."
-msgstr ""
-"メールテンプレートを上書き保存します、よろしいですか。"
-"回答：はい、上書き保存します／いいえ、上書き保存しません"
+msgid "The template e-mail will be saved, overwriting the original e-mail. Is it OK?"
+msgstr "メールテンプレートを上書き保存します、よろしいですか。"
 
 #: biz/templates/ga_contract_operation/mail.html
 msgid ""
 "Are you sure you want to send the test e-mail?"
-"*The password is dummy in the test e-mail."
 msgstr ""
-"送信してよろしいですか？"
-"※テストメールに記載されるパスワードはサンプルです。"
-
-#: biz/templates/ga_contract_operation/mail.html
-msgid ""
-"Are you sure you want to send the test e-mail?"
-"*The password and login code are dummy in the test e-mail."
-msgstr ""
-"送信してよろしいですか？"
-"※テストメールで送信されるパスワードとログインコードはサンプルです。"
+"テストメールを送信してよろしいですか？"
 
 ##### Login
 #: biz/djangoapps/ga_login/views.py
