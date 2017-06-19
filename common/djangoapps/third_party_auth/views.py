@@ -10,6 +10,7 @@ import social
 from social.apps.django_app.views import complete
 from social.apps.django_app.utils import load_strategy, load_backend
 from social.utils import setting_name
+from student.views import reactivation_email_for_user
 from .models import SAMLConfiguration
 
 URL_NAMESPACE = getattr(settings, setting_name('URL_NAMESPACE'), None) or 'social'
@@ -29,6 +30,10 @@ def inactive_user_view(request):
     # in a course. Otherwise, just redirect them to the dashboard, which displays a message
     # about activating their account.
     if not request.user.is_active:
+        # TODO: Remove this after named-release of 'G'.
+        #       See https://github.com/edx/edx-platform/commit/07ddf9b452d70cc407a63ac334e88ea4fae786bf
+        # Send reactivation email to unactivated user.
+        reactivation_email_for_user(request.user)
         return redirect(reverse('notice_unactivated'))
     return redirect(request.GET.get('next', 'dashboard'))
 

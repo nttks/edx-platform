@@ -213,6 +213,13 @@
                     queryParams = url('?'),
                     queryStr = queryParams.length > 0 ? '?' + queryParams : '';
 
+                // Redirect unactivated user to notice_unactivatedq.
+                if (type === 'register') {
+                    this.nextUrl = '/notice_unactivated';
+                } else {
+                    this.nextUrl = '/dashboard';
+                }
+
                 e.preventDefault();
 
                 window.analytics.track('edx.bi.' + type + '_form.toggled', {

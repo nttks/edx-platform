@@ -1,6 +1,5 @@
 
 import datetime
-import django.db
 import json
 import unittest
 
