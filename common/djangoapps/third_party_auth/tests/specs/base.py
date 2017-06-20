@@ -162,7 +162,7 @@ class IntegrationTestMixin(object):
         if user_is_activated:
             url_expected = reverse('dashboard')
         else:
-            url_expected = reverse('third_party_inactive_redirect') + '?next=' + reverse('dashboard')
+            url_expected = reverse('third_party_inactive_redirect') + '?next=' + reverse('notice_unactivated')
         self.assertEqual(login_response['Location'], self.url_prefix + url_expected)
         # Now we are logged in:
         dashboard_response = self.client.get(reverse('dashboard'))
@@ -407,11 +407,15 @@ class IntegrationTest(testutil.TestCase, test.TestCase):
         """Makes sure the given request is running an auth pipeline."""
         self.assertTrue(pipeline.running(request))
 
-    def assert_redirect_to_dashboard_looks_correct(self, response):
+    def assert_redirect_to_dashboard_looks_correct(self, response, user_is_active=True):
         """Asserts a response would redirect to /dashboard."""
         self.assertEqual(302, response.status_code)
         # pylint: disable=protected-access
-        self.assertEqual(auth_settings._SOCIAL_AUTH_LOGIN_REDIRECT_URL, response.get('Location'))
+        if user_is_active:
+            redirect_url = auth_settings._SOCIAL_AUTH_LOGIN_REDIRECT_URL
+        else:
+            redirect_url = '/notice_unactivated'
+        self.assertEqual(redirect_url, response.get('Location'))
 
     def assert_redirect_to_login_looks_correct(self, response):
         """Asserts a response would redirect to /login."""
@@ -847,7 +851,7 @@ class IntegrationTest(testutil.TestCase, test.TestCase):
         # Set the cookie and try again
         self.set_logged_in_cookies(request)
         self.assert_redirect_to_dashboard_looks_correct(
-            actions.do_complete(strategy.request.backend, social_views._do_login, user=created_user))
+            actions.do_complete(strategy.request.backend, social_views._do_login, user=created_user), created_user.is_active)
         # Now the user has been redirected to the dashboard. Their third party account should now be linked.
         self.assert_social_auth_exists_for_user(created_user, strategy)
         self.assert_account_settings_context_looks_correct(account_settings_context(request), created_user, linked=True)
