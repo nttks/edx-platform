@@ -869,6 +869,7 @@ STATICFILES_DIRS = [
 
 FAVICON_PATH = 'images/favicon.ico'
 DEFAULT_COURSE_ABOUT_IMAGE_URL = 'images/pencils.jpg'
+DEFAULT_CUSTOM_LOGO_IMAGE_URL = 'images/gacco_logo.png'
 
 # User-uploaded content
 MEDIA_ROOT = '/edx/var/edxapp/media/'
@@ -1197,6 +1198,7 @@ MIDDLEWARE_CLASSES = (
 
     # block the access to '/courses/{COURSE_ID_PATTERN}/.*' exclude COURSE_TERMINATED_CHECK_EXCLUDE_PATH
     'courseware.ga_middleware.CourseTerminatedCheckMiddleware',
+    'courseware.ga_middleware.CustomLogoMiddleware',
 
     # This must be last
     'microsite_configuration.middleware.MicrositeSessionCookieDomainMiddleware',

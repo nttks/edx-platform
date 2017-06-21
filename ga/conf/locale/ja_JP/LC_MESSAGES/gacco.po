@@ -1129,6 +1129,52 @@ msgstr "相互採点のスタッフ採点"
 msgid "Submission Reminder Email"
 msgstr "課題未提出督促メール"
 
+#: cms/templates/settings.html
+msgid "Custom Logo for Settings"
+msgstr "カスタムロゴ設定"
+
+#: cms/templates/settings.html
+msgid "Your Own Logo"
+msgstr "カスタムロゴ"
+
+#: cms/templates/settings.html
+msgid "Please upload image (JPEG or PNG format, and dimensions are 300px wide by 95px tall)"
+msgstr ""
+"JPEGもしくはPNG形式の画像をアップロードしてください。サイズは横300ピクセル・縦95ピクセルです。"
+"(注意：ファイル名に日本語は使用しないでください)"
+
+#: cms/templates/settings.html
+msgid ""
+"Please provide a valid path and name to your custom logo (Note: only JPEG "
+"or PNG format supported)"
+msgstr "カスタムロゴへの適正なファイルパス、そしてファイル名を提供してください (注意：JPEG と PNG 形式のみの利用可能)"
+
+#: cms/templates/settings.html
+msgid "Your own logo"
+msgstr "カスタムロゴのURL"
+
+#: cms/templates/settings.html
+msgid "Upload custom logo"
+msgstr "カスタムロゴをアップロード"
+
+#: lms/templates/navigation.html
+msgid "Top Page"
+msgstr "トップページ"
+
+#: lms/templates/navigation.html
+msgid "{course_org} Logo"
+msgstr "{course_org} のロゴ"
+
+#: lms/templates/navigation.html
+msgid "{platform_name} Logo"
+msgstr "{platform_name} のロゴ"
+
+#: cms/templates/settings.html
+msgid ""
+"You can manage this image along with all of your other <a href='{}'>files "
+"&amp; uploads</a>"
+msgstr "アップロードした画像を変更することができます。<a href='{}'>ファイル &amp; アップロード</a>"
+
 #-#-#-#-#  Deleted or revised messages between Cypress and Dogwood on Transifex  #-#-#-#-#
 #: lms/templates/dashboard.html
 msgid "Want to change your account settings?"

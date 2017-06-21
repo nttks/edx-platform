@@ -222,7 +222,7 @@ class TestFieldOverrideMongoPerformance(FieldOverridePerformanceTestCase):
         ('ccx', 3, True, False): (484, 7, 335),
         ('ccx', 1, True, True): (52, 7, 13),
         ('ccx', 2, True, True): (139, 7, 84),
-        ('ccx', 3, True, True): (484, 7, 335),
+        ('ccx', 3, True, True): (486, 7, 335),
         ('no_overrides', 1, False, False): (52, 7, 13),
         ('no_overrides', 2, False, False): (139, 7, 84),
         ('no_overrides', 3, False, False): (484, 7, 335),
@@ -231,7 +231,7 @@ class TestFieldOverrideMongoPerformance(FieldOverridePerformanceTestCase):
         ('ccx', 3, False, False): (484, 7, 335),
         ('ccx', 1, False, True): (52, 7, 13),
         ('ccx', 2, False, True): (139, 7, 84),
-        ('ccx', 3, False, True): (484, 7, 335),
+        ('ccx', 3, False, True): (485, 7, 335),
     }
 
 
@@ -260,5 +260,5 @@ class TestFieldOverrideSplitPerformance(FieldOverridePerformanceTestCase):
         ('ccx', 3, False, False): (484, 84, 215),
         ('ccx', 1, False, True): (52, 4, 9),
         ('ccx', 2, False, True): (139, 19, 54),
-        ('ccx', 3, False, True): (484, 84, 215),
+        ('ccx', 3, False, True): (486, 84, 215),
     }

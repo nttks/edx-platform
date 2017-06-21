@@ -10,6 +10,10 @@ header.global {
   width: 100%;
   height: 76px;
 
+  &.header-height{
+    height: auto;
+  }
+
   .wrapper-header {
     @include clearfix();
     height: 40px;
@@ -115,7 +119,7 @@ header.global {
   .user {
     @include float(right);
     @extend %ui-print-excluded;
-    margin-top: ($baseline/4);
+    margin-bottom: ($baseline/4);
     padding-left: 0;
 
     > .primary {
@@ -303,7 +307,7 @@ header.global {
 
   .nav-courseware {
     @include float(right);
-    margin-top: ($baseline/4);
+    margin: ($baseline/4) 0;
     list-style: none;
 
     li, div {
@@ -861,5 +865,42 @@ header.global-new {
   a {
     text-decoration: none;
     color: $link-color !important;
+  }
+}
+
+@media screen and (max-width: 330px) {
+  header.global .nav-courseware li .cta-register{
+    width: 70px !important;
+    height: 40px !important;
+  }
+
+  header.global .nav-courseware li .cta-login{
+    width: 45px !important;
+    height: 40px !important;
+    font-size: 6px !important;
+  }
+
+  header.global .nav-courseware li .cta i{
+    font-size: 25px !important;
+  }
+}
+
+div.wrap-top-page{
+  display: block;
+  padding-bottom: 5px;
+  a.top-page{
+    float: right;
+    font-size: 13px;
+    padding: 2px 10px;
+    border-radius: 5px;
+    background-color: rgba(0,0,0,0.05);
+    text-align: right;
+    text-transform: uppercase;
+    color: #b62567;
+    &:hover {
+      background-color: $staff-color;
+      color: $white;
+      text-decoration: none;
+    }
   }
 }

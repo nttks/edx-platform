@@ -16,8 +16,8 @@ class HeaderPage(PageObject):
         return self.q(css='header.global').present
 
     @property
-    def logo_link(self):
-        return self.q(css='h1.logo a').attrs('href')[0]
+    def top_page(self):
+        return self.q(css='a.top-page').attrs('href')[0]
 
     @property
     def navigation_menu_links(self):

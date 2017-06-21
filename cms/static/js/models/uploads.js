@@ -10,7 +10,8 @@ var FileUpload = Backbone.Model.extend({
         "totalBytes": 0,
         "finished": false,
         "mimeTypes": [],
-        "fileFormats": []
+        "fileFormats": [],
+        'customLogo': false
     },
     validate: function(attrs, options) {
         if(attrs.selectedFile && !this.checkTypeValidity(attrs.selectedFile)) {

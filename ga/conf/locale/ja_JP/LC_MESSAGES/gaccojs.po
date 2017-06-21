@@ -403,6 +403,24 @@ msgstr "お支払い金額"
 msgid "If you need help, please contact <a href=\"%(cancelUrl)s\">HERE</a> (language is Japanese only)"
 msgstr "お問い合わせは<a href=\"%(cancelUrl)s\">こちら</a>"
 
+#: cms/static/js/views/settings/main.js
+msgid "Please upload your own logo."
+msgstr "本講座のカスタムロゴをアップロードしてください。"
+
+#: cms/static/js/views/settings/main.js
+msgid "Files must be in JPEG or PNG format and 300px wide by 95px tall."
+msgstr "ファイル形式：JPEGもしくはPNG形式／サイズ：幅300ピクセル、高さ95ピクセル／ファイル名に日本語は使用しないでください。"
+
+#: cms/static/js/views/uploads.js
+msgid "Please upload image (dimensions are 300px wide by 95px tall)"
+msgstr "正しいファイルサイズの画像をアップロードしてください。"
+
+#: cms/static/js/models/uploads.js
+msgid ""
+"Only <%= fileTypes %> files can be uploaded. Please select a file ending in "
+"<%= fileExtensions %> to upload."
+msgstr "正しいファイル形式の画像をアップロードしてください。"
+
 #-#-#-#-#  Deleted or revised messages between Cypress and Dogwood on Transifex  #-#-#-#-#
 
 #: cms/templates/js/team-member.underscore

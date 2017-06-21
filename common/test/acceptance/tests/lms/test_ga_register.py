@@ -65,7 +65,7 @@ class RegistrationTest(WebAppTest, GaccoTestMixin):
         # Check link of logo
         self.assertEqual(
             BASE_URL + '/',
-            requests.get(self.header_page.logo_link, allow_redirects=False).headers['Location']
+            requests.get(self.header_page.top_page, allow_redirects=False).headers['Location']
         )
         if is_login:
             # Check link of FAQ

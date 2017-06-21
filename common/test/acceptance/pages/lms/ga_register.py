@@ -26,3 +26,31 @@ class ActivationPage(PageObject):
 
     def click_login_button(self):
         self.q(css=".cta-login").click()
+
+
+class RegisterPage(PageObject):
+    """
+    register page.
+    """
+
+    url = BASE_URL + "/register"
+
+    def is_browser_on_page(self):
+        return self.q(css=".login-register").present
+
+    def click_top_page(self):
+        self.q(css='a.top-page').first.click()
+
+
+class LoginPage(PageObject):
+    """
+    Login page for the LMS.
+    """
+
+    url = BASE_URL + "/login"
+
+    def is_browser_on_page(self):
+        return self.q(css='.login-register').present
+
+    def click_top_page(self):
+        self.q(css='a.top-page').first.click()

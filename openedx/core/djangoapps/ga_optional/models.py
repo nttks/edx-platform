@@ -5,9 +5,10 @@ from django.utils.translation import ugettext_lazy as _
 from config_models.models import ConfigurationModel
 from xmodule_django.models import CourseKeyField
 
-
+CUSTOM_LOGO_OPTION_KEY = 'custom-logo-for-settings'
 OPTIONAL_FEATURES = [
     ('ora2-staff-assessment', _("Staff Assessment for Peer Grading")),
+    (CUSTOM_LOGO_OPTION_KEY, _("Custom Logo for Settings")),
 ]
 
 
@@ -22,3 +23,10 @@ class CourseOptionalConfiguration(ConfigurationModel):
         app_label = "ga_optional"
         verbose_name = _("Settings for the course optional feature")
         verbose_name_plural = _("Settings for the course optional feature")
+
+    @classmethod
+    def is_available(cls, key, course_key=None):
+        if course_key is not None:
+            return cls.current(key, course_key).enabled
+        else:
+            return False

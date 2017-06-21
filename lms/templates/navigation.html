@@ -38,14 +38,16 @@ site_status_msg = get_site_status_msg(course_id)
 % endif
 </%block>
 
-  <header id="global-navigation" class="global ${"slim" if course else ""}" >
+  <header id="global-navigation" class="global header-height ${"slim" if course else ""}" >
     <nav class="nav-wrapper" aria-label="${_('Global')}">
     <h1 class="logo">
-      <a href="${marketing_link('ROOT')}">
-        <%block name="navigation_logo">
-            <img src="${static.url(branding.get_logo_url())}" alt="${_("{platform_name} Home Page").format(platform_name=platform_name())}"/>
-        </%block>
-      </a>
+      <%block name="navigation_logo">
+        % if hasattr(request, 'custom_logo_enabled') and request.custom_logo_enabled and hasattr(request, 'custom_logo_for_url') and request.custom_logo_for_url:
+          <img src="${request.custom_logo_for_url}" alt="${_("{course_org} Logo").format(course_org=course.org)}" id="custom-logo"/>
+        % else:
+          <img src="${static.url(branding.get_logo_url())}" alt="${_("{platform_name} Logo").format(platform_name=platform_name())}"/>
+        % endif
+      </%block>
     </h1>
 
     % if course:
@@ -60,7 +62,9 @@ site_status_msg = get_site_status_msg(course_id)
       %>
       <span class="course-name">${display_name}</span></h2>
     % endif
-
+    <div class="wrap-top-page">
+      <a class="top-page" href="${marketing_link('ROOT')}" id="top-page"><i class="fa fa-chevron-circle-up"></i>${_("Top Page")}</a><br>
+    </div>
     % if user.is_authenticated():
     <ol class="left nav-global authenticated">
       <%block name="navigation_global_links_authenticated">
