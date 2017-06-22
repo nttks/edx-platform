@@ -86,6 +86,9 @@
                 // Once the third party error message has been shown once,
                 // there is no need to show it again, if the user changes mode:
                 this.thirdPartyAuth.errorMessage = null;
+
+                // URL for evacuation when using toggleForm button
+                this.activatedUserNextUrl = null;
             },
 
             render: function() {
@@ -213,11 +216,23 @@
                     queryParams = url('?'),
                     queryStr = queryParams.length > 0 ? '?' + queryParams : '';
 
-                // Redirect unactivated user to notice_unactivatedq.
+                // When changing to register page, Redirect to notice_unactivated.
+                // When changing to login page, Redirect to dashboard or next url.
                 if (type === 'register') {
-                    this.nextUrl = '/notice_unactivated';
+                    if (this.nextUrl.match(/dashboard/)) {
+                        this.nextUrl = this.nextUrl.replace(/dashboard/, 'notice_unactivated') ;
+                    } else {
+                        this.activatedUserNextUrl = this.nextUrl;
+                        this.nextUrl = '/notice_unactivated'
+                    }
                 } else {
-                    this.nextUrl = '/dashboard';
+                    if (this.activatedUserNextUrl == null) {
+                        this.nextUrl = this.nextUrl.replace(/notice_unactivated/, 'dashboard');
+                    } else {
+                        this.nextUrl = this.activatedUserNextUrl;
+                        this.activatedUserNextUrl == null;
+                    }
+
                 }
 
                 e.preventDefault();

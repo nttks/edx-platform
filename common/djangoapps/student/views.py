@@ -1366,13 +1366,19 @@ def logout_user(request):
 
 def notice_unactivated(request):
     """
-    Call logout_user, add Param and redirect to login page.
+    Change the redirect page on the state of the user.
+    Unactivated user, add Param and redirect to login page.
+    Activated user, redirect to dashboard page.
     """
-    logout_user(request)
-    redirect_uri = '{}?{}'.format('/login', 'unactivated=true')
-    response = redirect(redirect_uri)
+    if request.user and request.user.is_active:
+        redirect_uri = reverse('dashboard')
+    elif request.user and not request.user.is_active:
+        redirect_uri = '{}?{}'.format('/login', 'unactivated=true')
+        logout_user(request)
+    else:
+        redirect_uri = reverse('login')
 
-    return response
+    return redirect(redirect_uri)
 
 
 @require_GET

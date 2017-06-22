@@ -365,7 +365,7 @@ class AdvancedCourseTest(WebAppTest, GaccoTestMixin):
         1. Visit course about page and enroll
         2. Show register page
         3. Toggle form and login
-        4. Show dashboard page
+        4. Show advanced course choose page
         """
         # Create user and logout
         user = self._auto_auth()
@@ -377,8 +377,8 @@ class AdvancedCourseTest(WebAppTest, GaccoTestMixin):
         register_page.toggle_form()
         register_page.login(email=user['email'], password=user['username'])
 
-        # dashboard page is shown
-        DashboardPage(self.browser).wait_for_page()
+        # Verify course choose page is shown
+        AdvancedCourseChoosePage(self.browser, self.course_id).wait_for_page()
 
     def test_not_logged_in_and_login_with_not_advanced_course(self):
         """
