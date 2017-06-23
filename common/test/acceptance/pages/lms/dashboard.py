@@ -192,3 +192,6 @@ class DashboardPage(PageObject):
         Click on `Account` link.
         """
         self.q(css='.dropdown-menu li a').nth(2).click()
+
+    def click_top_page(self):
+        self.q(css='a.top-page').first.click()

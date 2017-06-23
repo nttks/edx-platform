@@ -7,11 +7,11 @@ import logging
 from django.conf import settings
 from django.utils.translation import ugettext as _
 
-from xmodule.fields import Date
-from xmodule.modulestore.exceptions import ItemNotFoundError
 from openedx.core.djangoapps.self_paced.models import SelfPacedConfiguration
-from openedx.core.lib.courses import course_image_url
+from openedx.core.lib.courses import course_image_url, custom_logo_url
+from xmodule.fields import Date
 from xmodule.modulestore.django import modulestore
+from xmodule.modulestore.exceptions import ItemNotFoundError
 
 
 # This list represents the attribute keys for a course's 'about' info.
@@ -47,7 +47,7 @@ class CourseDetails(object):
         self.enrollment_start = None
         self.enrollment_end = None
         self.deadline_start = None
-        self.terminate_start= None
+        self.terminate_start = None
         self.syllabus = None  # a pdf file asset
         self.short_description = ""
         self.overview = ""  # html to render as the overview
@@ -56,6 +56,8 @@ class CourseDetails(object):
         self.license = "all-rights-reserved"  # default course license is all rights reserved
         self.course_image_name = ""
         self.course_image_asset_path = ""  # URL of the course image
+        self.custom_logo_name = ""
+        self.custom_logo_asset_path = ""
         self.pre_requisite_courses = []  # pre-requisite courses
         self.entrance_exam_enabled = ""  # is entrance exam enabled
         self.entrance_exam_id = ""  # the content location for the entrance exam
@@ -108,6 +110,8 @@ class CourseDetails(object):
         course_details.pre_requisite_courses = descriptor.pre_requisite_courses
         course_details.course_image_name = descriptor.course_image
         course_details.course_image_asset_path = course_image_url(descriptor)
+        course_details.custom_logo_name = descriptor.custom_logo
+        course_details.custom_logo_asset_path = custom_logo_url(descriptor)
         course_details.language = descriptor.language
         course_details.self_paced = descriptor.self_paced
 
@@ -269,6 +273,10 @@ class CourseDetails(object):
 
         if 'course_image_name' in jsondict and jsondict['course_image_name'] != descriptor.course_image:
             descriptor.course_image = jsondict['course_image_name']
+            dirty = True
+
+        if 'custom_logo_name' in jsondict and jsondict['custom_logo_name'] != descriptor.custom_logo:
+            descriptor.custom_logo = jsondict['custom_logo_name']
             dirty = True
 
         if 'pre_requisite_courses' in jsondict \

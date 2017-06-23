@@ -493,6 +493,16 @@ class CourseFields(object):
         # Ensure that courses imported from XML keep their image
         default="images_course_image.jpg"
     )
+    custom_logo = String(
+        display_name=_("Custom Logo Image"),
+        help=_(
+            "Edit the name of the custom logo image file. You must upload this file on the Files & Uploads page. "
+            "You can also set the custom logo image on the Settings & Details page."
+        ),
+        scope=Scope.settings,
+        # Ensure that courses imported from XML keep their image
+        default=""
+    )
     issue_badges = Boolean(
         display_name=_("Issue Open Badges"),
         help=_(

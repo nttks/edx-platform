@@ -64,12 +64,14 @@ from models.settings.encoder import CourseSettingsEncoder
 from openedx.core.djangoapps.content.course_structures.api.v0 import api, errors
 from openedx.core.djangoapps.credit.api import is_credit_course, get_credit_requirements
 from openedx.core.djangoapps.credit.tasks import update_credit_course_requirements
+from openedx.core.djangoapps.ga_optional.api import is_available
+from openedx.core.djangoapps.ga_optional.models import CUSTOM_LOGO_OPTION_KEY
 from openedx.core.djangoapps.models.course_details import CourseDetails
 from openedx.core.djangoapps.programs.models import ProgramsApiConfig
 from openedx.core.djangoapps.programs.utils import get_programs
 from openedx.core.djangoapps.self_paced.models import SelfPacedConfiguration
 from openedx.core.lib.course_tabs import CourseTabPluginManager
-from openedx.core.lib.courses import course_image_url
+from openedx.core.lib.courses import course_image_url, custom_logo_url
 from openedx.core.lib.js_utils import escape_json_dumps
 from student import auth
 from student.auth import has_course_author_access, has_studio_write_access, has_studio_read_access
@@ -860,6 +862,8 @@ def course_info_handler(request, course_key_string):
         if not course_module:
             raise Http404
         if 'text/html' in request.META.get('HTTP_ACCEPT', 'text/html'):
+            custom_logo_enabled = is_available(CUSTOM_LOGO_OPTION_KEY, course_key)
+
             return render_to_response(
                 'course_info.html',
                 {
@@ -867,7 +871,9 @@ def course_info_handler(request, course_key_string):
                     'updates_url': reverse_course_url('course_info_update_handler', course_key),
                     'handouts_locator': course_key.make_usage_key('course_info', 'handouts'),
                     'base_asset_url': StaticContent.get_base_url_path_for_course_assets(course_module.id),
-                    'push_notification_enabled': push_notification_enabled()
+                    'push_notification_enabled': push_notification_enabled(),
+                    'custom_logo_enabled': custom_logo_enabled,
+                    'custom_logo_for_url': custom_logo_url(course_module),
                 }
             )
         else:
@@ -961,6 +967,8 @@ def settings_handler(request, course_key_string):
 
             self_paced_enabled = SelfPacedConfiguration.current().enabled
 
+            custom_logo_enabled = is_available(CUSTOM_LOGO_OPTION_KEY, course_key)
+
             settings_context = {
                 'context_course': course_module,
                 'course_locator': course_key,
@@ -979,6 +987,8 @@ def settings_handler(request, course_key_string):
                 'is_prerequisite_courses_enabled': is_prerequisite_courses_enabled(),
                 'is_entrance_exams_enabled': is_entrance_exams_enabled(),
                 'self_paced_enabled': self_paced_enabled,
+                'custom_logo_enabled': custom_logo_enabled,
+                'custom_logo_for_url': custom_logo_url(course_module),
             }
             if is_prerequisite_courses_enabled():
                 courses, in_process_course_actions = get_courses_accessible_to_user(request)

@@ -17,6 +17,9 @@
   http://${ site }/activate/${ key }
 % endif
 
+会員登録用URLの有効期限：${expiration_month}月${expiration_day}日24時まで
+有効期限が過ぎた場合は、無効となります。ご注意ください。
+
 ─────────
 
 ※上記手続き用URLが改行され、URLをクリックしても
@@ -40,9 +43,14 @@ https://lms.gacco.org/dashboard
 
 gacco運営チーム
 % else:  ## --------------------------------------------------------------------------------------------------------- en
-Thank you for creating an account with gacco
+■Information of gacco Member Registration
+━━━━━━━━━
+Thank you for your creating an account with gacco!
 
-You need to activate your gacco account. To activate your account, click the following link. If that doesn't work, copy and paste the link into your browser's address bar.
+You need to activate your gacco account.
+Please click the following URL to activate your account.
+─────────
+[URL for activating your account]
 
 % if is_secure:
   https://${ site }/activate/${ key }
@@ -50,8 +58,25 @@ You need to activate your gacco account. To activate your account, click the fol
   http://${ site }/activate/${ key }
 % endif
 
-The gacco Team
+The expiration date of this URL：${expiration_day}/${expiration_month}/${expiration_year}  24:00
+Please be careful with the expiration dates.
 
-This email message was automatically sent by gacco.org, please do not reply to this email.
-If you have any further question please visit the help section on gacco.org.
+─────────
+
+If you are unable to click on the link above, you need to copy and paste the whole URL into your web browser.
+
+─────────
+
+This message was generated automatically. Please do not reply to this e-mail.
+Please delete this e-mail if you were not aware that you were going to receive it.
+
+==================
+FAQ
+https://support.gacco.org/
+
+If you have any further questions, please visit to your dashboard page and select “Help” menu then send us a message.
+https://lms.gacco.org/dashboard
+
+
+The gacco Team
 % endif

@@ -63,6 +63,10 @@ msgstr "アンケート"
 msgid "Manager Setting"
 msgstr "管理者設定"
 
+#: biz/templates/main_biz.html
+msgid "E-Mail Management"
+msgstr "メール管理"
+
 #: templates/theme-header.html
 msgid "Biz"
 msgstr "管理サイト"
@@ -621,6 +625,74 @@ msgstr "一度に登録できる受講者の上限({max_register_number})を超�
 msgid "The number of lines per line has exceeded the {biz_max_char_length_register_line} lines."
 msgstr "１行あたりの行数が{biz_max_char_length_register_line}行を超えています。"
 
+#: biz/djangoapps/ga_contract_operation/views.py
+msgid "Please enter the subject of an e-mail."
+msgstr "メール件名を入力してください。"
+
+#: biz/djangoapps/ga_contract_operation/views.py
+msgid "Subject within {0} characters."
+msgstr "件名は{0}文字以内で入力してください。"
+
+#: biz/djangoapps/ga_contract_operation/views.py
+msgid "Please enter the body of an e-mail."
+msgstr "メール本文を入力してください。"
+
+#: biz/djangoapps/ga_contract_operation/views.py
+msgid "Please save the template e-mail before sending."
+msgstr "メール送信前にメールテンプレートを保存してください。"
+
+#: biz/djangoapps/ga_contract_operation/views.py
+msgid "Successfully to save the template e-mail."
+msgstr "メールテンプレートの保存が完了しました。"
+
+#: biz/djangoapps/ga_contract_operation/views.py
+msgid "Failed to save the template e-mail."
+msgstr "メールテンプレートの保存に失敗しました。"
+
+#: biz/djangoapps/ga_contract_operation/views.py
+msgid "Successfully to send the test e-mail."
+msgstr "テストメール送信が完了しました。"
+
+#: biz/djangoapps/ga_contract_operation/views.py
+msgid "Failed to send the test e-mail."
+msgstr "テストメール送信に失敗しました。"
+
+#: biz/djangoapps/ga_contract_operation/models.py
+msgid "For New User"
+msgstr "新規受講者向け"
+
+#: biz/djangoapps/ga_contract_operation/models.py
+msgid "For Existing User"
+msgstr "既存受講者向け"
+
+#: biz/djangoapps/ga_contract_operation/models.py
+msgid "For New User with Login Code"
+msgstr "ログインコードによる新規受講者向け"
+
+#: biz/djangoapps/ga_contract_operation/models.py
+msgid "For Existing User with Login Code"
+msgstr "ログインコードによる既存受講者向け"
+
+#: biz/djangoapps/ga_contract_operation/models.py
+msgid "Replaced with the user name"
+msgstr "ユーザー名に置換されます"
+
+#: biz/djangoapps/ga_contract_operation/models.py
+msgid "Replaced with the user password"
+msgstr "パスワードに置換されます"
+
+#: biz/djangoapps/ga_contract_operation/models.py
+msgid "Replaced with the user e-mail address"
+msgstr "メールアドレスに置換されます"
+
+#: biz/djangoapps/ga_contract_operation/models.py
+msgid "Replaced with the login code"
+msgstr "ログインコードに置換されます"
+
+#: biz/djangoapps/ga_contract_operation/models.py
+msgid "Replaced with the URL code for login"
+msgstr "URLに置換されます"
+
 #: biz/templates/ga_contract_operation/register_students.html
 msgid "Register Students"
 msgstr "受講者を新規登録"
@@ -749,6 +821,44 @@ msgstr "実行結果"
 #: biz/templates/ga_contract_operation/students.html
 msgid "Execution Datetime"
 msgstr "実行日時"
+
+#: biz/templates/ga_contract_operation/mail.html
+msgid "Either new user or existing user will be identified automatically in our system."
+msgstr "新規受講者または既存受講者の判定は自動で行います。"
+
+#: biz/templates/ga_contract_operation/mail.html
+msgid "The following logograph will be replaced other word. Do not change the logograph."
+msgstr "以下の文字列のみメール送付時にそれぞれ置換されます。※文字列は変更しないでください"
+
+#: biz/templates/ga_contract_operation/mail.html
+msgid "Subject:"
+msgstr "件名："
+
+#: biz/templates/ga_contract_operation/mail.html
+msgid "Send a Message:"
+msgstr "メール本文："
+
+#: biz/templates/ga_contract_operation/mail.html
+msgid "Save the template e-mail"
+msgstr "テンプレート保存"
+
+#: biz/templates/ga_contract_operation/mail.html
+msgid "Send the test e-mail"
+msgstr "テストメール送信"
+
+#: biz/templates/ga_contract_operation/mail.html
+msgid "The test e-mail was send to yourself"
+msgstr "テストメールはあなた宛てに送信します。"
+
+#: biz/templates/ga_contract_operation/mail.html
+msgid "The template e-mail will be saved, overwriting the original e-mail. Is it OK?"
+msgstr "メールテンプレートを上書き保存します、よろしいですか。"
+
+#: biz/templates/ga_contract_operation/mail.html
+msgid ""
+"Are you sure you want to send the test e-mail?"
+msgstr ""
+"テストメールを送信してよろしいですか？"
 
 ##### Login
 #: biz/djangoapps/ga_login/views.py

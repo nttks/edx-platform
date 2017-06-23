@@ -44,6 +44,18 @@ import json
         signInUser: "${reverse('signin_user')}",
         changeEmailSettings: "${reverse('change_email_settings')}"
       });
+      $('.js-search').on('keyup change', function() {
+        var searchText = $(this).val().toLowerCase();
+        $('.listing-courses>.course-item').each(function() {
+          var course = $(this), titleText = course.find('.course-title').text().toLowerCase().trim(),
+            courseIds = course.data('course-id').split(/[:+/]/).slice(-3);
+          if (titleText.indexOf(searchText) !== -1 || courseIds.join('\n').indexOf(searchText) !== -1) {
+            course.show();
+          } else {
+            course.hide();
+          }
+        });
+      });
     });
   </script>
   % if settings.FEATURES.get('ENABLE_DASHBOARD_SEARCH'):
@@ -120,6 +132,7 @@ import json
   <section class="my-courses" id="my-courses" role="main" aria-label="Content">
     <header class="wrapper-header-courses">
       <h2 class="header-courses">${_("My Courses")}</h2>
+      <div class="search-box"><input class="js-search" type="search" placeholder="${_("Search...")}"></div>
     </header>
 
 

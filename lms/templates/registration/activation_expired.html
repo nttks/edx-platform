@@ -1,0 +1,16 @@
+<%inherit file="../main.html" />
+<%namespace name='static' file='../static_content.html'/>
+<%!
+from django.utils.translation import ugettext as _
+from django.core.urlresolvers import reverse
+%>
+
+<section class="container activation">
+
+  <section class="message">
+    <h1 class="invalid">${_("This URL validity has expired.")}</h1>
+    <hr class="horizontal-divider">
+
+    <p>${_('Unfortunately, this URL validity has expired. Please re-register again from the beginning.')}</p>
+  </section>
+</section>

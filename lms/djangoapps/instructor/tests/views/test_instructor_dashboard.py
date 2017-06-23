@@ -17,6 +17,7 @@ from courseware.tests.helpers import LoginEnrollmentTestCase
 from instructor.views.gradebook_api import calculate_page_info
 
 from common.test.utils import XssTestMixin
+from openedx.core.djangoapps.ga_optional.models import CourseOptionalConfiguration
 from student.tests.factories import AdminFactory
 from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
 from xmodule.modulestore.tests.factories import CourseFactory
@@ -53,7 +54,8 @@ class TestInstructorDashboard(ModuleStoreTestCase, LoginEnrollmentTestCase, XssT
         super(TestInstructorDashboard, self).setUp()
         self.course = CourseFactory.create(
             grading_policy={"GRADE_CUTOFFS": {"A": 0.75, "B": 0.63, "C": 0.57, "D": 0.5}},
-            display_name='<script>alert("XSS")</script>'
+            display_name='<script>alert("XSS")</script>',
+            custom_logo='dummy.png'
         )
 
         self.course_mode = CourseMode(
@@ -293,3 +295,23 @@ class TestInstructorDashboard(ModuleStoreTestCase, LoginEnrollmentTestCase, XssT
         self.assertEqual(response.status_code, 200)
         # Max number of student per page is one.  Patched setting MAX_STUDENTS_PER_PAGE_GRADE_BOOK = 1
         self.assertEqual(len(response.mako_context['students']), 1)  # pylint: disable=no-member
+
+    def test_dashboard_instructor_custom_logo(self):
+        """
+        Test instructor_dashboard_2 method
+        check return html in custom-logo id
+        """
+
+        self.course_optional_configuration = CourseOptionalConfiguration(
+            id=1,
+            change_date="2015-06-18 11:02:13",
+            enabled=True,
+            key='custom-logo-for-settings',
+            course_key=self.course.id,
+            changed_by_id=self.instructor.id
+        )
+        self.course_optional_configuration.save()
+
+        response = self.client.get(self.url)
+
+        self.assertIn('id="custom-logo"', response.content)

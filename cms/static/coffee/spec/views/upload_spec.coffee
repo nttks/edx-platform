@@ -14,7 +14,7 @@ define ["js/models/uploads", "js/views/uploads", "js/models/chapter", "common/js
             @dialogResponse = dialogResponse = []
             @view = new UploadDialog(
               model: @model,
-              url:  CMS.URL.UPLOAD_ASSET,
+              url: CMS.URL.UPLOAD_ASSET,
               onSuccess: (response) =>
                 dialogResponse.push(response.response)
             )
@@ -86,6 +86,32 @@ define ["js/models/uploads", "js/views/uploads", "js/models/chapter", "common/js
                 @view.selectFile(event)
                 expect(@view.$el).toContain("input[type=file]")
                 expect(@view.$el).toContain("#upload_error")
+                expect(@view.$(".action-upload")).toHaveClass("disabled")
+
+            it "upload image", ->
+                @model = new FileUpload(
+                    mimeTypes: ['image/png'],
+                    customLogo: true
+                )
+                @dialogResponse = dialogResponse = []
+                @view = new UploadDialog(
+                    model: @model,
+                    url: CMS.URL.UPLOAD_ASSET,
+                    onSuccess: (response) =>
+                        dialogResponse.push(response.response)
+                )
+
+                @view.render()
+
+                event = {}
+
+                event.target = {"files": [new Blob ['abcd1234'], type: 'image/png']}
+                @view.selectFile(event)
+
+                @view.checkSizeAndSetMessage(300, 95)
+                expect(@view.$(".action-upload")).not.toHaveClass("disabled")
+
+                @view.checkSizeAndSetMessage(400, 300)
                 expect(@view.$(".action-upload")).toHaveClass("disabled")
 
         describe "Uploads", ->

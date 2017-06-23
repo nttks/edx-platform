@@ -101,6 +101,22 @@ class Contract(models.Model):
         """
         return self.register_type == REGISTER_TYPE_ENABLE_REGISTER_BY_STUDENT[0]
 
+    @property
+    def has_auth(self):
+        return hasattr(self, 'contractauth')
+
+    @property
+    def can_send_mail(self):
+        return not self.has_auth or self.contractauth.send_mail
+
+    @property
+    def can_customize_mail(self):
+        return self.can_send_mail and hasattr(self, 'contractoption') and self.contractoption.customize_mail
+
+    @property
+    def can_send_submission_reminder(self):
+        return hasattr(self, 'contractoption') and self.contractoption.send_submission_reminder
+
     @classmethod
     def get_contract_types(cls, manager):
         """
@@ -357,6 +373,29 @@ class ContractAuth(models.Model):
 
     def __unicode__(self):
         return u'{}({})'.format(self.contract.contract_name, self.url_code)
+
+    class Meta:
+        app_label = 'ga_contract'
+        ordering = ['contract']
+
+
+class ContractOption(models.Model):
+    """
+    This table contains contract option info.
+    """
+    contract = models.OneToOneField(
+        Contract,
+        on_delete=models.CASCADE,
+        primary_key=True,
+    )
+    customize_mail = models.BooleanField(default=False)
+    # Feature option for submission reminder email (#1816)
+    send_submission_reminder = models.BooleanField(default=False)
+    modified_by = models.ForeignKey(User)
+    modified = models.DateTimeField(auto_now=True)
+
+    def __unicode__(self):
+        return self.contract.contract_name
 
     class Meta:
         app_label = 'ga_contract'

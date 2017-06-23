@@ -27,3 +27,6 @@ class CourseAboutPage(CoursePage):
         registration_page = RegisterPage(self.browser, self.course_id)
         registration_page.wait_for_page()
         return registration_page
+
+    def click_top_page(self):
+        self.q(css='a.top-page').first.click()

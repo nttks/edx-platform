@@ -105,8 +105,8 @@ class RenderXBlockTestMixin(object):
         return response
 
     @ddt.data(
-        (ModuleStoreEnum.Type.mongo, 8),
-        (ModuleStoreEnum.Type.split, 5),
+        (ModuleStoreEnum.Type.mongo, 9),
+        (ModuleStoreEnum.Type.split, 8),
     )
     @ddt.unpack
     def test_courseware_html(self, default_store, mongo_calls):

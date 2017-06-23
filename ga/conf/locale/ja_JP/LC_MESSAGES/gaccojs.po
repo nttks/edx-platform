@@ -355,8 +355,9 @@ msgid "Including tax"
 msgstr "税込"
 
 #: lms/templates/verify_student/make_payment_step.underscore
+#: lms/templates/student_account/login.underscore
 msgid "You're almost there!"
-msgstr "会員登録が完了しておりません。"
+msgstr "会員登録はまだ完了しておりません。"
 
 #: lms/templates/verify_student/make_payment_step.underscore
 msgid ""
@@ -367,7 +368,7 @@ msgstr ""
 
 #: lms/templates/verify_student/make_payment_step.underscore
 msgid ""
-"*If you lost the e-mail of \"Information of gacco Member registration,\" "
+"*If you lost the e-mail of \"Information of gacco Member Registration,\" "
 "please log-out and sign in again. "
 "We will you resend the activation e-mail after entering your registered e-mail address and password."
 msgstr ""
@@ -401,6 +402,24 @@ msgstr "お支払い金額"
 #: lms/templates/verify_student/payment_confirmation_step.underscore
 msgid "If you need help, please contact <a href=\"%(cancelUrl)s\">HERE</a> (language is Japanese only)"
 msgstr "お問い合わせは<a href=\"%(cancelUrl)s\">こちら</a>"
+
+#: cms/static/js/views/settings/main.js
+msgid "Please upload your own logo."
+msgstr "本講座のカスタムロゴをアップロードしてください。"
+
+#: cms/static/js/views/settings/main.js
+msgid "Files must be in JPEG or PNG format and 300px wide by 95px tall."
+msgstr "ファイル形式：JPEGもしくはPNG形式／サイズ：幅300ピクセル、高さ95ピクセル／ファイル名に日本語は使用しないでください。"
+
+#: cms/static/js/views/uploads.js
+msgid "Please upload image (dimensions are 300px wide by 95px tall)"
+msgstr "正しいファイルサイズの画像をアップロードしてください。"
+
+#: cms/static/js/models/uploads.js
+msgid ""
+"Only <%= fileTypes %> files can be uploaded. Please select a file ending in "
+"<%= fileExtensions %> to upload."
+msgstr "正しいファイル形式の画像をアップロードしてください。"
 
 #-#-#-#-#  Deleted or revised messages between Cypress and Dogwood on Transifex  #-#-#-#-#
 
@@ -489,3 +508,7 @@ msgstr "分："
 #: cms/static/js/views/modals/course_outline_modals.js
 msgid "Please enter the date on and after 1900."
 msgstr "1900年以降の日付を入力して下さい。"
+
+#: lms/templates/student_account/login.underscore
+msgid "Before you enroll in a course, you need to activate your account. We've sent an e-mail to your registered e-mail address with instructions for activating your account."
+msgstr "会員登録時に入力されたメールアドレス宛に会員登録のご案内メールを送信しました。メール内のURLをクリックし、会員登録を完了してください。"

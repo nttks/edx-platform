@@ -1,0 +1,39 @@
+[
+  {
+    "pk": 1,
+    "model": "ga_optional.courseoptionalconfiguration",
+    "fields": {
+        "id": 1,
+        "change_date":"2015-06-18 11:02:13",
+        "enabled": true,
+        "key": "custom-logo-for-settings",
+        "course_key": "course-v1:test_org_00001+test_show_settings_page_for_custom_logo_enabled+test_run_00001",
+        "changed_by_id": 1
+    }
+  },
+  {
+    "pk": 2,
+    "model": "ga_optional.courseoptionalconfiguration",
+    "fields": {
+      "id": 2,
+      "change_date":"2015-06-18 11:02:13",
+      "enabled": false,
+      "key": "custom-logo-for-settings",
+      "course_key": "course-v1:test_org_00002+test_show_settings_page_for_custom_logo_not_enabled+test_run_00002",
+      "changed_by_id": 1
+    }
+  },
+  {
+    "pk": 3,
+    "model": "ga_optional.courseoptionalconfiguration",
+    "fields": {
+        "id": 3,
+        "change_date":"2015-06-18 11:02:13",
+        "enabled": true,
+        "key": "custom-logo-for-settings",
+        "course_key": "course-v1:org.10+course_10+_script_alert_XSS_script_",
+        "changed_by_id": 1
+    }
+  }
+
+]

@@ -38,13 +38,14 @@ Install Apps
 INSTALLED_APPS += (
     'biz.djangoapps.ga_achievement',
     'biz.djangoapps.ga_contract',
+    'biz.djangoapps.ga_contract_operation',
     'biz.djangoapps.ga_course_operation',
     'biz.djangoapps.ga_course_selection',
+    'biz.djangoapps.ga_invitation',
+    'biz.djangoapps.ga_login',
     'biz.djangoapps.ga_manager',
     'biz.djangoapps.ga_organization',
-    'biz.djangoapps.ga_invitation',
-    'biz.djangoapps.ga_contract_operation',
-    'biz.djangoapps.ga_login',
+    'biz.djangoapps.ga_student',
 )
 
 """
@@ -57,6 +58,11 @@ Monthly report info
 """
 BIZ_FROM_EMAIL = 'support@nttks.jp'
 BIZ_RECIPIENT_LIST = []
+
+"""
+Submission reminder email batch
+"""
+INTERVAL_DAYS_TO_SEND_SUBMISSION_REMINDER_EMAIL = 5
 
 """
 Register student

@@ -12,4 +12,7 @@ urlpatterns = patterns(
     url(r'^unregister_students_ajax$', 'unregister_students_ajax', name='unregister_students_ajax'),
     url(r'^personalinfo_mask$', 'submit_personalinfo_mask', name='personalinfo_mask'),
     url(r'^task_history_ajax', 'task_history_ajax', name='task_history'),
+    url(r'^register_mail$', 'register_mail', name='register_mail'),
+    url(r'^register_mail_ajax$', 'register_mail_ajax', name='register_mail_ajax'),
+    url(r'^send_mail_ajax$', 'send_mail_ajax', name='send_mail_ajax'),
 )

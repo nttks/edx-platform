@@ -52,6 +52,7 @@ define(["jquery", "underscore", "gettext", "js/views/modals/base_modal", "jquery
                 return this.template({
                     url: this.options.url || CMS.URL.UPLOAD_ASSET,
                     message: this.model.escape('message'),
+                    customLogo: this.model.get('customLogo'),
                     selectedFile: this.model.get('selectedFile'),
                     uploading: this.model.get('uploading'),
                     uploadedBytes: this.model.get('uploadedBytes'),
@@ -66,10 +67,50 @@ define(["jquery", "underscore", "gettext", "js/views/modals/base_modal", "jquery
                 this.model.set({
                     selectedFile: selectedFile
                 });
+                this.checkSizeValidity(selectedFile);
                 // This change event triggering necessary for FireFox, because the browser don't
                 // consider change of File object (file input field) as a change in model.
-                if (selectedFile && $.isEmptyObject(this.model.changed)){
+                if (selectedFile && $.isEmptyObject(this.model.changed)) {
                     this.model.trigger('change');
+                }
+            },
+
+            checkSizeValidity: function(file) {
+                if (file && this.model.attributes.customLogo) {
+                    var localmodel = this;
+                    reader = new FileReader();
+                    reader.onload = function(selectedFile) {
+                        var base64img = selectedFile.target.result;
+                        var img = new Image();
+                        img.onload = function(img) {
+                            var width = img.srcElement.width;
+                            var height = img.srcElement.height;
+                            localmodel.checkSizeAndSetMessage(width, height);
+                        };
+                        img.src = base64img;
+                    };
+                    reader.readAsDataURL(file);
+                }
+            },
+
+            checkSizeAndSetMessage: function(width, height) {
+                var checkValidateWidth = width;
+                var checkValidateHeight = height;
+                var validateText = '';
+                checkValidateWidth = 300;
+                checkValidateHeight = 95;
+                validateText = 'Please upload image (dimensions are 300px wide by 95px tall)'
+                if (width != checkValidateWidth || height != checkValidateHeight) {
+                    this.model.validationError = {
+                        message: gettext(validateText),
+                        attributes: {selectedFile: true}
+                    };
+                    BaseModal.prototype.renderContents.call(this);
+                    this.$('.action-upload').addClass('disabled');
+                } else {
+                    oldInput = this.$('input[type=file]').get(0);
+                    $(oldInput).removeClass('error');
+                    this.$('.action-upload').removeClass('disabled');
                 }
             },
 

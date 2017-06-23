@@ -7,6 +7,7 @@ from django.db import models
 from django.utils.timezone import UTC
 
 from openedx.core.djangoapps.content.course_overviews.models import CourseOverview
+from openedx.core.lib.courses import custom_logo_url
 
 
 class CourseOverviewExtra(models.Model):
@@ -31,6 +32,7 @@ class CourseOverviewExtra(models.Model):
     individual_end_days = models.IntegerField(null=True)
     individual_end_hours = models.IntegerField(null=True)
     individual_end_minutes = models.IntegerField(null=True)
+    custom_logo = models.TextField(blank=True, default="")
 
     @classmethod
     def create(cls, course, overview):
@@ -43,7 +45,8 @@ class CourseOverviewExtra(models.Model):
             self_paced=course.self_paced,
             individual_end_days=course.individual_end_days,
             individual_end_hours=course.individual_end_hours,
-            individual_end_minutes=course.individual_end_minutes
+            individual_end_minutes=course.individual_end_minutes,
+            custom_logo=custom_logo_url(course)
         ).save()
 
     @property

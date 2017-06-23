@@ -18,6 +18,10 @@ function renderTime(record, index, column_index) {
 
 function renderPercent(record, index, column_index) {
     var value = record[this.columns[column_index].field];
+    // Note: '―'(U+2015) means 'Not Attempted' (#1816)
+    if (value === '―') {
+        return value;
+    }
     var pow = Math.pow(10 , 1) ;
     return (Math.round(parseFloat(value) * 100 * pow) / pow).toFixed(1) + '%';
 }

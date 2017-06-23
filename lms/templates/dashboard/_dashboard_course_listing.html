@@ -33,7 +33,7 @@ from util.date_utils import get_time_display
 
 <%namespace name='static' file='../static_content.html'/>
 
-<li class="course-item">
+<li class="course-item" data-course-id="${enrollment.course_id}">
   % if settings.FEATURES.get('ENABLE_VERIFIED_CERTIFICATES'):
     <%
         course_verified_certs = enrollment_mode_display(

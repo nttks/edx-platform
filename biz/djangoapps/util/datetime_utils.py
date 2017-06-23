@@ -1,7 +1,7 @@
 """
 Cache utilities
 """
-from datetime import date, datetime
+from datetime import date, datetime, time, timedelta
 import math
 
 from django.utils import timezone
@@ -23,6 +23,46 @@ def timezone_today():
     :return: current date with server timezone
     """
     return timezone_now().date()
+
+
+def min_and_max_of_today():
+    """
+    Get min and max datetime of today
+
+    :return: a tuple of min datetime and max datetime
+        e.g.)
+        (
+            datetime(2017, 4, 1, 0, 0, tzinfo=<DstTzInfo 'Asia/Tokyo' JST+9:00:00 STD>),
+            datetime(2017, 4, 1, 23, 59, 59, 999999, tzinfo=<DstTzInfo 'Asia/Tokyo' JST+9:00:00 STD>)
+        )
+    """
+    return min_and_max_of_date()
+
+
+def min_and_max_of_date(base_date=None, days_after=0):
+    """
+    Get min and max datetime of a specified date
+
+    :param base_date: a base date
+    :param days_after: days to add to a base date
+    :return: a tuple of min datetime and max datetime
+        e.g.)
+        (
+            datetime(2017, 4, 1, 0, 0, tzinfo=<DstTzInfo 'Asia/Tokyo' JST+9:00:00 STD>),
+            datetime(2017, 4, 1, 23, 59, 59, 999999, tzinfo=<DstTzInfo 'Asia/Tokyo' JST+9:00:00 STD>)
+        )
+    """
+    if base_date is None:
+        base_date = timezone_today()
+    # Note: datetime is a subclass of date, so isinstance(base_date, date) cannot be used
+    elif type(base_date) != date:
+        raise TypeError('base_date should be a date object.')
+
+    target_date = base_date + timedelta(days=days_after)
+    # Convert timezone-naive to timezone-aware
+    default_timezone = timezone.get_default_timezone()
+    return default_timezone.localize(datetime.combine(target_date, time.min)), \
+           default_timezone.localize(datetime.combine(target_date, time.max))
 
 
 def to_jst(_datetime):

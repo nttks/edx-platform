@@ -28,3 +28,12 @@ def course_image_url(course):
         loc = StaticContent.compute_location(course.id, course.course_image)
         url = StaticContent.serialize_asset_key_with_slash(loc)
     return url
+
+
+def custom_logo_url(course):
+    if not course.custom_logo:
+        url = settings.STATIC_URL + settings.DEFAULT_CUSTOM_LOGO_IMAGE_URL
+    else:
+        loc = StaticContent.compute_location(course.id, course.custom_logo)
+        url = StaticContent.serialize_asset_key_with_slash(loc)
+    return url

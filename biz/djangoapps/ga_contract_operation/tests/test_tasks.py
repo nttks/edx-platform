@@ -22,12 +22,12 @@ from xmodule.modulestore.tests.factories import CourseFactory
 from biz.djangoapps.ga_contract.models import CONTRACT_TYPE_PF, CONTRACT_TYPE_GACCO_SERVICE
 from biz.djangoapps.ga_contract.tests.factories import AdditionalInfoFactory, ContractFactory, ContractDetailFactory
 from biz.djangoapps.ga_contract_operation.models import ContractTaskTarget
-from biz.djangoapps.ga_contract_operation.personalinfo import _hash
 from biz.djangoapps.ga_contract_operation.tasks import personalinfo_mask
 from biz.djangoapps.ga_contract_operation.tests.factories import ContractTaskTargetFactory
 from biz.djangoapps.ga_invitation.models import AdditionalInfoSetting, INPUT_INVITATION_CODE
 from biz.djangoapps.ga_invitation.tests.factories import AdditionalInfoSettingFactory, ContractRegisterFactory
 from biz.djangoapps.ga_login.models import BizUser
+from biz.djangoapps.util import mask_utils
 from biz.djangoapps.ga_login.tests.factories import BizUserFactory
 from biz.djangoapps.util.datetime_utils import timezone_today
 from biz.djangoapps.util.tests.testcase import BizTestBase
@@ -43,7 +43,7 @@ class PersonalinfoMaskTaskTest(BizTestBase, ModuleStoreTestCase, ThirdPartyAuthT
 
         self.random_value = 'test1'
 
-        patcher1 = patch('biz.djangoapps.ga_contract_operation.personalinfo.get_random_string')
+        patcher1 = patch('biz.djangoapps.util.mask_utils.get_random_string')
         self.mock_get_random_string = patcher1.start()
         self.mock_get_random_string.return_value = self.random_value
         self.addCleanup(patcher1.stop)
@@ -56,6 +56,10 @@ class PersonalinfoMaskTaskTest(BizTestBase, ModuleStoreTestCase, ThirdPartyAuthT
         patcher3 = patch('biz.djangoapps.ga_contract_operation.personalinfo.log')
         self.mock_log = patcher3.start()
         self.addCleanup(patcher3.stop)
+
+        patcher4 = patch('biz.djangoapps.util.mask_utils.log')
+        self.mock_util_log = patcher4.start()
+        self.addCleanup(patcher4.stop)
 
     def _setup_courses(self):
         # Setup courses. Some tests does not need course data. Therefore, call this function if need course data.
@@ -171,8 +175,8 @@ class PersonalinfoMaskTaskTest(BizTestBase, ModuleStoreTestCase, ThirdPartyAuthT
 
     def _assert_user_info(self, user_info, user, masked=True):
         _email, _name, _login_code = (user_info[user.id]['email'], user_info[user.id]['name'], user_info[user.id]['login_code'])
-        expected_email = _hash(_email + self.random_value) if masked else _email
-        expected_name = _hash(_name) if masked else _name
+        expected_email = mask_utils.hash(_email + self.random_value) if masked else _email
+        expected_name = mask_utils.hash(_name) if masked else _name
         expected_first_name = '' if masked else user_info[user.id]['first_name']
         expected_last_name = '' if masked else user_info[user.id]['last_name']
         expected_login_code = self.random_value if _login_code and masked else _login_code
@@ -205,7 +209,7 @@ class PersonalinfoMaskTaskTest(BizTestBase, ModuleStoreTestCase, ThirdPartyAuthT
 
     def _assert_cert_info(self, user_info, user, courses, masked=True):
         _name = user_info[user.id]['name']
-        expected_name = _hash(_name) if masked else _name
+        expected_name = mask_utils.hash(_name) if masked else _name
         # default values set in _create_enrollments.
         expected_status = CertificateStatuses.deleted if masked else CertificateStatuses.downloadable
         expected_key = '' if masked else 'key'
@@ -220,7 +224,7 @@ class PersonalinfoMaskTaskTest(BizTestBase, ModuleStoreTestCase, ThirdPartyAuthT
 
     def _assert_global_courses(self, user_info, user, courses, masked=True):
         _email = user_info[user.id]['email']
-        expected_email = _hash(_email + self.random_value) if masked else _email
+        expected_email = mask_utils.hash(_email + self.random_value) if masked else _email
 
         for course in courses:
             self.assertTrue(
@@ -243,7 +247,7 @@ class PersonalinfoMaskTaskTest(BizTestBase, ModuleStoreTestCase, ThirdPartyAuthT
         for display_name in display_names:
             expected_value = 'value_of_{}'.format(display_name)
             if masked:
-                expected_value = _hash(expected_value)
+                expected_value = mask_utils.hash(expected_value)
             self.assertEqual(expected_value, AdditionalInfoSetting.get_value_by_display_name(user, contract, display_name))
 
     def _assert_success_message(self, registers):
@@ -804,9 +808,9 @@ class PersonalinfoMaskTaskTest(BizTestBase, ModuleStoreTestCase, ThirdPartyAuthT
 
         # delete_cert_pdf should be called 10 times even if previous process had been failed.
         self.assertEqual(10, self.mock_delete_cert_pdf.call_count)
-
-        self.mock_log.error.assert_any_call(
+        self.mock_util_log.error.assert_called_once_with(
             'Failed to delete certificate. user={}, course_id=spoc/course1/run'.format(registers[1].user_id)
         )
+
         self._assert_success_message([registers[0], registers[2], registers[3], registers[4]])
         self._assert_failed_message([registers[1]])

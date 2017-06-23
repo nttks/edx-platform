@@ -26,6 +26,10 @@ from student.models import CourseEnrollment
 @ddt.ddt
 class StudentRegisterTaskTest(BizViewTestBase, ModuleStoreTestCase, TaskTestMixin):
 
+    def setUp(self):
+        super(StudentRegisterTaskTest, self).setUp()
+        self._create_contract_mail_default()
+
     def _create_targets(self, history, students, completed=False):
         for student in students:
             StudentRegisterTaskTargetFactory.create(history=history, student=student, completed=completed)
@@ -1076,7 +1080,7 @@ class StudentRegisterTaskTest(BizViewTestBase, ModuleStoreTestCase, TaskTestMixi
         ], 0),
     )
     @ddt.unpack
-    @patch('biz.djangoapps.ga_contract_operation.student_register.send_mail_to_student')
+    @patch('biz.djangoapps.ga_contract_operation.student_register.send_mail')
     def test_register_send_mail(self, url_code, send_mail, students, send_mail_call_count, send_mail_to_student):
         # ----------------------------------------------------------
         # Setup test data

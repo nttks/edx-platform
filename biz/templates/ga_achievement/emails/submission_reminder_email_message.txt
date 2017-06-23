@@ -1,0 +1,28 @@
+<%!
+from biz.djangoapps.util.datetime_utils import to_jst
+%>
+${user.profile.name}様
+
+本メールがお手元に届いた方は、オンライン学習サービス「${settings.PLATFORM_NAME}」にて、
+以下の講座の課題提出がまだ完了しておりません。
+
+未提出の課題
+% for grouped_target_sections in target_courses:
+・${grouped_target_sections.course_display_name}
+% for target_section in grouped_target_sections.target_sections:
+　${target_section.chapter_descriptor.display_name} - ${target_section.section_descriptor.display_name} （締切：${to_jst(target_section.section_descriptor.due).strftime('%-m月%-d日%-H時%-M分')}）
+% endfor
+
+% endfor
+
+上記講座の課題締切日時が迫っております（日時はいずれも日本時間です）。
+お早めの課題提出をお願い致します。
+
+─────────
+このメールは本日夜間の課題提出状況を鑑みて自動送信しています。
+すでに課題提出済みでしたらご容赦願います。
+
+なお、このメールの内容に覚えのない方は、
+破棄していただきますようお願い申し上げます。
+
+${settings.PLATFORM_NAME}運営チーム

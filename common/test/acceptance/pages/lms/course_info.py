@@ -28,3 +28,6 @@ class CourseInfoPage(CoursePage):
         Return a list of handout assets links.
         """
         return self.q(css='section.handouts ol li a').map(lambda el: el.get_attribute('href')).results
+
+    def click_top_page(self):
+        self.q(css='a.top-page').first.click()

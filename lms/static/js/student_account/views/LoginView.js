@@ -4,7 +4,8 @@
             'jquery',
             'underscore',
             'gettext',
-            'js/student_account/views/FormView'
+            'js/student_account/views/FormView',
+            'js/query-params'
         ],
         function($, _, gettext, FormView) {
 
@@ -63,6 +64,7 @@
                 this.$resetSuccess = this.$container.find('.js-reset-success');
                 this.$authError = this.$container.find('.already-authenticated-msg');
                 this.$submitButton = this.$container.find(this.submitButton);
+                this.$activateAccountNotice = this.$container.find('.activate-account-notice');
 
                 /* If we're already authenticated with a third-party
                  * provider, try logging in.  The easiest way to do this
@@ -70,6 +72,10 @@
                  */
                 if (this.currentProvider) {
                     this.model.save();
+                }
+
+                if (getParameterByName('unactivated')) {
+                    this.activateAccountNotice();
                 }
             },
 
@@ -81,6 +87,7 @@
             },
 
             postFormSubmission: function() {
+                this.element.hide( this.$activateAccountNotice );
                 this.element.hide( this.$resetSuccess );
             },
 
@@ -100,6 +107,10 @@
             saveSuccess: function() {
                 this.trigger('auth-complete');
                 this.element.hide( this.$resetSuccess );
+            },
+
+            activateAccountNotice: function() {
+                this.element.show( this.$activateAccountNotice );
             },
 
             saveError: function( error ) {

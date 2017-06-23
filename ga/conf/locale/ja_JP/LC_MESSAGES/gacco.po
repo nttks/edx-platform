@@ -112,7 +112,7 @@ msgid "Let's login and enjoy your courses!"
 msgstr "ログインして学習をはじめましょう。"
 
 #: lms/templates/emails/activation_email_subject.txt
-msgid "Activate Your {platform_name} Account"
+msgid "Information of {platform_name} Member Registration"
 msgstr "■{platform_name} 会員登録のご案内"
 
 #: lms/templates/emails/email_change_subject.txt
@@ -597,6 +597,10 @@ msgstr "学習リスト"
 #: templates/courseware/courseware.html
 msgid "Open"
 msgstr "開く"
+
+#: lms/templates/dashboard.html
+msgid "Search..."
+msgstr "講座名で検索"
 
 #: lms/templates/courseware/progress.html
 msgid "Your certificate is available"
@@ -1087,8 +1091,9 @@ msgstr "{platform_name} チケット購入完了のお知らせ"
 
 #: lms/templates/ga_advanced_course/choose_ticket.html
 #: lms/templates/registration/activate_account_notice.html
+#: lms/templates/student_account/login.underscore
 msgid "You're almost there!"
-msgstr "会員登録はまだ終了しておりません。"
+msgstr "会員登録はまだ完了しておりません。"
 
 #: lms/templates/ga_advanced_course/choose_ticket.html
 #: lms/templates/registration/activate_account_notice.html
@@ -1101,7 +1106,7 @@ msgstr ""
 #: lms/templates/ga_advanced_course/choose_ticket.html
 #: lms/templates/registration/activate_account_notice.html
 msgid ""
-"*If you lost the e-mail of \"Information of gacco Member registration,\" "
+"*If you lost the e-mail of \"Information of gacco Member Registration,\" "
 "please log-out and sign in again. "
 "We will you resend the activation e-mail after entering your registered e-mail address and password."
 msgstr ""
@@ -1119,6 +1124,56 @@ msgstr "機能"
 #: openedx/core/djangoapps/ga_optional/models.py
 msgid "Staff Assessment for Peer Grading"
 msgstr "相互採点のスタッフ採点"
+
+#: openedx/core/djangoapps/ga_optional/models.py
+msgid "Submission Reminder Email"
+msgstr "課題未提出督促メール"
+
+#: cms/templates/settings.html
+msgid "Custom Logo for Settings"
+msgstr "カスタムロゴ設定"
+
+#: cms/templates/settings.html
+msgid "Your Own Logo"
+msgstr "カスタムロゴ"
+
+#: cms/templates/settings.html
+msgid "Please upload image (JPEG or PNG format, and dimensions are 300px wide by 95px tall)"
+msgstr ""
+"JPEGもしくはPNG形式の画像をアップロードしてください。サイズは横300ピクセル・縦95ピクセルです。"
+"(注意：ファイル名に日本語は使用しないでください)"
+
+#: cms/templates/settings.html
+msgid ""
+"Please provide a valid path and name to your custom logo (Note: only JPEG "
+"or PNG format supported)"
+msgstr "カスタムロゴへの適正なファイルパス、そしてファイル名を提供してください (注意：JPEG と PNG 形式のみの利用可能)"
+
+#: cms/templates/settings.html
+msgid "Your own logo"
+msgstr "カスタムロゴのURL"
+
+#: cms/templates/settings.html
+msgid "Upload custom logo"
+msgstr "カスタムロゴをアップロード"
+
+#: lms/templates/navigation.html
+msgid "Top Page"
+msgstr "トップページ"
+
+#: lms/templates/navigation.html
+msgid "{course_org} Logo"
+msgstr "{course_org} のロゴ"
+
+#: lms/templates/navigation.html
+msgid "{platform_name} Logo"
+msgstr "{platform_name} のロゴ"
+
+#: cms/templates/settings.html
+msgid ""
+"You can manage this image along with all of your other <a href='{}'>files "
+"&amp; uploads</a>"
+msgstr "アップロードした画像を変更することができます。<a href='{}'>ファイル &amp; アップロード</a>"
 
 #-#-#-#-#  Deleted or revised messages between Cypress and Dogwood on Transifex  #-#-#-#-#
 #: lms/templates/dashboard.html
@@ -1512,3 +1567,43 @@ msgstr "ログイン時に利用されたメールアドレスは既に退会さ
 #: lms/templates/disabled_account.html
 msgid "The email address which is withdrawn can't be used again, please register as new member with other email address."
 msgstr "同じメールアドレスでの再登録はできません。別のメールアドレスで新規登録をしてください。"
+
+#: lms/templates/ga_advanced_course/choose_ticket.html
+msgid "Before you enroll in a course, you need to activate your account."
+msgstr "会員登録が完了しておりません。"
+
+#: lms/templates/ga_advanced_course/choose_ticket.html
+msgid "We've sent an email to {email} with instructions for activating your account. Please try again."
+msgstr "ご登録いただいた{email}宛に会員登録のご案内メールを送信しております。メール内のURLをクリックし、会員登録を行ってからお申込ください。"
+
+#: lms/templates/registration/activation_complete.html
+msgid "You've successfully registered."
+msgstr "会員登録完了"
+
+#: lms/templates/registration/activation_complete.html
+msgid "You've successfully registered. Please {link_start}log-in{link_end} from here."
+msgstr "こちらから {link_start}<b><u>ログイン</u></b>{link_end} をしてご利用ください。"
+
+#: lms/templates/registration/activation_expired.html
+msgid "This URL validity has expired."
+msgstr "このURLの有効期限は切れております。"
+
+#: lms/templates/registration/activation_expired.html
+msgid "Unfortunately, this URL validity has expired. Please re-register again from the beginning."
+msgstr "申し訳ございませんが、再度会員登録を行ってください。"
+
+#: lms/templates/registration/activation_invalid.html
+msgid "Please check URL link for activating your account on the e-mail and try to activate your account again."
+msgstr "再度メール内のURLをご確認のうえ、クリックしてください。"
+
+#: lms/templates/registration/activation_invalid.html
+msgid "If the problem still occurs, please send e-mail to gacco support desk ({email})."
+msgstr "※問題が解決されない場合は、サポートデスク ({email}) までご連絡ください。"
+
+#: common/djangoapps/student/views.py
+msgid "You're almost there. Before you enroll in a course, you need to activate your account. We've sent an e-mail to your registered e-mail address with instructions for activating your account."
+msgstr "会員登録はまだ完了しておりません。会員登録時に入力されたメールアドレス宛に会員登録のご案内メールを送信しました。メール内のURLをクリックし、会員登録を完了してください。"
+
+#: lms/templates/registration/activation_invalid.html
+msgid "Activation Invalid"
+msgstr "会員登録が完了できませんでした"

@@ -20,7 +20,8 @@ var DetailsView = ValidatingView.extend({
         // would love to move to a general superclass, but event hashes don't inherit in backbone :-(
         'focus :input' : "inputFocus",
         'blur :input' : "inputUnfocus",
-        'click .action-upload-image': "uploadImage"
+        'click .action-upload-image': "uploadImage",
+        'click .action-upload-logo-image': "uploadLogoImage",
     },
 
     initialize : function(options) {
@@ -89,6 +90,10 @@ var DetailsView = ValidatingView.extend({
         var imageURL = this.model.get('course_image_asset_path');
         this.$el.find('#course-image-url').val(imageURL);
         this.$el.find('#course-image').attr('src', imageURL);
+
+        var imagelogoURL = this.model.get('custom_logo_asset_path');
+        this.$el.find('#custom-logo-url').val(imagelogoURL);
+        this.$el.find('#custom-logo').attr('src', imagelogoURL);
 
         var pre_requisite_courses = this.model.get('pre_requisite_courses');
         pre_requisite_courses = pre_requisite_courses.length > 0 ? pre_requisite_courses : '';
@@ -167,6 +172,7 @@ var DetailsView = ValidatingView.extend({
         'intro_video' : 'course-introduction-video',
         'effort' : "course-effort",
         'course_image_asset_path': 'course-image-url',
+        'custom_logo_asset_path': 'custom-logo-url',
         'pre_requisite_courses': 'pre-requisite-course',
         'entrance_exam_enabled': 'entrance-exam-enabled',
         'entrance_exam_minimum_score_pct': 'entrance-exam-minimum-score-pct',
@@ -253,6 +259,17 @@ var DetailsView = ValidatingView.extend({
             clearTimeout(this.imageTimer);
             this.imageTimer = setTimeout(function() {
                 $('#course-image').attr('src', $(event.currentTarget).val());
+            }, 1000);
+            break;
+        case 'custom-logo-url':
+            this.setField(event);
+            var url = $(event.currentTarget).val();
+            var image_name = _.last(url.split('/'));
+            this.model.set('custom_logo_name', image_name);
+            // Wait to set the image src until the user stops typing
+            clearTimeout(this.logoTimer);
+            this.logoTimer = setTimeout(function() {
+                $('#custom-logo').attr('src', $(event.currentTarget).val());
             }, 1000);
             break;
         case 'course-effort':
@@ -411,7 +428,8 @@ var DetailsView = ValidatingView.extend({
         var upload = new FileUploadModel({
             title: gettext("Upload your course image."),
             message: gettext("Files must be in JPEG or PNG format."),
-            mimeTypes: ['image/jpeg', 'image/png']
+            mimeTypes: ['image/jpeg', 'image/png'],
+            customLogo: false,
         });
         var self = this;
         var modal = new FileUploadDialog({
@@ -424,6 +442,30 @@ var DetailsView = ValidatingView.extend({
                 self.model.set(options);
                 self.render();
                 $('#course-image').attr('src', self.model.get('course_image_asset_path'));
+            }
+        });
+        modal.show();
+    },
+
+    uploadLogoImage: function(event) {
+        event.preventDefault();
+        var upload = new FileUploadModel({
+            title: gettext("Please upload your own logo."),
+            message: gettext("Files must be in JPEG or PNG format and 300px wide by 95px tall."),
+            mimeTypes: ['image/jpeg', 'image/png'],
+            customLogo: true,
+        });
+        var self = this;
+        var modal = new FileUploadDialog({
+            model: upload,
+            onSuccess: function(response) {
+                var options = {
+                    'custom_logo_name': response.asset.display_name,
+                    'custom_logo_asset_path': response.asset.url
+                };
+                self.model.set(options);
+                self.render();
+                $('#custom-logo').attr('src', self.model.get('custom_logo_asset_path'));
             }
         });
         modal.show();

@@ -91,7 +91,7 @@ class IntegrationTestLTI(testutil.TestCase):
         self.assertEqual(continue_response.status_code, 302)
         self.assertEqual(
             continue_response['Location'],
-            'http://testserver/account/finish_auth/?course_id=my_course_id&enrollment_action=enroll'
+            'http://testserver/notice_unactivated'
         )
 
         # Now check that we can login again

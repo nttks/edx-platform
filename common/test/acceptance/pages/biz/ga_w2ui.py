@@ -288,3 +288,9 @@ class W2uiMixin(W2uiGrid):
 
     def __init__(self, *args, **kwargs):
         super(W2uiMixin, self).__init__(self)
+
+    def click_tab(self, tab_text):
+        elements = [el for el in self.q(css='.w2ui-tab').results if el.text == tab_text]
+        if elements:
+            return elements[0].click()
+        raise Exception('Not found tab, tab_text:{}'.format(tab_text))

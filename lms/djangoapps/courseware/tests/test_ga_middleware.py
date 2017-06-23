@@ -6,8 +6,9 @@ from mock import patch
 from django.utils import timezone
 from django.test.utils import override_settings
 
-from courseware.ga_middleware import CourseTerminatedCheckMiddleware
+from courseware.ga_middleware import CourseTerminatedCheckMiddleware, CustomLogoMiddleware
 from courseware.tests.helpers import get_request_for_user, LoginEnrollmentTestCase
+from openedx.core.djangoapps.ga_optional.models import CourseOptionalConfiguration
 from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
 from xmodule.modulestore.tests.factories import CourseFactory
 
@@ -206,3 +207,70 @@ class CourseTerminatedCheckViewTest(LoginEnrollmentTestCase, ModuleStoreTestCase
 
         response = self._access_page(False, True)
         self._assert_redirect_login(response)
+
+
+class CustomLogoMiddlewareTest(LoginEnrollmentTestCase, ModuleStoreTestCase):
+
+    def setUp(self):
+        super(CustomLogoMiddlewareTest, self).setUp()
+
+        self.course = CourseFactory.create(start=timezone.now() - timedelta(days=10), custom_logo='dummy.png')
+
+    def _create_request(self, is_staff, path):
+        self.setup_user()
+        self.enroll(self.course)
+        if is_staff:
+            self.user.is_staff = True
+            self.user.save()
+        request = get_request_for_user(self.user)
+        request.path = path.format(unicode(self.course.id))
+        return request
+
+    def test_check_custom_logo_for_info(self):
+        request = self._create_request(False, '/courses/{}/info')
+        self.course_optional_configuration = CourseOptionalConfiguration(
+            id=1,
+            change_date="2015-06-18 11:02:13",
+            enabled=True,
+            key='custom-logo-for-settings',
+            course_key=self.course.id,
+            changed_by_id=self.user.id
+        )
+        self.course_optional_configuration.save()
+
+        CustomLogoMiddleware().process_request(request)
+
+        self.assertIn('custom_logo_enabled', request.__dict__)
+        self.assertTrue(request.custom_logo_enabled)
+
+    def test_check_custom_logo_for_about(self):
+        request = self._create_request(False, '/courses/{}/about/')
+        self.course_optional_configuration = CourseOptionalConfiguration(
+            id=1,
+            change_date="2015-06-18 11:02:13",
+            enabled=True,
+            key='custom-logo-for-settings',
+            course_key=self.course.id,
+            changed_by_id=self.user.id
+        )
+        self.course_optional_configuration.save()
+
+        CustomLogoMiddleware().process_request(request)
+
+        self.assertTrue(request.custom_logo_enabled)
+
+    def test_check_custom_logo_for_login(self):
+        request = self._create_request(False, '/login')
+        self.course_optional_configuration = CourseOptionalConfiguration(
+            id=1,
+            change_date="2015-06-18 11:02:13",
+            enabled=True,
+            key='custom-logo-for-settings',
+            course_key=self.course.id,
+            changed_by_id=self.user.id
+        )
+        self.course_optional_configuration.save()
+
+        CustomLogoMiddleware().process_request(request)
+
+        self.assertNotIn('custom_logo_enabled', request.__dict__)

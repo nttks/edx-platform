@@ -4,7 +4,7 @@ from urllib import urlencode
 from bok_choy.page_object import PageObject, unguarded
 from bok_choy.promise import Promise, EmptyPromise
 from . import BASE_URL
-from .dashboard import DashboardPage
+from .login import LoginPage
 
 
 class RegisterPage(PageObject):
@@ -57,10 +57,10 @@ class RegisterPage(PageObject):
         """
         self.q(css='button#submit').first.click()
 
-        # The next page is the dashboard; make sure it loads
-        dashboard = DashboardPage(self.browser)
-        dashboard.wait_for_page()
-        return dashboard
+        # The next page is the login; make sure it loads
+        login = LoginPage(self.browser)
+        login.wait_for_page()
+        return login
 
 
 class ResetPasswordPage(PageObject):

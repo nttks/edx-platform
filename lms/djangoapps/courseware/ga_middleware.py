@@ -13,6 +13,11 @@ from courseware.ga_access import is_terminated
 from opaque_keys import InvalidKeyError
 from opaque_keys.edx.keys import CourseKey
 
+from courseware.courses import get_course_with_access, get_permission_for_course_about
+from openedx.core.djangoapps.ga_optional.api import is_available
+from openedx.core.djangoapps.ga_optional.models import CUSTOM_LOGO_OPTION_KEY
+from openedx.core.lib.courses import custom_logo_url
+
 log = logging.getLogger(__name__)
 
 
@@ -66,3 +71,43 @@ class CourseTerminatedCheckMiddleware(object):
                     return False, None
             return True, matches.group('course_id')
         return False, None
+
+
+class CustomLogoMiddleware(object):
+    """
+    When it is the URL of the course series, obtain the setting
+    of the custom logo from the course ID
+    """
+
+    COURSE_URL_PATTERN = re.compile(r'^/courses/{}/'.format(settings.COURSE_ID_PATTERN))
+    COURSE_ABOUT_URL_PATTERN = re.compile(r'^/courses/{}/about'.format(settings.COURSE_ID_PATTERN))
+
+    def process_request(self, request):
+
+        course_key = None
+        matches = self.COURSE_URL_PATTERN.match(request.path)
+        about_matches = self.COURSE_ABOUT_URL_PATTERN.match(request.path)
+        if matches:
+            course_id = matches.group('course_id')
+            if course_id:
+                try:
+                    course_key = CourseKey.from_string(course_id)
+                except InvalidKeyError:
+                    # do NOT raise HTTP404 here. should raise at each view if need be.
+                    pass
+
+            # If could not get course_key, nothing to do.
+            if not course_key:
+                return
+            try:
+                if about_matches:
+                    permission = get_permission_for_course_about()
+                    course = get_course_with_access(request.user, permission, course_key)
+                else:
+                    course = get_course_with_access(request.user, "load", course_key)
+            except Http404:
+                return
+            if course.custom_logo:
+                custom_logo_enabled = is_available(CUSTOM_LOGO_OPTION_KEY, course_key)
+                request.custom_logo_enabled = custom_logo_enabled
+                request.custom_logo_for_url = custom_logo_url(course)

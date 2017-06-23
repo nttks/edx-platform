@@ -11,11 +11,8 @@ from django.core.urlresolvers import reverse
     <h1 class="invalid">${_("Activation Invalid")}</h1>
     <hr class="horizontal-divider">
 
-    <p>${_('Something went wrong. Check to make sure the URL you went to was '
-           'correct -- e-mail programs will sometimes split it into two '
-           'lines. If you still have issues, e-mail us to let us know what happened '
-           'at {email}.').format(email='<a href="mailto:{email}">{email}</a>'.format(email=settings.BUGS_EMAIL))}</p>
+    <p>${_('Please check URL link for activating your account on the e-mail and try to activate your account again.')}</p>
 
-    <p>${_('Or you can go back to the {link_start}home page{link_end}.').format(link_start='<a href="/">', link_end='</a>')}</p>
+    <p>${_('If the problem still occurs, please send e-mail to gacco support desk ({email}).').format(email='<a href="mailto:{email}">{email}</a>'.format(email=settings.BUGS_EMAIL))}</p>
   </section>
 </section>

@@ -9,7 +9,7 @@ from django.core.urlresolvers import reverse
 
   <section class="message">
     %if not already_active:
-      <h1 class="valid">${_("Activation Complete!")}</h1>
+      <h1 class="valid">${_("You've successfully registered.")}</h1>
     %else:
       <h1>${_("Account already active!")}</h1>
     %endif
@@ -25,7 +25,7 @@ from django.core.urlresolvers import reverse
       %if user_logged_in:
         ${_("Visit your {link_start}dashboard{link_end} to see your courses.").format(link_start='<a href="{url}">'.format(url=reverse('dashboard')), link_end='</a>')}
       %else:
-        ${_("You can now {link_start}log in{link_end}.").format(link_start='<a href="{url}">'.format(url=reverse('signin_user')), link_end='</a>')}
+        ${_("You've successfully registered. Please {link_start}log-in{link_end} from here.").format(link_start='<a href="{url}">'.format(url=reverse('signin_user')), link_end='</a>')}
       %endif
     </p>
   </section>

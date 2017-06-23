@@ -498,6 +498,8 @@ class Registration(models.Model):
 
     user = models.OneToOneField(User)
     activation_key = models.CharField(('activation key'), max_length=32, unique=True, db_index=True)
+    modified = models.DateTimeField(null=True, auto_now=True)
+    masked = models.BooleanField(default=False)
 
     def register(self, user):
         # MINOR TODO: Switch to crypto-secure key
@@ -508,6 +510,12 @@ class Registration(models.Model):
     def activate(self):
         self.user.is_active = True
         self.user.save()
+        # update modified
+        self.save()
+
+    def update_masked(self):
+        self.masked = True
+        self.save()
 
 
 class PendingNameChange(models.Model):

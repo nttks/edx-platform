@@ -11,8 +11,15 @@ from mock import patch
 from biz.djangoapps.ga_contract.tests.factories import (
     AdditionalInfoFactory, ContractFactory,
     ContractAuthFactory, ContractDetailFactory,
+    ContractOptionFactory,
 )
-from biz.djangoapps.ga_contract_operation.tests.factories import ContractTaskHistoryFactory
+from biz.djangoapps.ga_contract_operation.models import (
+    MAIL_TYPE_REGISTER_NEW_USER,
+    MAIL_TYPE_REGISTER_EXISTING_USER,
+    MAIL_TYPE_REGISTER_NEW_USER_WITH_LOGINCODE,
+    MAIL_TYPE_REGISTER_EXISTING_USER_WITH_LOGINCODE,
+)
+from biz.djangoapps.ga_contract_operation.tests.factories import ContractMailFactory, ContractTaskHistoryFactory
 from biz.djangoapps.ga_invitation.tests.factories import AdditionalInfoSettingFactory, ContractRegisterFactory
 from biz.djangoapps.ga_invitation.models import ContractRegister, INPUT_INVITATION_CODE, REGISTER_INVITATION_CODE, UNREGISTER_INVITATION_CODE
 from biz.djangoapps.ga_manager.models import ManagerPermission
@@ -26,6 +33,7 @@ from courseware.tests.helpers import LoginEnrollmentTestCase
 from student.models import CourseEnrollment, UserStanding
 from student.tests.factories import UserFactory, UserStandingFactory
 from xmodule.course_module import CourseDescriptor
+from xmodule.modulestore import ModuleStoreEnum
 
 
 class BizTestBase(TestCase):
@@ -65,7 +73,7 @@ class BizTestBase(TestCase):
         )
 
     def _create_contract(self, contract_name='test contract', contract_type='PF', register_type='ERS', contractor_organization=None, owner_organization=None, end_date=None,
-                         detail_courses=[], additional_display_names=[], url_code=None, send_mail=False):
+                         detail_courses=[], additional_display_names=[], url_code=None, send_mail=False, customize_mail=None):
         contract = ContractFactory.create(
             contract_name=contract_name,
             contract_type=contract_type,
@@ -82,6 +90,8 @@ class BizTestBase(TestCase):
             AdditionalInfoFactory.create(contract=contract, display_name=d)
         if url_code:
             ContractAuthFactory.create(contract=contract, url_code=url_code, send_mail=send_mail)
+        if customize_mail is not None:
+            ContractOptionFactory.create(contract=contract, customize_mail=customize_mail)
         return contract
 
     def _input_contract(self, contract, user):
@@ -160,6 +170,57 @@ class BizTestBase(TestCase):
 
     def _create_task_history(self, contract):
         return ContractTaskHistoryFactory.create(contract=contract)
+
+    def _create_contract_mail_default(self):
+        ContractMailFactory.create(
+            contract=None,
+            mail_type=MAIL_TYPE_REGISTER_NEW_USER,
+            mail_subject='Test Subject New User Without Logincode',
+            mail_body='Test Body New User Without Logincode',
+        )
+        ContractMailFactory.create(
+            contract=None,
+            mail_type=MAIL_TYPE_REGISTER_EXISTING_USER,
+            mail_subject='Test Subject Exists User Without Logincode',
+            mail_body='Test Body Exists User Without Logincode',
+        )
+        ContractMailFactory.create(
+            contract=None,
+            mail_type=MAIL_TYPE_REGISTER_NEW_USER_WITH_LOGINCODE,
+            mail_subject='Test Subject New User With Logincode',
+            mail_body='Test Body New User With Logincode',
+        )
+        ContractMailFactory.create(
+            contract=None,
+            mail_type=MAIL_TYPE_REGISTER_EXISTING_USER_WITH_LOGINCODE,
+            mail_subject='Test Subject Exists User With Logincode',
+            mail_body='Test Body Exists User With Logincode',
+        )
+        # Following records are illegal, to confirm that be not gotten.
+        ContractMailFactory.create(
+            contract=None,
+            mail_type=MAIL_TYPE_REGISTER_NEW_USER,
+            mail_subject='[Illegal]Test Subject New User Without Logincode',
+            mail_body='[Illegal]Test Body New User Without Logincode',
+        )
+        ContractMailFactory.create(
+            contract=None,
+            mail_type=MAIL_TYPE_REGISTER_EXISTING_USER,
+            mail_subject='[Illegal]Test Subject Exists User Without Logincode',
+            mail_body='[Illegal]Test Body Exists User Without Logincode',
+        )
+        ContractMailFactory.create(
+            contract=None,
+            mail_type=MAIL_TYPE_REGISTER_NEW_USER_WITH_LOGINCODE,
+            mail_subject='[Illegal]Test Subject New User With Logincode',
+            mail_body='[Illegal]Test Body New User With Logincode',
+        )
+        ContractMailFactory.create(
+            contract=None,
+            mail_type=MAIL_TYPE_REGISTER_EXISTING_USER_WITH_LOGINCODE,
+            mail_subject='[Illegal]Test Subject Exists User With Logincode',
+            mail_body='[Illegal]Test Body Exists User With Logincode',
+        )
 
 
 _current_feature = None
@@ -255,3 +316,38 @@ class BizStoreTestBase(BizTestBase):
     def _drop_mongo_collections(self):
         for config in settings.BIZ_MONGO.values():
             BizMongoConnection(**config).database.drop_collection(config['collection'])
+
+    # Note: This method had removed since Dogwood release.
+    #       So, we restored it from common/lib/xmodule/xmodule/modulestore/tests/django_utils.py (as Cypress ver.)
+    def _create_course(self, org, course, run, block_info_tree=None, course_fields=None):
+        """
+        create a course in the default modulestore from the collection of BlockInfo
+        records defining the course tree
+        Returns:
+            course: the course of created
+        """
+        with self.store.branch_setting(ModuleStoreEnum.Branch.draft_preferred, None):
+            course = self.store.create_course(org, course, run, self.user.id, fields=course_fields)
+            self.course_loc = course.location  # pylint: disable=attribute-defined-outside-init
+
+            def create_sub_tree(parent_loc, block_info):
+                """Recursively creates a sub_tree on this parent_loc with this block."""
+                block = self.store.create_child(
+                    self.user.id,
+                    # TODO remove version_agnostic() when we impl the single transaction
+                    parent_loc.version_agnostic(),
+                    block_info.category, block_id=block_info.block_id,
+                    fields=block_info.fields,
+                )
+                for tree in block_info.sub_tree:
+                    create_sub_tree(block.location, tree)
+                setattr(self, block_info.block_id, block.location.version_agnostic())
+
+            for tree in block_info_tree:
+                create_sub_tree(self.course_loc, tree)
+
+            # remove version_agnostic when bulk write works
+            self.store.publish(self.course_loc.version_agnostic(), self.user.id)
+        # mod to return course
+        # Note: Get course object to be able to use subtree by course.get_children()
+        return self.store.get_course(course.id)

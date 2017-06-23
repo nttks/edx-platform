@@ -49,6 +49,19 @@ class TestSubmittingProblems(EdXTestSubmittingProblems):
         self.refresh_course()
         return problem
 
+    def count_attempted_section(self):
+        """
+        Count the number of attempted sections from grade_summary.totaled_scores.
+        """
+        grade_summary = self.get_grade_summary()
+        totaled_scores = grade_summary.get('totaled_scores', {})
+        count = 0
+        for _, scores in totaled_scores.iteritems():
+            for score in scores:
+                if score.is_attempted:
+                    count += 1
+        return count
+
 
 @ddt.ddt
 class CourseGraderWholeAdditionPointTestMixin(object):
@@ -91,6 +104,7 @@ class CourseGraderWholeAdditionPointTestMixin(object):
         self.check_grade_percent(0)
         self.assertEqual(self.get_grade_summary()['grade'], None)
         self.assertEqual(self.score_for_hw('homework'), [0.0, 0.0, 0.0])
+        self.assertEqual(self.count_attempted_section(), 0)
 
     @ddt.data(
         ('p1', False),
@@ -111,8 +125,10 @@ class CourseGraderWholeAdditionPointTestMixin(object):
             self.check_grade_percent(0.33)
             self.assertEqual(self.get_grade_summary()['grade'], 'B')
             self.assertEqual(self.score_for_hw('homework'), [0.0, 1.0, 0.0])
+            self.assertEqual(self.count_attempted_section(), 0)
         else:
             self.check_grade_percent(0)
+            self.assertEqual(self.count_attempted_section(), 0)
 
     def test_grade_with_correct(self):
         """
@@ -127,6 +143,7 @@ class CourseGraderWholeAdditionPointTestMixin(object):
         self.check_grade_percent(1.0)
         self.assertEqual(self.get_grade_summary()['grade'], 'A')
         self.assertEqual(self.score_for_hw('homework'), [1.0, 1.0, 1.0])
+        self.assertEqual(self.count_attempted_section(), 1)
 
     def test_grade_with_incorrect(self):
         """
@@ -141,6 +158,7 @@ class CourseGraderWholeAdditionPointTestMixin(object):
         self.check_grade_percent(0.33)
         self.assertEqual(self.get_grade_summary()['grade'], 'B')
         self.assertEqual(self.score_for_hw('homework'), [0.0, 1.0, 0.0])
+        self.assertEqual(self.count_attempted_section(), 1)
 
 
 class CourseGraderChoiceTest(CourseGraderWholeAdditionPointTestMixin, TestSubmittingProblems):

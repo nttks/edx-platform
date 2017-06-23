@@ -45,6 +45,7 @@ class CourseDetailsTestCase(ModuleStoreTestCase):
         self.assertIsNone(details.individual_end_days, "individual_end_days somehow initialized " + str(details.individual_end_days))
         self.assertIsNone(details.individual_end_hours, "individual_end_hours somehow initialized " + str(details.individual_end_hours))
         self.assertIsNone(details.individual_end_minutes, "individual_end_minutes somehow initialized " + str(details.individual_end_minutes))
+        self.assertEqual(details.custom_logo_name, "")
 
     def test_update_and_fetch(self):
         SelfPacedConfiguration(enabled=True).save()
@@ -95,6 +96,11 @@ class CourseDetailsTestCase(ModuleStoreTestCase):
             self.assertEqual(
                 CourseDetails.update_from_json(self.course.id, jsondetails.__dict__, self.user).course_image_name,
                 jsondetails.course_image_name
+            )
+            jsondetails.custom_logo_name = "logo_image.jpg"
+            self.assertEqual(
+                CourseDetails.update_from_json(self.course.id, jsondetails.__dict__, self.user).custom_logo_name,
+                jsondetails.custom_logo_name
             )
             jsondetails.language = "hr"
             self.assertEqual(

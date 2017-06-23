@@ -203,7 +203,7 @@ def auth_pipeline_urls(auth_entry, redirect_url=None):
 POST_AUTH_PARAMS = ('course_id', 'enrollment_action', 'course_mode', 'email_opt_in', 'advanced_course')
 
 
-def get_next_url_for_login_page(request):
+def get_next_url_for_login_page(request, initial_mode=None):
     """
     Determine the URL to redirect to following login/registration/third_party_auth
 
@@ -218,7 +218,11 @@ def get_next_url_for_login_page(request):
     redirect_to = request.GET.get('next', None)
     if not redirect_to:
         try:
-            redirect_to = reverse('dashboard')
+            # Users who already logged-in should always go to dashboard
+            if initial_mode == 'register' and not request.user.is_authenticated():
+                redirect_to = reverse('notice_unactivated')
+            else:
+                redirect_to = reverse('dashboard')
         except NoReverseMatch:
             redirect_to = reverse('home')
     if any(param in request.GET for param in POST_AUTH_PARAMS):

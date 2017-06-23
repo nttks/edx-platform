@@ -426,6 +426,35 @@ CMS.URL.UPLOAD_ASSET = '${upload_asset_url}';
                   </div>
                 </li>
 
+                % if custom_logo_enabled:
+                <li class="field image" id="field-custom-logo">
+                  <label>${_("Your Own Logo")}</label>
+                  <div class="current current-custom-logo">
+                    % if context_course.custom_logo:
+                    <span class="wrapper-custom-logo">
+                      <img class="custom-logo" id="custom-logo" src="${custom_logo_for_url}" alt="${_("Your Own Logo")}"/>
+                    </span>
+                    <span class="msg msg-help">
+                    ${_("You can manage this image along with all of your other <a href='{}'>files &amp; uploads</a>").format(upload_asset_url)}
+                    </span>
+                    % else:
+                    <span class="wrapper-custom-logo">
+                      <img class="custom-logo placeholder" id="custom-logo" src="${custom_logo_for_url}" alt="${_("Your Own Logo")}"/>
+                    </span>
+                    <span class="msg msg-empty">${_("Please upload image (JPEG or PNG format, and dimensions are 300px wide by 95px tall)")}</span>
+                    % endif
+                  </div>
+                  <div class="wrapper-input">
+                    <div class="input">
+                      ## Translators: This is the placeholder text for a field that requests the URL for a course image
+                      <input type="text" dir="ltr" class="long new-custom-logo-url" id="custom-logo-url" value="" placeholder="${_("Your own logo")}" autocomplete="off" />
+                      <span class="tip tip-stacked">${_("Please provide a valid path and name to your custom logo (Note: only JPEG or PNG format supported)")}</span>
+                    </div>
+                    <button type="button" class="action action-upload-logo-image">${_("Upload custom logo")}</button>
+                  </div>
+                </li>
+                % endif
+
                 % if about_page_editable:
                 <li class="field video" id="field-course-introduction-video">
                   <label for="course-overview">${_("Course Introduction Video")}</label>

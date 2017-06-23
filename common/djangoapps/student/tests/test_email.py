@@ -1,6 +1,6 @@
 
+import datetime
 import json
-import django.db
 import unittest
 
 from student.tests.factories import UserFactory, RegistrationFactory, PendingEmailChangeFactory
@@ -70,14 +70,14 @@ class EmailTestMixin(object):
 class ActivationEmailTests(TestCase):
     """Test sending of the activation email. """
 
-    ACTIVATION_SUBJECT = "Activate Your edX Account"
+    ACTIVATION_SUBJECT = "Information of {platform} Member Registration".format(platform=settings.PLATFORM_NAME)
 
     # Text fragments we expect in the body of an email
     # sent from an OpenEdX installation.
     OPENEDX_FRAGMENTS = [
-        "Thank you for creating an account with ",
+        "Information of gacco Member Registration",
         "http://edx.org/activate/",
-        "This email message was automatically sent by "
+        "This message was generated automatically"
     ]
 
     # Text fragments we expect in the body of an email
@@ -149,11 +149,16 @@ class ReactivationEmailTests(EmailTestMixin, TestCase):
         """
         return json.loads(reactivation_email_for_user(user).content)
 
+    @unittest.skipUnless(settings.ROOT_URLCONF == 'lms.urls', "Test only valid in LMS")
     def assertReactivateEmailSent(self, email_user):
         """Assert that the correct reactivation email has been sent"""
+        expiration_date = datetime.datetime.now() + datetime.timedelta(settings.INTERVAL_DAYS_TO_MASK_UNACTIVATED_USER)
         context = {
             'name': self.user.profile.name,
-            'key': self.registration.activation_key
+            'key': self.registration.activation_key,
+            'expiration_year': expiration_date.year,
+            'expiration_month': expiration_date.month,
+            'expiration_day': expiration_date.day,
         }
 
         self.assertEmailUser(

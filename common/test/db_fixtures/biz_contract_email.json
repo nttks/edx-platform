@@ -1,0 +1,50 @@
+[
+  {
+    "pk": 1,
+    "model": "ga_contract_operation.contractmail",
+    "fields": {
+      "contract": null,
+      "mail_type": "RNU",
+      "mail_subject": "オンライン学習「gacco」の受講予定者の方へ",
+      "mail_body": "{email_address} の所有者の方へ Default Body For New User",
+      "created": "2016-03-01T12:00:53Z",
+      "modified": "2016-03-01T12:00:53Z"
+    }
+  },
+  {
+    "pk": 2,
+    "model": "ga_contract_operation.contractmail",
+    "fields": {
+      "contract": null,
+      "mail_type": "REU",
+      "mail_subject": "オンライン学習「gacco」の受講予定者の方へ",
+      "mail_body": "{username}様 Default Body For Existing User",
+      "created": "2016-03-01T12:00:53Z",
+      "modified": "2016-03-01T12:00:53Z"
+    }
+  },
+  {
+    "pk": 3,
+    "model": "ga_contract_operation.contractmail",
+    "fields": {
+      "contract": null,
+      "mail_type": "RNUWLC",
+      "mail_subject": "オンライン学習「gacco」の受講予定者の方へ",
+      "mail_body": "{email_address} の所有者の方へ Default Body Send Registration Mail for New User ",
+      "created": "2016-03-01T12:00:53Z",
+      "modified": "2016-03-01T12:00:53Z"
+    }
+  },
+  {
+    "pk": 4,
+    "model": "ga_contract_operation.contractmail",
+    "fields": {
+      "contract": null,
+      "mail_type": "REUWLC",
+      "mail_subject": "オンライン学習「gacco」の受講予定者の方へ",
+      "mail_body": "{username}様 Default Body Send Registration Mail for Existing User ",
+      "created": "2016-03-01T12:00:53Z",
+      "modified": "2016-03-01T12:00:53Z"
+    }
+  }
+]

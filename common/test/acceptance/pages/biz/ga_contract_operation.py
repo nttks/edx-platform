@@ -1,6 +1,8 @@
 """
 Contract operation pages of biz.
 """
+import re
+
 from . import BASE_URL
 from .ga_navigation import BizNavPage
 from .ga_w2ui import W2uiMixin, W2uiGrid, KEY_GRID_INDEX
@@ -122,3 +124,76 @@ class BizRegisterStudentsPage(BizNavPage, BizTaskHistoryMixin, W2uiMixin):
     def messages(self):
         """Return a list of errors displayed to the list view. """
         return self.q(css="div.main ul.messages li").text
+
+
+class BizMailPage(BizNavPage, W2uiMixin):
+    """
+    Mail page
+    """
+
+    @property
+    def url(self):
+        return '{base}/biz/contract_operation/mail'.format(base=BASE_URL)
+
+    def is_browser_on_page(self):
+        return self.pagetitle == u'E-Mail Management'
+
+    @property
+    def parameter_keys(self):
+        r = re.compile(u'^\{(\w+)\}')
+        return [m.group(1) for m in [r.search(el.text) for el in self.q(css='.w2ui-page .operation').results if el.is_displayed()] if m]
+
+    @property
+    def subject(self):
+        for el in self.q(css='.w2ui-page input[name="mail_subject"]').results:
+            if el.is_displayed():
+                return el.get_attribute('value')
+        return None
+
+    @property
+    def body(self):
+        for el in self.q(css='.w2ui-page textarea[name="mail_body"]').results:
+            if el.is_displayed():
+                return el.text
+        return None
+
+    def click_tab_for_new_user(self):
+        self.click_tab('For New User')
+        return self
+
+    def click_tab_for_existing_user(self):
+        self.click_tab('For Existing User')
+        return self
+
+    def click_tab_for_new_user_login_code(self):
+        self.click_tab('For New User with Login Code')
+        return self
+
+    def click_tab_for_existing_user_login_code(self):
+        self.click_tab('For Existing User with Login Code')
+        return self
+
+    def input(self, subject, body):
+        for el in self.q(css='.w2ui-page input[name="mail_subject"]').results:
+            if el.is_displayed():
+                el.clear()
+                el.send_keys(subject)
+        for el in self.q(css='.w2ui-page textarea[name="mail_body"]').results:
+            if el.is_displayed():
+                el.clear()
+                el.send_keys(body)
+        return self
+
+    def click_save_template(self):
+        for el in self.q(css='.w2ui-page .register-btn').results:
+            if el.is_displayed():
+                el.click()
+        self.wait_for_ajax()
+        return self
+
+    def click_send_test_mail(self):
+        for el in self.q(css='.w2ui-page .test-send-btn').results:
+            if el.is_displayed():
+                el.click()
+        self.wait_for_ajax()
+        return self
