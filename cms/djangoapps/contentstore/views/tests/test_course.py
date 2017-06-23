@@ -8,8 +8,6 @@ from django.test.utils import override_settings
 from contentstore.tests.utils import CourseTestCase
 from contentstore.utils import reverse_course_url
 
-CUSTOM_LOGO_URL = 'images_custom_logo.jpg'
-
 
 class TestCourseDisplayName(CourseTestCase):
     """
@@ -70,7 +68,7 @@ class TestSettingsHandlerForGet(CourseTestCase):
         response = self.client.get_json(self.course_details_url)
         whole_model = json.loads(response.content)
         self.assertIn('custom_logo_name', whole_model)
-        self.assertEqual(whole_model['custom_logo_name'], CUSTOM_LOGO_URL)
+        self.assertEqual(whole_model['custom_logo_name'], '')
 
     def test_app_json_for_get(self):
         """
@@ -81,4 +79,4 @@ class TestSettingsHandlerForGet(CourseTestCase):
         response = self.client.get(self.course_details_url, HTTP_ACCEPT='application/json')
         whole_model = json.loads(response.content)
         self.assertIn('custom_logo_name', whole_model)
-        self.assertEqual(whole_model['custom_logo_name'], CUSTOM_LOGO_URL)
+        self.assertEqual(whole_model['custom_logo_name'], '')

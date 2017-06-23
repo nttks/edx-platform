@@ -54,7 +54,8 @@ class TestInstructorDashboard(ModuleStoreTestCase, LoginEnrollmentTestCase, XssT
         super(TestInstructorDashboard, self).setUp()
         self.course = CourseFactory.create(
             grading_policy={"GRADE_CUTOFFS": {"A": 0.75, "B": 0.63, "C": 0.57, "D": 0.5}},
-            display_name='<script>alert("XSS")</script>'
+            display_name='<script>alert("XSS")</script>',
+            custom_logo='dummy.png'
         )
 
         self.course_mode = CourseMode(

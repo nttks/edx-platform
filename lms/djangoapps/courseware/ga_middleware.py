@@ -14,7 +14,8 @@ from opaque_keys import InvalidKeyError
 from opaque_keys.edx.keys import CourseKey
 
 from courseware.courses import get_course_with_access, get_permission_for_course_about
-from openedx.core.djangoapps.ga_optional.models import CourseOptionalConfiguration, CUSTOM_LOGO_OPTION_KEY
+from openedx.core.djangoapps.ga_optional.api import is_available
+from openedx.core.djangoapps.ga_optional.models import CUSTOM_LOGO_OPTION_KEY
 from openedx.core.lib.courses import custom_logo_url
 
 log = logging.getLogger(__name__)
@@ -86,7 +87,7 @@ class CustomLogoMiddleware(object):
         course_key = None
         matches = self.COURSE_URL_PATTERN.match(request.path)
         about_matches = self.COURSE_ABOUT_URL_PATTERN.match(request.path)
-        if matches or about_matches:
+        if matches:
             course_id = matches.group('course_id')
             if course_id:
                 try:
@@ -107,6 +108,6 @@ class CustomLogoMiddleware(object):
             except Http404:
                 return
             if course.custom_logo:
-                custom_logo_enabled = CourseOptionalConfiguration.is_available(CUSTOM_LOGO_OPTION_KEY, course_key)
+                custom_logo_enabled = is_available(CUSTOM_LOGO_OPTION_KEY, course_key)
                 request.custom_logo_enabled = custom_logo_enabled
                 request.custom_logo_for_url = custom_logo_url(course)

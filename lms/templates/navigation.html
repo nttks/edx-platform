@@ -42,7 +42,7 @@ site_status_msg = get_site_status_msg(course_id)
     <nav class="nav-wrapper" aria-label="${_('Global')}">
     <h1 class="logo">
       <%block name="navigation_logo">
-        % if hasattr(request, 'custom_logo_enabled') and request.custom_logo_enabled and hasattr(request, 'custom_logo_for_url') and request.custom_logo_for_url:
+        % if hasattr(request, 'custom_logo_enabled') and request.custom_logo_enabled and hasattr(request, 'custom_logo_for_url') and request.custom_logo_for_url and course:
           <img src="${request.custom_logo_for_url}" alt="${_("{course_org} Logo").format(course_org=course.org)}" id="custom-logo"/>
         % else:
           <img src="${static.url(branding.get_logo_url())}" alt="${_("{platform_name} Logo").format(platform_name=platform_name())}"/>

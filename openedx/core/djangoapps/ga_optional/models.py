@@ -23,10 +23,3 @@ class CourseOptionalConfiguration(ConfigurationModel):
         app_label = "ga_optional"
         verbose_name = _("Settings for the course optional feature")
         verbose_name_plural = _("Settings for the course optional feature")
-
-    @classmethod
-    def is_available(cls, key, course_key=None):
-        if course_key is not None:
-            return cls.current(key, course_key).enabled
-        else:
-            return False

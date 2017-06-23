@@ -23,7 +23,7 @@ class CourseImageTestCase(ModuleStoreTestCase):
         self.assertEquals(expected_url, actual_url)
 
     def test_get_custom_logo(self):
-        course = CourseFactory.create()
+        course = CourseFactory.create(custom_logo='dummy.png')
         self.verify_url(
             unicode(course.id.make_asset_key('asset', course.custom_logo)),
             custom_logo_url(course)
@@ -37,7 +37,7 @@ class CourseImageTestCase(ModuleStoreTestCase):
         Verify that if a course has empty `custom_logo`, `custom_logo_url` returns
         `DEFAULT_CUSTOM_LOGO_IMAGE_URL` defined in the settings.
         """
-        course = CourseFactory.create(custom_logo='', default_store=default_store)
+        course = CourseFactory.create(default_store=default_store)
         self.assertEquals(
             'static/test.png',
             custom_logo_url(course),

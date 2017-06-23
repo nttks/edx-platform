@@ -214,7 +214,7 @@ class CustomLogoMiddlewareTest(LoginEnrollmentTestCase, ModuleStoreTestCase):
     def setUp(self):
         super(CustomLogoMiddlewareTest, self).setUp()
 
-        self.course = CourseFactory.create(start=timezone.now() - timedelta(days=10))
+        self.course = CourseFactory.create(start=timezone.now() - timedelta(days=10), custom_logo='dummy.png')
 
     def _create_request(self, is_staff, path):
         self.setup_user()

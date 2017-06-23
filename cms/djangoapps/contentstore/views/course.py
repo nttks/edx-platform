@@ -64,7 +64,8 @@ from models.settings.encoder import CourseSettingsEncoder
 from openedx.core.djangoapps.content.course_structures.api.v0 import api, errors
 from openedx.core.djangoapps.credit.api import is_credit_course, get_credit_requirements
 from openedx.core.djangoapps.credit.tasks import update_credit_course_requirements
-from openedx.core.djangoapps.ga_optional.models import CourseOptionalConfiguration, CUSTOM_LOGO_OPTION_KEY
+from openedx.core.djangoapps.ga_optional.api import is_available
+from openedx.core.djangoapps.ga_optional.models import CUSTOM_LOGO_OPTION_KEY
 from openedx.core.djangoapps.models.course_details import CourseDetails
 from openedx.core.djangoapps.programs.models import ProgramsApiConfig
 from openedx.core.djangoapps.programs.utils import get_programs
@@ -861,7 +862,7 @@ def course_info_handler(request, course_key_string):
         if not course_module:
             raise Http404
         if 'text/html' in request.META.get('HTTP_ACCEPT', 'text/html'):
-            custom_logo_enabled = CourseOptionalConfiguration.is_available(CUSTOM_LOGO_OPTION_KEY, course_key)
+            custom_logo_enabled = is_available(CUSTOM_LOGO_OPTION_KEY, course_key)
 
             return render_to_response(
                 'course_info.html',
@@ -966,7 +967,7 @@ def settings_handler(request, course_key_string):
 
             self_paced_enabled = SelfPacedConfiguration.current().enabled
 
-            custom_logo_enabled = CourseOptionalConfiguration.is_available(CUSTOM_LOGO_OPTION_KEY, course_key)
+            custom_logo_enabled = is_available(CUSTOM_LOGO_OPTION_KEY, course_key)
 
             settings_context = {
                 'context_course': course_module,
