@@ -183,7 +183,8 @@ class Command(BaseCommand):
                             # Choice 'Not Attempted' section from user's score
                             grouped_target_sections_per_user = GroupedTargetSections()
                             for target_section in grouped_target_sections.target_sections:
-                                if record.get(target_section.column_name) == ScoreStore.VALUE__NOT_ATTEMPTED:
+                                # Note: record is None if user enrolled after update_biz_score_status finished. (#1980)
+                                if record is None or record.get(target_section.column_name) == ScoreStore.VALUE__NOT_ATTEMPTED:
                                     grouped_target_sections_per_user.append(target_section)
                             if grouped_target_sections_per_user.keys():
                                 target_courses_per_user.append(grouped_target_sections_per_user)
