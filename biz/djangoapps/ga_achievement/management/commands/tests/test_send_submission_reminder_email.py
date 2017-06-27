@@ -367,6 +367,22 @@ class SendSubmissionReminderEmailTest(BizStoreTestBase, ModuleStoreTestCase, Log
         call_command('send_submission_reminder_email', self.contract.id)
         self.assert_finished(0, 0, self.contract)
 
+    def test_if_user_has_enrolled_after_score_batch_finished(self):
+        self._profile(self.user)
+        self._register_contract(self.contract, self.user)
+
+        # Update score status (mark some sections as 'not attempted')
+        call_command('update_biz_score_status', self.contract.id)
+
+        # User enrolled after update_biz_score_status finished
+        user = UserFactory.create()
+        self._profile(user)
+        self._register_contract(self.contract, user)
+
+        call_command('send_submission_reminder_email', self.contract.id)
+        self.assert_finished(2, 0, self.contract)
+        self.assertEquals(self.mock_send_mail.call_count, 2)
+
     def test_error_by_send_email(self):
         self.mock_send_mail.side_effect = Exception()
 
