@@ -294,13 +294,13 @@ class BizStoreAggregateTest(BizStoreTestBase):
         self.assertDictEqual({u'science': 60.0, u'math': 40.0}, summary)
 
     def test_aggregate_exception(self):
-        self.test_store._collection.map_reduce = MagicMock(side_effect=_Exception())
+        self.test_store._collection.aggregate = MagicMock(side_effect=_Exception())
         with self.assertRaises(_Exception):
             self.test_store.aggregate('subject', 'score')
-        self.assertEqual(1, self.test_store._collection.map_reduce.call_count)
+        self.assertEqual(1, self.test_store._collection.aggregate.call_count)
 
     def test_aggregate_auto_retry(self):
-        self.test_store._collection.map_reduce = MagicMock(side_effect=AutoReconnect())
+        self.test_store._collection.aggregate = MagicMock(side_effect=AutoReconnect())
         with self.assertRaises(AutoReconnect):
             self.test_store.aggregate('subject', 'score')
-        self.assertEqual(5, self.test_store._collection.map_reduce.call_count)
+        self.assertEqual(5, self.test_store._collection.aggregate.call_count)

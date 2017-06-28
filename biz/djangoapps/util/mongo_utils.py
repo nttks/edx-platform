@@ -2,7 +2,6 @@
 MongoDB operation for Biz.
 Add mongodb operation method by the need.
 """
-from bson.code import Code
 from collections import OrderedDict
 import copy
 from datetime import datetime
@@ -125,35 +124,18 @@ class BizStore(object):
                 u'key3': 300.0,
             }
         """
-        mapper = Code(u'''
-            function() {{
-                emit(
-                    this.{key_field_name},
-                    this.{value_field_name}
-                );
-            }}
-        ''').format(
-            key_field_name=key_field_name,
-            value_field_name=value_field_name,
-        )
-        reducer = Code(u'''
-            function(key, values) {
-                var sum = 0;
-                values.forEach(function(value) {
-                    sum += value;
-                });
-                return sum;
-            }
-        ''')
         if conditions is None:
             conditions = {}
         _conditions = copy.deepcopy(self._key_conditions)
         _conditions.update(conditions)
         try:
-            results = list(self._collection.map_reduce(mapper, reducer, 'results', query=_conditions).find())
-            return dict([(result['_id'], result['value']) for result in results])
+            result = self._collection.aggregate([
+                {'$match': _conditions},
+                {'$group': {'_id': '${}'.format(key_field_name), 'total': {'$sum': '${}'.format(value_field_name)}}},
+            ])['result']
+            return dict([(d['_id'], d['total']) for d in result])
         except Exception as e:
-            log.error("Error occurred while processing map reduce to MongoDB: %s" % e)
+            log.error("Error occurred while processing aggregate to MongoDB: %s" % e)
             raise
 
     @autoretry_read()
