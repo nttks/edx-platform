@@ -168,7 +168,7 @@
                     });
 
                     // Listen for 'auth-complete' event so we can enroll/redirect the user appropriately.
-                    this.listenTo( this.subview.register, 'auth-complete', this.authComplete );
+                    this.listenTo( this.subview.register, 'auth-complete', this.registerAuthComplete );
                 },
 
                 institution_login: function ( unused ) {
@@ -274,6 +274,23 @@
                     this.redirect(this.thirdPartyAuth.finishAuthUrl);
                     // Note: the third party auth URL likely contains another redirect URL embedded inside
                 } else {
+                    this.redirect(this.nextUrl);
+                }
+            },
+
+            /**
+             * Once authentication at register account has completed successfully:
+             *
+             * If we're in a third party auth pipeline, we must complete the pipeline.
+             * Otherwise, redirect to the specified next step.
+             *
+             */
+            registerAuthComplete: function() {
+                if (this.thirdPartyAuth && this.thirdPartyAuth.finishAuthUrl) {
+                    this.redirect(this.thirdPartyAuth.finishAuthUrl);
+                    // Note: the third party auth URL likely contains another redirect URL embedded inside
+                } else {
+                    this.nextUrl = this.nextUrl.replace(/dashboard/, 'notice_unactivated');
                     this.redirect(this.nextUrl);
                 }
             },

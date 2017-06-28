@@ -50,7 +50,7 @@
                     '/account/finish_auth' +
                     '?course_id=edx%2FDemoX%2FFall' +
                     '&enrollment_action=enroll' +
-                    '&next=%2Fdashboard'
+                    '&next=%2Fnotice_unactivated'
                 ),
                 THIRD_PARTY_COMPLETE_URL = '/auth/complete/provider/';
 
@@ -195,7 +195,7 @@
                 view.subview.register.trigger('auth-complete');
 
                 // Since we did not provide a ?next query param, expect a redirect to the dashboard.
-                expect( view.redirect ).toHaveBeenCalledWith( '/dashboard' );
+                expect( view.redirect ).toHaveBeenCalledWith( '/notice_unactivated' );
             });
 
             it('proceeds with the third party auth pipeline if active', function() {
@@ -226,7 +226,7 @@
                 view.subview.register.trigger('auth-complete');
 
                 // Expect that we ignore the external URL and redirect to the dashboard
-                expect( view.redirect ).toHaveBeenCalledWith( "/dashboard" );
+                expect( view.redirect ).toHaveBeenCalledWith( "/notice_unactivated" );
             });
 
         });

@@ -10,6 +10,7 @@ import pytz
 
 from django.core.urlresolvers import reverse
 from django.conf import settings
+from django.test import TestCase
 
 from certificates.models import CertificateStatuses
 from certificates.tests.factories import GeneratedCertificateFactory
@@ -267,3 +268,34 @@ class TestBizStudentDashboardUnenrollments(BizContractTestBase):
             {'enrollment_action': 'unenroll', 'course_id': self.course_spoc7.id}
         )
         course_enrollment.assert_not_called()
+
+
+@unittest.skipUnless(settings.ROOT_URLCONF == 'lms.urls', 'Test only valid in lms')
+class TestNoticeUnactivated(TestCase):
+    """
+    Test to notice_unactivated.
+    """
+    USERNAME = 'foo'
+    PASSWORD = 'bar'
+
+    def test_user_is_active(self):
+        # Create a user account
+        self.user = UserFactory.create(
+            username=self.USERNAME,
+            password=self.PASSWORD,
+            is_active=True,
+        )
+        self.client.login(username=self.USERNAME, password=self.PASSWORD)
+        response = self.client.get(reverse('notice_unactivated'))
+        self.assertRedirects(response, '/dashboard', status_code=302, target_status_code=200)
+
+    def test_user_is_not_active(self):
+        # Create a user account
+        self.user = UserFactory.create(
+            username=self.USERNAME,
+            password=self.PASSWORD,
+            is_active=False,
+        )
+        self.client.login(username=self.USERNAME, password=self.PASSWORD)
+        response = self.client.get(reverse('notice_unactivated'))
+        self.assertRedirects(response, '/login?unactivated=true', status_code=302, target_status_code=200)
