@@ -18,6 +18,8 @@ from student.helpers import (
   DISABLE_UNENROLL_CERT_STATES,
 )
 from util.date_utils import get_time_display
+from ga_app.djangoapps.ga_diagnosis.models import DiagnosisInfo
+from openedx.core.djangoapps.ga_optional.models import DashboardOptionalConfiguration
 %>
 
 <%
@@ -29,6 +31,8 @@ from util.date_utils import get_time_display
   if cert_name_long == "":
     cert_name_long = settings.CERT_NAME_LONG
   billing_email = settings.PAYMENT_SUPPORT_EMAIL
+  view_course_button_conf = DashboardOptionalConfiguration.get_dict('view-course-button', enrollment.course_id)
+  is_ga_diagnosis_finished = DiagnosisInfo.is_finished(user, enrollment.course_id)
 %>
 
 <%namespace name='static' file='../static_content.html'/>
@@ -62,7 +66,17 @@ from util.date_utils import get_time_display
   <section class="details">
     <div class="wrapper-course-image" aria-hidden="true">
       % if show_courseware_link:
-        % if not is_course_blocked:
+        % if not is_course_blocked and view_course_button_conf:
+          % if is_ga_diagnosis_finished:
+            <a class="cover">
+              <img src="${course_overview.course_image_url}" class="course-image" alt="${_('{course_number} {course_name} Cover Image').format(course_number=course_overview.number, course_name=course_overview.display_name_with_default) | h}" />
+            </a>
+          % else:
+            <a href="${view_course_button_conf.get('href')}" data-course-key="${enrollment.course_id}" class="cover">
+              <img src="${course_overview.course_image_url}" class="course-image" alt="${_('{course_number} {course_name} Home Page').format(course_number=course_overview.number, course_name=course_overview.display_name_with_default) |h}" />
+            </a>
+          % endif
+        % elif not is_course_blocked:
             <a href="${course_target}" data-course-key="${enrollment.course_id}" class="cover">
               <img src="${course_overview.course_image_url}" class="course-image" alt="${_('{course_number} {course_name} Home Page').format(course_number=course_overview.number, course_name=course_overview.display_name_with_default) |h}" />
             </a>
@@ -109,11 +123,24 @@ from util.date_utils import get_time_display
           </a>
         </div>
       % endif
+      % if is_ga_diagnosis_finished:
+          <div class="advanced-course-information apply">
+              <a href="${reverse('ga_app:diagnosis:result', args=[enrollment.course_id])}" class="btn">
+                  ${_("View your MDA")}
+              </a>
+          </div>
+      % endif
     </div>
       <div class="wrapper-course-details">
         <h3 class="course-title">
           % if show_courseware_link:
-            % if not is_course_blocked:
+            % if not is_course_blocked and view_course_button_conf:
+              % if is_ga_diagnosis_finished:
+                <span>${course_overview.display_name_with_default}</span>
+              % else:
+                <a data-course-key="${enrollment.course_id}" href="${view_course_button_conf.get('href')}">${course_overview.display_name_with_default}</a>
+              % endif
+            % elif not is_course_blocked:
               <a data-course-key="${enrollment.course_id}" href="${course_target}">${course_overview.display_name_with_default}</a>
             % else:
               <a class="disable-look" data-course-key="${enrollment.course_id}">${course_overview.display_name_with_default}</a>
@@ -158,7 +185,13 @@ from util.date_utils import get_time_display
                   <a class="enter-course-blocked archived" data-course-key="${enrollment.course_id}">${_('View Archived Course')}<span class="sr">&nbsp;${course_overview.display_name_with_default}</span></a>
                 % endif
               % else:
-                % if not is_course_blocked:
+                % if not is_course_blocked and view_course_button_conf:
+                  % if is_ga_diagnosis_finished:
+                    <a class="enter-course-blocked" data-course-key="${enrollment.course_id}">${view_course_button_conf.get('parts_title')}<span class="sr">&nbsp;${course_overview.display_name_with_default}</span></a>
+                  % else:
+                    <a href="${view_course_button_conf.get('href')}" class="enter-course" data-course-key="${enrollment.course_id}">${view_course_button_conf.get('parts_title')}<span class="sr">&nbsp;${course_overview.display_name_with_default}</span></a>
+                  % endif
+                % elif not is_course_blocked:
                   <a href="${course_target}" class="enter-course" data-course-key="${enrollment.course_id}">${_('View Course')}<span class="sr">&nbsp;${course_overview.display_name_with_default}</span></a>
                 % else:
                   <a class="enter-course-blocked" data-course-key="${enrollment.course_id}">${_('View Course')}<span class="sr">&nbsp;${course_overview.display_name_with_default}</span></a>

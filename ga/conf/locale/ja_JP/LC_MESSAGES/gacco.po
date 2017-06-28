@@ -793,6 +793,10 @@ msgstr "有料講座 購入済み"
 msgid "Purchased Face-to-Face Course"
 msgstr "対面学習コース 購入済み"
 
+#: templates/dashboard/_dashboard_course_listing.html
+msgid "View your MDA"
+msgstr "MDA診断結果を確認する"
+
 #: templates/ga_advanced_course/choose.html
 msgid "Recommended: Online and Face-to-face course"
 msgstr "＜推奨＞ オンライン学習 + 対面学習"

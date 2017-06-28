@@ -431,6 +431,7 @@ BIZ_ROOT = REPO_ROOT / "biz"
 GACCO_ROOT = REPO_ROOT / "ga"
 ENV_ROOT = REPO_ROOT.dirname()  # virtualenv dir /edx-platform is in
 COURSES_ROOT = ENV_ROOT / "data"
+GA_APP_ROOT = REPO_ROOT / "ga_app"
 
 DATA_DIR = COURSES_ROOT
 
@@ -504,7 +505,8 @@ MAKO_TEMPLATES['main'] = [PROJECT_ROOT / 'templates',
                           COMMON_ROOT / 'templates',
                           COMMON_ROOT / 'lib' / 'capa' / 'capa' / 'templates',
                           COMMON_ROOT / 'djangoapps' / 'pipeline_mako' / 'templates',
-                          BIZ_ROOT / 'templates']
+                          BIZ_ROOT / 'templates',
+                          GA_APP_ROOT / 'templates']
 
 # Django templating
 TEMPLATES = [
@@ -520,6 +522,7 @@ TEMPLATES = [
             COMMON_ROOT / 'djangoapps' / 'pipeline_mako' / 'templates',
             COMMON_ROOT / 'static',  # required to statically include common Underscore templates
             BIZ_ROOT / 'templates',
+            GA_APP_ROOT / 'templates',
         ],
         # Options specific to this backend.
         'OPTIONS': {
@@ -865,6 +868,7 @@ STATICFILES_DIRS = [
     BIZ_ROOT / "static",
     COMMON_ROOT / "static",
     PROJECT_ROOT / "static",
+    GA_APP_ROOT / "static",
 ]
 
 FAVICON_PATH = 'images/favicon.ico'
@@ -2789,3 +2793,6 @@ COURSE_TERMINATED_CHECK_EXCLUDE_PATH = []
 
 ##### Settings for Biz #####
 from biz.envs.common import *
+
+##### Settings for GaApp #####
+from ga_app.envs.common import *

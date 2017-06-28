@@ -1,0 +1,80 @@
+a:link{
+  color: blue;
+  font-weight: bold;
+  text-decoration: underline;
+  font-style:normal;
+  text-transform: none;
+}
+a:visited{
+  color: blue;
+  font-weight: bold;
+  text-decoration: underline;
+  font-style:normal;
+  text-transform: none;
+}
+
+ul#id_regulation_state{
+  padding-top: 20px;
+  list-style: none;
+}
+
+img#course_logo{
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  padding-top: 80px;
+}
+
+div#course_info_title{
+  padding-top: 20px;
+  padding-left: 15px;
+  font-size: 130%;
+}
+
+div#course_info{
+  padding-top: 20px;
+  margin-left: auto;
+  margin-right: auto;
+  width: 90%;
+}
+
+table#table_course_info{
+}
+table#table_course_info tr td{
+  background-color: #EEEEEE;
+  padding: 10px 10px 10px 10px;
+}
+
+input#id_regulation_state_0{
+  display: block;
+  height: 26px;
+  float: left;
+  margin-right: 15px;
+}
+input#id_regulation_state_1{
+  display: block;
+  height: 26px;
+  float: left;
+  margin-right: 15px;
+}
+
+button[type="submit"]#entry{
+  background-image: none;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+button[type="submit"].entry-disable{
+  background-color: #666666;
+}
+
+button[type="submit"].entry-enable{
+  background-color: #F04124;
+}
+
+button[type="submit"].entry-enable:hover{
+  background-color: #D22D0F;
+}

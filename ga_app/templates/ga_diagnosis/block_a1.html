@@ -1,0 +1,286 @@
+<%inherit file="../main.html" />
+<%namespace name="static" file="../static_content.html" />
+
+<%!
+  from django.core.urlresolvers import reverse
+  from django.utils.translation import ugettext as _
+%>
+
+<%block name="pagetitle">${_('demo')}</%block>
+
+<%block name="js_extra">
+</%block>
+
+<%block name="headextra">
+<link rel="stylesheet" type="text/css" href="${static.url('css/ga_diagnosis/header.css')}" />
+<link rel="stylesheet" type="text/css" href="${static.url('css/ga_diagnosis/common-all.css')}" />
+<link rel="stylesheet" type="text/css" href="${static.url('css/ga_diagnosis/block_a1.css')}" />
+</%block>
+
+<%block name="bodyextra">
+<div id="agent-container">
+  <div id="header">
+    <table id="table-navigation-status-a1" background="${static.url('images/ga_diagnosis/block_a1.png')}">
+        <tr id="tr-navigation-status">
+          <td class="td-navigation-status-cls td-navigation-status-cls-now">基本情報</td>
+          <td class="td-navigation-status-cls">MDA</td>
+          <td class="td-navigation-status-cls">職務履歴</td>
+          <td class="td-navigation-status-cls">完了</td>
+        </tr>
+    </table>
+    <div id="header-title">基本情報登録</div>
+    <div id="header-caution">※ブラウザの「戻る」ボタンは押さないでください</div>
+    <div id="header-title-mobile">基本情報登録</div>
+    <hr id="header-title-line" />
+  </div>
+
+  <div id="main-contents-agent">
+    <form action="." method="post">
+      <table class="basic-info" align="center">
+        % if str(form['block1_01_1'].errors) != "" or str(form['block1_01_2'].errors) != "":
+        <tr class="tr-basic-info tr-question-1 tr-warning">
+        % else:
+        <tr class="tr-basic-info tr-question-1">
+        % endif
+          <td class="td-leftblock td-question">
+            <table class="inner-table"><tr>
+              <td class="td-title">
+                氏名<br>
+              </td>
+              <td class="td-require-mark">
+                <div class="required">必須</div>
+              </td>
+            </tr></table>
+          </td>
+          <td class="td-rightblock">
+            <table class="righttable righttable_float center-to-fon2"><tr>
+              <td class="name-space">
+                ${form['block1_01_1'].label}
+              </td>
+              <td class="border-right">
+                ${form['block1_01_1']}
+              </td>
+            </tr></table>
+            <table class="righttable center-to-fon2"><tr>
+              <td class="name-space">
+                ${form['block1_01_2'].label}
+              </td>
+              <td>
+                ${form['block1_01_2']}
+              </td>
+            </tr></table>
+            % if str(form['block1_01_1'].errors) != "" or str(form['block1_01_2'].errors) != "":
+            <table class="righttable">
+              <tr>
+                <td>
+                  % if str(form['block1_01_1'].errors) != "":
+                  <span class=warning>${form['block1_01_1'].errors}</span>
+                  % else:
+                    % if str(form['block1_01_2'].errors) != "":
+                    <span class=warning>${form['block1_01_2'].errors}</span>
+                    %endif
+                  %endif
+                </td>
+              </tr>
+            </table>
+            % endif
+          </td>
+        </tr>
+        % if str(form['block1_02_1'].errors) != "" or str(form['block1_02_2'].errors) != "":
+        <tr class="tr-basic-info tr-question-2 tr-warning">
+        % else:
+        <tr class="tr-basic-info tr-question-2">
+        % endif
+          <td class="td-leftblock td-question">
+            <table class="inner-table"><tr>
+              <td class="td-title">
+                氏名（全角カナ）<br>
+              </td>
+              <td class="td-require-mark">
+                <div class="required">必須</div>
+              </td>
+            </tr></table>
+          </td>
+          <td class="td-rightblock">
+            <table class="righttable righttable_float center-to-fon2"><tr>
+              <td class="name-space">
+                ${form['block1_02_1'].label}
+              </td>
+              <td class="border-right">
+                ${form['block1_02_1']}
+              </td>
+            </tr></table>
+            <table class="righttable center-to-fon2"><tr>
+              <td class="name-space">
+                ${form['block1_02_2'].label}
+              </td>
+              <td>
+                ${form['block1_02_2']}
+              </td>
+            </tr></table>
+            % if str(form['block1_02_1'].errors) != "" or str(form['block1_02_2'].errors) != "":
+            <table class="righttable">
+              <tr>
+                <td>
+                  % if str(form['block1_02_1'].errors) != "":
+                  <span class=warning>${form['block1_02_1'].errors}</span>
+                  % else:
+                    % if str(form['block1_02_2'].errors) != "":
+                    <span class=warning>${form['block1_02_2'].errors}</span>
+                    %endif
+                  %endif
+                </td>
+              </tr>
+            </table>
+            % endif
+          </td>
+        </tr>
+        % if str(form['block1_03'].errors) != "":
+        <tr class="tr-basic-info tr-question-3 tr-warning">
+        % else:
+        <tr class="tr-basic-info tr-question-3">
+        % endif
+          <td class="td-leftblock td-question">
+            <table class="inner-table"><tr>
+              <td class="td-title">
+                ${form['block1_03'].label}
+              </td>
+              <td class="td-changeline td-require-mark">
+                <div class="required">必須</div>
+              </td>
+            </tr></table>
+          </td>
+          <td class="td-rightblock">
+            <table class="inner-table center-to-fon"><tr>
+              <td colspan="4">
+                ${form['block1_03'][1]}　${form['block1_03'][2]}
+              </td>
+            % if str(form['block1_03'].errors) != "":
+            </tr>
+            <tr>
+              <td colspan="4">
+                <span class=warning>${form['block1_03'].errors}</span>
+              </td>
+            % endif
+            </tr></table>
+          </td>
+        </tr>
+        % if str(form['block1_04_1'].errors) != "" or str(form['block1_04_2'].errors) != "" or str(form['block1_04_3'].errors) != "":
+        <tr class="tr-basic-info tr-question-4 tr-warning">
+        % else:
+        <tr class="tr-basic-info tr-question-4">
+        % endif
+          <td class="td-leftblock td-question">
+            <table class="inner-table"><tr>
+              <td class="td-title">
+                生年月日
+              </td>
+              <td class="td-changeline td-require-mark">
+                <div class="required">必須</div>
+              </td>
+            </tr></table>
+          </td>
+          <td class="td-rightblock">
+            <table class="righttable righttable_float center-to-fon2"><tr>
+              <td>
+                ${form['block1_04_1']}
+                ${form['block1_04_1'].label}
+              </td>
+            </tr></table>
+            <table class="righttable righttable_float center-to-fon2"><tr>
+              <td>
+                ${form['block1_04_2']}
+                ${form['block1_04_2'].label}
+              </td>
+            </tr></table>
+            <table class="righttable center-to-fon2"><tr>
+              <td>
+                ${form['block1_04_3']}
+                ${form['block1_04_3'].label}
+              </td>
+            </tr></table>
+            % if str(form['block1_04_1'].errors) != "" or str(form['block1_04_2'].errors) != "" or str(form['block1_04_3'].errors) != "":
+            <table class="righttable">
+              <tr>
+                <td>
+                  % if str(form['block1_04_1'].errors) != "":
+                  <span class=warning>${form['block1_04_1'].errors}</span>
+                  % else:
+                    % if str(form['block1_04_2'].errors) != "":
+                    <span class=warning>${form['block1_04_2'].errors}</span>
+                    % else:
+                      % if str(form['block1_04_3'].errors) != "":
+                      <span class=warning>${form['block1_04_3'].errors}</span>
+                      %endif
+                    %endif
+                  %endif
+                </td>
+              </tr>
+            </table>
+            % endif
+          </td>
+        </tr>
+        % if str(form['block1_05'].errors) != "":
+        <tr class="tr-basic-info tr-question-5 tr-warning">
+        % else:
+        <tr class="tr-basic-info tr-question-5">
+        % endif
+          <td class="td-leftblock td-question">
+            <table class="inner-table"><tr>
+              <td class="td-title">
+                ${form['block1_05'].label}<br>
+                (半角英数字)<br>
+                ※携帯メール不可<br>
+              </td>
+              <td class="td-changeline td-require-mark">
+                <div class="required">必須</div>
+              </td>
+            </tr></table>
+          </td>
+          <td class="td-rightblock">
+            <table class="inner-table center-to-fon"><tr>
+              <td colspan="4">
+                転職に関するメールが届きます。秘密厳守の為、勤務先メールアドレスを使用しない事を推奨します<br>
+                ${form['block1_05']}<br>
+              </td>
+            </tr>
+            <tr>
+              <td colspan="4">
+                ${form['block1_05_']}　確認のため、もう一度入力してください
+              </td>
+            </tr></table>
+            % if str(form['block1_05'].errors) != "" or str(form['block1_05_'].errors) != "":
+            <table class="righttable">
+              <tr>
+                <td>
+                  % if str(form['block1_05'].errors) != "":
+                  <span class=warning>${form['block1_05'].errors}</span>
+                  % else:
+                    % if str(form['block1_05_'].errors) != "":
+                    <span class=warning>${form['block1_05_'].errors}</span>
+                    %endif
+                  %endif
+                </td>
+              </tr>
+            </table>
+            % endif
+          </td>
+        </tr>
+      </table>
+        <div id="footer-button-line">
+          <div class="btn-back">
+            <table>
+              <tr><td>
+                <a class="footer-btn-back" href='${reverse('ga_app:diagnosis:index', args=[course_id])}'>最初に戻る</a>
+              </td></tr>
+            </table>
+          </div>
+          <div class="btn-next">
+            <input type="hidden" name="csrfmiddlewaretoken" value="${ csrf_token }"/>
+            <button type="submit" class="footer-btn footer-btn-next" >次へ</button>
+          </div>
+        </div>
+      </form>
+  </div>
+</div>
+</%block>

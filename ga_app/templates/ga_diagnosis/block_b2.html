@@ -1,0 +1,173 @@
+<%inherit file="../main.html" />
+<%namespace name="static" file="../static_content.html" />
+
+<%!
+  from django.core.urlresolvers import reverse
+  from django.utils.translation import ugettext as _
+%>
+
+<%block name="pagetitle">${_('demo')}</%block>
+
+<%block name="js_extra">
+  <script type="text/javascript" src="${static.url('js/ga_diagnosis/pulldown_narrows.js')}"></script>
+</%block>
+
+<%block name="headextra">
+<link rel="stylesheet" type="text/css" href="${static.url('css/ga_diagnosis/header.css')}" />
+<link rel="stylesheet" type="text/css" href="${static.url('css/ga_diagnosis/common-all.css')}" />
+<link rel="stylesheet" type="text/css" href="${static.url('css/ga_diagnosis/block_a1.css')}" />
+<link rel="stylesheet" type="text/css" href="${static.url('css/ga_diagnosis/block_a3.css')}" />
+</%block>
+
+<%block name="bodyextra">
+<div id="agent-container">
+  <div id="header">
+    <table id="table-navigation-status-a3" background="${static.url('images/ga_diagnosis/block_b2.png')}">
+        <tr id="tr-navigation-status">
+          <td class="td-navigation-status-cls">MDA</td>
+          <td class="td-navigation-status-cls td-navigation-status-cls-now">職務履歴</td>
+          <td class="td-navigation-status-cls">完了</td>
+        </tr>
+    </table>
+    <div id="header-title">職務履歴</div>
+    <div id="header-caution">※ブラウザの「戻る」ボタンは押さないでください</div>
+    <div id="header-title-mobile">職務履歴</div>
+    <hr id="header-title-line" />
+  </div>
+
+  <form action="." method="post">
+  <div id="main-contents-agent">
+    <table class="basic-info" align="center">
+      % if str(form['block3_18_'].errors) != "" or str(form['block3_18'].errors) != "":
+      <tr class="tr-basic-info tr-question-18 tr-warning">
+      % else:
+      <tr class="tr-basic-info tr-question-18">
+      % endif
+        <td class="td-leftblock td-question">
+          <table class="inner-table"><tr>
+            <td class="td-title">
+              Q1　${form['block3_18_'].label}
+            </td>
+            <td class="td-changeline td-require-mark">
+              <div class="required">必須</div>
+            </td>
+          </tr></table>
+        </td>
+        <td class="td-rightblock">
+          <table class="inner-table"><tr>
+            <td class="list-display-block">
+              大分類<br>
+              ${form['block3_18_']}
+            </td>
+            <td class="list-display-block">
+              小分類<br>
+              ${form['block3_18']}
+            </td>
+          % if str(form['block3_18_'].errors) != "" or str(form['block3_18'].errors) != "":
+          </tr>
+          <tr>
+            <td>
+              % if str(form['block3_18_'].errors) != "":
+              <span class=warning>${form['block3_18_'].errors}</span>
+              % else:
+                % if str(form['block3_18'].errors) != "":
+                <span class=warning>${form['block3_18'].errors}</span>
+                % endif
+              % endif
+            </td>
+          % endif
+          </tr></table>
+        </td>
+      </tr>
+      % if str(form['block3_19'].errors) != "":
+      <tr class="tr-basic-info tr-question-19 tr-warning">
+      % else:
+      <tr class="tr-basic-info tr-question-19">
+      % endif
+        <td class="td-leftblock td-question">
+          <table class="inner-table"><tr>
+            <td class="td-title">
+              Q2　${form['block3_19'].label}
+            </td>
+            <td class="td-changeline td-require-mark">
+              <div class="required">必須</div>
+            </td>
+          </tr></table>
+        </td>
+        <td class="td-rightblock">
+          <table class="inner-table"><tr>
+            <td>
+              ${form['block3_19']}
+            </td>
+        % if str(form['block3_19'].errors) != "":
+          </tr>
+          <tr>
+            <td>
+              <span class=warning>${form['block3_19'].errors}</span>
+            </td>
+          % endif
+          </tr></table>
+        </td>
+      </tr>
+      % if str(form['block2b_3'].errors) != "":
+      <tr class="tr-basic-info tr-question-1 tr-warning">
+      % else:
+      <tr class="tr-basic-info tr-question-1">
+      % endif
+        <td class="td-leftblock td-question">
+          <table class="inner-table"><tr>
+            <td class="td-title">
+                Q3　${form['block2b_3'].label}
+            </td>
+            <td class="td-require-mark">
+              <div class="required">必須</div>
+            </td>
+          </tr></table>
+        </td>
+        <td class="td-rightblock">
+          <table class="inner-table"><tr>
+            <td>
+              ${form['block2b_3']}
+            </td>
+          % if str(form['block2b_3'].errors) != "":
+          </tr>
+          <tr>
+            <td>
+              <span class=warning>${form['block2b_3'].errors}</span>
+            </td>
+          % endif
+          </tr></table>
+        </td>
+      </tr>
+    </table>
+  </div>
+
+  <div id="footer-button-line">
+    <div class="btn-back">
+      <table>
+      <tr><td>
+        <a class="footer-btn-back" href='${reverse('ga_app:diagnosis:index', args=[course_id])}'>最初に戻る</a>
+      </td></tr>
+    </table>
+    </div>
+    <div class="btn-next">
+      <input type="hidden" name="csrfmiddlewaretoken" value="${ csrf_token }"/>
+      <button type="submit" class="footer-btn footer-btn-next" >提出する</button>
+    </div>
+  </div>
+  </form>
+</div>
+
+<script type="text/javascript">
+$(function () {
+  var id_block3_18_children = $("#id_block3_18"),
+      id_block3_18_original = id_block3_18_children.html();
+
+  initGaDiagnosisPullDown([id_block3_18_children]);
+
+  $("#id_block3_18_").on("change", function () {
+    changeGaDiagnosisPullDown(this, id_block3_18_children, id_block3_18_original);
+  });
+});
+</script>
+</%block>

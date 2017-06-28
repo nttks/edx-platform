@@ -850,6 +850,11 @@ urlpatterns += (
     url(r'^biz/', include('biz.urls', namespace='biz')),
 )
 
+# GaApp
+urlpatterns += (
+    url(r'^ga_app/', include('ga_app.urls', namespace='ga_app')),
+)
+
 if settings.FEATURES.get('AUTH_USE_OPENID_PROVIDER'):
     urlpatterns += (
         url(r'^openid/provider/login/$', 'external_auth.views.provider_login', name='openid-provider-login'),

@@ -1,0 +1,152 @@
+<%inherit file="../main.html" />
+<%namespace name="static" file="../static_content.html" />
+<%!
+  from django.core.urlresolvers import reverse
+  from django.utils.translation import ugettext as _
+%>
+
+<%block name="pagetitle">${_('demo')}</%block>
+
+<%block name="js_extra">
+</%block>
+<%block name="headextra">
+<link rel="stylesheet" type="text/css" href="${static.url('css/ga_diagnosis/header.css')}" />
+<link rel="stylesheet" type="text/css" href="${static.url('css/ga_diagnosis/common-all.css')}" />
+<link rel="stylesheet" type="text/css" href="${static.url('css/ga_diagnosis/result.css')}" />
+<link rel="stylesheet" type="text/css" href="${static.url('css/ga_diagnosis/pre_result.css')}" />
+</%block>
+
+<%block name="bodyextra">
+<div id="agent-container">
+  <div id="header">
+    % if is_gacco_regulation_state:
+    <table id="table-navigation-status-a2-or-b1" background="${static.url('images/ga_diagnosis/block_b1.png')}">
+      <tr id="tr-navigation-status">
+        <td class="td-navigation-status-cls td-navigation-status-cls-now">MDA</td>
+        <td class="td-navigation-status-cls">職務履歴</td>
+        <td class="td-navigation-status-cls">完了</td>
+      </tr>
+    </table>
+    % else:
+    <table id="table-navigation-status-a2-or-b1" background="${static.url('images/ga_diagnosis/block_a2.png')}">
+      <tr id="tr-navigation-status">
+        <td class="td-navigation-status-cls">基本情報</td>
+        <td class="td-navigation-status-cls td-navigation-status-cls-now">MDA</td>
+        <td class="td-navigation-status-cls">職務履歴</td>
+        <td class="td-navigation-status-cls">完了</td>
+      </tr>
+    </table>
+    % endif
+    <table class="table-header-report">
+      <tr class="tr-header-report">
+        <td class="td-header-report-right">※ブラウザの「戻る」ボタンは押さないでください。</td>
+      </tr>
+      <tr class="tr-header-report">
+        <td class="td-header-report-left">■仕事でのあなたの志向傾向</td>
+      </tr>
+    </table>
+    <hr id="header-title-line" />
+  </div>
+</div>
+
+<div id="main-contents-agent-report">
+  <div class="prereport-message-top">
+    あなたが希望する年収グループの平均と志向傾向を比較しました。<br>
+    各指標の特性は、以下の通りです。<br>
+  </div>
+
+  <div class="table-description">
+    <table class="table-description-a">
+      <tr class="tr-description-a">
+        <td class="td-description-a">
+          A　【論理・理性タイプ】<BR>
+          ・業務の効率的な進め方を見つけるのが得意です<BR>
+          ・給与や労働条件が重要なポイントです<BR>
+          ・自分にとってやや高めの定量的な目標を設定するとやる気がアップします<BR>
+        </td>
+      </tr>
+    </table>
+
+    <table class="table-description-b">
+      <tr class="tr-description-b">
+        <td class="td-description-b">
+          B　【堅実・計画タイプ】<BR>
+         ・計画立てて業務遂行することが得意です<BR>
+         ・自分の評価や雇用の安定性が重要なポイントです<BR>
+         ・明確な目標設定ができるとやる気がアップします<BR>
+        </td>
+      </tr>
+    </table>
+    <table class="table-description-c">
+      <tr class="tr-description-c">
+        <td class="td-description-c">
+          C　【感覚・友好タイプ】<BR>
+          ・良好な人間関係を築きながら業務を進めることが得意です<BR>
+          ・職場の風土やコミュニケーションが重要なポイントです <BR>
+          ・会社の周囲や取引先からの期待を通じてやる気がアップします<BR>
+        </td>
+      </tr>
+    </table>
+    <table class="table-description-d">
+      <tr class="tr-description-d">
+        <td class="td-description-d">
+          D　【冒険・創造タイプ】<BR>
+            ・業務を進めるにあたり、独自の発想で切り開いていくことが得意です<BR>
+            ・会社の理念や方向性が重要なポイントです<BR>
+            ・自由に創造できる環境、機会、裁量でやる気がアップします<BR>
+        </td>
+      </tr>
+    </table>
+    <table class="table-description-e">
+      <tr class="tr-description-e">
+        <td class="td-description-e">
+          E　【自己実現タイプ】<BR>
+          ・業務を社会における自己実現の一環として捉える傾向があります<BR>
+          ・自分の将来像につながっているか、重要なポイントです<BR>
+          ・社会課題の解決に向けた業務に就くことでやる気がアップします<BR>
+        </td>
+      </tr>
+    </table>
+  </div>
+  <table id="table-legend">
+    <tr id="tr-legend">
+      <td id="td-legend-left">
+        <img src="${static.url('images/ga_diagnosis/legend_blue.png')}">
+      </td>
+      <td id="td-legend-right">
+        青線：あなた
+      </td>
+    </tr>
+    <tr id="tr-legend">
+      <td id="td-legend-left">
+        <img src="${static.url('images/ga_diagnosis/legend_red.png')}">
+      </td>
+      <td id="td-legend-right">
+        赤線：「希望年収」平均
+      </td>
+    </tr>
+  </table>
+  <img class="report-chart" src="data:image/png;base64,${radar_chart}">
+
+  <div class="prereport-message-bottom">
+    MDA診断はまだ続きます。<br>
+    次のアンケートに答えると、年収に加えてさらに希望の業種グループとの比較ができます。<br>
+  </div>
+
+  <form action="." method="post">
+    <div id="footer-button-line">
+      <div class="btn-back">
+        <table>
+        <tr><td>
+          <a class="footer-btn-back" href='${reverse('ga_app:diagnosis:index', args=[course_id])}'>最初に戻る</a>
+        </td></tr>
+      </table>
+      </div>
+      <div class="btn-next">
+        <input type="hidden" name="csrfmiddlewaretoken" value="${ csrf_token }"/>
+        <button type="submit" class="footer-btn footer-btn-next" >次へ</button>
+      </div>
+    </div>
+  </form>
+</div>
+</%block>

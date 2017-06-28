@@ -594,3 +594,6 @@ FEATURES['ENABLE_FINANCIAL_ASSISTANCE_FORM'] = True
 
 ##### Settings for Biz #####
 from biz.envs.test import *
+
+##### Settings for GaApp #####
+from ga_app.envs.test import *

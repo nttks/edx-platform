@@ -1,0 +1,744 @@
+class="warning"<%inherit file="../main.html" />
+<%namespace name="static" file="../static_content.html" />
+
+<%!
+  from django.core.urlresolvers import reverse
+  from django.utils.translation import ugettext as _
+%>
+
+<%block name="pagetitle">${_('demo')}</%block>
+
+<%block name="js_extra">
+<script type="text/javascript" src="${static.url('js/ga_diagnosis/pulldown_narrows.js')}"></script>
+</%block>
+
+<%block name="headextra">
+<link rel="stylesheet" type="text/css" href="${static.url('css/ga_diagnosis/header.css')}" />
+<link rel="stylesheet" type="text/css" href="${static.url('css/ga_diagnosis/common-all.css')}" />
+<link rel="stylesheet" type="text/css" href="${static.url('css/ga_diagnosis/block_a1.css')}" />
+<link rel="stylesheet" type="text/css" href="${static.url('css/ga_diagnosis/block_a3.css')}" />
+</%block>
+
+<%block name="bodyextra">
+<div id="agent-container">
+  <div id="header">
+    <table id="table-navigation-status-a3" background="${static.url('images/ga_diagnosis/block_a3.png')}">
+        <tr id="tr-navigation-status">
+          <td class="td-navigation-status-cls">基本情報</td>
+          <td class="td-navigation-status-cls">MDA</td>
+          <td class="td-navigation-status-cls td-navigation-status-cls-now">職務履歴</td>
+          <td class="td-navigation-status-cls">完了</td>
+        </tr>
+    </table>
+    <div id="header-title">職務履歴</div>
+    <div id="header-caution">※ブラウザの「戻る」ボタンは押さないでください</div>
+    <div id="header-title-mobile">職務履歴</div>
+    <hr id="header-title-line" />
+  </div>
+</div>
+<form action="." method="post">
+  <div id="main-contents-agent">
+    <table class="basic-info" align="center">
+      % if str(form['block3_01'].errors) != "":
+      <tr class="tr-basic-info tr-question-1 tr-warning">
+      % else:
+      <tr class="tr-basic-info tr-question-1">
+      % endif
+        <td class="td-leftblock td-question">
+          <table class="inner-table"><tr>
+            <td class="td-title">
+                Q1　${form['block3_01'].label}
+            </td>
+            <td class="td-require-mark">
+              <div class="required">必須</div>
+            </td>
+          </tr></table>
+        </td>
+        <td class="td-rightblock">
+          <table class="inner-table"><tr>
+            <td>
+              ${form['block3_01']}
+            </td>
+          % if str(form['block3_01'].errors) != "":
+          </tr>
+          <tr>
+            <td >
+              <span class="warning">${form['block3_01'].errors}</span>
+            </td>
+          % endif
+          </tr></table>
+        </td>
+      </tr>
+      % if str(form['block3_02'].errors) != "":
+      <tr class="tr-basic-info tr-question-2 tr-warning">
+      % else:
+      <tr class="tr-basic-info tr-question-2">
+      % endif
+        <td class="td-leftblock td-question">
+          <table class="inner-table"><tr>
+            <td class="td-title">
+              Q2　${form['block3_02'].label}
+            </td>
+            <td class="td-changeline td-require-mark">
+              <div class="required">必須</div>
+            </td>
+          </tr></table>
+        </td>
+        <td class="td-rightblock">
+          <table class="inner-table"><tr>
+            <td >
+              ${form['block3_02']}
+            </td>
+          % if str(form['block3_02'].errors) != "":
+          </tr>
+          <tr>
+            <td>
+              <span class="warning">${form['block3_02'].errors}</span>
+            </td>
+          % endif
+          </tr></table>
+        </td>
+      </tr>
+      % if str(form['block3_03_1'].errors) != "" or str(form['block3_03_2'].errors) != "" or str(form['block3_03_3'].errors) != "":
+      <tr class="tr-basic-info tr-question-3 tr-warning">
+      % else:
+      <tr class="tr-basic-info tr-question-3">
+      % endif
+        <td class="td-leftblock td-question">
+          <table class="inner-table"><tr>
+            <td class="td-title">
+              Q3　${form['block3_03_1'].label}（半角数字）
+            </td>
+            <td class="td-changeline td-require-mark">
+              <div class="required">必須</div>
+            </td>
+          </tr></table>
+        </td>
+        <td class="td-rightblock">
+          <table class="inner-table"><tr>
+            <td class="td-display">
+              ${form['block3_03_1']}
+              <div style="padding: 0px 1px; display: inline-block;">-</div>
+              ${form['block3_03_2']}
+              <div style="padding: 0px 1px; display: inline-block;">-</div>
+              ${form['block3_03_3']}
+            </td>
+          % if str(form['block3_03_1'].errors) != "" or str(form['block3_03_2'].errors) != "" or str(form['block3_03_3'].errors) != "":
+          </tr>
+          <tr>
+            <td>
+              % if str(form['block3_03_1'].errors) != "":
+              <span class="warning">${form['block3_03_1'].errors}</span>
+              % else:
+                % if str(form['block3_03_2'].errors) != "":
+                <span class="warning">${form['block3_03_2'].errors}</span>
+                % else:
+                  % if str(form['block3_03_3'].errors) != "":
+                  <span class="warning">${form['block3_03_3'].errors}</span>
+                  % endif
+                % endif
+              % endif
+            </td>
+          % endif
+          </tr></table>
+        </td>
+      </tr>
+      % if str(form['block3_04'].errors) != "":
+      <tr class="tr-basic-info tr-question-4 tr-warning">
+      % else:
+      <tr class="tr-basic-info tr-question-4">
+      % endif
+        <td class="td-leftblock td-question">
+          <table class="inner-table"><tr>
+            <td class="td-title">
+              Q4　${form['block3_04'].label}
+            </td>
+            <td class="td-changeline td-require-mark">
+              <div class="required">必須</div>
+            </td>
+          </tr></table>
+        </td>
+        <td class="td-rightblock">
+          <table class="inner-table"><tr>
+            <td>
+              ${form['block3_04']}
+            </td>
+          % if str(form['block3_04'].errors) != "":
+          </tr>
+          <tr>
+            <td>
+              <span class="warning">${form['block3_04'].errors}</span>
+            </td>
+          % endif
+          </tr></table>
+        </td>
+      </tr>
+      % if str(form['block3_05'].errors) != "":
+      <tr class="tr-basic-info tr-question-5 tr-warning">
+      % else:
+      <tr class="tr-basic-info tr-question-5">
+      % endif
+        <td class="td-leftblock td-question">
+          <table class="inner-table"><tr>
+            <td class="td-title">
+              Q5　${form['block3_05'].label}
+            </td>
+            <td class="td-changeline td-require-mark">
+              <div class="required">必須</div>
+            </td>
+          </tr></table>
+        </td>
+        <td class="td-rightblock">
+          <table class="inner-table"><tr>
+            <td>
+              ${form['block3_05']}
+            </td>
+          % if str(form['block3_05'].errors) != "":
+          </tr>
+          <tr>
+            <td>
+              <span class="warning">${form['block3_05'].errors}</span>
+            </td>
+          % endif
+          </tr></table>
+        </td>
+        </tr>
+        % if str(form['block3_06'].errors) != "":
+        <tr class="tr-basic-info tr-question-6 tr-warning">
+        % else:
+        <tr class="tr-basic-info tr-question-6">
+        % endif
+        <td class="td-leftblock td-question">
+          <table class="inner-table"><tr>
+            <td class="td-title">
+              Q6　${form['block3_06'].label}
+            </td>
+            <td class="td-changeline td-require-mark">
+              <div class="required">必須</div>
+            </td>
+          </tr></table>
+        </td>
+        <td class="td-rightblock">
+          <table class="inner-table"><tr>
+            <td>
+              ${form['block3_06']}
+            </td>
+          % if str(form['block3_06'].errors) != "":
+          </tr>
+          <tr>
+            <td>
+              <span class="warning">${form['block3_06'].errors}</span>
+            </td>
+          % endif
+          </tr></table>
+        </td>
+      </tr>
+      <tr>
+        <td colspan="2">
+          現在の就労状況を記入ください。
+        </td>
+      </tr>
+      % if str(form['block3_07'].errors) != "":
+      <tr class="tr-basic-info tr-question-7 tr-warning">
+      % else:
+      <tr class="tr-basic-info tr-question-7">
+      % endif
+        <td class="td-leftblock td-question">
+          <table class="inner-table"><tr>
+            <td class="td-title">
+              Q7　${form['block3_07'].label}
+            </td>
+            <td class="td-changeline td-require-mark">
+              <div class="required">必須</div>
+            </td>
+          </tr></table>
+        </td>
+        <td class="td-rightblock">
+          <table class="inner-table"><tr>
+            <td colspan="4">
+              ${form['block3_07'][1]}　${form['block3_07'][2]}
+            </td>
+          % if str(form['block3_07'].errors) != "":
+          </tr>
+          <tr>
+            <td>
+              <span class="warning">${form['block3_07'].errors}</span>
+            </td>
+          % endif
+          </tr></table>
+        </td>
+      </tr>
+      % if str(form['block3_08'].errors) != "":
+      <tr class="tr-basic-info tr-question-8 tr-warning">
+      % else:
+      <tr class="tr-basic-info tr-question-8">
+      % endif
+        <td class="td-leftblock td-question">
+          <table class="inner-table"><tr>
+            <td class="td-title">
+              Q8　${form['block3_08'].label}
+            </td>
+            <td class="td-changeline td-require-mark">
+              <div class="required">必須</div>
+            </td>
+          </tr></table>
+        </td>
+        <td class="td-rightblock">
+          <table class="inner-table"><tr>
+            <td>
+              ${form['block3_08']}
+            </td>
+          % if str(form['block3_08'].errors) != "":
+          </tr>
+          <tr>
+            <td>
+              <span class="warning">${form['block3_08'].errors}</span>
+            </td>
+          % endif
+          </tr></table>
+        </td>
+      </tr>
+      % if str(form['block3_09_1'].errors) != "" or str(form['block3_09_2'].errors) != "" or str(form['block3_09_3'].errors) != "" or str(form['block3_09_4'].errors) != "":
+      <tr class="tr-basic-info tr-question-9 tr-warning">
+      % else:
+      <tr class="tr-basic-info tr-question-9">
+      % endif
+        <td class="td-leftblock td-question">
+          <table class="inner-table"><tr>
+            <td class="td-title">
+              Q9　${form['block3_09_1'].label}
+            </td>
+            <td class="td-require-mark">
+              <div class="required">必須</div>
+            </td>
+          </tr></table>
+        </td>
+        <td class="td-rightblock">
+
+          <table class="righttable righttable_float center-to-fon2"><tr>
+            <td class="period-space">
+              開始年月
+            </td>
+            <td class="border-right">
+              ${form['block3_09_1']}年${form['block3_09_2']}月　～
+            </td>
+          </tr></table>
+          <table class="righttable center-to-fon2"><tr>
+            <td class="period-space">
+              終了年月
+            </td>
+            <td>
+              ${form['block3_09_3']}年${form['block3_09_4']}月
+            </td>
+          </tr></table>
+          <div style="padding-left: 10px; padding-top: 10px">現職中の場合、終了年月は記入しないでください。</div>
+          % if str(form['block3_09_1'].errors) != "" or str(form['block3_09_2'].errors) != "" or str(form['block3_09_3'].errors) != "" or str(form['block3_09_4'].errors) != "":
+          <table class="righttable">
+            <tr>
+              <td>
+                % if str(form['block3_09_1'].errors) != "":
+                <span class="warning">${form['block3_09_1'].errors}</span>
+                % else:
+                  % if str(form['block3_09_2'].errors) != "":
+                  <span class="warning">${form['block3_09_2'].errors}</span>
+                  % else:
+                    % if str(form['block3_09_3'].errors) != "":
+                    <span class="warning">${form['block3_09_3'].errors}</span>
+                    % else:
+                      % if str(form['block3_09_4'].errors) != "":
+                      <span class="warning">${form['block3_09_4'].errors}</span>
+                      % endif
+                    % endif
+                  % endif
+                % endif
+              </td>
+            </tr>
+          </table>
+          % endif
+        </td>
+      </tr>
+      % if str(form['block3_10'].errors) != "":
+      <tr class="tr-basic-info tr-question-10 tr-warning">
+      % else:
+      <tr class="tr-basic-info tr-question-10">
+      % endif
+        <td class="td-leftblock td-question">
+          <table class="inner-table"><tr>
+            <td class="td-title">
+              Q10　${form['block3_10'].label}
+            </td>
+            <td class="td-changeline td-require-mark">
+              <div class="required">必須</div>
+            </td>
+          </tr></table>
+        </td>
+        <td class="td-rightblock">
+          <table class="inner-table"><tr>
+            <td>
+              ${form['block3_10']}
+            </td>
+          % if str(form['block3_10'].errors) != "":
+          </tr>
+          <tr>
+            <td>
+              <span class="warning">${form['block3_10'].errors}</span>
+            </td>
+          % endif
+          </tr></table>
+        </td>
+      </tr>
+      % if str(form['block3_11'].errors) != "":
+      <tr class="tr-basic-info tr-question-11 tr-warning">
+      % else:
+      <tr class="tr-basic-info tr-question-11">
+      % endif
+        <td class="td-leftblock td-question">
+          <table class="inner-table"><tr>
+            <td class="td-title">
+              Q11　${form['block3_11'].label}
+            </td>
+            <td class="td-changeline td-require-mark">
+              <div class="required">必須</div>
+            </td>
+          </tr></table>
+        </td>
+        <td class="td-rightblock">
+          <table class="inner-table"><tr>
+            <td>
+              ${form['block3_11']}
+            </td>
+          % if str(form['block3_11'].errors) != "":
+          </tr>
+          <tr>
+            <td>
+              <span class="warning">${form['block3_11'].errors}</span>
+            </td>
+          % endif
+          </tr></table>
+        </td>
+      </tr>
+      % if str(form['block3_12_'].errors) != "" or str(form['block3_12'].errors) != "":
+      <tr class="tr-basic-info tr-question-12 tr-warning">
+      % else:
+      <tr class="tr-basic-info tr-question-12">
+      % endif
+        <td class="td-leftblock td-question">
+          <table class="inner-table"><tr>
+            <td class="td-title">
+              Q12　${form['block3_12_'].label}
+            </td>
+            <td class="td-changeline td-require-mark">
+              <div class="required">必須</div>
+            </td>
+          </tr></table>
+        </td>
+        <td class="td-rightblock">
+          <table class="inner-table"><tr>
+            <td class="list-display-block">
+              大分類<br>
+              ${form['block3_12_']}
+            </td>
+            <td class="list-display-block">
+              小分類<br>
+              ${form['block3_12']}
+            </td>
+          % if str(form['block3_12_'].errors) != "" or str(form['block3_12'].errors) != "":
+          </tr>
+          <tr>
+            <td>
+              % if str(form['block3_12_'].errors) != "":
+              <span class="warning">${form['block3_12_'].errors}</span>
+              % else:
+                % if str(form['block3_12'].errors) != "":
+                <span class="warning">${form['block3_12'].errors}</span>
+                % endif
+              % endif
+            </td>
+          % endif
+          </tr></table>
+        </td>
+      </tr>
+      % if str(form['block3_13_'].errors) != "" or str(form['block3_13'].errors) != "":
+      <tr class="tr-basic-info tr-question-13 tr-warning">
+      % else:
+      <tr class="tr-basic-info tr-question-13">
+      % endif
+        <td class="td-leftblock td-question">
+          <table class="inner-table"><tr>
+            <td class="td-title">
+              Q13　${form['block3_13_'].label}
+            </td>
+            <td class="td-changeline td-require-mark">
+              <div class="required">必須</div>
+            </td>
+          </tr></table>
+        </td>
+        <td class="td-rightblock">
+          <table class="inner-table"><tr>
+            <td class="list-display-block">
+              大分類<br>
+              ${form['block3_13_']}
+            </td>
+            <td class="list-display-block">
+              小分類<br>
+              ${form['block3_13']}
+            </td>
+          % if str(form['block3_13_'].errors) != "" or str(form['block3_13'].errors) != "":
+          </tr>
+          <tr>
+            <td>
+              % if str(form['block3_13_'].errors) != "":
+              <span class="warning">${form['block3_13_'].errors}</span>
+              % else:
+                % if str(form['block3_13'].errors) != "":
+                <span class="warning">${form['block3_13'].errors}</span>
+                % endif
+              % endif
+            </td>
+          % endif
+          </tr></table>
+        </td>
+      </tr>
+      % if str(form['block3_14'].errors) != "":
+      <tr class="tr-basic-info tr-question-14 tr-warning">
+      % else:
+      <tr class="tr-basic-info tr-question-14">
+      % endif
+        <td class="td-leftblock td-question">
+          <table class="inner-table"><tr>
+            <td class="td-title">
+              Q14　${form['block3_14'].label}
+            </td>
+            <td class="td-changeline td-require-mark">
+              <div class="required">必須</div>
+            </td>
+          </tr></table>
+        </td>
+        <td class="td-rightblock">
+          <table class="inner-table"><tr>
+            <td>
+              ${form['block3_14']}
+            </td>
+          % if str(form['block3_14'].errors) != "":
+          </tr>
+          <tr>
+            <td>
+              <span class="warning">${form['block3_14'].errors}</span>
+            </td>
+          % endif
+          </tr></table>
+        </td>
+      </tr>
+      % if str(form['block3_15'].errors) != "":
+      <tr class="tr-basic-info tr-question-15 tr-warning">
+      % else:
+      <tr class="tr-basic-info tr-question-15">
+      % endif
+        <td class="td-leftblock td-question">
+          <table class="inner-table"><tr>
+            <td class="td-title">
+              Q15　${form['block3_15'].label}（半角数字）
+            </td>
+            <td class="td-changeline td-require-mark">
+              <div class="required">必須</div>
+            </td>
+          </tr></table>
+        </td>
+        <td class="td-rightblock">
+          <table class="inner-table"><tr>
+            <td class="about">
+              約
+            </td>
+            <td>
+              ${form['block3_15']}
+            </td>
+            <td class="yen">
+              万円
+            </td>
+          % if str(form['block3_15'].errors) != "":
+          </tr>
+          <tr>
+            <td>
+              <span class="warning">${form['block3_15'].errors}</span>
+            </td>
+          % endif
+          </tr></table>
+        </td>
+      </tr>
+      <tr>
+        <td colspan="2">
+          希望条件を記入ください。
+        </td>
+      </tr>
+      % if str(form['block3_16'].errors) != "":
+      <tr class="tr-basic-info tr-question-16 tr-warning">
+      % else:
+      <tr class="tr-basic-info tr-question-16">
+      % endif
+        <td class="td-leftblock td-question">
+          <table class="inner-table"><tr>
+            <td class="td-title">
+              Q16　${form['block3_16'].label}
+            </td>
+            <td class="td-changeline td-require-mark">
+              <div class="required">必須</div>
+            </td>
+          </tr></table>
+        </td>
+        <td class="td-rightblock">
+          <table class="inner-table"><tr>
+            <td id="location-list">
+              ${form['block3_16']}
+            </td>
+          % if str(form['block3_16'].errors) != "":
+          </tr>
+          <tr>
+            <td>
+              <span class="warning">${form['block3_16'].errors}</span>
+            </td>
+          % endif
+          </tr></table>
+        </td>
+      </tr>
+      % if str(form['block3_17'].errors) != "":
+      <tr class="tr-basic-info tr-question-17 tr-warning">
+      % else:
+      <tr class="tr-basic-info tr-question-17">
+      % endif
+        <td class="td-leftblock td-question">
+          <table class="inner-table"><tr>
+            <td class="td-title">
+              Q17　${form['block3_17'].label}
+            </td>
+            <td class="td-changeline td-require-mark">
+              <div class="required">必須</div>
+            </td>
+          </tr></table>
+        </td>
+        <td class="td-rightblock">
+          <table class="inner-table"><tr>
+            <td>
+              ${form['block3_17']}
+            </td>
+          % if str(form['block3_17'].errors) != "":
+          </tr>
+          <tr>
+            <td>
+              <span class="warning">${form['block3_17'].errors}</span>
+            </td>
+          % endif
+          </tr></table>
+        </td>
+      </tr>
+      % if str(form['block3_18_'].errors) != "" or str(form['block3_18'].errors) != "":
+      <tr class="tr-basic-info tr-question-18 tr-warning">
+      % else:
+      <tr class="tr-basic-info tr-question-18">
+      % endif
+        <td class="td-leftblock td-question">
+          <table class="inner-table"><tr>
+            <td class="td-title">
+              Q18　${form['block3_18_'].label}
+            </td>
+            <td class="td-changeline td-require-mark">
+              <div class="required">必須</div>
+            </td>
+          </tr></table>
+        </td>
+        <td class="td-rightblock">
+          <table class="inner-table"><tr>
+            <td class="list-display-block">
+              大分類<br>
+              ${form['block3_18_']}
+            </td>
+            <td class="list-display-block">
+              小分類<br>
+              ${form['block3_18']}
+            </td>
+          % if str(form['block3_18_'].errors) != "" or str(form['block3_18'].errors) != "":
+          </tr>
+          <tr>
+            <td>
+              % if str(form['block3_18_'].errors) != "":
+              <span class="warning">${form['block3_18_'].errors}</span>
+              % else:
+                % if str(form['block3_18'].errors) != "":
+                <span class="warning">${form['block3_18'].errors}</span>
+                % endif
+              % endif
+            </td>
+          % endif
+          </tr></table>
+        </td>
+      </tr>
+      % if str(form['block3_19'].errors) != "":
+      <tr class="tr-basic-info tr-question-19 tr-warning">
+      % else:
+      <tr class="tr-basic-info tr-question-19">
+      % endif
+        <td class="td-leftblock td-question">
+          <table class="inner-table"><tr>
+            <td class="td-title">
+              Q19　${form['block3_19'].label}（半角数字）
+            </td>
+            <td class="td-changeline td-require-mark">
+              <div class="required">必須</div>
+            </td>
+          </tr></table>
+        </td>
+        <td class="td-rightblock">
+          <table class="inner-table"><tr>
+            <td>
+              ${form['block3_19']}
+            </td>
+          % if str(form['block3_19'].errors) != "":
+          </tr>
+          <tr>
+            <td>
+              <span class="warning">${form['block3_19'].errors}</span>
+            </td>
+          % endif
+          </tr></table>
+        </td>
+      </tr>
+    </table>
+  </div>
+
+  <div id="footer-button-line">
+    <div class="btn-back">
+      <table>
+        <tr><td>
+          <a class="footer-btn-back" href='${reverse('ga_app:diagnosis:index', args=[course_id])}'>最初に戻る</a>
+        </td></tr>
+      </table>
+    </div>
+    <div class="btn-next">
+      <input type="hidden" name="csrfmiddlewaretoken" value="${ csrf_token }"/>
+      <button type="submit" class="footer-btn footer-btn-next" >提出する</button>
+    </div>
+  </div>
+</form>
+
+<script type="text/javascript">
+  $(function () {
+    var id_block3_12_children = $("#id_block3_12"),
+        id_block3_12_original = id_block3_12_children.html(),
+        id_block3_13_children = $("#id_block3_13"),
+        id_block3_13_original = id_block3_13_children.html(),
+        id_block3_18_children = $("#id_block3_18"),
+        id_block3_18_original = id_block3_18_children.html();
+
+    initGaDiagnosisPullDown([id_block3_12_children, id_block3_13_children, id_block3_18_children]);
+
+    $("#id_block3_12_").on("change", function () {
+      changeGaDiagnosisPullDown(this, id_block3_12_children, id_block3_12_original);
+    });
+    $("#id_block3_13_").on("change", function () {
+      changeGaDiagnosisPullDown(this, id_block3_13_children, id_block3_13_original);
+    });
+    $("#id_block3_18_").on("change", function () {
+      changeGaDiagnosisPullDown(this, id_block3_18_children, id_block3_18_original);
+    });
+  });
+</script>
+</%block>
