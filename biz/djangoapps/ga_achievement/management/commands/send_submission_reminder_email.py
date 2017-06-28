@@ -166,6 +166,10 @@ class Command(BaseCommand):
                         if hasattr(user, 'standing') and user.standing \
                                 and user.standing.account_status == UserStanding.ACCOUNT_DISABLED:
                             continue
+                        # Skip if user already masked (#1970)
+                        if '@' not in user.email:
+                            log.warning(u"User({}) has been already masked, so skip.".format(user.id))
+                            continue
 
                         target_courses_per_user = []
                         for grouped_target_sections in target_courses:

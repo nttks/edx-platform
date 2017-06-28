@@ -27,7 +27,7 @@ from biz.djangoapps.ga_achievement.models import ScoreBatchStatus, SubmissionRem
 from biz.djangoapps.ga_achievement.tests.factories import ScoreBatchStatusFactory
 from biz.djangoapps.ga_contract.tests.factories import ContractAuthFactory, ContractOptionFactory
 from biz.djangoapps.ga_login.tests.factories import BizUserFactory
-from biz.djangoapps.util import datetime_utils
+from biz.djangoapps.util import datetime_utils, mask_utils
 from biz.djangoapps.util.tests.testcase import BizStoreTestBase
 from courseware import grades
 from courseware.tests.helpers import LoginEnrollmentTestCase
@@ -350,6 +350,17 @@ class SendSubmissionReminderEmailTest(BizStoreTestBase, ModuleStoreTestCase, Log
         self._profile(self.user)
         self._register_contract(self.contract, self.user)
         self._account_disable(self.user)
+
+        # Update score status (mark some sections as 'not attempted')
+        call_command('update_biz_score_status', self.contract.id)
+
+        call_command('send_submission_reminder_email', self.contract.id)
+        self.assert_finished(0, 0, self.contract)
+
+    def test_if_user_already_masked(self):
+        self._profile(self.user)
+        self._register_contract(self.contract, self.user)
+        mask_utils.mask_email(self.user)
 
         # Update score status (mark some sections as 'not attempted')
         call_command('update_biz_score_status', self.contract.id)
