@@ -16,17 +16,40 @@ table.inner-table tr td#location-list li {
   width: 24%;
 }
 
+table.inner-table tr td#block3_15 {
+  width: 16em;
+}
+
 td.period-space {
   width: 80px;
   border-right-style: hidden !important;
 }
 
-input#id_block3_15{
+table.inner-table tr td.about {
+  width: 20px;
+}
+input#id_block3_02 {
+  width: 90%;
+}
+input#id_block3_06 {
+  width: 90%;
+}
+input#id_block3_08 {
+  width: 90%;
+}
+input#id_block3_15 {
   width: 16em;
 }
+
 @media screen and (max-width: 800px) {
   table.basic-info td {
     padding: 0;
+  }
+  table.inner-table{
+    width: 100%;
+  }
+  table.inner-table td.td-wide{
+    width: 100%;
   }
 
   table.inner-table td tr td.list-display-block {
@@ -35,6 +58,12 @@ input#id_block3_15{
 
   table.center-to-fon {
     text-align: center;
+  }
+  td.td-question-message{
+    height: 30px;
+    vertical-align: bottom;
+    display: table-cell!important;
+    font-weight: bold;
   }
 }
 

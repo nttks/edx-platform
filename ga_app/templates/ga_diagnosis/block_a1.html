@@ -37,7 +37,7 @@
   <div id="main-contents-agent">
     <form action="." method="post">
       <table class="basic-info" align="center">
-        % if str(form['block1_01_1'].errors) != "" or str(form['block1_01_2'].errors) != "":
+        % if form['block1_01_1'].errors or form['block1_01_2'].errors:
         <tr class="tr-basic-info tr-question-1 tr-warning">
         % else:
         <tr class="tr-basic-info tr-question-1">
@@ -69,24 +69,22 @@
                 ${form['block1_01_2']}
               </td>
             </tr></table>
-            % if str(form['block1_01_1'].errors) != "" or str(form['block1_01_2'].errors) != "":
+            % if form['block1_01_1'].errors or form['block1_01_2'].errors:
             <table class="righttable">
               <tr>
                 <td>
-                  % if str(form['block1_01_1'].errors) != "":
-                  <span class=warning>${form['block1_01_1'].errors}</span>
-                  % else:
-                    % if str(form['block1_01_2'].errors) != "":
-                    <span class=warning>${form['block1_01_2'].errors}</span>
-                    %endif
-                  %endif
+                  % if form['block1_01_1'].errors:
+                  <span class="warning">${form['block1_01_1'].errors}</span>
+                  % elif form['block1_01_2'].errors:
+                  <span class="warning">${form['block1_01_2'].errors}</span>
+                  % endif
                 </td>
               </tr>
             </table>
             % endif
           </td>
         </tr>
-        % if str(form['block1_02_1'].errors) != "" or str(form['block1_02_2'].errors) != "":
+        % if form['block1_02_1'].errors or form['block1_02_2'].errors:
         <tr class="tr-basic-info tr-question-2 tr-warning">
         % else:
         <tr class="tr-basic-info tr-question-2">
@@ -118,24 +116,22 @@
                 ${form['block1_02_2']}
               </td>
             </tr></table>
-            % if str(form['block1_02_1'].errors) != "" or str(form['block1_02_2'].errors) != "":
+            % if form['block1_02_1'].errors or form['block1_02_2'].errors:
             <table class="righttable">
               <tr>
                 <td>
-                  % if str(form['block1_02_1'].errors) != "":
-                  <span class=warning>${form['block1_02_1'].errors}</span>
-                  % else:
-                    % if str(form['block1_02_2'].errors) != "":
-                    <span class=warning>${form['block1_02_2'].errors}</span>
-                    %endif
-                  %endif
+                  % if form['block1_02_1'].errors:
+                  <span class="warning">${form['block1_02_1'].errors}</span>
+                  % elif form['block1_02_2'].errors:
+                  <span class="warning">${form['block1_02_2'].errors}</span>
+                  % endif
                 </td>
               </tr>
             </table>
             % endif
           </td>
         </tr>
-        % if str(form['block1_03'].errors) != "":
+        % if form['block1_03'].errors:
         <tr class="tr-basic-info tr-question-3 tr-warning">
         % else:
         <tr class="tr-basic-info tr-question-3">
@@ -155,17 +151,17 @@
               <td colspan="4">
                 ${form['block1_03'][1]}　${form['block1_03'][2]}
               </td>
-            % if str(form['block1_03'].errors) != "":
+            % if form['block1_03'].errors:
             </tr>
             <tr>
               <td colspan="4">
-                <span class=warning>${form['block1_03'].errors}</span>
+                <span class="warning">${form['block1_03'].errors}</span>
               </td>
             % endif
             </tr></table>
           </td>
         </tr>
-        % if str(form['block1_04_1'].errors) != "" or str(form['block1_04_2'].errors) != "" or str(form['block1_04_3'].errors) != "":
+        % if form['block1_04_1'].errors or form['block1_04_2'].errors or form['block1_04_3'].errors:
         <tr class="tr-basic-info tr-question-4 tr-warning">
         % else:
         <tr class="tr-basic-info tr-question-4">
@@ -199,28 +195,24 @@
                 ${form['block1_04_3'].label}
               </td>
             </tr></table>
-            % if str(form['block1_04_1'].errors) != "" or str(form['block1_04_2'].errors) != "" or str(form['block1_04_3'].errors) != "":
+            % if form['block1_04_1'].errors or form['block1_04_2'].errors or form['block1_04_3'].errors:
             <table class="righttable">
               <tr>
                 <td>
-                  % if str(form['block1_04_1'].errors) != "":
-                  <span class=warning>${form['block1_04_1'].errors}</span>
-                  % else:
-                    % if str(form['block1_04_2'].errors) != "":
-                    <span class=warning>${form['block1_04_2'].errors}</span>
-                    % else:
-                      % if str(form['block1_04_3'].errors) != "":
-                      <span class=warning>${form['block1_04_3'].errors}</span>
-                      %endif
-                    %endif
-                  %endif
+                  % if form['block1_04_1'].errors:
+                  <span class="warning">${form['block1_04_1'].errors}</span>
+                  % elif form['block1_04_2'].errors:
+                  <span class="warning">${form['block1_04_2'].errors}</span>
+                  % elif form['block1_04_3'].errors:
+                  <span class="warning">${form['block1_04_3'].errors}</span>
+                  % endif
                 </td>
               </tr>
             </table>
             % endif
           </td>
         </tr>
-        % if str(form['block1_05'].errors) != "":
+        % if form['block1_05'].errors:
         <tr class="tr-basic-info tr-question-5 tr-warning">
         % else:
         <tr class="tr-basic-info tr-question-5">
@@ -249,17 +241,15 @@
                 ${form['block1_05_']}　確認のため、もう一度入力してください
               </td>
             </tr></table>
-            % if str(form['block1_05'].errors) != "" or str(form['block1_05_'].errors) != "":
+            % if form['block1_05'].errors or form['block1_05_'].errors:
             <table class="righttable">
               <tr>
                 <td>
-                  % if str(form['block1_05'].errors) != "":
-                  <span class=warning>${form['block1_05'].errors}</span>
-                  % else:
-                    % if str(form['block1_05_'].errors) != "":
-                    <span class=warning>${form['block1_05_'].errors}</span>
-                    %endif
-                  %endif
+                  % if form['block1_05'].errors:
+                  <span class="warning">${form['block1_05'].errors}</span>
+                  % elif form['block1_05_'].errors:
+                  <span class="warning">${form['block1_05_'].errors}</span>
+                  % endif
                 </td>
               </tr>
             </table>
@@ -281,6 +271,9 @@
           </div>
         </div>
       </form>
+      <div id="back-message">
+        ※これまで入力した情報は消去されます
+      </div>
   </div>
 </div>
 </%block>

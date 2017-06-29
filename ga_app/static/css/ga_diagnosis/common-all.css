@@ -142,6 +142,11 @@ button[type="submit"].footer-btn-next:hover {
   color: white;
 }
 
+div#back-message{
+  padding-top: 40px;
+  width: 50%;
+}
+
 @media screen and (max-width: 800px) {
   html, body {
   }
@@ -171,6 +176,10 @@ button[type="submit"].footer-btn-next:hover {
   }
 
   td.td-leftblock {
+    width: 100%;
+  }
+
+  td.td-rightblock {
     width: 100%;
   }
 }

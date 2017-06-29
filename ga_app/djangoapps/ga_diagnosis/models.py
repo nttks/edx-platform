@@ -19,7 +19,7 @@ class DiagnosisInfo(models.Model):
     Creates the database table model.
     """
 
-    user = models.OneToOneField(User)
+    user = models.ForeignKey(User)
     course_id = CourseKeyField(max_length=255, db_index=True)
     finished = models.BooleanField(default=False)
     finished_date = models.DateTimeField(null=True)

@@ -107,7 +107,7 @@ class Migration(migrations.Migration):
                 ('block3_17', models.CharField(max_length=255, blank=True)),
                 ('block3_18', models.CharField(max_length=4, blank=True)),
                 ('block3_19', models.CharField(max_length=4, blank=True)),
-                ('user', models.OneToOneField(to=settings.AUTH_USER_MODEL)),
+                ('user', models.ForeignKey(to=settings.AUTH_USER_MODEL)),
             ],
         ),
         migrations.CreateModel(

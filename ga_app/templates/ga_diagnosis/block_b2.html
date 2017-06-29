@@ -38,7 +38,7 @@
   <form action="." method="post">
   <div id="main-contents-agent">
     <table class="basic-info" align="center">
-      % if str(form['block3_18_'].errors) != "" or str(form['block3_18'].errors) != "":
+      % if form['block3_18_'].errors or form['block3_18'].errors:
       <tr class="tr-basic-info tr-question-18 tr-warning">
       % else:
       <tr class="tr-basic-info tr-question-18">
@@ -63,23 +63,21 @@
               小分類<br>
               ${form['block3_18']}
             </td>
-          % if str(form['block3_18_'].errors) != "" or str(form['block3_18'].errors) != "":
+          % if form['block3_18_'].errors or form['block3_18'].errors:
           </tr>
           <tr>
             <td>
-              % if str(form['block3_18_'].errors) != "":
-              <span class=warning>${form['block3_18_'].errors}</span>
-              % else:
-                % if str(form['block3_18'].errors) != "":
-                <span class=warning>${form['block3_18'].errors}</span>
-                % endif
+              % if form['block3_18_'].errors:
+              <span class="warning">${form['block3_18_'].errors}</span>
+              % elif form['block3_18'].errors:
+              <span class="warning">${form['block3_18'].errors}</span>
               % endif
             </td>
           % endif
           </tr></table>
         </td>
       </tr>
-      % if str(form['block3_19'].errors) != "":
+      % if form['block3_19'].errors:
       <tr class="tr-basic-info tr-question-19 tr-warning">
       % else:
       <tr class="tr-basic-info tr-question-19">
@@ -87,7 +85,7 @@
         <td class="td-leftblock td-question">
           <table class="inner-table"><tr>
             <td class="td-title">
-              Q2　${form['block3_19'].label}
+              Q2　${form['block3_19'].label}（半角数字）
             </td>
             <td class="td-changeline td-require-mark">
               <div class="required">必須</div>
@@ -99,17 +97,17 @@
             <td>
               ${form['block3_19']}
             </td>
-        % if str(form['block3_19'].errors) != "":
+        % if form['block3_19'].errors:
           </tr>
           <tr>
             <td>
-              <span class=warning>${form['block3_19'].errors}</span>
+              <span class="warning">${form['block3_19'].errors}</span>
             </td>
           % endif
           </tr></table>
         </td>
       </tr>
-      % if str(form['block2b_3'].errors) != "":
+      % if form['block2b_3'].errors:
       <tr class="tr-basic-info tr-question-1 tr-warning">
       % else:
       <tr class="tr-basic-info tr-question-1">
@@ -117,7 +115,7 @@
         <td class="td-leftblock td-question">
           <table class="inner-table"><tr>
             <td class="td-title">
-                Q3　${form['block2b_3'].label}
+                Q3　${form['block2b_3'].label}（半角数字）
             </td>
             <td class="td-require-mark">
               <div class="required">必須</div>
@@ -129,11 +127,11 @@
             <td>
               ${form['block2b_3']}
             </td>
-          % if str(form['block2b_3'].errors) != "":
+          % if form['block2b_3'].errors:
           </tr>
           <tr>
             <td>
-              <span class=warning>${form['block2b_3'].errors}</span>
+              <span class="warning">${form['block2b_3'].errors}</span>
             </td>
           % endif
           </tr></table>
@@ -156,6 +154,9 @@
     </div>
   </div>
   </form>
+  <div id="back-message">
+    ※これまで入力した情報は消去されます
+  </div>
 </div>
 
 <script type="text/javascript">

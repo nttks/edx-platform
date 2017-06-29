@@ -35,10 +35,9 @@ function enable_button(){
   <table id="table_course_info">
     <tr>
       <td>
-        この講座は、『次のステージに進むあなた』を応援するための特別企画として、ハイクラスポジションの転職に強い「ジェイ エイ シー リクルートメント」と日本最大のMOOCプラットフォームgaccoを運営する「ドコモgacco」がコラボレーションし、伊藤健二氏（明治学院大学　学長特別補佐）監修のもと、キャリアアップに役立つ専門的・実践的な講座を選定、特別に期間限定で無料公開しているものです。ぜひこの機会に受講し、理想のキャリア形成にお役立てください。<br>
+        ${DESCRIPTION1}
+        詳細は <a href="${REGULATION_URL_4}" target="__blank">こちら</a> をご確認ください。<br>
         <br>
-        JACリクルートメント社サービス利用規約に合意された方には、MDA診断実施後、ジェイ エイ シーより直接ご連絡をいたします。<br>
-        詳細は <a href="${REGULATION_URL_4}" target="__blank">こちら</a> をご確認ください。<br><br>
         合意いただけるポリシーにチェックして、「申し込む」ボタンを押してください。<br>
       </td>
     </tr>
@@ -47,25 +46,21 @@ function enable_button(){
 <form action="." method="post">
   <ul id="id_regulation_state">
     <li>
-      <label for="id_regulation_state_0">
         <input id="id_regulation_state_0" name="regulation_state" type="radio" value="1" onclick="enable_button()">
-        <table><tr><td>
+        <div class="div_regulation_state">
           <a href="${REGULATION_URL_1}" target="__blank">${REGULATION_NAME_1}</a>と <a href="${REGULATION_URL_2}" target="__blank">${REGULATION_NAME_2}</a>両方に合意します。
-        </td></tr></table>
-      </label>
+        </div>
     </li>
     <li>
-      <label for="id_regulation_state_1">
         <input id="id_regulation_state_1" name="regulation_state" type="radio" value="2" onclick="enable_button()">
-        <table><tr><td>
+        <div class="div_regulation_state">
           <a href="${REGULATION_URL_3}" target="__blank">${REGULATION_NAME_3}</a>のみ合意します。
-        </td></tr></table>
-      </label>
+        </div>
     </li>
   </ul>
-  %if hasattr(form, 'errors'):
+  % if hasattr(form, 'errors'):
     ${form.errors['regulation_state']}
-  %endif
+  % endif
   <input type="hidden" name="csrfmiddlewaretoken" value="${ csrf_token }"/>
   <button type="submit" id="entry" class="entry-disable" disabled>申し込む</button>
 </form>

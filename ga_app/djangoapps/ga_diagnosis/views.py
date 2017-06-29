@@ -132,6 +132,8 @@ class IndexView(DiagnosisBaseView):
     @method_decorator(login_required)
     def get(self, request, *args, **kwargs):
         course_id = CourseKey.from_string(kwargs['course_id'])
+        if str(course_id) not in settings.GA_DIAGNOSIS_ALLOW_COURSE_ID_LIST:
+            raise Http404
         diagnosis_info, _ = DiagnosisInfo.objects.get_or_create(
             user=request.user,
             course_id=course_id,

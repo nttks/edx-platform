@@ -15,6 +15,7 @@ a:visited{
 
 ul#id_regulation_state{
   padding-top: 20px;
+  margin-right: 40px;
   list-style: none;
 }
 
@@ -24,7 +25,7 @@ img#course_logo{
   display: block;
   margin-left: auto;
   margin-right: auto;
-  padding-top: 80px;
+  padding-top: 90px;
 }
 
 div#course_info_title{
@@ -47,17 +48,23 @@ table#table_course_info tr td{
   padding: 10px 10px 10px 10px;
 }
 
+div.div_regulation_state{
+  display: table-cell;
+  height: 26px;
+  line-height: normal;
+  vertical-align: middle;
+}
 input#id_regulation_state_0{
   display: block;
   height: 26px;
-  float: left;
   margin-right: 15px;
+  float: left;
 }
 input#id_regulation_state_1{
   display: block;
   height: 26px;
-  float: left;
   margin-right: 15px;
+  float: left;
 }
 
 button[type="submit"]#entry{

@@ -45,7 +45,7 @@
     <hr id="header-title-line" />
     <div id="header-question">
       <table class="mda-info">
-        % if str(form['block2_01'].errors) != "":
+        % if form['block2_01'].errors:
         <tr class="tr-mda-info tr-question-1 tr-warning">
         % else:
         <tr class="tr-mda-info tr-question-1">
@@ -74,7 +74,7 @@
               <td class="yen">
                 万円（額面）
               </td>
-            % if str(form['block2_01'].errors) != "":
+            % if form['block2_01'].errors:
             </tr>
             <tr>
               <td colspan="3">
@@ -103,13 +103,13 @@
     </div>
   </div>
 
-  % if str(form['block2_01'].errors) != "":
+  % if form['block2_01'].errors:
   <div id="main-contents-agent-mda-warning">
   % else:
   <div id="main-contents-agent-mda">
   % endif
     <table id="mda-select-question-body" class="mda-select-question">
-      % if str(form['block2_02'].errors) != "":
+      % if form['block2_02'].errors:
       <tr class="tr-question-2 tr-mda-info tr-warning">
       % else:
       <tr class="tr-question-2 tr-mda-info">
@@ -128,7 +128,7 @@
           </tr>
           <tr>
             <td colspan="3">
-              % if str(form['block2_02'].errors) != "":
+              % if form['block2_02'].errors:
               <span class="warning">${form['block2_02'].errors}</span>
               % endif
             </td>
@@ -150,7 +150,7 @@
           ${form['block2_02'][4]}
         </td>
       </tr>
-      % if str(form['block2_03'].errors) != "":
+      % if form['block2_03'].errors:
       <tr class="tr-question-3 tr-mda-info tr-warning">
       % else:
       <tr class="tr-question-3 tr-mda-info">
@@ -169,7 +169,7 @@
           </tr>
           <tr>
             <td colspan="3">
-              % if str(form['block2_03'].errors) != "":
+              % if form['block2_03'].errors:
               <span class="warning">${form['block2_03'].errors}</span>
               % endif
             </td>
@@ -191,7 +191,7 @@
           ${form['block2_03'][4]}
         </td>
       </tr>
-      % if str(form['block2_04'].errors) != "":
+      % if form['block2_04'].errors:
       <tr class="tr-question-4 tr-mda-info tr-warning">
       % else:
       <tr class="tr-question-4 tr-mda-info">
@@ -210,7 +210,7 @@
           </tr>
           <tr>
             <td colspan="3">
-              % if str(form['block2_04'].errors) != "":
+              % if form['block2_04'].errors:
               <span class="warning">${form['block2_04'].errors}</span>
               % endif
             </td>
@@ -232,7 +232,7 @@
           ${form['block2_04'][4]}
         </td>
       </tr>
-      % if str(form['block2_05'].errors) != "":
+      % if form['block2_05'].errors:
       <tr class="tr-question-5 tr-mda-info tr-warning">
       % else:
       <tr class="tr-question-5 tr-mda-info">
@@ -251,7 +251,7 @@
           </tr>
           <tr>
             <td colspan="3">
-              % if str(form['block2_05'].errors) != "":
+              % if form['block2_05'].errors:
               <span class="warning">${form['block2_05'].errors}</span>
               % endif
             </td>
@@ -273,7 +273,7 @@
           ${form['block2_05'][4]}
         </td>
       </tr>
-      % if str(form['block2_06'].errors) != "":
+      % if form['block2_06'].errors:
       <tr class="tr-question-6 tr-mda-info tr-warning">
       % else:
       <tr class="tr-question-6 tr-mda-info">
@@ -292,7 +292,7 @@
           </tr>
           <tr>
             <td colspan="3">
-              % if str(form['block2_06'].errors) != "":
+              % if form['block2_06'].errors:
               <span class="warning">${form['block2_06'].errors}</span>
               % endif
             </td>
@@ -314,7 +314,7 @@
           ${form['block2_06'][4]}
         </td>
       </tr>
-      % if str(form['block2_07'].errors) != "":
+      % if form['block2_07'].errors:
       <tr class="tr-question-7 tr-mda-info tr-warning">
         % else:
       <tr class="tr-question-7 tr-mda-info">
@@ -333,7 +333,7 @@
           </tr>
           <tr>
             <td colspan="3">
-              % if str(form['block2_07'].errors) != "":
+              % if form['block2_07'].errors:
               <span class="warning">${form['block2_07'].errors}</span>
               % endif
             </td>
@@ -355,7 +355,7 @@
           ${form['block2_07'][4]}
         </td>
       </tr>
-      % if str(form['block2_08'].errors) != "":
+      % if form['block2_08'].errors:
       <tr class="tr-question-8 tr-mda-info tr-warning">
       % else:
       <tr class="tr-question-8 tr-mda-info">
@@ -374,7 +374,7 @@
           </tr>
           <tr>
             <td colspan="3">
-              % if str(form['block2_08'].errors) != "":
+              % if form['block2_08'].errors:
               <span class="warning">${form['block2_08'].errors}</span>
               % endif
             </td>
@@ -396,7 +396,7 @@
           ${form['block2_08'][4]}
         </td>
       </tr>
-      % if str(form['block2_09'].errors) != "":
+      % if form['block2_09'].errors:
       <tr class="tr-question-9 tr-mda-info tr-warning">
       % else:
       <tr class="tr-question-9 tr-mda-info">
@@ -415,7 +415,7 @@
           </tr>
           <tr>
             <td colspan="3">
-              % if str(form['block2_09'].errors) != "":
+              % if form['block2_09'].errors:
               <span class="warning">${form['block2_09'].errors}</span>
               % endif
             </td>
@@ -437,7 +437,7 @@
           ${form['block2_09'][4]}
         </td>
       </tr>
-      % if str(form['block2_10'].errors) != "":
+      % if form['block2_10'].errors:
       <tr class="tr-question-10 tr-mda-info tr-warning">
       % else:
       <tr class="tr-question-10 tr-mda-info">
@@ -456,7 +456,7 @@
           </tr>
           <tr>
             <td colspan="3">
-              % if str(form['block2_10'].errors) != "":
+              % if form['block2_10'].errors:
               <span class="warning">${form['block2_10'].errors}</span>
               % endif
             </td>
@@ -478,7 +478,7 @@
           ${form['block2_10'][4]}
         </td>
       </tr>
-      % if str(form['block2_11'].errors) != "":
+      % if form['block2_11'].errors:
       <tr class="tr-question-11 tr-mda-info tr-warning">
       % else:
       <tr class="tr-question-11 tr-mda-info">
@@ -497,7 +497,7 @@
           </tr>
           <tr>
             <td colspan="3">
-              % if str(form['block2_11'].errors) != "":
+              % if form['block2_11'].errors:
               <span class="warning">${form['block2_11'].errors}</span>
               % endif
             </td>
@@ -519,7 +519,7 @@
           ${form['block2_11'][4]}
         </td>
       </tr>
-      % if str(form['block2_12'].errors) != "":
+      % if form['block2_12'].errors:
       <tr class="tr-question-12 tr-mda-info tr-warning">
       % else:
       <tr class="tr-question-12 tr-mda-info">
@@ -538,7 +538,7 @@
           </tr>
           <tr>
             <td colspan="3">
-              % if str(form['block2_12'].errors) != "":
+              % if form['block2_12'].errors:
               <span class="warning">${form['block2_12'].errors}</span>
               % endif
             </td>
@@ -560,7 +560,7 @@
           ${form['block2_12'][4]}
         </td>
       </tr>
-      % if str(form['block2_13'].errors) != "":
+      % if form['block2_13'].errors:
       <tr class="tr-question-13 tr-mda-info tr-warning">
       % else:
       <tr class="tr-question-13 tr-mda-info">
@@ -579,7 +579,7 @@
           </tr>
           <tr>
             <td colspan="3">
-              % if str(form['block2_13'].errors) != "":
+              % if form['block2_13'].errors:
               <span class="warning">${form['block2_13'].errors}</span>
               % endif
             </td>
@@ -601,7 +601,7 @@
           ${form['block2_13'][4]}
         </td>
       </tr>
-      % if str(form['block2_14'].errors) != "":
+      % if form['block2_14'].errors:
       <tr class="tr-question-14 tr-mda-info tr-warning">
       % else:
       <tr class="tr-question-14 tr-mda-info">
@@ -620,7 +620,7 @@
           </tr>
           <tr>
             <td colspan="3">
-              % if str(form['block2_14'].errors) != "":
+              % if form['block2_14'].errors:
               <span class="warning">${form['block2_14'].errors}</span>
               % endif
             </td>
@@ -642,7 +642,7 @@
           ${form['block2_14'][4]}
         </td>
       </tr>
-      % if str(form['block2_15'].errors) != "":
+      % if form['block2_15'].errors:
       <tr class="tr-question-15 tr-mda-info tr-warning">
       % else:
       <tr class="tr-question-15 tr-mda-info">
@@ -661,7 +661,7 @@
           </tr>
           <tr>
             <td colspan="3">
-              % if str(form['block2_15'].errors) != "":
+              % if form['block2_15'].errors:
               <span class="warning">${form['block2_15'].errors}</span>
               % endif
             </td>
@@ -683,7 +683,7 @@
           ${form['block2_15'][4]}
         </td>
       </tr>
-      % if str(form['block2_16'].errors) != "":
+      % if form['block2_16'].errors:
       <tr class="tr-question-16 tr-mda-info tr-warning">
       % else:
       <tr class="tr-question-16 tr-mda-info">
@@ -702,7 +702,7 @@
           </tr>
           <tr>
             <td colspan="3">
-              % if str(form['block2_16'].errors) != "":
+              % if form['block2_16'].errors:
               <span class="warning">${form['block2_16'].errors}</span>
               % endif
             </td>
@@ -724,7 +724,7 @@
           ${form['block2_16'][4]}
         </td>
       </tr>
-      % if str(form['block2_17'].errors) != "":
+      % if form['block2_17'].errors:
       <tr class="tr-question-17 tr-mda-info tr-warning">
       % else:
       <tr class="tr-question-17 tr-mda-info">
@@ -743,7 +743,7 @@
           </tr>
           <tr>
             <td colspan="3">
-              % if str(form['block2_17'].errors) != "":
+              % if form['block2_17'].errors:
               <span class="warning">${form['block2_17'].errors}</span>
               % endif
             </td>
@@ -765,7 +765,7 @@
           ${form['block2_17'][4]}
         </td>
       </tr>
-      % if str(form['block2_18'].errors) != "":
+      % if form['block2_18'].errors:
       <tr class="tr-question-18 tr-mda-info tr-warning">
       % else:
       <tr class="tr-question-18 tr-mda-info">
@@ -784,7 +784,7 @@
           </tr>
           <tr>
             <td colspan="3">
-              % if str(form['block2_18'].errors) != "":
+              % if form['block2_18'].errors:
               <span class="warning">${form['block2_18'].errors}</span>
               % endif
             </td>
@@ -806,7 +806,7 @@
           ${form['block2_18'][4]}
         </td>
       </tr>
-      % if str(form['block2_19'].errors) != "":
+      % if form['block2_19'].errors:
       <tr class="tr-question-19 tr-mda-info tr-warning">
       % else:
       <tr class="tr-question-19 tr-mda-info">
@@ -825,7 +825,7 @@
           </tr>
           <tr>
             <td colspan="3">
-              % if str(form['block2_19'].errors) != "":
+              % if form['block2_19'].errors:
               <span class="warning">${form['block2_19'].errors}</span>
               % endif
             </td>
@@ -847,7 +847,7 @@
           ${form['block2_19'][4]}
         </td>
       </tr>
-      % if str(form['block2_20'].errors) != "":
+      % if form['block2_20'].errors:
       <tr class="tr-question-20 tr-mda-info tr-warning">
       % else:
       <tr class="tr-question-20 tr-mda-info">
@@ -865,7 +865,7 @@
             </td>
             <tr>
               <td colspan="3">
-                % if str(form['block2_20'].errors) != "":
+                % if form['block2_20'].errors:
                 <span class="warning">${form['block2_20'].errors}</span>
                 % endif
               </td>
@@ -887,7 +887,7 @@
           ${form['block2_20'][4]}
         </td>
       </tr>
-      % if str(form['block2_21'].errors) != "":
+      % if form['block2_21'].errors:
       <tr class="tr-question-21 tr-mda-info tr-warning">
       % else:
       <tr class="tr-question-21 tr-mda-info">
@@ -905,7 +905,7 @@
             </td>
             <tr>
               <td colspan="3">
-                % if str(form['block2_21'].errors) != "":
+                % if form['block2_21'].errors:
                 <span class="warning">${form['block2_21'].errors}</span>
                 % endif
               </td>
@@ -927,7 +927,7 @@
           ${form['block2_21'][4]}
         </td>
       </tr>
-      % if str(form['block2_22'].errors) != "":
+      % if form['block2_22'].errors:
       <tr class="tr-question-22 tr-mda-info tr-warning">
       % else:
       <tr class="tr-question-22 tr-mda-info">
@@ -945,7 +945,7 @@
             </td>
             <tr>
               <td colspan="3">
-                % if str(form['block2_22'].errors) != "":
+                % if form['block2_22'].errors:
                 <span class="warning">${form['block2_22'].errors}</span>
                 % endif
               </td>
@@ -967,7 +967,7 @@
           ${form['block2_22'][4]}
         </td>
       </tr>
-      % if str(form['block2_23'].errors) != "":
+      % if form['block2_23'].errors:
       <tr class="tr-question-23 tr-mda-info tr-warning">
       % else:
       <tr class="tr-question-23 tr-mda-info">
@@ -985,7 +985,7 @@
             </td>
             <tr>
               <td colspan="3">
-                % if str(form['block2_23'].errors) != "":
+                % if form['block2_23'].errors:
                 <span class="warning">${form['block2_23'].errors}</span>
                 % endif
               </td>
@@ -1007,7 +1007,7 @@
           ${form['block2_23'][4]}
         </td>
       </tr>
-      % if str(form['block2_24'].errors) != "":
+      % if form['block2_24'].errors:
       <tr class="tr-question-24 tr-mda-info tr-warning">
       % else:
       <tr class="tr-question-24 tr-mda-info">
@@ -1025,7 +1025,7 @@
             </td>
             <tr>
               <td colspan="3">
-                % if str(form['block2_24'].errors) != "":
+                % if form['block2_24'].errors:
                 <span class="warning">${form['block2_24'].errors}</span>
                 % endif
               </td>
@@ -1047,7 +1047,7 @@
           ${form['block2_24'][4]}
         </td>
       </tr>
-      % if str(form['block2_25'].errors) != "":
+      % if form['block2_25'].errors:
       <tr class="tr-question-25 tr-mda-info tr-warning">
       % else:
       <tr class="tr-question-25 tr-mda-info">
@@ -1065,7 +1065,7 @@
             </td>
             <tr>
               <td colspan="3">
-                % if str(form['block2_25'].errors) != "":
+                % if form['block2_25'].errors:
                 <span class="warning">${form['block2_25'].errors}</span>
                 % endif
               </td>
@@ -1087,7 +1087,7 @@
           ${form['block2_25'][4]}
         </td>
       </tr>
-      % if str(form['block2_26'].errors) != "":
+      % if form['block2_26'].errors:
       <tr class="tr-question-26 tr-mda-info tr-warning">
       % else:
       <tr class="tr-question-26 tr-mda-info">
@@ -1105,7 +1105,7 @@
             </td>
             <tr>
               <td colspan="3">
-                % if str(form['block2_26'].errors) != "":
+                % if form['block2_26'].errors:
                 <span class="warning">${form['block2_26'].errors}</span>
                 % endif
               </td>
@@ -1127,7 +1127,7 @@
           ${form['block2_26'][4]}
         </td>
       </tr>
-      % if str(form['block2_27'].errors) != "":
+      % if form['block2_27'].errors:
       <tr class="tr-question-27 tr-mda-info tr-warning">
       % else:
       <tr class="tr-question-27 tr-mda-info">
@@ -1145,7 +1145,7 @@
             </td>
             <tr>
               <td colspan="3">
-                % if str(form['block2_27'].errors) != "":
+                % if form['block2_27'].errors:
                 <span class="warning">${form['block2_27'].errors}</span>
                 % endif
               </td>
@@ -1184,6 +1184,9 @@
     </div>
   </div>
   </form>
+  <div id="back-message">
+    ※これまで入力した情報は消去されます
+  </div>
 </div>
 <script type="text/javascript">
 $(function () {
