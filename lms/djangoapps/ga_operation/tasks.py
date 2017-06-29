@@ -4,6 +4,7 @@ import logging
 from django.core.management import call_command
 from django.conf import settings
 from django.db.models import Q
+from django.test.client import RequestFactory
 
 from pdfgen.certificate import CertPDFException, CertPDFUserNotFoundException
 from pdfgen.views import CertException
@@ -100,7 +101,8 @@ class CreateCerts(TaskBase):
                 )
                 if is_course_passed(
                     course=_course,
-                    student=userstanding.user
+                    student=userstanding.user,
+                    request=RequestFactory().request()
                 )
             ]
 
@@ -109,7 +111,8 @@ class CreateCerts(TaskBase):
                 enrollment.user.username for enrollment in CourseEnrollment.objects.filter(course_id=_course.id)
                 if not enrollment.user.is_active and is_course_passed(
                     course=_course,
-                    student=enrollment.user
+                    student=enrollment.user,
+                    request=RequestFactory().request()
                 )
             ]
 
@@ -120,7 +123,8 @@ class CreateCerts(TaskBase):
                     course_id=_course.id, is_active=False)
                 if is_course_passed(
                     course=_course,
-                    student=enrollment.user
+                    student=enrollment.user,
+                    request=RequestFactory().request()
                 )
                 # The following user's counts are not included in the number of unenroll user's count
                 # * disabled and course passed user's count(_disabled_username_list)
