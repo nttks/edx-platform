@@ -1133,6 +1133,14 @@ msgstr "相互採点のスタッフ採点"
 msgid "Submission Reminder Email"
 msgstr "課題未提出督促メール"
 
+#: openedx/core/djangoapps/ga_optional/models.py
+msgid "Settings for the user optional feature"
+msgstr "ユーザーのオプション機能設定"
+
+#: openedx/core/djangoapps/ga_optional/models.py
+msgid "Hide the e-mail on the Account Settings"
+msgstr "アカウント設定画面のメールアドレス欄非表示"
+
 #: cms/templates/settings.html
 msgid "Custom Logo for Settings"
 msgstr "カスタムロゴ設定"

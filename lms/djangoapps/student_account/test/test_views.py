@@ -18,6 +18,7 @@ from django.test.utils import override_settings
 from django.http import HttpRequest
 
 from course_modes.models import CourseMode
+from openedx.core.djangoapps.ga_optional.models import UserOptionalConfiguration, USERPOFILE_OPTION_KEY
 from openedx.core.djangoapps.user_api.accounts.api import activate_account, create_account
 from openedx.core.djangoapps.user_api.accounts import EMAIL_MAX_LENGTH
 from openedx.core.lib.js_utils import escape_json_dumps
@@ -451,6 +452,15 @@ class AccountSettingsViewTest(ThirdPartyAuthTestMixin, TestCase):
 
     def test_context(self):
 
+        user_optional_configuration = UserOptionalConfiguration(
+            change_date="2015-06-18 11:02:13",
+            enabled=True,
+            key=USERPOFILE_OPTION_KEY,
+            changed_by=self.request.user,
+            user=self.request.user
+        )
+        user_optional_configuration.save()
+
         context = account_settings_context(self.request)
 
         user_accounts_api_url = reverse("accounts_api", kwargs={'username': self.user.username})
@@ -472,6 +482,7 @@ class AccountSettingsViewTest(ThirdPartyAuthTestMixin, TestCase):
         self.assertEqual(context['duplicate_provider'], 'Facebook')
         self.assertEqual(context['auth']['providers'][0]['name'], 'Facebook')
         self.assertEqual(context['auth']['providers'][1]['name'], 'Google')
+        self.assertEqual(context['email_hidden_available'], True)
 
     def test_view(self):
 

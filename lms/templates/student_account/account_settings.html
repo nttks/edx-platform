@@ -31,9 +31,10 @@ from microsite_configuration import microsite
     var fieldsData = ${ json.dumps(fields) };
     var authData = ${ json.dumps(auth) };
     var platformName = ${ json.dumps(microsite.get_value('platform_name', settings.PLATFORM_NAME))};
+    var emailHiddenAvailable = ${json.dumps(email_hidden_available)};
 
     AccountSettingsFactory(
-        fieldsData, authData, '${user_accounts_api_url}', '${user_preferences_api_url}', ${user.id}, platformName
+        fieldsData, authData, '${user_accounts_api_url}', '${user_preferences_api_url}', ${user.id}, platformName, emailHiddenAvailable
     );
 </%static:require_module>
 </%block>

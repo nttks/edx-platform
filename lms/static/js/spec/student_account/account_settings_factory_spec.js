@@ -57,9 +57,9 @@ define(['backbone', 'jquery', 'underscore', 'common/js/spec_helpers/ajax_helpers
                 ]
             };
 
-            var createAccountSettingsPage = function() {
+            var createAccountSettingsPage = function(emailHiddenAvailable) {
                 var context = AccountSettingsPage(
-                    FIELDS_DATA, AUTH_DATA, Helpers.USER_ACCOUNTS_API_URL, Helpers.USER_PREFERENCES_API_URL, 'edX'
+                    FIELDS_DATA, AUTH_DATA, Helpers.USER_ACCOUNTS_API_URL, Helpers.USER_PREFERENCES_API_URL, 'edX', 'platform_name', emailHiddenAvailable
                 );
                 return context.accountSettingsView;
             };
@@ -74,7 +74,7 @@ define(['backbone', 'jquery', 'underscore', 'common/js/spec_helpers/ajax_helpers
 
                 requests = AjaxHelpers.requests(this);
 
-                var accountSettingsView = createAccountSettingsPage();
+                var accountSettingsView = createAccountSettingsPage(false);
 
                 Helpers.expectLoadingIndicatorIsVisible(accountSettingsView, true);
                 Helpers.expectLoadingErrorIsVisible(accountSettingsView, false);
@@ -95,7 +95,7 @@ define(['backbone', 'jquery', 'underscore', 'common/js/spec_helpers/ajax_helpers
 
                 requests = AjaxHelpers.requests(this);
 
-                var accountSettingsView = createAccountSettingsPage();
+                var accountSettingsView = createAccountSettingsPage(false);
 
                 Helpers.expectLoadingIndicatorIsVisible(accountSettingsView, true);
                 Helpers.expectLoadingErrorIsVisible(accountSettingsView, false);
@@ -124,7 +124,7 @@ define(['backbone', 'jquery', 'underscore', 'common/js/spec_helpers/ajax_helpers
 
                 requests = AjaxHelpers.requests(this);
 
-                var accountSettingsView = createAccountSettingsPage();
+                var accountSettingsView = createAccountSettingsPage(false);
 
                 Helpers.expectLoadingIndicatorIsVisible(accountSettingsView, true);
                 Helpers.expectLoadingErrorIsVisible(accountSettingsView, false);
@@ -142,7 +142,7 @@ define(['backbone', 'jquery', 'underscore', 'common/js/spec_helpers/ajax_helpers
 
                 requests = AjaxHelpers.requests(this);
 
-                var accountSettingsView = createAccountSettingsPage();
+                var accountSettingsView = createAccountSettingsPage(false);
 
                 AjaxHelpers.respondWithJson(requests, Helpers.createAccountSettingsData());
                 AjaxHelpers.respondWithJson(requests, Helpers.createUserPreferencesData());
@@ -198,6 +198,22 @@ define(['backbone', 'jquery', 'underscore', 'common/js/spec_helpers/ajax_helpers
                     var view = section3Fields[i].view;
                     AccountSettingsFieldViewSpecHelpers.verifyAuthField(view, view.options, requests);
                 }
+            });
+
+            it("expects e-mail setting of fields to behave hidden", function () {
+
+                requests = AjaxHelpers.requests(this);
+
+                var accountSettingsView = createAccountSettingsPage(true);
+
+                AjaxHelpers.respondWithJson(requests, Helpers.createAccountSettingsData());
+                AjaxHelpers.respondWithJson(requests, Helpers.createUserPreferencesData());
+                AjaxHelpers.respondWithJson(requests, {});  // Page viewed analytics event
+                AjaxHelpers.respondWithJson(requests, {});  // Page viewed receive email get event
+
+                var sectionsData = accountSettingsView.options.sectionsData;
+
+                expect(sectionsData[0].fields.length).toBe(4);
             });
         });
     });

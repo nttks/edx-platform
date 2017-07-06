@@ -27,6 +27,7 @@ from external_auth.login_and_register import (
     register as external_auth_register
 )
 from openedx.core.djangoapps.course_global.models import CourseGlobalSetting
+from openedx.core.djangoapps.ga_optional.models import UserOptionalConfiguration, USERPOFILE_OPTION_KEY
 from student.models import UserProfile
 from student.views import (
     signin_user as old_login_view,
@@ -399,6 +400,7 @@ def account_settings_context(request):
         'user_accounts_api_url': reverse("accounts_api", kwargs={'username': user.username}),
         'user_preferences_api_url': reverse('preferences_api', kwargs={'username': user.username}),
         'disable_courseware_js': True,
+        'email_hidden_available': UserOptionalConfiguration.is_available(USERPOFILE_OPTION_KEY, user),
     }
 
     if third_party_auth.is_enabled():

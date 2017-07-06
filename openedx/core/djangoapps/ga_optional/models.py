@@ -1,8 +1,9 @@
 
+from django.contrib.auth.models import User
 from django.db import models
 from django.utils.translation import get_language, ugettext_lazy as _
 
-from config_models.models import ConfigurationModel
+from config_models.models import ConfigurationModel, ConfigurationModelManager
 from xmodule_django.models import CourseKeyField
 
 CUSTOM_LOGO_OPTION_KEY = 'custom-logo-for-settings'
@@ -51,3 +52,60 @@ class DashboardOptionalConfiguration(ConfigurationModel):
         app_label = "ga_optional"
         verbose_name = _("Settings for mypage optional feature")
         verbose_name_plural = _("Settings for mypage optional feature")
+
+
+class UserOptionalConfigurationManager(ConfigurationModelManager):
+    def current_set(self):
+        """
+        extends ConfigurationModelManager.
+        Because where block's `id` is not identify it.
+        --  OperationalError: (1052, "Column 'id' in IN/ALL/ANY subquery is ambiguous")
+        """
+        assert self.model.KEY_FIELDS != (), "Just use model.current() if there are no KEY_FIELDS"
+        return self.get_queryset().extra(           # pylint: disable=no-member
+            where=["`{tablename}`.id IN ({subquery})".format(tablename=self.model._meta.db_table, subquery=self._current_ids_subquery())],
+            select={'is_active': 1},  # This annotation is used by the admin changelist. sqlite requires '1', not 'True'
+        )
+
+    def with_active_flag(self):
+        """
+        extends ConfigurationModelManager.
+        Because where block's `id` is not identify it.
+        --  OperationalError: (1052, "Column 'id' in IN/ALL/ANY subquery is ambiguous")
+        """
+        if self.model.KEY_FIELDS:
+            subquery = self._current_ids_subquery()
+            return self.get_queryset().extra(           # pylint: disable=no-member
+                select={'is_active': "`{tablename}`.id IN ({subquery})".format(tablename=self.model._meta.db_table, subquery=subquery)}
+            )
+        else:
+            return self.get_queryset().extra(           # pylint: disable=no-member
+                select={'is_active': "`{tablename}`.id = {pk}".format(tablename=self.model._meta.db_table, pk=self.model.current().pk)}
+            )
+
+
+USERPOFILE_OPTION_KEY = 'hide-email-settings'
+OPTIONAL_USEROPTIONAL_FEATURES = [
+    (USERPOFILE_OPTION_KEY, _("Hide the e-mail on the Account Settings")),
+]
+
+
+class UserOptionalConfiguration(ConfigurationModel):
+
+    KEY_FIELDS = ('key', 'user_id', )
+
+    key = models.CharField(max_length=100, choices=OPTIONAL_USEROPTIONAL_FEATURES, db_index=True, verbose_name=_("Feature"))
+    user = models.ForeignKey(User, related_name="useroptional", verbose_name=_("Username"))
+
+    objects = UserOptionalConfigurationManager()
+
+    class Meta(object):
+        app_label = "ga_optional"
+        verbose_name = _("Settings for the user optional feature")
+        verbose_name_plural = _("Settings for the user optional feature")
+
+    @classmethod
+    def is_available(cls, key, user=None):
+        if user is not None:
+            return cls.current(key, user.id).enabled
+        return False
