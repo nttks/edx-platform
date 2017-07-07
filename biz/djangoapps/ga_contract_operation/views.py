@@ -16,8 +16,9 @@ from django.http import Http404
 from django.utils.translation import ugettext as _
 from django.views.decorators.http import require_GET, require_POST
 
-from biz.djangoapps.ga_contract_operation.models import ContractMail, ContractTaskHistory, ContractTaskTarget, StudentRegisterTaskTarget
-from biz.djangoapps.ga_contract_operation.tasks import personalinfo_mask, student_register, TASKS, STUDENT_REGISTER, PERSONALINFO_MASK
+from biz.djangoapps.ga_contract_operation.models import ContractMail, ContractTaskHistory, ContractTaskTarget, StudentRegisterTaskTarget, StudentUnregisterTaskTarget
+from biz.djangoapps.ga_contract_operation.tasks import personalinfo_mask, student_register, student_unregister, \
+                                                        TASKS, STUDENT_REGISTER, STUDENT_UNREGISTER, PERSONALINFO_MASK
 from biz.djangoapps.ga_contract_operation.utils import send_mail
 from biz.djangoapps.ga_invitation.models import (
     AdditionalInfoSetting,
@@ -235,7 +236,7 @@ def register_students_ajax(request):
 
     if any([len(s) > settings.BIZ_MAX_CHAR_LENGTH_REGISTER_LINE for s in students]):
         return _error_response(_(
-            "The number of lines per line has exceeded the {biz_max_char_length_register_line} lines."
+            "The number of lines per line has exceeded the {biz_max_char_length_register_line} characters."
         ).format(biz_max_char_length_register_line=settings.BIZ_MAX_CHAR_LENGTH_REGISTER_LINE))
 
     register_status = request.POST.get('register_status')
@@ -251,6 +252,18 @@ def register_students_ajax(request):
     StudentRegisterTaskTarget.bulk_create(history, students)
 
     return _submit_task(request, STUDENT_REGISTER, student_register, history)
+
+
+@require_GET
+@login_required
+@check_course_selection
+def bulk_students(request):
+    return render_to_response(
+        'ga_contract_operation/bulk_students.html',
+        {
+            'max_bulk_students_number': settings.BIZ_MAX_BULK_STUDENTS_NUMBER,
+        }
+    )
 
 
 def _submit_task(request, task_type, task_class, history):
@@ -301,6 +314,23 @@ def task_history_ajax(request):
             skipped=task_output.get('skipped', 0), failed=task_output.get('failed', 0)
         )
 
+    def _task_message(task, history):
+        _task_targets = None
+        if task:
+            if task.task_type == STUDENT_REGISTER:
+                _task_targets = StudentRegisterTaskTarget.find_by_history_id_and_message(history.id)
+            elif task.task_type == STUDENT_UNREGISTER:
+                _task_targets = StudentUnregisterTaskTarget.find_by_history_id_and_message(history.id)
+            elif task.task_type == PERSONALINFO_MASK:
+                _task_targets = ContractTaskTarget.find_by_history_id_and_message(history.id)
+        return [
+            {
+                'recid': task_target.id,
+                'message': task_target.message,
+            }
+            for task_target in _task_targets
+        ] if _task_targets else []
+
     task_histories = [
         {
             'recid': i + 1,
@@ -309,13 +339,7 @@ def task_history_ajax(request):
             'task_result': _task_result(task),
             'requester': history.requester.username,
             'created': to_timezone(history.created).strftime('%Y/%m/%d %H:%M:%S'),
-            'messages': [
-                {
-                    'recid': task_target.id,
-                    'message': task_target.message,
-                }
-                for task_target in StudentRegisterTaskTarget.find_by_history_id_and_message(history.id)
-            ] if task and task.task_type == STUDENT_REGISTER else [],
+            'messages': _task_message(task, history),
         }
         for i, (history, task) in enumerate(ContractTaskHistory.find_by_contract_with_task(request.current_contract))
     ]
@@ -451,3 +475,69 @@ def send_mail_ajax(request):
         return JsonResponse({
             'info': _("Successfully to send the test e-mail."),
         })
+
+
+def check_contract_bulk_operation(func):
+    """
+    This checks for bulk operation.
+    unregistered students, personalinfo mask.
+    """
+    @wraps(func)
+    def wrapper(request, *args, **kwargs):
+        if 'students_list' not in request.POST or 'contract_id' not in request.POST:
+            return _error_response(_("Unauthorized access."))
+
+        if str(request.current_contract.id) != request.POST['contract_id']:
+            return _error_response(_("Current contract is changed. Please reload this page."))
+
+        students_line = request.POST['students_list'].splitlines()
+        if not students_line:
+            return _error_response(_("Could not find student list."))
+
+        if len(students_line) > settings.BIZ_MAX_BULK_STUDENTS_NUMBER:
+            return _error_response(_(
+                "It has exceeded the number({max_bulk_students_number}) of cases that can be a time of specification."
+            ).format(max_bulk_students_number=settings.BIZ_MAX_BULK_STUDENTS_NUMBER))
+
+        if any([len(s) > settings.BIZ_MAX_CHAR_LENGTH_BULK_STUDENTS_LINE for s in students_line]):
+            return _error_response(_(
+                "The number of lines per line has exceeded the {biz_max_char_length_register_line} characters."
+            ).format(biz_max_char_length_register_line=settings.BIZ_MAX_CHAR_LENGTH_BULK_STUDENTS_LINE))
+
+        kwargs['students'] = students_line
+        return func(request, *args, **kwargs)
+    return wrapper
+
+
+@transaction.non_atomic_requests
+@require_POST
+@login_required
+@check_course_selection
+@check_contract_bulk_operation
+def bulk_unregister_students_ajax(request, students):
+    """
+    Submit task of unregistering students by bulk operation.
+    """
+
+    history = ContractTaskHistory.create(request.current_contract, request.user)
+
+    StudentUnregisterTaskTarget.bulk_create_by_text(history, students)
+
+    return _submit_task(request, STUDENT_UNREGISTER, student_unregister, history)
+
+
+@transaction.non_atomic_requests
+@require_POST
+@login_required
+@check_course_selection
+@check_contract_bulk_operation
+def bulk_personalinfo_mask_ajax(request, students):
+    """
+    Submit task of masking personal information by bulk operation.
+    """
+
+    history = ContractTaskHistory.create(request.current_contract, request.user)
+
+    ContractTaskTarget.bulk_create_by_text(history, students)
+
+    return _submit_task(request, PERSONALINFO_MASK, personalinfo_mask, history)

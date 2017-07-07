@@ -216,6 +216,8 @@ from microsite_configuration import microsite
                 current_feature = 'contract_operation/register_mail'
             elif re.match('^/biz/contract_operation/students', request.path):
                 current_feature = 'contract_operation/students'
+            elif re.match('^/biz/contract_operation/bulk_students', request.path):
+                current_feature = 'contract_operation/bulk_students'
             elif re.match('^/biz/contract_operation/register_students', request.path):
                 current_feature = 'contract_operation/register_students'
             elif re.match('^/biz/course_operation/survey', request.path):
@@ -387,6 +389,8 @@ from microsite_configuration import microsite
                         href="${reverse('biz:contract_operation:register_students')}">${_("Register User Management")}</a></li>
                     <li class="${'current' if current_feature == 'contract_operation/students' else ''}"><a
                         href="${reverse('biz:contract_operation:students')}">${_("Contract Register Management")}</a></li>
+                    <li class="${'current' if current_feature == 'contract_operation/bulk_students' else ''}"><a
+                        href="${reverse('biz:contract_operation:bulk_students')}">${_("User Collective Management")}</a></li>
                     % endif
 
                     ## Manager

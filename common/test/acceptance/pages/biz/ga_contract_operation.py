@@ -56,7 +56,7 @@ class BizStudentsPage(BizNavPage, BizTaskHistoryMixin, W2uiMixin):
         self.student_grid = W2uiGrid(self, '#grid.w2ui-grid')
 
     def is_browser_on_page(self):
-        return self.pagetitle == u'Students List'
+        return self.pagetitle == u'Users List'
 
     def click_unregister_button(self):
         """
@@ -197,3 +197,50 @@ class BizMailPage(BizNavPage, W2uiMixin):
                 el.click()
         self.wait_for_ajax()
         return self
+
+
+class BizBulkStudentsPage(BizNavPage, BizTaskHistoryMixin, W2uiMixin):
+    """
+    Bulk operation page
+    """
+
+    @property
+    def url(self):
+        return '{base}/biz/contract_operation/bulk_students'.format(base=BASE_URL)
+
+    def is_browser_on_page(self):
+        """
+        Check if browser is showing the page.
+        """
+        return 'Unregister, Mask' in self.browser.title
+
+    def input_students(self, value):
+        """
+        Input students info
+
+        Arguments:
+            value : target students
+        """
+        self.q(css='textarea#list-students').fill(value)
+        return self
+
+    def click_bulk_unregister_button(self):
+        """
+        Click the bulk-unregister button
+        """
+        self.q(css='#bulk-unregister-btn').click()
+        self.wait_for_ajax()
+        return self
+
+    def click_bulk_personalinfo_mask_button(self):
+        """
+        Click the bulk-personalinfo-mask button
+        """
+        self.q(css='#bulk-personalinfo-mask-btn').click()
+        self.wait_for_ajax()
+        return self
+
+    @property
+    def messages(self):
+        """Return a list of errors displayed to the list view. """
+        return self.q(css="div.main ul.messages li").text

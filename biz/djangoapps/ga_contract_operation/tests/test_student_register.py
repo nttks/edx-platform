@@ -450,12 +450,12 @@ class StudentRegisterTaskTest(BizViewTestBase, ModuleStoreTestCase, TaskTestMixi
         self.assertEqual(0, StudentRegisterTaskTarget.objects.filter(history=history, completed=False).count())
         self.assertEqual(1, StudentRegisterTaskTarget.objects.filter(history=history, completed=True).count())
         self.assertIn(
-            "Warning, an account with email {email} exists but the registered username {username} is different.".format(email=self.email, username=self.username),
+            "Warning, an account with the e-mail {email} exists but the registered username {username} is different.".format(email=self.email, username=self.username),
             StudentRegisterTaskTarget.objects.get(history=history, student=students[0]).message
         )
         if url_code:
             self.assertIn(
-                "Warning, an account with email {email} exists but the registered password is different.".format(email=self.email),
+                "Warning, an account with the e-mail {email} exists but the registered password is different.".format(email=self.email),
                 StudentRegisterTaskTarget.objects.get(history=history, student=students[0]).message
             )
 
@@ -502,12 +502,12 @@ class StudentRegisterTaskTest(BizViewTestBase, ModuleStoreTestCase, TaskTestMixi
         self.assertEqual(0, StudentRegisterTaskTarget.objects.filter(history=history, completed=False).count())
         self.assertEqual(1, StudentRegisterTaskTarget.objects.filter(history=history, completed=True).count())
         self.assertIn(
-            "Warning, an account with email {email} exists but the registered username {username} is different.".format(email=self.email, username=self.username),
+            "Warning, an account with the e-mail {email} exists but the registered username {username} is different.".format(email=self.email, username=self.username),
             StudentRegisterTaskTarget.objects.get(history=history, student=students[0]).message
         )
         if url_code:
             self.assertIn(
-                "Warning, an account with email {email} exists but the registered password is different.".format(email=self.email),
+                "Warning, an account with the e-mail {email} exists but the registered password is different.".format(email=self.email),
                 StudentRegisterTaskTarget.objects.get(history=history, student=students[0]).message
             )
 
@@ -554,12 +554,12 @@ class StudentRegisterTaskTest(BizViewTestBase, ModuleStoreTestCase, TaskTestMixi
         self.assertEqual(0, StudentRegisterTaskTarget.objects.filter(history=history, completed=False).count())
         self.assertEqual(1, StudentRegisterTaskTarget.objects.filter(history=history, completed=True).count())
         self.assertIn(
-            "Warning, an account with email {email} exists but the registered username {username} is different.".format(email=self.email, username=self.username),
+            "Warning, an account with the e-mail {email} exists but the registered username {username} is different.".format(email=self.email, username=self.username),
             StudentRegisterTaskTarget.objects.get(history=history, student=students[0]).message
         )
         if url_code:
             self.assertIn(
-                "Warning, an account with email {email} exists but the registered password is different.".format(email=self.email),
+                "Warning, an account with the e-mail {email} exists but the registered password is different.".format(email=self.email),
                 StudentRegisterTaskTarget.objects.get(history=history, student=students[0]).message
             )
 
@@ -639,7 +639,7 @@ class StudentRegisterTaskTest(BizViewTestBase, ModuleStoreTestCase, TaskTestMixi
         self.assertEqual(1, StudentRegisterTaskTarget.objects.filter(history=history, completed=True).count())
 
         self.assertIn(
-            "Warning, an account with email {email} exists but the registered login code {login_code} is different.".format(email=self.email, login_code=self.login_code),
+            "Warning, an account with the e-mail {email} exists but the registered login code {login_code} is different.".format(email=self.email, login_code=self.login_code),
             StudentRegisterTaskTarget.objects.get(history=history, student=students[0]).message
         )
 
@@ -680,7 +680,7 @@ class StudentRegisterTaskTest(BizViewTestBase, ModuleStoreTestCase, TaskTestMixi
         self.assertEqual(1, StudentRegisterTaskTarget.objects.filter(history=history, completed=True).count())
 
         self.assertIn(
-            "Warning, an account with email {email} exists but the registered password is different.".format(email=self.email),
+            "Warning, an account with the e-mail {email} exists but the registered password is different.".format(email=self.email),
             StudentRegisterTaskTarget.objects.get(history=history, student=students[0]).message
         )
 
@@ -721,11 +721,11 @@ class StudentRegisterTaskTest(BizViewTestBase, ModuleStoreTestCase, TaskTestMixi
         self.assertEqual(1, StudentRegisterTaskTarget.objects.filter(history=history, completed=True).count())
 
         self.assertIn(
-            "Warning, an account with email {email} exists but the registered login code {login_code} is different.".format(email=self.email, login_code=self.login_code),
+            "Warning, an account with the e-mail {email} exists but the registered login code {login_code} is different.".format(email=self.email, login_code=self.login_code),
             StudentRegisterTaskTarget.objects.get(history=history, student=students[0]).message
         )
         self.assertIn(
-            "Warning, an account with email {email} exists but the registered password is different.".format(email=self.email),
+            "Warning, an account with the e-mail {email} exists but the registered password is different.".format(email=self.email),
             StudentRegisterTaskTarget.objects.get(history=history, student=students[0]).message
         )
 

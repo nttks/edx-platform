@@ -71,9 +71,9 @@ from biz.djangoapps.ga_invitation.models import REGISTER_INVITATION_CODE
     <div class="w2ui-page page-0">
         <div class="field">
           %if hasattr(request.current_contract, 'contractauth'):
-            <span class="operation">${_("To register a list of users in this course, contains the following columns in this exact order: email, username, name, login code, and password. Please include one student per row and do not include any headers, footers, or blank lines.")}</span>
+            <span class="operation">${_("To register a list of users in this course, contains the following columns in this exact order: e-mail, username, name, login code, and password. Please include one user per row and do not include any headers, footers, or blank lines.")}</span>
           %else:
-            <span class="operation">${_("To register a list of users in this course, contains the following columns in this exact order: email, username, and name. Please include one student per row and do not include any headers, footers, or blank lines.")}</span>
+            <span class="operation">${_("To register a list of users in this course, contains the following columns in this exact order: e-mail, username, and name. Please include one user per row and do not include any headers, footers, or blank lines.")}</span>
           %endif
         </div>
         <div class="field">

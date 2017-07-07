@@ -168,8 +168,11 @@ class BizTestBase(TestCase):
             if item1_id != item2_id:
                 raise self.failureException('id does not match: %s, %s' % (item1_id, item2_id))
 
-    def _create_task_history(self, contract):
-        return ContractTaskHistoryFactory.create(contract=contract)
+    def _create_task_history(self, contract, requester=None):
+        if requester:
+            return ContractTaskHistoryFactory.create(contract=contract, requester=requester)
+        else:
+            return ContractTaskHistoryFactory.create(contract=contract)
 
     def _create_contract_mail_default(self):
         ContractMailFactory.create(

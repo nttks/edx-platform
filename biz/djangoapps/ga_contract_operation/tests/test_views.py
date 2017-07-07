@@ -22,7 +22,7 @@ from biz.djangoapps.ga_contract_operation.models import (
     MAIL_TYPE_REGISTER_NEW_USER_WITH_LOGINCODE,
     MAIL_TYPE_REGISTER_EXISTING_USER_WITH_LOGINCODE,
 )
-from biz.djangoapps.ga_contract_operation.tests.factories import ContractTaskHistoryFactory
+from biz.djangoapps.ga_contract_operation.tests.factories import ContractTaskHistoryFactory, ContractTaskTargetFactory, StudentRegisterTaskTargetFactory, StudentUnregisterTaskTargetFactory
 from biz.djangoapps.ga_invitation.models import ContractRegister, INPUT_INVITATION_CODE, REGISTER_INVITATION_CODE, UNREGISTER_INVITATION_CODE
 from biz.djangoapps.ga_invitation.tests.factories import ContractRegisterFactory
 from biz.djangoapps.ga_invitation.tests.test_views import BizContractTestBase
@@ -220,7 +220,7 @@ class ContractOperationViewTest(BizContractTestBase):
 
         self.assertEqual(400, response.status_code)
         data = json.loads(response.content)
-        self.assertEqual("The number of lines per line has exceeded the 45 lines.", data['error'])
+        self.assertEqual("The number of lines per line has exceeded the 45 characters.", data['error'])
 
         self.assertFalse(User.objects.filter(username='test_student_1', email='test_student1@example.com').exists())
         self.assertFalse(User.objects.filter(username='test_student_2', email='test_student2@example.com').exists())
@@ -1048,3 +1048,421 @@ class ContractOperationMailViewTest(BizContractTestBase):
         self.assertEqual(400, response.status_code)
         data = json.loads(response.content)
         self.assertEquals(data['error'], 'Failed to send the test e-mail.')
+
+
+@ddt.ddt
+class ContractOperationViewBulkStudentTest(BizContractTestBase):
+    # ------------------------------------------------------------
+    # Bulk Students
+    # ------------------------------------------------------------
+    def test_bulk_students(self):
+        self.setup_user()
+        # view student management
+        with self.skip_check_course_selection(current_contract=self.contract):
+            self.assert_request_status_code(200, reverse('biz:contract_operation:bulk_students'))
+
+    # ------------------------------------------------------------
+    # Bulk Unregister students
+    # ------------------------------------------------------------
+    @property
+    def _url_bulk_unregister_students_ajax(self):
+        return reverse('biz:contract_operation:bulk_unregister_students_ajax')
+
+    def _assert_bulk_unregister_success(self, response):
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.content)
+        self.assertEqual(data['info'], 'Began the processing of Student Unregister.Execution status, please check from the task history.')
+
+    def _assert_bulk_unregister_after_success_check_db(self, contract_id, csv_content):
+        # get latest task and assert
+        task = Task.objects.all().order_by('-id')[0]
+        self.assertEqual('student_unregister', task.task_type)
+
+        task_input = json.loads(task.task_input)
+        self.assertEqual(contract_id, task_input['contract_id'])
+        history = ContractTaskHistory.objects.get(pk=task_input['history_id'])
+        self.assertEqual(history.task_id, task.task_id)
+        self.assertItemsEqual([u'{}'.format(s) for s in csv_content.splitlines()], [target.inputdata for target in history.studentunregistertasktarget_set.all()])
+
+    def test_bulk_unregister_contract_unmatch(self):
+        self.setup_user()
+        csv_content = u"test_student_1\n" \
+                      u"test_student_2"
+
+        with self.skip_check_course_selection(current_contract=self.contract):
+            response = self.client.post(self._url_bulk_unregister_students_ajax, {'contract_id': self.contract_mooc.id, 'students_list': csv_content})
+
+        self.assertEqual(400, response.status_code)
+        data = json.loads(response.content)
+        self.assertEqual(data['error'], 'Current contract is changed. Please reload this page.')
+
+    def test_bulk_unregister_no_param(self):
+        self.setup_user()
+
+        with self.skip_check_course_selection(current_contract=self.contract):
+            response = self.client.post(self._url_bulk_unregister_students_ajax, {})
+
+        self.assertEqual(400, response.status_code)
+        data = json.loads(response.content)
+        self.assertEqual(data['error'], 'Unauthorized access.')
+
+    def test_bulk_unregister_no_param_students_list(self):
+        self.setup_user()
+
+        with self.skip_check_course_selection(current_contract=self.contract):
+            response = self.client.post(self._url_bulk_unregister_students_ajax, {'contract_id': self.contract_mooc.id})
+
+        self.assertEqual(400, response.status_code)
+        data = json.loads(response.content)
+        self.assertEqual(data['error'], 'Unauthorized access.')
+
+    def test_bulk_unregister_no_param_contract_id(self):
+        self.setup_user()
+        csv_content = u"test_student_1\n" \
+                      u"test_student_2"
+
+        with self.skip_check_course_selection(current_contract=self.contract):
+            response = self.client.post(self._url_bulk_unregister_students_ajax, {'students_list': csv_content})
+
+        self.assertEqual(400, response.status_code)
+        data = json.loads(response.content)
+        self.assertEqual(data['error'], 'Unauthorized access.')
+
+    def test_bulk_unregister_no_student(self):
+        self.setup_user()
+        csv_content = ""
+
+        with self.skip_check_course_selection(current_contract=self.contract):
+            response = self.client.post(self._url_bulk_unregister_students_ajax, {'contract_id': self.contract.id, 'students_list': csv_content})
+
+        self.assertEqual(400, response.status_code)
+        data = json.loads(response.content)
+        self.assertEqual(data['error'], 'Could not find student list.')
+
+    def test_bulk_unregister_not_allowed_method(self):
+        response = self.client.get(self._url_bulk_unregister_students_ajax)
+        self.assertEqual(response.status_code, 405)
+
+    @override_settings(BIZ_MAX_BULK_STUDENTS_NUMBER=2)
+    def test_bulk_unregister_students_over_max_number(self):
+        self.setup_user()
+        csv_content = u"test_student_1\n" \
+                      u"test_student_2\n" \
+                      u"test_student_3\n"
+
+        with self.skip_check_course_selection(current_contract=self.contract):
+            response = self.client.post(self._url_bulk_unregister_students_ajax, {'contract_id': self.contract.id, 'students_list': csv_content})
+
+        self.assertEqual(400, response.status_code)
+        data = json.loads(response.content)
+        self.assertEqual("It has exceeded the number(2) of cases that can be a time of specification.", data['error'])
+
+    @override_settings(BIZ_MAX_CHAR_LENGTH_BULK_STUDENTS_LINE=30)
+    def test_bulk_unregister_students_over_max_char_length(self):
+        self.setup_user()
+        ContractRegisterFactory.create(user=self.user, contract=self.contract, status=REGISTER_INVITATION_CODE)
+        CourseEnrollment.enroll(self.user, self.course_spoc1.id)
+        CourseEnrollment.enroll(self.user, self.course_spoc2.id)
+        csv_content = u"1234567890123456789112345678931"
+
+        with self.skip_check_course_selection(current_contract=self.contract):
+            response = self.client.post(self._url_bulk_unregister_students_ajax, {'contract_id': self.contract.id, 'students_list': csv_content})
+
+        self.assertEqual(400, response.status_code)
+        data = json.loads(response.content)
+        self.assertEqual("The number of lines per line has exceeded the 30 characters.", data['error'])
+
+    def test_bulk_unregister_validate_already_unregisterd(self):
+        self.setup_user()
+        ContractRegisterFactory.create(user=self.user, contract=self.contract, status=UNREGISTER_INVITATION_CODE)
+        csv_content = self.user.username
+
+        with self.skip_check_course_selection(current_contract=self.contract):
+            response = self.client.post(self._url_bulk_unregister_students_ajax, {'contract_id': self.contract.id, 'students_list': csv_content})
+
+        self._assert_bulk_unregister_success(response)
+
+    def test_bulk_unregister_spoc(self):
+        self.setup_user()
+        ContractRegisterFactory.create(user=self.user, contract=self.contract, status=REGISTER_INVITATION_CODE)
+        CourseEnrollment.enroll(self.user, self.course_spoc1.id)
+        CourseEnrollment.enroll(self.user, self.course_spoc2.id)
+        csv_content = self.user.username
+
+        with self.skip_check_course_selection(current_contract=self.contract):
+            response = self.client.post(self._url_bulk_unregister_students_ajax, {'contract_id': self.contract.id, 'students_list': csv_content})
+
+        self._assert_bulk_unregister_success(response)
+        self._assert_bulk_unregister_after_success_check_db(self.contract.id, csv_content)
+
+    def test_bulk_unregister_mooc(self):
+        self.setup_user()
+        ContractRegisterFactory.create(user=self.user, contract=self.contract_mooc, status=REGISTER_INVITATION_CODE)
+        CourseEnrollment.enroll(self.user, self.course_mooc1.id)
+        csv_content = self.user.username
+
+        with self.skip_check_course_selection(current_contract=self.contract_mooc):
+            response = self.client.post(self._url_bulk_unregister_students_ajax, {'contract_id': self.contract_mooc.id, 'students_list': csv_content})
+
+        self._assert_bulk_unregister_success(response)
+        self._assert_bulk_unregister_after_success_check_db(self.contract_mooc.id, csv_content)
+
+    def test_bulk_unregister_spoc_staff(self):
+        self.setup_user()
+        # to be staff
+        self.user.is_staff = True
+        self.user.save()
+        ContractRegisterFactory.create(user=self.user, contract=self.contract, status=REGISTER_INVITATION_CODE)
+        CourseEnrollment.enroll(self.user, self.course_spoc1.id)
+        CourseEnrollment.enroll(self.user, self.course_spoc2.id)
+        csv_content = self.user.username
+
+        with self.skip_check_course_selection(current_contract=self.contract):
+            response = self.client.post(self._url_bulk_unregister_students_ajax, {'contract_id': self.contract.id, 'students_list': csv_content})
+
+        self._assert_bulk_unregister_success(response)
+        self._assert_bulk_unregister_after_success_check_db(self.contract.id, csv_content)
+
+    def test_bulk_unregister_student_submit_duplicated(self):
+        TaskFactory.create(task_type='student_unregister', task_key=hashlib.md5(str(self.contract.id)).hexdigest())
+        self.setup_user()
+        csv_content = self.user.username
+
+        with self.skip_check_course_selection(current_contract=self.contract):
+            response = self.client.post(self._url_bulk_unregister_students_ajax, {'contract_id': self.contract.id, 'students_list': csv_content})
+
+        self.assertEqual(400, response.status_code)
+        data = json.loads(response.content)
+        self.assertEqual("Processing of Student Unregister is running.Execution status, please check from the task history.", data['error'])
+        # assert not to be created new Task instance.
+        self.assertEqual(1, Task.objects.count())
+
+    # # ------------------------------------------------------------
+    # # Personalinfo Mask
+    # # ------------------------------------------------------------
+    @property
+    def _url_bulk_personalinfo_mask_students_ajax(self):
+        return reverse('biz:contract_operation:bulk_personalinfo_mask_ajax')
+
+    def _assert_bulk_personalinfo_mask_success(self, response):
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.content)
+        self.assertEqual(data['info'], 'Began the processing of Personal Information Mask.Execution status, please check from the task history.')
+
+    def _assert_bulk_personalinfo_mask_after_success_check_db(self, contract_id, csv_content):
+        # get latest task and assert
+        task = Task.objects.all().order_by('-id')[0]
+        self.assertEqual('personalinfo_mask', task.task_type)
+
+        task_input = json.loads(task.task_input)
+        self.assertEqual(contract_id, task_input['contract_id'])
+        history = ContractTaskHistory.objects.get(pk=task_input['history_id'])
+        self.assertEqual(history.task_id, task.task_id)
+        self.assertItemsEqual([u'{}'.format(s) for s in csv_content.splitlines()], [target.inputdata for target in history.contracttasktarget_set.all()])
+
+    def test_bulk_personalinfo_mask_not_allowed_method(self):
+        response = self.client.get(self._url_bulk_personalinfo_mask_students_ajax)
+        self.assertEqual(response.status_code, 405)
+
+    def test_bulk_personalinfo_mask_contract_unmatch(self):
+        self.setup_user()
+        csv_content = u"test_student_1\n" \
+                      u"test_student_2"
+
+        with self.skip_check_course_selection(current_contract=self.contract):
+            response = self.client.post(self._url_bulk_personalinfo_mask_students_ajax, {'contract_id': self.contract_mooc.id, 'students_list': csv_content})
+
+        self.assertEqual(400, response.status_code)
+        data = json.loads(response.content)
+        self.assertEqual(data['error'], 'Current contract is changed. Please reload this page.')
+
+    def test_bulk_personalinfo_mask_no_param(self):
+        self.setup_user()
+
+        with self.skip_check_course_selection(current_contract=self.contract):
+            response = self.client.post(self._url_bulk_personalinfo_mask_students_ajax, {})
+
+        self.assertEqual(400, response.status_code)
+        data = json.loads(response.content)
+        self.assertEqual(data['error'], 'Unauthorized access.')
+
+    def test_bulk_personalinfo_mask_no_param_students_list(self):
+        self.setup_user()
+
+        with self.skip_check_course_selection(current_contract=self.contract):
+            response = self.client.post(self._url_bulk_personalinfo_mask_students_ajax, {'contract_id': self.contract_mooc.id})
+
+        self.assertEqual(400, response.status_code)
+        data = json.loads(response.content)
+        self.assertEqual(data['error'], 'Unauthorized access.')
+
+    def test_bulk_personalinfo_mask_no_param_contract_id(self):
+        self.setup_user()
+        csv_content = u"test_student_1\n" \
+                      u"test_student_2"
+
+        with self.skip_check_course_selection(current_contract=self.contract):
+            response = self.client.post(self._url_bulk_personalinfo_mask_students_ajax, {'students_list': csv_content})
+
+        self.assertEqual(400, response.status_code)
+        data = json.loads(response.content)
+        self.assertEqual(data['error'], 'Unauthorized access.')
+
+    def test_bulk_personalinfo_mask_no_student(self):
+        self.setup_user()
+        csv_content = ""
+
+        with self.skip_check_course_selection(current_contract=self.contract):
+            response = self.client.post(self._url_bulk_personalinfo_mask_students_ajax, {'contract_id': self.contract.id, 'students_list': csv_content})
+
+        self.assertEqual(400, response.status_code)
+        data = json.loads(response.content)
+        self.assertEqual(data['error'], 'Could not find student list.')
+
+    @override_settings(BIZ_MAX_BULK_STUDENTS_NUMBER=2)
+    def test_bulk_personalinfo_mask_students_over_max_number(self):
+        self.setup_user()
+        csv_content = u"test_bulk_student_1\n" \
+                      u"test_bulk_student_2\n" \
+                      u"test_bulk_student_3\n"
+
+        with self.skip_check_course_selection(current_contract=self.contract):
+            response = self.client.post(self._url_bulk_personalinfo_mask_students_ajax, {'contract_id': self.contract.id, 'students_list': csv_content})
+
+        self.assertEqual(400, response.status_code)
+        data = json.loads(response.content)
+        self.assertEqual("It has exceeded the number(2) of cases that can be a time of specification.", data['error'])
+
+    @override_settings(BIZ_MAX_CHAR_LENGTH_BULK_STUDENTS_LINE=30)
+    def test_bulk_personalinfo_mask_students_over_max_char_length(self):
+        self.setup_user()
+        ContractRegisterFactory.create(user=self.user, contract=self.contract, status=REGISTER_INVITATION_CODE)
+        CourseEnrollment.enroll(self.user, self.course_spoc1.id)
+        CourseEnrollment.enroll(self.user, self.course_spoc2.id)
+        csv_content = u"1234567890123456789112345678931"
+
+        with self.skip_check_course_selection(current_contract=self.contract):
+            response = self.client.post(self._url_bulk_personalinfo_mask_students_ajax, {'contract_id': self.contract.id, 'students_list': csv_content})
+
+        self.assertEqual(400, response.status_code)
+        data = json.loads(response.content)
+        self.assertEqual("The number of lines per line has exceeded the 30 characters.", data['error'])
+
+    def test_bulk_personalinfo_mask_validate_already_personal_info_maskd(self):
+        self.setup_user()
+        ContractRegisterFactory.create(user=self.user, contract=self.contract, status=REGISTER_INVITATION_CODE)
+        csv_content = self.user.username
+
+        with self.skip_check_course_selection(current_contract=self.contract):
+            response = self.client.post(self._url_bulk_personalinfo_mask_students_ajax, {'contract_id': self.contract.id, 'students_list': csv_content})
+
+        self._assert_bulk_personalinfo_mask_success(response)
+
+    def test_bulk_personalinfo_mask_submit_duplicated(self):
+        TaskFactory.create(task_type='personalinfo_mask', task_key=hashlib.md5(str(self.contract.id)).hexdigest())
+        self.setup_user()
+        csv_content = self.user.username
+
+        with self.skip_check_course_selection(current_contract=self.contract):
+            response = self.client.post(self._url_bulk_personalinfo_mask_students_ajax, {'contract_id': self.contract.id, 'students_list': csv_content})
+
+        self.assertEqual(400, response.status_code)
+        data = json.loads(response.content)
+        self.assertEqual("Processing of Personal Information Mask is running.Execution status, please check from the task history.", data['error'])
+        # assert not to be created new Task instance.
+        self.assertEqual(1, Task.objects.count())
+
+    def test_bulk_personalinfo_mask_success(self):
+        self.setup_user()
+        CourseEnrollment.enroll(self.user, self.course_spoc1.id)
+        CourseEnrollment.enroll(self.user, self.course_spoc2.id)
+        csv_content = self.user.username
+
+        with self.skip_check_course_selection(current_contract=self.contract):
+            response = self.client.post(self._url_bulk_personalinfo_mask_students_ajax, {'contract_id': self.contract.id, 'students_list': csv_content})
+
+        self._assert_bulk_personalinfo_mask_success(response)
+        self._assert_bulk_personalinfo_mask_after_success_check_db(self.contract.id, csv_content)
+
+    # ------------------------------------------------------------
+    # Task History For bulk operation
+    # ------------------------------------------------------------
+    @property
+    def _url_task_history_ajax(self):
+        return reverse('biz:contract_operation:task_history')
+
+    def _create_task(self, task_type, task_key, task_id, task_state, total=0, attempted=0, succeeded=0, skipped=0, failed=0):
+        task_output = {
+            'total': total,
+            'attempted': attempted,
+            'succeeded': succeeded,
+            'skipped': skipped,
+            'failed': failed,
+        }
+        return TaskFactory.create(
+            task_type=task_type, task_key=task_key, task_id=task_id, task_state=task_state, task_output=json.dumps(task_output)
+        )
+
+    def _create_task_mask_target(self, history, register=None, inputdata=None, message=None, completed=False):
+        return ContractTaskTargetFactory.create(
+            history=history, register=register, inputdata=inputdata, message=message, completed=completed
+        )
+
+    def _create_task_register_target(self, history, student='', message=None, completed=False):
+        return StudentRegisterTaskTargetFactory.create(
+            history=history, student=student, message=message, completed=completed
+        )
+
+    def _create_task_unregister_target(self, history, inputdata='', message=None, completed=False):
+        return StudentUnregisterTaskTargetFactory.create(
+            history=history, inputdata=inputdata, message=message, completed=completed
+        )
+
+    def _assert_task_history(self, history, recid, task_type, state, requester, created, total=0, succeeded=0, skipped=0, failed=0, mes_recid=0, mes_message=None):
+        self.assertEqual(history['recid'], recid)
+        self.assertEqual(history['task_type'], task_type)
+        self.assertEqual(history['task_state'], state)
+        self.assertEqual(history['task_result'], "Total: {}, Success: {}, Skipped: {}, Failed: {}".format(total, succeeded, skipped, failed))
+        self.assertEqual(history['requester'], requester)
+        self.assertEqual(history['created'], to_timezone(created).strftime('%Y/%m/%d %H:%M:%S'))
+        if mes_recid > 0:
+            self.assertEqual(history['messages'][0]['recid'], mes_recid)
+        if mes_message:
+            self.assertEqual(history['messages'][0]['message'], mes_message)
+
+    def test_task_history(self):
+        self.setup_user()
+        tasks = [
+            self._create_task('personalinfo_mask', 'key1', 'task_id1', 'SUCCESS', 1, 1, 1, 0, 0),
+            self._create_task('student_unregister', 'key2', 'task_id2', 'FAILURE', 1, 1, 0, 1, 0),
+            self._create_task('student_register', 'key3', 'task_id3', 'QUEUING', 1, 1, 0, 0, 1),
+            self._create_task('dummy_task', 'key4', 'task_id4', 'PROGRESS'),
+            self._create_task('dummy_task', 'key5', 'tesk_id5', 'DUMMY'),
+        ]
+        # Create histories for target contract
+        histories = [ContractTaskHistoryFactory.create(contract=self.contract, requester=self.user) for i in range(7)]
+        task_target_mask = self._create_task_mask_target(histories[0], message='message1')
+        task_target_unregister = self._create_task_unregister_target(histories[1], message='message2')
+        task_target_register = self._create_task_register_target(histories[2], message='message3')
+        _now = datetime.now(pytz.UTC)
+        for i, history in enumerate(histories):
+            if i < len(tasks):
+                history.task_id = tasks[i].task_id
+                history.created = _now + timedelta(seconds=i)
+                history.save()
+        # Create histories for other contract
+        ContractTaskHistoryFactory.create(contract=self.contract_mooc)
+
+        with self.skip_check_course_selection(current_contract=self.contract):
+            response = self.client.post(self._url_task_history_ajax, {})
+
+        self.assertEqual(200, response.status_code)
+        data = json.loads(response.content)
+        self.assertEqual('success', data['status'])
+        self.assertEqual(5, data['total'])
+        records = data['records']
+        self._assert_task_history(records[0], 1, 'Unknown', 'Unknown', self.user.username, histories[4].created)
+        self._assert_task_history(records[1], 2, 'Unknown', 'In Progress', self.user.username, histories[3].created)
+        self._assert_task_history(records[2], 3, 'Student Register', 'Waiting', self.user.username, histories[2].created, 1, 0, 0, 1, task_target_register.id, 'message3')
+        self._assert_task_history(records[3], 4, 'Student Unregister', 'Complete', self.user.username, histories[1].created, 1, 0, 1, 0, task_target_unregister.id, 'message2')
+        self._assert_task_history(records[4], 5, 'Personal Information Mask', 'Complete', self.user.username, histories[0].created, 1, 1, 0, 0, task_target_mask.id, 'message1')

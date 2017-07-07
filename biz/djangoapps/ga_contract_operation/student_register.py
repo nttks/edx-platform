@@ -125,7 +125,7 @@ def perform_delegate_student_register(entry_id, task_input, action_name):
             user = User.objects.get(email=email)
             if user.username != username:
                 messages.append(_(
-                    "Warning, an account with email {email} exists but the registered username {username} is different."
+                    "Warning, an account with the e-mail {email} exists but the registered username {username} is different."
                 ).format(email=email, username=user.username))
                 log.warning(u'email {email} already exist, but username is different.'.format(email=email))
 
@@ -138,13 +138,13 @@ def perform_delegate_student_register(entry_id, task_input, action_name):
                 biz_user, __ = BizUser.objects.get_or_create(user=user, defaults={'login_code': login_code})
                 if biz_user.login_code != login_code:
                     messages.append(_(
-                        "Warning, an account with email {email} exists but the registered login code {login_code} is different."
+                        "Warning, an account with the e-mail {email} exists but the registered login code {login_code} is different."
                     ).format(email=email, login_code=biz_user.login_code))
                     log.warning(u'email {email} already exist, but login code is different.'.format(email=email))
 
                 if authenticate(username=user.username, password=password) is None:
                     messages.append(_(
-                        "Warning, an account with email {email} exists but the registered password is different."
+                        "Warning, an account with the e-mail {email} exists but the registered password is different."
                     ).format(email=email))
                     log.warning(u'email {email} already exist, but password is different.'.format(email=email))
 

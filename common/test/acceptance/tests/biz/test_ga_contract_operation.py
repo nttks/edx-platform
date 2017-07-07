@@ -14,7 +14,7 @@ from lms.envs.bok_choy import EMAIL_FILE_PATH
 
 from . import GaccoBizTestMixin, PLAT_COMPANY_CODE, PLATFORMER_USER_INFO
 from ..ga_helpers import NoEmailFileException, SUPER_USER_INFO
-from ...pages.biz.ga_contract_operation import BizStudentsPage
+from ...pages.biz.ga_contract_operation import BizBulkStudentsPage, BizStudentsPage
 from ...pages.biz.ga_course_about import CourseAboutPage
 from ...pages.biz.ga_invitation import BizInvitationPage, BizInvitationConfirmPage
 from ...pages.biz.ga_login import BizLoginPage
@@ -210,16 +210,16 @@ class BizStudentRegisterTest(WebAppTest, GaccoBizTestMixin, BizStudentRegisterMi
             [
                 u'Line 1:Your legal name must be a minimum of two characters long',
                 u'Line 2:Username must be minimum of two characters long',
-                u'Line 3:Warning, an account with email {} exists but the registered username {} is different.'.format(
+                u'Line 3:Warning, an account with the e-mail {} exists but the registered username {} is different.'.format(
                     self.existing_users[0]['email'],
                     self.existing_users[0]['username'],
                 ),
-                u'Line 4:Warning, an account with email {} exists but the registered username {} is different.'.format(
+                u'Line 4:Warning, an account with the e-mail {} exists but the registered username {} is different.'.format(
                     self.existing_users[1]['email'],
                     self.existing_users[1]['username'],
                 ),
                 u'Line 5:Username {} already exists.'.format(self.new_users[2]['username']),
-                u'Line 6:Warning, an account with email {} exists but the registered username {} is different.'.format(
+                u'Line 6:Warning, an account with the e-mail {} exists but the registered username {} is different.'.format(
                     self.existing_users[2]['email'],
                     self.existing_users[2]['username'],
                 ),
@@ -625,8 +625,8 @@ class BizStudentRegisterWithContractAuthTest(WebAppTest, GaccoBizTestMixin, BizS
         )
         self.assertEqual(
             [
-                u'Line 1:Warning, an account with email {} exists but the registered login code {} is different.'.format(self.new_users[0]['email'], self.new_users[0]['username']),
-                u'Line 2:Warning, an account with email {} exists but the registered password is different.'.format(self.new_users[1]['email']),
+                u'Line 1:Warning, an account with the e-mail {} exists but the registered login code {} is different.'.format(self.new_users[0]['email'], self.new_users[0]['username']),
+                u'Line 2:Warning, an account with the e-mail {} exists but the registered password is different.'.format(self.new_users[1]['email']),
             ],
             biz_register_students_page.task_messages,
         )
@@ -752,11 +752,11 @@ class BizStudentRegisterWithContractAuthTest(WebAppTest, GaccoBizTestMixin, BizS
         self.assertEqual(
             [
                 u'Line 1:Username {} already exists.'.format(self.new_users[0]['username']),
-                u'Line 2:Warning, an account with email {email} exists but the registered username {username} is different.Warning, an account with email {email} exists but the registered password is different.'.format(
+                u'Line 2:Warning, an account with the e-mail {email} exists but the registered username {username} is different.Warning, an account with the e-mail {email} exists but the registered password is different.'.format(
                     email=self.new_users[2]['email'],
                     username=self.existing_users[0]['username']
                 ),
-                u'Line 3:Warning, an account with email {} exists but the registered password is different.'.format(self.new_users[3]['email']),
+                u'Line 3:Warning, an account with the e-mail {} exists but the registered password is different.'.format(self.new_users[3]['email']),
                 u'Line 4:Login code {} already exists.'.format(self.new_users[1]['login_code'])
             ],
             biz_register_students_page.task_messages,
@@ -794,7 +794,7 @@ class BizStudentRegisterWithContractAuthTest(WebAppTest, GaccoBizTestMixin, BizS
             self.new_director,
         )
         self.assertEqual(
-            [u'Line 1:Warning, an account with email {} exists but the registered password is different.'.format(self.new_users[4]['email'])],
+            [u'Line 1:Warning, an account with the e-mail {} exists but the registered password is different.'.format(self.new_users[4]['email'])],
             biz_register_students_page.task_messages,
         )
         self._assert_send_email(self.new_users[4], True)
@@ -1182,6 +1182,7 @@ class BizStudentManagementTestBase(WebAppTest, GaccoBizTestMixin, BizStudentRegi
         self._register_student(self.users[2])
 
         self.students_page = BizStudentsPage(self.browser)
+        self.bulk_students_page = BizBulkStudentsPage(self.browser)
 
     def _register_student(self, user, do_register=False):
         self.switch_to_user(user)
@@ -1205,7 +1206,7 @@ class BizStudentManagementTestBase(WebAppTest, GaccoBizTestMixin, BizStudentRegi
         expected_info1 = 'info1-{}'.format(expected_user['username']) if expected_user['status'] == 'Register Invitation' else ''
         expected_info2 = 'info2-{}'.format(expected_user['username']) if expected_user['status'] == 'Register Invitation' else ''
         self.assert_grid_row(grid_row, {
-            'Contract Register Status': expected_status,
+            'Register Status': expected_status,
             'Email Address': expected_user['email'],
             'Username': expected_user['username'],
             'Full Name': expected_user['username'],
@@ -1240,7 +1241,7 @@ class BizStudentListTest(BizStudentManagementTestBase):
         # Check default columns
         grid_columns = self.students_page.student_grid.grid_columns
         self.assertItemsEqual(grid_columns, [
-            '', 'Contract Register Status', 'Full Name', 'Username', 'Email Address', 'info1', 'info2',
+            '', 'Register Status', 'Full Name', 'Username', 'Email Address', 'info1', 'info2',
         ])
 
         # Check icon columns on/off
@@ -1251,27 +1252,27 @@ class BizStudentListTest(BizStudentManagementTestBase):
             else:
                 self.assertFalse(self.students_page.student_grid.is_checked_grid_icon_columns(c))
 
-        self.students_page.student_grid.click_grid_icon_columns_checkbox('Contract Register Status')
+        self.students_page.student_grid.click_grid_icon_columns_checkbox('Register Status')
 
         grid_columns = self.students_page.student_grid.grid_columns
         self.assertItemsEqual(grid_columns, [
             '', 'Full Name', 'Username', 'Email Address', 'info1', 'info2',
         ])
 
-        self.students_page.student_grid.click_grid_icon_columns_checkbox('Contract Register Status')
+        self.students_page.student_grid.click_grid_icon_columns_checkbox('Register Status')
 
         grid_columns = self.students_page.student_grid.grid_columns
         self.assertItemsEqual(grid_columns, [
-            '', 'Contract Register Status', 'Full Name', 'Username', 'Email Address', 'info1', 'info2',
+            '', 'Register Status', 'Full Name', 'Username', 'Email Address', 'info1', 'info2',
         ])
 
         # Check columns of grid for search
         self.students_page.student_grid.click_grid_icon_search()
         grid_icon_search = self.students_page.student_grid.grid_icon_search
         self.assertItemsEqual(grid_icon_search, [
-            'Contract Register Status', 'Full Name', 'Username', 'Email Address', 'info1', 'info2',
+            'Register Status', 'Full Name', 'Username', 'Email Address', 'info1', 'info2',
         ])
-        self.assertTrue(self.students_page.student_grid.is_checked_grid_icon_search('Contract Register Status'))
+        self.assertTrue(self.students_page.student_grid.is_checked_grid_icon_search('Register Status'))
 
         # Check search
         self.students_page.student_grid.click_grid_icon_search_label('Username')
@@ -1298,15 +1299,14 @@ class BizStudentListTest(BizStudentManagementTestBase):
         self.assert_grid_row_equal(grid_rows, self.students_page.student_grid.grid_rows)
 
 
-@attr('shard_ga_biz_3')
-class BizPersonalinfoMaskTest(BizStudentManagementTestBase):
+class BizPersonalinfoMaskTestBase(BizStudentManagementTestBase):
 
     def _assert_masked_grid_row(self, grid_row, expected_user):
         expected_status = expected_user.get('status', 'Input Invitation')
         expected_info1 = 'info1-{}'.format(expected_user['username']) if expected_status == 'Register Invitation' else ''
         expected_info2 = 'info2-{}'.format(expected_user['username']) if expected_status == 'Register Invitation' else ''
         # not masked value
-        self.assertEqual(grid_row['Contract Register Status'], expected_status)
+        self.assertEqual(grid_row['Register Status'], expected_status)
         self.assertEqual(grid_row['Username'], expected_user['username'])
         # masked value
         self.assertNotEqual(grid_row['Email Address'], expected_user['email'])
@@ -1331,6 +1331,10 @@ class BizPersonalinfoMaskTest(BizStudentManagementTestBase):
             DashboardPage(self.browser).wait_for_page()
         else:
             login_page.wait_for_errors()
+
+
+@attr('shard_ga_biz_3')
+class BizPersonalinfoMaskTest(BizPersonalinfoMaskTestBase):
 
     def test_success(self):
         # Check that can login
@@ -1381,12 +1385,15 @@ class BizPersonalinfoMaskTest(BizStudentManagementTestBase):
         self._assert_login(self.users[2], False)
 
 
-@attr('shard_ga_biz_3')
-class BizStudentUnregisterTest(BizStudentManagementTestBase):
+class BizStudentUnregisterTestBase(BizStudentManagementTestBase):
 
     def _assert_access_course_about(self, user, can_access=True):
         self.switch_to_user(user)
         CourseAboutPage(self.browser, self.new_course_key, not can_access).visit()
+
+
+@attr('shard_ga_biz_3')
+class BizStudentUnregisterTest(BizStudentUnregisterTestBase):
 
     def test_success(self):
         # Check registered user can access to course about

@@ -4,7 +4,7 @@ from django.utils.translation import ugettext as _
 from django.core.urlresolvers import reverse
 %>
 
-<%block name="pagetitle">${_("Students List")}</%block>
+<%block name="pagetitle">${_("Users List")}</%block>
 
 <%block name="js_extra">
 <script type="text/javascript">
@@ -21,13 +21,13 @@ from django.core.urlresolvers import reverse
                 },
                 multiSearch: false,
                 searches: [
-                    {field: 'contract_register_status', caption: '${_("Contract Register Status")}', type: 'list', options: {items: ${status_list}}},
+                    {field: 'contract_register_status', caption: '${_("Register Status")}', type: 'list', options: {items: ${status_list}}},
                     {field: 'full_name', caption: '${_("Full Name")}', type: 'text'},
                     {field: 'user_name', caption: '${_("Username")}', type: 'text'},
                     {field: 'user_email', caption: '${_("Email Address")} ', type: 'text'},
                 ],
                 columns: [
-                    {field: 'contract_register_status', caption: '${_("Contract Register Status")}', size: 1, sortable: true, hidden: false},
+                    {field: 'contract_register_status', caption: '${_("Register Status")}', size: 1, sortable: true, hidden: false},
                     {field: 'full_name', caption: '${_("Full Name")}', size: 2, sortable: true, hidden: false},
                     {field: 'user_name', caption: '${_("Username")}', size: 2, sortable: true, hidden: false},
                     {field: 'user_email', caption: '${_("Email Address")}', size: 3, sortable: true, hidden: false},

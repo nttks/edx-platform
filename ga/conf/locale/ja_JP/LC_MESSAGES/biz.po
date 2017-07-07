@@ -56,6 +56,10 @@ msgid "Contract Register Management"
 msgstr "受講者管理"
 
 #: biz/templates/main_biz.html
+msgid "User Collective Management"
+msgstr "受講者一括管理"
+
+#: biz/templates/main_biz.html
 msgid "Survey Management"
 msgstr "アンケート"
 
@@ -552,14 +556,14 @@ msgstr "登録済の契約が存在するため、組織を削除できません
 
 ##### Contract Operation
 #: biz/templates/ga_contract_operation/register_students.html
-msgid "To register a list of users in this course, contains the following columns in this exact order: email, username, and name. Please include one student per row and do not include any headers, footers, or blank lines."
+msgid "To register a list of users in this course, contains the following columns in this exact order: e-mail, username, and name. Please include one user per row and do not include any headers, footers, or blank lines."
 msgstr "区切り文字カンマ(,)で、次に示す項目の順序に従い値を指定してください。なお、1受講者につき1行で記載し、ヘッダー、フッターや空行を含んではいけません。<br/>"
 "・メールアドレス：半角英数字、ハイフン(-)、アンダーバー(_)、ピリオド(.)。<br/>"
 "・ユーザー名：半角英数2文字以上、30文字以下。ディスカッションの際に表示されるユーザー名となります。(一度、登録すると変更できません)<br/>"
 "・氏名：修了証に表示するために用いる情報です。"
 
 #: biz/templates/ga_contract_operation/register_students.html
-msgid "To register a list of users in this course, contains the following columns in this exact order: email, username, name, login code, and password. Please include one student per row and do not include any headers, footers, or blank lines."
+msgid "To register a list of users in this course, contains the following columns in this exact order: e-mail, username, name, login code, and password. Please include one user per row and do not include any headers, footers, or blank lines."
 msgstr "区切り文字カンマ(,)で、次に示す項目の順序に従い値を指定してください。なお、1受講者につき1行で記載し、ヘッダー、フッターや空行を含んではいけません。<br/>"
 "・メールアドレス：半角英数字、ハイフン(-)、アンダーバー(_)、ピリオド(.)。<br/>"
 "・ユーザー名：半角英数2文字以上、30文字以下。ディスカッションの際に表示されるユーザー名となります。(一度、登録すると変更できません)<br/>"
@@ -617,13 +621,40 @@ msgstr "次の3項目が見つかりませんでした：メールアドレス�
 msgid "Data must have exactly five columns: email, username, full name, login code and password."
 msgstr "次の5項目が見つかりませんでした：メールアドレス、ユーザー名、氏名、ログインコード、パスワード"
 
+#: biz/djangoapps/ga_contract_operation/personalinfo.py
+#: biz/djangoapps/ga_contract_operation/student_unregister.py
+msgid "You can not change of yourself."
+msgstr "自分自身は操作できません。"
+
+#: biz/djangoapps/ga_contract_operation/personalinfo.py
+#: biz/djangoapps/ga_contract_operation/student_unregister.py
+msgid "Data must have exactly one column: username."
+msgstr "次の項目が見つかりませんでした：ユーザー名"
+
+#: biz/djangoapps/ga_contract_operation/personalinfo.py
+#: biz/djangoapps/ga_contract_operation/student_unregister.py
+msgid "username {username} is not registered student."
+msgstr "ユーザー名「{username}」は受講登録されていません。"
+
+#: biz/djangoapps/ga_contract_operation/student_unregister.py
+msgid "username {username} already unregistered student."
+msgstr "ユーザー名「{username}」は既に受講解除済みです。"
+
+#: biz/djangoapps/ga_contract_operation/personalinfo.py
+msgid "username {username} already personal information masked."
+msgstr "ユーザー名「{username}」は既に個人情報削除済みです。"
+
 #: biz/djangoapps/ga_contract_operation/views.py
 msgid "It has exceeded the number({max_register_number}) of cases that can be a time of registration."
 msgstr "一度に登録できる受講者の上限({max_register_number})を超えています。"
 
 #: biz/djangoapps/ga_contract_operation/views.py
-msgid "The number of lines per line has exceeded the {biz_max_char_length_register_line} lines."
-msgstr "１行あたりの行数が{biz_max_char_length_register_line}行を超えています。"
+msgid "The number of lines per line has exceeded the {biz_max_char_length_register_line} characters."
+msgstr "１行あたりの文字数が{biz_max_char_length_register_line}文字を超えている箇所があります。"
+
+#: biz/djangoapps/ga_contract_operation/views.py
+msgid "It has exceeded the number({max_bulk_students_number}) of cases that can be a time of specification."
+msgstr "一度に指定できる受講者の上限{max_bulk_students_number}件を超えています。"
 
 #: biz/djangoapps/ga_contract_operation/views.py
 msgid "Please enter the subject of an e-mail."
@@ -703,15 +734,15 @@ msgstr "新規登録を実施する"
 
 #: biz/djangoapps/ga_contract_operation/student_register.py
 msgid ""
-"Warning, an account with email {email} exists but the registered username {username} is different."
+"Warning, an account with the e-mail {email} exists but the registered username {username} is different."
 msgstr "警告：メールアドレス「{email}」は登録されているユーザー名「{username}」と一致しませんでしたので、念のため登録・入力内容をご確認ください。"
 
 #: biz/djangoapps/ga_contract_operation/student_register.py
-msgid "Warning, an account with email {email} exists but the registered login code {login_code} is different."
+msgid "Warning, an account with the e-mail {email} exists but the registered login code {login_code} is different."
 msgstr "警告：メールアドレス「{email}」は登録されているログインコード「{login_code}」と一致しませんでしたので、念のため登録・入力内容をご確認ください。"
 
 #: biz/djangoapps/ga_contract_operation/student_register.py
-msgid "Warning, an account with email {email} exists but the registered password is different."
+msgid "Warning, an account with the e-mail {email} exists but the registered password is different."
 msgstr "警告：メールアドレス「{email}」は登録されているパスワードと一致しませんでしたので、念のため登録・入力内容をご確認ください。"
 
 #: biz/djangoapps/ga_contract_operation/student_register.py
@@ -735,12 +766,25 @@ msgid "Unauthorized access."
 msgstr "不正アクセスです。"
 
 #: biz/templates/ga_contract_operation/students.html
-msgid "Students List"
+msgid "Users List"
 msgstr "受講者一覧"
 
 #: biz/templates/ga_contract_operation/students.html
-msgid "Contract Register Status"
+msgid "Register Status"
 msgstr "登録状況"
+
+#: biz/templates/ga_contract_operation/bulk_students.html
+msgid "Unregister, Mask"
+msgstr "受講解除・個人情報削除"
+
+#: biz/templates/ga_contract_operation/bulk_students.html
+msgid "To use a list of users in this course, contains the following columns in this : username. Please include one student per row and do not include any headers, footers, or blank lines."
+msgstr "次に示す項目に従い値を指定してください。なお、1受講者につき1行で記載し、ヘッダー、フッターや空行を含んではいけません。<br/>"
+"・ユーザー名：受講者一覧に記載されているユーザー名です。"
+
+#: biz/templates/ga_contract_operation/bulk_students.html
+msgid "Once can be specified number is {max_bulk_students_number}."
+msgstr "一度に指定できる受講者は{max_bulk_students_number}件です。"
 
 #: biz/djangoapps/ga_contract_operation/views.py
 msgid "Failed to batch unregister. Please operation again after a time delay."
@@ -749,6 +793,14 @@ msgstr "一括解除に失敗しました。時間を空けて再度、操作し
 #: biz/djangoapps/ga_contract_operation/student_register.py
 msgid "Failed to register. Please operation again after a time delay."
 msgstr "登録処理に失敗しました。時間を空けて再度、操作してください。"
+
+#: biz/djangoapps/ga_contract_operation/student_unregister.py
+msgid "Failed to unregistered student. Please operation again after a time delay."
+msgstr "受講解除処理に失敗しました。時間を空けて再度、操作してください。"
+
+#: biz/djangoapps/ga_contract_operation/personalinfo.py
+msgid "Failed to personal information masked. Please operation again after a time delay."
+msgstr "個人情報削除処理に失敗しました。時間を空けて再度、操作してください。"
 
 #: biz/djangoapps/ga_contract_operation/views.py
 msgid "Succeed to unregister {user_count} users."
@@ -793,6 +845,10 @@ msgstr "受講解除"
 #: biz/djangoapps/ga_contract_operation/tasks.py
 msgid "Student Register"
 msgstr "受講者新規登録"
+
+#: biz/djangoapps/ga_contract_operation/tasks.py
+msgid "Student Unregister"
+msgstr "受講解除"
 
 #: biz/templates/ga_contract_operation/students.html
 msgid "Personal Information Mask"

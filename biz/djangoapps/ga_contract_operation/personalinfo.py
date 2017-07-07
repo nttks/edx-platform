@@ -2,11 +2,13 @@
 import logging
 import time
 
+from django.contrib.auth.models import User
 from django.db import transaction
+from django.utils.translation import ugettext as _
 
 from biz.djangoapps.ga_contract.models import ContractDetail
 from biz.djangoapps.ga_contract_operation.models import ContractTaskHistory, ContractTaskTarget
-from biz.djangoapps.ga_invitation.models import AdditionalInfoSetting
+from biz.djangoapps.ga_invitation.models import AdditionalInfoSetting, ContractRegister
 from biz.djangoapps.util import mask_utils
 from openedx.core.djangoapps.course_global.models import CourseGlobalSetting
 from openedx.core.djangoapps.ga_task.models import Task
@@ -14,7 +16,6 @@ from openedx.core.djangoapps.ga_task.task import TaskProgress
 from student.models import CourseEnrollment
 
 log = logging.getLogger(__name__)
-
 
 
 class _PersonalinfoMaskExecutor(object):
@@ -113,7 +114,7 @@ def _validate_and_get_arguments(task_id, task_input):
     contract = task_history.contract
     targets = ContractTaskTarget.find_by_history_id(task_history.id)
 
-    return (contract, targets)
+    return (contract, targets, task_history.requester)
 
 
 def perform_delegate_personalinfo_mask(entry_id, task_input, action_name):
@@ -123,25 +124,68 @@ def perform_delegate_personalinfo_mask(entry_id, task_input, action_name):
     entry = Task.objects.get(pk=entry_id)
     task_id = entry.task_id
 
-    contract, targets = _validate_and_get_arguments(task_id, task_input)
+    contract, targets, task_history_requester = _validate_and_get_arguments(task_id, task_input)
 
     task_progress = TaskProgress(action_name, len(targets), time.time())
     task_progress.update_task_state()
 
     executor = _PersonalinfoMaskExecutor(task_id, contract)
-    for target in targets:
+
+    for line_number, target in enumerate(targets, start=1):
         task_progress.attempt()
-        user = target.register.user
         try:
+            user = target.register.user if target.register else None
             with transaction.atomic():
-                if ContractTaskTarget.is_completed_by_user_and_contract(user, contract):
-                    log.info(
-                        "Task {task_id}: User {user_id} has already been processed of mask.".format(
-                            task_id=task_id, user_id=user.id
+                # bulk operation case
+                # use inputdata
+                if not user:
+                    inputdata_columns = target.inputdata.split(',') if target.inputdata else []
+                    len_inputdata_columns = len(inputdata_columns)
+
+                    # blank line
+                    if len_inputdata_columns == 0:
+                        task_progress.skip()
+                        continue
+
+                    # unmatch columns
+                    if len_inputdata_columns != 1:
+                        message = _("Data must have exactly one column: username.")
+                        target.incomplete(_("Line {line_number}:{message}").format(line_number=line_number, message=message))
+                        task_progress.fail()
+                        continue
+
+                    contract_register = None
+                    try:
+                        contract_register = ContractRegister.get_by_user_contract(
+                            User.objects.get(username=inputdata_columns[0]),
+                            contract,
                         )
-                    )
+                    except User.DoesNotExist:
+                        pass
+
+                    # contractregister not found
+                    if contract_register is None:
+                        message = _("username {username} is not registered student.").format(username=inputdata_columns[0])
+                        target.incomplete(_("Line {line_number}:{message}").format(line_number=line_number, message=message))
+                        task_progress.fail()
+                        continue
+
+                    # validate yourself
+                    if contract_register.user_id == task_history_requester.id:
+                        message = _("You can not change of yourself.")
+                        target.incomplete(_("Line {line_number}:{message}").format(line_number=line_number, message=message))
+                        task_progress.fail()
+                        continue
+
+                    user = contract_register.user
+
+                # already mask
+                if ContractTaskTarget.is_completed_by_user_and_contract(user, contract):
+                    message = _("username {username} already personal information masked.").format(username=user.username)
+                    target.incomplete(_("Line {line_number}:{message}").format(line_number=line_number, message=message))
                     task_progress.skip()
                     continue
+
                 # Mask of additional information will run for all users even if it does not mask an user
                 # information. Therefore, it might be run more than once, but this is not a problem.
                 executor.disable_additional_info(user)
@@ -154,8 +198,13 @@ def perform_delegate_personalinfo_mask(entry_id, task_input, action_name):
                 target.complete()
         except:
             # If an exception occur, logging it and to continue processing next target.
-            log.exception("Task {task_id}: Failed to process of the personal information mask to User {user_id}".format(task_id=task_id, user_id=user.id))
+            log.exception("Task {task_id}: Failed to process of the personal information mask to User {user_id}".format(task_id=task_id, user_id=user.id if user else ''))
             task_progress.fail()
+            target.incomplete(_("Line {line_number}:{message}").format(
+                line_number=line_number,
+                message=_("Failed to personal information masked. Please operation again after a time delay."),
+            ))
+
         else:
             log.info("Task {task_id}: Success to process of mask to User {user_id}".format(task_id=task_id, user_id=user.id))
             task_progress.success()

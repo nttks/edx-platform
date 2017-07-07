@@ -216,7 +216,7 @@ button.btn {
     font-size: 0.9rem !important;
 }
 
-button.btn, input#register-btn, input#delete-btn, input#edit-btn {
+button.btn, input#register-btn, input#delete-btn, input#edit-btn, input#bulk-unregister-btn, input#bulk-personalinfo-mask-btn {
     min-width: 6rem;
     min-height: 2rem;
 }
@@ -265,7 +265,7 @@ input#download-btn {
     padding: 0.3rem 1rem;
 }
 
-input#register-btn, input#delete-btn, input#edit-btn, input#download-btn {
+input#register-btn, input#delete-btn, input#edit-btn, input#download-btn, input#bulk-unregister-btn, input#bulk-personalinfo-mask-btn {
     border-bottom: 2px solid #333;
 }
 
@@ -284,7 +284,7 @@ input#edit-btn {
     margin: 2px 5px;
 }
 
-.btn.success:hover, button#Yes:hover, input#register-btn:hover, input#edit-btn:hover {
+.btn.success:hover, button#Yes:hover, input#register-btn:hover, input#edit-btn:hover, input#bulk-unregister-btn:hover, input#bulk-personalinfo-mask-btn:hover {
     background-color: #409206 !important;
 }
 
@@ -338,13 +338,13 @@ input[type="button"] {
 }
 
 /* .biz-wrap */
-input[type="button"]#register-btn, #download-btn {
+input[type="button"]#register-btn, #download-btn, input[type="button"]#bulk-unregister-btn, input[type="button"]#bulk-personalinfo-mask-btn {
     background-color: #43ac6a;
     /* 	border-bottom: 3px solid #2f8a7d; */
     transition: background-color 0.15s ease-in-out;
 }
 
-.biz-wrap input[type="button"]#register-btn:hover, #download-btn:hover {
+.biz-wrap input[type="button"]#register-btn:hover, #download-btn:hover, input[type="button"]#bulk-unregister-btn:hover, input[type="button"]#bulk-personalinfo-mask-btn:hover {
     background: #15986c;
 }
 
@@ -648,7 +648,7 @@ w2ui-popup .w2ui-msg-title {
     width: 90%;
 }
 
-#register-btn {
+#register-btn, #bulk-unregister-btn, #bulk-personalinfo-mask-btn {
     padding: 0.3rem 1rem;
 }
 

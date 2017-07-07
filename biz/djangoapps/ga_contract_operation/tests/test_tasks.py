@@ -36,31 +36,7 @@ from openedx.core.djangoapps.ga_task.models import Task
 from openedx.core.djangoapps.ga_task.tests.test_task import TaskTestMixin
 
 
-class PersonalinfoMaskTaskTest(BizTestBase, ModuleStoreTestCase, ThirdPartyAuthTestMixin, TaskTestMixin):
-
-    def setUp(self):
-        super(PersonalinfoMaskTaskTest, self).setUp()
-
-        self.random_value = 'test1'
-
-        patcher1 = patch('biz.djangoapps.util.mask_utils.get_random_string')
-        self.mock_get_random_string = patcher1.start()
-        self.mock_get_random_string.return_value = self.random_value
-        self.addCleanup(patcher1.stop)
-
-        patcher2 = patch('pdfgen.certificate.delete_cert_pdf')
-        self.mock_delete_cert_pdf = patcher2.start()
-        self.mock_delete_cert_pdf.return_value = '{}'
-        self.addCleanup(patcher2.stop)
-
-        patcher3 = patch('biz.djangoapps.ga_contract_operation.personalinfo.log')
-        self.mock_log = patcher3.start()
-        self.addCleanup(patcher3.stop)
-
-        patcher4 = patch('biz.djangoapps.util.mask_utils.log')
-        self.mock_util_log = patcher4.start()
-        self.addCleanup(patcher4.stop)
-
+class StudentsTaskTestMixin(TaskTestMixin):
     def _setup_courses(self):
         # Setup courses. Some tests does not need course data. Therefore, call this function if need course data.
         self.spoc_courses = [
@@ -102,28 +78,6 @@ class PersonalinfoMaskTaskTest(BizTestBase, ModuleStoreTestCase, ThirdPartyAuthT
             task_input['history_id'] = history.id
         return TaskTestMixin._create_input_entry(self, task_input=task_input)
 
-    def _create_contract(self, contract_type=CONTRACT_TYPE_PF[0], courses=[], display_names=[], enabled=True):
-        if enabled:
-            start_date = timezone_today() - timedelta(days=1)
-        else:
-            start_date = timezone_today() + timedelta(days=1)
-
-        contract = ContractFactory.create(
-            contract_type=contract_type,
-            contractor_organization=self.gacco_organization,
-            owner_organization=self.gacco_organization,
-            created_by=UserFactory.create(),
-            start_date=start_date
-        )
-
-        for course in courses:
-            ContractDetailFactory.create(contract=contract, course_id=course.id)
-
-        for display_name in display_names:
-            AdditionalInfoFactory.create(contract=contract, display_name=display_name)
-
-        return contract
-
     def _create_user_and_register(self, contract, status=INPUT_INVITATION_CODE, display_names=[], email=None, login_code=None):
         if email is not None:
             user = UserFactory.create(email=email)
@@ -160,9 +114,60 @@ class PersonalinfoMaskTaskTest(BizTestBase, ModuleStoreTestCase, ThirdPartyAuthT
                     status=CertificateStatuses.downloadable, key='key', download_url='http://dummy'
                 )
 
+
+class PersonalinfoMaskTaskTest(BizTestBase, ModuleStoreTestCase, ThirdPartyAuthTestMixin, StudentsTaskTestMixin):
+    def setUp(self):
+        super(PersonalinfoMaskTaskTest, self).setUp()
+
+        self.random_value = 'test1'
+
+        patcher1 = patch('biz.djangoapps.util.mask_utils.get_random_string')
+        self.mock_get_random_string = patcher1.start()
+        self.mock_get_random_string.return_value = self.random_value
+        self.addCleanup(patcher1.stop)
+
+        patcher2 = patch('pdfgen.certificate.delete_cert_pdf')
+        self.mock_delete_cert_pdf = patcher2.start()
+        self.mock_delete_cert_pdf.return_value = '{}'
+        self.addCleanup(patcher2.stop)
+
+        patcher3 = patch('biz.djangoapps.ga_contract_operation.personalinfo.log')
+        self.mock_log = patcher3.start()
+        self.addCleanup(patcher3.stop)
+
+        patcher4 = patch('biz.djangoapps.util.mask_utils.log')
+        self.mock_util_log = patcher4.start()
+        self.addCleanup(patcher4.stop)
+
+    def _create_contract(self, contract_type=CONTRACT_TYPE_PF[0], courses=[], display_names=[], enabled=True):
+        if enabled:
+            start_date = timezone_today() - timedelta(days=1)
+        else:
+            start_date = timezone_today() + timedelta(days=1)
+
+        contract = ContractFactory.create(
+            contract_type=contract_type,
+            contractor_organization=self.gacco_organization,
+            owner_organization=self.gacco_organization,
+            created_by=UserFactory.create(),
+            start_date=start_date
+        )
+
+        for course in courses:
+            ContractDetailFactory.create(contract=contract, course_id=course.id)
+
+        for display_name in display_names:
+            AdditionalInfoFactory.create(contract=contract, display_name=display_name)
+
+        return contract
+
     def _create_targets(self, history, registers, completed=False):
         for register in registers:
             ContractTaskTargetFactory.create(history=history, register=register, completed=completed)
+
+    def _create_targets_from_bulk(self, history, inputdata_list, completed=False):
+        for inputdata in inputdata_list:
+            ContractTaskTargetFactory.create(history=history, register=None, inputdata=inputdata, completed=completed)
 
     def _create_user_info(self, user):
         return {
@@ -371,6 +376,52 @@ class PersonalinfoMaskTaskTest(BizTestBase, ModuleStoreTestCase, ThirdPartyAuthT
         self._assert_success_message(registers)
         self.mock_log.exception.assert_not_called()
 
+    def test_successful_from_bulk(self):
+        # ----------------------------------------------------------
+        # Setup test data
+        # ----------------------------------------------------------
+        self._configure_dummy_provider(enabled=True)
+        self._setup_courses()
+        display_names = ['settting1', 'setting2', ]
+        contract = self._create_contract(courses=self.spoc_courses, display_names=display_names)
+        history = self._create_task_history(contract=contract)
+        # users: enrolled only target spoc courses
+        registers = [self._create_user_and_register(contract, display_names=display_names) for _ in range(5)]
+        inputdata_list = [register.user.username for register in registers]
+        self._create_targets_from_bulk(history, inputdata_list)
+        self._create_enrollments(registers, self.spoc_courses)
+        # This is `NOT` the target contract
+        other_contract = self._create_contract(courses=self.other_enabled_spoc_courses, display_names=display_names)
+        other_registers = [self._create_user_and_register(other_contract, display_names=display_names) for _ in range(5)]
+        self._create_contract(courses=self.other_not_enabled_spoc_courses, display_names=display_names, enabled=False)
+
+        entry = self._create_input_entry(contract=contract, history=history)
+
+        user_info = {register.user.id: self._create_user_info(register.user) for register in registers + other_registers}
+
+        # ----------------------------------------------------------
+        # Execute task
+        # ----------------------------------------------------------
+        self._test_run_with_task(personalinfo_mask, 'personalinfo_mask', 5, 0, 0, 5, 5, entry)
+
+        # ----------------------------------------------------------
+        # Assertion
+        # ----------------------------------------------------------
+        for register in registers:
+            self._assert_additional_info(register.user, contract, display_names)
+            self._assert_user_info(user_info, register.user)
+            self._assert_cert_info(user_info, register.user, self.spoc_courses)
+            self._assert_global_courses(user_info, register.user, self.global_courses)
+        for register in other_registers:
+            self._assert_additional_info(register.user, other_contract, display_names, masked=False)
+            self._assert_user_info(user_info, register.user, masked=False)
+            self._assert_global_courses(user_info, register.user, self.global_courses, masked=False)
+        # Assert all of target is completed
+        self.assertEqual(5, ContractTaskTarget.objects.filter(history=history, completed=True).count())
+
+        self._assert_success_message(registers)
+        self.mock_log.exception.assert_not_called()
+
     def test_successful_login_code(self):
         # ----------------------------------------------------------
         # Setup test data
@@ -383,6 +434,52 @@ class PersonalinfoMaskTaskTest(BizTestBase, ModuleStoreTestCase, ThirdPartyAuthT
         # users: enrolled only target spoc courses
         registers = [self._create_user_and_register(contract, display_names=display_names, login_code='LoginCode{}'.format(i)) for i in range(5)]
         self._create_targets(history, registers)
+        self._create_enrollments(registers, self.spoc_courses)
+        # This is `NOT` the target contract
+        other_contract = self._create_contract(courses=self.other_enabled_spoc_courses, display_names=display_names)
+        other_registers = [self._create_user_and_register(other_contract, display_names=display_names, login_code='LoginCode{}'.format(i)) for i in range(5)]
+        self._create_contract(courses=self.other_not_enabled_spoc_courses, display_names=display_names, enabled=False)
+
+        entry = self._create_input_entry(contract=contract, history=history)
+
+        user_info = {register.user.id: self._create_user_info(register.user) for register in registers + other_registers}
+
+        # ----------------------------------------------------------
+        # Execute task
+        # ----------------------------------------------------------
+        self._test_run_with_task(personalinfo_mask, 'personalinfo_mask', 5, 0, 0, 5, 5, entry)
+
+        # ----------------------------------------------------------
+        # Assertion
+        # ----------------------------------------------------------
+        for register in registers:
+            self._assert_additional_info(register.user, contract, display_names)
+            self._assert_user_info(user_info, register.user)
+            self._assert_cert_info(user_info, register.user, self.spoc_courses)
+            self._assert_global_courses(user_info, register.user, self.global_courses)
+        for register in other_registers:
+            self._assert_additional_info(register.user, other_contract, display_names, masked=False)
+            self._assert_user_info(user_info, register.user, masked=False)
+            self._assert_global_courses(user_info, register.user, self.global_courses, masked=False)
+        # Assert all of target is completed
+        self.assertEqual(5, ContractTaskTarget.objects.filter(history=history, completed=True).count())
+
+        self._assert_success_message(registers)
+        self.mock_log.exception.assert_not_called()
+
+    def test_successful_login_code_from_bulk(self):
+        # ----------------------------------------------------------
+        # Setup test data
+        # ----------------------------------------------------------
+        self._configure_dummy_provider(enabled=True)
+        self._setup_courses()
+        display_names = ['settting1', 'setting2', ]
+        contract = self._create_contract(courses=self.spoc_courses, display_names=display_names)
+        history = self._create_task_history(contract=contract)
+        # users: enrolled only target spoc courses
+        registers = [self._create_user_and_register(contract, display_names=display_names, login_code='LoginCode{}'.format(i)) for i in range(5)]
+        inputdata_list = [register.user.username for register in registers]
+        self._create_targets_from_bulk(history, inputdata_list)
         self._create_enrollments(registers, self.spoc_courses)
         # This is `NOT` the target contract
         other_contract = self._create_contract(courses=self.other_enabled_spoc_courses, display_names=display_names)
@@ -496,6 +593,88 @@ class PersonalinfoMaskTaskTest(BizTestBase, ModuleStoreTestCase, ThirdPartyAuthT
         self._assert_success_message(registers)
         self.mock_log.exception.assert_not_called()
 
+    def test_successful_reuse_email_from_bulk(self):
+        """
+        Scenario:
+            1. Create userA
+            2. Execute mask to userA
+            3. Create userB with same email addrses as userA
+            4. Excute mask to userB
+        """
+        # ----------------------------------------------------------
+        # Setup test data
+        # ----------------------------------------------------------
+        self._configure_dummy_provider(enabled=True)
+        self._setup_courses()
+        display_names = ['settting1', 'setting2', ]
+        contract = self._create_contract(courses=self.spoc_courses, display_names=display_names)
+        history = self._create_task_history(contract=contract)
+        # users: enrolled only target spoc courses
+        registers = [self._create_user_and_register(contract, display_names=display_names) for _ in range(5)]
+        inputdata_list = [register.user.username for register in registers]
+        self._create_targets_from_bulk(history, inputdata_list)
+        self._create_enrollments(registers, self.spoc_courses)
+
+        entry = self._create_input_entry(contract=contract, history=history)
+
+        user_info = {register.user.id: self._create_user_info(register.user) for register in registers}
+
+        # ----------------------------------------------------------
+        # Execute task
+        # ----------------------------------------------------------
+        self._test_run_with_task(personalinfo_mask, 'personalinfo_mask', 5, 0, 0, 5, 5, entry)
+
+        # ----------------------------------------------------------
+        # Assertion
+        # ----------------------------------------------------------
+        for register in registers:
+            self._assert_additional_info(register.user, contract, display_names)
+            self._assert_user_info(user_info, register.user)
+            self._assert_cert_info(user_info, register.user, self.spoc_courses)
+            self._assert_global_courses(user_info, register.user, self.global_courses)
+        # Assert all of target is completed
+        self.assertEqual(5, ContractTaskTarget.objects.filter(history=history, completed=True).count())
+
+        # ----------------------------------------------------------
+        # Setup test data for 2nd
+        # ----------------------------------------------------------
+        history = self._create_task_history(contract=contract)
+        # users: enrolled only target spoc courses
+        # Use email of 1st users
+        _user_info_of_1st = user_info.values()
+        registers = [
+            self._create_user_and_register(contract, display_names=display_names, email=_user_info_of_1st[i]['email'])
+            for i in range(5)
+        ]
+        inputdata_list = [register.user.username for register in registers]
+        self._create_targets_from_bulk(history, inputdata_list)
+        self._create_enrollments(registers, self.spoc_courses)
+
+        entry = self._create_input_entry(contract=contract, history=history)
+
+        user_info = {register.user.id: self._create_user_info(register.user) for register in registers}
+
+        # ----------------------------------------------------------
+        # Execute task for 2nd
+        # ----------------------------------------------------------
+        self.random_value = 'test2'
+        self.mock_get_random_string.return_value = self.random_value
+        self._test_run_with_task(personalinfo_mask, 'personalinfo_mask', 5, 0, 0, 5, 5, entry)
+
+        # ----------------------------------------------------------
+        # Assertion for 2nd
+        # ----------------------------------------------------------
+        for register in registers:
+            self._assert_additional_info(register.user, contract, display_names)
+            self._assert_user_info(user_info, register.user)
+            self._assert_cert_info(user_info, register.user, self.spoc_courses)
+            self._assert_global_courses(user_info, register.user, self.global_courses)
+        # Assert all of target is completed
+        self.assertEqual(5, ContractTaskTarget.objects.filter(history=history, completed=True).count())
+
+        self._assert_success_message(registers)
+        self.mock_log.exception.assert_not_called()
+
     def test_successful_with_gacco_service(self):
         # ----------------------------------------------------------
         # Setup test data
@@ -513,7 +692,9 @@ class PersonalinfoMaskTaskTest(BizTestBase, ModuleStoreTestCase, ThirdPartyAuthT
         # 3 target is not completed
         self._create_targets(history, registers[:3])
         # 2 target is completed
-        self._create_targets(history, registers[3:], completed=True)
+        self._create_targets(history, [registers[3]], completed=True)
+        self._create_targets_from_bulk(history, [registers[4].user.username], completed=True)
+
         self._create_enrollments(registers, self.mooc_courses)
 
         entry = self._create_input_entry(contract=contract, history=history)
@@ -537,10 +718,71 @@ class PersonalinfoMaskTaskTest(BizTestBase, ModuleStoreTestCase, ThirdPartyAuthT
             self._assert_user_info(user_info, register.user, masked=False)
             self._assert_cert_info(user_info, register.user, self.mooc_courses, masked=False)
             self._assert_global_courses(user_info, register.user, self.global_courses, masked=False)
-        # Assert all of target is completed
-        self.assertEqual(5, ContractTaskTarget.objects.filter(history=history, completed=True).count())
-
+        # Assert 3 of target is completed
+        self.assertEqual(3, ContractTaskTarget.objects.filter(history=history, completed=True).count())
         self._assert_success_message(registers[:3])
+
+        # Assert 2 of target is already personalinfo masked
+        self.assertEqual("Line 4:username {username} already personal information masked.".format(username=registers[3].user.username),
+                         ContractTaskTarget.objects.get(history=history, register=registers[3]).message)
+        self.assertEqual("Line 5:username {username} already personal information masked.".format(username=registers[4].user.username),
+                         ContractTaskTarget.objects.get(history=history, inputdata=registers[4].user.username).message)
+
+        self.mock_log.exception.assert_not_called()
+
+    def test_successful_with_gacco_service_from_bulk(self):
+        # ----------------------------------------------------------
+        # Setup test data
+        # ----------------------------------------------------------
+        self._setup_courses()
+        display_names = ['settting1', 'setting2', ]
+        contract = self._create_contract(
+            contract_type=CONTRACT_TYPE_GACCO_SERVICE[0],
+            courses=self.mooc_courses,
+            display_names=display_names
+        )
+        history = self._create_task_history(contract)
+        # users: enrolled only target mooc courses
+        registers = [self._create_user_and_register(contract, display_names=display_names) for _ in range(5)]
+        # 3 target is not completed
+        inputdata_list = [register.user.username for register in registers[:3]]
+        self._create_targets_from_bulk(history, inputdata_list)
+        # 2 target is completed
+        self._create_targets_from_bulk(history, [registers[3].user.username], completed=True)
+        self._create_targets(history, [registers[4]], completed=True)
+        self._create_enrollments(registers, self.mooc_courses)
+
+        entry = self._create_input_entry(contract=contract, history=history)
+
+        user_info = {register.user.id: self._create_user_info(register.user) for register in registers}
+
+        # ----------------------------------------------------------
+        # Execute task
+        # ----------------------------------------------------------
+        self._test_run_with_task(personalinfo_mask, 'personalinfo_mask', 3, 2, 0, 5, 5, entry)
+
+        # ----------------------------------------------------------
+        # Assertion
+        # ----------------------------------------------------------
+        for i, register in enumerate(registers):
+            masked = i < 3
+            if masked:
+                self._assert_additional_info(register.user, contract, display_names, masked=True)
+            else:
+                self._assert_additional_info(register.user, contract, display_names, masked=False)
+            self._assert_user_info(user_info, register.user, masked=False)
+            self._assert_cert_info(user_info, register.user, self.mooc_courses, masked=False)
+            self._assert_global_courses(user_info, register.user, self.global_courses, masked=False)
+        # Assert 3 of target is completed
+        self.assertEqual(3, ContractTaskTarget.objects.filter(history=history, completed=True).count())
+        self._assert_success_message(registers[:3])
+
+        # Assert 2 of target is already personalinfo masked
+        self.assertEqual("Line 4:username {username} already personal information masked.".format(username=registers[3].user.username),
+                         ContractTaskTarget.objects.get(history=history, inputdata=registers[3].user.username).message)
+        self.assertEqual("Line 5:username {username} already personal information masked.".format(username=registers[4].user.username),
+                         ContractTaskTarget.objects.get(history=history, register=registers[4]).message)
+
         self.mock_log.exception.assert_not_called()
 
     def test_successful_with_completed_target(self):
@@ -557,7 +799,8 @@ class PersonalinfoMaskTaskTest(BizTestBase, ModuleStoreTestCase, ThirdPartyAuthT
         # 3 target is not completed
         self._create_targets(history, registers[:3])
         # 2 target is completed
-        self._create_targets(history, registers[3:], completed=True)
+        self._create_targets(history, [registers[3]], completed=True)
+        self._create_targets_from_bulk(history, [registers[4].user.username], completed=True)
         self._create_enrollments(registers, self.spoc_courses)
         # This is `NOT` the target contract
         other_contract = self._create_contract(courses=self.other_enabled_spoc_courses, display_names=display_names)
@@ -586,10 +829,73 @@ class PersonalinfoMaskTaskTest(BizTestBase, ModuleStoreTestCase, ThirdPartyAuthT
             self._assert_additional_info(register.user, other_contract, display_names, masked=False)
             self._assert_user_info(user_info, register.user, masked=False)
             self._assert_global_courses(user_info, register.user, self.global_courses, masked=False)
-        # Assert all of target is completed
-        self.assertEqual(5, ContractTaskTarget.objects.filter(history=history, completed=True).count())
-
+        # Assert 3 of target is completed
+        self.assertEqual(3, ContractTaskTarget.objects.filter(history=history, completed=True).count())
         self._assert_success_message(registers[:3])
+
+        # Assert 2 of target is already personalinfo masked
+        self.assertEqual("Line 4:username {username} already personal information masked.".format(username=registers[3].user.username),
+                         ContractTaskTarget.objects.get(history=history, register=registers[3]).message)
+        self.assertEqual("Line 5:username {username} already personal information masked.".format(username=registers[4].user.username),
+                         ContractTaskTarget.objects.get(history=history, inputdata=registers[4].user.username).message)
+
+        self.mock_log.exception.assert_not_called()
+
+    def test_successful_with_completed_target_from_bulk(self):
+        # ----------------------------------------------------------
+        # Setup test data
+        # ----------------------------------------------------------
+        self._configure_dummy_provider(enabled=True)
+        self._setup_courses()
+        display_names = ['settting1', 'setting2', ]
+        contract = self._create_contract(courses=self.spoc_courses, display_names=display_names)
+        history = self._create_task_history(contract=contract)
+        # users: enrolled only target spoc courses
+        registers = [self._create_user_and_register(contract, display_names=display_names) for _ in range(5)]
+        # 3 target is not completed
+        inputdata_list = [register.user.username for register in registers[:3]]
+        self._create_targets_from_bulk(history, inputdata_list)
+        # 2 target is completed
+        self._create_targets_from_bulk(history, [registers[3].user.username], completed=True)
+        self._create_targets(history, [registers[4]], completed=True)
+        self._create_enrollments(registers, self.spoc_courses)
+        # This is `NOT` the target contract
+        other_contract = self._create_contract(courses=self.other_enabled_spoc_courses, display_names=display_names)
+        other_registers = [self._create_user_and_register(other_contract, display_names=display_names) for _ in range(5)]
+        self._create_contract(courses=self.other_not_enabled_spoc_courses, display_names=display_names, enabled=False)
+
+        entry = self._create_input_entry(contract=contract, history=history)
+
+        user_info = {register.user.id: self._create_user_info(register.user) for register in registers + other_registers}
+
+        # ----------------------------------------------------------
+        # Execute task
+        # ----------------------------------------------------------
+        self._test_run_with_task(personalinfo_mask, 'personalinfo_mask', 3, 2, 0, 5, 5, entry)
+
+        # ----------------------------------------------------------
+        # Assertion
+        # ----------------------------------------------------------
+        for i, register in enumerate(registers):
+            masked = i < 3
+            self._assert_additional_info(register.user, contract, display_names, masked=masked)
+            self._assert_user_info(user_info, register.user, masked=masked)
+            self._assert_cert_info(user_info, register.user, self.spoc_courses, masked=masked)
+            self._assert_global_courses(user_info, register.user, self.global_courses, masked=masked)
+        for register in other_registers:
+            self._assert_additional_info(register.user, other_contract, display_names, masked=False)
+            self._assert_user_info(user_info, register.user, masked=False)
+            self._assert_global_courses(user_info, register.user, self.global_courses, masked=False)
+        # Assert 3 of target is completed
+        self.assertEqual(3, ContractTaskTarget.objects.filter(history=history, completed=True).count())
+        self._assert_success_message(registers[:3])
+
+        # Assert 2 of target is already personalinfo masked
+        self.assertEqual("Line 4:username {username} already personal information masked.".format(username=registers[3].user.username),
+                         ContractTaskTarget.objects.get(history=history, inputdata=registers[3].user.username).message)
+        self.assertEqual("Line 5:username {username} already personal information masked.".format(username=registers[4].user.username),
+                         ContractTaskTarget.objects.get(history=history, register=registers[4]).message)
+
         self.mock_log.exception.assert_not_called()
 
     def test_successful_with_other_course(self):
@@ -640,6 +946,62 @@ class PersonalinfoMaskTaskTest(BizTestBase, ModuleStoreTestCase, ThirdPartyAuthT
         # Assert 4 target is completed, and 1 target is not completed
         for target in ContractTaskTarget.objects.filter(history=history):
             if target.register_id == registers[4].id:
+                self.assertFalse(target.completed)
+            else:
+                self.assertTrue(target.completed)
+
+        self._assert_success_message(registers[:4])
+        self.mock_log.exception.assert_not_called()
+
+    def test_successful_with_other_course_from_bulk(self):
+        # ----------------------------------------------------------
+        # Setup test data
+        # ----------------------------------------------------------
+        self._configure_dummy_provider(enabled=True)
+        self._setup_courses()
+        display_names = ['settting1', 'setting2', ]
+        contract = self._create_contract(courses=self.spoc_courses, display_names=display_names)
+        history = self._create_task_history(contract=contract)
+        # users: enrolled only target spoc courses
+        registers = [self._create_user_and_register(contract, display_names=display_names) for _ in range(5)]
+        inputdata_list = [register.user.username for register in registers]
+        self._create_targets_from_bulk(history, inputdata_list)
+        self._create_enrollments(registers, self.spoc_courses)
+        # This is `NOT` the target contract
+        self._create_contract(courses=self.other_enabled_spoc_courses, display_names=display_names)
+        self._create_contract(courses=self.other_not_enabled_spoc_courses, display_names=display_names, enabled=False)
+
+        # user4: enroll other courses of enabled contract
+        self._create_enrollments([registers[4]], self.other_enabled_spoc_courses)
+        # user3: enroll other course of not enabled contract
+        self._create_enrollments([registers[3]], self.other_not_enabled_spoc_courses)
+
+        entry = self._create_input_entry(contract=contract, history=history)
+
+        user_info = {register.user.id: self._create_user_info(register.user) for register in registers}
+
+        # ----------------------------------------------------------
+        # Execute task
+        # ----------------------------------------------------------
+        self._test_run_with_task(personalinfo_mask, 'personalinfo_mask', 4, 1, 0, 5, 5, entry)
+
+        # ----------------------------------------------------------
+        # Assertion
+        # ----------------------------------------------------------
+        for register in registers[:4]:
+            self._assert_additional_info(register.user, contract, display_names)
+            self._assert_user_info(user_info, register.user)
+            self._assert_cert_info(user_info, register.user, self.spoc_courses)
+            self._assert_global_courses(user_info, register.user, self.global_courses)
+        # additional info should be masked
+        self._assert_additional_info(registers[4].user, contract, display_names)
+        # user info should not be masked
+        self._assert_user_info(user_info, registers[4].user, masked=False)
+        self._assert_cert_info(user_info, registers[4].user, self.spoc_courses, masked=False)
+        self._assert_global_courses(user_info, registers[4].user, self.global_courses, masked=False)
+        # Assert 4 target is completed, and 1 target is not completed
+        for target in ContractTaskTarget.objects.filter(history=history):
+            if target.inputdata == registers[4].user.username:
                 self.assertFalse(target.completed)
             else:
                 self.assertTrue(target.completed)
@@ -700,6 +1062,60 @@ class PersonalinfoMaskTaskTest(BizTestBase, ModuleStoreTestCase, ThirdPartyAuthT
         self._assert_success_message(registers[:4])
         self.mock_log.exception.assert_not_called()
 
+    def test_successful_with_mooc_course_from_bulk(self):
+        # ----------------------------------------------------------
+        # Setup test data
+        # ----------------------------------------------------------
+        self._configure_dummy_provider(enabled=True)
+        self._setup_courses()
+        display_names = ['settting1', 'setting2', ]
+        contract = self._create_contract(courses=self.spoc_courses, display_names=display_names)
+        history = self._create_task_history(contract=contract)
+        # users: enrolled only target spoc courses
+        registers = [self._create_user_and_register(contract, display_names=display_names) for _ in range(5)]
+        inputdata_list = [register.user.username for register in registers]
+        self._create_targets_from_bulk(history, inputdata_list)
+        self._create_enrollments(registers, self.spoc_courses)
+        # This is `NOT` the target contract
+        self._create_contract(courses=self.other_enabled_spoc_courses, display_names=display_names)
+        self._create_contract(courses=self.other_not_enabled_spoc_courses, display_names=display_names, enabled=False)
+
+        # user4: enroll mooc courses
+        self._create_enrollments([registers[4]], self.mooc_courses)
+
+        entry = self._create_input_entry(contract=contract, history=history)
+
+        user_info = {register.user.id: self._create_user_info(register.user) for register in registers}
+
+        # ----------------------------------------------------------
+        # Execute task
+        # ----------------------------------------------------------
+        self._test_run_with_task(personalinfo_mask, 'personalinfo_mask', 4, 1, 0, 5, 5, entry)
+
+        # ----------------------------------------------------------
+        # Assertion
+        # ----------------------------------------------------------
+        for register in registers[:4]:
+            self._assert_additional_info(register.user, contract, display_names)
+            self._assert_user_info(user_info, register.user)
+            self._assert_cert_info(user_info, register.user, self.spoc_courses)
+            self._assert_global_courses(user_info, register.user, self.global_courses)
+        # additional info should be masked
+        self._assert_additional_info(registers[4].user, contract, display_names)
+        # user info should not be masked
+        self._assert_user_info(user_info, registers[4].user, masked=False)
+        self._assert_cert_info(user_info, registers[4].user, self.spoc_courses, masked=False)
+        self._assert_global_courses(user_info, registers[4].user, self.global_courses, masked=False)
+        # Assert 4 target is completed, and 1 target is not completed
+        for target in ContractTaskTarget.objects.filter(history=history):
+            if target.inputdata == registers[4].user.username:
+                self.assertFalse(target.completed)
+            else:
+                self.assertTrue(target.completed)
+
+        self._assert_success_message(registers[:4])
+        self.mock_log.exception.assert_not_called()
+
     def test_successful_with_failed(self):
         # ----------------------------------------------------------
         # Setup test data
@@ -752,6 +1168,64 @@ class PersonalinfoMaskTaskTest(BizTestBase, ModuleStoreTestCase, ThirdPartyAuthT
 
         self._assert_success_message(registers[:4])
         self._assert_failed_message([registers[4]])
+        self.assertEqual("Line 5:Failed to personal information masked. Please operation again after a time delay.",
+                         ContractTaskTarget.objects.get(history=history, register=registers[4]).message)
+
+    def test_successful_with_failed_from_bulk(self):
+        # ----------------------------------------------------------
+        # Setup test data
+        # ----------------------------------------------------------
+        self._configure_dummy_provider(enabled=True)
+        self._setup_courses()
+        display_names = ['settting1', 'setting2', ]
+        contract = self._create_contract(courses=self.spoc_courses, display_names=display_names)
+        history = self._create_task_history(contract=contract)
+        # users: enrolled only target spoc courses
+        registers = [self._create_user_and_register(contract, display_names=display_names) for _ in range(5)]
+        inputdata_list = [register.user.username for register in registers]
+        self._create_targets_from_bulk(history, inputdata_list)
+        self._create_enrollments(registers, self.spoc_courses)
+        # This is `NOT` the target contract
+        other_contract = self._create_contract(courses=self.other_enabled_spoc_courses, display_names=display_names)
+        other_registers = [self._create_user_and_register(other_contract, display_names=display_names) for _ in range(5)]
+        self._create_contract(courses=self.other_not_enabled_spoc_courses, display_names=display_names, enabled=False)
+
+        entry = self._create_input_entry(contract=contract, history=history)
+
+        user_info = {register.user.id: self._create_user_info(register.user) for register in registers + other_registers}
+
+        # ----------------------------------------------------------
+        # Execute task
+        # ----------------------------------------------------------
+        self.random_value = 'test1'
+        with patch(
+            'biz.djangoapps.ga_contract_operation.personalinfo._PersonalinfoMaskExecutor.check_enrollment'
+        ) as mock_check_enrollment:
+            # raise Exception at last call
+            mock_check_enrollment.side_effect = [True, True, True, True, Exception]
+            self._test_run_with_task(personalinfo_mask, 'personalinfo_mask', 4, 0, 1, 5, 5, entry)
+
+        # ----------------------------------------------------------
+        # Assertion
+        # ----------------------------------------------------------
+        for i, register in enumerate(registers):
+            masked = i != 4
+            self._assert_additional_info(register.user, contract, display_names, masked=masked)
+            self._assert_user_info(user_info, register.user, masked=masked)
+            self._assert_cert_info(user_info, register.user, self.spoc_courses, masked=masked)
+            self._assert_global_courses(user_info, register.user, self.global_courses, masked=masked)
+        for register in other_registers:
+            self._assert_additional_info(register.user, other_contract, display_names, masked=False)
+            self._assert_user_info(user_info, register.user, masked=False)
+            self._assert_global_courses(user_info, register.user, self.global_courses, masked=False)
+        # Assert 4 target is completed
+        self.assertEqual(4, ContractTaskTarget.objects.filter(history=history, completed=True).count())
+        self.assertFalse(ContractTaskTarget.objects.get(history=history, inputdata=registers[4].user.username).completed)
+
+        self._assert_success_message(registers[:4])
+        self._assert_failed_message([registers[4]])
+        self.assertEqual("Line 5:Failed to personal information masked. Please operation again after a time delay.",
+                         ContractTaskTarget.objects.get(history=history, inputdata=registers[4].user.username).message)
 
     def test_successful_with_failed_cert_deletion(self):
         # ----------------------------------------------------------
@@ -808,9 +1282,144 @@ class PersonalinfoMaskTaskTest(BizTestBase, ModuleStoreTestCase, ThirdPartyAuthT
 
         # delete_cert_pdf should be called 10 times even if previous process had been failed.
         self.assertEqual(10, self.mock_delete_cert_pdf.call_count)
+
         self.mock_util_log.error.assert_called_once_with(
             'Failed to delete certificate. user={}, course_id=spoc/course1/run'.format(registers[1].user_id)
         )
-
         self._assert_success_message([registers[0], registers[2], registers[3], registers[4]])
         self._assert_failed_message([registers[1]])
+        self.assertEqual("Line 2:Failed to personal information masked. Please operation again after a time delay.",
+                         ContractTaskTarget.objects.get(history=history, register=registers[1]).message)
+
+    def test_successful_with_failed_cert_deletion_from_bulk(self):
+        # ----------------------------------------------------------
+        # Setup test data
+        # ----------------------------------------------------------
+        self._configure_dummy_provider(enabled=True)
+        self._setup_courses()
+        display_names = ['settting1', 'setting2', ]
+        contract = self._create_contract(courses=self.spoc_courses, display_names=display_names)
+        history = self._create_task_history(contract=contract)
+        # users: enrolled only target spoc courses
+        registers = [self._create_user_and_register(contract, display_names=display_names) for _ in range(5)]
+        inputdata_list = [register.user.username for register in registers]
+        self._create_targets_from_bulk(history, inputdata_list)
+        self._create_enrollments(registers, self.spoc_courses)
+        # This is `NOT` the target contract
+        other_contract = self._create_contract(courses=self.other_enabled_spoc_courses, display_names=display_names)
+        other_registers = [self._create_user_and_register(other_contract, display_names=display_names) for _ in range(5)]
+        self._create_contract(courses=self.other_not_enabled_spoc_courses, display_names=display_names, enabled=False)
+
+        entry = self._create_input_entry(contract=contract, history=history)
+
+        user_info = {register.user.id: self._create_user_info(register.user) for register in registers + other_registers}
+
+        # Make the deletion of second user failed, otherwise it makes successful.
+        self.mock_delete_cert_pdf.side_effect = [
+            '{}', '{}',  # user1's deletion
+            '{"error": "error"}', '{}',  # user2's deletion
+            '{}', '{}',  # user3's deletion
+            '{}', '{}',  # user4's deletion
+            '{}', '{}',  # user5's deletion
+        ]
+
+        # ----------------------------------------------------------
+        # Execute task
+        # ----------------------------------------------------------
+        self._test_run_with_task(personalinfo_mask, 'personalinfo_mask', 4, 0, 1, 5, 5, entry)
+
+        # ----------------------------------------------------------
+        # Assertion
+        # ----------------------------------------------------------
+        for i, register in enumerate(registers):
+            masked = i != 1
+            self._assert_additional_info(register.user, contract, display_names, masked=masked)
+            self._assert_user_info(user_info, register.user, masked=masked)
+            self._assert_cert_info(user_info, register.user, self.spoc_courses, masked=masked)
+            self._assert_global_courses(user_info, register.user, self.global_courses, masked=masked)
+        for register in other_registers:
+            self._assert_additional_info(register.user, other_contract, display_names, masked=False)
+            self._assert_user_info(user_info, register.user, masked=False)
+            self._assert_global_courses(user_info, register.user, self.global_courses, masked=False)
+        # Assert 4 target is completed
+        self.assertEqual(4, ContractTaskTarget.objects.filter(history=history, completed=True).count())
+        self.assertFalse(ContractTaskTarget.objects.get(history=history, inputdata=registers[1].user.username).completed)
+
+        # delete_cert_pdf should be called 10 times even if previous process had been failed.
+        self.assertEqual(10, self.mock_delete_cert_pdf.call_count)
+
+        self.mock_util_log.error.assert_called_once_with(
+            'Failed to delete certificate. user={}, course_id=spoc/course1/run'.format(registers[1].user_id)
+        )
+        self._assert_success_message([registers[0], registers[2], registers[3], registers[4]])
+        self._assert_failed_message([registers[1]])
+        self.assertEqual("Line 2:Failed to personal information masked. Please operation again after a time delay.",
+                         ContractTaskTarget.objects.get(history=history, inputdata=registers[1].user.username).message)
+
+    def test_input_validation_failed_from_bulk(self):
+        # ----------------------------------------------------------
+        # Setup test data
+        # ----------------------------------------------------------
+        self._configure_dummy_provider(enabled=True)
+        self._setup_courses()
+        display_names = ['settting1', 'setting2', ]
+        contract = self._create_contract(courses=self.spoc_courses, display_names=display_names)
+        registers = [self._create_user_and_register(contract, display_names=display_names) for _ in range(5)]
+        history = self._create_task_history(contract=contract, requester=registers[3].user)
+        # users: enrolled only target spoc courses
+        inputdata_list = [
+            "",
+            "{},{}".format(registers[1].user.username, registers[1].user.id),
+            "{}unknown".format(registers[2].user.username),
+            registers[3].user.username,
+            registers[4].user.username
+        ]
+        self._create_targets_from_bulk(history, inputdata_list)
+        self._create_enrollments(registers, self.spoc_courses)
+        # This is `NOT` the target contract
+        other_contract = self._create_contract(courses=self.other_enabled_spoc_courses, display_names=display_names)
+        other_registers = [self._create_user_and_register(other_contract, display_names=display_names) for _ in range(5)]
+        self._create_contract(courses=self.other_not_enabled_spoc_courses, display_names=display_names, enabled=False)
+
+        entry = self._create_input_entry(contract=contract, history=history)
+
+        user_info = {register.user.id: self._create_user_info(register.user) for register in registers + other_registers}
+
+        # ----------------------------------------------------------
+        # Execute task
+        # ----------------------------------------------------------
+        self._test_run_with_task(personalinfo_mask, 'personalinfo_mask', 1, 1, 3, 5, 5, entry)
+
+        # ----------------------------------------------------------
+        # Assertion
+        # ----------------------------------------------------------
+        for i, register in enumerate(registers):
+            masked = i == 4
+            self._assert_additional_info(register.user, contract, display_names, masked=masked)
+            self._assert_user_info(user_info, register.user, masked=masked)
+            self._assert_cert_info(user_info, register.user, self.spoc_courses, masked=masked)
+            self._assert_global_courses(user_info, register.user, self.global_courses, masked=masked)
+        for register in other_registers:
+            self._assert_additional_info(register.user, other_contract, display_names, masked=False)
+            self._assert_user_info(user_info, register.user, masked=False)
+            self._assert_global_courses(user_info, register.user, self.global_courses, masked=False)
+        # Assert 1 of target is completed
+        self.assertEqual(1, ContractTaskTarget.objects.filter(history=history, completed=True).count())
+        for inputdata in inputdata_list[:4]:
+            self.assertFalse(ContractTaskTarget.objects.get(history=history, inputdata=inputdata).completed)
+        self._assert_success_message(registers[4:])
+
+        # Assert 1st task is skip
+        self.assertEqual(None,
+                         ContractTaskTarget.objects.get(history=history, inputdata=inputdata_list[0]).message)
+        # Assert 2nd task is unmatch colunn
+        self.assertEqual("Line 2:Data must have exactly one column: username.",
+                         ContractTaskTarget.objects.get(history=history, inputdata=inputdata_list[1]).message)
+        # Assert 3rd task is register not found
+        self.assertEqual("Line 3:username {username} is not registered student.".format(username=inputdata_list[2]),
+                         ContractTaskTarget.objects.get(history=history, inputdata=inputdata_list[2]).message)
+        # Assert 4th task is select yourself
+        self.assertEqual("Line 4:You can not change of yourself.",
+                         ContractTaskTarget.objects.get(history=history, inputdata=inputdata_list[3]).message)
+
+        self.mock_log.exception.assert_not_called()

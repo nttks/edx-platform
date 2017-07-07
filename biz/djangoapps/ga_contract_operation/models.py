@@ -53,74 +53,20 @@ class ContractTaskHistory(models.Model):
         self.save()
 
 
-class ContractTaskTarget(models.Model):
-
+class ContractTaskTargetBase(models.Model):
+    """
+    Contract task base
+    """
     class Meta:
         app_label = 'ga_contract_operation'
-        unique_together = ('history', 'register')
+        abstract = True
+        ordering = ['id']
 
     history = models.ForeignKey(ContractTaskHistory)
-    register = models.ForeignKey(ContractRegister)
-    completed = models.BooleanField(default=False)
-    created = models.DateTimeField(auto_now_add=True)
-    modified = models.DateTimeField(auto_now=True)
-
-    @classmethod
-    def bulk_create(cls, history, registers):
-        targets = [cls(
-            history=history,
-            register=register,
-        ) for register in registers]
-        cls.objects.bulk_create(targets)
-
-    @classmethod
-    def find_by_history_id(cls, history_id):
-        return cls.objects.filter(
-            history_id=history_id,
-        ).select_related('register__user')
-
-    @classmethod
-    def is_completed_by_user_and_contract(cls, user, contract):
-        """
-        Returns whether an user is completed in the whole history of the contract.
-        """
-        return cls.objects.filter(
-            history__contract=contract,
-            register__user=user,
-            completed=True
-        ).exists()
-
-    def complete(self):
-        self.completed = True
-        self.save()
-
-
-class StudentRegisterTaskTarget(models.Model):
-
-    history = models.ForeignKey(ContractTaskHistory)
-    student = models.CharField(max_length=1024)
     message = models.CharField(max_length=1024, null=True)
     completed = models.BooleanField(default=False)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        app_label = 'ga_contract_operation'
-        ordering = ['id']
-
-    @classmethod
-    def bulk_create(cls, history, students):
-        targets = [cls(
-            history=history,
-            student=student,
-        ) for student in students]
-        cls.objects.bulk_create(targets)
-
-    @classmethod
-    def find_by_history_id(cls, history_id):
-        return cls.objects.filter(
-            history_id=history_id,
-        )
 
     @classmethod
     def find_by_history_id_and_message(cls, history_id):
@@ -139,6 +85,88 @@ class StudentRegisterTaskTarget(models.Model):
         self.message = message
         self.completed = False
         self.save()
+
+
+class ContractTaskTarget(ContractTaskTargetBase):
+
+    register = models.ForeignKey(ContractRegister, null=True)
+    inputdata = models.CharField(max_length=1024, null=True)
+
+    @classmethod
+    def bulk_create(cls, history, registers):
+        targets = [cls(
+            history=history,
+            register=register,
+        ) for register in registers]
+        cls.objects.bulk_create(targets)
+
+    @classmethod
+    def bulk_create_by_text(cls, history, inputdata_list):
+        targets = [cls(
+            history=history,
+            inputdata=inputdata,
+        ) for inputdata in inputdata_list]
+        cls.objects.bulk_create(targets)
+
+    @classmethod
+    def find_by_history_id(cls, history_id):
+        return cls.objects.filter(
+            history_id=history_id,
+        ).select_related('register__user')
+
+    @classmethod
+    def is_completed_by_user_and_contract(cls, user, contract):
+        """
+        Returns whether an user is completed in the whole history of the contract.
+        """
+        return cls.objects.filter(
+            history__contract=contract,
+            register__user=user,
+            completed=True
+        ).exists() \
+            or cls.objects.filter(
+                history__contract=contract,
+                inputdata=user.username,
+                completed=True
+        ).exists()
+
+
+class StudentRegisterTaskTarget(ContractTaskTargetBase):
+
+    student = models.CharField(max_length=1024)
+
+    @classmethod
+    def bulk_create(cls, history, students):
+        targets = [cls(
+            history=history,
+            student=student,
+        ) for student in students]
+        cls.objects.bulk_create(targets)
+
+    @classmethod
+    def find_by_history_id(cls, history_id):
+        return cls.objects.filter(
+            history_id=history_id,
+        )
+
+
+class StudentUnregisterTaskTarget(ContractTaskTargetBase):
+
+    inputdata = models.CharField(max_length=1024)
+
+    @classmethod
+    def bulk_create_by_text(cls, history, inputdata_list):
+        targets = [cls(
+            history=history,
+            inputdata=inputdata,
+        ) for inputdata in inputdata_list]
+        cls.objects.bulk_create(targets)
+
+    @classmethod
+    def find_by_history_id(cls, history_id):
+        return cls.objects.filter(
+            history_id=history_id,
+        )
 
 
 MAIL_TYPE_REGISTER_NEW_USER = 'RNU'
