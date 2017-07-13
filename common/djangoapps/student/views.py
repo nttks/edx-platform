@@ -1300,7 +1300,10 @@ def login_user(request, error=""):  # pylint: disable=too-many-statements,unused
         AUDIT_LOG.warning(u"Login failed - Account not active for user {0}, resending activation".format(username))
 
     reactivation_email_for_user(user)
-    not_activated_msg = _("You're almost there. Before you enroll in a course, you need to activate your account. We've sent an e-mail to your registered e-mail address with instructions for activating your account.")
+    not_activated_msg = _(
+        "You're almost there. Before you enroll in a course, you need to activate your account. We've sent an e-mail to your registered e-mail address with instructions for activating your account."
+        "<br/>*This link will expire at  midnight (24:00 JST) of the next day which was delivered, please take care of it immediately."
+    )
     return JsonResponse({
         "success": False,
         "value": not_activated_msg,

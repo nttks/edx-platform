@@ -1613,8 +1613,12 @@ msgid "If the problem still occurs, please send e-mail to gacco support desk ({e
 msgstr "※問題が解決されない場合は、サポートデスク ({email}) までご連絡ください。"
 
 #: common/djangoapps/student/views.py
-msgid "You're almost there. Before you enroll in a course, you need to activate your account. We've sent an e-mail to your registered e-mail address with instructions for activating your account."
-msgstr "会員登録はまだ完了しておりません。会員登録時に入力されたメールアドレス宛に会員登録のご案内メールを送信しました。メール内のURLをクリックし、会員登録を完了してください。"
+msgid ""
+"You're almost there. Before you enroll in a course, you need to activate your account. We've sent an e-mail to your registered e-mail address with instructions for activating your account."
+"<br/>*This link will expire at  midnight (24:00 JST) of the next day which was delivered, please take care of it immediately."
+msgstr ""
+"会員登録はまだ完了しておりません。会員登録時に入力されたメールアドレス宛に会員登録のご案内メールを送信しました。メール内のURLをクリックし、会員登録を完了してください。"
+"<br/>※URLの有効期限は、配信された日の翌日24時までです。"
 
 #: lms/templates/registration/activation_invalid.html
 msgid "Activation Invalid"

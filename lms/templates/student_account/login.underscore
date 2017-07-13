@@ -24,7 +24,7 @@
     <h4 class="message-title"><%- gettext("You're almost there!") %></h4>
     <div class="message-copy">
         <p>
-            <%- gettext("Before you enroll in a course, you need to activate your account. We've sent an e-mail to your registered e-mail address with instructions for activating your account.") %>
+            <%= gettext("Before you enroll in a course, you need to activate your account. We've sent an e-mail to your registered e-mail address with instructions for activating your account.<br/>*This link will expire at  midnight (24:00 JST) of the next day which was delivered, please take care of it immediately.") %>
         </p>
     </div>
 </div>

@@ -510,5 +510,9 @@ msgid "Please enter the date on and after 1900."
 msgstr "1900年以降の日付を入力して下さい。"
 
 #: lms/templates/student_account/login.underscore
-msgid "Before you enroll in a course, you need to activate your account. We've sent an e-mail to your registered e-mail address with instructions for activating your account."
-msgstr "会員登録時に入力されたメールアドレス宛に会員登録のご案内メールを送信しました。メール内のURLをクリックし、会員登録を完了してください。"
+msgid ""
+"Before you enroll in a course, you need to activate your account. We've sent an e-mail to your registered e-mail address with instructions for activating your account."
+"<br/>*This link will expire at  midnight (24:00 JST) of the next day which was delivered, please take care of it immediately."
+msgstr ""
+"会員登録時に入力されたメールアドレス宛に会員登録のご案内メールを送信しました。メール内のURLをクリックし、会員登録を完了してください。"
+"<br/>※URLの有効期限は、配信された日の翌日24時までです。"
