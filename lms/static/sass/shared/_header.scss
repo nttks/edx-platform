@@ -339,6 +339,14 @@ header.global {
   }
 }
 
+// accountSetting and profile page dropdown design
+body.view-account-settings,
+body.view-profile {
+  header.global .user .dropdown {
+    line-height: 1.6rem;
+  }
+}
+
 
 // edX theme: Global Header
 // ====================

@@ -14,6 +14,8 @@ from microsite_configuration import microsite
 <%block name="pagetitle">${_("Account Settings")}</%block>
 <%block name="nav_skip">#content</%block>
 
+<%block name="bodyclass">view-account-settings</%block>
+
 % if duplicate_provider:
     <section>
         <%include file='/dashboard/_dashboard_third_party_error.html' />
