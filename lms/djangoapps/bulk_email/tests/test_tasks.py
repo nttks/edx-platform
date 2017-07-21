@@ -271,6 +271,24 @@ class TestBulkEmailInstructorTask(InstructorTaskCourseTestCase):
             get_conn.return_value.send_messages.side_effect = cycle([None])
             self._test_run_with_task(send_bulk_course_email, 'emailed', num_emails - 1, num_emails - 1)
 
+    def test_masked_user(self):
+        # Select number of emails to fit into a single subtask.
+        num_emails = settings.BULK_EMAIL_EMAILS_PER_TASK
+        # We also send email to the instructor:
+        students = self._create_students(num_emails - 1)
+
+        def _mask_user(user):
+            # For the moment, we simulate user masking by only removing '@' from email. (#1908)
+            user.email = user.email.replace('@', '')
+            user.save()
+
+        # mark a student masked:
+        student = students[0]
+        _mask_user(student)
+        with patch('bulk_email.tasks.get_connection', autospec=True) as get_conn:
+            get_conn.return_value.send_messages.side_effect = cycle([None])
+            self._test_run_with_task(send_bulk_course_email, 'emailed', num_emails - 1, num_emails - 1)
+
     def test_skipped(self):
         # Select number of emails to fit into a single subtask.
         num_emails = settings.BULK_EMAIL_EMAILS_PER_TASK

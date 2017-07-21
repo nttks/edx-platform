@@ -129,6 +129,7 @@ def _get_recipient_querysets(user_id, to_option, course_id):
             # provide verification that the provided email address is valid.
             enrollment_qset = User.objects.filter(
                 is_active=True,
+                email__contains='@',  # Exclude masked user (#1908)
                 courseenrollment__course_id=course_id,
                 courseenrollment__is_active=True
             ).exclude(standing__account_status=UserStanding.ACCOUNT_DISABLED)
