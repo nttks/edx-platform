@@ -14,6 +14,7 @@ from boto.s3 import connect_to_region
 from boto.s3.connection import Location, OrdinaryCallingFormat
 from boto.s3.key import Key
 from django.conf import settings
+from django.core.mail import send_mail
 from django.core.management.base import BaseCommand, CommandError
 
 from ...models import DiagnosisInfo
@@ -176,6 +177,16 @@ class Command(BaseCommand):
                 ).encode('utf-8')
             )
         self._create_csv(course_id, records, start_date)
+        send_mail(
+            subject=settings.GA_DIAGNOSIS_DAILY_REPORT['SUBJECT'].format(
+                year=start_date.year,
+                month=start_date.month,
+                day=start_date.day,
+            ),
+            message=settings.GA_DIAGNOSIS_DAILY_REPORT['MESSAGE'].format(len(records) - 1),
+            from_email=settings.GA_DIAGNOSIS_DAILY_REPORT['FROM_EMAIL'],
+            recipient_list=settings.GA_DIAGNOSIS_DAILY_REPORT['RECIPIENT_LIST'],
+        )
 
     @staticmethod
     def _trim_white_space(value):
