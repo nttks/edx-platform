@@ -2110,6 +2110,9 @@ def activate_account(request, key):
     """When link in activation e-mail is clicked"""
     regs = Registration.objects.filter(activation_key=key)
     if len(regs) == 1:
+        if regs[0].masked:
+            return render_to_response("registration/activation_expired.html")
+
         user_logged_in = request.user.is_authenticated()
         already_active = True
         if not regs[0].user.is_active:
@@ -2133,16 +2136,13 @@ def activate_account(request, key):
                             manual_enrollment_audit.reason, enrollment
                         )
 
-        if regs[0].masked:
-            resp = render_to_response("registration/activation_expired.html")
-        else:
-            resp = render_to_response(
-                "registration/activation_complete.html",
-                {
-                    'user_logged_in': user_logged_in,
-                    'already_active': already_active
-                }
-            )
+        resp = render_to_response(
+            "registration/activation_complete.html",
+            {
+                'user_logged_in': user_logged_in,
+                'already_active': already_active
+            }
+        )
         return resp
     if len(regs) == 0:
         return render_to_response(

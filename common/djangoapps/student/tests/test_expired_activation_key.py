@@ -15,17 +15,42 @@ class ExpiredActivationKeyTest(ModuleStoreTestCase):
     """Tests for expired activation key"""
 
     def setUp(self):
-        self.user = UserFactory.create(is_active=False)
+        super(ExpiredActivationKeyTest, self).setUp()
 
-        # Create a registration for the user
-        self.registration = RegistrationFactory.create(user=self.user, masked=True)
+    def test_user_not_active_and_masked(self):
+        user = UserFactory.create(is_active=False)
+        registration = RegistrationFactory.create(user=user, masked=True)
+        UserProfileFactory(user=user)
 
-        # Create a profile for the user
-        UserProfileFactory(user=self.user)
-
-    def test_expired_activation_key(self):
-        response = self.client.get(reverse('activate', kwargs={'key': self.registration.activation_key}))
-
+        response = self.client.get(reverse('activate', kwargs={'key': registration.activation_key}))
         self.assertEqual(response.status_code, 200)
         self.assertRegexpMatches(response.content, 'This URL validity has expired')
         self.assertRegexpMatches(response.content, 'Unfortunately, this URL validity has expired')
+
+    def test_user_not_active_and_not_masked(self):
+        user = UserFactory.create(is_active=False)
+        registration = RegistrationFactory.create(user=user, masked=False)
+        UserProfileFactory(user=user)
+
+        response = self.client.get(reverse('activate', kwargs={'key': registration.activation_key}))
+        self.assertEqual(response.status_code, 200)
+        self.assertRegexpMatches(response.content, 'Thanks for activating your account')
+
+    def test_user_already_active_and_masked(self):
+        user = UserFactory.create(is_active=True)
+        registration = RegistrationFactory.create(user=user, masked=True)
+        UserProfileFactory(user=user)
+
+        response = self.client.get(reverse('activate', kwargs={'key': registration.activation_key}))
+        self.assertEqual(response.status_code, 200)
+        self.assertRegexpMatches(response.content, 'This URL validity has expired')
+        self.assertRegexpMatches(response.content, 'Unfortunately, this URL validity has expired')
+
+    def test_user_already_active_and_not_masked(self):
+        user = UserFactory.create(is_active=True)
+        registration = RegistrationFactory.create(user=user, masked=False)
+        UserProfileFactory(user=user)
+
+        response = self.client.get(reverse('activate', kwargs={'key': registration.activation_key}))
+        self.assertEqual(response.status_code, 200)
+        self.assertRegexpMatches(response.content, 'This account has already been activated')
