@@ -7,9 +7,12 @@ from django.conf import settings
 from opaque_keys import InvalidKeyError
 from opaque_keys.edx.keys import CourseKey
 
+FIELD_NOT_INPUT = u'このフィールドは必須です。'
+INVALID_EMAIL = u'有効なメールアドレスを入力してください。'
+
 
 class GaOperationBaseForm(forms.Form):
-    course_id = forms.CharField(required=True)
+    course_id = forms.CharField(required=True, error_messages={'required': FIELD_NOT_INPUT})
 
     def clean_course_id(self):
         val = self.cleaned_data.get('course_id')

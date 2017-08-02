@@ -49,6 +49,7 @@ class CreateCertsTest(TestCase):
     def _get_course_mock(self):
         m = MagicMock()
         type(m).id = PropertyMock(return_value=CourseKey.from_string(self.course_id))
+        type(m).grade_cutoffs = PropertyMock(return_value={'A': 0.5, 'B': 0.3})
         return m
 
     def _set_enroll(self, is_active):
@@ -186,7 +187,7 @@ class CreateCertsTest(TestCase):
         mock_log.exception.assert_called_once_with('Caught the exception: Exception')
 
     @patch('ga_operation.tasks.get_course_by_id')
-    @patch('ga_operation.tasks.is_course_passed')
+    @patch('courseware.grades.grade', return_value={'percent': 0.9})
     @patch('ga_operation.tasks.log')
     @patch('openedx.core.djangoapps.ga_operation.task_base.send_mail')
     @patch('ga_operation.tasks.call_command')
@@ -198,24 +199,15 @@ class CreateCertsTest(TestCase):
           u'　* 合格かつ未アクティベート者数：2（未アクティベートユーザー名：{}）\n'
           u'　* 合格かつ退会者数：0（退会ユーザー名：）\n'
           u'\n'
-          u'---\n{}'), True, 2, -1),
-        ((u'修了証発行数： 1\n'
-          u'※受講解除者0人を含みます（受講解除ユーザー名：）\n'
-          u'---\n'
-          u'修了判定データに含まれる\n'
-          u'　* 合格かつ未アクティベート者数：0（未アクティベートユーザー名：{}）\n'
-          u'　* 合格かつ退会者数：0（退会ユーザー名：）\n'
-          u'\n'
-          u'---\n{}'), False, 2, -1)
+          u'---\n{}'), True, 2, -1)
     )
     @ddt.unpack
     def test_run_include_not_activate_and_course_passed(self, expect_email_body, is_course_passed,
                                                         not_activate_and_course_passed_count, create_cert_user_index,
                                                         mock_call_command, mock_send_mail, mock_log,
-                                                        is_course_passed_mock, get_course_by_id_mock):
+                                                        grades_grade_mock, get_course_by_id_mock):
         expect_user_list = []
         get_course_by_id_mock.return_value = self._get_course_mock()
-        is_course_passed_mock.return_value = is_course_passed
         self._set_enroll(is_active=True)
 
         for i in range(not_activate_and_course_passed_count):
@@ -250,7 +242,62 @@ class CreateCertsTest(TestCase):
         get_course_by_id_mock.assert_called_once_with(course_key=CourseKey.from_string(self.course_id))
 
     @patch('ga_operation.tasks.get_course_by_id')
-    @patch('ga_operation.tasks.is_course_passed')
+    @patch('courseware.grades.grade', return_value={'percent': 0.1})
+    @patch('ga_operation.tasks.log')
+    @patch('openedx.core.djangoapps.ga_operation.task_base.send_mail')
+    @patch('ga_operation.tasks.call_command')
+    @ddt.data(
+        ((u'修了証発行数： 1\n'
+          u'※受講解除者0人を含みます（受講解除ユーザー名：）\n'
+          u'---\n'
+          u'修了判定データに含まれる\n'
+          u'　* 合格かつ未アクティベート者数：0（未アクティベートユーザー名：{}）\n'
+          u'　* 合格かつ退会者数：0（退会ユーザー名：）\n'
+          u'\n'
+          u'---\n{}'), False, 2, -1)
+    )
+    @ddt.unpack
+    def test_run_include_not_activate_and_not_course_passed(self, expect_email_body, is_course_passed,
+                                                            not_activate_and_course_passed_count, create_cert_user_index,
+                                                            mock_call_command, mock_send_mail, mock_log,
+                                                            grades_grade_mock, get_course_by_id_mock):
+        expect_user_list = []
+        get_course_by_id_mock.return_value = self._get_course_mock()
+        self._set_enroll(is_active=True)
+
+        for i in range(not_activate_and_course_passed_count):
+            user = self.users[i]
+            user.is_active = False
+            user.save()
+            expect_user_list.append(user)
+
+        created_cert_user = self.users[create_cert_user_index]
+        self._create_certificate(
+            self.course_id, 'generating', '{}-url'.format(created_cert_user.username), created_cert_user
+        )
+
+        create_certs_task(self.course_id, 'test@example.com', [])
+
+        mock_call_command.assert_called_once_with(
+            'create_certs', 'create', self.course_id,
+            username=False, debug=False, noop=False, prefix=''
+        )
+        expected_urls_text = '{}-url'.format(created_cert_user.username)
+        mock_send_mail.assert_called_once_with(
+            'create_certs was completed. ({})'.format(self.course_id),
+            expect_email_body.format(
+                ", ".join([u.username for u in expect_user_list if is_course_passed]),
+                expected_urls_text
+            ),
+            'sender@example.com',
+            ['test@example.com'],
+            fail_silently=False
+        )
+        mock_log.exception.assert_not_called()
+        get_course_by_id_mock.assert_called_once_with(course_key=CourseKey.from_string(self.course_id))
+
+    @patch('ga_operation.tasks.get_course_by_id')
+    @patch('courseware.grades.grade', return_value={'percent': 0.9})
     @patch('ga_operation.tasks.log')
     @patch('openedx.core.djangoapps.ga_operation.task_base.send_mail')
     @patch('ga_operation.tasks.call_command')
@@ -262,23 +309,14 @@ class CreateCertsTest(TestCase):
           u'　* 合格かつ未アクティベート者数：0（未アクティベートユーザー名：）\n'
           u'　* 合格かつ退会者数：2（退会ユーザー名：{}）\n'
           u'\n'
-          u'---\n{}'), True, 2),
-        ((u'修了証発行数： 3\n'
-          u'※受講解除者0人を含みます（受講解除ユーザー名：）\n'
-          u'---\n'
-          u'修了判定データに含まれる\n'
-          u'　* 合格かつ未アクティベート者数：0（未アクティベートユーザー名：）\n'
-          u'　* 合格かつ退会者数：0（退会ユーザー名：{}）\n'
-          u'\n'
-          u'---\n{}'), False, 2)
+          u'---\n{}'), True, 2)
     )
     @ddt.unpack
     def test_run_include_disabled_account_and_course_passed(self, expect_email_body, is_course_passed,
                                                             disabled_account_count, mock_call_command, mock_send_mail,
-                                                            mock_log, is_course_passed_mock, get_course_by_id_mock):
+                                                            mock_log, grades_grade_mock, get_course_by_id_mock):
         expect_user_list = []
         get_course_by_id_mock.return_value = self._get_course_mock()
-        is_course_passed_mock.return_value = is_course_passed
         self._set_enroll(is_active=True)
 
         for i in range(disabled_account_count):
@@ -310,7 +348,58 @@ class CreateCertsTest(TestCase):
         get_course_by_id_mock.assert_called_once_with(course_key=CourseKey.from_string(self.course_id))
 
     @patch('ga_operation.tasks.get_course_by_id')
-    @patch('ga_operation.tasks.is_course_passed')
+    @patch('courseware.grades.grade', return_value={'percent': 0.1})
+    @patch('ga_operation.tasks.log')
+    @patch('openedx.core.djangoapps.ga_operation.task_base.send_mail')
+    @patch('ga_operation.tasks.call_command')
+    @ddt.data(
+        ((u'修了証発行数： 3\n'
+          u'※受講解除者0人を含みます（受講解除ユーザー名：）\n'
+          u'---\n'
+          u'修了判定データに含まれる\n'
+          u'　* 合格かつ未アクティベート者数：0（未アクティベートユーザー名：）\n'
+          u'　* 合格かつ退会者数：0（退会ユーザー名：{}）\n'
+          u'\n'
+          u'---\n{}'), False, 2)
+    )
+    @ddt.unpack
+    def test_run_include_disabled_account_and_not_course_passed(self, expect_email_body, is_course_passed,
+                                                                disabled_account_count, mock_call_command, mock_send_mail,
+                                                                mock_log, grades_grade_mock, get_course_by_id_mock):
+        expect_user_list = []
+        get_course_by_id_mock.return_value = self._get_course_mock()
+        self._set_enroll(is_active=True)
+
+        for i in range(disabled_account_count):
+            user = self.users[i]
+            self._create_user_standing(user, UserStanding.ACCOUNT_DISABLED)
+            expect_user_list.append(user)
+
+        for user in self.users:
+            self._create_certificate(self.course_id, 'generating', '{}-url'.format(user.username), user)
+
+        create_certs_task(self.course_id, 'test@example.com', [])
+
+        mock_call_command.assert_called_once_with(
+            'create_certs', 'create', self.course_id,
+            username=False, debug=False, noop=False, prefix=''
+        )
+        expected_urls_text = '\n'.join(['{}-url'.format(user.username) for user in self.users])
+        mock_send_mail.assert_called_once_with(
+            'create_certs was completed. ({})'.format(self.course_id),
+            expect_email_body.format(
+                ", ".join([u.username for u in expect_user_list if is_course_passed]),
+                expected_urls_text
+            ),
+            'sender@example.com',
+            ['test@example.com'],
+            fail_silently=False
+        )
+        mock_log.exception.assert_not_called()
+        get_course_by_id_mock.assert_called_once_with(course_key=CourseKey.from_string(self.course_id))
+
+    @patch('ga_operation.tasks.get_course_by_id')
+    @patch('courseware.grades.grade', return_value={'percent': 0.9})
     @patch('ga_operation.tasks.log')
     @patch('openedx.core.djangoapps.ga_operation.task_base.send_mail')
     @patch('ga_operation.tasks.call_command')
@@ -322,7 +411,51 @@ class CreateCertsTest(TestCase):
           u'　* 合格かつ未アクティベート者数：0（未アクティベートユーザー名：）\n'
           u'　* 合格かつ退会者数：0（退会ユーザー名：）\n'
           u'\n'
-          u'---\n{}'), True),
+          u'---\n{}'), True)
+    )
+    @ddt.unpack
+    def test_run_include_unenroll_student_and_course_passed(self, expect_email_body, is_course_passed,
+                                                            mock_call_command, mock_send_mail, mock_log,
+                                                            grades_grade_mock, get_course_by_id_mock):
+        expect_user_list = []
+        get_course_by_id_mock.return_value = self._get_course_mock()
+        unenroll_student_count = 2
+
+        for i in range(unenroll_student_count):
+            enrollment = self._create_course_enrollment(self.users[i], self.course_id)
+            enrollment.is_active = False
+            enrollment.save()
+            expect_user_list.append(enrollment)
+
+        for user in self.users:
+            self._create_certificate(self.course_id, 'generating', '{}-url'.format(user.username), user)
+
+        create_certs_task(self.course_id, 'test@example.com', [])
+
+        mock_call_command.assert_called_once_with(
+            'create_certs', 'create', self.course_id,
+            username=False, debug=False, noop=False, prefix=''
+        )
+        expected_urls_text = '\n'.join(['{}-url'.format(user.username) for user in self.users])
+        mock_send_mail.assert_called_once_with(
+            'create_certs was completed. ({})'.format(self.course_id),
+            expect_email_body.format(
+                ", ".join([e.user.username for e in expect_user_list if is_course_passed]),
+                expected_urls_text
+            ),
+            'sender@example.com',
+            ['test@example.com'],
+            fail_silently=False
+        )
+        mock_log.exception.assert_not_called()
+        get_course_by_id_mock.assert_called_once_with(course_key=CourseKey.from_string(self.course_id))
+
+    @patch('ga_operation.tasks.get_course_by_id')
+    @patch('courseware.grades.grade', return_value={'percent': 0.1})
+    @patch('ga_operation.tasks.log')
+    @patch('openedx.core.djangoapps.ga_operation.task_base.send_mail')
+    @patch('ga_operation.tasks.call_command')
+    @ddt.data(
         ((u'修了証発行数： 3\n'
           u'※受講解除者0人を含みます（受講解除ユーザー名：{}）\n'
           u'---\n'
@@ -333,12 +466,11 @@ class CreateCertsTest(TestCase):
           u'---\n{}'), False)
     )
     @ddt.unpack
-    def test_run_include_unenroll_student_and_course_passed(self, expect_email_body, is_course_passed,
-                                                            mock_call_command, mock_send_mail, mock_log,
-                                                            is_course_passed_mock, get_course_by_id_mock):
+    def test_run_include_unenroll_student_and_not_course_passed(self, expect_email_body, is_course_passed,
+                                                                mock_call_command, mock_send_mail, mock_log,
+                                                                grades_grade_mock, get_course_by_id_mock):
         expect_user_list = []
         unenroll_student_count = 2
-        is_course_passed_mock.return_value = is_course_passed
         get_course_by_id_mock.return_value = self._get_course_mock()
 
         for i in range(unenroll_student_count):

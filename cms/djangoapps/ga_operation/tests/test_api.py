@@ -90,7 +90,7 @@ class ApiTestMixin(object):
         self.assertEqual(response.status_code, 400)
         content = json.loads(response.content)
         self.assertEqual(content[RESPONSE_FIELD_ID], u'入力したフォームの内容が不正です。')
-        self.assertEqual(content['course_id'], [u'This field is required.'])
+        self.assertEqual(content['course_id'], [u'このフィールドは必須です。'])
 
     def test_invalid_course_id(self):
         _url = reverse(self.url)
