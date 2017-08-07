@@ -16,7 +16,9 @@ from biz.djangoapps.ga_contract.tests.factories import ContractFactory, Contract
 from biz.djangoapps.ga_manager.tests.factories import ManagerFactory
 from biz.djangoapps.ga_organization.tests.factories import OrganizationFactory
 from biz.djangoapps.util import cache_utils
-from biz.djangoapps.util.decorators import check_course_selection, require_survey, handle_command_exception
+from biz.djangoapps.util.decorators import (
+    check_course_selection, require_survey, handle_command_exception, ExitWithWarning
+)
 from biz.djangoapps.util.tests.testcase import BizTestBase
 from student.tests.factories import UserFactory
 from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
@@ -777,6 +779,11 @@ def handle_command_exception_target_output_file_is_none():
     return "success"
 
 
+@handle_command_exception('/path/to/output_file')
+def handle_command_exception_target_contract_id_does_not_exists():
+    raise ExitWithWarning('specific contract does not exist')
+
+
 class HandleCommandExceptionTest(TestCase):
     """Test for handle_command_exception"""
 
@@ -796,6 +803,10 @@ class HandleCommandExceptionTest(TestCase):
         self.mock_open = patcher_open.start()
         self.addCleanup(patcher_open.stop)
 
+        patcher_log = patch('biz.djangoapps.util.decorators.log')
+        self.mock_log = patcher_log.start()
+        self.addCleanup(patcher_log.stop)
+
     def test_handle_command_exception(self):
         self.assertEqual('success', handle_command_exception_target())
 
@@ -814,3 +825,7 @@ class HandleCommandExceptionTest(TestCase):
     def test_handle_command_exception_if_output_file_is_none(self):
         with self.assertRaises(CommandError):
             handle_command_exception_target_output_file_is_none()
+
+    def test_handle_command_exception_if_invalid_contract_id(self):
+        handle_command_exception_target_contract_id_does_not_exists()
+        self.mock_log.warning.assert_called_once_with('specific contract does not exist', exc_info=True)

@@ -211,6 +211,10 @@ def require_survey(func):
     return wrapper
 
 
+class ExitWithWarning(Exception):
+    pass
+
+
 def handle_command_exception(output_file):
     """
     Command Exception Handler
@@ -233,6 +237,10 @@ def handle_command_exception(output_file):
                 _output_command_status(output_file, 'OK', msg)
                 log.info(msg)
                 return out
+            except ExitWithWarning as e:
+                msg = e.message
+                _output_command_status(output_file, 'WARNING', msg)
+                log.warning(msg, exc_info=True)
             except Exception:
                 msg = u"Command {} failed at {}.\n{}".format(command_name, _now(), traceback.format_exc())
                 _output_command_status(output_file, 'NG', msg)

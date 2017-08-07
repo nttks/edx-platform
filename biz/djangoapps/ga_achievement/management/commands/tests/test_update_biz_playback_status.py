@@ -21,6 +21,7 @@ from biz.djangoapps.ga_achievement.management.commands import update_biz_playbac
 from biz.djangoapps.ga_achievement.management.commands.update_biz_playback_status import TargetVertical, GroupedTargetVerticals
 from biz.djangoapps.ga_achievement.models import PlaybackBatchStatus, BATCH_STATUS_STARTED, BATCH_STATUS_FINISHED, BATCH_STATUS_ERROR
 from biz.djangoapps.ga_achievement.tests.factories import PlaybackBatchStatusFactory
+from biz.djangoapps.util.decorators import ExitWithWarning
 from biz.djangoapps.util.tests.testcase import BizStoreTestBase
 from lms.djangoapps.courseware.tests.helpers import LoginEnrollmentTestCase
 from opaque_keys.edx.keys import CourseKey
@@ -164,9 +165,10 @@ class TestArgParsing(TestCase):
         """
         Tests for the case when invalid contract_id is specified
         """
-        errstring = "The specified contract does not exist or is not active."
-        with self.assertRaisesRegexp(CommandError, errstring):
-            self.command.handle._original(self.command, 99999999)
+        contract_id = 99999999
+        errstring = "The specified contract does not exist or is not active. contract_id={}".format(contract_id)
+        with self.assertRaisesRegexp(ExitWithWarning, errstring):
+            self.command.handle._original(self.command, contract_id)
 
 
 @override_settings(BIZ_SET_PLAYBACK_COMMAND_OUTPUT=command_output_file.name)

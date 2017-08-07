@@ -18,7 +18,7 @@ from biz.djangoapps.ga_achievement.achievement_store import ScoreStore
 from biz.djangoapps.ga_achievement.models import ScoreBatchStatus
 from biz.djangoapps.ga_contract.models import Contract, ContractAuth, AdditionalInfo
 from biz.djangoapps.ga_invitation.models import ContractRegister, AdditionalInfoSetting
-from biz.djangoapps.util.decorators import handle_command_exception
+from biz.djangoapps.util.decorators import handle_command_exception, ExitWithWarning
 from certificates.models import CertificateStatuses, GeneratedCertificate
 from courseware import grades
 from openedx.core.djangoapps.ga_self_paced import api as self_paced_api
@@ -156,7 +156,9 @@ class Command(BaseCommand):
             try:
                 contracts = [Contract.objects.enabled().get(pk=contract_id)]
             except Contract.DoesNotExist:
-                raise CommandError("The specified contract does not exist or is not active.")
+                raise ExitWithWarning(
+                    "The specified contract does not exist or is not active. contract_id={}".format(contract_id)
+                )
         else:
             contracts = Contract.objects.enabled().all().exclude(id__in=exclude_ids).order_by('id')
         log.debug(u"contract_ids=[{}]".format(','.join([str(contract.id) for contract in contracts])))

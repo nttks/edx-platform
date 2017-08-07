@@ -24,6 +24,7 @@ from biz.djangoapps.ga_achievement.models import ScoreBatchStatus, BATCH_STATUS_
 from biz.djangoapps.ga_achievement.tests.factories import ScoreBatchStatusFactory
 from biz.djangoapps.ga_contract.tests.factories import ContractAuthFactory
 from biz.djangoapps.ga_login.tests.factories import BizUserFactory
+from biz.djangoapps.util.decorators import ExitWithWarning
 from biz.djangoapps.util.tests.testcase import BizStoreTestBase
 from certificates.models import CertificateStatuses, GeneratedCertificate
 from certificates.tests.factories import GeneratedCertificateFactory
@@ -109,9 +110,10 @@ class TestArgParsing(TestCase):
         """
         Tests for the case when invalid contract_id is specified
         """
-        errstring = "The specified contract does not exist or is not active."
-        with self.assertRaisesRegexp(CommandError, errstring):
-            self.command.handle._original(self.command, 99999999)
+        contract_id = 99999999
+        errstring = "The specified contract does not exist or is not active. contract_id={}".format(contract_id)
+        with self.assertRaisesRegexp(ExitWithWarning, errstring):
+            self.command.handle._original(self.command, contract_id)
 
 
 @ddt.ddt
