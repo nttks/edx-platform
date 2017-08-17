@@ -383,7 +383,7 @@ from microsite_configuration import microsite
                     % if current_manager.can_handle_contract_operation():
                         % if current_contract.can_customize_mail:
                     <li class="${'current' if current_feature == 'contract_operation/register_mail' else ''}"><a
-                        href="${reverse('biz:contract_operation:register_mail')}">${_("E-Mail Management")}</a></li>
+                        href="${reverse('biz:contract_operation:register_mail')}">${_("Welcome E-Mail Management")}</a></li>
                         % endif
                     <li class="${'current' if current_feature == 'contract_operation/register_students' else ''}"><a
                         href="${reverse('biz:contract_operation:register_students')}">${_("Register User Management")}</a></li>

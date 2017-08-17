@@ -1814,7 +1814,7 @@ class BizMailTest(WebAppTest, GaccoBizTestMixin, BizStudentRegisterMixin):
         self.switch_to_user(self.new_director)
         nav = BizNavPage(self.browser).visit()
 
-        self.assertFalse('E-Mail Management' in nav.left_menu_items.keys())
+        self.assertFalse('Welcome E-Mail Management' in nav.left_menu_items.keys())
 
         # Make contract auth
         self.switch_to_user(SUPER_USER_INFO)
@@ -1828,7 +1828,7 @@ class BizMailTest(WebAppTest, GaccoBizTestMixin, BizStudentRegisterMixin):
         self.switch_to_user(self.new_director)
         nav = BizNavPage(self.browser).visit()
 
-        self.assertTrue('E-Mail Management' in nav.left_menu_items.keys())
+        self.assertTrue('Welcome E-Mail Management' in nav.left_menu_items.keys())
 
         # Mail Management
         mail_page = nav.click_mail_management()
@@ -1890,7 +1890,7 @@ class BizMailTest(WebAppTest, GaccoBizTestMixin, BizStudentRegisterMixin):
         self.switch_to_user(self.new_director)
         nav = BizNavPage(self.browser).visit()
 
-        self.assertFalse('E-Mail Management' in nav.left_menu_items.keys())
+        self.assertFalse('Welcome E-Mail Management' in nav.left_menu_items.keys())
 
         # Make contract auth
         self.switch_to_user(SUPER_USER_INFO)
@@ -1904,7 +1904,7 @@ class BizMailTest(WebAppTest, GaccoBizTestMixin, BizStudentRegisterMixin):
         self.switch_to_user(self.new_director)
         nav = BizNavPage(self.browser).visit()
 
-        self.assertTrue('E-Mail Management' in nav.left_menu_items.keys())
+        self.assertTrue('Welcome E-Mail Management' in nav.left_menu_items.keys())
 
         # Mail Management
         mail_page = nav.click_mail_management()
@@ -1966,7 +1966,7 @@ class BizMailTest(WebAppTest, GaccoBizTestMixin, BizStudentRegisterMixin):
         self.switch_to_user(self.new_director)
         nav = BizNavPage(self.browser).visit()
 
-        self.assertFalse('E-Mail Management' in nav.left_menu_items.keys())
+        self.assertFalse('Welcome E-Mail Management' in nav.left_menu_items.keys())
 
         # Make contract auth
         self.switch_to_user(SUPER_USER_INFO)
@@ -1980,7 +1980,7 @@ class BizMailTest(WebAppTest, GaccoBizTestMixin, BizStudentRegisterMixin):
         self.switch_to_user(self.new_director)
         nav = BizNavPage(self.browser).visit()
 
-        self.assertFalse('E-Mail Management' in nav.left_menu_items.keys())
+        self.assertFalse('Welcome E-Mail Management' in nav.left_menu_items.keys())
 
     @skip("This won't work with mod #1906")
     def test_normal_existing_user(self):
@@ -1988,7 +1988,7 @@ class BizMailTest(WebAppTest, GaccoBizTestMixin, BizStudentRegisterMixin):
         self.switch_to_user(self.new_director)
         nav = BizNavPage(self.browser).visit()
 
-        self.assertFalse('E-Mail Management' in nav.left_menu_items.keys())
+        self.assertFalse('Welcome E-Mail Management' in nav.left_menu_items.keys())
 
         # Make contract auth
         self.switch_to_user(SUPER_USER_INFO)
@@ -2002,7 +2002,7 @@ class BizMailTest(WebAppTest, GaccoBizTestMixin, BizStudentRegisterMixin):
         self.switch_to_user(self.new_director)
         nav = BizNavPage(self.browser).visit()
 
-        self.assertTrue('E-Mail Management' in nav.left_menu_items.keys())
+        self.assertTrue('Welcome E-Mail Management' in nav.left_menu_items.keys())
 
         # Mail Management
         mail_page = nav.click_mail_management().click_tab_for_existing_user()
@@ -2065,7 +2065,7 @@ class BizMailTest(WebAppTest, GaccoBizTestMixin, BizStudentRegisterMixin):
         self.switch_to_user(self.new_director)
         nav = BizNavPage(self.browser).visit()
 
-        self.assertFalse('E-Mail Management' in nav.left_menu_items.keys())
+        self.assertFalse('Welcome E-Mail Management' in nav.left_menu_items.keys())
 
         # Make contract auth
         self.switch_to_user(SUPER_USER_INFO)
@@ -2079,7 +2079,7 @@ class BizMailTest(WebAppTest, GaccoBizTestMixin, BizStudentRegisterMixin):
         self.switch_to_user(self.new_director)
         nav = BizNavPage(self.browser).visit()
 
-        self.assertTrue('E-Mail Management' in nav.left_menu_items.keys())
+        self.assertTrue('Welcome E-Mail Management' in nav.left_menu_items.keys())
 
         # Mail Management
         mail_page = nav.click_mail_management().click_tab_for_existing_user_login_code()

@@ -68,8 +68,8 @@ msgid "Manager Setting"
 msgstr "管理者設定"
 
 #: biz/templates/main_biz.html
-msgid "E-Mail Management"
-msgstr "メール管理"
+msgid "Welcome E-Mail Management"
+msgstr "登録メール設定"
 
 #: templates/theme-header.html
 msgid "Biz"

@@ -136,7 +136,7 @@ class BizMailPage(BizNavPage, W2uiMixin):
         return '{base}/biz/contract_operation/mail'.format(base=BASE_URL)
 
     def is_browser_on_page(self):
-        return self.pagetitle == u'E-Mail Management'
+        return self.pagetitle == u'Welcome E-Mail Management'
 
     @property
     def parameter_keys(self):
