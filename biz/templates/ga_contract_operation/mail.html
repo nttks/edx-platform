@@ -99,7 +99,7 @@ from biz.djangoapps.ga_invitation.models import REGISTER_INVITATION_CODE
 <div id="form" class="field-area">
     % for i, mail_info in enumerate(mail_info_list):
     <div class="w2ui-page page-${i}">
-        <div class="operation">${_("The following logograph will be replaced other word. Do not change the logograph.")}</div>
+        <div class="operation"><span class="red">${_("The following logograph will replace each user's information when sending the e-mail. Do not change the logograph.")}</span></div>
         % for k, v in mail_info.mail_params.items():
             <div class="operation">{${k}}:${v}</div>
         % endfor

@@ -718,23 +718,23 @@ msgstr "ログインコードによる既存受講者向け"
 
 #: biz/djangoapps/ga_contract_operation/models.py
 msgid "Replaced with the user name"
-msgstr "ユーザー名に置換されます"
+msgstr "ユーザー名に置き換わります"
 
 #: biz/djangoapps/ga_contract_operation/models.py
 msgid "Replaced with the user password"
-msgstr "パスワードに置換されます"
+msgstr "パスワードに置き換わります"
 
 #: biz/djangoapps/ga_contract_operation/models.py
 msgid "Replaced with the user e-mail address"
-msgstr "メールアドレスに置換されます"
+msgstr "メールアドレスに置き換わります"
 
 #: biz/djangoapps/ga_contract_operation/models.py
 msgid "Replaced with the login code"
-msgstr "ログインコードに置換されます"
+msgstr "ログインコードに置き換わります"
 
 #: biz/djangoapps/ga_contract_operation/models.py
 msgid "Replaced with the URL code for login"
-msgstr "URLに置換されます"
+msgstr "URLに置き換わります"
 
 #: biz/templates/ga_contract_operation/register_students.html
 msgid "Register Students"
@@ -895,8 +895,8 @@ msgid "Either new user or existing user will be identified automatically in our 
 msgstr "新規受講者または既存受講者の判定は自動で行います。"
 
 #: biz/templates/ga_contract_operation/mail.html
-msgid "The following logograph will be replaced other word. Do not change the logograph."
-msgstr "以下の文字列のみメール送付時にそれぞれ置換されます。※文字列は変更しないでください"
+msgid "The following logograph will replace each user's information when sending the e-mail. Do not change the logograph."
+msgstr "以下の{}付の文言は、メール送付時に受講者一人一人の情報に置き換わります。変更しないでください。"
 
 #: biz/templates/ga_contract_operation/mail.html
 msgid "Subject:"
