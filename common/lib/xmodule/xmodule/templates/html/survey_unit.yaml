@@ -166,6 +166,7 @@ data: |
           $('#survey-submit-button').on('click', function() {
             var form = $('#survey-form');
             var param = {};
+            $('#survey-submit-button').addClass('disabled');
             $(form.find('input:visible,textarea,select')).each(function() {
               // set default
               param[$(this).attr('name')] = '';
@@ -211,6 +212,7 @@ data: |
                 if (err_msgs.length > 0) {
                     $('#survey-inputcheck-message').removeClass('is-disabled');
                     $('#survey-inputcheck-message p').html('<ul><li>' + err_msgs.join('</li><li>') + '</li></ul>');
+                    $('#survey-submit-button').removeClass('disabled');
                     xhr.abort();
                     window.scrollTo(0, 0);
                 }
