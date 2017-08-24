@@ -36,9 +36,6 @@ function enable_button(){
     <tr>
       <td>
         ${DESCRIPTION1}
-        詳細は <a href="${REGULATION_URL_4}" target="__blank">こちら</a> をご確認ください。<br>
-        <br>
-        合意いただけるポリシーにチェックして、「申し込む」ボタンを押してください。<br>
       </td>
     </tr>
   </table>
@@ -55,6 +52,7 @@ function enable_button(){
         <input id="id_regulation_state_1" name="regulation_state" type="radio" value="2" onclick="enable_button()">
         <div class="div_regulation_state">
           <a href="${REGULATION_URL_3}" target="__blank">${REGULATION_NAME_3}</a>のみ合意します。
+          <br><span style="color:red">※gacco転職サポート特約（職業紹介なし）のみに合意した方も、ＭＤＡ診断および講座受講をいただくことができます。</span>
         </div>
     </li>
   </ul>
