@@ -1,1 +1,0 @@
-■${settings.PLATFORM_NAME} 未提出課題のお知らせ

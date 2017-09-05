@@ -4,7 +4,10 @@ from factory.django import DjangoModelFactory
 
 from student.tests.factories import UserFactory
 
-from biz.djangoapps.ga_contract_operation.models import ContractMail, ContractTaskHistory, ContractTaskTarget, StudentRegisterTaskTarget, StudentUnregisterTaskTarget
+from biz.djangoapps.ga_contract_operation.models import (
+    ContractMail, ContractReminderMail,
+    ContractTaskHistory, ContractTaskTarget, StudentRegisterTaskTarget, StudentUnregisterTaskTarget,
+)
 
 
 class ContractTaskHistoryFactory(DjangoModelFactory):
@@ -42,3 +45,10 @@ class ContractMailFactory(DjangoModelFactory):
 
     class Meta(object):
         model = ContractMail
+
+
+class ContractReminderMailFactory(DjangoModelFactory):
+    """Factory for the ContractReminderMail model"""
+
+    class Meta(object):
+        model = ContractReminderMail

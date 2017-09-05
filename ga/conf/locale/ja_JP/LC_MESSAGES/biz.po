@@ -71,6 +71,10 @@ msgstr "管理者設定"
 msgid "Welcome E-Mail Management"
 msgstr "登録メール設定"
 
+#: biz/templates/main_biz.html
+msgid "Reminder Mail Setting"
+msgstr "督促メール設定"
+
 #: templates/theme-header.html
 msgid "Biz"
 msgstr "管理サイト"
@@ -700,6 +704,10 @@ msgstr "テストメール送信が完了しました。"
 msgid "Failed to send the test e-mail."
 msgstr "テストメール送信に失敗しました。"
 
+#: biz/djangoapps/ga_contract_operation/views.py
+msgid "Please use the pull-down menu to choose the reminder e-mail days."
+msgstr "督促日の設定はプルダウンから選択してしてください。"
+
 #: biz/djangoapps/ga_contract_operation/models.py
 msgid "For New User"
 msgstr "新規受講者向け"
@@ -735,6 +743,10 @@ msgstr "ログインコードに置き換わります"
 #: biz/djangoapps/ga_contract_operation/models.py
 msgid "Replaced with the URL code for login"
 msgstr "URLに置き換わります"
+
+#: biz/djangoapps/ga_contract_operation/models.py
+msgid "Submission Reminder Mail"
+msgstr "未提出課題督促メール"
 
 #: biz/templates/ga_contract_operation/register_students.html
 msgid "Register Students"
@@ -927,6 +939,18 @@ msgid ""
 "Are you sure you want to send the test e-mail?"
 msgstr ""
 "テストメールを送信してよろしいですか？"
+
+#: biz/templates/ga_contract_operation/reminder_mail.html
+msgid "Reminder E-mail Days:"
+msgstr "督促日："
+
+#: biz/templates/ga_contract_operation/reminder_mail.html
+msgid "days before"
+msgstr "日前"
+
+#: biz/templates/ga_contract_operation/reminder_mail.html
+msgid "(The target courses and the section are listed. This part can not be edited.)"
+msgstr "（対象の講座名および節が列挙されます。この部分は編集できません。）"
 
 ##### Login
 #: biz/djangoapps/ga_login/views.py

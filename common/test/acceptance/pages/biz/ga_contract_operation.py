@@ -3,6 +3,8 @@ Contract operation pages of biz.
 """
 import re
 
+from selenium.webdriver.support.ui import Select
+
 from . import BASE_URL
 from .ga_navigation import BizNavPage
 from .ga_w2ui import W2uiMixin, W2uiGrid, KEY_GRID_INDEX
@@ -193,6 +195,88 @@ class BizMailPage(BizNavPage, W2uiMixin):
 
     def click_send_test_mail(self):
         for el in self.q(css='.w2ui-page .test-send-btn').results:
+            if el.is_displayed():
+                el.click()
+        self.wait_for_ajax()
+        return self
+
+
+class BizReminderMailPage(BizNavPage, W2uiMixin):
+    """
+    Reminder mail page
+    """
+
+    @property
+    def url(self):
+        return '{base}/biz/contract_operation/reminder_mail'.format(base=BASE_URL)
+
+    def is_browser_on_page(self):
+        return self.pagetitle == u'Reminder Mail Setting'
+
+    @property
+    def parameter_keys(self):
+        r = re.compile(u'^\{(\w+)\}')
+        return [m.group(1) for m in [r.search(el.text) for el in self.q(css='.w2ui-page .operation').results if el.is_displayed()] if m]
+
+    @property
+    def reminder_email_days(self):
+        for el in self.q(css='.w2ui-page select[name="reminder_email_days"]').results:
+            if el.is_displayed():
+                return Select(el).first_selected_option.text
+        return None
+
+    @property
+    def subject(self):
+        for el in self.q(css='.w2ui-page input[name="mail_subject"]').results:
+            if el.is_displayed():
+                return el.get_attribute('value')
+        return None
+
+    @property
+    def body(self):
+        for el in self.q(css='.w2ui-page textarea[name="mail_body"]').results:
+            if el.is_displayed():
+                return el.text
+        return None
+
+    @property
+    def body2(self):
+        for el in self.q(css='.w2ui-page textarea[name="mail_body2"]').results:
+            if el.is_displayed():
+                return el.text
+        return None
+
+    def click_tab_for_submission_reminder_mail(self):
+        self.click_tab('Submission Reminder Mail')
+        return self
+
+    def input(self, reminder_email_days, subject, body, body2):
+        for el in self.q(css='.w2ui-page select[name="reminder_email_days"]').results:
+            if el.is_displayed():
+                Select(el).select_by_value(reminder_email_days)
+        for el in self.q(css='.w2ui-page input[name="mail_subject"]').results:
+            if el.is_displayed():
+                el.clear()
+                el.send_keys(subject)
+        for el in self.q(css='.w2ui-page textarea[name="mail_body"]').results:
+            if el.is_displayed():
+                el.clear()
+                el.send_keys(body)
+        for el in self.q(css='.w2ui-page textarea[name="mail_body2"]').results:
+            if el.is_displayed():
+                el.clear()
+                el.send_keys(body2)
+        return self
+
+    def click_save_template(self):
+        for el in self.q(css='.w2ui-buttons .save-btn').results:
+            if el.is_displayed():
+                el.click()
+        self.wait_for_ajax()
+        return self
+
+    def click_send_test_mail(self):
+        for el in self.q(css='.w2ui-buttons .send-btn').results:
             if el.is_displayed():
                 el.click()
         self.wait_for_ajax()

@@ -1,0 +1,16 @@
+[
+  {
+    "pk": 1,
+    "model": "ga_contract_operation.contractremindermail",
+    "fields": {
+      "contract": null,
+      "mail_type": "SRM",
+      "reminder_email_days": "3",
+      "mail_subject": "■gacco 未提出課題のお知らせ",
+      "mail_body": "Default Body For Submission Reminder Mail",
+      "mail_body2": "Default Body2 For Submission Reminder Mail",
+      "created": "2017-09-01T00:00:00Z",
+      "modified": "2017-09-01T00:00:00Z"
+    }
+  }
+]

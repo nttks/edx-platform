@@ -10,13 +10,16 @@ import logging
 from celery.states import READY_STATES
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import User
 from django.db import transaction
 from django.http import Http404
 from django.utils.translation import ugettext as _
 from django.views.decorators.http import require_GET, require_POST
 
-from biz.djangoapps.ga_contract_operation.models import ContractMail, ContractTaskHistory, ContractTaskTarget, StudentRegisterTaskTarget, StudentUnregisterTaskTarget
+from biz.djangoapps.ga_achievement.management.commands.update_biz_score_status import get_grouped_target_sections
+from biz.djangoapps.ga_contract_operation.models import (
+    ContractMail, ContractReminderMail,
+    ContractTaskHistory, ContractTaskTarget, StudentRegisterTaskTarget, StudentUnregisterTaskTarget,
+)
 from biz.djangoapps.ga_contract_operation.tasks import personalinfo_mask, student_register, student_unregister, \
                                                         TASKS, STUDENT_REGISTER, STUDENT_UNREGISTER, PERSONALINFO_MASK
 from biz.djangoapps.ga_contract_operation.utils import send_mail
@@ -39,6 +42,7 @@ from openedx.core.djangoapps.ga_task.task import STATES as TASK_STATES
 from openedx.core.lib.ga_datetime_utils import to_timezone
 from student.models import CourseEnrollment
 from util.json_request import JsonResponse, JsonResponseBadRequest
+from xmodule.modulestore.django import modulestore
 
 log = logging.getLogger(__name__)
 
@@ -475,6 +479,131 @@ def send_mail_ajax(request):
         return JsonResponse({
             'info': _("Successfully to send the test e-mail."),
         })
+
+
+@require_GET
+@login_required
+@check_course_selection
+def reminder_mail(request):
+    if not request.current_contract.can_send_submission_reminder:
+        raise Http404()
+
+    if request.current_contract.can_send_submission_reminder:
+        submission_reminder_mail = ContractReminderMail.get_or_default(request.current_contract,
+                                                                       ContractReminderMail.MAIL_TYPE_SUBMISSION_REMINDER)
+
+    return render_to_response(
+        'ga_contract_operation/reminder_mail.html',
+        {
+            'mail_info_list': [
+                submission_reminder_mail,
+            ],
+        }
+    )
+
+
+@require_POST
+@login_required
+@check_course_selection
+def reminder_mail_save_ajax(request):
+    if not request.current_contract.can_send_submission_reminder:
+        return _error_response(_("Unauthorized access."))
+
+    if str(request.current_contract.id) != request.POST.get('contract_id'):
+        return _error_response(_("Current contract is changed. Please reload this page."))
+
+    # Input check
+    mail_type = request.POST.get('mail_type')
+    if not ContractReminderMail.is_mail_type(mail_type):
+        log.warning('Illegal mail-type: {}'.format(mail_type))
+        return _error_response(_("Unauthorized access."))
+
+    reminder_email_days = request.POST.get('reminder_email_days')
+    if not reminder_email_days:
+        return _error_response(_("Please use the pull-down menu to choose the reminder e-mail days."))
+    try:
+        reminder_email_days = int(reminder_email_days)
+    except ValueError:
+        return _error_response(_("Please use the pull-down menu to choose the reminder e-mail days."))
+    if reminder_email_days < ContractReminderMail.REMINDER_EMAIL_DAYS_MIN_VALUE or ContractReminderMail.REMINDER_EMAIL_DAYS_MAX_VALUE < reminder_email_days:
+        return _error_response(_("Please use the pull-down menu to choose the reminder e-mail days."))
+
+    mail_subject = request.POST.get('mail_subject')
+    if not mail_subject:
+        return _error_response(_("Please enter the subject of an e-mail."))
+    mail_subject_max_length = ContractReminderMail._meta.get_field('mail_subject').max_length
+    if len(mail_subject) > mail_subject_max_length:
+        return _error_response(_("Subject within {0} characters.").format(mail_subject_max_length))
+
+    mail_body = request.POST.get('mail_body')
+    mail_body2 = request.POST.get('mail_body2')
+    if not mail_body or not mail_body2:
+        return _error_response(_("Please enter the body of an e-mail."))
+
+    # Save template
+    try:
+        contract_mail, __ = ContractReminderMail.objects.get_or_create(contract=request.current_contract,
+                                                                       mail_type=mail_type)
+        contract_mail.reminder_email_days = reminder_email_days
+        contract_mail.mail_subject = mail_subject
+        contract_mail.mail_body = mail_body
+        contract_mail.mail_body2 = mail_body2
+        contract_mail.save()
+    except:
+        log.exception('Failed to save the template e-mail.')
+        return _error_response(_("Failed to save the template e-mail."))
+    else:
+        return JsonResponse({
+            'info': _("Successfully to save the template e-mail."),
+        })
+
+
+@require_POST
+@login_required
+@check_course_selection
+def reminder_mail_send_ajax(request):
+    if not request.current_contract.can_send_submission_reminder:
+        return _error_response(_("Unauthorized access."))
+
+    if str(request.current_contract.id) != request.POST.get('contract_id'):
+        return _error_response(_("Current contract is changed. Please reload this page."))
+
+    mail_type = request.POST.get('mail_type')
+    if not ContractReminderMail.is_mail_type(mail_type):
+        log.warning('Illegal mail-type: {}'.format(mail_type))
+        return _error_response(_("Unauthorized access."))
+
+    contract_mail = ContractReminderMail.get_or_default(request.current_contract, mail_type)
+    if (str(contract_mail.reminder_email_days) != request.POST.get('reminder_email_days') or
+                contract_mail.mail_subject != request.POST.get('mail_subject') or
+                contract_mail.mail_body != request.POST.get('mail_body') or
+                contract_mail.mail_body2 != request.POST.get('mail_body2')):
+        return _error_response(_("Please save the template e-mail before sending."))
+
+    if mail_type == ContractReminderMail.MAIL_TYPE_SUBMISSION_REMINDER:
+        # Get target courses to display on the e-mail body
+        target_courses = []
+        courses = [modulestore().get_course(d.course_id) for d in request.current_contract.details.all().order_by('id')]
+        for course in courses:
+            grouped_target_sections = get_grouped_target_sections(course)
+            if grouped_target_sections.keys():
+                target_courses.append(grouped_target_sections)
+
+        # Send mail
+        try:
+            send_mail(
+                request.user,
+                contract_mail.mail_subject,
+                contract_mail.compose_mail_body(target_courses),
+                {'username': request.user.username},
+            )
+        except:
+            log.exception('Failed to send the test e-mail.')
+            return _error_response(_("Failed to send the test e-mail."))
+        else:
+            return JsonResponse({
+                'info': _("Successfully to send the test e-mail."),
+            })
 
 
 def check_contract_bulk_operation(func):

@@ -19,7 +19,9 @@ from django.test.utils import override_settings
 
 from biz.djangoapps.ga_achievement.achievement_store import ScoreStore
 from biz.djangoapps.ga_achievement.management.commands import update_biz_score_status
-from biz.djangoapps.ga_achievement.management.commands.update_biz_score_status import TargetSection, GroupedTargetSections
+from biz.djangoapps.ga_achievement.management.commands.update_biz_score_status import (
+    TargetSection, GroupedTargetSections, get_grouped_target_sections,
+)
 from biz.djangoapps.ga_achievement.models import ScoreBatchStatus, BATCH_STATUS_STARTED, BATCH_STATUS_FINISHED, BATCH_STATUS_ERROR
 from biz.djangoapps.ga_achievement.tests.factories import ScoreBatchStatusFactory
 from biz.djangoapps.ga_contract.tests.factories import ContractAuthFactory
@@ -146,7 +148,7 @@ class UpdateBizScoreStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEnrol
             BlockInfo(
                 'chapter_x', 'chapter', {'display_name': 'chapter_x'}, [
                     BlockInfo(
-                        'sequential_x1', 'sequential', {'display_name': 'sequential_x1'}, [
+                        'sequential_x1', 'sequential', {'display_name': 'sequential_x1', 'graded': True, 'format': 'format_x1'}, [
                             BlockInfo(
                                 'vertical_x1a', 'vertical', {'display_name': 'vertical_x1a'}, [
                                     BlockInfo('component_x1a_1', 'problem', {'display_name': 'component_x1a_1'}, []),
@@ -164,7 +166,7 @@ class UpdateBizScoreStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEnrol
             BlockInfo(
                 'chapter_y', 'chapter', {'display_name': 'chapter_y'}, [
                     BlockInfo(
-                        'sequential_y1', 'sequential', {'display_name': 'sequential_y1'}, [
+                        'sequential_y1', 'sequential', {'display_name': 'sequential_y1', 'graded': True, 'format': 'format_y1'}, [
                             BlockInfo(
                                 'vertical_y1a', 'vertical', {'display_name': 'vertical_y1a'}, [
                                     BlockInfo('component_y1a_1', 'problem', {'display_name': 'component_y1a_1'}, []),
@@ -173,7 +175,7 @@ class UpdateBizScoreStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEnrol
                         ]
                     ),
                     BlockInfo(
-                        'sequential_y2', 'sequential', {'display_name': 'sequential_y2'}, [
+                        'sequential_y2', 'sequential', {'display_name': 'sequential_y2', 'graded': True, 'format': 'format_y2'}, [
                             BlockInfo(
                                 'vertical_y2a', 'vertical', {'display_name': 'vertical_y2a'}, [
                                     BlockInfo('component_y2a_1', 'problem', {'display_name': 'component_y2a_1'}, []),
@@ -189,7 +191,7 @@ class UpdateBizScoreStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEnrol
             BlockInfo(
                 'chapter_z', 'chapter', {'display_name': 'chapter_z'}, [
                     BlockInfo(
-                        'sequential_z1', 'sequential', {'display_name': 'sequential_z1'}, [
+                        'sequential_z1', 'sequential', {'display_name': 'sequential_z1', 'graded': True, 'format': 'format_z1'}, [
                             BlockInfo(
                                 'vertical_z1a', 'vertical', {'display_name': 'vertical_z1a'}, [
                                     BlockInfo('component_z1a_1', 'problem', {'display_name': 'component_z1a_1'}, []),
@@ -888,3 +890,53 @@ class TestGroupedTargetSections(ModuleStoreTestCase):
         self.assertEquals(grouped_target_sections.get(self.chapter_x.location), [self.target_section_x1])
         self.assertEquals(grouped_target_sections.get(self.chapter_y.location), [self.target_section_y1, self.target_section_y2])
         self.assertEquals(grouped_target_sections.target_sections, [self.target_section_x1, self.target_section_y1, self.target_section_y2])
+
+
+class TestGetGroupedTargetSections(ModuleStoreTestCase):
+    """
+    Tests for get_grouped_target_sections
+    """
+    def setUp(self):
+        super(TestGetGroupedTargetSections, self).setUp()
+        self.course = CourseFactory.create(org='TestX', course='TS101', run='T1')
+        self.chapter_x = ItemFactory.create(parent=self.course, category='chapter', display_name='chapter_x')
+        self.chapter_y = ItemFactory.create(parent=self.course, category='chapter', display_name='chapter_y')
+        self.section_x1 = ItemFactory.create(parent=self.chapter_x, category='sequential', display_name='sequential_x1', metadata={'graded': True, 'format': 'format_x1'})
+        self.section_y1 = ItemFactory.create(parent=self.chapter_y, category='sequential', display_name='sequential_y1', metadata={'graded': True, 'format': 'format_y1'})
+        self.section_y2 = ItemFactory.create(parent=self.chapter_y, category='sequential', display_name='sequential_y2', metadata={'graded': True, 'format': 'format_y2'})
+        self.vertical_x1a = ItemFactory.create(parent=self.section_x1, category='vertical', display_name='vertical_x1a')
+        self.vertical_y1a = ItemFactory.create(parent=self.section_y1, category='vertical', display_name='vertical_y1a')
+        self.vertical_y2a = ItemFactory.create(parent=self.section_y2, category='vertical', display_name='vertical_y2a')
+        self.component_x1a_1 = ItemFactory.create(parent=self.vertical_x1a, category='problem', display_name='component_x1a_1')
+        self.component_y1a_1 = ItemFactory.create(parent=self.vertical_y1a, category='problem', display_name='component_y1a_1')
+        self.component_y2a_1 = ItemFactory.create(parent=self.vertical_y2a, category='problem', display_name='component_y2a_1')
+
+    def test_if_chapter_is_hide_from_students(self):
+        self.chapter_x.visible_to_staff_only = True
+        self.store.update_item(self.chapter_x, self.user.id)
+
+        grouped_target_sections = get_grouped_target_sections(self.course)
+        self.assertEquals(
+            [ts.module_id for ts in grouped_target_sections.target_sections],
+            [unicode(self.section_y1.location), unicode(self.section_y2.location)]
+        )
+
+    def test_if_section_is_hide_from_students(self):
+        self.section_y1.visible_to_staff_only = True
+        self.store.update_item(self.section_y1, self.user.id)
+
+        grouped_target_sections = get_grouped_target_sections(self.course)
+        self.assertEquals(
+            [ts.module_id for ts in grouped_target_sections.target_sections],
+            [unicode(self.section_x1.location), unicode(self.section_y2.location)]
+        )
+
+    def test_if_section_grade_is_not_set(self):
+        self.section_y2.graded = False
+        self.store.update_item(self.section_y2, self.user.id)
+
+        grouped_target_sections = get_grouped_target_sections(self.course)
+        self.assertEquals(
+            [ts.module_id for ts in grouped_target_sections.target_sections],
+            [unicode(self.section_x1.location), unicode(self.section_y1.location)]
+        )

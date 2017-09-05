@@ -8,21 +8,48 @@ from optparse import make_option
 from django.conf import settings
 from django.core.mail import send_mail
 from django.core.management.base import BaseCommand, CommandError
+from django.test.client import RequestFactory
 from django.utils import translation
 from xmodule.modulestore.django import modulestore
 
 from biz.djangoapps.ga_achievement.achievement_store import ScoreStore
-from biz.djangoapps.ga_achievement.management.commands.update_biz_score_status import TargetSection, GroupedTargetSections
+from biz.djangoapps.ga_achievement.management.commands.update_biz_score_status import (
+    GroupedTargetSections, get_grouped_target_sections,
+)
 from biz.djangoapps.ga_achievement.models import ScoreBatchStatus, SubmissionReminderBatchStatus
 from biz.djangoapps.ga_contract.models import Contract
+from biz.djangoapps.ga_contract_operation.models import ContractReminderMail
+from biz.djangoapps.ga_contract_operation.utils import replace_braces
 from biz.djangoapps.ga_invitation.models import ContractRegister
 from biz.djangoapps.util import datetime_utils
-from biz.djangoapps.util.decorators import handle_command_exception
-from lms.djangoapps.instructor.enrollment import render_message_to_string
+from biz.djangoapps.util.decorators import handle_command_exception, ExitWithWarning
+from courseware.model_data import FieldDataCache
+from courseware.module_render import get_module_for_descriptor
 from microsite_configuration import microsite
 from student.models import UserStanding, CourseEnrollment
 
 log = logging.getLogger(__name__)
+
+
+class ContractHasNoCourses(Exception):
+    """
+    This exception is raised in the case where contract has no courses
+    """
+    pass
+
+
+class ContractReminderMailNotFound(Exception):
+    """
+    This exception is raised in the case where reminder mail template (including default template) is not found
+    """
+    pass
+
+
+class InvalidReminderEmailDays(Exception):
+    """
+    This exception is raised in the case where the value of the reminder e-mail days is invalid
+    """
+    pass
 
 
 class ScoreBatchNotFinished(Exception):
@@ -86,7 +113,9 @@ class Command(BaseCommand):
             try:
                 contracts = [Contract.objects.enabled().get(pk=contract_id)]
             except Contract.DoesNotExist:
-                raise CommandError("The specified contract does not exist or is not active.")
+                raise ExitWithWarning(
+                    "The specified contract does not exist or is not active. contract_id={}".format(contract_id)
+                )
         else:
             contracts = Contract.objects.enabled().all().exclude(id__in=exclude_ids).order_by('id')
         log.debug(u"contract_ids=[{}]".format(','.join([str(contract.id) for contract in contracts])))
@@ -112,12 +141,8 @@ class Command(BaseCommand):
                 send_success = 0
                 send_failure = 0
 
-                # Calculate target min and max datetime
-                target_day_min, target_day_max = datetime_utils.min_and_max_of_date(
-                    start_datetime.date(), settings.INTERVAL_DAYS_TO_SEND_SUBMISSION_REMINDER_EMAIL)
-
-                # Get target courses
-                target_courses = []
+                # Get courses in contract
+                courses = []
                 for contract_detail in contract.details.all().order_by('id'):
                     # Check if course exists in modulestore
                     course = modulestore().get_course(contract_detail.course_id)
@@ -126,91 +151,97 @@ class Command(BaseCommand):
                             u"This course does not exist in modulestore. contract_id={}, course_id={}".format(
                                 contract.id, unicode(contract_detail.course_id)))
                         continue
-                    # TODO: As of now, exclude the self-paced courses. We'll fix it later. (#1816)
-                    elif course.self_paced:
-                        log.warning(
-                            u"This course is self-paced. So, we exclude it from the target courses. contract_id={}, course_id={}".format(
-                                contract.id, unicode(course.id)))
+                    # Check if update_biz_score_status process has finished today
+                    if not ScoreBatchStatus.finished_today(contract.id, course.id):
+                        raise ScoreBatchNotFinished()
+                    courses.append(course)
+
+                if not courses:
+                    raise ContractHasNoCourses()
+
+                # Calculate target min and max datetime
+                contract_mail = ContractReminderMail.get_or_default(contract,
+                                                                    ContractReminderMail.MAIL_TYPE_SUBMISSION_REMINDER)
+                if not contract_mail:
+                    raise ContractReminderMailNotFound()
+                reminder_email_days = contract_mail.reminder_email_days
+                if reminder_email_days < ContractReminderMail.REMINDER_EMAIL_DAYS_MIN_VALUE or ContractReminderMail.REMINDER_EMAIL_DAYS_MAX_VALUE < reminder_email_days:
+                    raise InvalidReminderEmailDays()
+                target_day_min, target_day_max = datetime_utils.min_and_max_of_date(start_datetime.date(), reminder_email_days)
+
+                # Get target users
+                for contract_register in ContractRegister.find_input_and_register_by_contract(contract.id):
+                    start = time.clock()
+                    user = contract_register.user
+                    # Skip if user already resigned
+                    if hasattr(user, 'standing') and user.standing \
+                            and user.standing.account_status == UserStanding.ACCOUNT_DISABLED:
+                        continue
+                    # Skip if user already masked (#1970)
+                    if '@' not in user.email:
+                        log.warning(u"User({}) has been already masked, so skip.".format(user.id))
                         continue
 
                     # Extract sections whose due dates are approaching within the specified days
-                    grouped_target_sections = GroupedTargetSections()
-                    for chapter in course.get_children():
-                        for section in chapter.get_children():
-                            if section.due and target_day_min <= section.due <= target_day_max:
-                                grouped_target_sections.append(TargetSection(section))
-                                log.debug(u"column_name={}".format(TargetSection(section).column_name))
-                    if grouped_target_sections.keys():
-                        target_courses.append(grouped_target_sections)
-
-                log.debug(u"Target courses for contract(id={}) are [{}]".format(
-                    contract.id, ', '.join([unicode(grouped_target_sections.course_key) for grouped_target_sections in target_courses]))
-                )
-                if not target_courses:
-                    log.warning(u"Contract(id={}) has no target courses for submission reminder today, so skip.".format(
-                        contract.id))
-                else:
-                    # Check if update_biz_score_status process for all target courses has all finished today
-                    score_batch_finished_today = all(
-                        ScoreBatchStatus.finished_today(contract.id, grouped_target_sections.course_key)
-                        for grouped_target_sections in target_courses
-                    )
-                    if not score_batch_finished_today:
-                        raise ScoreBatchNotFinished()
-
-                    # Get target users
-                    for contract_register in ContractRegister.find_input_and_register_by_contract(contract.id):
-                        start = time.clock()
-                        user = contract_register.user
-                        # Skip if user already resigned
-                        if hasattr(user, 'standing') and user.standing \
-                                and user.standing.account_status == UserStanding.ACCOUNT_DISABLED:
-                            continue
-                        # Skip if user already masked (#1970)
-                        if '@' not in user.email:
-                            log.warning(u"User({}) has been already masked, so skip.".format(user.id))
+                    target_courses_per_user = []
+                    for course in courses:
+                        # Exclude course in which user don't enroll at this time
+                        course_enrollment = CourseEnrollment.get_enrollment(user, course.id)
+                        if not course_enrollment or not course_enrollment.is_active:
                             continue
 
-                        target_courses_per_user = []
-                        for grouped_target_sections in target_courses:
-                            course_key = grouped_target_sections.course_key
+                        # In self-paced course, due date differs by user (#1240)
+                        if course.self_paced:
+                            request = RequestFactory().get('/')
+                            field_data_cache = FieldDataCache([course], course.id, user)
+                            course = get_module_for_descriptor(user, request, course, field_data_cache, course.id, course=course)
 
-                            # Exclude course in which user don't enroll at this time
-                            course_enrollment = CourseEnrollment.get_enrollment(user, course_key)
-                            if not course_enrollment or not course_enrollment.is_active:
-                                continue
+                        # Get user's score
+                        score_store = ScoreStore(contract.id, unicode(course.id))
+                        record = score_store.get_record_document_by_username(user.username)
 
-                            # Get user's score
-                            score_store = ScoreStore(contract.id, unicode(course_key))
-                            record = score_store.get_record_document_by_username(user.username)
-
-                            # Choice 'Not Attempted' section from user's score
-                            grouped_target_sections_per_user = GroupedTargetSections()
-                            for target_section in grouped_target_sections.target_sections:
+                        # Choice 'Not Attempted' section from user's score
+                        grouped_target_sections_per_user = GroupedTargetSections()
+                        for target_section in get_grouped_target_sections(course).target_sections:
+                            due = target_section.section_descriptor.due
+                            if due and target_day_min <= due <= target_day_max:
                                 # Note: record is None if user enrolled after update_biz_score_status finished. (#1980)
                                 if record is None or record.get(target_section.column_name) == ScoreStore.VALUE__NOT_ATTEMPTED:
                                     grouped_target_sections_per_user.append(target_section)
-                            if grouped_target_sections_per_user.keys():
-                                target_courses_per_user.append(grouped_target_sections_per_user)
+                        if grouped_target_sections_per_user.keys():
+                            target_courses_per_user.append(grouped_target_sections_per_user)
 
-                        # Send email for user
-                        if target_courses_per_user:
-                            try:
-                                send_reminder_email(user, target_courses_per_user, debug)
-                                send_success += 1
-                            except Exception as ex:
-                                send_failure += 1
-                                log.error(u"Error occurred while sending reminder email: {}".format(ex))
+                    # Send email for user
+                    if target_courses_per_user:
+                        try:
+                            send_reminder_email(contract, user, target_courses_per_user, debug)
+                            send_success += 1
+                            end = time.clock()
+                            log.debug(u"Processed time to send submission reminder email ... {:.2f}s".format(end - start))
+                        except Exception as ex:
+                            send_failure += 1
+                            log.error(u"Error occurred while sending reminder email: {}".format(ex))
 
-                        end = time.clock()
-                        log.debug(u"Processed time to send submission reminder email ... {:.2f}s".format(end - start))
+                if send_failure > 0:
+                    raise SendMailError()
 
-                    if send_failure > 0:
-                        raise SendMailError()
+            # Warning
+            except ContractHasNoCourses:
+                log.warning(u"Contract(id={}) has no valid courses.".format(contract.id))
+                SubmissionReminderBatchStatus.save_for_error(contract.id, send_success, send_failure)
 
+            # Error (need recovery)
             except ScoreBatchNotFinished:
                 error_flag = True
                 log.error(u"Score batches for the contract(id={}) have not finished yet today.".format(contract.id))
+                SubmissionReminderBatchStatus.save_for_error(contract.id, send_success, send_failure)
+            except ContractReminderMailNotFound:
+                error_flag = True
+                log.error(u"Default email template record for submission reminder is not found.")
+                SubmissionReminderBatchStatus.save_for_error(contract.id, send_success, send_failure)
+            except InvalidReminderEmailDays:
+                error_flag = True
+                log.error(u"The value of the reminder e-mail days is invalid for the contract(id={}).".format(contract.id))
                 SubmissionReminderBatchStatus.save_for_error(contract.id, send_success, send_failure)
             except SendMailError:
                 error_flag = True
@@ -220,6 +251,8 @@ class Command(BaseCommand):
                 error_flag = True
                 log.error(u"Unexpected error occurred: {}".format(ex))
                 SubmissionReminderBatchStatus.save_for_error(contract.id, send_success, send_failure)
+
+            # Success
             else:
                 SubmissionReminderBatchStatus.save_for_finished(contract.id, send_success, send_failure)
 
@@ -227,23 +260,20 @@ class Command(BaseCommand):
             raise CommandError("Error occurred while handling send_submission_reminder_email command.")
 
 
-def send_reminder_email(user, target_courses, debug):
-    subject, message = render_message_to_string(
-        'ga_achievement/emails/submission_reminder_email_subject.txt',
-        'ga_achievement/emails/submission_reminder_email_message.txt',
-        {
-            'user': user,
-            'target_courses': target_courses,
-        }
-    )
+def send_reminder_email(contract, user, target_courses, debug):
+    from_address = microsite.get_value('email_from_address', settings.DEFAULT_FROM_EMAIL)
+    to_addresses = [user.email]
+
+    contract_mail = ContractReminderMail.get_or_default(contract, ContractReminderMail.MAIL_TYPE_SUBMISSION_REMINDER)
+    replace_dict = {'username': user.username}
+    subject = replace_braces(contract_mail.mail_subject, replace_dict)
+    message = replace_braces(contract_mail.compose_mail_body(target_courses), replace_dict)
 
     if debug:
         log.warning("This is a debug mode, so we don't send a reminder email.")
+        log.debug(u"From Address={}".format(from_address))
+        log.debug(u"To Addresses={}".format(to_addresses))
         log.debug(u"Subject={}".format(subject))
         log.debug(u"Message={}".format(message))
     else:
-        from_address = microsite.get_value(
-            'email_from_address',
-            settings.DEFAULT_FROM_EMAIL
-        )
-        send_mail(subject, message, from_address, [user.email])
+        send_mail(subject, message, from_address, to_addresses)

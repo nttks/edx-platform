@@ -11,7 +11,6 @@ from collections import namedtuple
 import ddt
 from datetime import datetime, timedelta
 from dateutil.tz import tzutc
-from django.conf import settings
 from django.core.management import call_command
 from django.core.management.base import CommandError
 from django.test import TestCase
@@ -25,9 +24,11 @@ from biz.djangoapps.ga_achievement.management.commands import send_submission_re
 from biz.djangoapps.ga_achievement.models import ScoreBatchStatus, SubmissionReminderBatchStatus, BATCH_STATUS_STARTED, \
     BATCH_STATUS_FINISHED, BATCH_STATUS_ERROR
 from biz.djangoapps.ga_achievement.tests.factories import ScoreBatchStatusFactory
+from biz.djangoapps.ga_contract_operation.models import ContractReminderMail
 from biz.djangoapps.ga_contract.tests.factories import ContractAuthFactory, ContractOptionFactory
 from biz.djangoapps.ga_login.tests.factories import BizUserFactory
 from biz.djangoapps.util import datetime_utils, mask_utils
+from biz.djangoapps.util.decorators import ExitWithWarning
 from biz.djangoapps.util.tests.testcase import BizStoreTestBase
 from courseware import grades
 from courseware.tests.helpers import LoginEnrollmentTestCase
@@ -106,9 +107,10 @@ class TestArgParsing(TestCase):
         """
         Tests for the case when invalid contract_id is specified
         """
-        errstring = "The specified contract does not exist or is not active."
-        with self.assertRaisesRegexp(CommandError, errstring):
-            self.command.handle._original(self.command, 99999999)
+        contract_id = 99999999
+        errstring = "The specified contract does not exist or is not active. contract_id={}".format(contract_id)
+        with self.assertRaisesRegexp(ExitWithWarning, errstring):
+            self.command.handle._original(self.command, contract_id)
 
 
 @ddt.ddt
@@ -133,15 +135,16 @@ class SendSubmissionReminderEmailTest(BizStoreTestBase, ModuleStoreTestCase, Log
 
     def setUp(self):
         super(SendSubmissionReminderEmailTest, self).setUp()
+        self.default_reminder_email_days = 3
         self.now = datetime_utils.timezone_now()
-        self.target_datetime = self.now.replace(hour=20) + timedelta(days=settings.INTERVAL_DAYS_TO_SEND_SUBMISSION_REMINDER_EMAIL)
-        self.non_target_datetime = self.now.replace(hour=20) + timedelta(days=settings.INTERVAL_DAYS_TO_SEND_SUBMISSION_REMINDER_EMAIL + 1)
+        self.target_datetime = self.now.replace(hour=20) + timedelta(days=self.default_reminder_email_days)
+        self.non_target_datetime = self.now.replace(hour=20) + timedelta(days=self.default_reminder_email_days + 1)
 
         self.course_blocks = [
             BlockInfo(
                 'chapter_x', 'chapter', {'display_name': 'chapter_x'}, [
                     BlockInfo(
-                        'sequential_x1', 'sequential', {'display_name': 'sequential_x1', 'due': self.target_datetime}, [
+                        'sequential_x1', 'sequential', {'display_name': 'sequential_x1', 'due': self.target_datetime, 'graded': True, 'format': 'format_x1'}, [
                             BlockInfo(
                                 'vertical_x1a', 'vertical', {'display_name': 'vertical_x1a'}, [
                                     BlockInfo('component_x1a_1', 'problem', {'display_name': 'component_x1a_1'}, []),
@@ -159,7 +162,7 @@ class SendSubmissionReminderEmailTest(BizStoreTestBase, ModuleStoreTestCase, Log
             BlockInfo(
                 'chapter_y', 'chapter', {'display_name': 'chapter_y'}, [
                     BlockInfo(
-                        'sequential_y1', 'sequential', {'display_name': 'sequential_y1'}, [
+                        'sequential_y1', 'sequential', {'display_name': 'sequential_y1', 'graded': True, 'format': 'format_y1'}, [
                             BlockInfo(
                                 'vertical_y1a', 'vertical', {'display_name': 'vertical_y1a'}, [
                                     BlockInfo('component_y1a_1', 'problem', {'display_name': 'component_y1a_1'}, []),
@@ -168,7 +171,7 @@ class SendSubmissionReminderEmailTest(BizStoreTestBase, ModuleStoreTestCase, Log
                         ]
                     ),
                     BlockInfo(
-                        'sequential_y2', 'sequential', {'display_name': 'sequential_y2'}, [
+                        'sequential_y2', 'sequential', {'display_name': 'sequential_y2', 'graded': True, 'format': 'format_y2'}, [
                             BlockInfo(
                                 'vertical_y2a', 'vertical', {'display_name': 'vertical_y2a'}, [
                                     BlockInfo('component_y2a_1', 'problem', {'display_name': 'component_y2a_1'}, []),
@@ -183,6 +186,8 @@ class SendSubmissionReminderEmailTest(BizStoreTestBase, ModuleStoreTestCase, Log
         self.contract = self._create_contract(detail_courses=[self.course])
         # Contract option
         self.contract_option = self._create_contract_option(self.contract)
+        # Set default mail template
+        self.default_mail_template = self._create_contract_reminder_mail_default(self.default_reminder_email_days)
 
         # Setup mock
         patcher_grade = patch.object(grades, 'grade')
@@ -299,14 +304,43 @@ class SendSubmissionReminderEmailTest(BizStoreTestBase, ModuleStoreTestCase, Log
         self._register_contract(not_exist_course_contract, self.user)
 
         call_command('send_submission_reminder_email', not_exist_course_contract.id)
-        self.assert_finished(0, 0, not_exist_course_contract)
+        self.assert_error(0, 0, not_exist_course_contract)
         warning_messages = [call[0][0] for call in self.mock_log.warning.call_args_list]
         self.assertEquals(warning_messages[0],
                           u"This course does not exist in modulestore. contract_id={}, course_id={}".format(
                               not_exist_course_contract.id, unicode(not_exist_course_id)))
         self.assertEquals(warning_messages[1],
-                          u"Contract(id={}) has no target courses for submission reminder today, so skip.".format(
+                          u"Contract(id={}) has no valid courses.".format(
                               not_exist_course_contract.id))
+
+    def test_if_reminder_mail_template_not_found(self):
+        self._profile(self.user)
+        self._register_contract(self.contract, self.user)
+        # Delete default mail template
+        self.default_mail_template.delete()
+
+        # Update score status (mark some sections as 'not attempted')
+        call_command('update_biz_score_status', self.contract.id)
+
+        call_command('send_submission_reminder_email', self.contract.id)
+        self.assert_error(0, 0, self.contract)
+        self.mock_log.error.assert_called_once_with(
+            u"Default email template record for submission reminder is not found.")
+
+    def test_if_reminder_email_days_is_invalid(self):
+        self._profile(self.user)
+        self._register_contract(self.contract, self.user)
+        # Set reminder_email_days as invalid
+        self.default_mail_template.reminder_email_days = ContractReminderMail.REMINDER_EMAIL_DAYS_MIN_VALUE - 1
+        self.default_mail_template.save()
+
+        # Update score status (mark some sections as 'not attempted')
+        call_command('update_biz_score_status', self.contract.id)
+
+        call_command('send_submission_reminder_email', self.contract.id)
+        self.assert_error(0, 0, self.contract)
+        self.mock_log.error.assert_called_once_with(
+            u"The value of the reminder e-mail days is invalid for the contract(id={}).".format(self.contract.id))
 
     def test_if_self_paced(self):
         individual_end_days = 10
@@ -319,21 +353,24 @@ class SendSubmissionReminderEmailTest(BizStoreTestBase, ModuleStoreTestCase, Log
                 'individual_end_days': individual_end_days,
             }
         )
+        # Set section.individual_due_days such that the following two date are on the same day:
+        # 1) enrollment.created + section.individual_due_days (+ individual_due_hours + individual_due_minutes)
+        # 2) today + reminder_email_days (stored in ContractReminderMail)
+        sections = self.store.get_items(self_paced_course.id, qualifiers={'category': 'sequential'})
+        for section in sections:
+            section.individual_due_days = self.default_reminder_email_days
+            self.store.update_item(section, self.user.id)
         self_paced_contract = self._create_contract(detail_courses=[self_paced_course])
         self._create_contract_option(self_paced_contract)
         self._profile(self.user)
         self._register_contract(self_paced_contract, self.user)
 
-        call_command('send_submission_reminder_email', self_paced_contract.id)
+        # Update score status (mark some sections as 'not attempted')
+        call_command('update_biz_score_status', self_paced_contract.id)
 
-        self.assert_finished(0, 0, self_paced_contract)
-        warning_messages = [call[0][0] for call in self.mock_log.warning.call_args_list]
-        self.assertEquals(warning_messages[0],
-                          u"This course is self-paced. So, we exclude it from the target courses. contract_id={}, course_id={}".format(
-                              self_paced_contract.id, unicode(self_paced_course.id)))
-        self.assertEquals(warning_messages[1],
-                          u"Contract(id={}) has no target courses for submission reminder today, so skip.".format(
-                              self_paced_contract.id))
+        call_command('send_submission_reminder_email', self_paced_contract.id)
+        self.assert_finished(1, 0, self_paced_contract)
+        self.assertEquals(self.mock_send_mail.call_count, 1)
 
     def test_error_by_score_batch_not_finished(self):
         self._create_score_batch_status(self.contract, self.course, BATCH_STATUS_ERROR)

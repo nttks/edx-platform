@@ -214,6 +214,8 @@ from microsite_configuration import microsite
                 current_feature = 'contract'
             elif re.match('^/biz/contract_operation/register_mail', request.path):
                 current_feature = 'contract_operation/register_mail'
+            elif re.match('^/biz/contract_operation/reminder_mail', request.path):
+                current_feature = 'contract_operation/reminder_mail'
             elif re.match('^/biz/contract_operation/students', request.path):
                 current_feature = 'contract_operation/students'
             elif re.match('^/biz/contract_operation/bulk_students', request.path):
@@ -384,6 +386,10 @@ from microsite_configuration import microsite
                         % if current_contract.can_customize_mail:
                     <li class="${'current' if current_feature == 'contract_operation/register_mail' else ''}"><a
                         href="${reverse('biz:contract_operation:register_mail')}">${_("Welcome E-Mail Management")}</a></li>
+                        % endif
+                        % if current_contract.can_send_submission_reminder:
+                    <li class="${'current' if current_feature == 'contract_operation/reminder_mail' else ''}"><a
+                        href="${reverse('biz:contract_operation:reminder_mail')}">${_("Reminder Mail Setting")}</a></li>
                         % endif
                     <li class="${'current' if current_feature == 'contract_operation/register_students' else ''}"><a
                         href="${reverse('biz:contract_operation:register_students')}">${_("Register User Management")}</a></li>

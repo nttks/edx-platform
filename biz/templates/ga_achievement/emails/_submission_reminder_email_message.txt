@@ -1,0 +1,13 @@
+<%!
+from biz.djangoapps.util.datetime_utils import to_jst
+%>
+${body}
+% for grouped_target_sections in target_courses:
+・${grouped_target_sections.course_display_name}
+% for target_section in grouped_target_sections.target_sections:
+　${target_section.chapter_descriptor.display_name} - ${target_section.section_descriptor.display_name} （締切：${to_jst(target_section.section_descriptor.due).strftime('%-m月%-d日%-H時%-M分') if target_section.section_descriptor.due else '未設定'}）
+% endfor
+
+% endfor
+
+${body2}
