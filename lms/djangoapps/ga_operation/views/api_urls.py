@@ -39,4 +39,16 @@ urlpatterns = patterns(
 
     url(r'^aggregate_g1528$',
         'ga_operation.views.api.aggregate_g1528', name="aggregate_g1528"),
+
+    url(r'^all_users_info$',
+        'ga_operation.views.api.all_users_info', name="all_users_info"),
+
+    url(r'^create_certs_status$',
+        'ga_operation.views.api.create_certs_status', name="create_certs_status"),
+
+    url(r'^enrollment_status$',
+        'ga_operation.views.api.enrollment_status', name="enrollment_status"),
+
+    url(r'^disabled_account_info$',
+        'ga_operation.views.api.disabled_account_info', name="disabled_account_info"),
 )

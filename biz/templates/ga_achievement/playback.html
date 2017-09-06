@@ -66,6 +66,53 @@ from django.utils.translation import ugettext as _
             columns: columns,
             records: responseRecords
         });
+
+        grid.total = ${total_records};
+
+        // Recursive download the playback records
+        if (grid.records.length < grid.total) {
+
+            // Override scroll method
+            grid.orginal_scroll = grid.scroll;
+            grid.scroll = function (event) {
+                grid.orginal_scroll(event);
+                var el = $('#grid_' + this.name + '_footer .w2ui-footer-right');
+                var buffered = ' (' + w2utils.lang('buffered') + ' ' + w2utils.formatNumber(this.records.length) + (this.offset > 0 ? ', skip ' + w2utils.formatNumber(this.offset) : '') + ')';
+                el.text(el.text() + buffered);
+            };
+
+            // Lock the grid while downloading the records
+            grid.lock(grid.msgRefresh + '(' + Math.floor(grid.records.length / grid.total * 100) + '%)', true);
+
+            (function get_playback() {
+                $.ajax({
+                    type: 'POST',
+                    async: true,
+                    url: 'playback_ajax',
+                    dataType: 'json',
+                    data: {offset: grid.records.length}
+                }).done(function (responseRecords) {
+                    grid.add(responseRecords['playback_records']);
+                    grid.total = responseRecords['total_records'];
+
+                    // Update the progress message
+                    $(grid.box).find('.w2ui-lock-msg').html(
+                        '<div class="w2ui-spinner"></div>'
+                        + grid.msgRefresh
+                        + '(' + Math.floor(grid.records.length / grid.total * 100) + '%)'
+                    );
+
+                    if (grid.records.length < grid.total) {
+                        get_playback();
+                    } else {
+                        grid.unlock();
+                    }
+                }).fail(function (msg) {
+                    grid.unlock();
+                    grid.error(msg.responseText);
+                });
+            })();
+        }
     });
 
     // Prevent double click

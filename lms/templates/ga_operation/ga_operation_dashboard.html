@@ -49,6 +49,17 @@
 ##                         <li><a href="#"><i class="fa fa-file-text-o"></i>ディスカッションデータ</a></li>
 ##                     </ul>
 ##                 </li>
+                % if is_ga_analyzer:
+                <li> <p><strong>社内集計</strong></p> </li>
+                <li>
+                    <ul>
+                        <li><a href="#all_users_info"><i class="fa fa-file-text-o"></i>全会員情報</a></li>
+                        <li><a href="#create_certs_status"><i class="fa fa-file-text-o"></i>修了証発行状況</a></li>
+                        <li><a href="#enrollment_status"><i class="fa fa-file-text-o"></i>受講登録状況</a></li>
+                        <li><a href="#disabled_account_info"><i class="fa fa-file-text-o"></i>退会情報</a></li>
+                    </ul>
+                </li>
+                % endif
             </ul>
         </div>
     </div> <!-- left_content -->
@@ -309,6 +320,49 @@
     </ul>
 </script>
 
+% if is_ga_analyzer:
+    <%
+        tmpl_list = ['all_users_info_tmpl', 'create_certs_status_tmpl',
+                     'enrollment_status_tmpl', 'disabled_account_info_tmpl']
+        title_list = ['◎全会員情報', '◎修了証発行状況', '◎受講登録状況', '◎退会情報']
+        id_list = ['all_users_info', 'create_certs_status', 'enrollment_status', 'disabled_account_info']
+    %>
+    % for (tmpl, title, id) in zip(tmpl_list, title_list, id_list):
+    <script id="${tmpl}" type="text/template">
+        <h3>${title}</h3>
+        <ul>
+            <li class="start-date">
+                <label for="start_date">集計開始日</label>
+                <input type="text" name="start_date" placeholder="20140109">
+                <label id="start_date" for="text" class="error"></label>
+                <div>
+                    <em class="operation-comment">※集計開始日が空白の場合、2014年1月9日以降のデータを集計します。</em>
+                </div>
+            </li>
+            <li class="end-date">
+                <label for="end_date">集計終了日</label>
+                <input type="text" name="end_date" placeholder="本日">
+                <label id="end_date" for="text" class="error"></label>
+                <div>
+                    <em class="operation-comment">※集計終了日が空白の場合、現時点までのデータを集計します。</em>
+                </div>
+            </li>
+            <li>
+                <label for="email">結果返却用Eメールアドレス</label>
+                <input type="email" name="email" value="${callback_email}">
+                <label id="email" for="text" class="error"></label>
+            </li>
+            <li>
+                <div class="form_action">
+                    <button id="${id}" class="button" name="${id}">集計</button>
+                    <img id="indicator" src="${static.url('images/spinner.gif')}" alt="実行中..." hidden>
+                </div>
+            </li>
+        </ul>
+    </script>
+    % endfor
+% endif
+
 <style type="text/css">
     li {
         list-style: none;
@@ -350,5 +404,11 @@
     .student_ids {
       width: 400px;
       height: 100px;
+    }
+    .start-date, .end-date {
+        margin-bottom: 1.5em;
+    }
+    .operation-comment {
+        font-size: 12px;
     }
 </style>

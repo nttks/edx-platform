@@ -12,7 +12,11 @@ RequireJS.require([
     'js/ga_operation/views/discussion_data',
     'js/ga_operation/views/past_graduates_info',
     'js/ga_operation/views/last_login_info',
-    'js/ga_operation/views/aggregate_g1528'
+    'js/ga_operation/views/aggregate_g1528',
+    'js/ga_operation/views/all_users_info',
+    'js/ga_operation/views/create_certs_status',
+    'js/ga_operation/views/enrollment_status',
+    'js/ga_operation/views/disabled_account_info',
 ], function (
     Backbone,
     GaOperationApp,
@@ -27,7 +31,11 @@ RequireJS.require([
     DiscussionData,
     PastGraduatesInfo,
     LastLoginInfo,
-    AggregateG1528
+    AggregateG1528,
+    AllUsersInfo,
+    CreateCertsStatus,
+    EnrollmentStatus,
+    DisabledAccountInfo
 ) {
     'use strict';
 
@@ -43,7 +51,11 @@ RequireJS.require([
         DiscussionData,
         PastGraduatesInfo,
         LastLoginInfo,
-        AggregateG1528
+        AggregateG1528,
+        AllUsersInfo,
+        CreateCertsStatus,
+        EnrollmentStatus,
+        DisabledAccountInfo
     );
     Backbone.history.start();
 });

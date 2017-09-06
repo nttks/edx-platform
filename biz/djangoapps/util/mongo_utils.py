@@ -65,7 +65,7 @@ class BizStore(object):
             raise
 
     @autoretry_read()
-    def get_documents(self, conditions=None, excludes=None, sort_column='_id', sort=ASCENDING):
+    def get_documents(self, conditions=None, excludes=None, sort_column='_id', sort=ASCENDING, offset=0, limit=0):
         """
         Get the data of MongoDB
 
@@ -73,6 +73,8 @@ class BizStore(object):
         :param excludes: _id flag of exclusion
         :param sort_column: Keys to sort
         :param sort: Sorting method
+        :param offset: Offset to documents
+        :param limit: Limit to documents (A limit() value of 0 (i.e. .limit(0)) is equivalent to setting no limit.)
         :return: Conversion of pymongo.cursor.Cursor type to list
         """
         if conditions is None:
@@ -84,7 +86,7 @@ class BizStore(object):
         _excludes = dict((exclude, False) for exclude in excludes)
         try:
             return list(
-                self._collection.find(_conditions, _excludes, as_class=OrderedDict).sort(sort_column, sort)
+                self._collection.find(_conditions, _excludes, as_class=OrderedDict).skip(offset).limit(limit).sort(sort_column, sort)
             )
         except Exception as e:
             log.error("Error occurred while find MongoDB: %s" % e)

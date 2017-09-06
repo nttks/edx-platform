@@ -4565,7 +4565,7 @@ msgstr "講座の表示名："
 
 #: lms/templates/instructor/instructor_dashboard_2/course_info.html
 msgid "Course End Date:"
-msgstr "講座閉講日："
+msgstr "講座終了日："
 
 #: lms/templates/instructor/instructor_dashboard_2/course_info.html
 msgid "Has the course started?"

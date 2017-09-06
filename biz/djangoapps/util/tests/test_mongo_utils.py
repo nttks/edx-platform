@@ -3,6 +3,7 @@ Tests for mongo_utils
 """
 from collections import OrderedDict
 import copy
+from ddt import data, ddt, unpack
 from mock import MagicMock
 
 from pymongo.errors import AutoReconnect
@@ -12,6 +13,7 @@ from biz.djangoapps.util.tests.testcase import BizStoreTestBase
 from biz.djangoapps.ga_achievement.achievement_store import ScoreStore
 
 
+@ddt
 class BizStoreTest(BizStoreTestBase):
 
     def _setup_normal_config_data(self):
@@ -83,18 +85,29 @@ class BizStoreTest(BizStoreTestBase):
 
         self._drop_mongo_collection()
 
-    def test_set_get_documents(self):
+    @data(
+        (0, 0, 2),
+        (0, 1, 1),
+        (1, 0, 1),
+        (1, 1, 1),
+        (2, 0, 0),
+        (2, 1, 0),
+    )
+    @unpack
+    def test_set_get_documents(self, offset, limit, expect_record_count):
         self.set_normal()
         self._bizstore = BizStore(self._test_store_config, self.key_conditions, self.key_index_columns)
 
         self._bizstore.set_documents(self._documents)
-        get_documents = self._bizstore.get_documents()
+        get_documents = self._bizstore.get_documents(offset=offset, limit=limit)
 
         for i, item in enumerate(get_documents):
-            self.assertEqual(self._documents[i][ScoreStore.FIELD_LOGIN_CODE], item[ScoreStore.FIELD_LOGIN_CODE])
-            self.assertEqual(self._documents[i][ScoreStore.FIELD_FULL_NAME], item[ScoreStore.FIELD_FULL_NAME])
-            self.assertEqual(self._documents[i][ScoreStore.FIELD_USERNAME], item[ScoreStore.FIELD_USERNAME])
-            self.assertEqual(self._documents[i][ScoreStore.FIELD_EMAIL], item[ScoreStore.FIELD_EMAIL])
+            self.assertEqual(self._documents[i+offset][ScoreStore.FIELD_LOGIN_CODE], item[ScoreStore.FIELD_LOGIN_CODE])
+            self.assertEqual(self._documents[i+offset][ScoreStore.FIELD_FULL_NAME], item[ScoreStore.FIELD_FULL_NAME])
+            self.assertEqual(self._documents[i+offset][ScoreStore.FIELD_USERNAME], item[ScoreStore.FIELD_USERNAME])
+            self.assertEqual(self._documents[i+offset][ScoreStore.FIELD_EMAIL], item[ScoreStore.FIELD_EMAIL])
+
+        self.assertEqual(len(get_documents), expect_record_count)
 
         self._drop_mongo_collection()
 

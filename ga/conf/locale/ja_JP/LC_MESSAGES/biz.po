@@ -152,6 +152,10 @@ msgstr "総視聴時間"
 msgid "Section Playback Time"
 msgstr "合計時間"
 
+#: biz/djangoapps/ga_achievement/views.py
+msgid "An error has occurred while loading. Please wait a moment and try again."
+msgstr "読込み中にエラーが発生しました。しばらくたってから再度お試しください。"
+
 ##### Contract
 #: biz/templates/ga_contract/index.html
 msgid "Contract List"

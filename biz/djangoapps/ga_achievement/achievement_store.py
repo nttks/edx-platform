@@ -110,10 +110,12 @@ class AchievementStoreBase(BizStore):
         ]
         return self.get_document(conditions=conditions, excludes=excludes)
 
-    def get_record_documents(self):
+    def get_record_documents(self, offset=0, limit=0):
         """
         Get stored documents which type is marked as 'record'
 
+        :param offset: Offset to documents
+        :param limit: Limit to documents (A limit() value of 0 (i.e. .limit(0)) is equivalent to setting no limit.)
         :return: documents for record
             e.g.)
             [
@@ -137,12 +139,14 @@ class AchievementStoreBase(BizStore):
             self.FIELD_COURSE_ID,
             self.FIELD_DOCUMENT_TYPE,
         ]
-        return self.get_documents(conditions=conditions, excludes=excludes)
+        return self.get_documents(conditions=conditions, excludes=excludes, offset=offset, limit=limit)
 
-    def get_data_for_w2ui(self):
+    def get_data_for_w2ui(self, offset=0, limit=0):
         """
         Get data for w2ui grid
 
+        :param offset: Offset to documents
+        :param limit: Limit to documents (A limit() value of 0 (i.e. .limit(0)) is equivalent to setting no limit.)
         :return: data for w2ui grid
             e.g.)
             [
@@ -165,7 +169,7 @@ class AchievementStoreBase(BizStore):
             ]
         """
         column_document = self.get_column_document()
-        record_documents = self.get_record_documents()
+        record_documents = self.get_record_documents(offset=offset, limit=limit)
 
         # Note: json.dumps() of views.py converts OrderedDict into dict (it's orderless!), so items() here.
         columns = column_document.items() if column_document is not None else []
@@ -244,6 +248,17 @@ class AchievementStoreBase(BizStore):
             records.append(record)
         return columns, records
 
+    def get_record_count(self):
+        """
+        Get stored documents count
+
+        :return: documents count
+        """
+        conditions = {
+            self.FIELD_DOCUMENT_TYPE: self.FIELD_DOCUMENT_TYPE__RECORD,
+        }
+        return self.get_count(conditions=conditions)
+
 
 class ScoreStore(AchievementStoreBase):
     """
@@ -299,14 +314,16 @@ class ScoreStore(AchievementStoreBase):
                 ordered[k] = self.COLUMN_TYPE__TEXT
         return ordered
 
-    def get_record_documents(self):
+    def get_record_documents(self, offset=0, limit=0):
         """
         Get stored documents which type is marked as 'record'
 
+        :param offset: Offset to documents
+        :param limit: Limit to documents (A limit() value of 0 (i.e. .limit(0)) is equivalent to setting no limit.)
         :return: documents for record
         """
         # For backward compatibility
-        record_documents = super(ScoreStore, self).get_record_documents()
+        record_documents = super(ScoreStore, self).get_record_documents(offset=offset, limit=limit)
         if record_documents:
             return record_documents
 
@@ -315,7 +332,20 @@ class ScoreStore(AchievementStoreBase):
             self.FIELD_CONTRACT_ID,
             self.FIELD_COURSE_ID,
         ]
-        return self.get_documents(excludes=excludes)
+        return self.get_documents(excludes=excludes, offset=offset, limit=limit)
+
+    def get_record_count(self):
+        """
+        Get stored documents count
+
+        :return: documents count
+        """
+        # For backward compatibility
+        record_count = super(ScoreStore, self).get_record_count()
+        if record_count:
+            return record_count
+
+        return self.get_count()
 
 
 class PlaybackStore(AchievementStoreBase):

@@ -7,7 +7,9 @@ urlpatterns = patterns(
     'biz.djangoapps.ga_achievement.views',
 
     url(r'^score$', 'score', name='score'),
+    url(r'^score_ajax$', 'score_ajax', name='score_ajax'),
     url(r'^score_download_csv$', 'score_download_csv', name='score_download_csv'),
     url(r'^playback$', 'playback', name='playback'),
+    url(r'^playback_ajax$', 'playback_ajax', name='playback_ajax'),
     url(r'^playback_download_csv$', 'playback_download_csv', name='playback_download_csv'),
 )

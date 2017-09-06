@@ -15,7 +15,11 @@
                 "discussion_data": "discussionData",
                 "past_graduates_info": "pastGraduatesInfo",
                 "last_login_info": "lastLoginInfo",
-                "aggregate_g1528": "aggregateG1528"
+                "aggregate_g1528": "aggregateG1528",
+                "all_users_info": "allUsersInfo",
+                "create_certs_status": "createCertsStatus",
+                "enrollment_status": "enrollmentStatus",
+                "disabled_account_info": "disabledAccountInfo",
             },
             uploadCertsTemplate: function() {
                 this._render('upload_certs_template_tmpl');
@@ -46,6 +50,18 @@
             },
             aggregateG1528: function () {
                 this._render("aggregate_g1528_tmpl")
+            },
+            allUsersInfo: function () {
+                this._render("all_users_info_tmpl")
+            },
+            createCertsStatus: function () {
+                this._render("create_certs_status_tmpl")
+            },
+            enrollmentStatus: function () {
+                this._render("enrollment_status_tmpl")
+            },
+            disabledAccountInfo: function () {
+                this._render("disabled_account_info_tmpl")
             },
             _render: function(id_name) {
                 $('#right_content_response').text('');

@@ -5,6 +5,7 @@ import json
 import logging
 import unicodecsv as csv
 
+from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from django.utils.translation import ugettext as _
@@ -16,6 +17,7 @@ from biz.djangoapps.util import datetime_utils
 from biz.djangoapps.util.decorators import check_course_selection
 from edxmako.shortcuts import render_to_response
 from util.file import course_filename_prefix_generator
+from util.json_request import JsonResponse, JsonResponseBadRequest
 
 log = logging.getLogger(__name__)
 
@@ -41,15 +43,46 @@ def score(request):
         update_status = ''
 
     score_store = ScoreStore(contract_id, unicode(course_id))
-    score_columns, score_records = score_store.get_data_for_w2ui()
+    score_columns, score_records = score_store.get_data_for_w2ui(limit=settings.BIZ_MONGO_LIMIT_RECORDS)
+    total_records = score_store.get_record_count()
 
     context = {
         'update_datetime': update_datetime,
         'update_status': update_status,
         'score_columns': json.dumps(score_columns),
         'score_records': json.dumps(score_records),
+        'total_records': total_records,
     }
     return render_to_response('ga_achievement/score.html', context)
+
+
+@require_POST
+@login_required
+@check_course_selection
+def score_ajax(request):
+    """
+    Returns response for score status when ajax request
+
+    :param request: HttpRequest
+    :return: JsonResponse object with success/error message.
+    """
+    contract_id = request.current_contract.id
+    course_id = request.current_course.id
+    try:
+        record_offset = int(request.POST['offset'])
+        score_store = ScoreStore(contract_id, unicode(course_id))
+        __, score_records = score_store.get_data_for_w2ui(offset=record_offset, limit=settings.BIZ_MONGO_LIMIT_RECORDS)
+        total_records = score_store.get_record_count()
+    except Exception as e:
+        log.exception('Caught the exception: ' + type(e).__name__)
+        return JsonResponseBadRequest(_("An error has occurred while loading. Please wait a moment and try again."))
+
+    content = {
+        'status': 'success',
+        'score_records': score_records,
+        'total_records': total_records,
+    }
+    return JsonResponse(content)
 
 
 @require_POST
@@ -113,15 +146,47 @@ def playback(request):
         update_status = ''
 
     playback_store = PlaybackStore(contract_id, unicode(course_id))
-    playback_columns, playback_records = playback_store.get_data_for_w2ui()
+    playback_columns, playback_records = playback_store.get_data_for_w2ui(limit=settings.BIZ_MONGO_LIMIT_RECORDS)
+    total_records = playback_store.get_record_count()
 
     context = {
         'update_datetime': update_datetime,
         'update_status': update_status,
         'playback_columns': json.dumps(playback_columns),
         'playback_records': json.dumps(playback_records),
+        'total_records': total_records,
     }
     return render_to_response('ga_achievement/playback.html', context)
+
+
+@require_POST
+@login_required
+@check_course_selection
+def playback_ajax(request):
+    """
+    Returns response for playback status when ajax request
+
+    :param request: HttpRequest
+    :return: JsonResponse object with success/error message.
+    """
+    contract_id = request.current_contract.id
+    course_id = request.current_course.id
+    try:
+        record_offset = int(request.POST['offset'])
+        playback_store = PlaybackStore(contract_id, unicode(course_id))
+        __, playback_records = playback_store.get_data_for_w2ui(offset=record_offset,
+                                                                limit=settings.BIZ_MONGO_LIMIT_RECORDS)
+        total_records = playback_store.get_record_count()
+    except Exception as e:
+        log.exception('Caught the exception: ' + type(e).__name__)
+        return JsonResponseBadRequest(_("An error has occurred while loading. Please wait a moment and try again."))
+
+    content = {
+        'status': 'success',
+        'playback_records': playback_records,
+        'total_records': total_records,
+    }
+    return JsonResponse(content)
 
 
 @require_POST

@@ -9,6 +9,7 @@ Basic settings
 """
 # Dummy biz secret key for dev/test
 BIZ_SECRET_KEY = 'test'
+BIZ_MONGO_LIMIT_RECORDS = 0
 
 """
 Batch Settings

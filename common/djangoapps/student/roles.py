@@ -377,3 +377,14 @@ class UserBasedRole(object):
         * role (will be self.role--thus uninteresting)
         """
         return CourseAccessRole.objects.filter(role=self.role, user=self.user)
+
+
+@register_access_role
+class GaAnalyzerRole(RoleBase):
+    """
+    Members who can access a specific function of ga_operation.
+    """
+    ROLE = "ga_analyzer"
+
+    def __init__(self, *args, **kwargs):
+        super(GaAnalyzerRole, self).__init__(self.ROLE, *args, **kwargs)

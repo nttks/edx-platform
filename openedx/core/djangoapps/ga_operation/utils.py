@@ -15,6 +15,7 @@ from boto.s3 import connect_to_region
 from boto.s3.connection import OrdinaryCallingFormat, Location
 from boto.s3.key import Key
 from bson import ObjectId
+from courseware.access import has_access, GA_ACCESS_CHECK_TYPE_ANALYZER
 from util.file import course_filename_prefix_generator
 from util.json_request import JsonResponse
 
@@ -27,6 +28,17 @@ def staff_only(view_func):
 
     def _wrapped_view_func(request, *args, **kwargs):
         if not request.user.is_staff:
+            return JsonResponse({}, status=403)
+        return view_func(request, *args, **kwargs)
+
+    return _wrapped_view_func
+
+
+def ga_analyzer_only(view_func):
+    """Prevent invasion from other roll's user."""
+
+    def _wrapped_view_func(request, *args, **kwargs):
+        if not request.user.is_superuser and not has_access(request.user, GA_ACCESS_CHECK_TYPE_ANALYZER, 'global'):
             return JsonResponse({}, status=403)
         return view_func(request, *args, **kwargs)
 

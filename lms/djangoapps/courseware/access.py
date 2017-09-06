@@ -41,6 +41,7 @@ from student.roles import (
     CourseBetaTesterRole,
     CourseInstructorRole,
     CourseStaffRole,
+    GaAnalyzerRole,
     GlobalStaff,
     SupportStaffRole,
     OrgInstructorRole,
@@ -66,6 +67,7 @@ from courseware.access_utils import (
 )
 
 log = logging.getLogger(__name__)
+GA_ACCESS_CHECK_TYPE_ANALYZER = 'ga_analyzer'
 
 
 def has_access(user, action, obj, course_key=None):
@@ -614,6 +616,7 @@ def _has_access_string(user, action, perm):
     'staff' -- global staff access.
     'support' -- access to student support functionality
     'certificates' --- access to view and regenerate certificates for other users.
+    'ga_analyzer' --- ga_analyzer access.
     """
 
     def check_staff():
@@ -634,10 +637,20 @@ def _has_access_string(user, action, perm):
             else ACCESS_DENIED
         )
 
+    def check_ga_analyzer():
+        """Checks for ga_analyzer access. """
+        if perm != 'global':
+            return ACCESS_DENIED
+        return (
+            ACCESS_GRANTED if GlobalStaff().has_user(user) and GaAnalyzerRole().has_user(user)
+            else ACCESS_DENIED
+        )
+
     checkers = {
         'staff': check_staff,
         'support': check_support,
         'certificates': check_support,
+        GA_ACCESS_CHECK_TYPE_ANALYZER: check_ga_analyzer,
     }
 
     return _dispatch(checkers, action, user, perm)

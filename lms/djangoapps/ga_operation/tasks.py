@@ -1,6 +1,12 @@
 # -*- coding: utf-8 -*-
+from datetime import date, datetime, time
 import logging
+import os
+import pytz
 
+from boto import connect_s3
+from boto.s3.key import Key
+from django.contrib.auth.models import User
 from django.core.management import call_command
 from django.conf import settings
 from django.db.models import Q
@@ -254,3 +260,337 @@ class GaGetGradesG1528(TaskBase):
     @staticmethod
     def get_command_name():
         return "ga_get_grades"
+
+
+class AggregateInHouseOperationTaskBase(TaskBase):
+    """AggregateInHouseOperationTaskBase class."""
+    def __init__(self, start_date, end_date, email):
+        """
+        :param start_date: YYYY-MM-DD
+        :param end_date: YYYY-MM-DD
+        :param email: user@domain
+        """
+        super(AggregateInHouseOperationTaskBase, self).__init__(email)
+        self.start_date = date(*[int(num) for num in start_date.split("-")])
+        self.end_date = date(*[int(num) for num in end_date.split("-")])
+        self.download_url = None
+
+    def run(self):
+        try:
+            # Fetch data
+            data = self._fetch_data()
+
+            # Dump directory
+            dump_dir = self._get_dump_dir()
+            if not os.path.exists(dump_dir):
+                os.makedirs(dump_dir)
+
+            # Create csv file
+            csv_filepath = os.path.join(dump_dir, self._csv_filename())
+            self._write_csv(csv_filepath, self._csv_header(), data)
+
+            # Upload to S3
+            conn = connect_s3(settings.AWS_ACCESS_KEY_ID, settings.AWS_SECRET_ACCESS_KEY)
+            bucket = conn.get_bucket(settings.GA_OPERATION_ANALYZE_UPLOAD_BUCKET_NAME)
+            self.download_url = self._upload_file_to_s3(bucket, csv_filepath)
+
+            # Delete csv file
+            os.remove(csv_filepath)
+        except Exception as e:
+            self.err_msg = "{}".format(e)
+            raise e
+        finally:
+            self._send_email()
+
+    # must be override by sub class
+    def _fetch_data(self):
+        raise NotImplementedError
+
+    def query_beginning_of_day(self):
+        d = datetime.combine(self.start_date, time.min)
+        jst_date = d.replace(tzinfo=pytz.timezone("Asia/Tokyo"))
+        return jst_date.astimezone(pytz.utc).strftime("%Y-%m-%d %H:%M:%S.%f")
+
+    def query_end_of_day(self):
+        d = datetime.combine(self.end_date, time.max)
+        jst_date = d.replace(tzinfo=pytz.timezone("Asia/Tokyo"))
+        return jst_date.astimezone(pytz.utc).strftime("%Y-%m-%d %H:%M:%S.%f")
+
+    @staticmethod
+    def remove_tz(date):
+        if type(date) != datetime:
+            return date
+        if date is None:
+            return 'NULL'
+        return date.strftime("%Y-%m-%d %H:%M:%S.%f")
+
+    @staticmethod
+    def remove_tz_microsecond(date):
+        if type(date) != datetime:
+            return date
+        if date is None:
+            return 'NULL'
+        return date.strftime("%Y-%m-%d %H:%M:%S")
+
+    @staticmethod
+    def null_to_string(str):
+        if str is None:
+            return 'NULL'
+        return str
+
+    def _csv_filename(self):
+        start = self.start_date.strftime("%Y%m%d")
+        end = self.end_date.strftime("%Y%m%d")
+        return "{}-{}-{}-{}.csv".format(self._get_subject_name(), datetime.now().strftime("%Y%m%d_%H%M%S"), start, end)
+
+    # must be override by sub class
+    def _csv_header(self):
+        raise NotImplementedError
+
+    def _get_email_subject(self):
+        if self.err_msg:
+            return "{} was failure.".format(self._get_subject_name())
+        else:
+            return "{} was completed.".format(self._get_subject_name())
+
+    def _get_email_body(self):
+        if self.err_msg:
+            return "{} was failed.\n\nError reason\n{}".format(self._get_subject_name(), self.err_msg)
+        else:
+            return "Successfully created csv file: {}".format(self.download_url)
+
+    def _upload_file_to_s3(self, bucket, filepath):
+        s3key = None
+        try:
+            s3key = Key(bucket)
+            s3key.key = "{}/{}/{}".format(
+                settings.GA_OPERATION_ANALYZE_UPLOAD_PREFIX, self.get_command_name(), self._csv_filename())
+            s3key.set_contents_from_filename(filepath)
+            download_url = s3key.generate_url(expires_in=0, query_auth=False, force_http=True)
+
+            log.info("Successfully uploaded file to S3: {}/{}".format(bucket.name, s3key.key))
+            return download_url
+        except Exception as e:
+            raise e
+        finally:
+            if s3key:
+                s3key.close()
+
+    @staticmethod
+    def _write_csv(filepath, header, rows):
+        try:
+            # format without quotation to handle with macros
+            with open(filepath, 'w') as output_file:
+                output_file.write(",".join(header))
+                output_file.write("\n")
+                for row in rows:
+                    output_file.write(",".join(str(col) for col in row))
+                    output_file.write("\n")
+        except IOError:
+            raise IOError("Error writing to file: %s" % filepath)
+        except Exception as e:
+            raise e
+        print "Successfully created csv file: %s" % filepath
+
+    @classmethod
+    def _get_dump_dir(cls):
+        return os.path.join(settings.GA_OPERATION_WORK_DIR, cls.get_command_name())
+
+    @staticmethod
+    def get_command_name():
+        raise NotImplementedError
+
+    @staticmethod
+    def _get_subject_name():
+        raise NotImplementedError
+
+
+@CELERY_APP.task
+def all_users_info_task(start_date, end_date, email):
+    """all_usrs_info_task main."""
+    AllUsersInfo(start_date, end_date, email).run()
+
+
+class AllUsersInfo(AggregateInHouseOperationTaskBase):
+    """AllUsersInfo class."""
+    def __init__(self, start_date, end_date, email):
+        super(AllUsersInfo, self).__init__(start_date, end_date, email)
+
+    def _csv_header(self):
+        return [
+            "id",
+            "username",
+            "email",
+            "is_active",
+            "last_login",
+            "date_joined",
+            "gender",
+            "year_of_birth",
+            "level_of_education"
+        ]
+
+    def _fetch_data(self):
+        sql = """
+            SELECT a.id, a.username, a.email, a.is_active, a.last_login, a.date_joined,
+                    b.gender, b.year_of_birth, b.level_of_education
+            FROM auth_user a
+                INNER JOIN auth_userprofile b ON a.id=b.user_id
+            WHERE
+                a.date_joined BETWEEN '{}' AND '{}'
+            ORDER BY a.date_joined, a.id
+        """.format(self.query_beginning_of_day(), self.query_end_of_day())
+
+        users = []
+        for user in User.objects.raw(sql):
+            users.append([user.id, user.username, user.email, 1 if user.is_active else 0,
+                          self.remove_tz(user.last_login),
+                          self.remove_tz_microsecond(user.date_joined),
+                          self.null_to_string(user.gender),
+                          self.null_to_string(user.year_of_birth),
+                          self.null_to_string(user.level_of_education)])
+        return users
+
+    @staticmethod
+    def get_command_name():
+        return "all_users_info"
+
+    @staticmethod
+    def _get_subject_name():
+        return "auth_userprofile"
+
+
+@CELERY_APP.task
+def create_certs_status_task(start_date, end_date, email):
+    """create_certs_status_task main."""
+    CreateCertsStatus(start_date, end_date, email).run()
+
+
+class CreateCertsStatus(AggregateInHouseOperationTaskBase):
+    """CreateCertsStatus class."""
+    def __init__(self, start_date, end_date, email):
+        super(CreateCertsStatus, self).__init__(start_date, end_date, email)
+
+    def _csv_header(self):
+        return [
+            "user_id",
+            "course_id",
+            "grade",
+            "status",
+            "created_date"
+        ]
+
+    def _fetch_data(self):
+        sql = """
+            SELECT id, user_id, course_id, grade, status, created_date
+            FROM certificates_generatedcertificate
+            WHERE
+                created_date BETWEEN '{}' AND '{}'
+            ORDER BY created_date, id
+        """.format(self.query_beginning_of_day(), self.query_end_of_day())
+
+        certs = []
+        for cert in GeneratedCertificate.objects.raw(sql):
+            certs.append([cert.user_id, cert.course_id, cert.grade, cert.status,
+                          self.remove_tz_microsecond(cert.created_date)])
+        return certs
+
+    @staticmethod
+    def get_command_name():
+        return "create_certs_status"
+
+    @staticmethod
+    def _get_subject_name():
+        return "certificates_generatedcertificate"
+
+
+@CELERY_APP.task
+def enrollment_status_task(start_date, end_date, email):
+    """enrollment_status_task main."""
+    EnrollmentStatus(start_date, end_date, email).run()
+
+
+class EnrollmentStatus(AggregateInHouseOperationTaskBase):
+    """EnrollmentStatus class."""
+    def __init__(self, start_date, end_date, email):
+        super(EnrollmentStatus, self).__init__(start_date, end_date, email)
+
+    def _csv_header(self):
+        return [
+            "id",
+            "user_id",
+            "course_id",
+            "created",
+            "is_active",
+            "mode"
+        ]
+
+    def _fetch_data(self):
+        sql = """
+            SELECT id, user_id, course_id, created, is_active, mode
+            FROM student_courseenrollment
+            WHERE
+                created BETWEEN '{}' AND '{}'
+            ORDER BY created, id
+        """.format(self.query_beginning_of_day(), self.query_end_of_day())
+
+        ces = []
+        for c in CourseEnrollment.objects.raw(sql):
+            ces.append([c.id, c.user_id, c.course_id,
+                        self.remove_tz_microsecond(c.created),
+                        1 if c.is_active else 0, c.mode])
+        return ces
+
+    @staticmethod
+    def get_command_name():
+        return "enrollment_status"
+
+    @staticmethod
+    def _get_subject_name():
+        return "student_courseenrollment"
+
+
+@CELERY_APP.task
+def disabled_account_info_task(start_date, end_date, email):
+    """disabled_account_info_task main."""
+    DisabledAccountInfo(start_date, end_date, email).run()
+
+
+class DisabledAccountInfo(AggregateInHouseOperationTaskBase):
+    """DisabledAccountInfo class."""
+    def __init__(self, start_date, end_date, email):
+        super(DisabledAccountInfo, self).__init__(start_date, end_date, email)
+
+    def _csv_header(self):
+        return [
+            "id",
+            "user_id",
+            "account_status",
+            "changed_by_id",
+            "standing_last_changed_at",
+            "replace(resign_reason, '\\r\\n', '')"
+        ]
+
+    def _fetch_data(self):
+        sql = """
+            SELECT id, user_id, account_status, changed_by_id, standing_last_changed_at,
+                replace(resign_reason, '\r\n', '') AS reason
+            FROM student_userstanding
+            WHERE
+                standing_last_changed_at BETWEEN '{}' AND '{}'
+            ORDER BY standing_last_changed_at, id
+        """.format(self.query_beginning_of_day(), self.query_end_of_day())
+
+        uss = []
+        for u in UserStanding.objects.raw(sql):
+            uss.append([u.id, u.user_id, u.account_status, u.changed_by_id,
+                        self.remove_tz_microsecond(u.standing_last_changed_at),
+                        self.null_to_string(u.reason)])
+        return uss
+
+    @staticmethod
+    def get_command_name():
+        return "disabled_account_info"
+
+    @staticmethod
+    def _get_subject_name():
+        return "student_userstanding"

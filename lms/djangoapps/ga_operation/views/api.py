@@ -21,14 +21,18 @@ from ga_operation.forms.discussion_data_form import DiscussionDataForm
 from ga_operation.forms.past_graduates_info_form import PastGraduatesInfoForm
 from ga_operation.forms.upload_certs_template_form import ConfirmCertsTemplateForm, UploadCertsTemplateForm
 from ga_operation.forms.aggregate_g1528_form import AggregateG1528Form
-from ga_operation.tasks import (CreateCerts, create_certs_task, dump_oa_scores_task, ga_get_grades_g1528_task)
+from ga_operation.forms.search_by_email_and_period_date_form import SearchByEmailAndPeriodDateForm
+from ga_operation.tasks import (CreateCerts, create_certs_task, dump_oa_scores_task, ga_get_grades_g1528_task,
+                                all_users_info_task, create_certs_status_task, enrollment_status_task,
+                                disabled_account_info_task)
 from ga_operation.mongo_utils import CommentStore
 from opaque_keys.edx.keys import CourseKey
 from opaque_keys import InvalidKeyError
 from openedx.core.djangoapps.ga_operation.utils import (
     staff_only, course_filename, handle_file_from_s3,
     get_s3_bucket, get_s3_connection, CSVResponse, JSONFileResponse,
-    handle_operation, RESPONSE_FIELD_ID
+    handle_operation, RESPONSE_FIELD_ID,
+    ga_analyzer_only
 )
 from pdfgen.certificate import CertPDFException, CertPDFUserNotFoundException
 from util.json_request import JsonResponse
@@ -395,3 +399,66 @@ def aggregate_g1528(request):
     finally:
         log.info('path:{}, user.id:{} End.'.format(request.path, request.user.id))
 
+
+@ensure_csrf_cookie
+def _exec_task_by_email_and_period_date(request, task):
+    f = SearchByEmailAndPeriodDateForm(request.POST)
+    try:
+        if not f.is_valid():
+            log.info(f.errors)
+            f.errors[RESPONSE_FIELD_ID] = u'入力したフォームの内容が不正です。'
+            return JsonResponse(f.errors, status=400)
+    except Exception as e:
+        log.error('path:{}, Exception error({}).'.format(request.path, e))
+        f.errors[RESPONSE_FIELD_ID] = u'入力したフォームの内容が不正です。'
+        return JsonResponse(f.errors, status=400)
+
+    try:
+        email = f.cleaned_data['email']
+        start_date = f.cleaned_data['start_date']
+        end_date = f.cleaned_data['end_date']
+
+        task.delay(start_date.strftime('%Y-%m-%d'), end_date.strftime('%Y-%m-%d'), email)
+    except Exception as e:
+        log.error('path:{}, Exception error({}).'.format(request.path, e))
+        return JsonResponse({
+            RESPONSE_FIELD_ID: '{}'.format(e)
+        }, status=500)
+    else:
+        return JsonResponse({
+            RESPONSE_FIELD_ID: u'処理を開始しました。\n処理が終了次第、{}のアドレスに完了通知が届きます。'.format(email)
+        })
+    finally:
+        log.info('path:{}, user.id:{} End.'.format(request.path, request.user.id))
+
+
+@ga_analyzer_only
+@login_required
+@require_POST
+def all_users_info(request):
+    """Ajax call to all users info."""
+    return _exec_task_by_email_and_period_date(request, all_users_info_task)
+
+
+@ga_analyzer_only
+@login_required
+@require_POST
+def create_certs_status(request):
+    """Ajax call to create certs status."""
+    return _exec_task_by_email_and_period_date(request, create_certs_status_task)
+
+
+@ga_analyzer_only
+@login_required
+@require_POST
+def enrollment_status(request):
+    """Ajax call to enrollment status."""
+    return _exec_task_by_email_and_period_date(request, enrollment_status_task)
+
+
+@ga_analyzer_only
+@login_required
+@require_POST
+def disabled_account_info(request):
+    """Ajax call to disabled account info."""
+    return _exec_task_by_email_and_period_date(request, disabled_account_info_task)
