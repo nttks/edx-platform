@@ -686,15 +686,15 @@ msgstr "メール本文を入力してください。"
 
 #: biz/djangoapps/ga_contract_operation/views.py
 msgid "Please save the template e-mail before sending."
-msgstr "メール送信前にメールテンプレートを保存してください。"
+msgstr "メール送信前に保存してください。"
 
 #: biz/djangoapps/ga_contract_operation/views.py
 msgid "Successfully to save the template e-mail."
-msgstr "メールテンプレートの保存が完了しました。"
+msgstr "保存が完了しました。"
 
 #: biz/djangoapps/ga_contract_operation/views.py
 msgid "Failed to save the template e-mail."
-msgstr "メールテンプレートの保存に失敗しました。"
+msgstr "保存に失敗しました。"
 
 #: biz/djangoapps/ga_contract_operation/views.py
 msgid "Successfully to send the test e-mail."
@@ -920,7 +920,7 @@ msgstr "メール本文："
 
 #: biz/templates/ga_contract_operation/mail.html
 msgid "Save the template e-mail"
-msgstr "テンプレート保存"
+msgstr "保存"
 
 #: biz/templates/ga_contract_operation/mail.html
 msgid "Send the test e-mail"
@@ -932,7 +932,7 @@ msgstr "テストメールはあなた宛てに送信します。"
 
 #: biz/templates/ga_contract_operation/mail.html
 msgid "The template e-mail will be saved, overwriting the original e-mail. Is it OK?"
-msgstr "メールテンプレートを上書き保存します、よろしいですか。"
+msgstr "上書き保存します、よろしいですか。"
 
 #: biz/templates/ga_contract_operation/mail.html
 msgid ""
