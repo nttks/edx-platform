@@ -108,20 +108,17 @@ def get_grouped_target_sections(course):
     """Get target sections from course"""
     grouped_target_sections = GroupedTargetSections()
     for chapter in course.get_children():
-        # Note: Exclude chapters if 'Hide from students' is checked. (#1996)
-        if not chapter.visible_to_staff_only:
-            for section in chapter.get_children():
-                # Note: Exclude sections if 'Hide from students' is checked. (#1996)
-                #       Also, exclude sections if grading_type is not set. (#1996)
-                if not section.visible_to_staff_only and section.graded:
-                    has_score = False
-                    for vertical in section.get_children():
-                        for component in vertical.get_children():
-                            if component.has_score:
-                                has_score = True
-                                break
-                    if has_score:
-                        grouped_target_sections.append(TargetSection(section))
+        for section in chapter.get_children():
+            # Note: Exclude sections if grading_type is not set. (#1996)
+            if section.graded:
+                has_score = False
+                for vertical in section.get_children():
+                    for component in vertical.get_children():
+                        if component.has_score:
+                            has_score = True
+                            break
+                if has_score:
+                    grouped_target_sections.append(TargetSection(section))
     return grouped_target_sections
 
 

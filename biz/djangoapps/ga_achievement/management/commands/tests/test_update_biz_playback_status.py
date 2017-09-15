@@ -752,7 +752,7 @@ class TestGetGroupedTargetVerticals(ModuleStoreTestCase):
         grouped_target_verticals = get_grouped_target_verticals(self.course)
         self.assertEquals(
             [[tv.vertical_id for tv in tvs] for tvs in grouped_target_verticals.values()],
-            [[self.vertical_y1a.location.block_id, self.vertical_y2a.location.block_id]]
+            [[self.vertical_x1a.location.block_id], [self.vertical_y1a.location.block_id, self.vertical_y2a.location.block_id]]
         )
 
     def test_if_section_is_hide_from_students(self):
@@ -762,5 +762,5 @@ class TestGetGroupedTargetVerticals(ModuleStoreTestCase):
         grouped_target_verticals = get_grouped_target_verticals(self.course)
         self.assertEquals(
             [[tv.vertical_id for tv in tvs] for tvs in grouped_target_verticals.values()],
-            [[self.vertical_x1a.location.block_id], [self.vertical_y2a.location.block_id]]
+            [[self.vertical_x1a.location.block_id], [self.vertical_y1a.location.block_id, self.vertical_y2a.location.block_id]]
         )

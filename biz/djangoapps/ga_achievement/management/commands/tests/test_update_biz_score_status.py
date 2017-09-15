@@ -918,7 +918,7 @@ class TestGetGroupedTargetSections(ModuleStoreTestCase):
         grouped_target_sections = get_grouped_target_sections(self.course)
         self.assertEquals(
             [ts.module_id for ts in grouped_target_sections.target_sections],
-            [unicode(self.section_y1.location), unicode(self.section_y2.location)]
+            [unicode(self.section_x1.location), unicode(self.section_y1.location), unicode(self.section_y2.location)]
         )
 
     def test_if_section_is_hide_from_students(self):
@@ -928,7 +928,7 @@ class TestGetGroupedTargetSections(ModuleStoreTestCase):
         grouped_target_sections = get_grouped_target_sections(self.course)
         self.assertEquals(
             [ts.module_id for ts in grouped_target_sections.target_sections],
-            [unicode(self.section_x1.location), unicode(self.section_y2.location)]
+            [unicode(self.section_x1.location), unicode(self.section_y1.location), unicode(self.section_y2.location)]
         )
 
     def test_if_section_grade_is_not_set(self):
