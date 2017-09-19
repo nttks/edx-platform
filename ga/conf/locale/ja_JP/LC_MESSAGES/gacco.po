@@ -589,19 +589,19 @@ msgid "Error uploading file."
 msgstr "ファイルアップロードに失敗しました。"
 
 #: lms/djangoapps/django_comment_client/utils.py
-msgid "The file ending in '{file_types}' to upload."
-msgstr "アップロードできる画像ファイルの拡張子は '{file_types}'です。"
+msgid "The file ending in '{file_types}' to insert."
+msgstr "挿入できるファイルの拡張子は '{file_types}'です。"
 
 #: lms/djangoapps/django_comment_client/utils.py
 msgid ""
-"An error has occurred with file upload, please reload this screen and upload image file again. The discussion data are erased without submit."
+"An error has occurred with file upload, please reload this screen and select file again. The discussion data are erased without submit."
 msgstr ""
-"ファイルアップロードに失敗しました、ブラウザの画面を更新して再度画像をアップロードしてください。"
+"ファイルアップロードに失敗しました、ブラウザの画面を更新して再度ファイルを選択してください。"
 "なお、投稿していないディスカッションデータは消去されます。"
 
 #: lms/djangoapps/django_comment_client/utils.py
-msgid "An invalid file, please upload valid image file."
-msgstr "アップロードしたファイルが不正です、正しいファイル形式の画像をアップロードしてください。"
+msgid "An invalid file format, please select valid file format."
+msgstr "選択したファイル形式が不正です、正しいファイル形式を選択してください。"
 
 #-#-#-#-#  Original messages in gacco/templates  #-#-#-#-#
 

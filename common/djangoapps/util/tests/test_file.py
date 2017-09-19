@@ -130,7 +130,7 @@ class StoreUploadedFileTestCase(TestCase):
         with self.assertRaises(exceptions.PermissionDenied) as error:
             self.request.FILES = {"uploaded_file": SimpleUploadedFile("tempfile.csv", self.file_content)}
             store_uploaded_file(self.request, "uploaded_file", [".csv"], "stored_file", 2)
-        self.verify_exception("Maximum upload file size is 2 bytes.", error)
+        self.verify_exception("Maximum insert file size is 2 bytes.", error)
 
     def test_validator(self):
         """

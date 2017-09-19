@@ -95,8 +95,8 @@ msgid "Description is Required."
 msgstr "説明は必須です。"
 
 #: lms/static/js/Markdown.Editor.js
-msgid "Maximum upload file size is {file_size} bytes."
-msgstr "アップロードできるファイルサイズは {file_size} byteまでです。"
+msgid "Maximum insert file size is {file_size} bytes."
+msgstr "挿入できるファイルサイズは {file_size} byteまでです。"
 
 #-#-#-#-#  Missing messages for openedx-releases/cypress  #-#-#-#-#
 

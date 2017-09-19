@@ -1126,8 +1126,8 @@ msgid_plural ""
 msgstr[0] "ファイルは次のうち一つの拡張子で終わる必要があります： '{file_types}'。"
 
 #: common/djangoapps/util/file.py
-msgid "Maximum upload file size is {file_size} bytes."
-msgstr "アップロードできるファイルサイズは {file_size} byteまでです。"
+msgid "Maximum insert file size is {file_size} bytes."
+msgstr "挿入できるファイルサイズは {file_size} byteまでです。"
 
 #: common/djangoapps/util/milestones_helpers.py
 msgid "Course {course_id} requires {prerequisite_course_id}"

@@ -3436,8 +3436,8 @@ msgid "\"optional title\""
 msgstr "\"リンクの説明\""
 
 #: lms/static/js/Markdown.Editor.js
-msgid "Insert Image (Upload File or Type URL)"
-msgstr "画像挿入(URLを入力するか画像をアップロードしてください)"
+msgid "Insert Image (Type URL or Select File)"
+msgstr "画像挿入(URLを入力するかファイルを選択してください)"
 
 #: lms/static/js/Markdown.Editor.js
 msgid "Markdown Editing Help"

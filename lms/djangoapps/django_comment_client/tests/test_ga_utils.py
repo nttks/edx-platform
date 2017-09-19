@@ -188,7 +188,7 @@ class DiscussionS3StoreTestCase(ModuleStoreTestCase):
                                                                                                     base_storage_filename,
                                                                                                     course_key, cc_settings.MAX_UPLOAD_FILE_SIZE)
         except PermissionDenied as err:
-            self.assertIn('An error has occurred with file upload, please reload this screen and upload image file again. The discussion data are erased without submit.',
+            self.assertIn('An error has occurred with file upload, please reload this screen and select file again. The discussion data are erased without submit.',
                           err.message)
 
     def test_store_uploaded_file_for_discussion_error_file_key(self):
@@ -268,7 +268,7 @@ class DiscussionS3StoreTestCase(ModuleStoreTestCase):
                                                                                                     base_storage_filename,
                                                                                                     self.course_id, cc_settings.MAX_UPLOAD_FILE_SIZE)
         except PermissionDenied as err:
-            self.assertIn('An invalid file, please upload valid image file.', err.message)
+            self.assertIn('An invalid file format, please select valid file format.', err.message)
 
     @mock_s3
     @patch('magic.from_buffer', return_value='image/jpeg')
@@ -306,4 +306,4 @@ class DiscussionS3StoreTestCase(ModuleStoreTestCase):
                                                                                                     base_storage_filename,
                                                                                                     self.course_id, 1)
         except PermissionDenied as err:
-            self.assertIn('Maximum upload file size', err.message)
+            self.assertIn('Maximum insert file size', err.message)

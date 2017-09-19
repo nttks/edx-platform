@@ -32,7 +32,7 @@
         notDestinationCheck = false;
 
     // The text that appears on the dialog box when entering Images.
-    var imageUploadDialogText = gettext("Insert Image (Upload File or Type URL)"),
+    var imageUploadDialogText = gettext("Insert Image (Type URL or Select File)"),
         imageDialogText = gettext("Insert Image (Type URL)"),
         imageDescriptionLabel = gettext("Image description"),
         imageDefaultText = "http://", // The default text that appears in input
@@ -273,7 +273,7 @@
             var fileSize = files[0].size;
             if (imageFileMaxSize < fileSize) {
                 alert(interpolate_text(
-                    gettext('Maximum upload file size is {file_size} bytes.'),
+                    gettext('Maximum insert file size is {file_size} bytes.'),
                     {'file_size': size}
                 ));
                 return false;

@@ -912,7 +912,7 @@ class DiscussionS3Store(object):
         """
 
         try:
-            msg = _("An error has occurred with file upload, please reload this screen and upload image file again. The discussion data are erased without submit.")
+            msg = _("An error has occurred with file upload, please reload this screen and select file again. The discussion data are erased without submit.")
             course_key = CourseKey.from_string(course_id)
             if not is_available(DISCCUSION_IMAGE_UPLOAD_KEY, course_key):
                 raise PermissionDenied(msg)
@@ -931,16 +931,16 @@ class DiscussionS3Store(object):
             file_extension = os.path.splitext(uploaded_file.name)[1].lower()
             if file_extension not in settings.DISCUSSION_ALLOWED_UPLOAD_FILE_TYPES:
                 file_types = "', '".join(settings.DISCUSSION_ALLOWED_UPLOAD_FILE_TYPES)
-                msg = _("The file ending in '{file_types}' to upload.").format(file_types=file_types)
+                msg = _("The file ending in '{file_types}' to insert.").format(file_types=file_types)
                 raise PermissionDenied(msg)
             content_type = magic.from_buffer(uploaded_file.read(), mime=True)
             uploaded_file.seek(0)
             if content_type not in settings.DISCUSSION_ALLOWED_IMAGE_MIME_TYPES:
-                msg = _("An invalid file, please upload valid image file.")
+                msg = _("An invalid file format, please select valid file format.")
                 raise PermissionDenied(msg)
 
             if uploaded_file.size > max_file_size:
-                msg = _("Maximum upload file size is {file_size} bytes.").format(file_size=max_size)
+                msg = _("Maximum insert file size is {file_size} bytes.").format(file_size=max_size)
                 raise PermissionDenied(msg)
 
             stored_file_name = base_storage_filename + file_extension

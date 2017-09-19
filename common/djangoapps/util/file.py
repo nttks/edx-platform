@@ -64,7 +64,7 @@ def store_uploaded_file(
             raise PermissionDenied(msg)
 
         if uploaded_file.size > max_file_size:
-            msg = _("Maximum upload file size is {file_size} bytes.").format(file_size=max_file_size)
+            msg = _("Maximum insert file size is {file_size} bytes.").format(file_size=max_file_size)
             raise PermissionDenied(msg)
 
         stored_file_name = base_storage_filename + file_extension

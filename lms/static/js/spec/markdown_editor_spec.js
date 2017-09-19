@@ -70,7 +70,7 @@ define(['Markdown.Editor'], function(MarkdownEditor) {
         describe('check ui.prompt', function () {
             it('ui.prompt', function () {
                 expect(function(){
-                    editor.ui.prompt(gettext("Insert Image (Upload File or Type URL)"),
+                    editor.ui.prompt(gettext("Insert Image (Type URL or Select File)"),
                                      gettext("Insert Image (Type URL)"),
                                      gettext("Please provide a valid URL."),
                                      '',
