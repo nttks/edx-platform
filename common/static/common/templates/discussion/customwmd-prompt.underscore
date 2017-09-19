@@ -1,0 +1,40 @@
+<b class="wmd-title"><%- title %></b>
+<div role="status" id="wmd-editor-dialog-form-errors" class="sr" tabindex="-1"></div>
+<div>
+    <form class="form">
+        <fieldset class="field-group">
+            <legend class="form-group-hd sr"><%- title %></legend>
+            <div class="field">
+                <label id="new-url-input-label" for="new-url-input" class="field-label">
+                    <%- urlLabel %></label>
+                <input type="text" id="new-url-input" class="field-input input-text">
+                <div id="new-url-input-field-message" class="field-message has-error" style="display:none">
+                    <span class="field-message-content"><%- urlError %></span>
+                </div>
+                <% if (imageUploadHandler) { %>
+                <div class="form-actions">
+                    <button id="file-upload-proxy">
+                        <%- chooseFileText %>
+                    </button>
+                    <input type="file" name="file-upload" id="file-upload" style="display:none;"/>
+                </div>
+                <% } %>
+
+
+            </div>
+            <% if (isDescription) { %>
+                <div class="field">
+                    <label for="new-url-desc-input" class="field-label"><%- urlDescLabel %></label>
+                    <input type="text" id="new-url-desc-input" class="field-input input-text">
+                    <div id="new-url-desc-input-field-message" class="field-message has-error" style="display:none">
+                        <span class="field-message-content"><%- descError %></span>
+                    </div>
+                </div>
+            <% } %>
+        </fieldset>
+        <div class="form-actions">
+            <input type="button" class="form-actions-button" id="new-link-image-ok" value="<%- okText %>" />
+            <input type="button" class="form-actions-button" id="new-link-image-cancel" value="<%- cancelText %>" >
+        </div>
+    </form>
+</div>

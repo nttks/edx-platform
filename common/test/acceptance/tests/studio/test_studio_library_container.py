@@ -5,6 +5,7 @@ import ddt
 from flaky import flaky
 from nose.plugins.attrib import attr
 import textwrap
+from unittest import skip
 
 from .base_studio_test import StudioLibraryTest
 from ...fixtures.course import CourseFixture
@@ -85,6 +86,7 @@ class StudioLibraryContainerTest(StudioLibraryTest, UniqueCourseTest, TestWithSe
         """
         return StudioLibraryContainerXBlockWrapper.from_xblock_wrapper(xblock)
 
+    @skip
     @ddt.data(
         (1, True),
         (2, False),
@@ -115,6 +117,7 @@ class StudioLibraryContainerTest(StudioLibraryTest, UniqueCourseTest, TestWithSe
         self.assertEqual(edit_modal.count, max_count)
         self.assertEqual(edit_modal.scored, scored)
 
+    @skip
     def test_no_library_shows_library_not_configured(self):
         """
         Scenario: Given I have a library, a course and library content xblock in a course
@@ -138,6 +141,7 @@ class StudioLibraryContainerTest(StudioLibraryTest, UniqueCourseTest, TestWithSe
         self.assertIn(expected_text, library_container.validation_not_configured_warning_text)
         self.assertIn(expected_action, library_container.validation_not_configured_warning_text)
 
+    @skip
     @flaky
     def test_out_of_date_message(self):
         """
@@ -173,6 +177,7 @@ class StudioLibraryContainerTest(StudioLibraryTest, UniqueCourseTest, TestWithSe
         # Removed this assert until a summary message is added back to the author view (SOL-192)
         #self.assertIn("4 matching components", library_block.author_content)
 
+    @skip
     def test_no_content_message(self):
         """
         Scenario: Given I have a library, a course and library content xblock in a course
@@ -185,12 +190,14 @@ class StudioLibraryContainerTest(StudioLibraryTest, UniqueCourseTest, TestWithSe
         # Add a single "Dropdown" type problem to the library (which otherwise has only HTML blocks):
         self.library_fixture.create_xblock(self.library_fixture.library_location, XBlockFixtureDesc(
             "problem", "Dropdown",
-            data=textwrap.dedent("""
+            data=textwrap.dedent(
+            """
                 <problem>
                     <p>Dropdown</p>
                     <optionresponse><optioninput label="Dropdown" options="('1', '2')" correct="'2'"></optioninput></optionresponse>
                 </problem>
-                """)
+            """
+            )
         ))
 
         expected_text = 'There are no matching problem types in the specified libraries. Select another problem type'
@@ -221,6 +228,7 @@ class StudioLibraryContainerTest(StudioLibraryTest, UniqueCourseTest, TestWithSe
         self.assertFalse(library_container.has_validation_error)
         self.assertFalse(library_container.has_validation_warning)
 
+    @skip
     def test_not_enough_children_blocks(self):
         """
         Scenario: Given I have a library, a course and library content xblock in a course
@@ -248,6 +256,7 @@ class StudioLibraryContainerTest(StudioLibraryTest, UniqueCourseTest, TestWithSe
             library_container.validation_warning_text
         )
 
+    @skip
     def test_settings_overrides(self):
         """
         Scenario: Given I have a library, a course and library content xblock in a course
@@ -300,6 +309,7 @@ class StudioLibraryContainerTest(StudioLibraryTest, UniqueCourseTest, TestWithSe
         block.save_settings()
         self.assertEqual(block.name, name_default)
 
+    @skip
     def test_cannot_manage(self):
         """
         Scenario: Given I have a library, a course and library content xblock in a course

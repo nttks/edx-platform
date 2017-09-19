@@ -77,7 +77,7 @@ from xmodule.modulestore import ModuleStoreEnum
 from collections import namedtuple
 
 from courseware.courses import get_courses, sort_by_announcement, sort_by_start_date  # pylint: disable=import-error
-from courseware.access import has_access
+from courseware.access import has_access, GA_ACCESS_CHECK_TYPE_OLD_COURSE_VIEW
 
 from django_comment_common.models import Role
 
@@ -592,6 +592,8 @@ def dashboard(request):
         staff_access = True
         errored_courses = modulestore().get_errored_courses()
 
+    ga_old_course_viewer_access = has_access(user, GA_ACCESS_CHECK_TYPE_OLD_COURSE_VIEW, 'global')
+
     show_courseware_links_for = frozenset(
         enrollment.course_id for enrollment in course_enrollments
         if has_access(request.user, 'load', enrollment.course_overview)
@@ -683,9 +685,9 @@ def dashboard(request):
             ),
             enrollment.course_id
         ) or (
-            enrollment.course_overview.extra and enrollment.course_overview.extra.has_terminated and not staff_access
+            enrollment.course_overview.extra and enrollment.course_overview.extra.has_terminated and not (staff_access or ga_old_course_viewer_access)
         ) or (
-            enrollment.is_individual_closed() and not staff_access
+            enrollment.is_individual_closed() and not (staff_access or ga_old_course_viewer_access)
         )
     )
 

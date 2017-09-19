@@ -151,17 +151,17 @@ $ ->
           success: (data, status) ->
             fileURL = data['result']['file_url']
             error = data['result']['error']
+            fileName = data['result']['file_name']
             if error != ''
               alert error
-              if startUploadHandler
-                $('#file-upload').unbind('change').change(startUploadHandler)
               console.log error
             else
               $(input).attr('value', fileURL)
+              $(input).attr('disabled', true)
+              $(input).addClass("disabled-textbox")
+              $('#new-url-desc-input').attr('value', fileName)
           error: (data, status, e) ->
             alert(e)
-            if startUploadHandler
-              $('#file-upload').unbind('change').change(startUploadHandler)
 
       imageUploadHandler = (elem, input) ->
         ajaxFileUpload(imageUploadUrl, input, imageUploadHandler)

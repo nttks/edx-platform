@@ -113,7 +113,7 @@ class ProblemReport(ProgressReportBase):
 
         for child in course.get_children():
             if child.category not in (
-                    "chapter", "sequential", "vertical", "problem"):
+                    "chapter", "sequential", "vertical", "problem", "library_content"):
                 continue
 
             location_list.append({

@@ -2,6 +2,7 @@ define(["domReady", "jquery", "underscore", "js/utils/cancel_on_escape", "js/vie
     "js/views/utils/create_library_utils", "common/js/components/utils/view_utils"],
     function (domReady, $, _, CancelOnEscape, CreateCourseUtilsFactory, CreateLibraryUtilsFactory, ViewUtils) {
         "use strict";
+        var course_key;
         var CreateCourseUtils = new CreateCourseUtilsFactory({
             name: '.new-course-name',
             org: '.new-course-org',
@@ -114,7 +115,7 @@ define(["domReady", "jquery", "underscore", "js/utils/cancel_on_escape", "js/vie
             };
 
             analytics.track('Created a Library', lib_info);
-            CreateLibraryUtils.create(lib_info, function (errorMessage) {
+            CreateLibraryUtils.create(lib_info, course_key, function (errorMessage) {
                 $('.create-library .wrap-error').addClass('is-shown');
                 $('#library_creation_error').html('<p>' + errorMessage + '</p>');
                 $('.new-library-save').addClass('is-disabled').attr('aria-disabled', true);
@@ -165,7 +166,12 @@ define(["domReady", "jquery", "underscore", "js/utils/cancel_on_escape", "js/vie
 
         domReady(onReady);
 
+        var course_key_setter = function(course) {
+            course_key = course;
+        };
+
         return {
-            onReady: onReady
+            onReady: onReady,
+            course_key_setter: course_key_setter
         };
     });

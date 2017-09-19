@@ -7,6 +7,7 @@ Higher-level tests are in `cms/djangoapps/contentstore/tests/test_libraries.py`.
 from bson.objectid import ObjectId
 from mock import Mock, patch
 
+from unittest import skip
 from xblock.fragment import Fragment
 from xblock.runtime import Runtime as VanillaRuntime
 
@@ -128,6 +129,7 @@ class LibraryContentModuleTestMixin(object):
         # Check that get_content_titles() doesn't return titles for hidden/unused children
         self.assertEqual(len(self.lc_block.get_content_titles()), 1)
 
+    @skip
     def test_validation_of_course_libraries(self):
         """
         Test that the validation method of LibraryContent blocks can validate
@@ -160,6 +162,7 @@ class LibraryContentModuleTestMixin(object):
         self.lc_block.refresh_children()
         self.assertTrue(self.lc_block.validate())
 
+    @skip
     def test_validation_of_matching_blocks(self):
         """
         Test that the validation method of LibraryContent blocks can warn

@@ -2,8 +2,9 @@
     'use strict';
     define(['backbone'], function() {
 
-        return function (GaOperationRouter, GaBaseView, DeleteCourse) {
+        return function (GaOperationRouter, GaBaseView, DeleteCourse, DeleteLibrary) {
             new DeleteCourse();
+            new DeleteLibrary();
         };
 
     });

@@ -388,3 +388,14 @@ class GaAnalyzerRole(RoleBase):
 
     def __init__(self, *args, **kwargs):
         super(GaAnalyzerRole, self).__init__(self.ROLE, *args, **kwargs)
+
+
+@register_access_role
+class GaOldCourseViewerStaffRole(RoleBase):
+    """
+    Old course viewer team members.
+    """
+    ROLE = "ga_old_course_viewer"
+
+    def __init__(self, *args, **kwargs):
+        super(GaOldCourseViewerStaffRole, self).__init__(self.ROLE, *args, **kwargs)

@@ -874,6 +874,7 @@ msgstr "無視"
 #. Translators: this is a message from the raw HTML editor displayed in the
 #. browser when a user needs to edit HTML
 #: common/lib/xmodule/xmodule/js/src/html/edit.js
+#: lms/static/js/Markdown.Editor.js
 msgid "Image description"
 msgstr "画像の説明"
 
@@ -3262,8 +3263,8 @@ msgid "\"optional title\""
 msgstr "\"リンクの説明\""
 
 #: lms/static/js/Markdown.Editor.js
-msgid "Insert Image (upload file or type url)"
-msgstr "画像挿入(URLを指定)"
+msgid "Insert Image (Upload File or Type URL)"
+msgstr "画像挿入(URLを入力するか画像をアップロードしてください)"
 
 #: lms/static/js/Markdown.Editor.js
 msgid "Markdown Editing Help"

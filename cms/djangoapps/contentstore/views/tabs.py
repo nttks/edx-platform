@@ -15,6 +15,8 @@ from xmodule.modulestore.django import modulestore
 from xmodule.modulestore import ModuleStoreEnum
 from xmodule.tabs import CourseTabList, CourseTab, InvalidTabsException, StaticTab
 from opaque_keys.edx.keys import CourseKey, UsageKey
+from openedx.core.djangoapps.ga_optional.api import is_available
+from openedx.core.djangoapps.ga_optional.models import LIBRARY_OPTION_KEY
 
 from ..utils import get_lms_link_for_item
 
@@ -72,6 +74,7 @@ def tabs_handler(request, course_key_string):
             'context_course': course_item,
             'tabs_to_render': tabs_to_render,
             'lms_link': get_lms_link_for_item(course_item.location),
+            'library_option': is_available(LIBRARY_OPTION_KEY, course_key)
         })
     else:
         return HttpResponseNotFound()

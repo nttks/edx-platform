@@ -54,6 +54,8 @@ from openedx.core.djangoapps.credit.api import (
     is_user_eligible_for_credit,
     is_credit_course
 )
+from openedx.core.djangoapps.ga_optional.api import is_available
+from openedx.core.djangoapps.ga_optional.models import DISCCUSION_IMAGE_UPLOAD_KEY
 from courseware.models import StudentModuleHistory
 from courseware.model_data import FieldDataCache, ScoresClient
 from .module_render import toc_for_course, get_module_for_descriptor, get_module, get_module_by_usage_id
@@ -427,6 +429,7 @@ def _index_bulk_op(request, course_key, chapter, section, position):
             'studio_url': studio_url,
             'masquerade': masquerade,
             'xqa_server': settings.FEATURES.get('XQA_SERVER', "http://your_xqa_server.com"),
+            'is_image_upload': is_available(DISCCUSION_IMAGE_UPLOAD_KEY, course_key),
         }
 
         now = datetime.now(UTC())

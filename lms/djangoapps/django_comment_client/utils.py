@@ -2,14 +2,21 @@ from collections import defaultdict
 from datetime import datetime
 import json
 import logging
+import os
 from django.conf import settings
+import magic
 
 import pytz
+from boto import connect_s3
+from boto.exception import S3ResponseError
+from boto.s3.key import Key
 from django.contrib.auth.models import User
+from django.core.exceptions import PermissionDenied
 from django.core.urlresolvers import reverse
 from django.db import connection
 from django.http import HttpResponse
 from django.utils.timezone import UTC
+from django.utils.translation import ugettext as _
 import pystache_custom as pystache
 from opaque_keys.edx.locations import i4xEncoder
 from opaque_keys.edx.keys import CourseKey
@@ -28,7 +35,8 @@ from openedx.core.djangoapps.course_groups.cohorts import (
     get_course_cohort_settings, get_cohort_by_id, get_cohort_id, is_course_cohorted
 )
 from openedx.core.djangoapps.course_groups.models import CourseUserGroup
-
+from openedx.core.djangoapps.ga_optional.api import is_available
+from openedx.core.djangoapps.ga_optional.models import DISCCUSION_IMAGE_UPLOAD_KEY
 
 log = logging.getLogger(__name__)
 
@@ -797,3 +805,149 @@ def is_discussion_enabled(course_id):
         if get_current_ccx(course_id):
             return False
     return settings.FEATURES.get('ENABLE_DISCUSSION_SERVICE')
+
+
+class DiscussionFileUploadError(Exception):
+    """
+    This error is raised when the request has invalid parameters for upload.
+    This error will be raised if the file being uploaded is somehow invalid,
+    based on type restrictions, size restrictions, upload limits, etc.
+    """
+    pass
+
+
+class DiscussionFileUploadInternalError(Exception):
+    """
+    This is an error raised when file upload failed due to internal problems
+    """
+    pass
+
+
+class DiscussionS3Store(object):
+    """
+    Discussion Image Data S3 Store
+    """
+    def _connect_to_s3(self, waf_proxy_enabled=False):
+        """
+        Connect to s3
+        Creates a connection to s3 for file URLs.
+        """
+        # Try to get the AWS credentials from settings if they are available
+        # If not, these will default to `None`, and boto will try to use
+        # environment vars or configuration files instead.
+        aws_access_key_id = settings.AWS_ACCESS_KEY_ID
+        aws_secret_access_key = settings.AWS_SECRET_ACCESS_KEY
+
+        if waf_proxy_enabled:
+            waf_proxy_ip = settings.DISCUSSION_WAF_PROXY_SERVER_IP
+            waf_proxy_port = settings.DISCUSSION_WAF_PROXY_SERVER_PORT
+            if not waf_proxy_ip or not waf_proxy_port:
+                msg = 'WAF proxy feature for Disccusion image upload is enabled, but WAF server ip or port is not configured.'
+                log.exception(u"{msg} DISCUSSION_WAF_PROXY_SERVER_IP={waf_proxy_ip}, DISCUSSION_WAF_PROXY_SERVER_PORT={waf_proxy_port}").format(
+                    msg=msg,
+                    waf_proxy_ip=waf_proxy_ip,
+                    waf_proxy_port=waf_proxy_port,
+                )
+                raise Exception(msg)
+            return connect_s3(
+                aws_access_key_id=aws_access_key_id,
+                aws_secret_access_key=aws_secret_access_key,
+                is_secure=False,
+                proxy=waf_proxy_ip,
+                proxy_port=waf_proxy_port,
+            )
+        else:
+            return connect_s3(
+                aws_access_key_id=aws_access_key_id,
+                aws_secret_access_key=aws_secret_access_key,
+            )
+
+    def upload_file(self, fp, file_name, course_id):
+        bucket_name = settings.DISCUSSION_IMAGE_BACKEND_AWS_BUCKET_NAME
+        key_name = settings.DISCUSSION_IMAGE_BACKEND_LOCATION + unicode(course_id) + '/' + file_name
+        waf_proxy_enabled = settings.DISCUSSION_ENABLE_WAF_PROXY
+        try:
+            conn = self._connect_to_s3(waf_proxy_enabled)
+            bucket = conn.get_bucket(bucket_name)
+            s3_key = Key(bucket=bucket, name=key_name)
+            # Note: S3ResponseError(403 Forbidden) raises if WAF proxy detects a virus in setting contents
+            s3_key.set_contents_from_file(fp, size=fp.size)
+            return s3_key.generate_url(expires_in=0)
+        except S3ResponseError as ex:
+            # Check if the specified keyword exists in ex.message
+            if waf_proxy_enabled and ex.message and settings.DISCUSSION_WAF_VIRUS_DETECTION_KEYWORD in ex.message:
+                log.warning(
+                    u"WAF proxy has detected a virus while uploading a file. key_name{}".format(key_name)
+                )
+                raise DiscussionFileUploadError(ex)
+            else:
+                log.exception("An internal exception occurred while uploading a discussion image file.")
+                raise DiscussionFileUploadInternalError(ex)
+        except Exception as ex:
+            log.exception("An internal exception occurred while uploading a discussion image file.")
+            raise DiscussionFileUploadInternalError(ex)
+        finally:
+            if conn:
+                conn.close()
+
+    def store_uploaded_file_for_discussion(
+            self, request, file_key, base_storage_filename, course_id, max_file_size,
+    ):
+        """
+        Stores an uploaded file to django file storage.
+
+        Args:
+            request (HttpRequest): A request object from which a file will be retrieved.
+            file_key (str): The key for retrieving the file from `request.FILES`. If no entry exists with this
+                key, a `ValueError` will be thrown.
+            base_storage_filename (str): the filename to be used for the stored file, not including the extension.
+                The same extension as the uploaded file will be appended to this value.
+            max_file_size (int): the maximum file size in bytes that the uploaded file can be. If the uploaded file
+                is larger than this size, a `PermissionDenied` exception will be thrown.
+
+        Returns:
+            Storage: the file storage object where the file can be retrieved from
+            str: stored_file_name: the name of the stored file (including extension)
+
+        """
+
+        try:
+            msg = _("An error has occurred with file upload, please reload this screen and upload image file again. The discussion data are erased without submit.")
+            course_key = CourseKey.from_string(course_id)
+            if not is_available(DISCCUSION_IMAGE_UPLOAD_KEY, course_key):
+                raise PermissionDenied(msg)
+        except Exception, err:
+            log.exception(unicode(err))
+            raise PermissionDenied(msg)
+
+        max_size_int = max_file_size / (1024 * 1024)
+        max_size = str(max_size_int) + 'M'
+
+        if file_key not in request.FILES:
+            raise ValueError("No file uploaded with key '" + file_key + "'.")
+
+        uploaded_file = request.FILES[file_key]
+        try:
+            file_extension = os.path.splitext(uploaded_file.name)[1].lower()
+            if file_extension not in settings.DISCUSSION_ALLOWED_UPLOAD_FILE_TYPES:
+                file_types = "', '".join(settings.DISCUSSION_ALLOWED_UPLOAD_FILE_TYPES)
+                msg = _("The file ending in '{file_types}' to upload.").format(file_types=file_types)
+                raise PermissionDenied(msg)
+            content_type = magic.from_buffer(uploaded_file.read(), mime=True)
+            uploaded_file.seek(0)
+            if content_type not in settings.DISCUSSION_ALLOWED_IMAGE_MIME_TYPES:
+                msg = _("An invalid file, please upload valid image file.")
+                raise PermissionDenied(msg)
+
+            if uploaded_file.size > max_file_size:
+                msg = _("Maximum upload file size is {file_size} bytes.").format(file_size=max_size)
+                raise PermissionDenied(msg)
+
+            stored_file_name = base_storage_filename + file_extension
+
+            generate_url = self.upload_file(uploaded_file, stored_file_name, course_key)
+
+        finally:
+            uploaded_file.close()
+
+        return generate_url, stored_file_name

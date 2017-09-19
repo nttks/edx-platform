@@ -7,6 +7,8 @@ from django.test.utils import override_settings
 
 from contentstore.tests.utils import CourseTestCase
 from contentstore.utils import reverse_course_url
+from openedx.core.djangoapps.ga_optional.models import CourseOptionalConfiguration
+from xmodule.modulestore.tests.factories import CourseFactory
 
 
 class TestCourseDisplayName(CourseTestCase):
@@ -80,3 +82,55 @@ class TestSettingsHandlerForGet(CourseTestCase):
         whole_model = json.loads(response.content)
         self.assertIn('custom_logo_name', whole_model)
         self.assertEqual(whole_model['custom_logo_name'], '')
+
+
+class TestLibraryOption(CourseTestCase):
+
+    def setUp(self):
+        super(TestLibraryOption, self).setUp()
+        self.course = CourseFactory.create()
+        CourseOptionalConfiguration(
+            id=1,
+            change_date="2015-06-18 11:02:13",
+            enabled=True,
+            key='library-for-settings',
+            course_key=self.course.id,
+            changed_by_id=self.user.id
+        ).save()
+
+    def test_library_listing_in_content(self):
+        library_listing_url = reverse_course_url('library_listing', self.course.id)
+        response = self.client.get(library_listing_url)
+        self.assertIn('class="nav-item nav-manage-library"', response.content)
+
+    def test_course_info_handler_in_content(self):
+        course_info_handler_url = reverse_course_url('course_info_handler', self.course.id)
+        response = self.client.get(course_info_handler_url)
+        self.assertIn('class="nav-item nav-manage-library"', response.content)
+
+    def test_grading_handler_in_content(self):
+        grading_handler_url = reverse_course_url('grading_handler', self.course.id)
+        response = self.client.get(grading_handler_url, HTTP_ACCEPT='text/html')
+        self.assertIn('class="nav-item nav-manage-library"', response.content)
+
+    def test_advanced_settings_handler_in_content(self):
+        advanced_settings_handler_url = reverse_course_url('advanced_settings_handler', self.course.id)
+        response = self.client.get(advanced_settings_handler_url, HTTP_ACCEPT='text/html')
+        self.assertIn('class="nav-item nav-manage-library"', response.content)
+
+    def test_textbooks_list_handler_in_content(self):
+        textbooks_list_handler_url = reverse_course_url('textbooks_list_handler', self.course.id)
+        response = self.client.get(textbooks_list_handler_url, HTTP_ACCEPT='text/html')
+        self.assertIn('class="nav-item nav-manage-library"', response.content)
+
+    def test_group_configurations_list_handler_in_content(self):
+        group_configurations_list_handler_url = reverse_course_url('group_configurations_list_handler', self.course.id)
+        response = self.client.get(group_configurations_list_handler_url, HTTP_ACCEPT='text/html')
+        self.assertIn('class="nav-item nav-manage-library"', response.content)
+
+    def test_library_listing_has_error(self):
+        library_listing_url = reverse_course_url('library_listing', self.course.id)
+        ns_user, password = self.create_non_staff_user()
+        self.client.login(username=ns_user, password=password)
+        response = self.client.get(library_listing_url)
+        self.assertEqual(response.status_code, 403)

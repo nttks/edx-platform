@@ -15,6 +15,7 @@ from student.roles import (
     CourseInstructorRole,
     CourseStaffRole,
     CourseBetaTesterRole,
+    GaOldCourseViewerStaffRole,
     GlobalStaff,
     OrgStaffRole,
     OrgInstructorRole,
@@ -118,6 +119,17 @@ class GlobalStaffFactory(UserFactory):
     def set_staff(self, create, extracted, **kwargs):
         GlobalStaff().add_users(self)
 # pylint: enable=unused-argument
+
+
+class GaOldCourseViewerStaffFactory(UserFactory):
+    """
+    Returns a User object with Old course viewer team members access
+    """
+    last_name = "GaOldCourseViewer"
+
+    @factory.post_generation
+    def set_staff(self, create, extracted, **kwargs):
+        GaOldCourseViewerStaffRole().add_users(self)
 
 
 class StudentModuleFactory(DjangoModelFactory):

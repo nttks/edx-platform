@@ -41,3 +41,35 @@ class DeleteCourse(TaskBase):
     def get_command_name():
         return "delete_course"
 
+
+@CELERY_APP.task
+def delete_library_task(library_id, email):
+    """delete_library_task main."""
+    DeleteLibrary(library_id, email).run()
+
+
+class DeleteLibrary(TaskBase):
+    def __init__(self, library_id, email):
+        super(DeleteLibrary, self).__init__(email)
+        self.library_id = library_id
+
+    def run(self):
+        try:
+            with change_behavior_sys(get_dummy_raw_input_list(["y"])):
+                call_command(self.get_command_name(), self.library_id, "--purge")
+        except Exception as e:
+            msg = 'Caught the exception: ' + type(e).__name__
+            log.exception(msg)
+            self.err_msg = "{} {}".format(msg, e)
+        finally:
+            self._send_email()
+
+    def _get_email_subject(self):
+        if self.err_msg:
+            return "{} was failure ({})".format(self.get_command_name(), self.library_id)
+        else:
+            return "{} was completed. ({})".format(self.get_command_name(), self.library_id)
+
+    @staticmethod
+    def get_command_name():
+        return "delete_library"

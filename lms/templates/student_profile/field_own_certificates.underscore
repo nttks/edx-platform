@@ -1,0 +1,34 @@
+<% if (certInfos.length > 0) { %>
+<hr>
+<div>
+    <div class="cert-header"><%- gettext("Certificates List") %></div>
+    <ul>
+    <% _.each(certInfos, function(certInfo, i) { %>
+        <li<% if (profileVisibility === 'all_users') { %> class="with-cert-visibility-select"<% } %>>
+            <div class="cert-thumbnail"><img src="<%- certInfo.image_url %>" alt=""></div>
+            <div class="cert-course"><span><%- certInfo.course_name %></span></div>
+            <% if (profileVisibility === 'all_users') { %>
+            <div class="cert-visibility">
+                <input type="radio"
+                       class="cert-visibility-change"
+                       id="radio-cert-<%- i %>-to-share"
+                       name="is_visible_to_public[<%- certInfo.course_id_str %>]"
+                       data-course-id="<%- certInfo.course_id_str %>"
+                       value="1"
+                       <% if (certInfo.is_visible_to_public) { %> checked <% } %>>
+                <label for="radio-cert-<%- i %>-to-share"><%- gettext("Shared") %></label>
+                <input type="radio"
+                       class="cert-visibility-change"
+                       id="radio-cert-<%- i %>-to-unshare"
+                       name="is_visible_to_public[<%- certInfo.course_id_str %>]"
+                       data-course-id="<%- certInfo.course_id_str %>"
+                       value="0"
+                       <% if (!certInfo.is_visible_to_public) { %> checked <% } %>>
+                <label for="radio-cert-<%- i %>-to-unshare"><%- gettext("Unshared") %></label>
+            </div>
+            <% } %>
+        </li>
+    <% }) %>
+    </ul>
+</div>
+<% } %>

@@ -1267,12 +1267,17 @@ class BizStudentListTest(BizStudentManagementTestBase):
         ])
 
         # Check columns of grid for search
+        """
+        'All search items' are not English-ready.
+        Because UTF - 16 is used for code conversion, we make the following description
+        u'\u5168\u3066\u306e\u691c\u7d22\u9805\u76ee'
+        """
         self.students_page.student_grid.click_grid_icon_search()
         grid_icon_search = self.students_page.student_grid.grid_icon_search
         self.assertItemsEqual(grid_icon_search, [
-            'Register Status', 'Full Name', 'Username', 'Email Address', 'info1', 'info2',
+            u'\u5168\u3066\u306e\u691c\u7d22\u9805\u76ee', 'Register Status', 'Full Name', 'Username', 'Email Address', 'info1', 'info2',
         ])
-        self.assertTrue(self.students_page.student_grid.is_checked_grid_icon_search('Register Status'))
+        self.assertTrue(self.students_page.student_grid.is_checked_grid_icon_search(u'\u5168\u3066\u306e\u691c\u7d22\u9805\u76ee'))
 
         # Check search
         self.students_page.student_grid.click_grid_icon_search_label('Username')
@@ -1297,6 +1302,16 @@ class BizStudentListTest(BizStudentManagementTestBase):
         self.students_page.student_grid.click_sort('Username')
         grid_rows.sort(key=lambda x: x['Username'], reverse=True)
         self.assert_grid_row_equal(grid_rows, self.students_page.student_grid.grid_rows)
+
+        # Check search of all keywords
+        self.students_page.student_grid.click_grid_icon_search()
+        self.students_page.student_grid.click_grid_icon_all_search_label()
+        self.students_page.student_grid.search(self.users[2]['email'])
+        grid_rows = self.students_page.student_grid.grid_rows
+
+        self.assertEqual(len(grid_rows), 1)
+        self._assert_grid_row(grid_rows[0], self.users[2])
+        self.students_page.student_grid.clear_search()
 
 
 class BizPersonalinfoMaskTestBase(BizStudentManagementTestBase):

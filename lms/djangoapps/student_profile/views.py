@@ -6,16 +6,24 @@ from django_countries import countries
 
 from django.core.urlresolvers import reverse
 from django.contrib.auth.decorators import login_required
-from django.http import Http404
+from django.http import Http404, HttpResponse, HttpResponseBadRequest, HttpResponseServerError
 from django.views.decorators.http import require_http_methods
 
+from biz.djangoapps.ga_contract.models import ContractDetail
+from certificates.models import (
+    GeneratedCertificate, CertificateStatuses, CertificatesOnUserProfile,
+    certificate_status_for_student
+)
 from edxmako.shortcuts import render_to_response
+from opaque_keys.edx.keys import CourseKey
+from openedx.core.djangoapps.ga_operation.utils import course_filename, handle_file_from_s3
 from openedx.core.djangoapps.user_api.accounts.api import get_account_settings
 from openedx.core.djangoapps.user_api.accounts.serializers import PROFILE_IMAGE_KEY_PREFIX
 from openedx.core.djangoapps.user_api.errors import UserNotFound, UserNotAuthorized
 from openedx.core.djangoapps.user_api.preferences.api import get_user_preferences
-from student.models import User
+from student.models import User, CourseEnrollment
 from microsite_configuration import microsite
+from xmodule.modulestore.django import modulestore
 
 
 @login_required
@@ -70,6 +78,11 @@ def learner_profile_context(request, profile_username, user_is_staff):
 
     preferences_data = get_user_preferences(profile_user, profile_username)
 
+    if own_profile or preferences_data.get('account_privacy', '') == 'all_users':
+        cert_infos = _get_cert_infos(profile_user, own_profile)
+    else:
+        cert_infos = []
+
     context = {
         'data': {
             'profile_user_id': profile_user.id,
@@ -90,7 +103,117 @@ def learner_profile_context(request, profile_username, user_is_staff):
             'language_options': settings.ALL_LANGUAGES,
             'platform_name': microsite.get_value('platform_name', settings.PLATFORM_NAME),
             'parental_consent_age_limit': settings.PARENTAL_CONSENT_AGE_LIMIT,
+            'cert_infos': cert_infos,
         },
         'disable_courseware_js': True,
     }
     return context
+
+
+def _get_cert_infos(user, own_profile):
+    generated_certificates = GeneratedCertificate.objects.filter(user=user).order_by('-created_date')
+
+    cert_infos = []
+    for generated_certificate in generated_certificates:
+        course_key = CourseKey.from_string(str(generated_certificate.course_id))
+
+        if _is_hidden_course(course_key):
+            continue
+
+        course_enrollment = CourseEnrollment.get_enrollment(user, course_key)
+        if course_enrollment is None:
+            continue
+
+        cert_status = certificate_status_for_student(user, generated_certificate.course_id)
+        if cert_status['status'] == CertificateStatuses.downloadable:
+
+            cert_status['course_id_str'] = str(generated_certificate.course_id)
+            cert_status['course_name'] = course_enrollment.course_overview.display_name_with_default
+            cert_status['image_url'] = _get_thumbnail_url(course_key)
+
+            is_visible_to_public = _is_certificate_visible_to_public(user, generated_certificate.course_id)
+
+            if own_profile:
+                cert_status['is_visible_to_public'] = is_visible_to_public
+                cert_infos.append(cert_status)
+            else:
+                if is_visible_to_public:
+                    # delete from the viewpoint of protection of personal information
+                    # (The real name is printed on the certificate)
+                    del cert_status['download_url']
+
+                    cert_infos.append(cert_status)
+
+    return cert_infos
+
+
+def _is_hidden_course(course_key):
+    course = modulestore().get_course(course_key)
+
+    if course is None:
+        return True
+
+    if course.course_category is None:
+        return True
+
+    if 'gacco' not in course.course_category:
+        return True
+
+    return False
+
+
+def _get_thumbnail_url(course_key):
+    _bucket_name = settings.PDFGEN_BASE_BUCKET_NAME
+    _key_prefix = 'thumbnail-'
+    s3_handle = handle_file_from_s3(
+        '{}{}.jpg'.format(_key_prefix, course_filename(course_key)),
+        _bucket_name
+    )
+    if s3_handle is None:
+        return ''
+    return s3_handle.generate_url(expires_in=300)
+
+
+def _is_certificate_visible_to_public(user, course_id):
+    try:
+        return CertificatesOnUserProfile.objects.get(
+            user=user,
+            course_id=course_id,
+        ).is_visible_to_public
+    except CertificatesOnUserProfile.DoesNotExist:
+        return False
+
+
+@login_required
+@require_http_methods(['POST'])
+def change_visibility_certificates(request, course_id):
+    """Handle visibility change requests.
+
+    Args:
+        request (HttpRequest)
+        course_id (str): course_id of certificate to be changed visibility .
+
+    Returns:
+        HttpResponse: 200 if the page was sent successfully
+        HttpResponse: 302 if not logged in (redirect to login page)
+        HttpResponse: 405 if using an unsupported HTTP method
+    Raises:
+        HttpResponseBadRequest: if the parameter of is_visible_to_public does not exist
+        HttpResponseServerError: if error occurs when saving model
+
+    """
+    is_visible_to_public = request.POST.get('is_visible_to_public')
+    if is_visible_to_public is not None:
+        try:
+            cert, __ = CertificatesOnUserProfile.objects.get_or_create(
+                user=request.user,
+                course_id=CourseKey.from_string(course_id),
+            )
+            cert.is_visible_to_public = True if (is_visible_to_public == '1') else False
+            cert.save()
+        except:
+            return HttpResponseServerError('Failed to save certifications visibility')
+
+        return HttpResponse(status=200)
+    else:
+        return HttpResponseBadRequest('There is no is_visible_to_public parameter')

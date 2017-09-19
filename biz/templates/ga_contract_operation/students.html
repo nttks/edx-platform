@@ -19,9 +19,9 @@ from django.core.urlresolvers import reverse
                     selectColumn: true,
                     toolbarReload: false
                 },
-                multiSearch: false,
+                multiSearch: true,
                 searches: [
-                    {field: 'contract_register_status', caption: '${_("Register Status")}', type: 'list', options: {items: ${status_list}}},
+                    {field: 'contract_register_status', caption: '${_("Register Status")}', type: 'text'},
                     {field: 'full_name', caption: '${_("Full Name")}', type: 'text'},
                     {field: 'user_name', caption: '${_("Username")}', type: 'text'},
                     {field: 'user_email', caption: '${_("Email Address")} ', type: 'text'},

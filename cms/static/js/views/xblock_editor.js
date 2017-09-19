@@ -64,7 +64,7 @@ define(["jquery", "underscore", "gettext", "js/views/xblock", "js/views/metadata
                 if (metadataEditor.length === 1) {
                     metadataData = metadataEditor.data('metadata');
                     for (key in metadataData) {
-                        if (metadataData.hasOwnProperty(key)) {
+                        if (metadataData.hasOwnProperty(key) && !(xblock.type == 'library_content' && key == 'has_score')) {
                             models.push(metadataData[key]);
                         }
                     }

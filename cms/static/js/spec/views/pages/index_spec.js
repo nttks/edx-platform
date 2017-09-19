@@ -81,7 +81,7 @@ define(["jquery", "common/js/spec_helpers/ajax_helpers", "common/js/spec_helpers
                 $('.new-library-button').click();
                 fillInLibraryFields('DemoX', 'DM101', 'Demo library');
                 $('.new-library-save').click();
-                AjaxHelpers.expectJsonRequest(requests, 'POST', '/library/', {
+                AjaxHelpers.expectJsonRequest(requests, 'POST', '/course/undefined/library/', {
                     org: 'DemoX',
                     number: 'DM101',
                     display_name: 'Demo library'

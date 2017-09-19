@@ -20,6 +20,8 @@ from xmodule.exceptions import NotFoundError
 from contentstore.views.exception import AssetNotFoundException
 from django.core.exceptions import PermissionDenied
 from opaque_keys.edx.keys import CourseKey, AssetKey
+from openedx.core.djangoapps.ga_optional.api import is_available
+from openedx.core.djangoapps.ga_optional.models import LIBRARY_OPTION_KEY
 
 from util.date_utils import get_default_time_display
 from util.json_request import JsonResponse
@@ -87,7 +89,8 @@ def _asset_index(request, course_key):
         'max_file_size_in_mbs': settings.MAX_ASSET_UPLOAD_FILE_SIZE_IN_MB,
         'chunk_size_in_mbs': settings.UPLOAD_CHUNK_SIZE_IN_MB,
         'max_file_size_redirect_url': settings.MAX_ASSET_UPLOAD_FILE_SIZE_URL,
-        'asset_callback_url': reverse_course_url('assets_handler', course_key)
+        'asset_callback_url': reverse_course_url('assets_handler', course_key),
+        'library_option': is_available(LIBRARY_OPTION_KEY, course_key)
     })
 
 

@@ -5,10 +5,14 @@
         var Router = Backbone.Router.extend({
             routes: {
                 "": "deleteCourse",
-                "delete_course": "deleteCourse"
+                "delete_course": "deleteCourse",
+                "delete_library": "deleteLibrary"
             },
             deleteCourse: function () {
                 this._render("delete_course_tmpl");
+            },
+            deleteLibrary: function () {
+                this._render("delete_library_tmpl");
             },
             _render: function (id_name) {
                 $('#right_content_response').text('');

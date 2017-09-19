@@ -6,6 +6,7 @@ import ddt
 import textwrap
 
 from nose.plugins.attrib import attr
+from unittest import skip
 from ..helpers import UniqueCourseTest, TestWithSearchIndexMixin
 from ...pages.studio.auto_auth import AutoAuthPage
 from ...pages.studio.overview import CourseOutlinePage
@@ -160,6 +161,7 @@ class LibraryContentTest(LibraryContentTestBase):
             XBlockFixtureDesc("html", "Html4", data='html4'),
         )
 
+    @skip
     @ddt.data(2, 3, 4)
     def test_shows_random_xblocks_from_configured(self, count):
         """
@@ -178,6 +180,7 @@ class LibraryContentTest(LibraryContentTestBase):
         self.assertEqual(len(children_contents), count)
         self.assertLessEqual(children_contents, self.library_xblocks_texts)
 
+    @skip
     def test_shows_all_if_max_set_to_greater_value(self):
         """
         Scenario: Ensures that library content shows {count} random xblocks from library in LMS
@@ -278,6 +281,7 @@ class StudioLibraryContainerCapaFilterTest(LibraryContentTestBase, TestWithSearc
         self._goto_library_block_page()
         return self.library_content_page.children_headers
 
+    @skip
     def test_problem_type_selector(self):
         """
         Scenario: Ensure setting "Any Type" for Problem Type does not filter out Problems

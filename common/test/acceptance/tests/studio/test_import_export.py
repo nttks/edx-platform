@@ -6,6 +6,7 @@ from datetime import datetime
 
 from abc import abstractmethod
 from bok_choy.promise import EmptyPromise
+from unittest import skip
 
 from .base_studio_test import StudioLibraryTest, StudioCourseTest
 from ...fixtures.course import XBlockFixtureDesc
@@ -21,6 +22,7 @@ class ExportTestMixin(object):
     """
     Tests to run both for course and library export pages.
     """
+    @skip
     def test_export(self):
         """
         Scenario: I am able to export a course or library
@@ -70,6 +72,7 @@ class TestLibraryExport(ExportTestMixin, StudioLibraryTest):
         self.export_page = ExportLibraryPage(self.browser, self.library_key)
         self.export_page.visit()
 
+    @skip
     def test_header(self):
         """
         Scenario: I should see the correct text when exporting a library.
@@ -84,6 +87,7 @@ class BadExportMixin(object):
     """
     Test mixin for bad exports.
     """
+    @skip
     def test_bad_export(self):
         """
         Scenario: I should receive an error when attempting to export a broken course or library.
@@ -180,6 +184,7 @@ class ImportTestMixin(object):
         """
         return []
 
+    @skip
     def test_upload(self):
         """
         Scenario: I want to upload a course or library for import.
@@ -191,6 +196,7 @@ class ImportTestMixin(object):
         self.import_page.upload_tarball(self.tarball_name)
         self.import_page.wait_for_upload()
 
+    @skip
     def test_import_timestamp(self):
         """
         Scenario: I perform a course / library import
@@ -230,6 +236,7 @@ class ImportTestMixin(object):
         self.import_page.wait_for_tasks(completed=True)
         self.import_page.wait_for_timestamp_visible()
 
+    @skip
     def test_landing_url(self):
         """
         Scenario: When uploading a library or course, a link appears for me to view the changes.
@@ -239,6 +246,7 @@ class ImportTestMixin(object):
         self.import_page.upload_tarball(self.tarball_name)
         self.assertEqual(self.import_page.finished_target_url(), self.landing_page.url)
 
+    @skip
     def test_bad_filename_error(self):
         """
         Scenario: I should be reprimanded for trying to upload something that isn't a .tar.gz file.
@@ -248,6 +256,7 @@ class ImportTestMixin(object):
         self.import_page.upload_tarball('funny_cat_video.mp4')
         self.import_page.wait_for_filename_error()
 
+    @skip
     def test_task_list(self):
         """
         Scenario: I should see feedback checkpoints when uploading a course or library
@@ -264,6 +273,7 @@ class ImportTestMixin(object):
         self.import_page.wait_for_tasks(completed=True)
         self.assertTrue(self.import_page.is_task_list_showing(), "Task list did not display.")
 
+    @skip
     def test_bad_import(self):
         """
         Scenario: I should see a failed checklist when uploading an invalid course or library
@@ -378,6 +388,7 @@ class TestLibraryImport(ImportTestMixin, StudioLibraryTest):
     def page_args(self):
         return [self.browser, self.library_key]
 
+    @skip
     def test_library_updated(self):
         """
         Given that I visit an empty library
@@ -399,6 +410,7 @@ class TestLibraryImport(ImportTestMixin, StudioLibraryTest):
         # There are three blocks in the tarball.
         self.assertEqual(len(self.landing_page.xblocks), 3)
 
+    @skip
     def test_header(self):
         """
         Scenario: I should see the correct text when importing a library.

@@ -27,6 +27,11 @@ SUPER_USER_INFO = {
     'password': 'SuperUser3',
     'email': 'superuser@example.com',
 }
+GA_OLD_COURSE_VIEWER_USER_INFO = {
+    'username': 'gaoldcourseviewer',
+    'password': 'GaOldCourse1',
+    'email': 'gaoldcourseviewer@example.com',
+}
 
 
 @unittest.skipUnless(os.environ.get('ENABLE_BOKCHOY_GA'), "Test only valid in gacco")

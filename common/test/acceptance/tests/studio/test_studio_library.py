@@ -4,6 +4,7 @@ Acceptance tests for Content Libraries in Studio
 from ddt import ddt, data
 from nose.plugins.attrib import attr
 from flaky import flaky
+from unittest import skip
 
 from .base_studio_test import StudioLibraryTest
 from ...fixtures.course import XBlockFixtureDesc
@@ -19,6 +20,7 @@ class LibraryEditPageTest(StudioLibraryTest):
     """
     Test the functionality of the library edit page.
     """
+    @skip
     def setUp(self):
         """
         Ensure a library exists and navigate to the library edit page.
@@ -28,6 +30,7 @@ class LibraryEditPageTest(StudioLibraryTest):
         self.lib_page.visit()
         self.lib_page.wait_until_ready()
 
+    @skip
     def test_page_header(self):
         """
         Scenario: Ensure that the library's name is displayed in the header and title.
@@ -39,6 +42,7 @@ class LibraryEditPageTest(StudioLibraryTest):
         self.assertIn(self.library_info['display_name'], self.lib_page.get_header_title())
         self.assertIn(self.library_info['display_name'], self.browser.title)
 
+    @skip
     def test_add_duplicate_delete_actions(self):
         """
         Scenario: Ensure that we can add an HTML block, duplicate it, then delete the original.
@@ -72,6 +76,7 @@ class LibraryEditPageTest(StudioLibraryTest):
         self.assertEqual(len(self.lib_page.xblocks), 1)
         self.assertEqual(self.lib_page.xblocks[0].locator, second_block_id)
 
+    @skip
     def test_no_edit_visibility_button(self):
         """
         Scenario: Ensure that library xblocks do not have 'edit visibility' buttons.
@@ -84,6 +89,7 @@ class LibraryEditPageTest(StudioLibraryTest):
         add_component(self.lib_page, "html", "Text")
         self.assertFalse(self.lib_page.xblocks[0].has_edit_visibility_button)
 
+    @skip
     def test_add_edit_xblock(self):
         """
         Scenario: Ensure that we can add an XBlock, edit it, then see the resulting changes.
@@ -123,12 +129,14 @@ class LibraryEditPageTest(StudioLibraryTest):
         problem_block = self.lib_page.xblocks[0]
         self.assertIn("Laura Roslin", problem_block.student_content)
 
+    @skip
     def test_no_discussion_button(self):
         """
         Ensure the UI is not loaded for adding discussions.
         """
         self.assertFalse(self.browser.find_elements_by_css_selector('span.large-discussion-icon'))
 
+    @skip
     @flaky  # TODO fix this, see TNL-2322
     def test_library_pagination(self):
         """
@@ -150,6 +158,7 @@ class LibraryEditPageTest(StudioLibraryTest):
         self.lib_page.click_delete_button(self.lib_page.xblocks[0].locator)
         self.assertEqual(len(self.lib_page.xblocks), 10)
 
+    @skip
     @data('top', 'bottom')
     def test_nav_present_but_disabled(self, position):
         """
@@ -164,6 +173,7 @@ class LibraryEditPageTest(StudioLibraryTest):
         add_component(self.lib_page, "problem", "Multiple Choice")
         self.assertTrue(self.lib_page.nav_disabled(position))
 
+    @skip
     def test_delete_deletes_only_desired_block(self):
         """
         Scenario: Ensure that when deleting XBlock only desired XBlock is deleted
@@ -209,6 +219,7 @@ class LibraryNavigationTest(StudioLibraryTest):
         self.blocks = [XBlockFixtureDesc('html', str(i)) for i in xrange(1, 41)]
         library_fixture.add_children(*self.blocks)
 
+    @skip
     def test_arbitrary_page_selection(self):
         """
         Scenario: I can pick a specific page number of a Library at will.
@@ -231,6 +242,7 @@ class LibraryNavigationTest(StudioLibraryTest):
         self.lib_page.go_to_page(2)
         self.assertEqual(self.lib_page.xblocks[0].name, '11')
 
+    @skip
     def test_bogus_page_selection(self):
         """
         Scenario: I can't pick a nonsense page number of a Library
@@ -254,6 +266,7 @@ class LibraryNavigationTest(StudioLibraryTest):
         self.lib_page.go_to_page(0)
         self.assertTrue(self.lib_page.check_page_unchanged('1'))
 
+    @skip
     @data('top', 'bottom')
     def test_nav_buttons(self, position):
         """
@@ -296,6 +309,7 @@ class LibraryNavigationTest(StudioLibraryTest):
         self.assertEqual(self.lib_page.xblocks[0].name, '1')
         self.assertTrue(self.lib_page.nav_disabled(position, ['previous']))
 
+    @skip
     def test_library_pagination(self):
         """
         Scenario: Ensure that adding several XBlocks to a library results in pagination.
@@ -326,6 +340,7 @@ class LibraryNavigationTest(StudioLibraryTest):
         self.assertEqual(self.lib_page.xblocks[0].name, '31')
         self.assertEqual(self.lib_page.xblocks[-1].name, '40')
 
+    @skip
     def test_delete_shifts_blocks(self):
         """
         Scenario: Ensure that removing an XBlock shifts other blocks back.
@@ -346,6 +361,7 @@ class LibraryNavigationTest(StudioLibraryTest):
         self.assertEqual(self.lib_page.xblocks[-1].name, '11')
         self.assertEqual(self.lib_page.get_page_number(), '1')
 
+    @skip
     def test_previews(self):
         """
         Scenario: Ensure the user is able to hide previews of XBlocks.
@@ -362,6 +378,7 @@ class LibraryNavigationTest(StudioLibraryTest):
         self.lib_page.toggle_previews()
         self.assertTrue(self.lib_page.are_previews_showing())
 
+    @skip
     def test_previews_navigation(self):
         """
         Scenario: Ensure preview settings persist across navigation.
@@ -391,6 +408,7 @@ class LibraryNavigationTest(StudioLibraryTest):
         self.assertEqual(self.lib_page.xblocks[0].name, '1')
         self.assertEqual(self.lib_page.xblocks[-1].name, '10')
 
+    @skip
     def test_preview_state_persistance(self):
         """
         Scenario: Ensure preview state persists between page loads.
@@ -406,6 +424,7 @@ class LibraryNavigationTest(StudioLibraryTest):
         self.lib_page.wait_until_ready()
         self.assertFalse(self.lib_page.are_previews_showing())
 
+    @skip
     def test_preview_add_xblock(self):
         """
         Scenario: Ensure previews are shown when adding new blocks, regardless of preview setting.
@@ -444,6 +463,7 @@ class LibraryNavigationTest(StudioLibraryTest):
         self.assertFalse(second_added.is_placeholder())
         self.assertTrue(first_added.is_placeholder())
 
+    @skip
     def test_edit_with_preview(self):
         """
         Scenario: Editing an XBlock should show me a preview even if previews are hidden.
@@ -464,6 +484,7 @@ class LibraryNavigationTest(StudioLibraryTest):
         self.assertFalse(target.is_placeholder())
         self.assertTrue(all([xblock.is_placeholder() for xblock in self.lib_page.xblocks[1:]]))
 
+    @skip
     def test_duplicate_xblock_pagination(self):
         """
         Scenario: Duplicating an XBlock should not shift the page if the XBlock is not at the end.
@@ -482,6 +503,7 @@ class LibraryNavigationTest(StudioLibraryTest):
         self.assertFalse(target.is_placeholder())
         self.assertEqual(len(self.lib_page.xblocks), 10)
 
+    @skip
     def test_duplicate_xblock_pagination_end(self):
         """
         Scenario: Duplicating an XBlock if it's the last one should bring me to the next page with a preview.
@@ -522,6 +544,7 @@ class LibraryUsersPageTest(StudioLibraryTest):
         self.page = LibraryUsersPage(self.browser, self.library_key)
         self.page.visit()
 
+    @skip
     def test_user_management(self):
         """
         Scenario: Ensure that we can edit the permissions of users.
@@ -571,7 +594,6 @@ class LibraryUsersPageTest(StudioLibraryTest):
         self.page.click_submit_new_user_form()
 
         # Check the new user's listing:
-
         def get_two_users():
             """
             Expect two users to be listed, one being me, and another user.
@@ -644,6 +666,7 @@ class StudioLibraryA11yTest(StudioLibraryTest):
     Class to test Studio pages accessibility.
     """
 
+    @skip
     def test_lib_edit_page_a11y(self):
         """
         Check accessibility of LibraryEditPage.

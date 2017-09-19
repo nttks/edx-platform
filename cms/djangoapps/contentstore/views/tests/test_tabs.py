@@ -5,6 +5,7 @@ import json
 from contentstore.views import tabs
 from contentstore.tests.utils import CourseTestCase
 from contentstore.utils import reverse_course_url
+from openedx.core.djangoapps.ga_optional.models import CourseOptionalConfiguration
 from xmodule.x_module import STUDENT_VIEW
 from xmodule.modulestore.tests.factories import CourseFactory, ItemFactory
 from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
@@ -66,10 +67,19 @@ class TabsPageTests(CourseTestCase):
 
     def test_view_index(self):
         """Basic check that the Pages page responds correctly"""
+        CourseOptionalConfiguration(
+            id=1,
+            change_date="2015-06-18 11:02:13",
+            enabled=True,
+            key='library-for-settings',
+            course_key=self.course.id,
+            changed_by_id=self.user.id
+        ).save()
 
         resp = self.client.get_html(self.url)
         self.assertEqual(resp.status_code, 200)
         self.assertIn('course-nav-list', resp.content)
+        self.assertIn('class="nav-item nav-manage-library"', resp.content)
 
     def test_reorder_tabs(self):
         """Test re-ordering of tabs"""

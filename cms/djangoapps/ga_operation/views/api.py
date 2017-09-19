@@ -5,7 +5,8 @@ from django.views.decorators.http import require_POST
 
 from biz.djangoapps.ga_contract.models import Contract, ContractDetail
 from cms.djangoapps.ga_operation.forms.delete_course_form import DeleteCourseForm
-from cms.djangoapps.ga_operation.tasks import delete_course_task
+from cms.djangoapps.ga_operation.forms.delete_library_form import DeleteLibraryForm
+from cms.djangoapps.ga_operation.tasks import delete_course_task, delete_library_task
 from opaque_keys.edx.keys import CourseKey
 from openedx.core.djangoapps.ga_operation.utils import handle_operation, RESPONSE_FIELD_ID, staff_only
 from student.models import CourseEnrollment
@@ -40,3 +41,18 @@ def delete_course(request, form_instance):
         return JsonResponse({
             RESPONSE_FIELD_ID: u"講座削除処理を開始しました。\n処理が終了次第、{}のアドレスに完了通知が届きます。".format(email)
         })
+
+
+@staff_only
+@login_required
+@require_POST
+@ensure_csrf_cookie
+@handle_operation(DeleteLibraryForm)
+def delete_library(request, form_instance):
+    """Ajax call to delete library."""
+    library_id = form_instance.cleaned_data['course_id']
+    email = form_instance.cleaned_data['email']
+    delete_library_task.delay(library_id=library_id, email=email)
+    return JsonResponse({
+        RESPONSE_FIELD_ID: u"ライブラリ削除処理を開始しました。\n処理が終了次第、{}のアドレスに完了通知が届きます。".format(email)
+    })

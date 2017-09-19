@@ -1,0 +1,41 @@
+[
+  {
+    "pk": 9092,
+    "model": "auth.user",
+    "fields": {
+      "date_joined": "2017-08-01 00:00:00",
+      "username": "gaoldcourseviewer",
+      "first_name": "gaoldcourseviewer",
+      "last_name": "test",
+      "email": "gaoldcourseviewer@example.com",
+      "password": "GaOldCourse1",
+      "is_active": true
+    }
+  },
+  {
+    "pk": 9092,
+    "model": "student.userprofile",
+    "fields": {
+      "user": 9092,
+      "name": "gaoldcourseviewer test",
+      "courseware": "course.xml",
+      "allow_certificate": true
+    }
+  },
+  {
+    "pk": 9092,
+    "model": "student.registration",
+    "fields": {
+      "user": 9092,
+      "activation_key": "TuC53PTAh6Kb3wEyaRi3HFQcKieB4QdS"
+    }
+  },
+  {
+    "pk": 9092,
+    "model": "student.courseaccessrole",
+    "fields": {
+      "role": "ga_old_course_viewer",
+      "user": 9092
+    }
+  }
+]

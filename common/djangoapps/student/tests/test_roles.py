@@ -4,7 +4,7 @@ Tests of student.roles
 import ddt
 from django.test import TestCase
 
-from courseware.tests.factories import UserFactory, StaffFactory, InstructorFactory
+from courseware.tests.factories import GaOldCourseViewerStaffFactory, UserFactory, StaffFactory, InstructorFactory
 from student.tests.factories import AnonymousUserFactory
 
 from student.roles import (
@@ -28,11 +28,13 @@ class RolesTestCase(TestCase):
         self.global_staff = UserFactory(is_staff=True)
         self.course_staff = StaffFactory(course_key=self.course_key)
         self.course_instructor = InstructorFactory(course_key=self.course_key)
+        self.ga_old_course_viewer = GaOldCourseViewerStaffFactory()
 
     def test_global_staff(self):
         self.assertFalse(GlobalStaff().has_user(self.student))
         self.assertFalse(GlobalStaff().has_user(self.course_staff))
         self.assertFalse(GlobalStaff().has_user(self.course_instructor))
+        self.assertFalse(GlobalStaff().has_user(self.ga_old_course_viewer))
         self.assertTrue(GlobalStaff().has_user(self.global_staff))
 
     def test_group_name_case_sensitive(self):

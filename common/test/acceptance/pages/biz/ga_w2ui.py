@@ -199,6 +199,15 @@ class W2uiGrid(object):
         self.page_object.q(css='div.w2ui-select-field>table>tbody>tr').nth(index).first.click()
         return self.wait_for_overlay_absence()
 
+    def click_grid_icon_all_search_label(self):
+        """
+        The argument of click_grid_icon_search_label corresponds to English only
+        'All search items' are not English-ready
+        Since all search items are placed at the beginning, direct designation is performed
+        """
+        self.page_object.q(css='div.w2ui-select-field>table>tbody>tr').nth(0).first.click()
+        return self.wait_for_overlay_absence()
+
     @property
     def search_placeholder(self):
         return self.page_object.q(css='{}input.w2ui-search-all'.format(self.parent_css)).attrs('placeholder')[0].strip()

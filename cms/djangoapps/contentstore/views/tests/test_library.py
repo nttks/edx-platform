@@ -6,21 +6,25 @@ More important high-level tests are in contentstore/tests/test_libraries.py
 from contentstore.tests.utils import AjaxEnabledTestClient, parse_json
 from contentstore.utils import reverse_course_url, reverse_library_url
 from contentstore.views.component import get_component_templates
+from contentstore.views.library import _get_course_and_check_access
+from xmodule.modulestore.django import modulestore
 from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
-from xmodule.modulestore.tests.factories import LibraryFactory
+from xmodule.modulestore.tests.factories import CourseFactory, LibraryFactory
 from mock import patch
 from opaque_keys.edx.locator import CourseKey, LibraryLocator
+from openedx.core.djangoapps.ga_optional.models import CourseOptionalConfiguration
+from student import auth
+from student.roles import CourseInstructorRole
 import ddt
-from student.roles import LibraryUserRole
-
-LIBRARY_REST_URL = '/library/'  # URL for GET/POST requests involving libraries
 
 
-def make_url_for_lib(key):
+def make_url_for_lib(course, library=None):
     """ Get the RESTful/studio URL for testing the given library """
-    if isinstance(key, LibraryLocator):
-        key = unicode(key)
-    return LIBRARY_REST_URL + key
+    if library:
+        lib_url = reverse_course_url('course_library_handler', course.id, kwargs={'library_key_string': unicode(library)})
+    else:
+        lib_url = reverse_course_url('course_library_handler', course.id)
+    return lib_url
 
 
 @ddt.ddt
@@ -31,10 +35,21 @@ class UnitTestLibraries(ModuleStoreTestCase):
 
     def setUp(self):
         user_password = super(UnitTestLibraries, self).setUp()
+        self.course = CourseFactory.create()
 
         self.client = AjaxEnabledTestClient()
         self.client.login(username=self.user.username, password=user_password)
 
+        CourseOptionalConfiguration(
+            id=1,
+            change_date="2015-06-18 11:02:13",
+            enabled=True,
+            key='library-for-settings',
+            course_key=self.course.id,
+            changed_by_id=self.user.id
+        ).save()
+
+        self.session_data = {}  # Used by _bind_module
     ######################################################
     # Tests for /library/ - list and create libraries:
 
@@ -43,40 +58,45 @@ class UnitTestLibraries(ModuleStoreTestCase):
         """
         The library URLs should return 404 if libraries are disabled.
         """
-        response = self.client.get_json(LIBRARY_REST_URL)
+        lib_url = make_url_for_lib(self.course)
+        response = self.client.get_json(lib_url)
         self.assertEqual(response.status_code, 404)
 
-    def test_list_libraries(self):
+    def test_redirect_libhome(self):
         """
-        Test that we can GET /library/ to list all libraries visible to the current user.
+        Redirect  /course/{}/library/ to course/{}/libhome.
         """
         # Create some more libraries
-        libraries = [LibraryFactory.create() for _ in range(3)]
-        lib_dict = dict([(lib.location.library_key, lib) for lib in libraries])
+        lib_url = make_url_for_lib(self.course)
+        response = self.client.get(lib_url, {
+            'course_key_string': unicode(self.course.id)
+        })
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("libhome", response['location'])
 
-        response = self.client.get_json(LIBRARY_REST_URL)
+    def test_library_listing(self):
+        libraries = [LibraryFactory.create() for _ in range(3)]
+        self.course.target_library = [unicode(library) for library in libraries]
+        modulestore().update_item(self.course, self.user.id)
+        lib_url = reverse_course_url('library_listing', self.course.id)
+        response = self.client.get(lib_url, {
+            'course_key_string': unicode(self.course.id)
+        })
         self.assertEqual(response.status_code, 200)
-        lib_list = parse_json(response)
-        self.assertEqual(len(lib_list), len(libraries))
-        for entry in lib_list:
-            self.assertIn("library_key", entry)
-            self.assertIn("display_name", entry)
-            key = CourseKey.from_string(entry["library_key"])
-            self.assertIn(key, lib_dict)
-            self.assertEqual(entry["display_name"], lib_dict[key].display_name)
-            del lib_dict[key]  # To ensure no duplicates are matched
 
     @ddt.data("delete", "put")
     def test_bad_http_verb(self, verb):
         """
         We should get an error if we do weird requests to /library/
         """
-        response = getattr(self.client, verb)(LIBRARY_REST_URL)
+        lib_url = make_url_for_lib(self.course)
+        response = getattr(self.client, verb)(lib_url)
         self.assertEqual(response.status_code, 405)
 
     def test_create_library(self):
         """ Create a library. """
-        response = self.client.ajax_post(LIBRARY_REST_URL, {
+        lib_url = make_url_for_lib(self.course)
+        response = self.client.ajax_post(lib_url, {
             'org': 'org',
             'library': 'lib',
             'display_name': "New Library",
@@ -92,9 +112,15 @@ class UnitTestLibraries(ModuleStoreTestCase):
         """
         self.client.logout()
         ns_user, password = self.create_non_staff_user()
+
+        instructor_role = CourseInstructorRole(self.course.id)
+        auth.add_users(self.user, instructor_role, ns_user)
+        CourseInstructorRole(self.course.location.course_key).add_users(ns_user)
+
         self.client.login(username=ns_user.username, password=password)
 
-        response = self.client.ajax_post(LIBRARY_REST_URL, {
+        lib_url = make_url_for_lib(self.course)
+        response = self.client.ajax_post(lib_url, {
             'org': 'org', 'library': 'lib', 'display_name': "New Library",
         })
         self.assertEqual(response.status_code, 200)
@@ -110,7 +136,8 @@ class UnitTestLibraries(ModuleStoreTestCase):
         """
         Make sure we are prevented from creating libraries with invalid keys/data
         """
-        response = self.client.ajax_post(LIBRARY_REST_URL, data)
+        lib_url = make_url_for_lib(self.course)
+        response = self.client.ajax_post(lib_url, data)
         self.assertEqual(response.status_code, 400)
 
     def test_no_duplicate_libraries(self):
@@ -119,7 +146,8 @@ class UnitTestLibraries(ModuleStoreTestCase):
         """
         lib = LibraryFactory.create()
         lib_key = lib.location.library_key
-        response = self.client.ajax_post(LIBRARY_REST_URL, {
+        lib_url = make_url_for_lib(self.course)
+        response = self.client.ajax_post(lib_url, {
             'org': lib_key.org,
             'library': lib_key.library,
             'display_name': "A Duplicate key, same as 'lib'",
@@ -135,13 +163,19 @@ class UnitTestLibraries(ModuleStoreTestCase):
         Test that we can get data about a library (in JSON format) using /library/:key/
         """
         # Create a library
-        lib_key = LibraryFactory.create().location.library_key
+        lib = LibraryFactory.create()
+        lib_key = lib.location.library_key
+        libraries = getattr(self.course, 'target_library', [])
+        libraries.append(unicode(lib_key))
+        setattr(self.course, 'target_library', libraries)
+        modulestore().update_item(self.course, self.user.id)
+
         # Re-load the library from the modulestore, explicitly including version information:
         lib = self.store.get_library(lib_key, remove_version=False, remove_branch=False)
         version = lib.location.library_key.version_guid
         self.assertNotEqual(version, None)
 
-        response = self.client.get_json(make_url_for_lib(lib_key))
+        response = self.client.get_json(make_url_for_lib(self.course, lib_key))
         self.assertEqual(response.status_code, 200)
         info = parse_json(response)
         self.assertEqual(info['display_name'], lib.display_name)
@@ -156,8 +190,13 @@ class UnitTestLibraries(ModuleStoreTestCase):
         Test that we can get the studio view for editing a library using /library/:key/
         """
         lib = LibraryFactory.create()
+        lib_key = lib.location.library_key
+        libraries = getattr(self.course, 'target_library', [])
+        libraries.append(unicode(lib_key))
+        setattr(self.course, 'target_library', libraries)
+        modulestore().update_item(self.course, self.user.id)
 
-        response = self.client.get(make_url_for_lib(lib.location.library_key))
+        response = self.client.get(make_url_for_lib(self.course, lib_key))
         self.assertEqual(response.status_code, 200)
         self.assertIn("<html", response.content)
         self.assertIn(lib.display_name, response.content)
@@ -167,7 +206,8 @@ class UnitTestLibraries(ModuleStoreTestCase):
         """
         Check that various Nonexistent/invalid keys give 404 errors
         """
-        response = self.client.get_json(make_url_for_lib(key_str))
+        lib_url = make_url_for_lib(self.course) + '/library/' + key_str
+        response = self.client.get_json(lib_url)
         self.assertEqual(response.status_code, 404)
 
     def test_bad_http_verb_with_lib_key(self):
@@ -176,7 +216,7 @@ class UnitTestLibraries(ModuleStoreTestCase):
         """
         lib = LibraryFactory.create()
         for verb in ("post", "delete", "put"):
-            response = getattr(self.client, verb)(make_url_for_lib(lib.location.library_key))
+            response = getattr(self.client, verb)(make_url_for_lib(self.course, lib.location.library_key))
             self.assertEqual(response.status_code, 405)
 
     def test_no_access(self):
@@ -184,8 +224,8 @@ class UnitTestLibraries(ModuleStoreTestCase):
         self.client.login(username=user, password=password)
 
         lib = LibraryFactory.create()
-        response = self.client.get(make_url_for_lib(lib.location.library_key))
-        self.assertEqual(response.status_code, 403)
+        response = self.client.get(make_url_for_lib(self.course, lib.location.library_key))
+        self.assertEqual(response.status_code, 404)
 
     def test_get_component_templates(self):
         """
@@ -200,29 +240,48 @@ class UnitTestLibraries(ModuleStoreTestCase):
         self.assertNotIn('discussion', templates)
         self.assertNotIn('advanced', templates)
 
-    def test_manage_library_users(self):
-        """
-        Simple test that the Library "User Access" view works.
-        Also tests that we can use the REST API to assign a user to a library.
-        """
-        library = LibraryFactory.create()
-        extra_user, _ = self.create_non_staff_user()
-        manage_users_url = reverse_library_url('manage_library_users', unicode(library.location.library_key))
+    def test_get_course_and_check_access(self):
+        course_module = _get_course_and_check_access(self.course.id, self.user)
+        self.assertIsNotNone(course_module)
 
-        response = self.client.get(manage_users_url)
-        self.assertEqual(response.status_code, 200)
-        # extra_user has not been assigned to the library so should not show up in the list:
-        self.assertNotIn(extra_user.username, response.content)
 
-        # Now add extra_user to the library:
-        user_details_url = reverse_course_url(
-            'course_team_handler',
-            library.location.library_key, kwargs={'email': extra_user.email}
-        )
-        edit_response = self.client.ajax_post(user_details_url, {"role": LibraryUserRole.ROLE})
-        self.assertIn(edit_response.status_code, (200, 204))
+class TestEnableLibraryContent(ModuleStoreTestCase):
+    def setUp(self):
+        user_password = super(TestEnableLibraryContent, self).setUp()
+        self.course = CourseFactory.create()
 
-        # Now extra_user should apear in the list:
-        response = self.client.get(manage_users_url)
-        self.assertEqual(response.status_code, 200)
-        self.assertIn(extra_user.username, response.content)
+        self.client = AjaxEnabledTestClient()
+        self.client.login(username=self.user.username, password=user_password)
+
+        self.session_data = {}  # Used by _bind_module
+
+    @patch('contentstore.views.library.LIBRARIES_ENABLED', False)
+    def test_disable_content_libraries(self, org='org', library='lib', display_name='Test Library'):
+        response = self.client.ajax_post('/course/org.0/course_0/Run_0/library/', {
+            'org': org,
+            'library': library,
+            'display_name': display_name,
+        })
+        self.assertEqual(response.status_code, 404)
+
+
+class TestLibraryOption(ModuleStoreTestCase):
+    def setUp(self):
+        self.user_password = super(TestLibraryOption, self).setUp()
+        self.course = CourseFactory.create()
+
+        self.client = AjaxEnabledTestClient()
+        self.client.login(username=self.user.username, password=self.user_password)
+
+        self.session_data = {}  # Used by _bind_module
+
+    def test_non_library_key(self, org='org', library='lib', display_name='Test Library'):
+        lib = LibraryFactory.create()
+        lib_key = lib.location.library_key
+        libraries = getattr(self.course, 'target_library', [])
+        libraries.append(unicode(lib_key))
+        setattr(self.course, 'target_library', libraries)
+        modulestore().update_item(self.course, self.user.id)
+
+        response = self.client.ajax_post(make_url_for_lib(self.course, lib_key))
+        self.assertEqual(response.status_code, 404)

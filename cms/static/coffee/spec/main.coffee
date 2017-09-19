@@ -268,6 +268,7 @@ define([
 
     "js/spec/views/settings/main_spec",
 
+    "js/spec/factories/index_spec",
     "js/spec/factories/xblock_validation_spec",
 
     "js/spec/xblock/cms.runtime.v1_spec",
@@ -279,6 +280,11 @@ define([
     "js/certificates/spec/views/certificates_list_spec",
     "js/certificates/spec/views/certificate_preview_spec",
 
+    "js/spec/ga_operation/views/delete_library_spec",
+    "js/spec/ga_operation/ga_operation_app_spec",
+    "js/spec/ga_operation/ga_operation_router_spec",
+
+    "js/spec/index_spec",
     # these tests are run separately in the cms-squire suite, due to process
     # isolation issues with Squire.js
     # "coffee/spec/views/assets_spec"

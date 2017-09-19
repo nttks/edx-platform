@@ -21,21 +21,31 @@
     // -------------------------------------------------------------------
     //  YOUR CHANGES GO HERE
     //
-    // I've tried to localize the things you are likely to change to 
+    // I've tried to localize the things you are likely to change to
     // this area.
     // -------------------------------------------------------------------
 
-    // The text that appears on the upper part of the dialog box when
-    // entering links.
-    var linkDialogText = "<p><b>" + gettext("Insert Hyperlink") + "</b></p><p></p>";
-    var imageDialogText = "<p><b>" + gettext("Insert Image (upload file or type url)") + "</b></p><p></p>";
+    // The text that appears on the dialog box when entering links.
+    var linkDialogText = gettext("Insert Hyperlink"),
+        linkDefaultText = "http://", // The default text that appears in input
+        linkDestinationError = gettext("Please provide a description of the link destination."),
+        notDestinationCheck = false;
 
-    // The default text that appears in the dialog input box when entering
-    // links.
-    var imageDefaultText = "http://";
-    var linkDefaultText = "http://";
+    // The text that appears on the dialog box when entering Images.
+    var imageUploadDialogText = gettext("Insert Image (Upload File or Type URL)"),
+        imageDialogText = gettext("Insert Image (Type URL)"),
+        imageDescriptionLabel = gettext("Image description"),
+        imageDefaultText = "http://", // The default text that appears in input
+        imageDescError = gettext("Description is Required."),  // jshint ignore:line
+        descriptionCheck = true,
+        imageButtonClick = false,
+        imageFileMaxSize = 4 * 1024 * 1024,
+        size = '4M';
 
-    var defaultHelpHoverTitle = gettext("Markdown Editing Help");
+    // Text that is shared between both link and image dialog boxes.
+    var defaultHelpHoverTitle = gettext("Markdown Editing Help"),
+        urlLabel = gettext("URL"),
+        urlError = gettext("Please provide a valid URL.");
 
     // -------------------------------------------------------------------
     //  END OF YOUR CHANGES
@@ -60,6 +70,8 @@
                                                   * its own image insertion dialog, this hook should return true, and the callback should be called with the chosen
                                                   * image url (or null if the user cancelled). If this hook returns false, the default dialog will be used.
                                                   */
+        this.util = util;
+        this.ui = ui;
 
         this.getConverter = function () { return markdownConverter; }
 
@@ -88,7 +100,7 @@
                 }
             }
 
-            uiManager = new UIManager(idPostfix, panels, undoManager, previewManager, commandManager, help, null);
+            uiManager = new UIManager(idPostfix, panels, undoManager, previewManager, commandManager, help, imageUploadHandler);
             uiManager.setUndoRedoButtonStates();
 
             var forceRefresh = that.refreshPreview = function () { previewManager.refresh(true); };
@@ -160,7 +172,7 @@
             beforeReplacer = function (s) { that.before += s; return ""; }
             afterReplacer = function (s) { that.after = s + that.after; return ""; }
         }
-        
+
         this.selection = this.selection.replace(/^(\s*)/, beforeReplacer).replace(/(\s*)$/, afterReplacer);
     };
 
@@ -228,14 +240,14 @@
         }
     };
 
-    // end of Chunks 
+    // end of Chunks
 
     // A collection of the important regions on the page.
     // Cached so we don't have to keep traversing the DOM.
     // Also holds ieCachedRange and ieCachedScrollTop, where necessary; working around
     // this issue:
     // Internet explorer has problems with CSS sprite buttons that use HTML
-    // lists.  When you click on the background image "button", IE will 
+    // lists.  When you click on the background image "button", IE will
     // select the non-existent link text and discard the selection in the
     // textarea.  The solution to this is to cache the textarea selection
     // on the button's mousedown event and set a flag.  In the part of the
@@ -250,6 +262,27 @@
         this.buttonBar = doc.getElementById("wmd-button-bar" + postfix);
         this.preview = doc.getElementById("wmd-preview" + postfix);
         this.input = doc.getElementById("wmd-input" + postfix);
+    };
+
+    util.isValidUrl = function(url) {
+        return /^((?:http|https|ftp):\/{2}|\/)[^]+$/.test(url);
+    };
+
+    util.checkSize = function(files) {
+        if (files.length == 1) {
+            var fileSize = files[0].size;
+            if (imageFileMaxSize < fileSize) {
+                alert(interpolate_text(
+                    gettext('Maximum upload file size is {file_size} bytes.'),
+                    {'file_size': size}
+                ));
+                return false;
+            } else {
+                return true;
+            }
+        } else {
+            return false;
+        }
     };
 
     // Returns true if the DOM element is visible, false if it's hidden.
@@ -580,7 +613,7 @@
                     setMode("escape");
                 }
                 else if ((keyCode < 16 || keyCode > 20) && keyCode != 91) {
-                    // 16-20 are shift, etc. 
+                    // 16-20 are shift, etc.
                     // 91: left window key
                     // I think this might be a little messed up since there are
                     // a lot of nonprinting keys above 20.
@@ -646,6 +679,7 @@
 
             this.setInputAreaSelectionStartEnd();
             this.scrollTop = inputArea.scrollTop;
+            this.oldScrollHeight = inputArea.scrollHeight;
             if (!this.text && inputArea.selectionStart || inputArea.selectionStart === 0) {
                 this.text = inputArea.value;
             }
@@ -661,11 +695,11 @@
             }
 
             if (inputArea.selectionStart !== undefined && !uaSniffed.isOpera) {
-
                 inputArea.focus();
                 inputArea.selectionStart = stateObj.start;
                 inputArea.selectionEnd = stateObj.end;
-                inputArea.scrollTop = stateObj.scrollTop;
+                scrollHeight = inputArea.scrollHeight - stateObj.oldScrollHeight;
+                inputArea.scrollTop = stateObj.scrollTop + scrollHeight;
             }
             else if (doc.selection) {
 
@@ -724,7 +758,7 @@
 
                 if (panels.ieCachedRange)
                     stateObj.scrollTop = panels.ieCachedScrollTop; // this is set alongside with ieCachedRange
-                
+
                 panels.ieCachedRange = null;
 
                 this.setInputAreaSelection();
@@ -738,7 +772,7 @@
                 inputArea.value = stateObj.text;
             }
             this.setInputAreaSelection();
-            inputArea.scrollTop = stateObj.scrollTop;
+            // inputArea.scrollTop = stateObj.scrollTop;
         };
 
         // Gets a collection of HTML chunks from the inptut textarea.
@@ -750,6 +784,7 @@
             chunk.selection = util.fixEolChars(stateObj.text.substring(stateObj.start, stateObj.end));
             chunk.endTag = "";
             chunk.after = util.fixEolChars(stateObj.text.substring(stateObj.end));
+            chunk.defs = ""
             chunk.scrollTop = stateObj.scrollTop;
 
             return chunk;
@@ -761,8 +796,13 @@
             chunk.before = chunk.before + chunk.startTag;
             chunk.after = chunk.endTag + chunk.after;
 
-            this.start = chunk.before.length;
-            this.end = chunk.before.length + chunk.selection.length;
+            if (imageButtonClick) {
+                this.start = chunk.before.length + chunk.defs.length;
+                this.end = chunk.before.length + chunk.defs.length;
+            } else {
+                this.start = chunk.before.length;
+                this.end = chunk.before.length + chunk.selection.length;
+            }
             this.text = chunk.before + chunk.selection + chunk.after;
             this.scrollTop = chunk.scrollTop;
         };
@@ -971,9 +1011,9 @@
 
         var background = doc.createElement("div"),
             style = background.style;
-        
+
         background.className = "wmd-prompt-background";
-        
+
         style.position = "absolute";
         style.top = "0";
 
@@ -1010,17 +1050,25 @@
     // callback: The function which is executed when the prompt is dismissed, either via OK or Cancel.
     //      It receives a single argument; either the entered text (if OK was chosen) or null (if Cancel
     //      was chosen).
-    ui.prompt = function (text, defaultInputText, callback, imageUploadHandler) {
+    ui.prompt = function (title,
+                          urlLabel,
+                          urlError,
+                          urlDescLabel,
+                          urlDescError,
+                          isDescriptionCheck,
+                          defaultInputText,
+                          callback,
+                          imageUploadHandler) {
 
         // These variables need to be declared at this level since they are used
         // in multiple functions.
-        var dialog;         // The dialog box.
-        var input;         // The text box where you enter the hyperlink.
-
-
-        if (defaultInputText === undefined) {
-            defaultInputText = "";
-        }
+        var dialog,         // The dialog box.
+            urlInput,       // The text box where you enter the hyperlink.
+            urlErrorMsg,
+            descInput,      // The text box where you enter the description.
+            descErrorMsg,
+            okButton,
+            cancelButton;
 
         // Used as a keydown event handler. Esc dismisses the prompt.
         // Key code 27 is ESC.
@@ -1031,129 +1079,161 @@
             }
         };
 
+        var clearFormErrorMessages = function () {
+            urlInput.classList.remove('has-error');
+            urlErrorMsg.style.display = 'none';
+            if (isDescriptionCheck) {
+                descInput.classList.remove('has-error');
+                descErrorMsg.style.display = 'none';
+            }
+        };
+
         // Dismisses the hyperlink input box.
         // isCancel is true if we don't care about the input text.
         // isCancel is false if we are going to keep the text.
         var close = function (isCancel) {
             util.removeEvent(doc.body, "keydown", checkEscape);
-            var text = input.value;
+            var url = urlInput.value.trim();
+            if (descInput != null) {
+                var description = descInput.value.trim();
+            }
+
+            clearFormErrorMessages();
 
             if (isCancel) {
-                text = null;
+                url = null;
             }
             else {
                 // Fixes common pasting errors.
-                text = text.replace(/^http:\/\/(https?|ftp):\/\//, '$1://');
+                url = url.replace(/^http:\/\/(https?|ftp):\/\//, '$1://');
                 // doesn't change url if started with '/' (local)
-                if (!/^(?:https?|ftp):\/\//.test(text) && text.charAt(0) != '/') {
-                    text = 'http://' + text;
+                if (!/^(?:https?|ftp):\/\//.test(url) && url.charAt(0) !== '/') {
+                    url = 'http://' + url;
                 }
             }
 
-            dialog.parentNode.removeChild(dialog);
+            var isValidUrl = util.isValidUrl(url);
+            var isValidDesc = true;
+            if (isDescriptionCheck) {
+                isValidDesc = (
+                    descInput.value ? true : false
+                );
+            }
 
-            callback(text);
+            if ((isValidUrl && isValidDesc) || isCancel) {
+                dialog.parentNode.removeChild(dialog);
+                callback(url, description);
+            } else {
+                var errorCount = 0;
+                if (!isValidUrl) {
+                    urlErrorMsg.style.display = 'inline-block';
+                    errorCount += 1;
+                } if (!isValidDesc) {
+                    descErrorMsg.style.display = 'inline-block';
+                    errorCount += 1;
+                }
+                document.getElementById('wmd-editor-dialog-form-errors').textContent = [
+                    interpolate(
+                        ngettext(
+                            // Translators: 'errorCount' is the number of errors found in the form.
+                            '%(errorCount)s error found in form.', '%(errorCount)s errors found in form.',
+                            errorCount
+                        ), {'errorCount': errorCount}, true
+                    ),
+                    !isValidUrl ? urlErrorMsg.textContent : '',
+                    !isValidDesc ? descErrorMsg.textContent : ''
+                ].join(' ');
+
+                document.getElementById('wmd-editor-dialog-form-errors').focus();
+            }
+
             return false;
         };
 
-
-
         // Create the text input box form/window.
         var createDialog = function () {
-
             // The main dialog box.
             dialog = doc.createElement("div");
+            dialog.innerHTML = _.template(
+                document.getElementById("customwmd-prompt-template").innerHTML, {
+                title: title,
+                urlLabel: urlLabel,
+                urlError: urlError,
+                urlDescLabel: urlDescLabel,
+                descError: urlDescError,
+                isDescription: isDescriptionCheck,
+                okText: "OK",
+                cancelText: "Cancel",
+                chooseFileText: gettext("Choose File"),
+                imageUploadHandler: imageUploadHandler
+            });
             dialog.setAttribute("role", "dialog");
-            dialog.className = "wmd-prompt-dialog";
+            dialog.setAttribute("tabindex", "-1");
+            dialog.setAttribute("aria-labelledby", "editorDialogTitle");
+            dialog.className = "image-link-wmd-prompt-dialog";
             dialog.style.padding = "10px;";
             dialog.style.position = "fixed";
-            dialog.style.width = "400px";
             dialog.style.zIndex = "1001";
 
-            // The dialog text.
-            var question = doc.createElement("div");
-            question.innerHTML = text;
-            question.style.padding = "5px";
-            dialog.appendChild(question);
-
-            // The web form container for the text box and buttons.
-            var form = doc.createElement("form"),
-                style = form.style;
-            form.onsubmit = function () { return close(false); };
-            style.padding = "0";
-            style.margin = "0";
-            style.cssFloat = "left";
-            style.width = "100%";
-            style.textAlign = "center";
-            style.position = "relative";
-            dialog.appendChild(form);
-
-            // The input text box
-            input = doc.createElement("input");
-            input.type = "text";
-            input.value = defaultInputText;
-            style = input.style;
-            style.display = "block";
-            style.width = "80%";
-            style.marginLeft = style.marginRight = "auto";
-            form.appendChild(input);
-
-            // The choose file button if prompt type is 'image'
-
-            if (imageUploadHandler) {
-              var chooseFile = doc.createElement("input");
-              chooseFile.type = "file";
-              chooseFile.name = "file-upload";
-              chooseFile.id = "file-upload";
-              chooseFile.onchange = function() {
-                imageUploadHandler(this, input);
-              };
-              form.appendChild(doc.createElement("br"));
-              form.appendChild(chooseFile);
-            }
-
-
-            // The ok button
-            var okButton = doc.createElement("input");
-            okButton.type = "button";
-            okButton.onclick = function () { return close(false); };
-            okButton.value = "OK";
-            style = okButton.style;
-            style.margin = "10px";
-            style.display = "inline";
-            style.width = "7em";
-
-
-            // The cancel button
-            var cancelButton = doc.createElement("input");
-            cancelButton.type = "button";
-            cancelButton.onclick = function () { return close(true); };
-            cancelButton.value = "Cancel";
-            style = cancelButton.style;
-            style.margin = "10px";
-            style.display = "inline";
-            style.width = "7em";
-
-            form.appendChild(okButton);
-            form.appendChild(cancelButton);
-
-            util.addEvent(doc.body, "keydown", checkEscape);
-            dialog.style.top = "50%";
-            dialog.style.left = "50%";
-            dialog.style.display = "block";
-            if (uaSniffed.isIE_5or6) {
-                dialog.style.position = "absolute";
-                dialog.style.top = doc.documentElement.scrollTop + 200 + "px";
-                dialog.style.left = "50%";
-            }
             doc.body.appendChild(dialog);
 
             // This has to be done AFTER adding the dialog to the form if you
             // want it to be centered.
+            util.addEvent(doc.body, "keydown", checkEscape);
+            dialog.style.top = "50%";
+            dialog.style.display = "block";
+            if (uaSniffed.isIE_5or6) {
+                dialog.style.position = "absolute";
+                dialog.style.top = doc.documentElement.scrollTop + 200 + "px";
+            }
             dialog.style.marginTop = -(position.getHeight(dialog) / 2) + "px";
-            dialog.style.marginLeft = -(position.getWidth(dialog) / 2) + "px";
 
+            urlInput = document.getElementById("new-url-input");
+            urlErrorMsg = document.getElementById("new-url-input-field-message");
+            descInput = document.getElementById("new-url-desc-input");
+            descErrorMsg = document.getElementById("new-url-desc-input-field-message");
+            urlInput.value = defaultInputText;
+
+            okButton = document.getElementById("new-link-image-ok");
+            cancelButton = document.getElementById("new-link-image-cancel");
+
+            okButton.onclick = function () { return close(false); };
+            cancelButton.onclick = function () { return close(true); };
+
+            if (imageUploadHandler) {
+                var startUploadHandler = function () {
+                    document.getElementById("file-upload").onchange = function() {
+                        if (util.checkSize(this.files)) {
+                            imageUploadHandler(this, urlInput);
+                            urlInput.focus();
+
+                            // Ensures that a user can update their file choice.
+                            startUploadHandler();
+                        }
+                    };
+                };
+                startUploadHandler();
+                document.getElementById("file-upload-proxy").onclick = function () {
+                    document.getElementById("file-upload").click();
+                    return false;
+                };
+            }
+
+            // trap focus in the dialog box
+            $(dialog).on("keydown", function (event) {
+                // On tab backward from the first tabbable item in the prompt
+                if (event.which === 9 && event.shiftKey && event.target === urlInput) {
+                    event.preventDefault();
+                    cancelButton.focus();
+                }
+                // On tab forward from the last tabbable item in the prompt
+                else if (event.which === 9 && !event.shiftKey && event.target === cancelButton) {
+                    event.preventDefault();
+                    urlInput.focus();
+                }
+            });
         };
+
 
         // Why is this in a zero-length timeout?
         // Is it working around a browser bug?
@@ -1162,19 +1242,19 @@
             createDialog();
 
             var defTextLen = defaultInputText.length;
-            if (input.selectionStart !== undefined) {
-                input.selectionStart = 0;
-                input.selectionEnd = defTextLen;
+            if (urlInput.selectionStart !== undefined) {
+                urlInput.selectionStart = 0;
+                urlInput.selectionEnd = defTextLen;
             }
-            else if (input.createTextRange) {
-                var range = input.createTextRange();
+            else if (urlInput.createTextRange) {
+                var range = urlInput.createTextRange();
                 range.collapse(false);
                 range.moveStart("character", -defTextLen);
                 range.moveEnd("character", defTextLen);
                 range.select();
             }
 
-            input.focus();
+            dialog.focus();
         }, 0);
     };
 
@@ -1202,9 +1282,9 @@
                     case "b":
                         doClick(buttons.bold);
                         break;
-                    //case "i":
-                    //    doClick(buttons.italic);
-                    //    break;
+                    // case "i":
+                    //     doClick(buttons.italic);
+                    //     break;
                     case "l":
                         doClick(buttons.link);
                         break;
@@ -1281,7 +1361,10 @@
 
         // Perform the button's action.
         function doClick(button) {
-
+            imageButtonClick = false
+            if (button.title == gettext("Image (Ctrl+G)")) {
+              imageButtonClick = true;
+            }
             inputBox.focus();
 
             if (button.textOp) {
@@ -1306,7 +1389,7 @@
                 //
                 // var link = CreateLinkDialog();
                 // makeMarkdownLink(link);
-                // 
+                //
                 // Instead of this straightforward method of handling a
                 // dialog I have to pass any code which would execute
                 // after the dialog is dismissed (e.g. link creation)
@@ -1445,7 +1528,7 @@
             }
 
             buttons.bold = makeButton("wmd-bold-button", gettext("Bold (Ctrl+B)"), "0px", bindCommand("doBold"));
-            //buttons.italic = makeButton("wmd-italic-button", gettext("Italic (Ctrl+I)"), "-20px", bindCommand("doItalic"));
+            // buttons.italic = makeButton("wmd-italic-button", gettext("Italic (Ctrl+I)"), "-20px", bindCommand("doItalic"));
             makeSpacer(1);
             buttons.link = makeButton("wmd-link-button", gettext("Hyperlink (Ctrl+L)"), "-40px", bindCommand(function (chunk, postProcessing) {
                 return this.doLinkOrImage(chunk, postProcessing, false);
@@ -1597,10 +1680,10 @@
                 defsToAdd[id] = totalMatch.replace(/\s*$/, "");
                 if (newlines) {
                     // Strip the title and return that separately.
-                    defsToAdd[id] = totalMatch.replace(/["(](.+?)[")]$/, "");
+                    defsToAdd[id] = totalMatch;
                     return newlines + title;
                 }
-                return "";
+                return totalMatch;
             });
 
         return text;
@@ -1617,6 +1700,10 @@
 
         var defs = "";
         var regex = /(\[)((?:\[[^\]]*\]|[^\[\]])*)(\][ ]?(?:\n[ ]*)?\[)(\d+)(\])/g;
+        var imageNumber = /\[(\d*)\]:( .+)/g;
+        var imageBefor = /( .+)\n:/;
+        var imageAfter = /\[(\d*)\]:/;
+
 
         var addDefNumber = function (def) {
             refNumber++;
@@ -1637,11 +1724,18 @@
             }
             return wholeMatch;
         };
+        var getURL = function (wholeMatch, inner) {
+            refNumber++;
+            wholeMatch = wholeMatch.replace(inner, refNumber)
+            return wholeMatch;
+        };
 
         chunk.before = chunk.before.replace(regex, getLink);
 
         if (linkDef) {
             addDefNumber(linkDef);
+            afterNumber = refNumber;
+            linkDef = "\n\n" + linkDef.replace(/^[ ]{0,3}\[(\d+)\]:/, "  [" + refNumber + "]:");
         }
         else {
             chunk.selection = chunk.selection.replace(regex, getLink);
@@ -1650,6 +1744,8 @@
         var refOut = refNumber;
 
         chunk.after = chunk.after.replace(regex, getLink);
+        refNumber = refOut;
+        chunk.after = chunk.after.replace(imageNumber, getURL);
 
         if (chunk.after) {
             chunk.after = chunk.after.replace(/\n*$/, "");
@@ -1658,7 +1754,8 @@
             chunk.selection = chunk.selection.replace(/\n*$/, "");
         }
 
-        chunk.after += "\n\n" + defs;
+        chunk.defs = linkDef + "\n\n"
+        chunk.after = linkDef + "\n\n" + chunk.after;
 
         return refOut;
     };
@@ -1670,8 +1767,9 @@
             link = link.replace(/\?.*$/, function (querypart) {
                 return querypart.replace(/\+/g, " "); // in the query string, a plus and a space are identical
             });
-            link = decodeURIComponent(link); // unencode first, to prevent double encoding
+            // link = decodeURIComponent(link); // unencode first, to prevent double encoding
             link = encodeURI(link).replace(/'/g, '%27').replace(/\(/g, '%28').replace(/\)/g, '%29');
+            link = link.replace(/%25/g, '%');
             link = link.replace(/\?.*$/, function (querypart) {
                 return querypart.replace(/\+/g, "%2b"); // since we replaced plus with spaces in the query part, all pluses that now appear where originally encoded
             });
@@ -1684,7 +1782,6 @@
     }
 
     commandProto.doLinkOrImage = function (chunk, postProcessing, isImage, imageUploadHandler) {
-
         chunk.trimWhitespace();
         chunk.findTags(/\s*!?\[/, /\][ ]?(?:\n[ ]*)?(\[.*?\])?/);
         var background;
@@ -1697,7 +1794,7 @@
 
         }
         else {
-            
+
             // We're moving start and end tag back into the selection, since (as we're in the else block) we're not
             // *removing* a link, but *adding* one, so whatever findTags() found is now back to being part of the
             // link text. linkEnteredCallback takes care of escaping any brackets.
@@ -1711,8 +1808,7 @@
             var that = this;
             // The function to be executed when you enter a link and press OK or Cancel.
             // Marks up the link and adds the ref.
-            var linkEnteredCallback = function (link) {
-
+            var linkEnteredCallback = function (link, description) {
                 background.parentNode.removeChild(background);
 
                 if (link !== null) {
@@ -1735,7 +1831,7 @@
                     // would mean a zero-width match at the start. Since zero-width matches advance the string position,
                     // the first bracket could then not act as the "not a backslash" for the second.
                     chunk.selection = (" " + chunk.selection).replace(/([^\\](?:\\\\)*)(?=[[\]])/g, "$1\\").substr(1);
-                    
+
                     var linkDef = " [999]: " + properlyEncoded(link);
 
                     var num = that.addLinkDef(chunk, linkDef);
@@ -1744,11 +1840,14 @@
 
                     if (!chunk.selection) {
                         if (isImage) {
-                            chunk.selection = gettext("enter image description here");
+                            chunk.selection = description ? description : gettext("enter image description here");
                         }
                         else {
-                            chunk.selection = gettext("enter link description here");
+                            chunk.selection = description ? description : gettext("enter link description here");
                         }
+                    }
+                    if (imageButtonClick) {
+                      chunk.defs = chunk.selection + chunk.endTag + chunk.defs
                     }
                 }
                 postProcessing();
@@ -1757,11 +1856,45 @@
             background = ui.createBackground();
 
             if (isImage) {
-                if (!this.hooks.insertImageDialog(linkEnteredCallback))
-                    ui.prompt(imageDialogText, imageDefaultText, linkEnteredCallback, imageUploadHandler);
+                if (!this.hooks.insertImageDialog(linkEnteredCallback)) {
+                    if (is_image_upload) {
+                        ui.prompt(
+                            imageUploadDialogText,
+                            urlLabel,
+                            urlError,
+                            imageDescriptionLabel,
+                            imageDescError,
+                            descriptionCheck,
+                            imageDefaultText,
+                            linkEnteredCallback,
+                            imageUploadHandler
+                        );
+                    } else {
+                        ui.prompt(
+                            imageDialogText,
+                            urlLabel,
+                            urlError,
+                            '',
+                            imageDescError,
+                            notDestinationCheck,
+                            imageDefaultText,
+                            linkEnteredCallback,
+                            ''
+                        );
+                    }
+                }
             }
             else {
-                ui.prompt(linkDialogText, linkDefaultText, linkEnteredCallback);
+                ui.prompt(
+                    linkDialogText,
+                    urlLabel,
+                    urlError,
+                    '',
+                    linkDestinationError,
+                    notDestinationCheck,
+                    linkDefaultText,
+                    linkEnteredCallback
+                );
             }
             return true;
         }
@@ -1777,7 +1910,7 @@
         chunk.before = chunk.before.replace(/(\n|^)[ ]{0,3}([*+-]|\d+[.])[ \t]*\n$/, "\n\n");
         chunk.before = chunk.before.replace(/(\n|^)[ ]{0,3}>[ \t]*\n$/, "\n\n");
         chunk.before = chunk.before.replace(/(\n|^)[ \t]+\n$/, "\n\n");
-        
+
         // There's no selection, end the cursor wasn't at the end of the line:
         // The user wants to split the current list item / code line / blockquote line
         // (for the latter it doesn't really matter) in two. Temporarily select the
@@ -1805,7 +1938,7 @@
                 commandMgr.doCode(chunk);
             }
         }
-        
+
         if (fakeSelection) {
             chunk.after = chunk.selection + chunk.after;
             chunk.selection = "";

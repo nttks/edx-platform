@@ -2058,14 +2058,11 @@ msgstr "講座でライブラリコンテンツを使う"
 
 #: cms/templates/library.html
 msgid ""
-"Use library content in courses by adding the "
-"{em_start}library_content{em_end} policy key to the Advanced Module List in "
-"the course's Advanced Settings, then adding a Randomized Content Block to "
-"your courseware. In the settings for each Randomized Content Block, select "
-"this library as the source library, and specify the number of problems to be"
-" randomly selected and displayed to each student."
-msgstr ""
-"講座の詳細設定で詳細モジュールリストに{em_start}library_content{em_end}ポリシーキーを追加してから、ランダム化コンテンツブロックをコース教材に追加して講座でライブラリコンテンツを使います。ランダム化コンテンツブロックごとの設定ではこのライブラリをソースライブラリとして選択し、受講者ごとにランダムに選ばれる問題数を設定します。"
+"In order to use library content in courses, add a \"Randomized Content Block\" "
+"to your courseware. In the settings for each Randomized Content Block, select "
+"this library as the source library, and specify the number of problems to be "
+"randomly selected and displayed to each student."
+msgstr "講座でライブラリコンテンツを使用するためには「詳細設定」から「Randomized Content Block」をコース教材に追加してください。Randomized Content Blockごとの設定では編集画面からライブラリ名を選択し、受講者ごとにランダムに出題される問題数を設定します。"
 
 #: cms/templates/library.html
 msgid "Learn more about content libraries"

@@ -60,6 +60,22 @@
                         view.$('.profile-section-two-fields').append(fieldView.render().el);
                     });
                 }
+                if (this.showFullProfile() || this.options.ownProfile) {
+                    if (this.options.ownProfile) {
+                        if (this.showFullProfile()) {
+                            _.each(this.options.certificationFieldViews, function(fieldView) {
+                                fieldView.setProfileVisibility('all_users');
+                            });
+                        } else {
+                            _.each(this.options.certificationFieldViews, function (fieldView) {
+                                fieldView.setProfileVisibility('private');
+                            });
+                        }
+                    }
+                    _.each(this.options.certificationFieldViews, function (fieldView) {
+                        view.$('.certificates-fields').append(fieldView.render().el);
+                    });
+                }
             },
 
             showLoadingError: function () {

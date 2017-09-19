@@ -1,14 +1,16 @@
 """
 Content library unit tests that require the CMS runtime.
 """
+from django.test.client import RequestFactory
 from django.test.utils import override_settings
 from contentstore.tests.utils import AjaxEnabledTestClient, parse_json
-from contentstore.utils import reverse_url, reverse_usage_url, reverse_library_url
+from contentstore.utils import reverse_url, reverse_usage_url, reverse_course_url
 from contentstore.views.item import _duplicate_item
+from contentstore.views.library import _list_libraries
 from contentstore.views.preview import _load_preview_module
-from contentstore.views.tests.test_library import LIBRARY_REST_URL
 import ddt
 from mock import patch
+from student import auth
 from student.auth import has_studio_read_access, has_studio_write_access
 from student.roles import (
     CourseInstructorRole, CourseStaffRole, CourseCreatorRole, LibraryUserRole,
@@ -22,6 +24,8 @@ from xmodule.modulestore.tests.factories import CourseFactory, ItemFactory
 from mock import Mock
 from opaque_keys.edx.locator import CourseKey, LibraryLocator
 from openedx.core.djangoapps.content.course_structures.tests import SignalDisconnectTestMixin
+from openedx.core.djangoapps.ga_optional.models import CourseOptionalConfiguration
+from xmodule.x_module import STUDIO_VIEW
 
 
 class LibraryTestCase(ModuleStoreTestCase):
@@ -29,21 +33,42 @@ class LibraryTestCase(ModuleStoreTestCase):
     Common functionality for content libraries tests
     """
     def setUp(self):
-        user_password = super(LibraryTestCase, self).setUp()
+        self.user_password = super(LibraryTestCase, self).setUp()
+        self.course = CourseFactory.create()
 
         self.client = AjaxEnabledTestClient()
-        self.client.login(username=self.user.username, password=user_password)
+        self._login_as_staff_user(logout_first=False)
 
-        self.lib_key = self._create_library()
+        self._setting_library_option(self.course)
+
+        self.lib_key = self._create_library(self.course)
         self.library = modulestore().get_library(self.lib_key)
 
         self.session_data = {}  # Used by _bind_module
 
-    def _create_library(self, org="org", library="lib", display_name="Test Library"):
+    def _setting_library_option(self, course):
+        CourseOptionalConfiguration(
+            id=1,
+            change_date="2015-06-18 11:02:13",
+            enabled=True,
+            key='library-for-settings',
+            course_key=course.id,
+            changed_by_id=self.user.id
+        ).save()
+
+    def _login_as_staff_user(self, logout_first=True):
+        """ Login as a staff user """
+        if logout_first:
+            self.client.logout()
+        self.client.login(username=self.user.username, password=self.user_password)
+
+    def _create_library(self, course, org='org', library='lib', display_name='Test Library'):
         """
         Helper method used to create a library. Uses the REST API.
         """
-        response = self.client.ajax_post(LIBRARY_REST_URL, {
+        lib_url = reverse_course_url('course_library_handler', course.id)
+
+        response = self.client.ajax_post(lib_url, {
             'org': org,
             'library': library,
             'display_name': display_name,
@@ -52,6 +77,12 @@ class LibraryTestCase(ModuleStoreTestCase):
         lib_info = parse_json(response)
         lib_key = CourseKey.from_string(lib_info['library_key'])
         self.assertIsInstance(lib_key, LibraryLocator)
+
+        libraries = getattr(course, 'target_library', [])
+        libraries.append(unicode(lib_key))
+        setattr(course, 'target_library', libraries)
+        modulestore().update_item(course, self.user.id)
+
         return lib_key
 
     def _add_library_content_block(self, course, library_key, other_settings=None):
@@ -120,11 +151,14 @@ class LibraryTestCase(ModuleStoreTestCase):
             }
         )
 
-    def _list_libraries(self):
+    def _list_libraries(self, course_key):
         """
         Use the REST API to get a list of libraries visible to the current user.
         """
-        response = self.client.get_json(LIBRARY_REST_URL)
+        self.request_factory = RequestFactory()
+        self.request = self.request_factory.get('foo')
+        self.request.user = self.user
+        response = _list_libraries(self.request, course_key)
         self.assertEqual(response.status_code, 200)
         return parse_json(response)
 
@@ -345,7 +379,7 @@ class TestLibraries(LibraryTestCase):
 
     def test_refreshes_children_if_libraries_change(self):
         """ Tests that children are automatically refreshed if libraries list changes """
-        library2key = self._create_library("org2", "lib2", "Library2")
+        library2key = self._create_library(self.course, 'org2', 'lib2', 'Library2')
         library2 = modulestore().get_library(library2key)
         data1, data2 = "Hello world!", "Hello other world!"
         ItemFactory.create(
@@ -480,15 +514,16 @@ class TestLibraryAccess(SignalDisconnectTestMixin, LibraryTestCase):
     def _assert_cannot_create_library(self, org="org", library="libfail", expected_code=403):
         """ Ensure the current user is not able to create a library. """
         self.assertTrue(expected_code >= 300)
+        lib_url = reverse_course_url('course_library_handler', self.course.id)
         response = self.client.ajax_post(
-            LIBRARY_REST_URL,
+            lib_url,
             {'org': org, 'library': library, 'display_name': "Irrelevant"}
         )
         self.assertEqual(response.status_code, expected_code)
         key = LibraryLocator(org=org, library=library)
         self.assertEqual(modulestore().get_library(key), None)
 
-    def _can_access_library(self, library):
+    def _can_access_library(self, course, library):
         """
         Use the normal studio library URL to check if we have access
 
@@ -498,8 +533,9 @@ class TestLibraryAccess(SignalDisconnectTestMixin, LibraryTestCase):
             lib_key = library
         else:
             lib_key = library.location.library_key
-        response = self.client.get(reverse_library_url('library_handler', unicode(lib_key)))
-        self.assertIn(response.status_code, (200, 302, 403))
+        lib_url = reverse_course_url('course_library_handler', course.id, kwargs={'library_key_string': unicode(lib_key)})
+        response = self.client.get(lib_url)
+        self.assertIn(response.status_code, (200, 302, 403, 404))
         return response.status_code == 200
 
     def tearDown(self):
@@ -513,6 +549,9 @@ class TestLibraryAccess(SignalDisconnectTestMixin, LibraryTestCase):
         """
         The user that creates a library should have instructor (admin) and staff permissions
         """
+        instructor_role = CourseInstructorRole(self.course.id)
+        auth.add_users(self.user, instructor_role, self.non_staff_user)
+        CourseInstructorRole(self.course.location.course_key).add_users(self.non_staff_user)
         # self.library has been auto-created by the staff user.
         self.assertTrue(has_studio_write_access(self.user, self.lib_key))
         self.assertTrue(has_studio_read_access(self.user, self.lib_key))
@@ -527,7 +566,7 @@ class TestLibraryAccess(SignalDisconnectTestMixin, LibraryTestCase):
         self._login_as_non_staff_user(logout_first=False)
         self.assertFalse(CourseCreatorRole().has_user(self.non_staff_user))
         with patch.dict('django.conf.settings.FEATURES', {'ENABLE_CREATOR_GROUP': True}):
-            lib_key2 = self._create_library(library="lib2", display_name="Test Library 2")
+            lib_key2 = self._create_library(self.course, library='lib2', display_name='Test Library 2')
             library2 = modulestore().get_library(lib_key2)
             self.assertIsNotNone(library2)
 
@@ -538,29 +577,27 @@ class TestLibraryAccess(SignalDisconnectTestMixin, LibraryTestCase):
     )
     def test_acccess(self, access_role):
         """
-        Test the various roles that allow viewing libraries are working correctly.
+        Test whether the library is correctly linked to the course
         """
         # At this point, one library exists, created by the currently-logged-in staff user.
         # Create another library as staff:
-        library2_key = self._create_library(library="lib2")
-        # Login as non_staff_user:
-        self._login_as_non_staff_user()
+        library2_key = self._create_library(self.course, library='lib2')
+        # Login as staff_user:
+        self._login_as_staff_user()
 
-        # non_staff_user shouldn't be able to access any libraries:
-        lib_list = self._list_libraries()
+        course2 = CourseFactory.create(org='org2', course='course2', run='run2')
+        # Library is not linked to course2
+        lib_list = self._list_libraries(unicode(course2.id))
         self.assertEqual(len(lib_list), 0)
-        self.assertFalse(self._can_access_library(self.library))
-        self.assertFalse(self._can_access_library(library2_key))
+        self.assertFalse(self._can_access_library(course2, self.library))
+        self.assertFalse(self._can_access_library(course2, library2_key))
 
-        # Now manually intervene to give non_staff_user access to library2_key:
-        access_role(library2_key).add_users(self.non_staff_user)
-
-        # Now non_staff_user should be able to access library2_key only:
-        lib_list = self._list_libraries()
-        self.assertEqual(len(lib_list), 1)
+        # Two libraries are linked to self.course
+        lib_list = self._list_libraries(unicode(self.course.id))
+        self.assertEqual(len(lib_list), 2)
         self.assertEqual(lib_list[0]["library_key"], unicode(library2_key))
-        self.assertTrue(self._can_access_library(library2_key))
-        self.assertFalse(self._can_access_library(self.library))
+        self.assertTrue(self._can_access_library(self.course, library2_key))
+        self.assertTrue(self._can_access_library(self.course, self.library))
 
     @ddt.data(
         OrgStaffRole,
@@ -573,22 +610,30 @@ class TestLibraryAccess(SignalDisconnectTestMixin, LibraryTestCase):
         libraries are working correctly.
         """
         # Create some libraries as the staff user:
-        lib_key_pacific = self._create_library(org="PacificX", library="libP")
-        lib_key_atlantic = self._create_library(org="AtlanticX", library="libA")
+        course_pacific = CourseFactory.create(org='PacificX', course='courseP', run='runP')
+        self._setting_library_option(course_pacific)
+        lib_key_pacific = self._create_library(course_pacific, org='PacificX', library='lib')
+        course_atlantic = CourseFactory.create(org='AtlanticX', course='courseA', run='runA')
+        self._setting_library_option(course_atlantic)
+        lib_key_atlantic = self._create_library(course_atlantic, org='AtlanticX', library='libA')
+
+        # Now manually intervene to give non_staff_user access to all  "PacificX" libraries:
+        org_access_role(lib_key_pacific.org).add_users(self.non_staff_user)
+        CourseStaffRole(course_pacific.location.course_key).add_users(self.non_staff_user)
 
         # Login as a non-staff:
         self._login_as_non_staff_user()
 
-        # Now manually intervene to give non_staff_user access to all "PacificX" libraries:
-        org_access_role(lib_key_pacific.org).add_users(self.non_staff_user)
-
         # Now non_staff_user should be able to access lib_key_pacific only:
-        lib_list = self._list_libraries()
+        lib_list = self._list_libraries(unicode(course_pacific.id))
         self.assertEqual(len(lib_list), 1)
         self.assertEqual(lib_list[0]["library_key"], unicode(lib_key_pacific))
-        self.assertTrue(self._can_access_library(lib_key_pacific))
-        self.assertFalse(self._can_access_library(lib_key_atlantic))
-        self.assertFalse(self._can_access_library(self.lib_key))
+        if org_access_role == OrgInstructorRole:
+            self.assertTrue(self._can_access_library(course_pacific, lib_key_pacific))
+        else:
+            self.assertFalse(self._can_access_library(course_pacific, lib_key_pacific))
+        self.assertFalse(self._can_access_library(course_atlantic, lib_key_atlantic))
+        self.assertFalse(self._can_access_library(self.course, self.lib_key))
 
     @ddt.data(True, False)
     def test_read_only_role(self, use_org_level_role):
@@ -600,7 +645,7 @@ class TestLibraryAccess(SignalDisconnectTestMixin, LibraryTestCase):
 
         # Login as a non_staff_user:
         self._login_as_non_staff_user()
-        self.assertFalse(self._can_access_library(self.library))
+        self.assertFalse(self._can_access_library(self.course, self.library))
 
         block_url = reverse_usage_url('xblock_handler', block.location)
 
@@ -652,7 +697,9 @@ class TestLibraryAccess(SignalDisconnectTestMixin, LibraryTestCase):
         else:
             LibraryUserRole(self.lib_key).add_users(self.non_staff_user)
 
-        self.assertTrue(self._can_access_library(self.library))
+        CourseStaffRole(self.course.location.course_key).add_users(self.non_staff_user)
+
+        self.assertFalse(self._can_access_library(self.course, self.library))
         self.assertTrue(can_read_block())
         self.assertFalse(can_edit_block())
         self.assertFalse(can_delete_block())
@@ -697,7 +744,7 @@ class TestLibraryAccess(SignalDisconnectTestMixin, LibraryTestCase):
     @ddt.data(
         (LibraryUserRole, CourseStaffRole, True),
         (CourseStaffRole, CourseStaffRole, True),
-        (None, CourseStaffRole, False),
+        (None, CourseStaffRole, True),
         (LibraryUserRole, None, False),
     )
     @ddt.unpack
@@ -728,6 +775,63 @@ class TestLibraryAccess(SignalDisconnectTestMixin, LibraryTestCase):
         self._bind_module(lc_block, user=self.non_staff_user)
         lc_block = self._refresh_children(lc_block, status_code_expected=200 if expected_result else 403)
         self.assertEqual(len(lc_block.children), 1 if expected_result else 0)
+
+    def test_studio_user_permissions(self):
+        """
+        Test that user could attach to the problem only libraries that he has access (or which were created by him).
+        This test was created on the basis of bug described in the pull requests on github:
+        https://github.com/edx/edx-platform/pull/11331
+        https://github.com/edx/edx-platform/pull/11611
+        """
+        with modulestore().default_store(ModuleStoreEnum.Type.split):
+            course = CourseFactory.create()
+        self._setting_library_option(course)
+
+        self._create_library(course, org='admin_org_1', library='lib_adm_1', display_name='admin_lib_1')
+        self._create_library(course, org='admin_org_2', library='lib_adm_2', display_name='admin_lib_2')
+
+        self._login_as_non_staff_user()
+        instructor_role = CourseInstructorRole(course.id)
+        auth.add_users(self.user, instructor_role, self.non_staff_user)
+
+        self._create_library(course, org='staff_org_1', library='lib_staff_1', display_name='staff_lib_1')
+        self._create_library(course, org='staff_org_2', library='lib_staff_2', display_name='staff_lib_2')
+
+        lib_block = ItemFactory.create(
+            category='library_content',
+            parent_location=course.location,
+            user_id=self.non_staff_user.id,
+            publish_item=False
+        )
+
+        def _get_settings_html():
+            """
+            Helper function to get block settings HTML
+            Used to check the available libraries.
+            """
+            edit_view_url = reverse_usage_url('xblock_view_handler', lib_block.location, {'view_name': STUDIO_VIEW})
+
+            resp = self.client.get_json(edit_view_url)
+            self.assertEquals(resp.status_code, 200)
+
+            return parse_json(resp)['html']
+
+        self._login_as_staff_user()
+        staff_settings_html = _get_settings_html()
+        self.assertIn('staff_lib_1', staff_settings_html)
+        self.assertIn('staff_lib_2', staff_settings_html)
+        self.assertIn('admin_lib_1', staff_settings_html)
+        self.assertIn('admin_lib_2', staff_settings_html)
+
+        self._login_as_non_staff_user()
+        staff_libs = self._list_libraries(unicode(course.id))
+        self.assertEqual(len(staff_libs), 4)
+
+        non_staff_settings_html = _get_settings_html()
+        self.assertIn('staff_lib_1', non_staff_settings_html)
+        self.assertIn('staff_lib_2', non_staff_settings_html)
+        self.assertIn('admin_lib_1', non_staff_settings_html)
+        self.assertIn('admin_lib_2', non_staff_settings_html)
 
 
 @ddt.ddt

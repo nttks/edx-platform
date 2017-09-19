@@ -6,6 +6,7 @@ import json
 from lxml import etree
 from copy import copy
 from capa.responsetypes import registry
+from django.utils.translation import ugettext, ungettext
 from gettext import ngettext
 from lazy import lazy
 
@@ -16,6 +17,7 @@ from webob import Response
 from xblock.core import XBlock
 from xblock.fields import Scope, String, List, Integer, Boolean
 from xblock.fragment import Fragment
+from xmodule.modulestore.django import modulestore
 from xmodule.validation import StudioValidationMessage, StudioValidation
 from xmodule.x_module import XModule, STUDENT_VIEW
 from xmodule.studio_editable import StudioEditableModule, StudioEditableDescriptor
@@ -88,7 +90,7 @@ class LibraryContentFields(object):
     )
     max_count = Integer(
         display_name=_("Count"),
-        help=_("Enter the number of components to display to each student."),
+        help=_("Enter the number of components to display to each student. Enter the half-width number 1 and over."),
         default=1,
         scope=Scope.settings,
     )
@@ -468,12 +470,12 @@ class LibraryContentDescriptor(LibraryContentFields, MakoModuleDescriptor, XmlDe
                 validation.set_summary(
                     StudioValidationMessage(
                         StudioValidationMessage.WARNING,
-                        _(u'This component is out of date. The library has new content.'),
+                        ugettext(u'This component is out of date. The library has new content.'),
                         # TODO: change this to action_runtime_event='...' once the unit page supports that feature.
                         # See https://openedx.atlassian.net/browse/TNL-993
                         action_class='library-update-btn',
                         # Translators: {refresh_icon} placeholder is substituted to "↻" (without double quotes)
-                        action_label=_(u"{refresh_icon} Update now.").format(refresh_icon=u"↻")
+                        action_label=ugettext(u"{refresh_icon} Update now.").format(refresh_icon=u"↻")
                     )
                 )
                 return False
@@ -481,9 +483,9 @@ class LibraryContentDescriptor(LibraryContentFields, MakoModuleDescriptor, XmlDe
             validation.set_summary(
                 StudioValidationMessage(
                     StudioValidationMessage.ERROR,
-                    _(u'Library is invalid, corrupt, or has been deleted.'),
+                    ugettext(u'Library is invalid.'),
                     action_class='edit-button',
-                    action_label=_(u"Edit Library List.")
+                    action_label=ugettext(u"Edit Library List.")
                 )
             )
             return False
@@ -508,7 +510,7 @@ class LibraryContentDescriptor(LibraryContentFields, MakoModuleDescriptor, XmlDe
             validation.set_summary(
                 StudioValidationMessage(
                     StudioValidationMessage.ERROR,
-                    _(
+                    ugettext(
                         u"This course does not support content libraries. "
                         u"Contact your system administrator for more information."
                     )
@@ -519,9 +521,9 @@ class LibraryContentDescriptor(LibraryContentFields, MakoModuleDescriptor, XmlDe
             validation.set_summary(
                 StudioValidationMessage(
                     StudioValidationMessage.NOT_CONFIGURED,
-                    _(u"A library has not yet been selected."),
+                    ugettext(u"A library has not yet been selected."),
                     action_class='edit-button',
-                    action_label=_(u"Select a Library.")
+                    action_label=ugettext(u"Select a Library.")
                 )
             )
             return validation
@@ -536,9 +538,9 @@ class LibraryContentDescriptor(LibraryContentFields, MakoModuleDescriptor, XmlDe
                 validation,
                 StudioValidationMessage(
                     StudioValidationMessage.WARNING,
-                    _(u'There are no matching problem types in the specified libraries.'),
+                    ugettext(u'There are no matching problem types in the specified libraries.'),
                     action_class='edit-button',
-                    action_label=_(u"Select another problem type.")
+                    action_label=ugettext(u"Select another problem type.")
                 )
             )
 
@@ -548,19 +550,19 @@ class LibraryContentDescriptor(LibraryContentFields, MakoModuleDescriptor, XmlDe
                 StudioValidationMessage(
                     StudioValidationMessage.WARNING,
                     (
-                        ngettext(
+                        ungettext(
                             u'The specified library is configured to fetch {count} problem, ',
                             u'The specified library is configured to fetch {count} problems, ',
                             self.max_count
                         ) +
-                        ngettext(
+                        ungettext(
                             u'but there is only {actual} matching problem.',
                             u'but there are only {actual} matching problems.',
                             matching_children_count
                         )
                     ).format(count=self.max_count, actual=matching_children_count),
                     action_class='edit-button',
-                    action_label=_(u"Edit the library configuration.")
+                    action_label=ugettext(u"Edit the library configuration.")
                 )
             )
 
@@ -572,12 +574,11 @@ class LibraryContentDescriptor(LibraryContentFields, MakoModuleDescriptor, XmlDe
         """
         lib_tools = self.runtime.service(self, 'library_tools')
         user_perms = self.runtime.service(self, 'studio_user_permissions')
-        all_libraries = lib_tools.list_available_libraries()
-        if user_perms:
-            all_libraries = [
-                (key, name) for key, name in all_libraries
-                if user_perms.can_read(key) or self.source_library_id == unicode(key)
-            ]
+        target_libraries = modulestore().get_course(self.location.course_key).target_library
+        all_libraries = [
+            (key, name) for key, name in lib_tools.list_available_libraries()
+            if unicode(key) in target_libraries
+        ]
         all_libraries.sort(key=lambda entry: entry[1])  # Sort by name
         if self.source_library_id and self.source_library_key not in [entry[0] for entry in all_libraries]:
             all_libraries.append((self.source_library_id, _(u"Invalid Library")))

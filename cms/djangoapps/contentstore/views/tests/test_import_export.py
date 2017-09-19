@@ -23,6 +23,7 @@ from contentstore.utils import reverse_course_url
 from xmodule.modulestore.tests.factories import ItemFactory, LibraryFactory
 
 from contentstore.tests.utils import CourseTestCase
+from openedx.core.djangoapps.ga_optional.models import CourseOptionalConfiguration
 from openedx.core.lib.extract_tar import safetar_extractall
 from student import auth
 from student.roles import CourseInstructorRole, CourseStaffRole
@@ -45,6 +46,14 @@ class ImportEntranceExamTestCase(CourseTestCase):
     """
     def setUp(self):
         super(ImportEntranceExamTestCase, self).setUp()
+        CourseOptionalConfiguration(
+            id=1,
+            change_date="2015-06-18 11:02:13",
+            enabled=True,
+            key='library-for-settings',
+            course_key=self.course.id,
+            changed_by_id=self.user.id
+        ).save()
         self.url = reverse_course_url('import_handler', self.course.id)
         self.content_dir = path(tempfile.mkdtemp())
         self.addCleanup(shutil.rmtree, self.content_dir)
@@ -90,6 +99,7 @@ class ImportEntranceExamTestCase(CourseTestCase):
         self.assertIsNotNone(course)
         self.assertEquals(course.entrance_exam_enabled, True)
         self.assertEquals(course.entrance_exam_minimum_score_pct, 0.7)
+        self.assertNotIn('class="nav-item nav-manage-library"', resp.content)
 
     def test_import_delete_pre_exiting_entrance_exam(self):
         """
@@ -489,6 +499,15 @@ class ExportTestCase(CourseTestCase):
         """
         fake_xblock = ItemFactory.create(parent_location=self.course.location, category='aawefawef')
         self.store.publish(fake_xblock.location, self.user.id)
+        CourseOptionalConfiguration(
+            id=1,
+            change_date="2015-06-18 11:02:13",
+            enabled=True,
+            key='library-for-settings',
+            course_key=self.course.id,
+            changed_by_id=self.user.id
+        ).save()
+
         self._verify_export_failure(u'/container/{}'.format(self.course.location))
 
     def test_export_failure_subsection_level(self):
@@ -500,6 +519,14 @@ class ExportTestCase(CourseTestCase):
             parent_location=vertical.location,
             category='aawefawef'
         )
+        CourseOptionalConfiguration(
+            id=1,
+            change_date="2015-06-18 11:02:13",
+            enabled=True,
+            key='library-for-settings',
+            course_key=self.course.id,
+            changed_by_id=self.user.id
+        ).save()
 
         self._verify_export_failure(u'/container/{}'.format(vertical.location))
 
@@ -510,6 +537,7 @@ class ExportTestCase(CourseTestCase):
         self.assertIsNone(resp.get('Content-Disposition'))
         self.assertContains(resp, 'Unable to create xml for module')
         self.assertContains(resp, expected_text)
+        self.assertIn('class="nav-item nav-manage-library"', resp.content)
 
     def test_library_export(self):
         """

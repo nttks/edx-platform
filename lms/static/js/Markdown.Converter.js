@@ -691,19 +691,26 @@ else
             
             alt_text = escapeCharacters(attributeEncode(alt_text), "*_[]()");
             url = escapeCharacters(url, "*_");
-            var result = "<img src=\"" + url + "\" alt=\"" + alt_text + "\"";
 
-            // attacklab: Markdown.pl adds empty title attributes to images.
-            // Replicate this bug.
+            var result = "<a href=\"" + url + "\" target=\"_blank\">";
+            var url_type = url.split(".").pop();
 
-            //if (title != "") {
-            title = attributeEncode(title);
-            title = escapeCharacters(title, "*_");
-            result += " title=\"" + title + "\"";
-            //}
+            if (url_type == 'pdf') {
+                result += alt_text + "</a>";
+            } else {
+                result += "<img src=\"" + url + "\" alt=\"" + alt_text + "\"";
 
-            result += " />";
+                // attacklab: Markdown.pl adds empty title attributes to images.
+                // Replicate this bug.
 
+                //if (title != "") {
+                title = attributeEncode(title);
+                title = escapeCharacters(title, "*_");
+                result += " title=\"" + title + "\" class=\"discussion-image\"";
+                //}
+
+                result += " /> </a>";
+            }
             return result;
         }
 

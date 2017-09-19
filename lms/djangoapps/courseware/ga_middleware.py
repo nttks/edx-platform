@@ -7,7 +7,7 @@ from django.core.urlresolvers import reverse
 from django.http import Http404
 from django.shortcuts import redirect
 
-from courseware.access import has_access
+from courseware.access import has_access, GA_ACCESS_CHECK_TYPE_OLD_COURSE_VIEW
 from courseware.courses import get_course_overview_with_access
 from courseware.ga_access import is_terminated
 from opaque_keys import InvalidKeyError
@@ -52,7 +52,8 @@ class CourseTerminatedCheckMiddleware(object):
             return
 
         is_staff = has_access(request.user, 'staff', course)
-        if is_terminated(course, request.user, is_staff):
+        is_old_course_viewer = has_access(request.user, GA_ACCESS_CHECK_TYPE_OLD_COURSE_VIEW, 'global')
+        if is_terminated(course, request.user, is_staff, is_old_course_viewer):
             log.warning(
                 'Cannot access to the terminated course. User({user_id}), Path({path})'.format(
                     user_id=request.user.id, path=request.path

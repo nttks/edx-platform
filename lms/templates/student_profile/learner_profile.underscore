@@ -31,5 +31,9 @@
             <span class="profile-private--privacy-message"><%- gettext("Please do NOT input your personally identifiable information (PII) here. This part will be shared to another students.") %></span>
             <% } %>
         </div>
+        <div class="wrapper-certificates-section">
+            <div class="certificates-fields">
+            </div>
+        </div>
     </div>
 </div>

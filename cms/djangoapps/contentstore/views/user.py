@@ -10,6 +10,8 @@ from edxmako.shortcuts import render_to_response
 from xmodule.modulestore.django import modulestore
 from opaque_keys.edx.keys import CourseKey
 from opaque_keys.edx.locator import LibraryLocator
+from openedx.core.djangoapps.ga_optional.api import is_available
+from openedx.core.djangoapps.ga_optional.models import LIBRARY_OPTION_KEY
 from util.json_request import JsonResponse, expect_json
 from student.roles import CourseInstructorRole, CourseStaffRole, LibraryUserRole
 from course_creators.views import user_requested_access
@@ -95,6 +97,7 @@ def _manage_users(request, course_key):
         'show_transfer_ownership_hint': request.user in instructors and len(instructors) == 1,
         'users': formatted_users,
         'allow_actions': bool(user_perms & STUDIO_EDIT_ROLES),
+        'library_option': is_available(LIBRARY_OPTION_KEY, course_key)
     })
 
 

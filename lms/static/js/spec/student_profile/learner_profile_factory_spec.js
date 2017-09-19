@@ -22,7 +22,10 @@ define(['backbone', 'jquery', 'underscore', 'common/js/spec_helpers/ajax_helpers
                 loadFixtures('js/fixtures/student_profile/student_profile.html');
             });
 
-            var createProfilePage = function(ownProfile, options) {
+            var createProfilePage = function(ownProfile, options, cert_infos) {
+                if (typeof cert_infos === 'undefined') {
+                    cert_infos = [];
+                }
                 return new LearnerProfilePage({
                     'accounts_api_url': Helpers.USER_ACCOUNTS_API_URL,
                     'preferences_api_url': Helpers.USER_PREFERENCES_API_URL,
@@ -39,7 +42,8 @@ define(['backbone', 'jquery', 'underscore', 'common/js/spec_helpers/ajax_helpers
                     'platform_name': 'edX',
                     'account_settings_data': Helpers.createAccountSettingsData(options),
                     'preferences_data': Helpers.createUserPreferencesData(),
-                    'parentalConsentAgeLimit': 13
+                    'parentalConsentAgeLimit': 13,
+                    'cert_infos': cert_infos
                 });
             };
 
@@ -71,6 +75,44 @@ define(['backbone', 'jquery', 'underscore', 'common/js/spec_helpers/ajax_helpers
                 );
                 var learnerProfileView = context.learnerProfileView;
                 LearnerProfileHelpers.expectLimitedProfileSectionsAndFieldsToBeRendered(learnerProfileView);
+            });
+
+            var expectCertificates = function(ownProfile, profileIsPublic, certificateExists) {
+                var context = createProfilePage(ownProfile, {},
+                    LearnerProfileHelpers.createCertificatesData(
+                        ownProfile, profileIsPublic, certificateExists
+                    )
+                );
+                var learnerProfileView = context.learnerProfileView;
+
+                if (profileIsPublic) {
+                    context.accountPreferencesModel.set({account_privacy: 'all_users'});
+                } else {
+                    context.accountPreferencesModel.set({account_privacy: 'public'});
+                }
+                LearnerProfileHelpers.expectCertificatesSectionToBeRendered(
+                    learnerProfileView, !ownProfile, profileIsPublic, certificateExists
+                );
+            };
+
+            it("renders the certificates field for self with full access", function() {
+
+                expectCertificates(true, true, true);
+            });
+
+            it("renders the certificates field for self with limited access", function() {
+
+                expectCertificates(true, false, true);
+            });
+
+            it("renders the certificates field for others with full access", function() {
+
+                expectCertificates(false, true, true);
+            });
+
+            it("renders the certificates field for others with limited access", function() {
+
+                expectCertificates(false, false, true);
             });
         });
     });

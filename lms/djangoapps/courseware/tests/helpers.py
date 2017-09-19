@@ -43,6 +43,8 @@ class LoginEnrollmentTestCase(TestCase):
         )
         self.activate_user(self.email)
         self.login(self.email, self.password)
+        # Update local user data
+        self.user.refresh_from_db()
 
     def assert_request_status_code(self, status_code, url, method="GET", **kwargs):
         make_request = getattr(self.client, method.lower())

@@ -22,6 +22,7 @@ from courseware.masquerade import CourseMasquerade
 from courseware.tests.factories import (
     BetaTesterFactory,
     GlobalStaffFactory,
+    GaOldCourseViewerStaffFactory,
     InstructorFactory,
     StaffFactory,
     UserFactory,
@@ -77,6 +78,7 @@ class AccessTestCase(LoginEnrollmentTestCase, ModuleStoreTestCase):
         self.course_staff = StaffFactory(course_key=self.course.id)
         self.course_instructor = InstructorFactory(course_key=self.course.id)
         self.staff = GlobalStaffFactory()
+        self.ga_old_course_viewer = GaOldCourseViewerStaffFactory()
 
     def verify_access(self, mock_unit, student_should_have_access, expected_error_type=None):
         """ Verify the expected result from _has_access_descriptor """
@@ -132,6 +134,8 @@ class AccessTestCase(LoginEnrollmentTestCase, ModuleStoreTestCase):
             for obj in modules:
                 self.assertTrue(bool(access.has_staff_access_to_preview_mode(user, obj=obj)))
                 self.assertFalse(bool(access.has_staff_access_to_preview_mode(self.student, obj=obj)))
+        for obj in modules:
+            self.assertFalse(bool(access.has_staff_access_to_preview_mode(self.ga_old_course_viewer, obj=obj)))
 
     def test_student_has_access(self):
         """
@@ -167,6 +171,7 @@ class AccessTestCase(LoginEnrollmentTestCase, ModuleStoreTestCase):
         self.assertFalse(bool(access.has_staff_access_to_preview_mode(self.course_staff, obj='global')))
         self.assertFalse(bool(access.has_staff_access_to_preview_mode(self.course_instructor, obj='global')))
         self.assertFalse(bool(access.has_staff_access_to_preview_mode(self.student, obj='global')))
+        self.assertFalse(bool(access.has_staff_access_to_preview_mode(self.ga_old_course_viewer, obj='global')))
 
     @patch('courseware.access.in_preview_mode', Mock(return_value=True))
     def test_has_access_with_preview_mode(self):
@@ -180,6 +185,8 @@ class AccessTestCase(LoginEnrollmentTestCase, ModuleStoreTestCase):
         )))
         self.assertFalse(bool(access.has_access(self.student, 'staff', self.course, course_key=self.course.id)))
         self.assertFalse(bool(access.has_access(self.student, 'load', self.course, course_key=self.course.id)))
+        self.assertFalse(bool(access.has_access(self.ga_old_course_viewer, 'staff', self.course, course_key=self.course.id)))
+        self.assertFalse(bool(access.has_access(self.ga_old_course_viewer, 'load', self.course, course_key=self.course.id)))
 
         # User should be able to preview when masquerade.
         with patch('courseware.access.is_masquerading_as_student') as mock_masquerade:
@@ -189,6 +196,9 @@ class AccessTestCase(LoginEnrollmentTestCase, ModuleStoreTestCase):
             )
             self.assertFalse(
                 bool(access.has_access(self.student, 'staff', self.course, course_key=self.course.id))
+            )
+            self.assertFalse(
+                bool(access.has_access(self.ga_old_course_viewer, 'staff', self.course, course_key=self.course.id))
             )
 
     def test_has_access_to_course(self):
@@ -234,9 +244,18 @@ class AccessTestCase(LoginEnrollmentTestCase, ModuleStoreTestCase):
         self.assertFalse(access._has_access_to_course(
             self.student, 'instructor', self.course.id
         ))
+        self.assertFalse(access._has_access_to_course(
+            self.ga_old_course_viewer, 'staff', self.course.id
+        ))
+        self.assertFalse(access._has_access_to_course(
+            self.ga_old_course_viewer, 'instructor', self.course.id
+        ))
 
         self.assertFalse(access._has_access_to_course(
             self.student, 'not_staff_or_instructor', self.course.id
+        ))
+        self.assertFalse(access._has_access_to_course(
+            self.ga_old_course_viewer, 'not_staff_or_instructor', self.course.id
         ))
 
     def test__has_access_string(self):
@@ -247,6 +266,24 @@ class AccessTestCase(LoginEnrollmentTestCase, ModuleStoreTestCase):
         self.assertTrue(access._has_access_string(user, 'staff', 'global'))
 
         self.assertRaises(ValueError, access._has_access_string, user, 'not_staff', 'global')
+
+    @ddt.data(
+        ('staff', False, True, False),
+        ('support', False, True, False),
+        ('certificates', False, True, False),
+        ('ga_old_course_view', False, True, True)
+    )
+    @ddt.unpack
+    def test__has_access_string_some_roles(self, action, expected_student, expected_staff, expected_ga_old_course_viewer):
+        for (user, expected_response) in (
+            (self.student, expected_student),
+            (self.staff, expected_staff),
+            (self.ga_old_course_viewer, expected_ga_old_course_viewer)
+        ):
+            self.assertEquals(
+                bool(access._has_access_string(user, action, 'global')),
+                expected_response
+            )
 
     @ddt.data(
         ('load', False, True, True),

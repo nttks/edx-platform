@@ -30,6 +30,7 @@
             settings_url = reverse('contentstore.views.settings_handler', kwargs={'course_key_string': unicode(course_key)})
             grading_url = reverse('contentstore.views.grading_handler', kwargs={'course_key_string': unicode(course_key)})
             advanced_settings_url = reverse('contentstore.views.advanced_settings_handler', kwargs={'course_key_string': unicode(course_key)})
+            library_url = reverse('contentstore.views.library_listing', kwargs={'course_key_string': unicode(course_key)})
             tabs_url = reverse('contentstore.views.tabs_handler', kwargs={'course_key_string': unicode(course_key)})
             certificates_url = ''
             if settings.FEATURES.get("CERTIFICATES_HTML_VIEW") and context_course.cert_html_view_enabled:
@@ -104,6 +105,11 @@
                   <li class="nav-item nav-course-settings-advanced">
                     <a href="${advanced_settings_url}">${_("Advanced Settings")}</a>
                   </li>
+                  % if library_option:
+                    <li class="nav-item nav-manage-library">
+                      <a href="${library_url}">${_("Manage Library")}</a>
+                    </li>
+                  % endif
                   % if certificates_url:
                   <li class="nav-item nav-course-settings-certificates">
                     <a href="${certificates_url}">${_("Certificates")}</a>
@@ -142,7 +148,7 @@
       % elif context_library:
        <%
             library_key = context_library.location.course_key
-            index_url = reverse('contentstore.views.library_handler', kwargs={'library_key_string': unicode(library_key)})
+            index_url = reverse('contentstore.views.course_library_handler', kwargs={'course_key_string': unicode(course_key), 'library_key_string': unicode(library_key)})
             import_url = reverse('contentstore.views.import_handler', kwargs={'course_key_string': unicode(library_key)})
             lib_users_url = reverse('contentstore.views.manage_library_users', kwargs={'library_key_string': unicode(library_key)})
             export_url = reverse('contentstore.views.export_handler', kwargs={'course_key_string': unicode(library_key)})

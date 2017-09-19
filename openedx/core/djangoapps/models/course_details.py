@@ -73,6 +73,7 @@ class CourseDetails(object):
         self.course_contents_provider = ""
         self.teacher_name = ""
         self.course_span = ""
+        self.target_library = []
 
     @classmethod
     def fetch_about_attribute(cls, course_key, attribute):

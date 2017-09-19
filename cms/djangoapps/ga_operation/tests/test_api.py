@@ -16,6 +16,7 @@ from student.tests.factories import CourseEnrollmentFactory, UserFactory
 
 GA_OPERATION_POST_ENDPOINTS = [
     'delete_course',
+    'delete_library',
 ]
 
 
@@ -249,6 +250,94 @@ class DeleteCourseTest(ApiTestBase, ApiTestMixin):
     @patch('cms.djangoapps.ga_operation.views.api.delete_course_task')
     def test_error(self, mock_delete_course_task, mock_log):
         mock_delete_course_task.delay.side_effect = self.exception
+
+        _url = reverse(self.url)
+        response = self.client.post(_url, {
+            'course_id': 'course-v1:org+course+run',
+            'email': 'test@example.com',
+        })
+        self._assert_exception(response, mock_log)
+        self._assert_audit_log(mock_log)
+
+
+@ddt.ddt
+@override_settings(GA_OPERATION_VALID_DOMAINS_LIST=['example.com'])
+class DeleteLibraryTest(ApiTestBase, ApiTestMixin):
+    @property
+    def url(self):
+        return 'delete_library'
+
+    @staticmethod
+    def _create_contract_detail(course_id):
+        def _create_contract():
+            org = OrganizationFactory.create(
+                org_name='docomo gacco',
+                org_code='gacco',
+                creator_org_id=1,  # It means the first of Organization
+                created_by=UserFactory.create(),
+            )
+            return ContractFactory.create(
+                contract_name=get_random_string(8),
+                contract_type='PF',
+                invitation_code=get_random_string(8),
+                contractor_organization=org,
+                owner_organization=org,
+                created_by=UserFactory.create(),
+            )
+
+        return [ContractDetailFactory.create(
+            contract=_create_contract(), course_id=course_id
+        ) for _ in range(3)]
+
+    @staticmethod
+    def _create_enrolled_users(course_id):
+        course_key = CourseKey.from_string(course_id)
+        enrollments = [CourseEnrollmentFactory.create(
+            user=UserFactory.create(), course_id=course_key
+        ) for _ in range(3)]
+        return [e.user for e in enrollments]
+
+    @patch('openedx.core.djangoapps.ga_operation.utils.log')
+    @patch('cms.djangoapps.ga_operation.views.api.delete_library_task')
+    def test_success(self, mock_delete_library_task, mock_log):
+        _url = reverse(self.url)
+        data = {
+            'course_id': 'course-v1:org+course+run',
+            'email': 'test@example.com',
+        }
+        response = self.client.post(_url, data)
+
+        self.assertEqual(response.status_code, 200)
+        content = json.loads(response.content)
+
+        mock_delete_library_task.delay.assert_called_once_with(
+            library_id='course-v1:org+course+run',
+            email='test@example.com',
+        )
+        self._assert_success_message(
+            content, u'ライブラリ削除処理を開始しました。\n処理が終了次第、test@example.comのアドレスに完了通知が届きます。'
+        )
+        self._assert_audit_log(mock_log)
+
+    @patch('cms.djangoapps.ga_operation.views.api.delete_library_task')
+    def test_no_email(self, mock_delete_library_task):
+        _url = reverse(self.url)
+        response = self.client.post(_url, {
+            'course_id': 'course-v1:org+course+run',
+        })
+
+        self.assertEqual(response.status_code, 400)
+        content = json.loads(response.content)
+
+        self.assertEqual(content[RESPONSE_FIELD_ID], u'入力したフォームの内容が不正です。')
+        self.assertEqual(content['email'], [u'This field is required.'])
+
+        mock_delete_library_task.assert_not_called()
+
+    @patch('openedx.core.djangoapps.ga_operation.utils.log')
+    @patch('cms.djangoapps.ga_operation.views.api.delete_library_task')
+    def test_error(self, mock_delete_library_task, mock_log):
+        mock_delete_library_task.delay.side_effect = self.exception
 
         _url = reverse(self.url)
         response = self.client.post(_url, {

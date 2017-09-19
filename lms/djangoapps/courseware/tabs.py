@@ -5,7 +5,7 @@ perform some LMS-specific tab display gymnastics for the Entrance Exams feature
 from django.conf import settings
 from django.utils.translation import ugettext as _, ugettext_noop
 
-from courseware.access import has_access
+from courseware.access import has_access, GA_ACCESS_CHECK_TYPE_OLD_COURSE_VIEW
 from courseware.entrance_exams import user_must_complete_entrance_exam
 from courseware.ga_access import is_terminated_tab
 from openedx.core.lib.course_tabs import CourseTabPluginManager
@@ -326,7 +326,8 @@ def get_course_tab_list(request, course):
 
     # Filter for the terminated course.
     is_staff = has_access(user, 'staff', course, course.id)
-    course_tab_list = [tab for tab in course_tab_list if not is_terminated_tab(tab, course, user, is_staff)]
+    is_old_course_viewer = has_access(user, GA_ACCESS_CHECK_TYPE_OLD_COURSE_VIEW, 'global')
+    course_tab_list = [tab for tab in course_tab_list if not is_terminated_tab(tab, course, user, is_staff, is_old_course_viewer)]
     return course_tab_list
 
 

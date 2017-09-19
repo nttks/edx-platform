@@ -42,6 +42,7 @@ from student.roles import (
     CourseInstructorRole,
     CourseStaffRole,
     GaAnalyzerRole,
+    GaOldCourseViewerStaffRole,
     GlobalStaff,
     SupportStaffRole,
     OrgInstructorRole,
@@ -68,6 +69,7 @@ from courseware.access_utils import (
 
 log = logging.getLogger(__name__)
 GA_ACCESS_CHECK_TYPE_ANALYZER = 'ga_analyzer'
+GA_ACCESS_CHECK_TYPE_OLD_COURSE_VIEW = 'ga_old_course_view'
 
 
 def has_access(user, action, obj, course_key=None):
@@ -304,7 +306,9 @@ def _can_enroll_courselike(user, courselike):
     # If the user appears in CourseEnrollmentAllowed paired with the given course key,
     # they may enroll. Note that as dictated by the legacy database schema, the filter
     # call includes a `course_id` kwarg which requires a CourseKey.
+    is_old_course_viewer = False
     if user is not None and user.is_authenticated():
+        is_old_course_viewer = _has_access_string(user, GA_ACCESS_CHECK_TYPE_OLD_COURSE_VIEW, 'global')
         if CourseEnrollmentAllowed.objects.filter(email=user.email, course_id=course_key):
             return ACCESS_GRANTED
 
@@ -318,6 +322,9 @@ def _can_enroll_courselike(user, courselike):
     now = datetime.now(UTC())
     enrollment_start = courselike.enrollment_start or datetime.min.replace(tzinfo=pytz.UTC)
     enrollment_end = courselike.enrollment_end or datetime.max.replace(tzinfo=pytz.UTC)
+    if is_old_course_viewer:
+        enrollment_end = datetime.max.replace(tzinfo=pytz.UTC)
+
     if reg_method_ok and enrollment_start < now < enrollment_end:
         debug("Allow: in enrollment period")
         return ACCESS_GRANTED
@@ -617,6 +624,7 @@ def _has_access_string(user, action, perm):
     'support' -- access to student support functionality
     'certificates' --- access to view and regenerate certificates for other users.
     'ga_analyzer' --- ga_analyzer access.
+    'ga_old_course_view' --- enroll and view to old courses.
     """
 
     def check_staff():
@@ -646,11 +654,21 @@ def _has_access_string(user, action, perm):
             else ACCESS_DENIED
         )
 
+    def check_old_course_view():
+        """Check that the user has access to old courses. """
+        if perm != 'global':
+            return ACCESS_DENIED
+        return (
+            ACCESS_GRANTED if GlobalStaff().has_user(user) or GaOldCourseViewerStaffRole().has_user(user)
+            else ACCESS_DENIED
+        )
+
     checkers = {
         'staff': check_staff,
         'support': check_support,
         'certificates': check_support,
         GA_ACCESS_CHECK_TYPE_ANALYZER: check_ga_analyzer,
+        GA_ACCESS_CHECK_TYPE_OLD_COURSE_VIEW: check_old_course_view,
     }
 
     return _dispatch(checkers, action, user, perm)

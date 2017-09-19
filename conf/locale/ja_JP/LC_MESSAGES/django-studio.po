@@ -314,8 +314,7 @@ msgid ""
 "There is already a library defined with the same organization and library "
 "code. Please change your library code so that it is unique within your "
 "organization."
-msgstr ""
-"既に同様に組織、ライブラリコードで規定されているコースがあります。組織もしくはライブラリコードのどちらかがユニークとなるように変更をしてください。"
+msgstr "ライブラリIDが重複しています。組織かライブラリコード、またはその両方を変更してください。"
 
 #: cms/djangoapps/contentstore/views/transcripts_ajax.py
 msgid "Incoming video data is empty."

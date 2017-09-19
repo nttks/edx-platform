@@ -6,17 +6,17 @@ from student.models import CourseEnrollment
 from xmodule.course_module import CourseDescriptor
 
 
-def is_terminated_tab(tab, course, user, is_staff):
+def is_terminated_tab(tab, course, user, is_staff, is_old_course_viewer=False):
     for config in getattr(settings, 'COURSE_TERMINATED_CHECK_EXCLUDE_PATH', []):
         if tab.type == config.get('tab', ''):
             return False
-    return is_terminated(course, user, is_staff)
+    return is_terminated(course, user, is_staff, is_old_course_viewer)
 
 
-def is_terminated(courselike, user, is_staff):
+def is_terminated(courselike, user, is_staff, is_old_course_viewer=False):
     if not (isinstance(courselike, CourseDescriptor) or isinstance(courselike, CourseOverview)):
         raise ValueError("courselike object must be instance of CourseDescriptor or CourseOverview. {}".format(type(courselike)))
-    return not is_staff and (_is_terminated(courselike) or _is_individual_closed(courselike, user))
+    return not (is_staff or is_old_course_viewer) and (_is_terminated(courselike) or _is_individual_closed(courselike, user))
 
 
 def _is_terminated(courselike):

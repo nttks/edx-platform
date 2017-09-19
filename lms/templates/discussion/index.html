@@ -1,6 +1,7 @@
 <%inherit file="../main.html" />
 <%namespace name='static' file='../static_content.html'/>
 <%!
+import json
 from django.utils.translation import ugettext as _
 from django.template.defaultfilters import escapejs
 from django.core.urlresolvers import reverse
@@ -24,7 +25,10 @@ from django.core.urlresolvers import reverse
 </%block>
 
 <%include file="../courseware/course_navigation.html" args="active_page='discussion'" />
-
+<script type="text/javascript">
+  var scrolltop = "";
+  var is_image_upload = ${json.dumps(is_image_upload)};
+</script>
 
 <section class="discussion container" id="discussion-container"
          data-roles="${roles | h}"

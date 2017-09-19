@@ -8,9 +8,11 @@ from django.utils.functional import SimpleLazyObject
 from opaque_keys import InvalidKeyError
 from opaque_keys.edx.keys import CourseKey
 
-from biz.djangoapps.ga_contract.models import ContractDetail
+from biz.djangoapps.ga_contract.models import Contract, ContractDetail
 from biz.djangoapps.ga_invitation.models import ContractRegister
 from biz.djangoapps.util.access_utils import has_staff_access
+from courseware.access import has_access, GA_ACCESS_CHECK_TYPE_OLD_COURSE_VIEW
+from student.roles import CourseBetaTesterRole
 
 
 SpocStatus = namedtuple('SpocStatus', 'is_spoc_course has_spoc_access')
@@ -36,8 +38,15 @@ def _get_spoc_status(user, course_id):
 
     is_spoc_course = bool(_spoc_contract_ids)
     has_spoc_access = (
-        is_spoc_course and
-        (has_staff_access(user, course_id) or _has_spoc_access(user, _spoc_contract_ids))
+        is_spoc_course and (
+            has_staff_access(user, course_id) or
+            _has_spoc_access(user, _spoc_contract_ids) or
+            has_access(user, GA_ACCESS_CHECK_TYPE_OLD_COURSE_VIEW, 'global') or
+            (
+                Contract.objects.enabled().filter(pk__in=_spoc_contract_ids).exists() and
+                CourseBetaTesterRole(course_id).has_user(user)
+            )
+        )
     )
 
     return SpocStatus(is_spoc_course, has_spoc_access)

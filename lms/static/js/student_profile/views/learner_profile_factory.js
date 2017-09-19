@@ -9,9 +9,11 @@
         'js/student_profile/views/learner_profile_view',
         'js/student_account/views/account_settings_fields',
         'js/views/message_banner',
+        'js/student_profile/views/field_certificates',
         'string_utils'
     ], function (gettext, $, _, Backbone, Logger, AccountSettingsModel, AccountPreferencesModel, FieldsView,
-                 LearnerProfileFieldsView, LearnerProfileView, AccountSettingsFieldViews, MessageBannerView) {
+                 LearnerProfileFieldsView, LearnerProfileView, AccountSettingsFieldViews, MessageBannerView,
+                 FieldCertificates) {
 
         return function (options) {
 
@@ -121,6 +123,14 @@
                 })
             ];
 
+            var certificationFieldViews = [
+                new FieldCertificates({
+                    ownProfile: options.own_profile,
+                    certInfos: options.cert_infos,
+                    profileVisibility: options.preferences_data.account_privacy
+                })
+            ]
+
             var learnerProfileView = new LearnerProfileView({
                 el: learnerProfileElement,
                 ownProfile: options.own_profile,
@@ -132,7 +142,8 @@
                 usernameFieldView: usernameFieldView,
                 sectionOneFieldViews: sectionOneFieldViews,
                 sectionTwoFieldViews: sectionTwoFieldViews,
-                parentalConsentAgeLimit: options.parental_consent_age_limit
+                parentalConsentAgeLimit: options.parental_consent_age_limit,
+                certificationFieldViews: certificationFieldViews
             });
 
             var getProfileVisibility = function() {

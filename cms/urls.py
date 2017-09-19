@@ -99,6 +99,7 @@ urlpatterns += patterns(
         name='course_search_index_handler'
     ),
     url(r'^course/{}?$'.format(settings.COURSE_KEY_PATTERN), 'course_handler', name='course_handler'),
+    url(r'^course/{}/libhome/?$'.format(settings.COURSE_KEY_PATTERN), 'library_listing', name='libhome'),
     url(r'^course_notifications/{}/(?P<action_state_id>\d+)?$'.format(settings.COURSE_KEY_PATTERN),
         'course_notifications_handler'),
     url(r'^course_rerun/{}$'.format(settings.COURSE_KEY_PATTERN), 'course_rerun_handler', name='course_rerun_handler'),
@@ -140,7 +141,11 @@ urlpatterns += patterns(
 
 if settings.FEATURES.get('ENABLE_CONTENT_LIBRARIES'):
     urlpatterns += (
-        url(r'^library/{}?$'.format(LIBRARY_KEY_PATTERN),
+        url(r'^course/{course_key}/library/{library_key}?$'.format(
+            course_key=settings.COURSE_KEY_PATTERN,
+            library_key=LIBRARY_KEY_PATTERN),
+            'contentstore.views.course_library_handler', name='course_library_handler'),
+        url(r'^library/{}$'.format(LIBRARY_KEY_PATTERN),
             'contentstore.views.library_handler', name='library_handler'),
         url(r'^library/{}/team/$'.format(LIBRARY_KEY_PATTERN),
             'contentstore.views.manage_library_users', name='manage_library_users'),

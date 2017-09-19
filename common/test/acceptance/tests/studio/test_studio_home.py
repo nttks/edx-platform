@@ -3,6 +3,7 @@ Acceptance tests for Home Page (My Courses / My Libraries).
 """
 from bok_choy.web_app_test import WebAppTest
 from opaque_keys.edx.locator import LibraryLocator
+from unittest import skip
 
 from ...fixtures import PROGRAMS_STUB_URL
 from ...fixtures.config import ConfigModelFixture
@@ -26,6 +27,7 @@ class CreateLibraryTest(WebAppTest):
         self.auth_page = AutoAuthPage(self.browser, staff=True)
         self.dashboard_page = DashboardPage(self.browser)
 
+    @skip
     def test_create_library(self):
         """
         From the home page:

@@ -1,6 +1,8 @@
-define(['jquery.form', 'js/index'], function() {
+define(['jquery.form', 'js/index'], function(JqueryForm, CreateLibrary) {
     'use strict';
-    return function () {
+    return function (course_key) {
+        CreateLibrary.course_key_setter(course_key);
+
         // showing/hiding creation rights UI
         $('.show-creationrights').click(function(e) {
             e.preventDefault();

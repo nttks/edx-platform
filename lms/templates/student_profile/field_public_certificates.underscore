@@ -1,0 +1,14 @@
+<% if (certInfos.length > 0) { %>
+<hr>
+<div>
+    <div class="cert-header"><%- gettext("Certificates List") %></div>
+    <ul>
+    <% _.each(certInfos, function(certInfo, i) { %>
+        <li>
+            <div class="cert-thumbnail"><img src="<%- certInfo.image_url %>" alt=""></div>
+            <div class="cert-course"><span><%- certInfo.course_name %></span></div>
+        </li>
+    <% }) %>
+    </ul>
+</div>
+<% } %>

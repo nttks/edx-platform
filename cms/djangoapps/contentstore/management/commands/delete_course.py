@@ -45,3 +45,17 @@ class Command(BaseCommand):
             if query_yes_no("Are you sure. This action cannot be undone!", default="no"):
                 delete_course_and_groups(course_key, ModuleStoreEnum.UserID.mgmt_command, purge=purge)
                 print "Deleted course {}".format(course_key)
+
+                courses = modulestore().get_courses()
+                delete_course_libraries = getattr(modulestore().get_course(course_key), 'target_library', [])
+                for delete_course_library in delete_course_libraries:
+                    used_other_courses = False
+                    for course in courses:
+                        target_libraries = getattr(course, 'target_library', [])
+                        if delete_course_library in target_libraries:
+                            used_other_courses = True
+                            break
+                    if not used_other_courses:
+                        library_key = CourseKey.from_string(delete_course_library)
+                        delete_course_and_groups(library_key, ModuleStoreEnum.UserID.mgmt_command, purge=purge)
+                        print "Deleted library {}".format(library_key)

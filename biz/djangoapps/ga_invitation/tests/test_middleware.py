@@ -11,9 +11,10 @@ from django.core.urlresolvers import reverse
 from django.test import TestCase, RequestFactory
 from django.utils.functional import SimpleLazyObject
 
+from courseware.access_utils import ACCESS_DENIED, ACCESS_GRANTED
 from courseware.tests.helpers import LoginEnrollmentTestCase
 from opaque_keys.edx.keys import CourseKey
-from student.roles import CourseStaffRole
+from student.roles import CourseBetaTesterRole, CourseStaffRole, GaOldCourseViewerStaffRole, GlobalStaff
 from student.tests.factories import UserFactory
 from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
 from xmodule.modulestore.tests.factories import CourseFactory, ItemFactory
@@ -186,6 +187,54 @@ class SpocStatusMiddlewareTest(SpocStatusTestBase):
 
         # has_spoc_access is True if user is staff
         self.assertEqual((True, True), self.request.spoc_status)
+
+    def test_process_request_spoc_course_with_betatester(self):
+        course_id = CourseKey.from_string('course-v1:org+course+run')
+        CourseFactory.create(org=course_id.org, number=course_id.course, run=course_id.run)
+
+        # Create SPOC contract. Not create ContractRegister.
+        self._create_contract(
+            user=self.user,
+            course_id=course_id,
+            contract_type=CONTRACT_TYPE_PF[0]
+        )
+        CourseBetaTesterRole(course_id).add_users(self.user)
+        self.request.path = '/courses/course-v1:org+course+run/'
+
+        SpocStatusMiddleware().process_request(self.request)
+
+        # has_spoc_access is True if user is not enroll betatesters
+        self.assertEqual((True, True), self.request.spoc_status)
+
+    @ddt.data((GlobalStaff, ACCESS_GRANTED), (GaOldCourseViewerStaffRole, ACCESS_GRANTED), (CourseBetaTesterRole, False))
+    @ddt.unpack
+    def test_process_request_spoc_disabled_and_specificate_role(self, data_role, expected_has_access):
+        course_id = CourseKey.from_string('course-v1:org+course+run')
+
+        # Create Contract but disabled
+        contract_detail = self._create_contract(
+            user=self.user,
+            course_id=course_id,
+            contract_type=CONTRACT_TYPE_PF[0],
+            end_date=(timezone_today() - timedelta(days=1)),
+        )
+
+        # Add Role
+        if data_role is CourseBetaTesterRole:
+            data_role(course_id).add_users(self.user)
+        else:
+            data_role().add_users(self.user)
+
+        # Create ContractRegister as INPUT_INVITATION_CODE.
+        self._create_contract_register(self.user, contract_detail.contract, INPUT_INVITATION_CODE)
+
+        self.request.path = '/courses/course-v1:org+course+run/'
+
+        SpocStatusMiddleware().process_request(self.request)
+
+        # If contract is disabled, has_access is False regardless of the status of ContractRegister
+        # But global staff and ga_old_course_viewer is True
+        self.assertEqual((True, expected_has_access), self.request.spoc_status)
 
     @ddt.data(
         INPUT_INVITATION_CODE,

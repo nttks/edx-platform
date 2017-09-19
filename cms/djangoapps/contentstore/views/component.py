@@ -22,9 +22,12 @@ from xblock.runtime import Mixologist
 
 from contentstore.utils import get_lms_link_for_item
 from contentstore.views.helpers import get_parent_xblock, is_unit, xblock_type_display_name
-from contentstore.views.item import create_xblock_info, add_container_page_publishing_info
+from contentstore.views.item import create_xblock_info, add_container_page_publishing_info, StudioEditModuleRuntime
 
 from opaque_keys.edx.keys import UsageKey
+
+from openedx.core.djangoapps.ga_optional.api import is_available
+from openedx.core.djangoapps.ga_optional.models import LIBRARY_OPTION_KEY
 
 from student.auth import has_course_author_access
 from django.utils.translation import ugettext as _
@@ -154,7 +157,8 @@ def container_handler(request, usage_key_string):
                 'xblock_info': xblock_info,
                 'draft_preview_link': preview_lms_link,
                 'published_preview_link': lms_link,
-                'templates': CONTAINER_TEMPLATES
+                'templates': CONTAINER_TEMPLATES,
+                'library_option': is_available(LIBRARY_OPTION_KEY, course.id)
             })
     else:
         return HttpResponseBadRequest("Only supports HTML requests")
@@ -263,11 +267,16 @@ def get_component_templates(courselike, library=False):
     # are the names of the modules in ADVANCED_COMPONENT_TYPES that should be
     # enabled for the course.
     course_advanced_keys = courselike.advanced_modules
+    if 'library_content' not in course_advanced_keys:
+        course_advanced_keys.append(u'library_content')
     advanced_component_templates = {"type": "advanced", "templates": [], "display_name": _("Advanced")}
     advanced_component_types = _advanced_component_types()
     # Set component types according to course policy file
     if isinstance(course_advanced_keys, list):
         for category in course_advanced_keys:
+            if category == 'library_content' and not is_available(LIBRARY_OPTION_KEY, courselike.id):
+                continue
+
             if category in advanced_component_types and category not in categories:
                 # boilerplates not supported for advanced components
                 try:
@@ -342,6 +351,7 @@ def component_handler(request, usage_key_string, handler, suffix=''):
     usage_key = UsageKey.from_string(usage_key_string)
 
     descriptor = modulestore().get_item(usage_key)
+    descriptor.xmodule_runtime = StudioEditModuleRuntime(request.user)
     # Let the module handle the AJAX
     req = django_to_webob_request(request)
 

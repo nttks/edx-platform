@@ -9,6 +9,7 @@ from django.test.utils import override_settings
 from courseware.ga_middleware import CourseTerminatedCheckMiddleware, CustomLogoMiddleware
 from courseware.tests.helpers import get_request_for_user, LoginEnrollmentTestCase
 from openedx.core.djangoapps.ga_optional.models import CourseOptionalConfiguration
+from student.tests.factories import CourseAccessRoleFactory
 from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
 from xmodule.modulestore.tests.factories import CourseFactory
 
@@ -30,12 +31,14 @@ class CourseTerminatedCheckMiddlewareTest(LoginEnrollmentTestCase, ModuleStoreTe
 
         self.course = CourseFactory.create(start=timezone.now() - timedelta(days=10))
 
-    def _create_request(self, is_staff, path):
+    def _create_request(self, is_staff, is_old_course_viewer, path):
         self.setup_user()
         self.enroll(self.course)
         if is_staff:
             self.user.is_staff = True
             self.user.save()
+        if is_old_course_viewer:
+            CourseAccessRoleFactory(course_id=None, user=self.user, role='ga_old_course_viewer')
         request = get_request_for_user(self.user)
         request.path = path.format(unicode(self.course.id))
         return request
@@ -64,7 +67,7 @@ class CourseTerminatedCheckMiddlewareTest(LoginEnrollmentTestCase, ModuleStoreTe
     )
     @ddt.unpack
     def test_check_target_path(self, expected, path):
-        request = self._create_request(False, path)
+        request = self._create_request(False, False, path)
         is_target, course_id = CourseTerminatedCheckMiddleware()._check_target_path(request)
         if expected:
             self.assertTrue(is_target)
@@ -74,54 +77,57 @@ class CourseTerminatedCheckMiddlewareTest(LoginEnrollmentTestCase, ModuleStoreTe
             self.assertIsNone(course_id)
 
     @ddt.data(
-        (False, False, '/courses/{}/courseware/'),
-        (False, True, '/courses/{}/courseware/'),
-        (False, False, '/courses/{}/exclude1'),
-        (False, False, '/courses/course-v1:org+course_non_exists+run/courseware/'),
+        (False, False, False, '/courses/{}/courseware/'),
+        (False, True, False, '/courses/{}/courseware/'),
+        (False, False, True, '/courses/{}/courseware/'),
+        (False, False, False, '/courses/{}/exclude1'),
+        (False, False, False, '/courses/course-v1:org+course_non_exists+run/courseware/'),
     )
     @ddt.unpack
-    def test_course_opened(self, is_blocked, is_staff, path):
+    def test_course_opened(self, is_blocked, is_staff, is_old_course_viewer, path):
         """
         Tests that the opened course always does not block the access.
         """
-        request = self._create_request(is_staff, path)
+        request = self._create_request(is_staff, is_old_course_viewer, path)
         response = CourseTerminatedCheckMiddleware().process_request(request)
         self._assert_response(is_blocked, response)
 
     @ddt.data(
-        (True, False, '/courses/{}/courseware/'),
-        (False, True, '/courses/{}/courseware/'),
-        (False, False, '/courses/{}/exclude1'),
-        (False, False, '/courses/course-v1:org+course_non_exists+run/courseware/'),
+        (True, False, False, '/courses/{}/courseware/'),
+        (False, True, False, '/courses/{}/courseware/'),
+        (False, False, True, '/courses/{}/courseware/'),
+        (False, False, False, '/courses/{}/exclude1'),
+        (False, False, False, '/courses/course-v1:org+course_non_exists+run/courseware/'),
     )
     @ddt.unpack
-    def test_course_terminated(self, is_blocked, is_staff, path):
+    def test_course_terminated(self, is_blocked, is_staff, is_old_course_viewer, path):
         """
-        Tests that the terminated course block the access except by staff.
+        Tests that the terminated course block the access except by staff or gaOldCourseViewer.
         """
         self.course.terminate_start = timezone.now() - timedelta(days=1)
         self.update_course(self.course, self.user.id)
 
-        request = self._create_request(is_staff, path)
+        request = self._create_request(is_staff, is_old_course_viewer, path)
         response = CourseTerminatedCheckMiddleware().process_request(request)
         self._assert_response(is_blocked, response)
 
     @patch('openedx.core.djangoapps.ga_self_paced.api.is_course_closed', return_value=True)
     @ddt.data(
-        (True, False, '/courses/{}/courseware/'),
-        (False, True, '/courses/{}/courseware/'),
-        (False, False, '/courses/{}/exclude1'),
-        (False, False, '/courses/course-v1:org+course_non_exists+run/courseware/'),
+        (True, False, False, '/courses/{}/courseware/'),
+        (False, True, False, '/courses/{}/courseware/'),
+        (False, False, True, '/courses/{}/courseware/'),
+        (False, False, False, '/courses/{}/exclude1'),
+        (False, False, False, '/courses/course-v1:org+course_non_exists+run/courseware/'),
     )
     @ddt.unpack
-    def test_self_paced_course_closed(self, is_blocked, is_staff, path, mock_is_course_closed):
+    def test_self_paced_course_closed(self, is_blocked, is_staff, is_old_course_viewer, path, mock_is_course_closed):
         """
-        Tests that the self-paced closed course block the access except by staff.
+        Tests that the self-paced closed course block the access except by staff or gaOldCourseViewer.
         """
         self.course.self_paced = True
         self.update_course(self.course, self.user.id)
 
-        request = self._create_request(is_staff, path)
+        request = self._create_request(is_staff, is_old_course_viewer, path)
         response = CourseTerminatedCheckMiddleware().process_request(request)
         self._assert_response(is_blocked, response)
 
@@ -152,50 +158,52 @@ class CourseTerminatedCheckViewTest(LoginEnrollmentTestCase, ModuleStoreTestCase
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response['Location'], 'http://testserver/login?next={}'.format(next_path))
 
-    def _access_page(self, is_staff, is_anonymous=False):
+    def _access_page(self, is_staff, is_old_course_viewer, is_anonymous=False):
         if not is_anonymous:
             self.setup_user()
             self.enroll(self.course)
             if is_staff:
                 self.user.is_staff = True
                 self.user.save()
+            if is_old_course_viewer:
+                CourseAccessRoleFactory(course_id=None, user=self.user, role='ga_old_course_viewer')
         path = '/courses/{}/progress'.format(unicode(self.course.id))
         return self.client.get(path)
 
-    @ddt.data((False, False), (False, True))
+    @ddt.data((False, False, False), (False, True, False), (False, False, True))
     @ddt.unpack
-    def test_course_opened(self, is_blocked, is_staff):
-        response = self._access_page(is_staff)
+    def test_course_opened(self, is_blocked, is_staff, is_old_course_viewer):
+        response = self._access_page(is_staff, is_old_course_viewer)
         self._assert_response(is_blocked, response)
 
     def test_course_opened_not_logged_in(self):
-        response = self._access_page(False, True)
+        response = self._access_page(False, False, True)
         self._assert_redirect_login(response)
 
-    @ddt.data((True, False), (False, True))
+    @ddt.data((True, False, False), (False, True, False), (False, False, True))
     @ddt.unpack
-    def test_course_terminated(self, is_blocked, is_staff):
+    def test_course_terminated(self, is_blocked, is_staff, is_old_course_viewer):
         self.course.terminate_start = timezone.now() - timedelta(days=1)
         self.update_course(self.course, self.user.id)
 
-        response = self._access_page(is_staff)
+        response = self._access_page(is_staff, is_old_course_viewer)
         self._assert_response(is_blocked, response)
 
     def test_course_terminated_not_logged_in(self):
         self.course.terminate_start = timezone.now() - timedelta(days=1)
         self.update_course(self.course, self.user.id)
 
-        response = self._access_page(False, True)
+        response = self._access_page(False, False, True)
         self._assert_response(True, response)
 
     @patch('openedx.core.djangoapps.ga_self_paced.api.is_course_closed', return_value=True)
-    @ddt.data((True, False), (False, True))
+    @ddt.data((True, False, False), (False, True, False), (False, False, True))
     @ddt.unpack
-    def test_self_paced_course_closed(self, is_blocked, is_staff, mock_is_course_closed):
+    def test_self_paced_course_closed(self, is_blocked, is_staff, is_old_course_viewer, mock_is_course_closed):
         self.course.self_paced = True
         self.update_course(self.course, self.user.id)
 
-        response = self._access_page(is_staff)
+        response = self._access_page(is_staff, is_old_course_viewer)
         self._assert_response(is_blocked, response)
 
         if is_blocked and not is_staff:
@@ -205,7 +213,7 @@ class CourseTerminatedCheckViewTest(LoginEnrollmentTestCase, ModuleStoreTestCase
         self.course.self_paced = True
         self.update_course(self.course, self.user.id)
 
-        response = self._access_page(False, True)
+        response = self._access_page(False, False, True)
         self._assert_redirect_login(response)
 
 

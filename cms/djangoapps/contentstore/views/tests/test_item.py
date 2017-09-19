@@ -206,7 +206,7 @@ class GetItemTest(ItemTest):
         # Get the preview HTML and verify the View -> link is present.
         html, __ = self._get_container_preview(root_usage_key)
         self.assertIn('wrapper-xblock', html)
-        self.assertRegexpMatches(
+        self.assertNotRegexpMatches(
             html,
             # The instance of the wrapper class will have an auto-generated ID. Allow any
             # characters after wrapper.

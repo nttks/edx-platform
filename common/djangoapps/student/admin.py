@@ -22,7 +22,7 @@ class CourseAccessRoleForm(forms.ModelForm):
         fields = '__all__'
 
     email = forms.EmailField(required=True)
-    COURSE_ACCESS_ROLES = [(role_name, role_name) for role_name in REGISTERED_ACCESS_ROLES.keys()]
+    COURSE_ACCESS_ROLES = [(role_name, role_name) for role_name in sorted(REGISTERED_ACCESS_ROLES.keys())]
     role = forms.ChoiceField(choices=COURSE_ACCESS_ROLES)
 
     def clean_course_id(self):

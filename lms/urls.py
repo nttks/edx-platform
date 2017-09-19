@@ -666,6 +666,13 @@ urlpatterns += (
         'student_profile.views.learner_profile',
         name='learner_profile',
     ),
+    url(
+        r'^certs_visibility/{}/'.format(
+            settings.COURSE_ID_PATTERN,
+        ),
+        'student_profile.views.change_visibility_certificates',
+        name='change_visibility_certificates',
+    ),
 
     # Student Notes
     url(

@@ -819,6 +819,14 @@ class CourseFields(object):
         scope=Scope.settings
     )
 
+    target_library = List(
+        help=_(
+            "Target library list for the course."
+        ),
+        scope=Scope.settings,
+        default=[]
+    )
+
 
 class CourseModule(CourseFields, SequenceModule):  # pylint: disable=abstract-method
     """
@@ -873,6 +881,15 @@ class CourseDescriptor(CourseFields, SequenceDescriptor, LicenseMixin):
                 CourseTabList.initialize_default(self)
         except InvalidTabsException as err:
             raise type(err)('{msg} For course: {course_id}'.format(msg=err.message, course_id=unicode(self.id)))
+
+    @property
+    def non_editable_metadata_fields(self):
+        non_editable_fields = super(CourseDescriptor, self).non_editable_metadata_fields
+        # The only supported mode is currently 'random'.
+        # Add the mode field to non_editable_metadata_fields so that it doesn't
+        # render in the edit form.
+        non_editable_fields.extend([CourseFields.target_library])
+        return non_editable_fields
 
     def set_grading_policy(self, course_policy):
         """

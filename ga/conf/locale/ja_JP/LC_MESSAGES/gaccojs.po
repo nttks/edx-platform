@@ -82,6 +82,22 @@ msgstr """ディスカッションは議論の場であり、答えを教えあ�
 msgid "%(post_type)s posted %(time_ago)s by %(author)s"
 msgstr "%(author)sにより%(time_ago)sに投稿"
 
+#: lms/static/js/Markdown.Editor.js
+msgid "Insert Image (Type URL)"
+msgstr "画像挿入(URLを入力してください)"
+
+#: lms/static/js/Markdown.Editor.js
+msgid "Please provide a valid URL."
+msgstr "有効なURLを入力してください。"
+
+#: lms/static/js/Markdown.Editor.js
+msgid "Description is Required."
+msgstr "説明は必須です。"
+
+#: lms/static/js/Markdown.Editor.js
+msgid "Maximum upload file size is {file_size} bytes."
+msgstr "アップロードできるファイルサイズは {file_size} byteまでです。"
+
 #-#-#-#-#  Missing messages for openedx-releases/cypress  #-#-#-#-#
 
 #. Translators: This is used in lms/templates/student_account/form_field.underscore
@@ -471,6 +487,19 @@ msgid ""
 "specify your birth year, go to the {account_settings_page_link}"
 msgstr ""
 "プロフィールを公開するには、 {account_settings_page_link} で誕生年を設定してください。"
+
+#: lms/templates/student_profile/field_own_certificates.underscore
+#: lms/templates/student_profile/field_public_certificates.underscore
+msgid "Certificates List"
+msgstr "修了証一覧"
+
+#: lms/templates/student_profile/field_own_certificates.underscore
+msgid "Shared"
+msgstr "公開"
+
+#: lms/templates/student_profile/field_own_certificates.underscore
+msgid "Unshared"
+msgstr "非公開"
 
 #: cms/templates/js/validation-error-modal.underscore
 msgid "There was {strong_start}{num_errors} validation error{strong_end} while trying to save the course settings in the database."

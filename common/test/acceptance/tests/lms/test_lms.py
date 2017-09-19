@@ -18,6 +18,7 @@ from ..helpers import (
     select_option_by_value,
     element_has_text
 )
+from ..ga_helpers import GA_OLD_COURSE_VIEWER_USER_INFO
 from ...fixtures.course import CourseFixture, XBlockFixtureDesc, CourseUpdateDesc
 from ...pages.common.logout import LogoutPage
 from ...pages.lms import BASE_URL
@@ -808,6 +809,30 @@ class VisibleToStaffOnlyTest(UniqueCourseTest):
         self.course_nav.go_to_section("Test Section", "Unlocked Subsection")
         self.assertEqual(["Html Child in visible unit"], self.course_nav.sequence_items)
 
+    def test_visible_to_ga_old_course_viewer(self):
+        """
+        Scenario: Content marked 'visible_to_staff_only' is not visible for students in the course
+            Given some of the course content has been marked 'visible_to_staff_only'
+            And I am logged on with an authorized ga_old_course_viewer account
+            Then I can only see content without 'visible_to_staff_only' set to True
+        """
+        AutoAuthPage(
+            self.browser,
+            username=GA_OLD_COURSE_VIEWER_USER_INFO['username'],
+            password=GA_OLD_COURSE_VIEWER_USER_INFO['password'],
+            email=GA_OLD_COURSE_VIEWER_USER_INFO['email'],
+            course_id=self.course_id
+        ).visit()
+
+        self.courseware_page.visit()
+        self.assertEqual(2, len(self.course_nav.sections['Test Section']))
+
+        self.course_nav.go_to_section("Test Section", "Subsection With Locked Unit")
+        self.assertEqual(["Html Child in unlocked unit"], self.course_nav.sequence_items)
+
+        self.course_nav.go_to_section("Test Section", "Unlocked Subsection")
+        self.assertEqual(["Html Child in visible unit"], self.course_nav.sequence_items)
+
 
 @attr('shard_1')
 class TooltipTest(UniqueCourseTest):
@@ -914,6 +939,20 @@ class PreRequisiteCourseTest(UniqueCourseTest):
         self.dashboard_page.visit()
         self.assertFalse(self.dashboard_page.pre_requisite_message_displayed())
 
+        # Logout and Login as a ga_old_course_viewer
+        # self.switch_to_user(GA_OLD_COURSE_VIEWER_USER_INFO, self.course_id)
+        LogoutPage(self.browser).visit()
+        AutoAuthPage(
+            self.browser,
+            username=GA_OLD_COURSE_VIEWER_USER_INFO['username'],
+            password=GA_OLD_COURSE_VIEWER_USER_INFO['password'],
+            email=GA_OLD_COURSE_VIEWER_USER_INFO['email'],
+            course_id=self.course_id
+        ).visit()
+        # visit dashboard page and make sure there is not pre-requisite course message
+        self.dashboard_page.visit()
+        self.assertFalse(self.dashboard_page.pre_requisite_message_displayed())
+
         # Logout and login as a staff.
         LogoutPage(self.browser).visit()
         AutoAuthPage(self.browser, course_id=self.course_id, staff=True).visit()
@@ -926,6 +965,21 @@ class PreRequisiteCourseTest(UniqueCourseTest):
         LogoutPage(self.browser).visit()
         AutoAuthPage(self.browser, course_id=self.course_id, staff=False).visit()
 
+        # visit dashboard page again now it should have pre-requisite course message
+        self.dashboard_page.visit()
+        EmptyPromise(lambda: self.dashboard_page.available_courses > 0, 'Dashboard page loaded').fulfill()
+        self.assertTrue(self.dashboard_page.pre_requisite_message_displayed())
+
+        # Logout and Login as a ga_old_course_viewer
+        # self.switch_to_user(GA_OLD_COURSE_VIEWER_USER_INFO)
+        LogoutPage(self.browser).visit()
+        AutoAuthPage(
+            self.browser,
+            username=GA_OLD_COURSE_VIEWER_USER_INFO['username'],
+            password=GA_OLD_COURSE_VIEWER_USER_INFO['password'],
+            email=GA_OLD_COURSE_VIEWER_USER_INFO['email'],
+            course_id=self.course_id
+        ).visit()
         # visit dashboard page again now it should have pre-requisite course message
         self.dashboard_page.visit()
         EmptyPromise(lambda: self.dashboard_page.available_courses > 0, 'Dashboard page loaded').fulfill()
@@ -1065,6 +1119,25 @@ class EntranceExamTest(UniqueCourseTest):
             text='Entrance Exam'
         ))
 
+        # Logout and login as a ga_old_course_viewer
+        LogoutPage(self.browser).visit()
+        AutoAuthPage(
+            self.browser,
+            username=GA_OLD_COURSE_VIEWER_USER_INFO['username'],
+            password=GA_OLD_COURSE_VIEWER_USER_INFO['password'],
+            email=GA_OLD_COURSE_VIEWER_USER_INFO['email'],
+            course_id=self.course_id
+        ).visit()
+        # self.switch_to_user(GA_OLD_COURSE_VIEWER_USER_INFO, self.course_id)
+        # visit courseware page and make sure there is not entrance exam chapter.
+        self.courseware_page.visit()
+        self.courseware_page.wait_for_page()
+        self.assertFalse(element_has_text(
+            page=self.courseware_page,
+            css_selector=entrance_exam_link_selector,
+            text='Entrance Exam'
+        ))
+
         # Logout and login as a staff.
         LogoutPage(self.browser).visit()
         AutoAuthPage(self.browser, course_id=self.course_id, staff=True).visit()
@@ -1079,6 +1152,27 @@ class EntranceExamTest(UniqueCourseTest):
         # Logout and login as a student.
         LogoutPage(self.browser).visit()
         AutoAuthPage(self.browser, course_id=self.course_id, staff=False).visit()
+
+        # visit course info page and make sure there is an "Entrance Exam" section.
+        self.courseware_page.visit()
+        self.courseware_page.wait_for_page()
+        self.assertTrue(element_has_text(
+            page=self.courseware_page,
+            css_selector=entrance_exam_link_selector,
+            text='Entrance Exam'
+        ))
+
+        # Logout and login as a ga_old_course_viewer
+        LogoutPage(self.browser).visit()
+        AutoAuthPage(
+            self.browser,
+            username=GA_OLD_COURSE_VIEWER_USER_INFO['username'],
+            password=GA_OLD_COURSE_VIEWER_USER_INFO['password'],
+            email=GA_OLD_COURSE_VIEWER_USER_INFO['email'],
+            course_id=self.course_id
+        ).visit()
+        # self.switch_to_user(GA_OLD_COURSE_VIEWER_USER_INFO, self.course_id)
+        # visit courseware page and make sure there is not entrance exam chapter.
 
         # visit course info page and make sure there is an "Entrance Exam" section.
         self.courseware_page.visit()

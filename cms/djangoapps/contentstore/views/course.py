@@ -65,7 +65,7 @@ from openedx.core.djangoapps.content.course_structures.api.v0 import api, errors
 from openedx.core.djangoapps.credit.api import is_credit_course, get_credit_requirements
 from openedx.core.djangoapps.credit.tasks import update_credit_course_requirements
 from openedx.core.djangoapps.ga_optional.api import is_available
-from openedx.core.djangoapps.ga_optional.models import CUSTOM_LOGO_OPTION_KEY
+from openedx.core.djangoapps.ga_optional.models import CUSTOM_LOGO_OPTION_KEY, LIBRARY_OPTION_KEY
 from openedx.core.djangoapps.models.course_details import CourseDetails
 from openedx.core.djangoapps.programs.models import ProgramsApiConfig
 from openedx.core.djangoapps.programs.utils import get_programs
@@ -107,6 +107,7 @@ from xmodule.tabs import CourseTab, CourseTabList, InvalidTabsException
 log = logging.getLogger(__name__)
 
 __all__ = ['course_info_handler', 'course_handler', 'course_listing',
+           'library_listing',
            'course_info_update_handler', 'course_search_index_handler',
            'course_rerun_handler',
            'settings_handler',
@@ -497,6 +498,58 @@ def course_listing(request):
     })
 
 
+@login_required
+@ensure_csrf_cookie
+def library_listing(request, course_key_string=None):
+    """
+    List all libraries for the course
+    """
+    def format_library_for_view(library, course):
+        """
+        Return a dict of the data which the view requires for each library
+        """
+        return {
+            'display_name': library.display_name,
+            'library_key': unicode(library.location.library_key),
+            'url': reverse_course_url('course_library_handler', course, kwargs={'library_key_string': unicode(library.location.library_key)}),
+            'org': library.display_org_with_default,
+            'number': library.display_number_with_default,
+            'can_edit': has_studio_write_access(request.user, library.location.library_key),
+        }
+
+    maintenance_message = MaintenanceMessage.messages_for_all()
+
+    course_key = CourseKey.from_string(course_key_string)
+
+    with modulestore().bulk_operations(course_key):
+        course_module = get_course_and_check_access(course_key, request.user, depth=None)
+
+        instructor_courses = UserBasedRole(request.user, CourseInstructorRole.ROLE).courses_with_role()
+        global_staff = GlobalStaff().has_user(request.user)
+        if not course_module or not is_available(LIBRARY_OPTION_KEY, course_key):
+            raise Http404
+        if not instructor_courses and not global_staff:
+            raise Http404
+
+        target_libraries = course_module.target_library
+
+        libraries = modulestore().get_libraries()
+        for library in libraries[:]:
+            if unicode(library.location.library_key) not in target_libraries:
+                libraries.remove(library)
+
+        return render_to_response('index_lib.html', {
+            'context_course': course_module,
+            'libraries_enabled': LIBRARIES_ENABLED,
+            'libraries': [format_library_for_view(lib, course_key) for lib in libraries],
+            'show_new_library_button': LIBRARIES_ENABLED and request.user.is_active,
+            'library_option': is_available(LIBRARY_OPTION_KEY, course_key),
+            'user': request.user,
+            'maintenance_message': maintenance_message,
+            'allow_unicode_course_id': settings.FEATURES.get('ALLOW_UNICODE_COURSE_ID', False)
+        })
+
+
 def _get_rerun_link_for_item(course_key):
     """ Returns the rerun link for the given course key. """
     return reverse_course_url('course_rerun_handler', course_key)
@@ -589,6 +642,7 @@ def course_index(request, course_key):
                     'action_state_id': current_action.id,
                 },
             ) if current_action else None,
+            'library_option': is_available(LIBRARY_OPTION_KEY, course_key)
         })
 
 
@@ -874,6 +928,7 @@ def course_info_handler(request, course_key_string):
                     'push_notification_enabled': push_notification_enabled(),
                     'custom_logo_enabled': custom_logo_enabled,
                     'custom_logo_for_url': custom_logo_url(course_module),
+                    'library_option': is_available(LIBRARY_OPTION_KEY, course_key)
                 }
             )
         else:
@@ -989,6 +1044,7 @@ def settings_handler(request, course_key_string):
                 'self_paced_enabled': self_paced_enabled,
                 'custom_logo_enabled': custom_logo_enabled,
                 'custom_logo_for_url': custom_logo_url(course_module),
+                'library_option': is_available(LIBRARY_OPTION_KEY, course_key)
             }
             if is_prerequisite_courses_enabled():
                 courses, in_process_course_actions = get_courses_accessible_to_user(request)
@@ -1105,6 +1161,7 @@ def grading_handler(request, course_key_string, grader_index=None):
                 'course_details': course_details,
                 'grading_url': reverse_course_url('grading_handler', course_key),
                 'is_credit_course': is_credit_course(course_key),
+                'library_option': is_available(LIBRARY_OPTION_KEY, course_key)
             })
         elif 'application/json' in request.META.get('HTTP_ACCEPT', ''):
             if request.method == 'GET':
@@ -1195,7 +1252,8 @@ def advanced_settings_handler(request, course_key_string):
             return render_to_response('settings_advanced.html', {
                 'context_course': course_module,
                 'advanced_dict': CourseMetadata.fetch(course_module),
-                'advanced_settings_url': reverse_course_url('advanced_settings_handler', course_key)
+                'advanced_settings_url': reverse_course_url('advanced_settings_handler', course_key),
+                'library_option': is_available(LIBRARY_OPTION_KEY, course_key)
             })
         elif 'application/json' in request.META.get('HTTP_ACCEPT', ''):
             if request.method == 'GET':
@@ -1327,6 +1385,7 @@ def textbooks_list_handler(request, course_key_string):
                 'textbooks': course.pdf_textbooks,
                 'upload_asset_url': upload_asset_url,
                 'textbook_url': textbook_url,
+                'library_option': is_available(LIBRARY_OPTION_KEY, course_key)
             })
 
         # from here on down, we know the client has requested JSON
@@ -1508,7 +1567,8 @@ def group_configurations_list_handler(request, course_key_string):
                 'course_outline_url': course_outline_url,
                 'experiment_group_configurations': experiment_group_configurations,
                 'should_show_experiment_groups': should_show_experiment_groups,
-                'content_group_configuration': content_group_configuration
+                'content_group_configuration': content_group_configuration,
+                'library_option': is_available(LIBRARY_OPTION_KEY, course_key)
             })
         elif "application/json" in request.META.get('HTTP_ACCEPT'):
             if request.method == 'POST':

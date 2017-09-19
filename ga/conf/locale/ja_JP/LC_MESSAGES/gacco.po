@@ -584,6 +584,25 @@ msgstr ""
 "'early_no_info'のいずれかを入力してください。修了証の生成後、合格した受講者はマイページで修了証へのリンクが確認でき、不合格の受講者は採点に関する情報を確認できます。"
 "デフォルトは'early_with_info'で生成後すぐに表示されます。講座終了後に表示するには'end'を指定してください。生成後、合格した受講者にのみ表示するには'early_no_info'を指定してください。"
 
+#: lms/djangoapps/django_comment_client/base/views.py
+msgid "Error uploading file."
+msgstr "ファイルアップロードに失敗しました。"
+
+#: lms/djangoapps/django_comment_client/utils.py
+msgid "The file ending in '{file_types}' to upload."
+msgstr "アップロードできる画像ファイルの拡張子は '{file_types}'です。"
+
+#: lms/djangoapps/django_comment_client/utils.py
+msgid ""
+"An error has occurred with file upload, please reload this screen and upload image file again. The discussion data are erased without submit."
+msgstr ""
+"ファイルアップロードに失敗しました、ブラウザの画面を更新して再度画像をアップロードしてください。"
+"なお、投稿していないディスカッションデータは消去されます。"
+
+#: lms/djangoapps/django_comment_client/utils.py
+msgid "An invalid file, please upload valid image file."
+msgstr "アップロードしたファイルが不正です、正しいファイル形式の画像をアップロードしてください。"
+
 #-#-#-#-#  Original messages in gacco/templates  #-#-#-#-#
 
 #: templates/theme-header.html
@@ -648,6 +667,10 @@ msgstr "修了証が発行できませんでした。しばらくたってから
 #: templates/courseware/course_about.html
 msgid "[fee-charging]"
 msgstr "（有料）"
+
+#: templates/courseware/course_about.html
+msgid "[Free of charge] Enroll in {course_name}"
+msgstr "{course_name}を受講登録する（無料）"
 
 #: templates/register-sidebar.html
 msgid "Please check the 'FAQs' if you experience any problems."
@@ -1130,8 +1153,16 @@ msgid "Staff Assessment for Peer Grading"
 msgstr "相互採点のスタッフ採点"
 
 #: openedx/core/djangoapps/ga_optional/models.py
+msgid "Providing Image Server for Discussion"
+msgstr "ディスカッションでの画像サーバー提供"
+
+#: openedx/core/djangoapps/ga_optional/models.py
 msgid "Submission Reminder Email"
 msgstr "課題未提出督促メール"
+
+#: openedx/core/djangoapps/ga_optional/models.py
+msgid "Library for Settings"
+msgstr "ライブラリ"
 
 #: openedx/core/djangoapps/ga_optional/models.py
 msgid "Settings for the user optional feature"
@@ -1389,6 +1420,11 @@ msgid ""
 " make another user the Admin, then ask that user to remove you from the "
 "Course Team list."
 msgstr "講座管理者は必ず１名以上設定する必要があります。講座管理者権限を移譲するには、「講座管理者のアクセスを追加する」をクリックし、新しく講座管理者を作成したうえで、以前の講座管理者を削除してください。"
+
+#: cms\templates\widgets\header.html
+#: cms\templates\index_lib.html
+msgid "Manage Library"
+msgstr "ライブラリ管理"
 
 #: lms/templates/manage_user_standing.html
 msgid "Account status:"

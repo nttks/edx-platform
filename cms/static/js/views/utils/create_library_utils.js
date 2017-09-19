@@ -11,10 +11,11 @@ define(["jquery", "gettext", "common/js/components/utils/view_utils", "js/views/
 
             CreateUtilsFactory.call(this, selectors, classes, keyLengthViolationMessage, keyFieldSelectors, nonEmptyCheckFieldSelectors);
 
-            this.create = function (libraryInfo, errorHandler) {
+            this.create = function (libraryInfo, course_key, errorHandler) {
                 $.postJSON(
-                    '/library/',
-                    libraryInfo
+                    '/course/' + course_key + '/library/',
+                    libraryInfo,
+                    course_key
                 ).done(function (data) {
                     ViewUtils.redirect(data.url);
                 }).fail(function(jqXHR, textStatus, errorThrown) {

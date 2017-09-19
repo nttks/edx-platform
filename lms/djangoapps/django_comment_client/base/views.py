@@ -1,5 +1,6 @@
 import functools
 import logging
+import json
 import random
 import time
 import urlparse
@@ -7,14 +8,13 @@ import urlparse
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.core import exceptions
-from django.http import Http404, HttpResponseBadRequest
+from django.http import Http404, HttpResponseBadRequest, HttpResponse
 from django.utils.translation import ugettext as _
 from django.views.decorators import csrf
 from django.views.decorators.http import require_GET, require_POST
 from opaque_keys.edx.keys import CourseKey
 
 from courseware.access import has_access
-from util.file import store_uploaded_file
 from courseware.courses import get_course_with_access, get_course_overview_with_access, get_course_by_id
 import django_comment_client.settings as cc_settings
 from django_comment_common.signals import (
@@ -40,6 +40,7 @@ from django_comment_client.utils import (
     get_group_id_for_comments_service,
     discussion_category_id_access,
     get_cached_discussion_id_map,
+    DiscussionS3Store,
 )
 from django_comment_client.permissions import check_permissions_by_view, has_permission, get_team
 from eventtracking import tracker
@@ -712,6 +713,22 @@ def upload(request, course_id):  # ajax upload file to a question or answer
     # check upload permission
     error = ''
     new_file_name = ''
+    generate_url = ''
+    new_file_name = ''
+    result = ''
+    file_url = ''
+    file_name = ''
+    # if request.FILES is not length
+    if len(request.FILES) == 0:
+        return HttpResponse(json.dumps({
+            'result': {
+                'msg': result,
+                'error': error,
+                'file_url': file_url,
+                'file_name': file_name,
+            }
+        }), content_type="text/plain")
+
     try:
         # TODO authorization
         #may raise exceptions.PermissionDenied
@@ -722,21 +739,23 @@ def upload(request, course_id):  # ajax upload file to a question or answer
         #request.user.assert_can_upload_file()
 
         base_file_name = str(time.time()).replace('.', str(random.randint(0, 100000)))
-        file_storage, new_file_name = store_uploaded_file(
-            request, 'file-upload', cc_settings.ALLOWED_UPLOAD_FILE_TYPES, base_file_name,
-            max_file_size=cc_settings.MAX_UPLOAD_FILE_SIZE
+        generate_url, new_file_name = DiscussionS3Store().store_uploaded_file_for_discussion(
+            request, 'file-upload', base_file_name, course_id,
+            max_file_size=cc_settings.MAX_UPLOAD_FILE_SIZE,
         )
 
     except exceptions.PermissionDenied, err:
         error = unicode(err)
+    except ValueError, err:
+        error = _('Error uploading file.')
     except Exception, err:
         print err
         logging.critical(unicode(err))
-        error = _('Error uploading file. Please contact the site administrator. Thank you.')
+        error = _('Error uploading file.')
 
     if error == '':
         result = _('Good')
-        file_url = file_storage.url(new_file_name)
+        file_url = generate_url
         parsed_url = urlparse.urlparse(file_url)
         file_url = urlparse.urlunparse(
             urlparse.ParseResult(
@@ -746,17 +765,19 @@ def upload(request, course_id):  # ajax upload file to a question or answer
                 '', '', ''
             )
         )
-    else:
-        result = ''
-        file_url = ''
+        file_name = request.FILES['file-upload'].name
 
-    return JsonResponse({
+    # Using content-type of text/plain here instead of JSON because
+    # IE doesn't know how to handle the JSON response and prompts the
+    # user to save the JSON as a file instead of passing it to the callback.
+    return HttpResponse(json.dumps({
         'result': {
             'msg': result,
             'error': error,
             'file_url': file_url,
+            'file_name': file_name,
         }
-    })
+    }), content_type="text/plain")
 
 
 @require_GET

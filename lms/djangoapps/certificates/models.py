@@ -1019,3 +1019,19 @@ def create_badge(sender, instance, **kwargs):
     from .badge_handler import BadgeHandler
     handler = BadgeHandler(instance.course_id)
     handler.award(instance.user)
+
+
+class CertificatesOnUserProfile(models.Model):
+    """
+    Stores setting whether to be visible certificate of each course on user's profile page
+    """
+
+    class Meta(object):
+        app_label = "certificates"
+        unique_together = ("user", "course_id")
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(User)
+    course_id = CourseKeyField(max_length=255, blank=False)
+    is_visible_to_public = models.BooleanField(default=0)
+    created = models.DateTimeField(auto_now_add=True, null=True, db_index=True)

@@ -89,11 +89,39 @@ define(['underscore'], function(_) {
         }
     };
 
+    var expectCertificatesSectionToBeRendered = function(learnerProfileView, othersProfile,
+                                                         profileIsPublic, certificateExists) {
+
+        if (typeof profileIsPublic === 'undefined') {
+            profileIsPublic = false;
+        }
+        if (typeof certificateExists === 'undefined') {
+            certificateExists = false;
+        }
+
+        var certificatesSectionElement = learnerProfileView.$('.wrapper-certificates-section');
+        var certificatesFieldElements = $(certificatesSectionElement).find('.certificates-fields');
+
+        if (certificateExists && (!othersProfile || profileIsPublic)) {
+            expect(certificatesFieldElements.find('.cert-header').text()).toBe('Certificates List');
+            expect(certificatesFieldElements.find('.cert-thumbnail').length).not.toBe(0);
+            expect(certificatesFieldElements.find('.cert-course').length).not.toBe(0);
+            if (othersProfile || !profileIsPublic) {
+                expect(certificatesFieldElements.find('.cert-visibility').length).toBe(0);
+            } else {
+                expect(certificatesFieldElements.find('.cert-visibility').length).not.toBe(0);
+            }
+        } else {
+            expect(certificatesFieldElements.find('.cert-header').length).toBe(0);
+        }
+    };
+
     var expectProfileSectionsAndFieldsToBeRendered = function (learnerProfileView, othersProfile) {
         expectProfilePrivacyFieldTobeRendered(learnerProfileView, othersProfile);
         expectSectionOneTobeRendered(learnerProfileView);
         expectSectionTwoTobeRendered(learnerProfileView);
         expectSectionThreeTobeRendered(learnerProfileView, othersProfile);
+        expectCertificatesSectionToBeRendered(learnerProfileView, othersProfile);
     };
 
     var expectLimitedProfileSectionsAndFieldsToBeRendered = function (learnerProfileView, othersProfile) {
@@ -132,9 +160,34 @@ define(['underscore'], function(_) {
         expect(learnerProfileView.$('.wrapper-profile-section-three').length).toBe(0);
     };
 
+    var createCertificatesData = function(ownProfile, profileIsPublic, certificateExists) {
+        if (typeof profileIsPublic === 'undefined') {
+            profileIsPublic = false;
+        }
+        if (typeof certificateExists === 'undefined') {
+            certificateExists = false;
+        }
+
+        if (certificateExists && (ownProfile || profileIsPublic)) {
+            var cert_info = {
+                course_id_str: 'test:course:id',
+                course_name: 'test',
+                image_url: 'http://test'
+            };
+            if (ownProfile) {
+                cert_info.is_visible_to_public = true;
+            }
+            return [cert_info];
+        } else {
+            return [];
+        }
+    };
+
     return {
         expectLimitedProfileSectionsAndFieldsToBeRendered: expectLimitedProfileSectionsAndFieldsToBeRendered,
         expectProfileSectionsAndFieldsToBeRendered: expectProfileSectionsAndFieldsToBeRendered,
-        expectProfileSectionsNotToBeRendered: expectProfileSectionsNotToBeRendered
+        expectProfileSectionsNotToBeRendered: expectProfileSectionsNotToBeRendered,
+        expectCertificatesSectionToBeRendered: expectCertificatesSectionToBeRendered,
+        createCertificatesData: createCertificatesData
     };
 });

@@ -34,6 +34,8 @@ from xmodule.modulestore import COURSE_ROOT, LIBRARY_ROOT
 
 from student.auth import has_course_author_access
 
+from openedx.core.djangoapps.ga_optional.api import is_available
+from openedx.core.djangoapps.ga_optional.models import LIBRARY_OPTION_KEY
 from openedx.core.lib.extract_tar import safetar_extractall
 from util.json_request import JsonResponse
 from util.views import ensure_valid_course_key
@@ -340,7 +342,8 @@ def _import_handler(request, courselike_key, root_name, successful_url, context_
             context_name: courselike_module,
             'successful_import_redirect_url': successful_url,
             'import_status_url': status_url,
-            'library': isinstance(courselike_key, LibraryLocator)
+            'library': isinstance(courselike_key, LibraryLocator),
+            'library_option': is_available(LIBRARY_OPTION_KEY, courselike_key)
         })
     else:
         return HttpResponseNotFound()
@@ -495,6 +498,7 @@ def export_handler(request, course_key_string):
             'library': False
         }
 
+    context['library_option'] = is_available(LIBRARY_OPTION_KEY, course_key)
     context['export_url'] = export_url + '?_accept=application/x-tgz'
 
     # an _accept URL parameter will be preferred over HTTP_ACCEPT in the header.

@@ -1008,6 +1008,7 @@ msgstr "無視"
 #. Translators: this is a message from the raw HTML editor displayed in the
 #. browser when a user needs to edit HTML
 #: common/lib/xmodule/xmodule/js/src/html/edit.js
+#: lms/static/js/Markdown.Editor.js
 msgid "Image description"
 msgstr "画像の説明"
 
@@ -3435,8 +3436,8 @@ msgid "\"optional title\""
 msgstr "\"リンクの説明\""
 
 #: lms/static/js/Markdown.Editor.js
-msgid "Insert Image (upload file or type url)"
-msgstr "画像挿入(URLを指定)"
+msgid "Insert Image (Upload File or Type URL)"
+msgstr "画像挿入(URLを入力するか画像をアップロードしてください)"
 
 #: lms/static/js/Markdown.Editor.js
 msgid "Markdown Editing Help"
@@ -5299,13 +5300,13 @@ msgstr "申し訳ありません，エラーがありました"
 msgid ""
 "The combined length of the organization, course number, and course run "
 "fields cannot be more than <%=limit%> characters."
-msgstr "組織名、コース番号、コース開始枠の合計の文字数は<%=limit%>文字を超えることができません。"
+msgstr "組織名、コース番号、コース開始枠は<%=limit%>文字以内で作成してください。"
 
 #: cms/static/js/views/utils/create_library_utils.js
 msgid ""
 "The combined length of the organization and library code fields cannot be "
 "more than <%=limit%> characters."
-msgstr "組織名、ライブラリコードの合計の文字数は<%=limit%>文字を超えることができません。"
+msgstr "組織名、ライブラリコードは<%=limit%>文字以内で作成してください。"
 
 #: cms/static/js/views/utils/xblock_utils.js
 msgid "component"

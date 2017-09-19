@@ -83,15 +83,7 @@ class TestCourseIndex(CourseTestCase):
         index_response = self.client.get(index_url, {}, HTTP_ACCEPT='text/html')
         parsed_html = lxml.html.fromstring(index_response.content)
         library_link_elements = parsed_html.find_class('library-link')
-        self.assertEqual(len(library_link_elements), 1)
-        link = library_link_elements[0]
-        self.assertEqual(
-            link.get("href"),
-            reverse_library_url('library_handler', lib1.location.library_key),
-        )
-        # now test that url
-        outline_response = self.client.get(link.get("href"), {}, HTTP_ACCEPT='text/html')
-        self.assertEqual(outline_response.status_code, 200)
+        self.assertEqual(len(library_link_elements), 0)
 
     def test_is_staff_access(self):
         """

@@ -17,9 +17,11 @@ from xmodule.contentstore.content import StaticContent
 from xmodule.contentstore.django import contentstore
 from xmodule.modulestore.django import modulestore
 from xmodule.modulestore import ModuleStoreEnum
+from xmodule.modulestore.tests.factories import CourseFactory
 from xmodule.modulestore.xml_importer import import_course_from_xml
 from django.test.utils import override_settings
 from opaque_keys.edx.locations import SlashSeparatedCourseKey, AssetLocation
+from openedx.core.djangoapps.ga_optional.models import CourseOptionalConfiguration
 from static_replace import replace_static_urls
 import mock
 from ddt import ddt
@@ -145,6 +147,20 @@ class BasicAssetsTestCase(AssetsTestCase):
             self.assertTrue("/{}".format(relative_path) in absolute_path)
             resp = self.client.get(absolute_path)
             self.assertEquals(resp.status_code, 200)
+
+    def test_library_option(self):
+        course = CourseFactory.create()
+        CourseOptionalConfiguration(
+            id=1,
+            change_date="2015-06-18 11:02:13",
+            enabled=True,
+            key='library-for-settings',
+            course_key=course.id,
+            changed_by_id=self.user.id
+        ).save()
+        url = reverse_course_url('assets_handler', course.id)
+        resp = self.client.get(url, HTTP_ACCEPT='text/html')
+        self.assertIn('class="nav-item nav-manage-library"', resp.content)
 
 
 class PaginationTestCase(AssetsTestCase):

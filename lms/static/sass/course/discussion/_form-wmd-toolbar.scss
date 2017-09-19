@@ -94,27 +94,116 @@
   background-color: Black;
 }
 
-.wmd-prompt-dialog
+body.discussion div.image-link-wmd-prompt-dialog
 {
-  border: 1px solid #999999;
-  background-color: #F5F5F5;
+  width: 450px;
 }
 
-.wmd-prompt-dialog > div {
-  font-size: 1em;
+.image-link-wmd-prompt-dialog
+{
+  width: 450px;
+  left: 50%;
+  margin-left: -((450 + $baseline * 2) / 2);
+  border: 1px solid #999999;
+  background-color: #F5F5F5;
+  padding: 5px;
+}
+
+.image-link-wmd-prompt-dialog > div {
+  font-size: 0.8em;
   font-family: arial, helvetica, sans-serif;
 }
 
+.image-link-wmd-prompt-dialog {
+  .form-actions {
+    text-align: center;
+    .form-actions-button{
+      margin: 10px;
+      display: inline;
+      border: 1px solid #888;
+      font-size: 14px;
+      font-family: "Open Sans",Verdana,Geneva,sans-serif,sans-serif;
+      width: 7em;
+      background-image: none;
+      &#new-link-image-ok {
+        background-color: #43ac6a;
+        border-color: #067913;
+        &:hover {
+          background-color: #409206 !important;
+        }
+      }
+      &#new-link-image-cancel {
+        background-color: #777;
+        &:hover {
+          background-color: #444 !important;
+        }
+      }
 
-.wmd-prompt-dialog > form > input[type="text"] {
-  border: 1px solid #999999;
-  color: black;
+    }
+  }
+
+  .input-text {
+    border-radius: 3px;
+    color: $gray-d3;
+    width: 100%;
+  }
+
+  #file-upload-proxy {
+    margin-top: 10px;
+    display: block;
+    border: 1px solid #888;
+    font-size: 14px;
+    font-family: "Open Sans",Verdana,Geneva,sans-serif,sans-serif;
+    background-color: #43ac6a;
+    border-color: #067913;
+    background-image: none;
+    &:hover {
+      background-color: #409206 !important;
+    }
+  }
+
+  .field-group {
+    .field {
+      margin-bottom: 10px;
+
+      &:last-child {
+          margin-bottom: 0;
+      }
+
+      .disabled-textbox {
+        background-color: #c8c8c8
+      }
+    }
+  }
+
+  .field-label {
+      display: block;
+      width: auto;
+      margin-bottom: 10px;
+      margin-top: 10px;
+      font-size: 16px;
+      line-height: 100%;
+      color: #4d4b4b;
+  }
+
+  .has-error {
+    color: red;
+
+  }
 }
 
-.wmd-prompt-dialog > form > input[type="button"]{
-  border: 1px solid #888888;
-  font-family: trebuchet MS, helvetica, sans-serif;
-  font-size: 1em;
-  font-weight: bold;
+.discussion-image {
+  max-width: 50%;
+  max-height: 50%;
 }
 
+@media only screen and (max-width: 460px) {
+  body.discussion div.image-link-wmd-prompt-dialog,
+  .image-link-wmd-prompt-dialog {
+    width: 100%;
+    box-sizing: border-box;
+    left: 0;
+    margin-left: 0;
+
+  }
+}

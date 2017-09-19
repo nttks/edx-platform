@@ -626,7 +626,11 @@ class MixedModuleStore(ModuleStoreDraftAndPublished, ModuleStoreWriteBase):
         # first make sure an existing course/lib doesn't already exist in the mapping
         lib_key = LibraryLocator(org=org, library=library)
         if lib_key in self.mappings:
-            raise DuplicateCourseError(lib_key, lib_key)
+            try:
+                if self.mappings[lib_key].get_library(lib_key):
+                    raise DuplicateCourseError(lib_key, lib_key)
+            except ItemNotFoundError:
+                pass
 
         # create the library
         store = self._verify_modulestore_support(None, 'create_library')

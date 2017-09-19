@@ -321,4 +321,74 @@
             word-wrap: break-word;
         }
     }
+    .wrapper-certificates-section {
+        .certificates-fields {
+            .cert-header {
+                padding: 0 15px;
+                font-family: "Open Sans","Helvetica Neue",Helvetica,Arial,sans-serif;
+                font-weight: 600;
+                font-size: 18px;
+                line-height: 26.64px;
+                vertical-align: top;
+                -webkit-font-smoothing: antialiased;
+            }
+            ul {
+                overflow: auto;
+            }
+            li {
+                display: block;
+                list-style-type: none;
+                float: left;
+                width: 33%;
+                height: auto;
+                min-height: 320px;
+            }
+            li.with-cert-visibility-select {
+                min-height: 360px;
+            }
+            li:nth-of-type(1n) {
+                clear: none;
+            }
+            li:nth-of-type(3n+1) {
+                clear: both;
+            }
+            @media screen and (max-width: 620px) {
+                ul {
+                    padding: 0 20px;
+                }
+                li {
+                    width: 100%;
+                    clear: both;
+                }
+                li.with-cert-visibility-select {
+                    min-height: 0;
+                    margin-bottom: 30px;
+                }
+            }
+            .cert-thumbnail {
+                margin: 0.5em;
+            }
+            .cert-course {
+                margin: 0.5em 2em;
+                text-align: center;
+                span {
+                    display: inline-block;
+                    text-align: left;
+                    font-size: 16px;
+                    line-height: 23.68px;
+                    vertical-align: top;
+                }
+            }
+            .cert-visibility {
+                margin: 0.5em;
+                text-align: center;
+                input:last-of-type {
+                    margin-left: 10px;
+                }
+                label:first-of-type {
+                    margin-right: 10px;
+                }
+            }
+        }
+    }
 }

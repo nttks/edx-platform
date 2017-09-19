@@ -1214,7 +1214,7 @@ msgstr[0] "ファイルは次のうち一つの拡張子で終わる必要があ
 
 #: common/djangoapps/util/file.py
 msgid "Maximum upload file size is {file_size} bytes."
-msgstr "最大アップロードファイルサイズは {file_size} byteです。"
+msgstr "アップロードできるファイルサイズは {file_size} byteまでです。"
 
 #: common/djangoapps/util/milestones_helpers.py
 msgid "Course {course_id} requires {prerequisite_course_id}"
@@ -1663,7 +1663,7 @@ msgstr "注釈（アノテーション）のためのXMLデータ"
 #: common/lib/xmodule/xmodule/videoannotation_module.py
 #: common/lib/xmodule/xmodule/word_cloud_module.py
 msgid "Display name for this module"
-msgstr "このモジュール名を表示"
+msgstr "ここで入力された内容が表示されます。"
 
 #: common/lib/xmodule/xmodule/annotatable_module.py
 msgid "Annotation"
@@ -2889,11 +2889,11 @@ msgstr "ランダムに n を選択"
 
 #: common/lib/xmodule/xmodule/library_content_module.py
 msgid "Count"
-msgstr "数量"
+msgstr "問題数"
 
 #: common/lib/xmodule/xmodule/library_content_module.py
-msgid "Enter the number of components to display to each student."
-msgstr "それぞれの受講者に表示するコンポーネントの数を入力してください。"
+msgid "Enter the number of components to display to each student. Enter the half-width number 1 and over."
+msgstr "受講者に表示する出題数を入力してください。1以上の半角数字を入力してください。"
 
 #: common/lib/xmodule/xmodule/library_content_module.py
 msgid "Problem Type"
@@ -2903,7 +2903,7 @@ msgstr "問題の形式"
 msgid ""
 "Choose a problem type to fetch from the library. If \"Any Type\" is selected"
 " no filtering is applied."
-msgstr "ライブラリから取得する問題の形式を選んでください。「すべての形式」が選択されている場合フィルタリングされません。"
+msgstr "選択したライブラリの中から表示する問題の形式を選択してください。"
 
 #: common/lib/xmodule/xmodule/library_content_module.py
 #: common/lib/xmodule/xmodule/lti_module.py
@@ -2914,7 +2914,7 @@ msgstr "採点された（採点済み）"
 msgid ""
 "Set this value to True if this module is either a graded assignment or a "
 "practice problem."
-msgstr "このモジュールが評価済の課題または練習問題のとき、この値をTrueにしてください。"
+msgstr "「いいえ」を選択してください。"
 
 #: common/lib/xmodule/xmodule/library_content_module.py
 msgid "This component is out of date. The library has new content."
@@ -2927,8 +2927,8 @@ msgid "{refresh_icon} Update now."
 msgstr "{refresh_icon} 更新する"
 
 #: common/lib/xmodule/xmodule/library_content_module.py
-msgid "Library is invalid, corrupt, or has been deleted."
-msgstr "ライブラリが無効か壊れているか削除されています。"
+msgid "Library is invalid."
+msgstr "ライブラリが不正です。"
 
 #: common/lib/xmodule/xmodule/library_content_module.py
 msgid "Edit Library List."
@@ -2950,7 +2950,7 @@ msgstr "ライブラリを選択してください。"
 
 #: common/lib/xmodule/xmodule/library_content_module.py
 msgid "There are no matching problem types in the specified libraries."
-msgstr "ライブラリに合致する問題の形式がありません。"
+msgstr "選択された問題の形式はライブラリに存在しません。"
 
 #: common/lib/xmodule/xmodule/library_content_module.py
 msgid "Select another problem type."
@@ -2959,12 +2959,12 @@ msgstr "別の問題の形式を選択してください。"
 #: common/lib/xmodule/xmodule/library_content_module.py
 msgid "The specified library is configured to fetch {count} problem, "
 msgid_plural "The specified library is configured to fetch {count} problems, "
-msgstr[0] "指定されたライブラリは{count}個の問題が取得されるように設定されています。"
+msgstr[0] "表示問題数は{count}問選択されましたが、"
 
 #: common/lib/xmodule/xmodule/library_content_module.py
 msgid "but there is only {actual} matching problem."
 msgid_plural "but there are only {actual} matching problems."
-msgstr[0] "しかし、実際には{actual}個の合致する問題しかありません。"
+msgstr[0] "選択された問題の形式では{actual}問しか出題できません。表示問題数を変更するか、問題の形式を変更してください。"
 
 #: common/lib/xmodule/xmodule/library_content_module.py
 msgid "Edit the library configuration."
@@ -8777,8 +8777,7 @@ msgid ""
 "There is already a library defined with the same organization and library "
 "code. Please change your library code so that it is unique within your "
 "organization."
-msgstr ""
-"既に同様に組織、ライブラリコードで規定されているコースがあります。組織もしくはライブラリコードのどちらかがユニークとなるように変更をしてください。"
+msgstr "ライブラリIDが重複しています。組織かライブラリコード、またはその両方を変更してください。"
 
 #: cms/djangoapps/contentstore/views/transcripts_ajax.py
 msgid "Incoming video data is empty."
@@ -17294,14 +17293,11 @@ msgstr "講座でライブラリコンテンツを使う"
 
 #: cms/templates/library.html
 msgid ""
-"Use library content in courses by adding the "
-"{em_start}library_content{em_end} policy key to the Advanced Module List in "
-"the course's Advanced Settings, then adding a Randomized Content Block to "
-"your courseware. In the settings for each Randomized Content Block, select "
-"this library as the source library, and specify the number of problems to be"
-" randomly selected and displayed to each student."
-msgstr ""
-"講座の詳細設定で詳細モジュールリストに{em_start}library_content{em_end}ポリシーキーを追加してから、ランダム化コンテンツブロックをコース教材に追加して講座でライブラリコンテンツを使います。ランダム化コンテンツブロックごとの設定ではこのライブラリをソースライブラリとして選択し、受講者ごとにランダムに選ばれる問題数を設定します。"
+"In order to use library content in courses, add a \"Randomized Content Block\" "
+"to your courseware. In the settings for each Randomized Content Block, select "
+"this library as the source library, and specify the number of problems to be "
+"randomly selected and displayed to each student."
+msgstr "講座でライブラリコンテンツを使用するためには「詳細設定」から「Randomized Content Block」をコース教材に追加してください。Randomized Content Blockごとの設定では編集画面からライブラリ名を選択し、受講者ごとにランダムに出題される問題数を設定します。"
 
 #: cms/templates/library.html
 msgid "Learn more about content libraries"

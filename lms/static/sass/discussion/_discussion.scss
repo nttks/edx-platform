@@ -189,13 +189,16 @@ body.discussion {
     background-color: Black;
   }
 
-  .wmd-prompt-dialog {
+  .image-link-wmd-prompt-dialog {
     @extend .modal;
     background: $white;
   }
 
-  .wmd-prompt-dialog {
+  .image-link-wmd-prompt-dialog {
     padding: $baseline;
+    width: 400px;
+    left: 50%;
+    margin-left: -((400 + $baseline * 2) / 2);
 
     > div {
       font-size: 0.8em;
@@ -209,6 +212,7 @@ body.discussion {
     > form > input[type="text"] {
       border-radius: 3px;
       color: $gray-d3;
+      width: 80%;
     }
 
     > form > input[type="button"] {
@@ -219,6 +223,19 @@ body.discussion {
 
     > form > input[type="file"] {
       margin-bottom: 18px;
+      width: 80%;
+    }
+
+    @media only screen and (max-width: 460px) {
+      width: 100%;
+      box-sizing: border-box;
+      left: 0px;
+      margin-left: 0px;
+
+      > form > input[type="text"],
+      > form > input[type="file"] {
+        width: 90%;
+      }
     }
   }
   .forum-guideline,

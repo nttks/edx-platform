@@ -940,13 +940,13 @@ msgstr "申し訳ありません，エラーがありました"
 msgid ""
 "The combined length of the organization, course number, and course run "
 "fields cannot be more than <%=limit%> characters."
-msgstr "組織名、コース番号、コース開始枠の合計の文字数は<%=limit%>文字を超えることができません。"
+msgstr "組織名、コース番号、コース開始枠は<%=limit%>文字以内で作成してください。"
 
 #: cms/static/js/views/utils/create_library_utils.js
 msgid ""
 "The combined length of the organization and library code fields cannot be "
 "more than <%=limit%> characters."
-msgstr "組織名、ライブラリコードの合計の文字数は<%=limit%>文字を超えることができません。"
+msgstr "組織名、ライブラリコードは<%=limit%>文字以内で作成してください。"
 
 #: cms/static/js/views/utils/xblock_utils.js
 msgid "component"
