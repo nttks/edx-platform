@@ -14,23 +14,19 @@ from django.core.urlresolvers import reverse
 from django.db import IntegrityError
 from django.test.utils import override_settings
 
-from biz.djangoapps.ga_contract_operation.models import (
-    ContractMail,
-    ContractTaskHistory,
-    MAIL_TYPE_REGISTER_NEW_USER,
-    MAIL_TYPE_REGISTER_EXISTING_USER,
-    MAIL_TYPE_REGISTER_NEW_USER_WITH_LOGINCODE,
-    MAIL_TYPE_REGISTER_EXISTING_USER_WITH_LOGINCODE,
-)
+from biz.djangoapps.ga_achievement.management.commands.update_biz_score_status import get_grouped_target_sections
+from biz.djangoapps.ga_contract_operation.models import ContractMail, ContractReminderMail, ContractTaskHistory
 from biz.djangoapps.ga_contract_operation.tests.factories import ContractTaskHistoryFactory, ContractTaskTargetFactory, StudentRegisterTaskTargetFactory, StudentUnregisterTaskTargetFactory
 from biz.djangoapps.ga_invitation.models import ContractRegister, INPUT_INVITATION_CODE, REGISTER_INVITATION_CODE, UNREGISTER_INVITATION_CODE
 from biz.djangoapps.ga_invitation.tests.factories import ContractRegisterFactory
 from biz.djangoapps.ga_invitation.tests.test_views import BizContractTestBase
+from biz.djangoapps.util import datetime_utils
 from openedx.core.djangoapps.ga_task.models import Task
 from openedx.core.djangoapps.ga_task.tests.factories import TaskFactory
 from openedx.core.lib.ga_datetime_utils import to_timezone
 from student.models import CourseEnrollment
 from student.tests.factories import UserFactory
+from xmodule.modulestore.tests.factories import ItemFactory
 
 
 @ddt.ddt
@@ -665,10 +661,10 @@ class ContractOperationMailViewTest(BizContractTestBase):
         self.assertEquals(data['error'], 'Unauthorized access.')
 
     @ddt.data(
-        (False, MAIL_TYPE_REGISTER_NEW_USER),
-        (False, MAIL_TYPE_REGISTER_EXISTING_USER),
-        (True, MAIL_TYPE_REGISTER_NEW_USER_WITH_LOGINCODE),
-        (True, MAIL_TYPE_REGISTER_EXISTING_USER_WITH_LOGINCODE),
+        (False, ContractMail.MAIL_TYPE_REGISTER_NEW_USER),
+        (False, ContractMail.MAIL_TYPE_REGISTER_EXISTING_USER),
+        (True, ContractMail.MAIL_TYPE_REGISTER_NEW_USER_WITH_LOGINCODE),
+        (True, ContractMail.MAIL_TYPE_REGISTER_EXISTING_USER_WITH_LOGINCODE),
     )
     @ddt.unpack
     def test_register_mail_can_not_customize(self, has_auth, mail_type):
@@ -705,10 +701,10 @@ class ContractOperationMailViewTest(BizContractTestBase):
         self.assertEquals(data['error'], 'Unauthorized access.')
 
     @ddt.data(
-        (False, MAIL_TYPE_REGISTER_NEW_USER),
-        (False, MAIL_TYPE_REGISTER_EXISTING_USER),
-        (True, MAIL_TYPE_REGISTER_NEW_USER_WITH_LOGINCODE),
-        (True, MAIL_TYPE_REGISTER_EXISTING_USER_WITH_LOGINCODE),
+        (False, ContractMail.MAIL_TYPE_REGISTER_NEW_USER),
+        (False, ContractMail.MAIL_TYPE_REGISTER_EXISTING_USER),
+        (True, ContractMail.MAIL_TYPE_REGISTER_NEW_USER_WITH_LOGINCODE),
+        (True, ContractMail.MAIL_TYPE_REGISTER_EXISTING_USER_WITH_LOGINCODE),
     )
     @ddt.unpack
     def test_register_mail_empty_mail_subject(self, has_auth, mail_type):
@@ -727,10 +723,10 @@ class ContractOperationMailViewTest(BizContractTestBase):
         self.assertEquals(data['error'], 'Please enter the subject of an e-mail.')
 
     @ddt.data(
-        (False, MAIL_TYPE_REGISTER_NEW_USER),
-        (False, MAIL_TYPE_REGISTER_EXISTING_USER),
-        (True, MAIL_TYPE_REGISTER_NEW_USER_WITH_LOGINCODE),
-        (True, MAIL_TYPE_REGISTER_EXISTING_USER_WITH_LOGINCODE),
+        (False, ContractMail.MAIL_TYPE_REGISTER_NEW_USER),
+        (False, ContractMail.MAIL_TYPE_REGISTER_EXISTING_USER),
+        (True, ContractMail.MAIL_TYPE_REGISTER_NEW_USER_WITH_LOGINCODE),
+        (True, ContractMail.MAIL_TYPE_REGISTER_EXISTING_USER_WITH_LOGINCODE),
     )
     @ddt.unpack
     def test_register_mail_illegal_mail_subject(self, has_auth, mail_type):
@@ -749,10 +745,10 @@ class ContractOperationMailViewTest(BizContractTestBase):
         self.assertEquals(data['error'], 'Subject within 128 characters.')
 
     @ddt.data(
-        (False, MAIL_TYPE_REGISTER_NEW_USER),
-        (False, MAIL_TYPE_REGISTER_EXISTING_USER),
-        (True, MAIL_TYPE_REGISTER_NEW_USER_WITH_LOGINCODE),
-        (True, MAIL_TYPE_REGISTER_EXISTING_USER_WITH_LOGINCODE),
+        (False, ContractMail.MAIL_TYPE_REGISTER_NEW_USER),
+        (False, ContractMail.MAIL_TYPE_REGISTER_EXISTING_USER),
+        (True, ContractMail.MAIL_TYPE_REGISTER_NEW_USER_WITH_LOGINCODE),
+        (True, ContractMail.MAIL_TYPE_REGISTER_EXISTING_USER_WITH_LOGINCODE),
     )
     @ddt.unpack
     def test_register_mail_empty_mail_body(self, has_auth, mail_type):
@@ -771,10 +767,10 @@ class ContractOperationMailViewTest(BizContractTestBase):
         self.assertEquals(data['error'], 'Please enter the body of an e-mail.')
 
     @ddt.data(
-        (False, MAIL_TYPE_REGISTER_NEW_USER),
-        (False, MAIL_TYPE_REGISTER_EXISTING_USER),
-        (True, MAIL_TYPE_REGISTER_NEW_USER_WITH_LOGINCODE),
-        (True, MAIL_TYPE_REGISTER_EXISTING_USER_WITH_LOGINCODE),
+        (False, ContractMail.MAIL_TYPE_REGISTER_NEW_USER),
+        (False, ContractMail.MAIL_TYPE_REGISTER_EXISTING_USER),
+        (True, ContractMail.MAIL_TYPE_REGISTER_NEW_USER_WITH_LOGINCODE),
+        (True, ContractMail.MAIL_TYPE_REGISTER_EXISTING_USER_WITH_LOGINCODE),
     )
     @ddt.unpack
     def test_register_mail_contract_unmatch(self, has_auth, mail_type):
@@ -790,10 +786,10 @@ class ContractOperationMailViewTest(BizContractTestBase):
             })
 
     @ddt.data(
-        (False, MAIL_TYPE_REGISTER_NEW_USER),
-        (False, MAIL_TYPE_REGISTER_EXISTING_USER),
-        (True, MAIL_TYPE_REGISTER_NEW_USER_WITH_LOGINCODE),
-        (True, MAIL_TYPE_REGISTER_EXISTING_USER_WITH_LOGINCODE),
+        (False, ContractMail.MAIL_TYPE_REGISTER_NEW_USER),
+        (False, ContractMail.MAIL_TYPE_REGISTER_EXISTING_USER),
+        (True, ContractMail.MAIL_TYPE_REGISTER_NEW_USER_WITH_LOGINCODE),
+        (True, ContractMail.MAIL_TYPE_REGISTER_EXISTING_USER_WITH_LOGINCODE),
     )
     @ddt.unpack
     def test_register_mail_success(self, has_auth, mail_type):
@@ -816,10 +812,10 @@ class ContractOperationMailViewTest(BizContractTestBase):
         self.assertEquals(contract_mail.mail_body, 'Test Body')
 
     @ddt.data(
-        (False, MAIL_TYPE_REGISTER_NEW_USER),
-        (False, MAIL_TYPE_REGISTER_EXISTING_USER),
-        (True, MAIL_TYPE_REGISTER_NEW_USER_WITH_LOGINCODE),
-        (True, MAIL_TYPE_REGISTER_EXISTING_USER_WITH_LOGINCODE),
+        (False, ContractMail.MAIL_TYPE_REGISTER_NEW_USER),
+        (False, ContractMail.MAIL_TYPE_REGISTER_EXISTING_USER),
+        (True, ContractMail.MAIL_TYPE_REGISTER_NEW_USER_WITH_LOGINCODE),
+        (True, ContractMail.MAIL_TYPE_REGISTER_EXISTING_USER_WITH_LOGINCODE),
     )
     @ddt.unpack
     def test_register_mail_error(self, has_auth, mail_type):
@@ -855,10 +851,10 @@ class ContractOperationMailViewTest(BizContractTestBase):
         self.assertEquals(data['error'], 'Unauthorized access.')
 
     @ddt.data(
-        (False, MAIL_TYPE_REGISTER_NEW_USER),
-        (False, MAIL_TYPE_REGISTER_EXISTING_USER),
-        (True, MAIL_TYPE_REGISTER_NEW_USER_WITH_LOGINCODE),
-        (True, MAIL_TYPE_REGISTER_EXISTING_USER_WITH_LOGINCODE),
+        (False, ContractMail.MAIL_TYPE_REGISTER_NEW_USER),
+        (False, ContractMail.MAIL_TYPE_REGISTER_EXISTING_USER),
+        (True, ContractMail.MAIL_TYPE_REGISTER_NEW_USER_WITH_LOGINCODE),
+        (True, ContractMail.MAIL_TYPE_REGISTER_EXISTING_USER_WITH_LOGINCODE),
     )
     @ddt.unpack
     def test_send_mail_can_not_customize(self, has_auth, mail_type):
@@ -895,10 +891,10 @@ class ContractOperationMailViewTest(BizContractTestBase):
         self.assertEquals(data['error'], 'Unauthorized access.')
 
     @ddt.data(
-        (False, MAIL_TYPE_REGISTER_NEW_USER),
-        (False, MAIL_TYPE_REGISTER_EXISTING_USER),
-        (True, MAIL_TYPE_REGISTER_NEW_USER_WITH_LOGINCODE),
-        (True, MAIL_TYPE_REGISTER_EXISTING_USER_WITH_LOGINCODE),
+        (False, ContractMail.MAIL_TYPE_REGISTER_NEW_USER),
+        (False, ContractMail.MAIL_TYPE_REGISTER_EXISTING_USER),
+        (True, ContractMail.MAIL_TYPE_REGISTER_NEW_USER_WITH_LOGINCODE),
+        (True, ContractMail.MAIL_TYPE_REGISTER_EXISTING_USER_WITH_LOGINCODE),
     )
     @ddt.unpack
     def test_send_mail_contract_unmatch(self, has_auth, mail_type):
@@ -918,10 +914,10 @@ class ContractOperationMailViewTest(BizContractTestBase):
         self.assertEquals(data['error'], 'Current contract is changed. Please reload this page.')
 
     @ddt.data(
-        (False, MAIL_TYPE_REGISTER_NEW_USER),
-        (False, MAIL_TYPE_REGISTER_EXISTING_USER),
-        (True, MAIL_TYPE_REGISTER_NEW_USER_WITH_LOGINCODE),
-        (True, MAIL_TYPE_REGISTER_EXISTING_USER_WITH_LOGINCODE),
+        (False, ContractMail.MAIL_TYPE_REGISTER_NEW_USER),
+        (False, ContractMail.MAIL_TYPE_REGISTER_EXISTING_USER),
+        (True, ContractMail.MAIL_TYPE_REGISTER_NEW_USER_WITH_LOGINCODE),
+        (True, ContractMail.MAIL_TYPE_REGISTER_EXISTING_USER_WITH_LOGINCODE),
     )
     @ddt.unpack
     def test_send_mail_pre_update(self, has_auth, mail_type):
@@ -940,10 +936,10 @@ class ContractOperationMailViewTest(BizContractTestBase):
         self.assertEqual(data['error'], 'Please save the template e-mail before sending.')
 
     @ddt.data(
-        (False, MAIL_TYPE_REGISTER_NEW_USER, False),
-        (False, MAIL_TYPE_REGISTER_EXISTING_USER, True),
-        (True, MAIL_TYPE_REGISTER_NEW_USER_WITH_LOGINCODE, False),
-        (True, MAIL_TYPE_REGISTER_EXISTING_USER_WITH_LOGINCODE, True),
+        (False, ContractMail.MAIL_TYPE_REGISTER_NEW_USER, False),
+        (False, ContractMail.MAIL_TYPE_REGISTER_EXISTING_USER, True),
+        (True, ContractMail.MAIL_TYPE_REGISTER_NEW_USER_WITH_LOGINCODE, False),
+        (True, ContractMail.MAIL_TYPE_REGISTER_EXISTING_USER_WITH_LOGINCODE, True),
     )
     @ddt.unpack
     def test_send_mail_success(self, has_auth, mail_type, is_existing_user):
@@ -995,10 +991,10 @@ class ContractOperationMailViewTest(BizContractTestBase):
         self.assertEqual(data['info'], 'Successfully to send the test e-mail.')
 
     @ddt.data(
-        (False, MAIL_TYPE_REGISTER_NEW_USER, False),
-        (False, MAIL_TYPE_REGISTER_EXISTING_USER, True),
-        (True, MAIL_TYPE_REGISTER_NEW_USER_WITH_LOGINCODE, False),
-        (True, MAIL_TYPE_REGISTER_EXISTING_USER_WITH_LOGINCODE, True),
+        (False, ContractMail.MAIL_TYPE_REGISTER_NEW_USER, False),
+        (False, ContractMail.MAIL_TYPE_REGISTER_EXISTING_USER, True),
+        (True, ContractMail.MAIL_TYPE_REGISTER_NEW_USER_WITH_LOGINCODE, False),
+        (True, ContractMail.MAIL_TYPE_REGISTER_EXISTING_USER_WITH_LOGINCODE, True),
     )
     @ddt.unpack
     def test_send_mail_error(self, has_auth, mail_type, is_existing_user):
@@ -1048,6 +1044,519 @@ class ContractOperationMailViewTest(BizContractTestBase):
         self.assertEqual(400, response.status_code)
         data = json.loads(response.content)
         self.assertEquals(data['error'], 'Failed to send the test e-mail.')
+
+
+@ddt.ddt
+class ContractOperationReminderMailViewTest(BizContractTestBase):
+
+    def setUp(self):
+        super(ContractOperationReminderMailViewTest, self).setUp()
+
+        self._create_contract_reminder_mail_default()
+
+        self.contract_submission_reminder = self._create_contract(
+            contract_name='test reminder mail',
+            contractor_organization=self.contract_org,
+            detail_courses=[self.course_spoc1.id, self.course_spoc2.id],
+            additional_display_names=['country', 'dept'],
+            send_submission_reminder=True,
+        )
+        # Update sections and components to fit the conditions for submission reminder
+        chapter_x = ItemFactory.create(parent=self.course_spoc1, category='chapter', display_name='chapter_x')
+        section_x1 = ItemFactory.create(parent=chapter_x, category='sequential', display_name='sequential_x1',
+                                        metadata={'graded': True, 'format': 'format_x1'})
+        vertical_x1a = ItemFactory.create(parent=section_x1, category='vertical', display_name='vertical_x1a')
+        component_x1a_1 = ItemFactory.create(parent=vertical_x1a, category='problem',
+                                             display_name='component_x1a_1')
+        self.store.update_item(chapter_x, self.user.id)
+
+    # ------------------------------------------------------------
+    # Show Reminder Mail
+    # ------------------------------------------------------------
+    def _url_mail(self):
+        return reverse('biz:contract_operation:reminder_mail')
+
+    def test_mail_404(self):
+        self.setup_user()
+        with self.skip_check_course_selection(current_contract=self.contract):
+            self.assert_request_status_code(404, self._url_mail())
+
+    def test_mail(self):
+        self.setup_user()
+        with self.skip_check_course_selection(current_contract=self.contract_submission_reminder):
+            response = self.assert_request_status_code(200, self._url_mail())
+
+        self.assertIn('Test Subject for Submission Reminder', response.content)
+        self.assertIn('Test Body for Submission Reminder {username}', response.content)
+        self.assertIn('Test Body2 for Submission Reminder', response.content)
+
+    # ------------------------------------------------------------
+    # Save Reminder Mail
+    # ------------------------------------------------------------
+    def _url_save_mail_ajax(self):
+        return reverse('biz:contract_operation:reminder_mail_save_ajax')
+
+    @ddt.data(
+        ContractReminderMail.MAIL_TYPE_SUBMISSION_REMINDER,
+    )
+    def test_save_mail_can_not_send_submission_reminder(self, mail_type):
+        self.setup_user()
+        with self.skip_check_course_selection(current_contract=self.contract):
+            response = self.client.post(self._url_save_mail_ajax(), {
+                'contract_id': self.contract.id,
+                'mail_type': mail_type,
+                'reminder_email_days': 3,
+                'mail_subject': 'Test Subject',
+                'mail_body': 'Test Body',
+                'mail_body2': 'Test Body2',
+            })
+
+        self.assertEqual(400, response.status_code)
+        data = json.loads(response.content)
+        self.assertEquals(data['error'], "Unauthorized access.")
+
+    @ddt.data(
+        ContractReminderMail.MAIL_TYPE_SUBMISSION_REMINDER,
+    )
+    def test_save_mail_contract_unmatch(self, mail_type):
+        self.setup_user()
+        contract = self.contract_submission_reminder
+        with self.skip_check_course_selection(current_contract=contract):
+            response = self.client.post(self._url_save_mail_ajax(), {
+                'contract_id': self.contract.id,  # unmatch
+                'mail_type': mail_type,
+                'reminder_email_days': 3,
+                'mail_subject': 'Test Subject',
+                'mail_body': 'Test Body',
+                'mail_body2': 'Test Body2',
+            })
+
+        self.assertEqual(400, response.status_code)
+        data = json.loads(response.content)
+        self.assertEquals(data['error'], "Current contract is changed. Please reload this page.")
+
+    @ddt.data(
+        ContractReminderMail.MAIL_TYPE_SUBMISSION_REMINDER,
+    )
+    def test_save_mail_no_contract_id(self, mail_type):
+        self.setup_user()
+        contract = self.contract_submission_reminder
+        with self.skip_check_course_selection(current_contract=contract):
+            response = self.client.post(self._url_save_mail_ajax(), {
+                'mail_type': mail_type,
+                'reminder_email_days': 3,
+                'mail_subject': 'Test Subject',
+                'mail_body': 'Test Body',
+                'mail_body2': 'Test Body2',
+            })
+
+        self.assertEqual(400, response.status_code)
+        data = json.loads(response.content)
+        self.assertEquals(data['error'], "Current contract is changed. Please reload this page.")
+
+    def test_save_mail_illegal_mail_type(self):
+        self.setup_user()
+        contract = self.contract_submission_reminder
+        with self.skip_check_course_selection(current_contract=contract), patch(
+                'biz.djangoapps.ga_contract_operation.views.log.warning') as warning_log:
+            response = self.client.post(self._url_save_mail_ajax(), {
+                'contract_id': contract.id,
+                'mail_type': 'NoneType',
+                'reminder_email_days': 3,
+                'mail_subject': 'Test Subject',
+                'mail_body': 'Test Body',
+                'mail_body2': 'Test Body2',
+            })
+
+        warning_log.assert_called_with("Illegal mail-type: NoneType")
+
+        self.assertEqual(400, response.status_code)
+        data = json.loads(response.content)
+        self.assertEquals(data['error'], "Unauthorized access.")
+
+    @ddt.data(
+        ContractReminderMail.MAIL_TYPE_SUBMISSION_REMINDER,
+    )
+    def test_save_mail_empty_reminder_email_days(self, mail_type):
+        self.setup_user()
+        contract = self.contract_submission_reminder
+        with self.skip_check_course_selection(current_contract=contract):
+            response = self.client.post(self._url_save_mail_ajax(), {
+                'contract_id': contract.id,
+                'mail_type': mail_type,
+                'reminder_email_days': '',
+                'mail_subject': 'Test Subject',
+                'mail_body': 'Test Body',
+                'mail_body2': 'Test Body2',
+            })
+
+        self.assertEqual(400, response.status_code)
+        data = json.loads(response.content)
+        self.assertEquals(data['error'], "Please use the pull-down menu to choose the reminder e-mail days.")
+
+    @ddt.data(
+        ContractReminderMail.MAIL_TYPE_SUBMISSION_REMINDER,
+    )
+    def test_save_mail_reminder_email_days_is_not_number(self, mail_type):
+        self.setup_user()
+        contract = self.contract_submission_reminder
+        with self.skip_check_course_selection(current_contract=contract):
+            response = self.client.post(self._url_save_mail_ajax(), {
+                'contract_id': contract.id,
+                'mail_type': mail_type,
+                'reminder_email_days': '@',
+                'mail_subject': 'Test Subject',
+                'mail_body': 'Test Body',
+                'mail_body2': 'Test Body2',
+            })
+
+        self.assertEqual(400, response.status_code)
+        data = json.loads(response.content)
+        self.assertEquals(data['error'], "Please use the pull-down menu to choose the reminder e-mail days.")
+
+    @ddt.data(
+        ContractReminderMail.MAIL_TYPE_SUBMISSION_REMINDER,
+    )
+    def test_save_mail_reminder_email_days_is_out_of_range(self, mail_type):
+        self.setup_user()
+        contract = self.contract_submission_reminder
+        with self.skip_check_course_selection(current_contract=contract):
+            response = self.client.post(self._url_save_mail_ajax(), {
+                'contract_id': contract.id,
+                'mail_type': mail_type,
+                'reminder_email_days': '-9999',
+                'mail_subject': 'Test Subject',
+                'mail_body': 'Test Body',
+                'mail_body2': 'Test Body2',
+            })
+
+        self.assertEqual(400, response.status_code)
+        data = json.loads(response.content)
+        self.assertEquals(data['error'], "Please use the pull-down menu to choose the reminder e-mail days.")
+
+    @ddt.data(
+        ContractReminderMail.MAIL_TYPE_SUBMISSION_REMINDER,
+    )
+    def test_save_mail_empty_mail_subject(self, mail_type):
+        self.setup_user()
+        contract = self.contract_submission_reminder
+        with self.skip_check_course_selection(current_contract=contract):
+            response = self.client.post(self._url_save_mail_ajax(), {
+                'contract_id': contract.id,
+                'mail_type': mail_type,
+                'reminder_email_days': 3,
+                'mail_subject': '',
+                'mail_body': 'Test Body',
+                'mail_body2': 'Test Body2',
+            })
+
+        self.assertEqual(400, response.status_code)
+        data = json.loads(response.content)
+        self.assertEquals(data['error'], "Please enter the subject of an e-mail.")
+
+    @ddt.data(
+        ContractReminderMail.MAIL_TYPE_SUBMISSION_REMINDER,
+    )
+    def test_save_mail_illegal_mail_subject(self, mail_type):
+        self.setup_user()
+        contract = self.contract_submission_reminder
+        with self.skip_check_course_selection(current_contract=contract):
+            response = self.client.post(self._url_save_mail_ajax(), {
+                'contract_id': contract.id,
+                'mail_type': mail_type,
+                'reminder_email_days': 3,
+                'mail_subject': 'a' * 129,
+                'mail_body': 'Test Body',
+                'mail_body2': 'Test Body2',
+            })
+
+        self.assertEqual(400, response.status_code)
+        data = json.loads(response.content)
+        self.assertEquals(data['error'], "Subject within 128 characters.")
+
+    @ddt.data(
+        ContractReminderMail.MAIL_TYPE_SUBMISSION_REMINDER,
+    )
+    def test_save_mail_empty_mail_body(self, mail_type):
+        self.setup_user()
+        contract = self.contract_submission_reminder
+        with self.skip_check_course_selection(current_contract=contract):
+            response = self.client.post(self._url_save_mail_ajax(), {
+                'contract_id': contract.id,
+                'mail_type': mail_type,
+                'reminder_email_days': 3,
+                'mail_subject': 'Test Subject',
+                'mail_body': '',
+                'mail_body2': 'Test Body2',
+            })
+
+        self.assertEqual(400, response.status_code)
+        data = json.loads(response.content)
+        self.assertEquals(data['error'], "Please enter the body of an e-mail.")
+
+    @ddt.data(
+        ContractReminderMail.MAIL_TYPE_SUBMISSION_REMINDER,
+    )
+    def test_save_mail_empty_mail_body2(self, mail_type):
+        self.setup_user()
+        contract = self.contract_submission_reminder
+        with self.skip_check_course_selection(current_contract=contract):
+            response = self.client.post(self._url_save_mail_ajax(), {
+                'contract_id': contract.id,
+                'mail_type': mail_type,
+                'reminder_email_days': 3,
+                'mail_subject': 'Test Subject',
+                'mail_body': 'Test Body',
+                'mail_body2': '',
+            })
+
+        self.assertEqual(400, response.status_code)
+        data = json.loads(response.content)
+        self.assertEquals(data['error'], "Please enter the body of an e-mail.")
+
+    @ddt.data(
+        ContractReminderMail.MAIL_TYPE_SUBMISSION_REMINDER,
+    )
+    def test_save_mail_success(self, mail_type):
+        self.setup_user()
+        contract = self.contract_submission_reminder
+        with self.skip_check_course_selection(current_contract=contract):
+            response = self.client.post(self._url_save_mail_ajax(), {
+                'contract_id': contract.id,
+                'mail_type': mail_type,
+                'reminder_email_days': 3,
+                'mail_subject': 'Test Subject',
+                'mail_body': 'Test Body',
+                'mail_body2': 'Test Body2',
+            })
+
+        self.assertEqual(200, response.status_code)
+        data = json.loads(response.content)
+        self.assertEqual(data['info'], "Successfully to save the template e-mail.")
+
+        contract_mail = ContractReminderMail.objects.get(contract=contract, mail_type=mail_type)
+        self.assertEquals(contract_mail.reminder_email_days, 3)
+        self.assertEquals(contract_mail.mail_subject, 'Test Subject')
+        self.assertEquals(contract_mail.mail_body, 'Test Body')
+        self.assertEquals(contract_mail.mail_body2, 'Test Body2')
+
+    @ddt.data(
+        ContractReminderMail.MAIL_TYPE_SUBMISSION_REMINDER,
+    )
+    def test_save_mail_error(self, mail_type):
+        self.setup_user()
+        contract = self.contract_submission_reminder
+        with self.skip_check_course_selection(current_contract=contract), patch(
+                'biz.djangoapps.ga_contract_operation.views.ContractReminderMail.objects.get_or_create',
+                side_effect=Exception('test')):
+            response = self.client.post(self._url_save_mail_ajax(), {
+                'contract_id': contract.id,
+                'mail_type': mail_type,
+                'reminder_email_days': 3,
+                'mail_subject': 'Test Subject',
+                'mail_body': 'Test Body',
+                'mail_body2': 'Test Body2',
+            })
+
+        self.assertEqual(400, response.status_code)
+        data = json.loads(response.content)
+        self.assertEquals(data['error'], "Failed to save the template e-mail.")
+
+    # ------------------------------------------------------------
+    # Send Reminder Mail
+    # ------------------------------------------------------------
+    def _url_send_mail_ajax(self):
+        return reverse('biz:contract_operation:reminder_mail_send_ajax')
+
+    @ddt.data(
+        ContractReminderMail.MAIL_TYPE_SUBMISSION_REMINDER,
+    )
+    def test_send_mail_can_not_send_submission_reminder(self, mail_type):
+        self.setup_user()
+        with self.skip_check_course_selection(current_contract=self.contract):
+            response = self.client.post(self._url_send_mail_ajax(), {
+                'contract_id': self.contract.id,
+                'mail_type': mail_type,
+                'reminder_email_days': 3,
+                'mail_subject': 'Test Subject',
+                'mail_body': 'Test Body',
+                'mail_body2': 'Test Body2',
+            })
+
+        self.assertEqual(400, response.status_code)
+        data = json.loads(response.content)
+        self.assertEquals(data['error'], 'Unauthorized access.')
+
+    @ddt.data(
+        ContractReminderMail.MAIL_TYPE_SUBMISSION_REMINDER,
+    )
+    def test_send_mail_contract_unmatch(self, mail_type):
+        self.setup_user()
+        contract = self.contract_submission_reminder
+        with self.skip_check_course_selection(current_contract=contract):
+            response = self.client.post(self._url_send_mail_ajax(), {
+                'contract_id': self.contract.id,  # unmatch
+                'mail_type': mail_type,
+                'reminder_email_days': 3,
+                'mail_subject': 'Test Subject',
+                'mail_body': 'Test Body',
+                'mail_body2': 'Test Body2',
+            })
+
+        self.assertEqual(400, response.status_code)
+        data = json.loads(response.content)
+        self.assertEquals(data['error'], "Current contract is changed. Please reload this page.")
+
+    @ddt.data(
+        ContractReminderMail.MAIL_TYPE_SUBMISSION_REMINDER,
+    )
+    def test_send_mail_no_contract_id(self, mail_type):
+        self.setup_user()
+        contract = self.contract_submission_reminder
+        with self.skip_check_course_selection(current_contract=contract):
+            response = self.client.post(self._url_send_mail_ajax(), {
+                'mail_type': mail_type,
+                'reminder_email_days': 3,
+                'mail_subject': 'Test Subject',
+                'mail_body': 'Test Body',
+                'mail_body2': 'Test Body2',
+            })
+
+        self.assertEqual(400, response.status_code)
+        data = json.loads(response.content)
+        self.assertEquals(data['error'], "Current contract is changed. Please reload this page.")
+
+    def test_send_mail_illegal_mail_type(self):
+        self.setup_user()
+        contract = self.contract_submission_reminder
+        with self.skip_check_course_selection(current_contract=contract), patch(
+                'biz.djangoapps.ga_contract_operation.views.log.warning') as warning_log:
+            response = self.client.post(self._url_send_mail_ajax(), {
+                'contract_id': contract.id,
+                'mail_type': 'NoneType',
+                'reminder_email_days': 3,
+                'mail_subject': 'Test Subject',
+                'mail_body': 'Test Body',
+                'mail_body2': 'Test Body2',
+            })
+
+        warning_log.assert_called_with("Illegal mail-type: NoneType")
+
+        self.assertEqual(400, response.status_code)
+        data = json.loads(response.content)
+        self.assertEquals(data['error'], "Unauthorized access.")
+
+    @ddt.data(
+        ContractReminderMail.MAIL_TYPE_SUBMISSION_REMINDER,
+    )
+    def test_send_mail_pre_update(self, mail_type):
+        self.setup_user()
+        contract = self.contract_submission_reminder
+        with self.skip_check_course_selection(current_contract=contract):
+            response = self.client.post(self._url_send_mail_ajax(), {
+                'contract_id': contract.id,
+                'mail_type': mail_type,
+                'reminder_email_days': 3,
+                'mail_subject': 'Test Subject',
+                'mail_body': 'Test Body',
+                'mail_body2': 'Test Body2',
+            })
+
+        self.assertEqual(400, response.status_code)
+        data = json.loads(response.content)
+        self.assertEqual(data['error'], "Please save the template e-mail before sending.")
+
+    @ddt.data(
+        ContractReminderMail.MAIL_TYPE_SUBMISSION_REMINDER,
+    )
+    def test_send_mail_success(self, mail_type):
+        self.setup_user()
+        contract = self.contract_submission_reminder
+
+        # Save
+        with self.skip_check_course_selection(current_contract=contract):
+            response = self.client.post(self._url_save_mail_ajax(), {
+                'contract_id': contract.id,
+                'mail_type': mail_type,
+                'reminder_email_days': 3,
+                'mail_subject': 'Test Subject',
+                'mail_body': 'Test Body',
+                'mail_body2': 'Test Body2',
+            })
+
+        self.assertEqual(200, response.status_code)
+        data = json.loads(response.content)
+        self.assertEqual(data['info'], "Successfully to save the template e-mail.")
+
+        contract_mail = ContractReminderMail.objects.get(contract=contract, mail_type=mail_type)
+        self.assertEquals(contract_mail.mail_subject, 'Test Subject')
+        self.assertEquals(contract_mail.mail_body, 'Test Body')
+
+        # Send
+        now = datetime_utils.timezone_now()
+        with self.skip_check_course_selection(current_contract=contract), patch(
+                'biz.djangoapps.ga_contract_operation.views.send_mail') as send_mail:
+            response = self.client.post(self._url_send_mail_ajax(), {
+                'contract_id': contract.id,
+                'mail_type': mail_type,
+                'reminder_email_days': 3,
+                'mail_subject': 'Test Subject',
+                'mail_body': 'Test Body',
+                'mail_body2': 'Test Body2',
+            })
+
+        mail_param = {'username': self.user.username}
+        target_courses = [get_grouped_target_sections(self.course_spoc1)]
+        mail_body = contract_mail.compose_mail_body(target_courses)
+        send_mail.assert_called_with(self.user, 'Test Subject', mail_body, mail_param)
+
+        self.assertEqual(200, response.status_code)
+        data = json.loads(response.content)
+        self.assertEqual(data['info'], "Successfully to send the test e-mail.")
+
+    @ddt.data(
+        ContractReminderMail.MAIL_TYPE_SUBMISSION_REMINDER,
+    )
+    def test_send_mail_error(self, mail_type):
+        self.setup_user()
+        contract = self.contract_submission_reminder
+
+        # Save
+        with self.skip_check_course_selection(current_contract=contract):
+            response = self.client.post(self._url_save_mail_ajax(), {
+                'contract_id': contract.id,
+                'mail_type': mail_type,
+                'reminder_email_days': 3,
+                'mail_subject': 'Test Subject',
+                'mail_body': 'Test Body',
+                'mail_body2': 'Test Body2',
+            })
+
+        self.assertEqual(200, response.status_code)
+        data = json.loads(response.content)
+        self.assertEqual(data['info'], "Successfully to save the template e-mail.")
+
+        contract_mail = ContractReminderMail.objects.get(contract=contract, mail_type=mail_type)
+        self.assertEquals(contract_mail.mail_subject, 'Test Subject')
+        self.assertEquals(contract_mail.mail_body, 'Test Body')
+
+        # Send
+        with self.skip_check_course_selection(current_contract=contract), patch(
+                'biz.djangoapps.ga_contract_operation.views.send_mail', side_effect=Exception('test')) as send_mail:
+            response = self.client.post(self._url_send_mail_ajax(), {
+                'contract_id': contract.id,
+                'mail_type': mail_type,
+                'reminder_email_days': 3,
+                'mail_subject': 'Test Subject',
+                'mail_body': 'Test Body',
+                'mail_body2': 'Test Body2',
+            })
+
+        send_mail.assert_called()
+
+        self.assertEqual(400, response.status_code)
+        data = json.loads(response.content)
+        self.assertEquals(data['error'], "Failed to send the test e-mail.")
 
 
 @ddt.ddt

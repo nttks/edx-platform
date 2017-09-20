@@ -18,7 +18,9 @@ from django.test.utils import override_settings
 
 from biz.djangoapps.ga_achievement.achievement_store import PlaybackStore
 from biz.djangoapps.ga_achievement.management.commands import update_biz_playback_status
-from biz.djangoapps.ga_achievement.management.commands.update_biz_playback_status import TargetVertical, GroupedTargetVerticals
+from biz.djangoapps.ga_achievement.management.commands.update_biz_playback_status import (
+    TargetVertical, GroupedTargetVerticals, get_grouped_target_verticals
+)
 from biz.djangoapps.ga_achievement.models import PlaybackBatchStatus, BATCH_STATUS_STARTED, BATCH_STATUS_FINISHED, BATCH_STATUS_ERROR
 from biz.djangoapps.ga_achievement.tests.factories import PlaybackBatchStatusFactory
 from biz.djangoapps.util.decorators import ExitWithWarning
@@ -722,3 +724,43 @@ class TestGroupedTargetVerticals(ModuleStoreTestCase):
                           [self.target_vertical_x1a, self.target_vertical_x1b])
         self.assertEquals(grouped_target_verticals.get(self.chapter_y.location),
                           [self.target_vertical_y1a, self.target_vertical_y2a, self.target_vertical_y2b])
+
+
+class TestGetGroupedTargetVerticals(ModuleStoreTestCase):
+    """
+    Tests for get_grouped_target_verticals
+    """
+    def setUp(self):
+        super(TestGetGroupedTargetVerticals, self).setUp()
+        self.course = CourseFactory.create(org='TestX', course='TS101', run='T1')
+        self.chapter_x = ItemFactory.create(parent=self.course, category='chapter', display_name='chapter_x')
+        self.chapter_y = ItemFactory.create(parent=self.course, category='chapter', display_name='chapter_y')
+        self.section_x1 = ItemFactory.create(parent=self.chapter_x, category='sequential', display_name='sequential_x1')
+        self.section_y1 = ItemFactory.create(parent=self.chapter_y, category='sequential', display_name='sequential_y1')
+        self.section_y2 = ItemFactory.create(parent=self.chapter_y, category='sequential', display_name='sequential_y2')
+        self.vertical_x1a = ItemFactory.create(parent=self.section_x1, category='vertical', display_name='vertical_x1a')
+        self.vertical_y1a = ItemFactory.create(parent=self.section_y1, category='vertical', display_name='vertical_y1a')
+        self.vertical_y2a = ItemFactory.create(parent=self.section_y2, category='vertical', display_name='vertical_y2a')
+        self.component_x1a_1 = ItemFactory.create(parent=self.vertical_x1a, category='jwplayerxblock', display_name='component_x1a_1')
+        self.component_y1a_1 = ItemFactory.create(parent=self.vertical_y1a, category='jwplayerxblock', display_name='component_y1a_1')
+        self.component_y2a_1 = ItemFactory.create(parent=self.vertical_y2a, category='jwplayerxblock', display_name='component_y2a_1')
+
+    def test_if_chapter_is_hide_from_students(self):
+        self.chapter_x.visible_to_staff_only = True
+        self.store.update_item(self.chapter_x, self.user.id)
+
+        grouped_target_verticals = get_grouped_target_verticals(self.course)
+        self.assertEquals(
+            [[tv.vertical_id for tv in tvs] for tvs in grouped_target_verticals.values()],
+            [[self.vertical_x1a.location.block_id], [self.vertical_y1a.location.block_id, self.vertical_y2a.location.block_id]]
+        )
+
+    def test_if_section_is_hide_from_students(self):
+        self.section_y1.visible_to_staff_only = True
+        self.store.update_item(self.section_y1, self.user.id)
+
+        grouped_target_verticals = get_grouped_target_verticals(self.course)
+        self.assertEquals(
+            [[tv.vertical_id for tv in tvs] for tvs in grouped_target_verticals.values()],
+            [[self.vertical_x1a.location.block_id], [self.vertical_y1a.location.block_id, self.vertical_y2a.location.block_id]]
+        )

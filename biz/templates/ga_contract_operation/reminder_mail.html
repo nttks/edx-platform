@@ -1,0 +1,180 @@
+<%inherit file="../main_biz.html" />
+<%!
+from django.core.urlresolvers import reverse
+from django.utils.translation import ugettext as _
+
+from biz.djangoapps.ga_contract_operation.models import ContractReminderMail
+%>
+
+<%block name="pagetitle">${_("Reminder Mail Setting")}</%block>
+
+<%block name="js_extra">
+<script type="text/javascript">
+    $(function () {
+        $('#form').w2form({
+            name: 'form',
+            tabs: [
+                % for i, mail_info in enumerate(mail_info_list):
+                    { id: 'page-${i}', caption: '${mail_info.mail_type_name}' },
+                % endfor
+            ],
+            actions: {
+                save: function (event) {
+                    this.action('submit', event);
+                },
+                send: function (event) {
+                    this.action('submit', event);
+                },
+                submit: function (event) {
+                    var obj = this;
+                    w2confirm({
+                        msg: $(event.target).data('confirm-message'),
+                        yes_class: 'btn-right',
+                        no_class: 'btn-left'
+                    }).yes(function () {
+                        var messages = $('.messages');
+                        messages.empty();
+                        w2utils.lock(obj.box, '', true);
+                        $.ajax({
+                            url: $(event.target).data('endpoint'),
+                            type: 'POST',
+                            data: $('.w2ui-page.page-' + obj.page).find('textarea,input,select').serializeArray()
+                        }).done(function (data) {
+                            messages.append('<li class="info">' + data.info + '</li>');
+                            if (event.target.name === 'save') {
+                                $('.w2ui-buttons.page-' + obj.page).find('.send-btn').prop('disabled', false);
+                            }
+                        }).fail(function (jqXHR) {
+                            var data = JSON.parse(jqXHR.responseText);
+                            messages.append('<li class="error">' + data.error + '</li>');
+                        }).always(function () {
+                            w2utils.unlock(obj.box);
+                        });
+                    });
+                }
+            },
+            onRender: function (event) {
+                var obj = this;
+                $(this.box).show();  // Note: Prevent w2ui form from being collapsed when rendering
+                $(this.box).on('change keydown', function () {
+                    $('.w2ui-buttons.page-' + obj.page).find('.send-btn').prop('disabled', true);
+                });
+                event.onComplete = function () {
+                    $('.w2ui-buttons').hide();
+                    $('.w2ui-buttons.page-0').show();
+                    obj.tabs.on('click', function (event) {
+                        $('.w2ui-buttons').hide();
+                        $('.w2ui-buttons.' + event.target).show();
+                    });
+                };
+            }
+        });
+    });
+</script>
+<style>
+  .content-wrapper {
+    min-height: 1000px;
+  }
+  .operation {
+    font-size: 1rem;
+    margin: 0.5rem 0 0.5rem 0;
+  }
+  .w2ui-page {
+    min-height: 800px;
+  }
+  .w2ui-page .operation > .operation {
+    padding-left: 1rem;
+  }
+  .w2ui-tabs .w2ui-tab {
+    margin: 1px 1px -2px 0;
+  }
+  .field > label {
+    display: block;
+    font-style: normal;
+    margin: 1rem 0rem 0.5rem;
+  }
+  .field > div > * {
+    font-size: 1rem;
+    width: 100%;
+  }
+  .field select {
+    width: 100px;
+  }
+  .w2ui-form .w2ui-buttons {
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+  }
+  .w2ui-buttons > .save-btn {
+    background-color: #43ac6a;
+    transition: background-color 0.15s ease-in-out 0s;
+    float: left;
+  }
+  .w2ui-buttons > .send-btn {
+    float: right;
+  }
+  .operation-right {
+    clear: both;
+    float: right;
+    text-align: right;
+  }
+</style>
+</%block>
+
+<%block name="custom_content">
+<div id="form" class="field-area" style="display: none;">
+    % for i, mail_info in enumerate(mail_info_list):
+    <div class="w2ui-page page-${i}">
+        <div class="field">
+            <label for="reminder_email_days-${i}">${_("Reminder E-mail Days:")}</label>
+            <div class="w2ui-field">
+                <select id="reminder_email_days-${i}" name="reminder_email_days">
+                    % for j in range(ContractReminderMail.REMINDER_EMAIL_DAYS_MIN_VALUE, ContractReminderMail.REMINDER_EMAIL_DAYS_MAX_VALUE + 1):
+                    <option value="${j}" ${'selected' if mail_info.reminder_email_days == j else ''}>${j}</option>
+                    % endfor
+                </select>&nbsp;<span class="operation">${_("days before")}</span>
+            </div>
+        </div>
+        <div class="operation">
+            <span class="red">${_("The following logograph will replace each user's information when sending the e-mail. Do not change the logograph.")}</span>
+            % for k, v in mail_info.mail_params.items():
+            <div class="operation">{${k}}:${v}</div>
+            % endfor
+        </div>
+        <div class="field">
+            <label for="subject-${i}">${_("Subject:")}</label>
+            <div>
+                <input id="subject-${i}" name="mail_subject" maxlength="128" value="${mail_info.mail_subject}" />
+            </div>
+        </div>
+        <div class="field">
+            <label for="body-${i}">${_("Send a Message:")}</label>
+            <div>
+                <textarea id="body-${i}" name="mail_body" rows="10">${mail_info.mail_body}</textarea>
+            </div>
+        </div>
+        <div class="operation">${_("(The target courses and the section are listed. This part can not be edited.)")}</div>
+        <div class="field">
+            <div>
+                <textarea id="body2-${i}" name="mail_body2" rows="15">${mail_info.mail_body2}</textarea>
+            </div>
+        </div>
+        <div class="field">
+            <input type="hidden" name="mail_type" value="${mail_info.mail_type}" />
+            <input type="hidden" name="contract_id" value="${request.current_contract.id}" />
+        </div>
+    </div>
+    ## Note: Add page-i class in order to switch buttons according to the tab click
+    <div class="w2ui-buttons page-${i}">
+        <input type="button" name="save" class="save-btn"
+               data-confirm-message="${_("The template e-mail will be saved, overwriting the original e-mail. Is it OK?")}"
+               data-endpoint="${reverse('biz:contract_operation:reminder_mail_save_ajax')}"
+               value="&#xf044 ${_("Save the template e-mail")}" />
+        <input type="button" name="send" class="send-btn"
+               data-confirm-message="${_("Are you sure you want to send the test e-mail?")}"
+               data-endpoint="${reverse('biz:contract_operation:reminder_mail_send_ajax')}"
+               value="&#xf003 ${_("Send the test e-mail")}" />
+        <div class="operation operation-right" style="">${_("The test e-mail was send to yourself")}</div>
+    </div>
+    % endfor
+</div>
+</%block>

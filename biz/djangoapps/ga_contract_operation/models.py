@@ -1,11 +1,10 @@
-from django.conf import settings
 from django.contrib.auth.models import User
-from django.core.mail import send_mail
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
 from biz.djangoapps.ga_contract.models import Contract
 from biz.djangoapps.ga_invitation.models import ContractRegister
+from edxmako.shortcuts import render_to_string
 from openedx.core.djangoapps.ga_task.models import Task
 
 
@@ -169,61 +168,29 @@ class StudentUnregisterTaskTarget(ContractTaskTargetBase):
         )
 
 
-MAIL_TYPE_REGISTER_NEW_USER = 'RNU'
-MAIL_TYPE_REGISTER_EXISTING_USER = 'REU'
-MAIL_TYPE_REGISTER_NEW_USER_WITH_LOGINCODE = 'RNUWLC'
-MAIL_TYPE_REGISTER_EXISTING_USER_WITH_LOGINCODE = 'REUWLC'
-MAIL_TYPE = (
-    (MAIL_TYPE_REGISTER_NEW_USER, _("For New User")),
-    (MAIL_TYPE_REGISTER_EXISTING_USER, _("For Existing User")),
-    (MAIL_TYPE_REGISTER_NEW_USER_WITH_LOGINCODE, _("For New User with Login Code")),
-    (MAIL_TYPE_REGISTER_EXISTING_USER_WITH_LOGINCODE, _("For Existing User with Login Code")),
-)
+class ContractMailBase(models.Model):
+    """
+    Abstract base class for mail settings for contract
+    """
+    class Meta:
+        app_label = 'ga_contract_operation'
+        abstract = True
+        unique_together = ('contract', 'mail_type')
+        ordering = ['id']
 
-MAIL_PARAM_USERNAME = ('username', _("Replaced with the user name"))
-MAIL_PARAM_EMAIL_ADDRESS = ('email_address', _("Replaced with the user e-mail address"))
-MAIL_PARAM_PASSWORD = ('password', _("Replaced with the user password"))
-MAIL_PARAM_LOGINCODE = ('logincode', _("Replaced with the login code"))
-MAIL_PARAM_URLCODE = ('urlcode', _("Replaced with the URL code for login"))
-MAIL_PARAMS = {
-    MAIL_TYPE_REGISTER_NEW_USER: [
-        MAIL_PARAM_USERNAME,
-        MAIL_PARAM_EMAIL_ADDRESS,
-        MAIL_PARAM_PASSWORD,
-    ],
-    MAIL_TYPE_REGISTER_EXISTING_USER: [
-        MAIL_PARAM_USERNAME,
-        MAIL_PARAM_EMAIL_ADDRESS,
-    ],
-    MAIL_TYPE_REGISTER_NEW_USER_WITH_LOGINCODE: [
-        MAIL_PARAM_USERNAME,
-        MAIL_PARAM_EMAIL_ADDRESS,
-        MAIL_PARAM_PASSWORD,
-        MAIL_PARAM_LOGINCODE,
-        MAIL_PARAM_URLCODE,
-    ],
-    MAIL_TYPE_REGISTER_EXISTING_USER_WITH_LOGINCODE: [
-        MAIL_PARAM_USERNAME,
-        MAIL_PARAM_EMAIL_ADDRESS,
-        MAIL_PARAM_LOGINCODE,
-        MAIL_PARAM_URLCODE,
-    ],
-}
-
-
-class ContractMail(models.Model):
+    MAIL_TYPE = ()
+    MAIL_PARAMS = {}
 
     contract = models.ForeignKey(Contract, default=None, null=True, blank=True)
-    mail_type = models.CharField(max_length=255, choices=MAIL_TYPE)
+    mail_type = models.CharField(max_length=255)
     mail_subject = models.CharField(max_length=128)
     mail_body = models.TextField()
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
 
-    class Meta:
-        app_label = 'ga_contract_operation'
-        unique_together = ('contract', 'mail_type')
-        ordering = ['id']
+    def __init__(self, *args, **kwargs):
+        self._meta.get_field('mail_type')._choices = self.MAIL_TYPE
+        super(ContractMailBase, self).__init__(*args, **kwargs)
 
     def __unicode__(self):
         return u'{}:{}'.format(
@@ -233,19 +200,63 @@ class ContractMail(models.Model):
 
     @property
     def mail_type_name(self):
-        return dict(MAIL_TYPE).get(self.mail_type, '')
+        return dict(self.MAIL_TYPE).get(self.mail_type, '')
 
     @property
     def mail_params(self):
-        return {p[0]: p[1] for p in MAIL_PARAMS[self.mail_type]}
-
-    @property
-    def has_mail_param_password(self):
-        return MAIL_PARAM_PASSWORD[0] in self.mail_params
+        return {p[0]: p[1] for p in self.MAIL_PARAMS[self.mail_type]}
 
     @classmethod
     def is_mail_type(cls, mail_type):
-        return mail_type in dict(MAIL_TYPE).keys()
+        return mail_type in dict(cls.MAIL_TYPE).keys()
+
+
+class ContractMail(ContractMailBase):
+
+    MAIL_TYPE_REGISTER_NEW_USER = 'RNU'
+    MAIL_TYPE_REGISTER_EXISTING_USER = 'REU'
+    MAIL_TYPE_REGISTER_NEW_USER_WITH_LOGINCODE = 'RNUWLC'
+    MAIL_TYPE_REGISTER_EXISTING_USER_WITH_LOGINCODE = 'REUWLC'
+    MAIL_TYPE = (
+        (MAIL_TYPE_REGISTER_NEW_USER, _("For New User")),
+        (MAIL_TYPE_REGISTER_EXISTING_USER, _("For Existing User")),
+        (MAIL_TYPE_REGISTER_NEW_USER_WITH_LOGINCODE, _("For New User with Login Code")),
+        (MAIL_TYPE_REGISTER_EXISTING_USER_WITH_LOGINCODE, _("For Existing User with Login Code")),
+    )
+
+    MAIL_PARAM_USERNAME = ('username', _("Replaced with the user name"))
+    MAIL_PARAM_EMAIL_ADDRESS = ('email_address', _("Replaced with the user e-mail address"))
+    MAIL_PARAM_PASSWORD = ('password', _("Replaced with the user password"))
+    MAIL_PARAM_LOGINCODE = ('logincode', _("Replaced with the login code"))
+    MAIL_PARAM_URLCODE = ('urlcode', _("Replaced with the URL code for login"))
+    MAIL_PARAMS = {
+        MAIL_TYPE_REGISTER_NEW_USER: [
+            MAIL_PARAM_USERNAME,
+            MAIL_PARAM_EMAIL_ADDRESS,
+            MAIL_PARAM_PASSWORD,
+        ],
+        MAIL_TYPE_REGISTER_EXISTING_USER: [
+            MAIL_PARAM_USERNAME,
+            MAIL_PARAM_EMAIL_ADDRESS,
+        ],
+        MAIL_TYPE_REGISTER_NEW_USER_WITH_LOGINCODE: [
+            MAIL_PARAM_USERNAME,
+            MAIL_PARAM_EMAIL_ADDRESS,
+            MAIL_PARAM_PASSWORD,
+            MAIL_PARAM_LOGINCODE,
+            MAIL_PARAM_URLCODE,
+        ],
+        MAIL_TYPE_REGISTER_EXISTING_USER_WITH_LOGINCODE: [
+            MAIL_PARAM_USERNAME,
+            MAIL_PARAM_EMAIL_ADDRESS,
+            MAIL_PARAM_LOGINCODE,
+            MAIL_PARAM_URLCODE,
+        ],
+    }
+
+    @property
+    def has_mail_param_password(self):
+        return self.MAIL_PARAM_PASSWORD[0] in self.mail_params
 
     @classmethod
     def get_or_default(cls, contract, mail_type):
@@ -259,29 +270,73 @@ class ContractMail(models.Model):
 
     @classmethod
     def get_register_new_user(cls, contract):
-        return cls.get_or_default(contract, MAIL_TYPE_REGISTER_NEW_USER)
+        return cls.get_or_default(contract, cls.MAIL_TYPE_REGISTER_NEW_USER)
 
     @classmethod
     def get_register_existing_user(cls, contract):
-        return cls.get_or_default(contract, MAIL_TYPE_REGISTER_EXISTING_USER)
+        return cls.get_or_default(contract, cls.MAIL_TYPE_REGISTER_EXISTING_USER)
 
     @classmethod
     def get_register_new_user_logincode(cls, contract):
-        return cls.get_or_default(contract, MAIL_TYPE_REGISTER_NEW_USER_WITH_LOGINCODE)
+        return cls.get_or_default(contract, cls.MAIL_TYPE_REGISTER_NEW_USER_WITH_LOGINCODE)
 
     @classmethod
     def get_register_existing_user_logincode(cls, contract):
-        return cls.get_or_default(contract, MAIL_TYPE_REGISTER_EXISTING_USER_WITH_LOGINCODE)
+        return cls.get_or_default(contract, cls.MAIL_TYPE_REGISTER_EXISTING_USER_WITH_LOGINCODE)
 
     @classmethod
     def register_replace_dict(cls, user, contract, password=None, login_code=None):
         replace_dict = {
-            MAIL_PARAM_USERNAME[0]: user.username,
-            MAIL_PARAM_EMAIL_ADDRESS[0]: user.email,
+            cls.MAIL_PARAM_USERNAME[0]: user.username,
+            cls.MAIL_PARAM_EMAIL_ADDRESS[0]: user.email,
         }
         if password is not None:
-            replace_dict[MAIL_PARAM_PASSWORD[0]] = password
+            replace_dict[cls.MAIL_PARAM_PASSWORD[0]] = password
         if contract.has_auth:
-            replace_dict[MAIL_PARAM_LOGINCODE[0]] = login_code or (user.bizuser.login_code if hasattr(user, 'bizuser') else '')
-            replace_dict[MAIL_PARAM_URLCODE[0]] = contract.contractauth.url_code
+            replace_dict[cls.MAIL_PARAM_LOGINCODE[0]] = login_code or (user.bizuser.login_code if hasattr(user, 'bizuser') else '')
+            replace_dict[cls.MAIL_PARAM_URLCODE[0]] = contract.contractauth.url_code
         return replace_dict
+
+
+class ContractReminderMail(ContractMailBase):
+
+    MAIL_TYPE_SUBMISSION_REMINDER = 'SRM'
+    MAIL_TYPE = (
+        (MAIL_TYPE_SUBMISSION_REMINDER, _('Submission Reminder Mail')),
+    )
+
+    MAIL_PARAM_USERNAME = ('username', _("Replaced with the user name"))
+    MAIL_PARAMS = {
+        MAIL_TYPE_SUBMISSION_REMINDER: [
+            MAIL_PARAM_USERNAME,
+        ],
+    }
+
+    REMINDER_EMAIL_DAYS_MIN_VALUE = 1
+    REMINDER_EMAIL_DAYS_MAX_VALUE = 14
+
+    reminder_email_days = models.IntegerField(null=True)
+    mail_body2 = models.TextField()
+
+    @classmethod
+    def get_or_default(cls, contract, mail_type):
+        query = cls.objects.filter(contract=contract, mail_type=mail_type)
+        if query.exists():
+            return query[0]
+
+        # Not found for specified contract, get default
+        query = cls.objects.filter(contract=None, mail_type=mail_type)
+        if query.exists():
+            return query[0]
+
+        return None
+
+    def compose_mail_body(self, target_courses):
+        return render_to_string(
+            'ga_achievement/emails/_submission_reminder_email_message.txt',
+            {
+                'body': self.mail_body,
+                'body2': self.mail_body2,
+                'target_courses': target_courses,
+            }
+        )

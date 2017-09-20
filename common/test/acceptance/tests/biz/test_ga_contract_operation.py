@@ -1814,7 +1814,7 @@ class BizMailTest(WebAppTest, GaccoBizTestMixin, BizStudentRegisterMixin):
         self.switch_to_user(self.new_director)
         nav = BizNavPage(self.browser).visit()
 
-        self.assertFalse('E-Mail Management' in nav.left_menu_items.keys())
+        self.assertFalse('Welcome E-Mail Management' in nav.left_menu_items.keys())
 
         # Make contract auth
         self.switch_to_user(SUPER_USER_INFO)
@@ -1828,7 +1828,7 @@ class BizMailTest(WebAppTest, GaccoBizTestMixin, BizStudentRegisterMixin):
         self.switch_to_user(self.new_director)
         nav = BizNavPage(self.browser).visit()
 
-        self.assertTrue('E-Mail Management' in nav.left_menu_items.keys())
+        self.assertTrue('Welcome E-Mail Management' in nav.left_menu_items.keys())
 
         # Mail Management
         mail_page = nav.click_mail_management()
@@ -1890,7 +1890,7 @@ class BizMailTest(WebAppTest, GaccoBizTestMixin, BizStudentRegisterMixin):
         self.switch_to_user(self.new_director)
         nav = BizNavPage(self.browser).visit()
 
-        self.assertFalse('E-Mail Management' in nav.left_menu_items.keys())
+        self.assertFalse('Welcome E-Mail Management' in nav.left_menu_items.keys())
 
         # Make contract auth
         self.switch_to_user(SUPER_USER_INFO)
@@ -1904,7 +1904,7 @@ class BizMailTest(WebAppTest, GaccoBizTestMixin, BizStudentRegisterMixin):
         self.switch_to_user(self.new_director)
         nav = BizNavPage(self.browser).visit()
 
-        self.assertTrue('E-Mail Management' in nav.left_menu_items.keys())
+        self.assertTrue('Welcome E-Mail Management' in nav.left_menu_items.keys())
 
         # Mail Management
         mail_page = nav.click_mail_management()
@@ -1966,7 +1966,7 @@ class BizMailTest(WebAppTest, GaccoBizTestMixin, BizStudentRegisterMixin):
         self.switch_to_user(self.new_director)
         nav = BizNavPage(self.browser).visit()
 
-        self.assertFalse('E-Mail Management' in nav.left_menu_items.keys())
+        self.assertFalse('Welcome E-Mail Management' in nav.left_menu_items.keys())
 
         # Make contract auth
         self.switch_to_user(SUPER_USER_INFO)
@@ -1980,7 +1980,7 @@ class BizMailTest(WebAppTest, GaccoBizTestMixin, BizStudentRegisterMixin):
         self.switch_to_user(self.new_director)
         nav = BizNavPage(self.browser).visit()
 
-        self.assertFalse('E-Mail Management' in nav.left_menu_items.keys())
+        self.assertFalse('Welcome E-Mail Management' in nav.left_menu_items.keys())
 
     @skip("This won't work with mod #1906")
     def test_normal_existing_user(self):
@@ -1988,7 +1988,7 @@ class BizMailTest(WebAppTest, GaccoBizTestMixin, BizStudentRegisterMixin):
         self.switch_to_user(self.new_director)
         nav = BizNavPage(self.browser).visit()
 
-        self.assertFalse('E-Mail Management' in nav.left_menu_items.keys())
+        self.assertFalse('Welcome E-Mail Management' in nav.left_menu_items.keys())
 
         # Make contract auth
         self.switch_to_user(SUPER_USER_INFO)
@@ -2002,7 +2002,7 @@ class BizMailTest(WebAppTest, GaccoBizTestMixin, BizStudentRegisterMixin):
         self.switch_to_user(self.new_director)
         nav = BizNavPage(self.browser).visit()
 
-        self.assertTrue('E-Mail Management' in nav.left_menu_items.keys())
+        self.assertTrue('Welcome E-Mail Management' in nav.left_menu_items.keys())
 
         # Mail Management
         mail_page = nav.click_mail_management().click_tab_for_existing_user()
@@ -2065,7 +2065,7 @@ class BizMailTest(WebAppTest, GaccoBizTestMixin, BizStudentRegisterMixin):
         self.switch_to_user(self.new_director)
         nav = BizNavPage(self.browser).visit()
 
-        self.assertFalse('E-Mail Management' in nav.left_menu_items.keys())
+        self.assertFalse('Welcome E-Mail Management' in nav.left_menu_items.keys())
 
         # Make contract auth
         self.switch_to_user(SUPER_USER_INFO)
@@ -2079,7 +2079,7 @@ class BizMailTest(WebAppTest, GaccoBizTestMixin, BizStudentRegisterMixin):
         self.switch_to_user(self.new_director)
         nav = BizNavPage(self.browser).visit()
 
-        self.assertTrue('E-Mail Management' in nav.left_menu_items.keys())
+        self.assertTrue('Welcome E-Mail Management' in nav.left_menu_items.keys())
 
         # Mail Management
         mail_page = nav.click_mail_management().click_tab_for_existing_user_login_code()
@@ -2126,3 +2126,77 @@ class BizMailTest(WebAppTest, GaccoBizTestMixin, BizStudentRegisterMixin):
         self.assertIsNotNone(register_mail)
         self.assertEqual(u'Existing Test Subject {}'.format(self.new_user['username']), register_mail['subject'])
         self.assertEqual(u'Existing Test Body {} PW:{{password}}'.format(self.new_user['email']), register_mail['body'].decode('utf-8'))
+
+
+@attr('shard_ga_biz_3')
+class BizReminderMailTest(WebAppTest, GaccoBizTestMixin, BizStudentRegisterMixin):
+    """
+    Tests that the reminder mail functionality of biz works
+    """
+
+    def setUp(self):
+        super(BizReminderMailTest, self).setUp()
+
+        # setup mail client
+        self.setup_email_client(EMAIL_FILE_PATH)
+
+        # page
+        self.django_admin_page = DjangoAdminPage(self.browser)
+
+        # Register organization
+        new_org_info = self.register_organization(PLATFORMER_USER_INFO)
+
+        # Register user as director
+        self.new_director = self.register_user()
+        self.grant(PLATFORMER_USER_INFO, new_org_info['Organization Name'], 'director', self.new_director)
+
+        # Register contract
+        new_course_key, new_course_name = self.install_course(PLAT_COMPANY_CODE)
+        self.new_contract = self.register_contract(PLATFORMER_USER_INFO, new_org_info['Organization Name'], detail_info=[new_course_key])
+
+        # Test user
+        self.new_user = self.new_user_info
+
+    def test_submission_reminder_mail_setting(self):
+        # Can not send submission reminder
+        self.switch_to_user(self.new_director)
+        nav = BizNavPage(self.browser).visit()
+
+        self.assertFalse('Reminder Mail Setting' in nav.left_menu_items.keys())
+
+        # Make contract auth
+        self.switch_to_user(SUPER_USER_INFO)
+        django_admin_add_page = self.django_admin_page.visit().click_add('ga_contract', 'contractoption')
+        django_admin_list_page = django_admin_add_page.input({
+            'contract': self.new_contract['Contract Name'],
+            'send_submission_reminder': True,
+        }).save()
+
+        # Can send submission reminder
+        self.switch_to_user(self.new_director)
+        nav = BizNavPage(self.browser).visit()
+
+        self.assertTrue('Reminder Mail Setting' in nav.left_menu_items.keys())
+
+        # Reminder Mail Setting
+        reminder_mail_page = nav.click_reminder_mail_setting()
+        self.assertEqual([u'username'], reminder_mail_page.parameter_keys)
+        self.assertEqual('3', reminder_mail_page.reminder_email_days)
+        self.assertEqual(u'■gacco 未提出課題のお知らせ', reminder_mail_page.subject)
+        self.assertEqual(u'Default Body For Submission Reminder Mail', reminder_mail_page.body)
+        self.assertEqual(u'Default Body2 For Submission Reminder Mail', reminder_mail_page.body2)
+
+        reminder_mail_page.input('5', 'Test Subject {username}', 'Test Body {username}', 'Test Body2').click_save_template().click_popup_yes()
+        reminder_mail_page.wait_for_ajax()
+        self.assertEqual([u'Successfully to save the template e-mail.'], reminder_mail_page.messages)
+
+        reminder_mail_page.click_send_test_mail().click_popup_yes()
+        reminder_mail_page.wait_for_ajax()
+        self.assertEqual([u'Successfully to send the test e-mail.'], reminder_mail_page.messages)
+
+        test_mail = self._get_message(self.new_director['email'])
+        self.assertIsNotNone(test_mail)
+        self.assertEqual(u'Test Subject {}'.format(self.new_director['username']), test_mail['subject'])
+        self.assertIn(u'Test Body {}'.format(self.new_director['username']), test_mail['body'].decode('utf-8'))
+        self.assertIn(u'Test Body2', test_mail['body'].decode('utf-8'))
+        self.email_client.clear_messages()

@@ -68,8 +68,12 @@ msgid "Manager Setting"
 msgstr "管理者設定"
 
 #: biz/templates/main_biz.html
-msgid "E-Mail Management"
-msgstr "メール管理"
+msgid "Welcome E-Mail Management"
+msgstr "登録メール設定"
+
+#: biz/templates/main_biz.html
+msgid "Reminder Mail Setting"
+msgstr "督促メール設定"
 
 #: templates/theme-header.html
 msgid "Biz"
@@ -155,6 +159,14 @@ msgstr "合計時間"
 #: biz/djangoapps/ga_achievement/views.py
 msgid "An error has occurred while loading. Please wait a moment and try again."
 msgstr "読込み中にエラーが発生しました。しばらくたってから再度お試しください。"
+
+#: biz/djangoapps/ga_achievement/management/commands/dump_biz_answer_data.py
+msgid "Submit Count"
+msgstr "提出回数"
+
+#: biz/djangoapps/ga_achievement/management/commands/generate_biz_score_data.py
+msgid "Final Judgement"
+msgstr "最終判定"
 
 ##### Contract
 #: biz/templates/ga_contract/index.html
@@ -674,15 +686,15 @@ msgstr "メール本文を入力してください。"
 
 #: biz/djangoapps/ga_contract_operation/views.py
 msgid "Please save the template e-mail before sending."
-msgstr "メール送信前にメールテンプレートを保存してください。"
+msgstr "メール送信前に保存してください。"
 
 #: biz/djangoapps/ga_contract_operation/views.py
 msgid "Successfully to save the template e-mail."
-msgstr "メールテンプレートの保存が完了しました。"
+msgstr "保存が完了しました。"
 
 #: biz/djangoapps/ga_contract_operation/views.py
 msgid "Failed to save the template e-mail."
-msgstr "メールテンプレートの保存に失敗しました。"
+msgstr "保存に失敗しました。"
 
 #: biz/djangoapps/ga_contract_operation/views.py
 msgid "Successfully to send the test e-mail."
@@ -691,6 +703,10 @@ msgstr "テストメール送信が完了しました。"
 #: biz/djangoapps/ga_contract_operation/views.py
 msgid "Failed to send the test e-mail."
 msgstr "テストメール送信に失敗しました。"
+
+#: biz/djangoapps/ga_contract_operation/views.py
+msgid "Please use the pull-down menu to choose the reminder e-mail days."
+msgstr "督促日の設定はプルダウンから選択してしてください。"
 
 #: biz/djangoapps/ga_contract_operation/models.py
 msgid "For New User"
@@ -710,23 +726,27 @@ msgstr "ログインコードによる既存受講者向け"
 
 #: biz/djangoapps/ga_contract_operation/models.py
 msgid "Replaced with the user name"
-msgstr "ユーザー名に置換されます"
+msgstr "ユーザー名に置き換わります"
 
 #: biz/djangoapps/ga_contract_operation/models.py
 msgid "Replaced with the user password"
-msgstr "パスワードに置換されます"
+msgstr "パスワードに置き換わります"
 
 #: biz/djangoapps/ga_contract_operation/models.py
 msgid "Replaced with the user e-mail address"
-msgstr "メールアドレスに置換されます"
+msgstr "メールアドレスに置き換わります"
 
 #: biz/djangoapps/ga_contract_operation/models.py
 msgid "Replaced with the login code"
-msgstr "ログインコードに置換されます"
+msgstr "ログインコードに置き換わります"
 
 #: biz/djangoapps/ga_contract_operation/models.py
 msgid "Replaced with the URL code for login"
-msgstr "URLに置換されます"
+msgstr "URLに置き換わります"
+
+#: biz/djangoapps/ga_contract_operation/models.py
+msgid "Submission Reminder Mail"
+msgstr "未提出課題督促メール"
 
 #: biz/templates/ga_contract_operation/register_students.html
 msgid "Register Students"
@@ -887,8 +907,8 @@ msgid "Either new user or existing user will be identified automatically in our 
 msgstr "新規受講者または既存受講者の判定は自動で行います。"
 
 #: biz/templates/ga_contract_operation/mail.html
-msgid "The following logograph will be replaced other word. Do not change the logograph."
-msgstr "以下の文字列のみメール送付時にそれぞれ置換されます。※文字列は変更しないでください"
+msgid "The following logograph will replace each user's information when sending the e-mail. Do not change the logograph."
+msgstr "以下の{}付の文言は、メール送付時に受講者一人一人の情報に置き換わります。変更しないでください。"
 
 #: biz/templates/ga_contract_operation/mail.html
 msgid "Subject:"
@@ -900,7 +920,7 @@ msgstr "メール本文："
 
 #: biz/templates/ga_contract_operation/mail.html
 msgid "Save the template e-mail"
-msgstr "テンプレート保存"
+msgstr "保存"
 
 #: biz/templates/ga_contract_operation/mail.html
 msgid "Send the test e-mail"
@@ -912,13 +932,25 @@ msgstr "テストメールはあなた宛てに送信します。"
 
 #: biz/templates/ga_contract_operation/mail.html
 msgid "The template e-mail will be saved, overwriting the original e-mail. Is it OK?"
-msgstr "メールテンプレートを上書き保存します、よろしいですか。"
+msgstr "上書き保存します、よろしいですか。"
 
 #: biz/templates/ga_contract_operation/mail.html
 msgid ""
 "Are you sure you want to send the test e-mail?"
 msgstr ""
 "テストメールを送信してよろしいですか？"
+
+#: biz/templates/ga_contract_operation/reminder_mail.html
+msgid "Reminder E-mail Days:"
+msgstr "督促日："
+
+#: biz/templates/ga_contract_operation/reminder_mail.html
+msgid "days before"
+msgstr "日前"
+
+#: biz/templates/ga_contract_operation/reminder_mail.html
+msgid "(The target courses and the section are listed. This part can not be edited.)"
+msgstr "（対象の講座名および節が列挙されます。この部分は編集できません。）"
 
 ##### Login
 #: biz/djangoapps/ga_login/views.py

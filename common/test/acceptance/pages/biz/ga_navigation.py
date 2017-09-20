@@ -168,6 +168,13 @@ class BizNavPage(PageObject):
         self.q(css='nav.side-menu>ul.menu>li>a[href="/biz/contract_operation/register_mail"]').first.click()
         return BizMailPage(self.browser).wait_for_page()
 
+    def click_reminder_mail_setting(self):
+        # Import in func for cross reference
+        from .ga_contract_operation import BizReminderMailPage
+
+        self.q(css='nav.side-menu>ul.menu>li>a[href="/biz/contract_operation/reminder_mail"]').first.click()
+        return BizReminderMailPage(self.browser).wait_for_page()
+
     def click_bulk_students_management(self):
         # Import in func for cross reference
         from .ga_contract_operation import BizBulkStudentsPage

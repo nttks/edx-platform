@@ -104,6 +104,24 @@ class GroupedTargetSections(OrderedDict, defaultdict):
         self[target_section.chapter_descriptor.location].append(target_section)
 
 
+def get_grouped_target_sections(course):
+    """Get target sections from course"""
+    grouped_target_sections = GroupedTargetSections()
+    for chapter in course.get_children():
+        for section in chapter.get_children():
+            # Note: Exclude sections if grading_type is not set. (#1996)
+            if section.graded:
+                has_score = False
+                for vertical in section.get_children():
+                    for component in vertical.get_children():
+                        if component.has_score:
+                            has_score = True
+                            break
+                if has_score:
+                    grouped_target_sections.append(TargetSection(section))
+    return grouped_target_sections
+
+
 class Command(BaseCommand):
     """
     Generate a list of grade summary for all biz students who registered any SPOC course.
@@ -191,17 +209,7 @@ class Command(BaseCommand):
                         raise CourseDoesNotExist()
 
                     # Get target sections from course
-                    grouped_target_sections = GroupedTargetSections()
-                    for chapter in course.get_children():
-                        for section in chapter.get_children():
-                            has_score = False
-                            for vertical in section.get_children():
-                                for component in vertical.get_children():
-                                    if component.has_score:
-                                        has_score = True
-                                        break
-                            if has_score:
-                                grouped_target_sections.append(TargetSection(section))
+                    grouped_target_sections = get_grouped_target_sections(course)
 
                     # Column
                     column = OrderedDict()

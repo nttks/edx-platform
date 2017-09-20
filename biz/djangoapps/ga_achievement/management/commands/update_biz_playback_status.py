@@ -80,6 +80,19 @@ class GroupedTargetVerticals(OrderedDict, defaultdict):
         self[target_vertical.chapter_descriptor.location].append(target_vertical)
 
 
+def get_grouped_target_verticals(course):
+    """Get verticals with SPOC video component from course"""
+    grouped_target_verticals = GroupedTargetVerticals()
+    for chapter in course.get_children():
+        for section in chapter.get_children():
+            for vertical in section.get_children():
+                for component in vertical.get_children():
+                    if component.location.block_type == 'jwplayerxblock':
+                        grouped_target_verticals.append(TargetVertical(vertical))
+                        break
+    return grouped_target_verticals
+
+
 class Command(BaseCommand):
     """
     Generate a list of playback summary for all biz students who registered any SPOC course.
@@ -166,15 +179,8 @@ class Command(BaseCommand):
                     if not course:
                         raise CourseDoesNotExist()
 
-                    # Get SPOC video verticals from course
-                    grouped_target_verticals = GroupedTargetVerticals()
-                    for chapter in course.get_children():
-                        for section in chapter.get_children():
-                            for vertical in section.get_children():
-                                for component in vertical.get_children():
-                                    if component.location.block_type == 'jwplayerxblock':
-                                        grouped_target_verticals.append(TargetVertical(vertical))
-                                        break
+                    # Get target verticals from course
+                    grouped_target_verticals = get_grouped_target_verticals(course)
 
                     # Column
                     column = OrderedDict()

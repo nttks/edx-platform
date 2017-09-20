@@ -60,11 +60,6 @@ BIZ_FROM_EMAIL = 'support@nttks.jp'
 BIZ_RECIPIENT_LIST = []
 
 """
-Submission reminder email batch
-"""
-INTERVAL_DAYS_TO_SEND_SUBMISSION_REMINDER_EMAIL = 5
-
-"""
 Register student
 """
 BIZ_MAX_REGISTER_NUMBER = 1000
