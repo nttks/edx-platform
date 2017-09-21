@@ -872,7 +872,8 @@ class DiscussionS3Store(object):
             s3_key = Key(bucket=bucket, name=key_name)
             # Note: S3ResponseError(403 Forbidden) raises if WAF proxy detects a virus in setting contents
             s3_key.set_contents_from_file(fp, size=fp.size)
-            return s3_key.generate_url(expires_in=0)
+            conn.protocol = 'https'
+            return s3_key.generate_url(expires_in=0, query_auth=False)
         except S3ResponseError as ex:
             # Check if the specified keyword exists in ex.message
             if waf_proxy_enabled and ex.message and settings.DISCUSSION_WAF_VIRUS_DETECTION_KEYWORD in ex.message:
