@@ -75,8 +75,9 @@ def delete_certificates(user):
     for certificate in GeneratedCertificate.objects.filter(user_id=user.id):
         # Use username since email may has been already masked.
         CertificatePDF(user.username, certificate.course_id, False, False).delete()
-        # Certificate's status should be `deleted` after deleting.
-        if GeneratedCertificate.objects.filter(pk=certificate.id).exclude(status=CertificateStatuses.deleted).exists():
+        # Confirm that certificate's status 'downloadable' or 'generating' has changed to 'deleted'.
+        if GeneratedCertificate.objects.filter(pk=certificate.id,
+                                               status__in=[CertificateStatuses.downloadable, CertificateStatuses.generating]).exists():
             log.error('Failed to delete certificate. user={user_id}, course_id={course_id}'.format(
                 user_id=user.id, course_id=certificate.course_id
             ))
