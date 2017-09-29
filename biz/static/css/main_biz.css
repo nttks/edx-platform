@@ -326,6 +326,11 @@ input#edit-btn {
     border-bottom: solid #cf0f31 1px;
 }
 
+.biz-wrap h1 span#playback-title-description {
+    font-size: 1.25rem;
+    margin-left: 10px;
+}
+
 /* .biz-wrap */
 input[type="button"] {
     background-color: #999;

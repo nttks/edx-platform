@@ -96,6 +96,10 @@ msgstr "更新中"
 msgid "All CSV Download"
 msgstr "全件CSVダウンロード"
 
+#: biz/templates/ga_achievement/playback.html
+msgid "(HH:MM)"
+msgstr "※視聴時間の表示は「時間：分」です"
+
 #: biz/djangoapps/ga_achievement/achievement_store.py
 msgid "Student Status"
 msgstr "受講ステータス"
