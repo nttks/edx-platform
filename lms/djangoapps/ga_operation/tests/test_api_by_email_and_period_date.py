@@ -262,7 +262,7 @@ class ApiByEmailAndPeriodDateTest(ApiTestBase):
             content = json.loads(response.content)
 
             self.assertEqual(content[RESPONSE_FIELD_ID], u'入力したフォームの内容が不正です。')
-            self.assertEqual(content['start_date'], [u'集計開始日は2014年1月9日以降が有効となります。'])
+            self.assertEqual(content['start_date'], [u'集計開始日は20140109以降の日付を入力してください。'])
             mock_task.delay.assert_not_called()
 
     @ddt.data('all_users_info', 'create_certs_status', 'enrollment_status', 'disabled_account_info')
@@ -282,7 +282,7 @@ class ApiByEmailAndPeriodDateTest(ApiTestBase):
             content = json.loads(response.content)
 
             self.assertEqual(content[RESPONSE_FIELD_ID], u'入力したフォームの内容が不正です。')
-            self.assertEqual(content['end_date'], [u'集計終了日は本日までが有効となります。'])
+            self.assertEqual(content['end_date'], [u'集計終了日は本日以前の日付を入力してください。'])
             mock_task.delay.assert_not_called()
 
     @ddt.data('all_users_info', 'create_certs_status', 'enrollment_status', 'disabled_account_info')
@@ -301,7 +301,7 @@ class ApiByEmailAndPeriodDateTest(ApiTestBase):
             content = json.loads(response.content)
 
             self.assertEqual(content[RESPONSE_FIELD_ID], u'入力したフォームの内容が不正です。')
-            self.assertEqual(content['end_date'], [u'終了日は開始日より後にしてください。'])
+            self.assertEqual(content['end_date'], [u'終了日は開始日以降の日付を入力してください。'])
             mock_task.delay.assert_not_called()
 
     @ddt.data('all_users_info', 'create_certs_status', 'enrollment_status', 'disabled_account_info')

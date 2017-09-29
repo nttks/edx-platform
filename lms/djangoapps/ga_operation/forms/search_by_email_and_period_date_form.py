@@ -21,7 +21,7 @@ class SearchByEmailAndPeriodDateForm(forms.Form):
             return date(2014, 1, 9)
 
         if val < date(2014, 1, 9):
-            raise forms.ValidationError(u"集計開始日は2014年1月9日以降が有効となります。")
+            raise forms.ValidationError(u"集計開始日は20140109以降の日付を入力してください。")
         return val
 
     def clean_end_date(self):
@@ -31,7 +31,7 @@ class SearchByEmailAndPeriodDateForm(forms.Form):
             return date.today()
 
         if val > date.today():
-            raise forms.ValidationError(u"集計終了日は本日までが有効となります。")
+            raise forms.ValidationError(u"集計終了日は本日以前の日付を入力してください。")
         return val
 
     def clean(self):
@@ -47,6 +47,6 @@ class SearchByEmailAndPeriodDateForm(forms.Form):
         end_date = cleaned_data['end_date']
 
         if start_date > end_date:
-            self.errors["end_date"] = ErrorList([u"終了日は開始日より後にしてください。"])
+            self.errors["end_date"] = ErrorList([u"終了日は開始日以降の日付を入力してください。"])
 
         return cleaned_data

@@ -9,6 +9,7 @@ from boto.s3.key import Key
 from django.contrib.auth.models import User
 from django.core.management import call_command
 from django.conf import settings
+from django.db import connection
 from django.db.models import Q
 from django.test.client import RequestFactory
 
@@ -317,26 +318,22 @@ class AggregateInHouseOperationTaskBase(TaskBase):
         return jst_date.astimezone(pytz.utc).strftime("%Y-%m-%d %H:%M:%S.%f")
 
     @staticmethod
-    def remove_tz(date):
-        if type(date) != datetime:
-            return date
-        if date is None:
+    def remove_tz(col_date):
+        if col_date is None:
             return 'NULL'
-        return date.strftime("%Y-%m-%d %H:%M:%S.%f")
+        return col_date.strftime("%Y-%m-%d %H:%M:%S.%f") if type(col_date) == datetime else col_date
 
     @staticmethod
-    def remove_tz_microsecond(date):
-        if type(date) != datetime:
-            return date
-        if date is None:
+    def remove_tz_microsecond(col_date):
+        if col_date is None:
             return 'NULL'
-        return date.strftime("%Y-%m-%d %H:%M:%S")
+        return col_date.strftime("%Y-%m-%d %H:%M:%S") if type(col_date) == datetime else col_date
 
     @staticmethod
-    def null_to_string(str):
-        if str is None:
+    def null_to_string(str_or_null):
+        if str_or_null is None:
             return 'NULL'
-        return str
+        return str_or_null
 
     def _csv_filename(self):
         start = self.start_date.strftime("%Y%m%d")
@@ -442,6 +439,13 @@ class AllUsersInfo(AggregateInHouseOperationTaskBase):
 
         users = []
         for user in User.objects.raw(sql):
+            try:
+                str(user.email)
+            except UnicodeEncodeError:
+                # Ignore to email address including multi-byte characters
+                log.warning("Email is invalid(user={})".format(user.id))
+                continue
+
             users.append([user.id, user.username, user.email, 1 if user.is_active else 0,
                           self.remove_tz(user.last_login),
                           self.remove_tz_microsecond(user.date_joined),
@@ -533,11 +537,15 @@ class EnrollmentStatus(AggregateInHouseOperationTaskBase):
             ORDER BY created, id
         """.format(self.query_beginning_of_day(), self.query_end_of_day())
 
+        # Do not use CourseEnrollment.objects.raw() method
+        # CourseLocator sometimes throw InvalidKeyError exception when to use the method
         ces = []
-        for c in CourseEnrollment.objects.raw(sql):
-            ces.append([c.id, c.user_id, c.course_id,
-                        self.remove_tz_microsecond(c.created),
-                        1 if c.is_active else 0, c.mode])
+        cursor = connection.cursor()
+        cursor.execute(sql)
+        for c in cursor.fetchall():
+            ces.append([c[0], c[1], c[2],
+                        self.remove_tz_microsecond(c[3]),
+                        1 if c[4] else 0, c[5]])
         return ces
 
     @staticmethod
