@@ -1,11 +1,12 @@
 """
 Base classes used by studio tests.
 """
-from bok_choy.web_app_test import WebAppTest
 from ...pages.studio.auto_auth import AutoAuthPage
 from ...fixtures.course import CourseFixture
 from ...fixtures.library import LibraryFixture
+from ..ga_helpers import GaccoTestMixin, SUPER_USER_INFO
 from ..helpers import UniqueCourseTest
+from ...pages.lms.ga_django_admin import DjangoAdminPage
 from ...pages.studio.overview import CourseOutlinePage
 from ...pages.studio.utils import verify_ordering
 
@@ -109,7 +110,7 @@ class ContainerBase(StudioCourseTest):
         verify_ordering(self, container, expected_ordering)
 
 
-class StudioLibraryTest(WebAppTest):
+class StudioLibraryTest(StudioCourseTest, GaccoTestMixin):
     """
     Base class for all Studio library tests.
     """
@@ -125,8 +126,17 @@ class StudioLibraryTest(WebAppTest):
             self.unique_id,
             'Test Library {}'.format(self.unique_id),
         )
+
+        self.switch_to_user(SUPER_USER_INFO)
+        DjangoAdminPage(self.browser).visit().click_add('ga_optional', 'courseoptionalconfiguration').input({
+            'enabled': True,
+            'key': 'library-for-settings',
+            'course_key': self.course_fixture._course_key,
+        }).save()
+        self.log_in(self.user, True)
+
         self.populate_library_fixture(fixture)
-        fixture.install()
+        fixture.install(self.course_fixture._course_key)
         self.library_fixture = fixture
         self.library_info = fixture.library_info
         self.library_key = fixture.library_key

@@ -9,9 +9,19 @@
         <li class="current">
             <a class="link-tab" href="#tab1"><%= gettext("Common Problem Types") %></a>
         </li>
+        <%
+            var advance_flg = false;
+            for (var i = 0; i < templates.length; i++) {
+                if (templates[i].tab == "advanced") {
+                    advance_flg = true;
+                }
+            }
+            if (advance_flg == true) {
+        %>
         <li>
             <a class="link-tab" href="#tab2"><%= gettext("Advanced") %></a>
         </li>
+        <% } %>
     </ul>
     <div class="tab current" id="tab1">
         <ul class="new-component-template">

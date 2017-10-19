@@ -77,6 +77,21 @@ define(["jquery", "underscore", "gettext", "js/views/modals/base_modal", "common
                 // Notify the runtime that the modal has been shown
                 editorView.notifyRuntime('modal-shown', this);
 
+                if (editorView.metadataEditor && editorView.metadataEditor.max_count_id) {
+                    var max_count_id = editorView.metadataEditor.max_count_id
+                    var maxCountField = editorView.$el.find('#' + max_count_id)[0];
+                    var self = this;
+                    maxCountField.onchange = function() {
+                        if (this.value < 1) {
+                            self.$('#' + self.editorView.metadataEditor.max_count_id + '-error').text(gettext('Please enter a value one or more'));
+                            self.$('.action-save').addClass('is-disabled');
+                        } else {
+                            self.$('#' + self.editorView.metadataEditor.max_count_id + '-error').text('');
+                            self.$('.action-save').removeClass('is-disabled');
+                        }
+                    }
+                }
+
                 // Update the modal's header
                 if (editorView.hasCustomTabs()) {
                     // Hide the modal's header as the custom editor provides its own

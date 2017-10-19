@@ -437,6 +437,17 @@ msgid ""
 "<%= fileExtensions %> to upload."
 msgstr "正しいファイル形式の画像をアップロードしてください。"
 
+#: cms/static/js/views/abstract_editor.js
+#: cms/static/js/views/modals/edit_xblock.js
+msgid "Please enter a value one or more"
+msgstr "1以上を入力してください"
+
+#: cms/static/js/views/utils/create_library_utils.js
+msgid ""
+"The length of library code fields cannot be "
+"more than <%=limit%> characters."
+msgstr "ライブラリコードは<%=limit%>文字以内で作成してください。"
+
 #-#-#-#-#  Deleted or revised messages between Cypress and Dogwood on Transifex  #-#-#-#-#
 
 #: cms/templates/js/team-member.underscore

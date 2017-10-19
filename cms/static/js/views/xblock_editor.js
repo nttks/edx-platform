@@ -70,7 +70,8 @@ define(["jquery", "underscore", "gettext", "js/views/xblock", "js/views/metadata
                     }
                     metadataView = new MetadataView.Editor({
                         el: metadataEditor,
-                        collection: new MetadataCollection(models)
+                        collection: new MetadataCollection(models),
+                        type: xblock.type
                     });
                     if (xblock.setMetadataEditor) {
                         xblock.setMetadataEditor(metadataView);

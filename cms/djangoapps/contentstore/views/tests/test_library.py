@@ -138,13 +138,17 @@ class UnitTestLibraries(ModuleStoreTestCase):
         """
         lib_url = make_url_for_lib(self.course)
         response = self.client.ajax_post(lib_url, data)
-        self.assertEqual(response.status_code, 400)
+        if data.get('org', '') == 'C++':
+            # org uses course.org value. So, will not use org param.
+            self.assertEqual(response.status_code, 200)
+        else:
+            self.assertEqual(response.status_code, 400)
 
     def test_no_duplicate_libraries(self):
         """
         We should not be able to create multiple libraries with the same key
         """
-        lib = LibraryFactory.create()
+        lib = LibraryFactory.create(org=self.course.org)
         lib_key = lib.location.library_key
         lib_url = make_url_for_lib(self.course)
         response = self.client.ajax_post(lib_url, {

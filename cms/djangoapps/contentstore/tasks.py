@@ -3,6 +3,8 @@ This file contains celery tasks for contentstore views
 """
 import json
 import logging
+import re
+
 from celery.task import task
 from celery.utils.log import get_task_logger
 from datetime import datetime
@@ -15,6 +17,7 @@ from contentstore.utils import initialize_permissions
 from course_action_state.models import CourseRerunState
 from opaque_keys.edx.keys import CourseKey
 from xmodule.course_module import CourseFields
+from xmodule.modulestore import EdxJSONEncoder
 from xmodule.modulestore.django import modulestore
 from xmodule.modulestore.exceptions import DuplicateCourseError, ItemNotFoundError
 
@@ -22,8 +25,46 @@ LOGGER = get_task_logger(__name__)
 FULL_COURSE_REINDEX_THRESHOLD = 1
 
 
+def _make_library_key_suffix(store, base_library_key):
+    """
+    Make library_key for rerun library.
+    It increases sequentially from '___0001'.
+    """
+    LIB_KEY_SUFFIX_REGEX = r'^(?P<base_text>.*)(?P<suffix>___[0-9]{4}$)'
+    lib_key_suffix_pattern = re.compile(LIB_KEY_SUFFIX_REGEX)
+    matches = lib_key_suffix_pattern.match(base_library_key)
+    num = 0
+    base_text = base_library_key
+    if matches:
+        num = int(matches.group('suffix')[3:])
+        base_text = matches.group('base_text')
+
+    for offset in range(1, 10000):
+        check_key = '{0}___{1:04d}'.format(base_text, (num + offset) % 10000)
+        source_library_key = CourseKey.from_string(check_key)
+        if store.get_library(source_library_key) is None:
+            return check_key
+
+    LOGGER.warning('Failed to rerun. There is no library key that can be duplicated.')
+    raise DuplicateCourseError(base_library_key, base_library_key)
+
+
+def _update_source_library_id(store, destination_course_key, user_id, src_libray_keys, dest_library_keys):
+    """
+    update source_library_id for library_content of vertical
+    """
+    items = store.get_items(destination_course_key)
+    for item in items:
+        if item.scope_ids.block_type == 'library_content':
+            source_library_id = getattr(item, 'source_library_id', '')
+            if source_library_id and source_library_id in src_libray_keys:
+                new_source_library_id = dest_library_keys[src_libray_keys.index(source_library_id)]
+                setattr(item, 'source_library_id', new_source_library_id)
+                store.update_item(item, user_id)
+
+
 @task()
-def rerun_course(source_course_key_string, destination_course_key_string, user_id, fields=None):
+def rerun_course(source_course_key_string, destination_course_key_string, user_id, fields=None, target_libraries=None):
     """
     Reruns a course in a new celery task.
     """
@@ -31,6 +72,13 @@ def rerun_course(source_course_key_string, destination_course_key_string, user_i
     from edxval.api import copy_course_videos
 
     try:
+        store = modulestore()
+        if target_libraries is not None:
+            target_libraries_dest = [_make_library_key_suffix(store, library) for library in target_libraries]
+            fields_load = json.loads(fields)
+            fields_load['target_library'] = target_libraries_dest
+            fields = json.dumps(fields_load, cls=EdxJSONEncoder)
+
         # deserialize the payload
         source_course_key = CourseKey.from_string(source_course_key_string)
         destination_course_key = CourseKey.from_string(destination_course_key_string)
@@ -38,9 +86,18 @@ def rerun_course(source_course_key_string, destination_course_key_string, user_i
 
         # use the split modulestore as the store for the rerun course,
         # as the Mongo modulestore doesn't support multiple runs of the same course.
-        store = modulestore()
         with store.default_store('split'):
+            # clone library
+            if target_libraries is not None:
+                for (target_library, target_library_dest) in zip(target_libraries, target_libraries_dest):
+                    target_library_src_key = CourseKey.from_string(target_library)
+                    target_library_dest_key = CourseKey.from_string(target_library_dest)
+                    store.clone_course(target_library_src_key, target_library_dest_key, user_id, ga_rerun_library=True)
             store.clone_course(source_course_key, destination_course_key, user_id, fields=fields)
+
+            # update source_library_id for library_content of vertical
+            if target_libraries is not None:
+                _update_source_library_id(store, destination_course_key, user_id, target_libraries, target_libraries_dest)
 
         # set initial permissions for the user to access the course.
         initialize_permissions(destination_course_key, User.objects.get(id=user_id))

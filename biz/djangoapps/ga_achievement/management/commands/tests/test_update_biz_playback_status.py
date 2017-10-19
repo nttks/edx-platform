@@ -7,6 +7,7 @@ Replace this with more appropriate tests for your application.
 from collections import namedtuple
 from datetime import datetime, timedelta
 from dateutil.tz import tzutc
+import ddt
 import logging
 from mock import patch
 import tempfile
@@ -23,6 +24,8 @@ from biz.djangoapps.ga_achievement.management.commands.update_biz_playback_statu
 )
 from biz.djangoapps.ga_achievement.models import PlaybackBatchStatus, BATCH_STATUS_STARTED, BATCH_STATUS_FINISHED, BATCH_STATUS_ERROR
 from biz.djangoapps.ga_achievement.tests.factories import PlaybackBatchStatusFactory
+from biz.djangoapps.ga_contract.tests.factories import ContractAuthFactory
+from biz.djangoapps.ga_login.tests.factories import BizUserFactory
 from biz.djangoapps.util.decorators import ExitWithWarning
 from biz.djangoapps.util.tests.testcase import BizStoreTestBase
 from lms.djangoapps.courseware.tests.helpers import LoginEnrollmentTestCase
@@ -173,6 +176,7 @@ class TestArgParsing(TestCase):
             self.command.handle._original(self.command, contract_id)
 
 
+@ddt.ddt
 @override_settings(BIZ_SET_PLAYBACK_COMMAND_OUTPUT=command_output_file.name)
 class UpdateBizPlaybackStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEnrollmentTestCase):
 
@@ -236,6 +240,11 @@ class UpdateBizPlaybackStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEn
     def _unenroll(self, user, course):
         CourseEnrollment.unenroll(user, course.id)
 
+    def _biz_user(self, user, login_code, contract):
+        if login_code:
+            BizUserFactory.create(user=user, login_code=login_code)
+            ContractAuthFactory.create(contract=contract)
+
     def assert_finished(self, count, contract, course):
         PlaybackBatchStatus.objects.get(contract=contract, course_id=course.id, status=BATCH_STATUS_STARTED)
         PlaybackBatchStatus.objects.get(contract=contract, course_id=course.id, status=BATCH_STATUS_FINISHED, student_count=count)
@@ -267,8 +276,13 @@ class UpdateBizPlaybackStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEn
 
         self.assert_finished(0, self.no_spoc_video_contract, self.no_spoc_video_course)
 
-    def test_contract_with_not_enrolled_user(self):
+    @ddt.data(
+        'test_login_code',
+        None,
+    )
+    def test_contract_with_not_enrolled_user(self, login_code):
         self._input_contract(self.no_spoc_video_contract, self.user)
+        self._biz_user(self.user, login_code, self.no_spoc_video_contract)
 
         call_command('update_biz_playback_status', self.no_spoc_video_contract.id)
 
@@ -280,6 +294,8 @@ class UpdateBizPlaybackStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEn
             self.assertEquals(column_items.next(), (PlaybackStore.FIELD_CONTRACT_ID, contract.id))
             self.assertEquals(column_items.next(), (PlaybackStore.FIELD_COURSE_ID, unicode(course.id)))
             self.assertEquals(column_items.next(), (PlaybackStore.FIELD_DOCUMENT_TYPE, PlaybackStore.FIELD_DOCUMENT_TYPE__COLUMN))
+            if login_code:
+                self.assertEquals(column_items.next(), (PlaybackStore.FIELD_LOGIN_CODE, PlaybackStore.COLUMN_TYPE__TEXT))
             self.assertEquals(column_items.next(), (PlaybackStore.FIELD_FULL_NAME, PlaybackStore.COLUMN_TYPE__TEXT))
             self.assertEquals(column_items.next(), (PlaybackStore.FIELD_USERNAME, PlaybackStore.COLUMN_TYPE__TEXT))
             self.assertEquals(column_items.next(), (PlaybackStore.FIELD_EMAIL, PlaybackStore.COLUMN_TYPE__TEXT))
@@ -293,6 +309,8 @@ class UpdateBizPlaybackStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEn
             self.assertEquals(record_items.next(), (PlaybackStore.FIELD_CONTRACT_ID, contract.id))
             self.assertEquals(record_items.next(), (PlaybackStore.FIELD_COURSE_ID, unicode(course.id)))
             self.assertEquals(record_items.next(), (PlaybackStore.FIELD_DOCUMENT_TYPE, PlaybackStore.FIELD_DOCUMENT_TYPE__RECORD))
+            if login_code:
+                self.assertEquals(record_items.next(), (PlaybackStore.FIELD_LOGIN_CODE, login_code))
             self.assertEquals(record_items.next(), (PlaybackStore.FIELD_FULL_NAME, None))
             self.assertEquals(record_items.next(), (PlaybackStore.FIELD_USERNAME, self.user.username))
             self.assertEquals(record_items.next(), (PlaybackStore.FIELD_EMAIL, self.user.email))
@@ -303,9 +321,14 @@ class UpdateBizPlaybackStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEn
 
         assert_playback(self.no_spoc_video_contract, self.no_spoc_video_course)
 
-    def test_contract_with_enrolled_user(self):
+    @ddt.data(
+        'test_login_code',
+        None,
+    )
+    def test_contract_with_enrolled_user(self, login_code):
         self._profile(self.user)
         self._register_contract(self.no_spoc_video_contract, self.user, additional_value=ADDITIONAL_SETTINGS_VALUE)
+        self._biz_user(self.user, login_code, self.no_spoc_video_contract)
 
         call_command('update_biz_playback_status', self.no_spoc_video_contract.id)
 
@@ -317,6 +340,8 @@ class UpdateBizPlaybackStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEn
             self.assertEquals(column_items.next(), (PlaybackStore.FIELD_CONTRACT_ID, contract.id))
             self.assertEquals(column_items.next(), (PlaybackStore.FIELD_COURSE_ID, unicode(course.id)))
             self.assertEquals(column_items.next(), (PlaybackStore.FIELD_DOCUMENT_TYPE, PlaybackStore.FIELD_DOCUMENT_TYPE__COLUMN))
+            if login_code:
+                self.assertEquals(column_items.next(), (PlaybackStore.FIELD_LOGIN_CODE, PlaybackStore.COLUMN_TYPE__TEXT))
             self.assertEquals(column_items.next(), (PlaybackStore.FIELD_FULL_NAME, PlaybackStore.COLUMN_TYPE__TEXT))
             self.assertEquals(column_items.next(), (PlaybackStore.FIELD_USERNAME, PlaybackStore.COLUMN_TYPE__TEXT))
             self.assertEquals(column_items.next(), (PlaybackStore.FIELD_EMAIL, PlaybackStore.COLUMN_TYPE__TEXT))
@@ -330,6 +355,8 @@ class UpdateBizPlaybackStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEn
             self.assertEquals(record_items.next(), (PlaybackStore.FIELD_CONTRACT_ID, contract.id))
             self.assertEquals(record_items.next(), (PlaybackStore.FIELD_COURSE_ID, unicode(course.id)))
             self.assertEquals(record_items.next(), (PlaybackStore.FIELD_DOCUMENT_TYPE, PlaybackStore.FIELD_DOCUMENT_TYPE__RECORD))
+            if login_code:
+                self.assertEquals(record_items.next(), (PlaybackStore.FIELD_LOGIN_CODE, login_code))
             self.assertEquals(record_items.next(), (PlaybackStore.FIELD_FULL_NAME, self.user.profile.name))
             self.assertEquals(record_items.next(), (PlaybackStore.FIELD_USERNAME, self.user.username))
             self.assertEquals(record_items.next(), (PlaybackStore.FIELD_EMAIL, self.user.email))
@@ -340,10 +367,15 @@ class UpdateBizPlaybackStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEn
 
         assert_playback(self.no_spoc_video_contract, self.no_spoc_video_course)
 
-    def test_contract_with_unenrolled_user(self):
+    @ddt.data(
+        'test_login_code',
+        None,
+    )
+    def test_contract_with_unenrolled_user(self, login_code):
         self._profile(self.user)
         self._register_contract(self.no_spoc_video_contract, self.user, additional_value=ADDITIONAL_SETTINGS_VALUE)
         self._unenroll(self.user, self.no_spoc_video_course)
+        self._biz_user(self.user, login_code, self.no_spoc_video_contract)
 
         call_command('update_biz_playback_status', self.no_spoc_video_contract.id)
 
@@ -355,6 +387,8 @@ class UpdateBizPlaybackStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEn
             self.assertEquals(column_items.next(), (PlaybackStore.FIELD_CONTRACT_ID, contract.id))
             self.assertEquals(column_items.next(), (PlaybackStore.FIELD_COURSE_ID, unicode(course.id)))
             self.assertEquals(column_items.next(), (PlaybackStore.FIELD_DOCUMENT_TYPE, PlaybackStore.FIELD_DOCUMENT_TYPE__COLUMN))
+            if login_code:
+                self.assertEquals(column_items.next(), (PlaybackStore.FIELD_LOGIN_CODE, PlaybackStore.COLUMN_TYPE__TEXT))
             self.assertEquals(column_items.next(), (PlaybackStore.FIELD_FULL_NAME, PlaybackStore.COLUMN_TYPE__TEXT))
             self.assertEquals(column_items.next(), (PlaybackStore.FIELD_USERNAME, PlaybackStore.COLUMN_TYPE__TEXT))
             self.assertEquals(column_items.next(), (PlaybackStore.FIELD_EMAIL, PlaybackStore.COLUMN_TYPE__TEXT))
@@ -368,6 +402,8 @@ class UpdateBizPlaybackStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEn
             self.assertEquals(record_items.next(), (PlaybackStore.FIELD_CONTRACT_ID, contract.id))
             self.assertEquals(record_items.next(), (PlaybackStore.FIELD_COURSE_ID, unicode(course.id)))
             self.assertEquals(record_items.next(), (PlaybackStore.FIELD_DOCUMENT_TYPE, PlaybackStore.FIELD_DOCUMENT_TYPE__RECORD))
+            if login_code:
+                self.assertEquals(record_items.next(), (PlaybackStore.FIELD_LOGIN_CODE, login_code))
             self.assertEquals(record_items.next(), (PlaybackStore.FIELD_FULL_NAME, self.user.profile.name))
             self.assertEquals(record_items.next(), (PlaybackStore.FIELD_USERNAME, self.user.username))
             self.assertEquals(record_items.next(), (PlaybackStore.FIELD_EMAIL, self.user.email))
@@ -378,10 +414,15 @@ class UpdateBizPlaybackStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEn
 
         assert_playback(self.no_spoc_video_contract, self.no_spoc_video_course)
 
-    def test_contract_with_disabled_user(self):
+    @ddt.data(
+        'test_login_code',
+        None,
+    )
+    def test_contract_with_disabled_user(self, login_code):
         self._profile(self.user)
         self._register_contract(self.no_spoc_video_contract, self.user, additional_value=ADDITIONAL_SETTINGS_VALUE)
         self._account_disable(self.user)
+        self._biz_user(self.user, login_code, self.no_spoc_video_contract)
 
         call_command('update_biz_playback_status', self.no_spoc_video_contract.id)
 
@@ -393,6 +434,8 @@ class UpdateBizPlaybackStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEn
             self.assertEquals(column_items.next(), (PlaybackStore.FIELD_CONTRACT_ID, contract.id))
             self.assertEquals(column_items.next(), (PlaybackStore.FIELD_COURSE_ID, unicode(course.id)))
             self.assertEquals(column_items.next(), (PlaybackStore.FIELD_DOCUMENT_TYPE, PlaybackStore.FIELD_DOCUMENT_TYPE__COLUMN))
+            if login_code:
+                self.assertEquals(column_items.next(), (PlaybackStore.FIELD_LOGIN_CODE, PlaybackStore.COLUMN_TYPE__TEXT))
             self.assertEquals(column_items.next(), (PlaybackStore.FIELD_FULL_NAME, PlaybackStore.COLUMN_TYPE__TEXT))
             self.assertEquals(column_items.next(), (PlaybackStore.FIELD_USERNAME, PlaybackStore.COLUMN_TYPE__TEXT))
             self.assertEquals(column_items.next(), (PlaybackStore.FIELD_EMAIL, PlaybackStore.COLUMN_TYPE__TEXT))
@@ -406,6 +449,8 @@ class UpdateBizPlaybackStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEn
             self.assertEquals(record_items.next(), (PlaybackStore.FIELD_CONTRACT_ID, contract.id))
             self.assertEquals(record_items.next(), (PlaybackStore.FIELD_COURSE_ID, unicode(course.id)))
             self.assertEquals(record_items.next(), (PlaybackStore.FIELD_DOCUMENT_TYPE, PlaybackStore.FIELD_DOCUMENT_TYPE__RECORD))
+            if login_code:
+                self.assertEquals(record_items.next(), (PlaybackStore.FIELD_LOGIN_CODE, login_code))
             self.assertEquals(record_items.next(), (PlaybackStore.FIELD_FULL_NAME, self.user.profile.name))
             self.assertEquals(record_items.next(), (PlaybackStore.FIELD_USERNAME, self.user.username))
             self.assertEquals(record_items.next(), (PlaybackStore.FIELD_EMAIL, self.user.email))

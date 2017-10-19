@@ -12,7 +12,8 @@
             validateRequiredField, validateURLItemEncoding, validateTotalKeyLength, checkTotalKeyLengthViolations;
 
         // see https://openedx.atlassian.net/browse/TNL-889 for what is it and why it's 65
-        var MAX_SUM_KEY_LENGTH = 65;
+        // Not used
+        // var MAX_SUM_KEY_LENGTH = 65;
 
         /**
          * Toggles the expanded state of the current element.
@@ -229,19 +230,19 @@
         };
 
         // Ensure that sum length of key field values <= ${MAX_SUM_KEY_LENGTH} chars.
-        validateTotalKeyLength = function (key_field_selectors) {
+        validateTotalKeyLength = function (key_field_selectors, max_sum_key_length) {
             var totalLength = _.reduce(
                 key_field_selectors,
                 function (sum, ele) { return sum + $(ele).val().length;},
                 0
             );
-            return totalLength <= MAX_SUM_KEY_LENGTH;
+            return totalLength <= max_sum_key_length;
         };
 
-        checkTotalKeyLengthViolations = function(selectors, classes, key_field_selectors, message_tpl) {
-            if (!validateTotalKeyLength(key_field_selectors)) {
+        checkTotalKeyLengthViolations = function(selectors, classes, key_field_selectors, message_tpl, max_sum_key_length) {
+            if (!validateTotalKeyLength(key_field_selectors, max_sum_key_length)) {
                 $(selectors.errorWrapper).addClass(classes.shown).removeClass(classes.hiding);
-                $(selectors.errorMessage).html('<p>' + _.template(message_tpl, {limit: MAX_SUM_KEY_LENGTH}) + '</p>');
+                $(selectors.errorMessage).html('<p>' + _.template(message_tpl, {limit: max_sum_key_length}) + '</p>');
                 $(selectors.save).addClass(classes.disabled);
             } else {
                 $(selectors.errorWrapper).removeClass(classes.shown).addClass(classes.hiding);

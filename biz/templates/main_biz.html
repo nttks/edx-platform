@@ -196,6 +196,8 @@ from microsite_configuration import microsite
 </style>
 </%block>
 
+<%block name="pagesubtitle"></%block>
+
 <%block name="bodyextra">
 <div id="container" class="container">
     <div class="side">
@@ -409,7 +411,7 @@ from microsite_configuration import microsite
     </div>
     <div class="main">
         <div class="biz-wrap">
-            <h1>${self.pagetitle()}</h1>
+            <h1>${self.pagetitle()}${self.pagesubtitle()}</h1>
 
             <ul class="messages">
                 % for message in messages:

@@ -37,14 +37,14 @@ class LibraryFixture(XBlockContainerFixture):
         """
         return "<LibraryFixture: org='{org}', number='{number}'>".format(**self.library_info)
 
-    def install(self):
+    def install(self, course_id):
         """
         Create the library and XBlocks within the library.
         This is NOT an idempotent method; if the library already exists, this will
         raise a `FixtureError`.  You should use unique library identifiers to avoid
         conflicts between tests.
         """
-        self._create_library()
+        self._create_library(course_id)
         self._create_xblock_children(self.library_location, self.children)
 
         return self
@@ -64,13 +64,13 @@ class LibraryFixture(XBlockContainerFixture):
         lib_key = CourseKey.from_string(self._library_key)
         return unicode(lib_key.make_usage_key('library', 'library'))
 
-    def _create_library(self):
+    def _create_library(self, course_id):
         """
         Create the library described in the fixture.
         Will fail if the library already exists.
         """
         response = self.session.post(
-            STUDIO_BASE_URL + '/library/',
+            STUDIO_BASE_URL + '/course/' + course_id + '/library/',
             data=self._encode_post_dict(self.library_info),
             headers=self.headers
         )

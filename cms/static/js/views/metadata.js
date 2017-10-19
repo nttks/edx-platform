@@ -28,24 +28,29 @@ function(BaseView, _, MetadataModel, AbstractEditor, FileUpload, UploadDialog,
                             el: self.$el.find('.metadata_entry')[counter++],
                             courseKey: courseKey,
                             locator: locator,
-                            model: model
+                            model: model,
+                            type: self.options.type
                         },
                         conversions = {
                             'Select': 'Option',
                             'Float': 'Number',
                             'Integer': 'Number'
                         },
-                        type = model.getType();
+                        type = model.getType(),
+                        metadata;
 
                     if (conversions[type]) {
                         type = conversions[type];
                     }
 
                     if (_.isFunction(Metadata[type])) {
-                        new Metadata[type](data);
+                        metadata = new Metadata[type](data);
                     } else {
                         // Everything else is treated as GENERIC_TYPE, which uses String editor.
-                        new Metadata.String(data);
+                        metadata = new Metadata.String(data);
+                    }
+                    if (metadata.max_count_id) {
+                      self.max_count_id = metadata.max_count_id;
                     }
                 });
         },

@@ -201,7 +201,8 @@ from microsite_configuration.templatetags.microsite import platform_name
             "${_('Report a Problem')}",
             "${_('Brief description of the problem')}" + "*",
             "${_('Details of the problem you are encountering')}" + "*" + "<span class='tip'>" +
-              "${_('Include error messages, steps which lead to the issue, etc.')}" + "</span>"
+              "${_('Include error messages, steps which lead to the issue, etc.')}" + "</span>" +
+            "<span class='tip'>" + "${_('Please leave your e-mail address if you wish us to contact you for assistance.')}" + "</span>"
         );
     });
     $("#feedback_link_suggestion").click(function(event) {
@@ -210,7 +211,8 @@ from microsite_configuration.templatetags.microsite import platform_name
             "${_('suggestion')}",
             "${_('Make a Suggestion')}",
             "${_('Brief description of your suggestion')}" + "*",
-            "${_('Details')}" + "*"
+            "${_('Details')}" + "*" +
+            "<span class='tip'>" + "${_('Please leave your e-mail address if you wish us to contact you for assistance.')}" + "</span>"
         );
     });
     $("#feedback_link_question").click(function(event) {
@@ -219,7 +221,8 @@ from microsite_configuration.templatetags.microsite import platform_name
             "${_('question')}",
             "${_('Ask a Question')}",
             "${_('Brief summary of your question')}" + "*",
-            "${_('Details')}" + "*"
+            "${_('Details')}" + "*" +
+            "<span class='tip'>" + "${_('Please leave your e-mail address if you wish us to contact you for assistance.')}" + "</span>"
         );
     });
     $("#feedback_form").submit(function() {

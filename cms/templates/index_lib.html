@@ -71,10 +71,7 @@
                   <span class="tip tip-error is-hiding" id="tip-error-new-library-name"></span>
                 </li>
                 <li class="field text required" id="field-organization">
-                  <label for="new-library-org">${_("Organization")}</label>
-                  <input class="new-library-org" id="new-library-org" type="text" name="new-library-org" required placeholder="${_('e.g. UniversityX or OrganizationX')}" aria-describedby="tip-new-library-org tip-error-new-library-org" />
-                  <span class="tip" id="tip-new-library-org">${_("The public organization name for your library.")} ${_("This cannot be changed.")}</span>
-                  <span class="tip tip-error is-hiding" id="tip-error-new-library-org"></span>
+                  <input class="new-library-org" id="new-library-org" type="hidden" name="new-library-org" value="${context_course.org}" required placeholder="${_('e.g. UniversityX or OrganizationX')}" aria-describedby="tip-new-library-org tip-error-new-library-org" />
                 </li>
 
                 <li class="field text required" id="field-library-number">

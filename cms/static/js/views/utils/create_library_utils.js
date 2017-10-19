@@ -5,11 +5,18 @@ define(["jquery", "gettext", "common/js/components/utils/view_utils", "js/views/
     function ($, gettext, ViewUtils, CreateUtilsFactory) {
         "use strict";
         return function (selectors, classes) {
-            var keyLengthViolationMessage = gettext("The combined length of the organization and library code fields cannot be more than <%=limit%> characters.")
-            var keyFieldSelectors = [selectors.org, selectors.number];
+            var keyLengthViolationMessage = gettext("The length of library code fields cannot be more than <%=limit%> characters.");
+            var keyFieldSelectors = [selectors.number];
             var nonEmptyCheckFieldSelectors = [selectors.name, selectors.org, selectors.number];
+            // default length is 65. 58 is subtracted Suffix[___0000].
+            var MAX_SUM_KEY_LENGTH = 58;
 
-            CreateUtilsFactory.call(this, selectors, classes, keyLengthViolationMessage, keyFieldSelectors, nonEmptyCheckFieldSelectors);
+            var orgObjVal = $(selectors.org).val();
+            var orgLength = 0;
+            if (orgObjVal) {
+              orgLength = orgObjVal.length;
+            }
+            CreateUtilsFactory.call(this, selectors, classes, keyLengthViolationMessage, keyFieldSelectors, nonEmptyCheckFieldSelectors, MAX_SUM_KEY_LENGTH - orgLength);
 
             this.create = function (libraryInfo, course_key, errorHandler) {
                 $.postJSON(

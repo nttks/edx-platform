@@ -1008,6 +1008,36 @@ define(["jquery", "common/js/spec_helpers/ajax_helpers", "common/js/components/u
                     verifyModalSaveButtonEnabled(true);
                 });
 
+                it('Due date before 1900 should result in error', function() {
+                    var errorMessage = 'Please enter the date on and after 1900.';
+                    createCourseOutlinePage(this, mockCourseJSON, false);
+                    outlinePage.$('.outline-subsection .configure-button').click();
+
+                    // Allow empty date
+                    $("#due_date").val("").trigger('change');
+                    expect($('#due-date-error-message')).not.toContainText(errorMessage);
+                    verifyModalSaveButtonEnabled(true);
+
+                    // Disallow date before 1900
+                    $("#due_date").val("12/31/1899").trigger('change');
+                    expect($('#due-date-error-message')).toContainText(errorMessage);
+                    verifyModalSaveButtonEnabled(false);
+
+                    // Allow date after 1900
+                    $("#due_date").val("1/1/1900").trigger('change');
+                    expect($('#due-date-error-message')).not.toContainText(errorMessage);
+                    verifyModalSaveButtonEnabled(true);
+
+                    // Confirm that the error is cleared when clearing the date
+                    $("#due_date").val("12/31/1899").trigger('change');
+                    expect($('#due-date-error-message')).toContainText(errorMessage);
+                    verifyModalSaveButtonEnabled(false);
+                    $(".wrapper-modal-window .due-date-input .action-clear").click();
+                    expect($("#due_date").val()).toBe('');
+                    expect($('#due-date-error-message')).not.toContainText(errorMessage);
+                    verifyModalSaveButtonEnabled(true);
+                });
+
                 it('can hide the time limit field when the None radio box is selected', function() {
                     createCourseOutlinePage(this, mockCourseJSON, false);
                     outlinePage.$('.outline-subsection .configure-button').click();

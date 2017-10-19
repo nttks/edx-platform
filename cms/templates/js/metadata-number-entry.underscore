@@ -6,3 +6,6 @@
     </button>
 </div>
 <span class="tip setting-help"><%= model.get('help') %></span>
+<div>
+	<span class="tip setting-error" id="<%= uniqueId %>-error"></span>
+</div>

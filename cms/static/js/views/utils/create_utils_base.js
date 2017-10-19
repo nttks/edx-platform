@@ -3,7 +3,7 @@
  */
 define(["jquery", "underscore", "gettext", "common/js/components/utils/view_utils"],
     function ($, _, gettext, ViewUtils) {
-        return function (selectors, classes, keyLengthViolationMessage, keyFieldSelectors, nonEmptyCheckFieldSelectors) {
+        return function (selectors, classes, keyLengthViolationMessage, keyFieldSelectors, nonEmptyCheckFieldSelectors, keyLengthMaxSize) {
             var self = this;
 
             this.selectors = selectors;
@@ -11,6 +11,7 @@ define(["jquery", "underscore", "gettext", "common/js/components/utils/view_util
             this.validateRequiredField = ViewUtils.validateRequiredField;
             this.validateURLItemEncoding = ViewUtils.validateURLItemEncoding;
             this.keyLengthViolationMessage = keyLengthViolationMessage;
+            this.keyLengthMaxSize = keyLengthMaxSize;
             // Key fields for your model, like [selectors.org, selectors.number]
             this.keyFieldSelectors = keyFieldSelectors;
             // Fields that must not be empty on your model.
@@ -25,7 +26,8 @@ define(["jquery", "underscore", "gettext", "common/js/components/utils/view_util
                 ViewUtils.checkTotalKeyLengthViolations(
                     self.selectors, self.classes,
                     self.keyFieldSelectors,
-                    self.keyLengthViolationMessage
+                    self.keyLengthViolationMessage,
+                    self.keyLengthMaxSize
                 );
             };
 

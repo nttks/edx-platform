@@ -43,11 +43,11 @@ class Command(BaseCommand):
         if query_yes_no("Deleting course {course_key}. Purge assets is {purge}. Confirm?".format(
             course_key=course_key, purge=purge), default="no"):
             if query_yes_no("Are you sure. This action cannot be undone!", default="no"):
+                delete_course_libraries = getattr(modulestore().get_course(course_key), 'target_library', [])
                 delete_course_and_groups(course_key, ModuleStoreEnum.UserID.mgmt_command, purge=purge)
                 print "Deleted course {}".format(course_key)
 
                 courses = modulestore().get_courses()
-                delete_course_libraries = getattr(modulestore().get_course(course_key), 'target_library', [])
                 for delete_course_library in delete_course_libraries:
                     used_other_courses = False
                     for course in courses:

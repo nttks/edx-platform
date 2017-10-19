@@ -1,8 +1,11 @@
 <%!
 from django.utils.translation import ugettext as _
 from contentstore.views.helpers import xblock_studio_url
-from contentstore.utils import is_visible_to_specific_content_groups
+from contentstore.views.access import get_user_role
+from contentstore.utils import is_visible_to_specific_content_groups, reverse_course_url
+from opaque_keys.edx.keys import CourseKey
 from openedx.core.lib.js_utils import escape_json_dumps
+from xmodule.modulestore.django import modulestore
 %>
 <%
 xblock_url = xblock_studio_url(xblock)
@@ -11,6 +14,16 @@ section_class = "level-nesting" if show_inline else "level-element"
 collapsible_class = "is-collapsible" if xblock.has_children else ""
 label = xblock.display_name_with_default or xblock.scope_ids.block_type
 messages = xblock.validate().to_json()
+
+library_url = library_name = source_library_id = ""
+if xblock.scope_ids.block_type == 'library_content':
+  course_key = xblock.location.course_key
+  source_library_id = getattr(xblock, 'source_library_id', None)
+  if source_library_id:
+    library_url = reverse_course_url('course_library_handler', course_key, kwargs={'library_key_string': source_library_id})
+    library = modulestore().get_library(CourseKey.from_string(source_library_id))
+    if library:
+      library_name = library.display_name
 %>
 
 <%namespace name='static' file='static_content.html'/>
@@ -32,6 +45,12 @@ messages = xblock.validate().to_json()
     });
 </script>
 
+% if xblock:
+  <%
+    course_key = xblock.location.course_key
+    has_access_instructor = (request and get_user_role(request.user, course_key) == 'instructor')
+  %>
+% endif
 % if not is_root:
     % if is_reorderable:
     <li class="studio-xblock-wrapper is-draggable" data-locator="${xblock.location | h}" data-course-key="${xblock.location.course_key | h}">
@@ -128,10 +147,10 @@ messages = xblock.validate().to_json()
             <div class="meta-info">${_('This block contains multiple components.')}</div>
             <ul class="actions-list">
                 <li class="action-item action-view">
-                    % if library_option:
-                      <a href="${xblock_url}" class="action-button">
+                    % if library_option and has_access_instructor and library_url and library_name:
+                      <a href="${library_url}" class="action-button">
                         ## Translators: this is a verb describing the action of viewing more details
-                        <span class="action-button-text">${_('View')}</span>
+                        <span class="action-button-text">${_('[{library_name}] View').format(library_name=library_name)}</span>
                         <i class="icon fa fa-arrow-right"></i>
                       </a>
                     % endif

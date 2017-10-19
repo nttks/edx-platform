@@ -8,8 +8,9 @@ define(["jquery", "gettext", "common/js/components/utils/view_utils", "js/views/
             var keyLengthViolationMessage = gettext("The combined length of the organization, course number, and course run fields cannot be more than <%=limit%> characters.");
             var keyFieldSelectors = [selectors.org, selectors.number, selectors.run];
             var nonEmptyCheckFieldSelectors = [selectors.name, selectors.org, selectors.number, selectors.run];
+            var MAX_SUM_KEY_LENGTH = 65;
 
-            CreateUtilsFactory.call(this, selectors, classes, keyLengthViolationMessage, keyFieldSelectors, nonEmptyCheckFieldSelectors);
+            CreateUtilsFactory.call(this, selectors, classes, keyLengthViolationMessage, keyFieldSelectors, nonEmptyCheckFieldSelectors, MAX_SUM_KEY_LENGTH);
 
             this.setupOrgAutocomplete = function(){
                 $.getJSON('/organizations', function (data) {

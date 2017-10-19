@@ -201,9 +201,9 @@ def get_component_templates(courselike, library=False):
     # by the components in the order listed in COMPONENT_TYPES.
     component_types = COMPONENT_TYPES[:]
 
-    # Libraries do not support discussions
+    # gacco support are only component of problem in library
     if library:
-        component_types = [component for component in component_types if component != 'discussion']
+        component_types = [component for component in component_types if component == 'problem']
 
     for category in component_types:
         templates_for_category = []
@@ -211,14 +211,19 @@ def get_component_templates(courselike, library=False):
         # add the default template with localized display name
         # TODO: Once mixins are defined per-application, rather than per-runtime,
         # this should use a cms mixed-in class. (cpennington)
-        display_name = xblock_type_display_name(category, _('Blank'))  # this is the Blank Advanced problem
-        templates_for_category.append(create_template_dict(display_name, category, None, 'advanced'))
+        if not library:
+            display_name = xblock_type_display_name(category, _('Blank'))  # this is the Blank Advanced problem
+            templates_for_category.append(create_template_dict(display_name, category, None, 'advanced'))
         categories.add(category)
 
         # add boilerplates
         if hasattr(component_class, 'templates'):
             for template in component_class.templates():
                 filter_templates = getattr(component_class, 'filter_templates', None)
+                if library:
+                    library_template = ['multiplechoice.yaml', 'checkboxes_response.yaml']
+                    if template.get('template_id') not in library_template:
+                        continue
                 if not filter_templates or filter_templates(template, courselike):
                     # Tab can be 'common' 'advanced'
                     # Default setting is common/advanced depending on the presence of markdown
@@ -238,7 +243,7 @@ def get_component_templates(courselike, library=False):
                     )
 
         # Add any advanced problem types
-        if category == 'problem':
+        if not library and category == 'problem':
             for advanced_problem_type in ADVANCED_PROBLEM_TYPES:
                 component = advanced_problem_type['component']
                 boilerplate_name = advanced_problem_type['boilerplate_name']

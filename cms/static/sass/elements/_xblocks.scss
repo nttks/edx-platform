@@ -86,7 +86,7 @@
           @include transition(all $tmg-f3 linear 0s);
           display: block;
           width: auto;
-          height: ($baseline*1.5);
+          height: 100%;
           border-radius: 3px;
           padding: 3px ($baseline/2) 0 ($baseline/2);
           color: $gray-l1;
@@ -703,6 +703,9 @@
       vertical-align: top;
     }
 
+    .setting-error {
+      color: #b20610;
+    }
 
 
     // TYPE: enumerated lists of metadata sets

@@ -220,13 +220,22 @@ define(['jquery', 'backbone', 'underscore', 'gettext', 'js/views/baseview',
         templateName: 'due-date-editor',
         className: 'modal-section-content has-actions due-date-input grading-due-date',
 
+        events: {
+            'change #due_date': 'validate'
+        },
+
+        initialize: function() {
+            BaseDateEditor.prototype.initialize.call(this);
+            this.events = _.extend({}, BaseDateEditor.prototype.events, this.events);
+        },
+
         getValue: function () {
             return DateUtils.getDate(this.$('#due_date'), this.$('#due_time'));
         },
 
         clearValue: function (event) {
             event.preventDefault();
-            this.$('#due_time, #due_date').val('');
+            this.$('#due_time, #due_date').val('').trigger('change');
         },
 
         getRequestData: function () {
@@ -235,6 +244,24 @@ define(['jquery', 'backbone', 'underscore', 'gettext', 'js/views/baseview',
                     'due': this.getValue()
                 }
             };
+        },
+
+        validate: function() {
+            var errorMessages = this.$('#due-date-error-message'),
+                isValid = true,
+                value = this.getValue();
+            errorMessages.empty();
+            if (value && value.getFullYear() < 1900) {
+                isValid = false;
+                errorMessages.append(
+                    $('<li>').text(gettext('Please enter the date on and after 1900.'))
+                );
+            }
+            if (isValid) {
+                this.model.trigger('valid');
+            } else {
+                this.model.trigger('invalid');
+            }
         }
     });
 
@@ -286,7 +313,7 @@ define(['jquery', 'backbone', 'underscore', 'gettext', 'js/views/baseview',
                 isValid = true,
                 value = this.getValue();
             errorMessages.empty();
-            if (value && value.getYear() < 0) {
+            if (value && value.getFullYear() < 1900) {
                 isValid = false;
                 errorMessages.append(
                     $('<li>').text(gettext('Please enter the date on and after 1900.'))

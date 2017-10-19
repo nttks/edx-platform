@@ -14,7 +14,7 @@ from django.utils.translation import ugettext as _
 from biz.djangoapps.ga_achievement.achievement_store import PlaybackStore
 from biz.djangoapps.ga_achievement.log_store import PlaybackLogStore
 from biz.djangoapps.ga_achievement.models import PlaybackBatchStatus
-from biz.djangoapps.ga_contract.models import Contract, AdditionalInfo
+from biz.djangoapps.ga_contract.models import Contract, AdditionalInfo, ContractAuth
 from biz.djangoapps.ga_invitation.models import ContractRegister, AdditionalInfoSetting
 from biz.djangoapps.util.decorators import handle_command_exception, ExitWithWarning
 from biz.djangoapps.util.hash_utils import to_target_id
@@ -166,6 +166,9 @@ class Command(BaseCommand):
                             contract.id))
                     continue
 
+            # Save the existence of ContractAuth object
+            use_contract_auth = ContractAuth.objects.filter(contract=contract).exists()
+
             for contract_detail in contract.details.all():
                 try:
                     course_key = contract_detail.course_id
@@ -187,6 +190,9 @@ class Command(BaseCommand):
                     column[PlaybackStore.FIELD_CONTRACT_ID] = contract.id
                     column[PlaybackStore.FIELD_COURSE_ID] = unicode(course_key)
                     column[PlaybackStore.FIELD_DOCUMENT_TYPE] = PlaybackStore.FIELD_DOCUMENT_TYPE__COLUMN
+                    # Only in the case of a contract using login code, setting processing of column is performed.
+                    if use_contract_auth:
+                        column[_(PlaybackStore.FIELD_LOGIN_CODE)] = PlaybackStore.COLUMN_TYPE__TEXT
                     column[_(PlaybackStore.FIELD_FULL_NAME)] = PlaybackStore.COLUMN_TYPE__TEXT
                     column[_(PlaybackStore.FIELD_USERNAME)] = PlaybackStore.COLUMN_TYPE__TEXT
                     column[_(PlaybackStore.FIELD_EMAIL)] = PlaybackStore.COLUMN_TYPE__TEXT
@@ -232,6 +238,10 @@ class Command(BaseCommand):
                         record[PlaybackStore.FIELD_CONTRACT_ID] = contract.id
                         record[PlaybackStore.FIELD_COURSE_ID] = unicode(course_key)
                         record[PlaybackStore.FIELD_DOCUMENT_TYPE] = PlaybackStore.FIELD_DOCUMENT_TYPE__RECORD
+                        # Only in the case of a contract using login code, setting processing of data is performed.
+                        if use_contract_auth:
+                            record[_(PlaybackStore.FIELD_LOGIN_CODE)] = contract_register.user.bizuser.login_code \
+                                if hasattr(contract_register.user, 'bizuser') else None
                         record[_(PlaybackStore.FIELD_FULL_NAME)] = user.profile.name \
                             if hasattr(user, 'profile') and user.profile else None
                         record[_(PlaybackStore.FIELD_USERNAME)] = user.username

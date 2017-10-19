@@ -8,7 +8,7 @@ import mock
 from opaque_keys.edx.locations import SlashSeparatedCourseKey
 from django.core.management import call_command, CommandError
 from contentstore.tests.utils import CourseTestCase
-from xmodule.modulestore.tests.factories import CourseFactory
+from xmodule.modulestore.tests.factories import CourseFactory, LibraryFactory
 from xmodule.modulestore.django import modulestore
 
 
@@ -61,3 +61,24 @@ class DeleteCourseTest(CourseTestCase):
             patched_yes_no.return_value = True
             call_command('delete_course', 'TestX/TS01/2015_Q1')
             self.assertIsNone(modulestore().get_course(SlashSeparatedCourseKey("TestX", "TS01", "2015_Q1")))
+
+    def test_course_deleted_with_library(self):
+        """
+        Testing if the entered course and library dependant on course was deleted
+        """
+        self.libraries = LibraryFactory.create()
+        target_libraries = getattr(self.course, 'target_library', [])
+        target_libraries.append(unicode(self.libraries.location.library_key))
+        setattr(self.course, 'target_library', target_libraries)
+        modulestore().update_item(self.course, self.user.id)
+        lib_key = self.libraries.location.library_key
+
+        #Test if the course that is about to be deleted exists
+        self.assertIsNotNone(modulestore().get_course(SlashSeparatedCourseKey("TestX", "TS01", "2015_Q1")))
+        self.assertIsNotNone(modulestore().get_library(lib_key))
+
+        with mock.patch(self.YESNO_PATCH_LOCATION) as patched_yes_no:
+            patched_yes_no.return_value = True
+            call_command('delete_course', 'TestX/TS01/2015_Q1')
+            self.assertIsNone(modulestore().get_course(SlashSeparatedCourseKey("TestX", "TS01", "2015_Q1")))
+            self.assertIsNone(modulestore().get_library(lib_key))

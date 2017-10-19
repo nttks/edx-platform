@@ -886,9 +886,13 @@ def _rerun_course(request, org, number, run, fields):
     # Clear the fields that must be reset for the rerun
     fields['advertised_start'] = None
 
+    # update target_library
+    source_course = modulestore().get_course(source_course_key)
+    target_libraries = source_course.target_library if source_course else None
+
     # Rerun the course as a new celery task
     json_fields = json.dumps(fields, cls=EdxJSONEncoder)
-    rerun_course.delay(unicode(source_course_key), unicode(destination_course_key), request.user.id, json_fields)
+    rerun_course.delay(unicode(source_course_key), unicode(destination_course_key), request.user.id, json_fields, target_libraries)
 
     # Return course listing page
     return JsonResponse({

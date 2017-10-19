@@ -154,7 +154,7 @@ class StudioLibraryContainerTest(StudioLibraryTest, UniqueCourseTest, TestWithSe
         Then I can see that the content no longer needs to be updated
         """
         # Formerly flaky: see TE-745
-        expected_text = "This component is out of date. The library has new content."
+        expected_text = "The library has been updated."
         library_block = self._get_library_xblock_wrapper(self.unit_page.xblocks[1])
 
         self.assertFalse(library_block.has_validation_warning)

@@ -21,6 +21,9 @@ from xmodule.validation import StudioValidationMessage
 from xmodule.x_module import AUTHOR_VIEW
 from search.search_engine_base import SearchEngine
 
+import django
+django.setup()
+
 dummy_render = lambda block, _: Fragment(block.data)  # pylint: disable=invalid-name
 
 
@@ -129,7 +132,6 @@ class LibraryContentModuleTestMixin(object):
         # Check that get_content_titles() doesn't return titles for hidden/unused children
         self.assertEqual(len(self.lc_block.get_content_titles()), 1)
 
-    @skip
     def test_validation_of_course_libraries(self):
         """
         Test that the validation method of LibraryContent blocks can validate
@@ -156,13 +158,12 @@ class LibraryContentModuleTestMixin(object):
         self.assertFalse(result)  # Validation fails due to at least one warning/message
         self.assertTrue(result.summary)
         self.assertEqual(StudioValidationMessage.WARNING, result.summary.type)
-        self.assertIn("out of date", result.summary.text)
+        self.assertIn("The library has been updated.", result.summary.text)
 
         # Now if we update the block, all validation should pass:
         self.lc_block.refresh_children()
         self.assertTrue(self.lc_block.validate())
 
-    @skip
     def test_validation_of_matching_blocks(self):
         """
         Test that the validation method of LibraryContent blocks can warn

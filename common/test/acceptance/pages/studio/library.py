@@ -20,16 +20,17 @@ class LibraryPage(PageObject):
     """
     Base page for Library pages. Defaults URL to the edit page.
     """
-    def __init__(self, browser, locator):
+    def __init__(self, browser, locator, course_locator):
         super(LibraryPage, self).__init__(browser)
         self.locator = locator
+        self.course_locator = course_locator
 
     @property
     def url(self):
         """
         URL to the library edit page for the given library.
         """
-        return "{}/library/{}".format(BASE_URL, unicode(self.locator))
+        return "{}/course/{}/library/{}".format(BASE_URL, unicode(self.course_locator), unicode(self.locator))
 
     def is_browser_on_page(self):
         """
@@ -271,3 +272,68 @@ class StudioLibraryContainerXBlockWrapper(XBlockWrapper):
         # And wait to make sure the ajax post has finished.
         self.wait_for_ajax()
         self.wait_for_element_absence(btn_selector, 'Wait for the XBlock to finish reloading')
+
+
+class LibraryHomePage(PageObject):
+    """
+    Base page for Library pages. Defaults URL to the home page.
+    """
+    def __init__(self, browser, course_locator):
+        super(LibraryHomePage, self).__init__(browser)
+        self.course_locator = course_locator
+
+    @property
+    def url(self):
+        """
+        URL to the library home page for the given library.
+        """
+        return "{}/course/{}/libhome/".format(BASE_URL, unicode(self.course_locator))
+
+    def is_browser_on_page(self):
+        """
+        Returns True iff the browser has loaded the library home page.
+        """
+        return self.q(css='.libraries').present
+
+    def has_new_library_button(self):
+        """
+        (bool) is the "New Library" button present?
+        """
+        return self.q(css='.new-library-button').present
+
+    def click_new_library(self):
+        """
+        Click on the "New Library" button
+        """
+        self.q(css='.new-library-button').first.click()
+        self.wait_for_ajax()
+
+    def is_new_library_form_visible(self):
+        """
+        Is the new library form visisble?
+        """
+        return self.q(css='.wrapper-create-library').visible
+
+    def fill_new_library_form(self, display_name, number):
+        """
+        Fill out the form to create a new library.
+        Must have called click_new_library() first.
+        """
+        field = lambda fn: self.q(css='.wrapper-create-library #new-library-{}'.format(fn))
+        field('name').fill(display_name)
+        field('number').fill(number)
+
+    def is_new_library_form_valid(self):
+        """
+        IS the new library form ready to submit?
+        """
+        return (
+            self.q(css='.wrapper-create-library .new-library-save:not(.is-disabled)').present and
+            not self.q(css='.wrapper-create-library .wrap-error.is-shown').present
+        )
+
+    def submit_new_library_form(self):
+        """
+        Submit the new library form.
+        """
+        self.q(css='.wrapper-create-library .new-library-save').click()

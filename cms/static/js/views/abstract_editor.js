@@ -8,6 +8,9 @@ define(["js/views/baseview", "underscore"], function(BaseView, _) {
             var templateName = _.result(this, 'templateName');
             // Backbone model cid is only unique within the collection.
             this.uniqueId = _.uniqueId(templateName + "_");
+            if (this.options.type == 'library_content' && this.model.attributes.field_name == 'max_count') {
+                this.max_count_id = this.uniqueId;
+            }
             this.template = this.loadTemplate(templateName);
             this.$el.html(this.template({model: this.model, uniqueId: this.uniqueId}));
             this.listenTo(this.model, 'change', this.render);
@@ -77,6 +80,16 @@ define(["js/views/baseview", "underscore"], function(BaseView, _) {
                 this.$el.removeClass('is-set');
                 this.getClearButton().addClass('inactive');
                 this.getClearButton().removeClass('active');
+            }
+
+            if (this.max_count_id){
+                if (this.$('#' + this.max_count_id)[0].value < 1) {
+                    self.$('#' + this.max_count_id + '-error').text(gettext('Please enter a value one or more'));
+                    self.$('.action-save').addClass('is-disabled');
+                } else {
+                    self.$('#' + this.max_count_id + '-error').text('');
+                    self.$('.action-save').removeClass('is-disabled');
+                }
             }
 
             return this;

@@ -20,3 +20,4 @@
         </a>
     </li>
 </ul>
+<ul id="due-date-error-message" class="error-message"></ul>

@@ -311,6 +311,10 @@ msgid ""
 msgstr ""
 "注意： {platform_name}のサポートチームの言語は日本語です。すべての言語のお問い合わせに対して極力対応しますが、返信は日本語となります。"
 
+#: lms/templates/help_modal.html
+msgid "Please leave your e-mail address if you wish us to contact you for assistance."
+msgstr "事務局からの返信を受信できるメールアドレスを本文に記載してください。"
+
 #: lms/djangoapps/instructor/views/instructor_dashboard.py
 msgid "Survey"
 msgstr "アンケート"
@@ -602,6 +606,15 @@ msgstr ""
 #: lms/djangoapps/django_comment_client/utils.py
 msgid "An invalid file format, please select valid file format."
 msgstr "選択したファイル形式が不正です、正しいファイル形式を選択してください。"
+
+#: common/lib/xmodule/xmodule/library_content_module.py
+msgid "The library has been updated."
+msgstr "ライブラリが更新されました。"
+
+#. Translators: this is a verb describing the action of viewing more details
+#: cms/templates/studio_xblock_wrapper.html
+msgid "[{library_name}] View"
+msgstr "[{library_name}]を見る"
 
 #-#-#-#-#  Original messages in gacco/templates  #-#-#-#-#
 

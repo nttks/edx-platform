@@ -1206,7 +1206,7 @@ class SplitMongoModuleStore(SplitBulkWriteMixin, ModuleStoreWriteBase):
             for block_id in items
         ]
 
-    def get_course_index_info(self, course_key):
+    def get_course_index_info(self, course_key, ga_rerun_library=False):
         """
         The index records the initial creation of the indexed course and tracks the current version
         heads. This function is primarily for test verification but may serve some
@@ -1222,7 +1222,8 @@ class SplitMongoModuleStore(SplitBulkWriteMixin, ModuleStoreWriteBase):
         """
         if not isinstance(course_key, CourseLocator) or course_key.deprecated:
             # The supplied CourseKey is of the wrong type, so it can't possibly be stored in this modulestore.
-            raise ItemNotFoundError(course_key)
+            if not(isinstance(course_key, LibraryLocator) and ga_rerun_library):
+                raise ItemNotFoundError(course_key)
 
         if not (course_key.course and course_key.run and course_key.org):
             return None
@@ -1653,20 +1654,32 @@ class SplitMongoModuleStore(SplitBulkWriteMixin, ModuleStoreWriteBase):
         In split, other than copying the assets, this is cheap as it merely creates a new version of the
         existing course.
         """
-        source_index = self.get_course_index_info(source_course_id)
+        ga_rerun_library = kwargs.get('ga_rerun_library', False)
+        source_index = self.get_course_index_info(source_course_id, ga_rerun_library)
         if source_index is None:
             raise ItemNotFoundError("Cannot find a course at {0}. Aborting".format(source_course_id))
 
         with self.bulk_operations(dest_course_id):
-            new_course = self.create_course(
-                dest_course_id.org, dest_course_id.course, dest_course_id.run,
-                user_id,
-                fields=fields,
-                versions_dict=source_index['versions'],
-                search_targets=source_index['search_targets'],
-                skip_auto_publish=True,
-                **kwargs
-            )
+            if ga_rerun_library and isinstance(source_course_id, LibraryLocator):
+                new_course = self.create_library(
+                    dest_course_id.org, dest_course_id.course,
+                    user_id,
+                    fields=fields,
+                    versions_dict=source_index['versions'],
+                    search_targets=source_index['search_targets'],
+                    skip_auto_publish=True,
+                    **kwargs
+                )
+            else:
+                new_course = self.create_course(
+                    dest_course_id.org, dest_course_id.course, dest_course_id.run,
+                    user_id,
+                    fields=fields,
+                    versions_dict=source_index['versions'],
+                    search_targets=source_index['search_targets'],
+                    skip_auto_publish=True,
+                    **kwargs
+                )
             # don't copy assets until we create the course in case something's awry
             super(SplitMongoModuleStore, self).clone_course(source_course_id, dest_course_id, user_id, fields, **kwargs)
             return new_course

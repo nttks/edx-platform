@@ -41,8 +41,10 @@ def _get_human_name(problem_class):
 def _get_capa_types():
     """
     Gets capa types tags and labels
+
+    Supported only CheckBox and MultipleChoice in gacco
     """
-    capa_types = {tag: _get_human_name(registry.get_class_for_tag(tag)) for tag in registry.registered_tags()}
+    capa_types = {tag: _get_human_name(registry.get_class_for_tag(tag)) for tag in registry.registered_tags() if tag in ['choiceresponse', 'multiplechoiceresponse']}
 
     return [{'value': ANY_CAPA_TYPE_VALUE, 'display_name': _('Any Type')}] + sorted([
         {'value': capa_type, 'display_name': caption}
@@ -470,7 +472,7 @@ class LibraryContentDescriptor(LibraryContentFields, MakoModuleDescriptor, XmlDe
                 validation.set_summary(
                     StudioValidationMessage(
                         StudioValidationMessage.WARNING,
-                        ugettext(u'This component is out of date. The library has new content.'),
+                        ugettext(u'The library has been updated.'),
                         # TODO: change this to action_runtime_event='...' once the unit page supports that feature.
                         # See https://openedx.atlassian.net/browse/TNL-993
                         action_class='library-update-btn',

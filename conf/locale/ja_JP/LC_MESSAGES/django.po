@@ -7563,7 +7563,9 @@ msgstr ""
 msgid ""
 "Please enter your new password twice so we can verify you typed it in "
 "correctly."
-msgstr "確認のために、新しいパスワードを二回入力してください。"
+msgstr ""
+"確認のために、新しいパスワードを二回入力してください。<br /><span style=\"color:red;\">半角英数8文字以上 "
+"(半角アルファベットの大文字、小文字、数字を1文字以上含めてください)</span>"
 
 #: lms/templates/registration/password_reset_confirm.html
 #, python-format

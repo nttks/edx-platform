@@ -595,7 +595,7 @@ class TestLibraryAccess(SignalDisconnectTestMixin, LibraryTestCase):
         # Two libraries are linked to self.course
         lib_list = self._list_libraries(unicode(self.course.id))
         self.assertEqual(len(lib_list), 2)
-        self.assertEqual(lib_list[0]["library_key"], unicode(library2_key))
+        self.assertIn(lib_list[0]["library_key"], [unicode(library2_key), unicode(self.lib_key)])
         self.assertTrue(self._can_access_library(self.course, library2_key))
         self.assertTrue(self._can_access_library(self.course, self.library))
 

@@ -184,17 +184,24 @@ def _create_library(request, course_key_string=None):
     """
     Helper method for creating a new library.
     """
+    if not course_key_string:
+        raise Http404
+
+    course_key = CourseKey.from_string(course_key_string)
+    course_module = _get_course_and_check_access(course_key, request.user)
+    if not course_module:
+        raise Http404
+
     display_name = None
     try:
         display_name = request.json['display_name']
-        org = request.json['org']
         library = request.json.get('number', None)
         if library is None:
             library = request.json['library']
         store = modulestore()
         with store.default_store(ModuleStoreEnum.Type.split):
             new_lib = store.create_library(
-                org=org,
+                org=course_module.org,
                 library=library,
                 user_id=request.user.id,
                 fields={"display_name": display_name},
@@ -222,15 +229,10 @@ def _create_library(request, course_key_string=None):
         })
 
     lib_key_str = unicode(new_lib.location.library_key)
-    if course_key_string:
-        course_key = CourseKey.from_string(course_key_string)
-        course_module = _get_course_and_check_access(course_key, request.user)
-        if not course_module:
-            raise Http404
-        libraries = course_module.target_library
-        libraries.append(lib_key_str)
-        setattr(course_module, 'target_library', libraries)
-        modulestore().update_item(course_module, request.user.id)
+    libraries = course_module.target_library
+    libraries.append(lib_key_str)
+    setattr(course_module, 'target_library', libraries)
+    modulestore().update_item(course_module, request.user.id)
 
     return JsonResponse({
         'url': reverse_course_url('course_library_handler', course_key_string, kwargs={'library_key_string': lib_key_str}),
