@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from django.contrib.auth.models import User
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
@@ -26,9 +28,11 @@ URL_CODE_PATTERN = '(?P<url_code>[a-zA-Z0-9]{{{min_length},{max_length}}})'.form
 
 
 class ContractManager(models.Manager):
-    def enabled(self, **kwargs):
-        today = datetime_utils.timezone_today()
-        return self.filter(start_date__lte=today, end_date__gte=today)
+    def enabled(self, days_after=0, **kwargs):
+        target_day = datetime_utils.timezone_today()
+        if days_after:
+            target_day = target_day + timedelta(days=days_after)
+        return self.filter(start_date__lte=target_day, end_date__gte=target_day)
 
 
 class ContractDetailManager(models.Manager):
@@ -331,7 +335,6 @@ class ContractDetail(models.Model):
         return cls.objects.filter(
             contract__register_type=REGISTER_TYPE_DISABLE_REGISTER_BY_STUDENT[0]
         )
-
 
 
 class AdditionalInfo(models.Model):

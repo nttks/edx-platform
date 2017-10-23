@@ -215,7 +215,7 @@ class ExitWithWarning(Exception):
     pass
 
 
-def handle_command_exception(output_file):
+def handle_command_exception(output_file, output_return_value=False):
     """
     Command Exception Handler
 
@@ -234,6 +234,8 @@ def handle_command_exception(output_file):
             try:
                 out = func(*args, **kwargs)
                 msg = u"Command {} finished at {}.".format(command_name, _now())
+                if output_return_value:
+                    msg = '{}\n{}'.format(out, msg)
                 _output_command_status(output_file, 'OK', msg)
                 log.info(msg)
                 return out

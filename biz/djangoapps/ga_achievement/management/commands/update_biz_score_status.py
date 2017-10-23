@@ -172,13 +172,13 @@ class Command(BaseCommand):
             if exclude_ids:
                 raise CommandError("Cannot specify exclude_ids and contract_id at the same time.")
             try:
-                contracts = [Contract.objects.enabled().get(pk=contract_id)]
+                contracts = [Contract.objects.enabled(days_after=-1).get(pk=contract_id)]
             except Contract.DoesNotExist:
                 raise ExitWithWarning(
                     "The specified contract does not exist or is not active. contract_id={}".format(contract_id)
                 )
         else:
-            contracts = Contract.objects.enabled().all().exclude(id__in=exclude_ids).order_by('id')
+            contracts = Contract.objects.enabled(days_after=-1).all().exclude(id__in=exclude_ids).order_by('id')
         log.debug(u"contract_ids=[{}]".format(','.join([str(contract.id) for contract in contracts])))
 
         error_flag = False

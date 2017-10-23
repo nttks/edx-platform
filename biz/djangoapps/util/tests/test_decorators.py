@@ -769,6 +769,11 @@ def handle_command_exception_target():
     return "success"
 
 
+@handle_command_exception('/path/to/output_file', True)
+def handle_command_exception_target_with_output_return_value():
+    return "success"
+
+
 @handle_command_exception('/path/to/output_file')
 def handle_command_exception_target_error():
     raise TypeError()
@@ -809,6 +814,9 @@ class HandleCommandExceptionTest(TestCase):
 
     def test_handle_command_exception(self):
         self.assertEqual('success', handle_command_exception_target())
+
+    def test_handle_command_exception_with_output_return_value(self):
+        self.assertEqual('success', handle_command_exception_target_with_output_return_value())
 
     def test_handle_command_exception_if_command_raises_error(self):
         self.assertIsNone(handle_command_exception_target_error())
