@@ -72,6 +72,7 @@ from openedx.core.djangoapps.programs.utils import get_programs
 from openedx.core.djangoapps.self_paced.models import SelfPacedConfiguration
 from openedx.core.lib.course_tabs import CourseTabPluginManager
 from openedx.core.lib.courses import course_image_url, custom_logo_url
+from openedx.core.lib.ga_course_utils import is_using_jwplayer_course
 from openedx.core.lib.js_utils import escape_json_dumps
 from student import auth
 from student.auth import has_course_author_access, has_studio_write_access, has_studio_read_access
@@ -1048,7 +1049,8 @@ def settings_handler(request, course_key_string):
                 'self_paced_enabled': self_paced_enabled,
                 'custom_logo_enabled': custom_logo_enabled,
                 'custom_logo_for_url': custom_logo_url(course_module),
-                'library_option': is_available(LIBRARY_OPTION_KEY, course_key)
+                'library_option': is_available(LIBRARY_OPTION_KEY, course_key),
+                'use_jwplayer': is_using_jwplayer_course(course_module),
             }
             if is_prerequisite_courses_enabled():
                 courses, in_process_course_actions = get_courses_accessible_to_user(request)

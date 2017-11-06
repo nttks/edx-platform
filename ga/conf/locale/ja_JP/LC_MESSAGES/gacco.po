@@ -566,6 +566,14 @@ msgstr "受講可能期間までの時間"
 msgid "Minutes up to the course available period"
 msgstr "受講可能期間までの分"
 
+#: cms/templates/settings.html
+msgid "JW Player Settings"
+msgstr "JW Playerオプション設定"
+
+#: cms/templates/settings.html
+msgid "Hide Playback Rate"
+msgstr "再生スピードを非表示にする"
+
 #: cms/djangoapps/contentstore/views/entrance_exam.py
 #: lms/djangoapps/courseware/tabs.py
 msgid "Entrance Exam"

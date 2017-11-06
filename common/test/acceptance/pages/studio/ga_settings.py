@@ -152,3 +152,22 @@ class SettingsPage(EdXSettingsPage):
             'Course span element is available'
         )
         return self.get_elements('#course-span')
+
+    @property
+    def is_playback_rate_1_only_displayed(self):
+        return self.q(css='#playback-rate-1x-only').present
+
+    @property
+    def playback_rate_1_only_checked(self):
+        return self.q(css='#playback-rate-1x-only:checked').present
+
+    @property
+    def playback_rate_1_only(self):
+        """
+        Returns the playback_rate_1x_only.
+        """
+        self.wait_for_element_visibility(
+            '#playback-rate-1x-only',
+            'Course playback rate 1x only element is available'
+        )
+        return self.get_elements('#playback-rate-1x-only')

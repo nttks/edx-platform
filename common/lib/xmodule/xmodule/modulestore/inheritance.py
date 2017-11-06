@@ -234,6 +234,15 @@ class InheritanceMixin(XBlockMixin):
         default=False
     )
 
+    # For reference by XBlock
+    # common/lib/xmodule/xmodule/course_module.py
+    playback_rate_1x_only = Boolean(
+        display_name=_("Hide Playback Rate"),
+        default=False,
+        help=_("Hide Playback Rate"),
+        scope=Scope.settings,
+    )
+
 
 def compute_inherited_metadata(descriptor):
     """Given a descriptor, traverse all of its descendants and do metadata

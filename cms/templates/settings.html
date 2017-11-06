@@ -574,6 +574,23 @@ CMS.URL.UPLOAD_ASSET = '${upload_asset_url}';
               </ol>
             </section>
           % endif
+
+          % if use_jwplayer:
+            <hr class="divide" />
+
+            <section class="group-settings course-jwplayer-settings">
+              <header>
+                <h2 class="title-2">${_("JW Player Settings")}</h2>
+              </header>
+
+              <ol class="list-input">
+                <li>
+                  <input type="checkbox" class="placeholder" id="playback-rate-1x-only" value="true" autocomplete="off" />
+                  <label for="playback-rate-1x-only">${_("Hide Playback Rate")}</label>
+                </li>
+              </ol>
+            </section>
+          % endif
       </form>
     </article>
     <aside class="content-supplementary" role="complementary">

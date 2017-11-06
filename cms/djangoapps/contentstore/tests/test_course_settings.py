@@ -57,6 +57,7 @@ class CourseSettingsEncoderTest(CourseTestCase):
         self.assertEqual(jsondetails['course_category'], [])
         self.assertFalse(jsondetails['is_f2f_course'])
         self.assertFalse(jsondetails['is_f2f_course_sell'])
+        self.assertFalse(jsondetails['playback_rate_1x_only'])
         self.assertEqual(jsondetails['course_canonical_name'], self.course.display_name)
         self.assertEqual(jsondetails['course_contents_provider'], "")
         self.assertEqual(jsondetails['teacher_name'], "Teacher Name")
@@ -144,6 +145,7 @@ class CourseDetailsViewTest(CourseTestCase):
         self.alter_field(url, details, 'course_contents_provider', "Course Contents Provider")
         self.alter_field(url, details, 'teacher_name', "Teacher Name")
         self.alter_field(url, details, 'course_span', "Course Span")
+        self.alter_field(url, details, 'playback_rate_1x_only', True)
 
     def compare_details_with_encoding(self, encoded, details, context):
         """
@@ -169,6 +171,7 @@ class CourseDetailsViewTest(CourseTestCase):
         self.assertEqual(details['course_contents_provider'], encoded['course_contents_provider'], context + " course_contents_provider not ==")
         self.assertEqual(details['teacher_name'], encoded['teacher_name'], context + " teacher_name not ==")
         self.assertEqual(details['course_span'], encoded['course_span'], context + " course_span not ==")
+        self.assertEqual(details['playback_rate_1x_only'], encoded['playback_rate_1x_only'], context + " playback_rate_1x_only not ==")
 
     def compare_date_fields(self, details, encoded, context, field):
         """
@@ -309,6 +312,24 @@ class CourseDetailsViewTest(CourseTestCase):
             self.assertContains(response, "Course Span")
             self.assertContains(response, "Face-to-Face Course")
             self.assertContains(response, "Sell Face-to-Face Course")
+            self.assertNotContains(response, "Hide Playback Rate")
+
+    @override_settings(MKTG_URLS={'ROOT': 'dummy-root'})
+    def test_marketing_site_fetch_include_playback_rate(self):
+        advanced_setting_url = get_url(self.course.id, 'advanced_settings_handler')
+        self.client.ajax_post(advanced_setting_url, {
+            ADVANCED_COMPONENT_POLICY_KEY: {"value": ["jwplayerxblock"]}
+        })
+
+        settings_details_url = get_url(self.course.id)
+
+        with mock.patch.dict('django.conf.settings.FEATURES', {
+            'ENABLE_MKTG_SITE': True,
+            'ENTRANCE_EXAMS': False,
+            'ENABLE_PREREQUISITE_COURSES': False
+        }):
+            response = self.client.get_html(settings_details_url)
+            self.assertContains(response, "Hide Playback Rate")
 
     @unittest.skipUnless(settings.FEATURES.get('ENTRANCE_EXAMS', False), True)
     def test_entrance_exam_created_updated_and_deleted_successfully(self):
@@ -446,6 +467,19 @@ class CourseDetailsViewTest(CourseTestCase):
             self.assertContains(response, "Course Span")
             self.assertContains(response, "Face-to-Face Course")
             self.assertContains(response, "Sell Face-to-Face Course")
+            self.assertNotContains(response, "Hide Playback Rate")
+
+    def test_regular_site_fetch_include_playback_rate(self):
+        advanced_setting_url = get_url(self.course.id, 'advanced_settings_handler')
+        self.client.ajax_post(advanced_setting_url, {
+            ADVANCED_COMPONENT_POLICY_KEY: {"value": ["jwplayerxblock"]}
+        })
+
+        settings_details_url = get_url(self.course.id)
+
+        with mock.patch.dict('django.conf.settings.FEATURES', {'ENABLE_MKTG_SITE': False}):
+            response = self.client.get_html(settings_details_url)
+            self.assertContains(response, "Hide Playback Rate")
 
 
 @ddt.ddt

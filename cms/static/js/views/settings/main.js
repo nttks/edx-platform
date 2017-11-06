@@ -155,6 +155,12 @@ var DetailsView = ValidatingView.extend({
             this.$el.find('#course-end').show();
         }
 
+        if (this.model.get('playback_rate_1x_only')) {
+            this.$('#' + this.fieldToSelectorMap['playback_rate_1x_only']).attr('checked', this.model.get('playback_rate_1x_only'));
+        } else {
+            this.$('#' + this.fieldToSelectorMap['playback_rate_1x_only']).removeAttr('checked');
+        }
+
         this.changeBackgroundColor();
 
         return this;
@@ -179,6 +185,7 @@ var DetailsView = ValidatingView.extend({
         'course_category' : 'course-category',
         'is_f2f_course' : 'face2face-course',
         'is_f2f_course_sell' : 'face2face-course-sell',
+        "playback_rate_1x_only" : 'playback-rate-1x-only',
         'course_canonical_name' : 'course-canonical-name',
         'course_contents_provider' : 'course-contents-provider',
         'teacher_name' : 'course-teacher-name',
@@ -335,6 +342,7 @@ var DetailsView = ValidatingView.extend({
         case 'individual-course-end-days':
         case 'individual-course-end-hours':
         case 'individual-course-end-minutes':
+        case 'playback-rate-1x-only':
             this.setField(event);
             break;
         default: // Everything else is handled by datepickers and CodeMirror.

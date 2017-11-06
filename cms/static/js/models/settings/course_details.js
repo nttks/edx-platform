@@ -30,6 +30,7 @@ var CourseDetails = Backbone.Model.extend({
         course_category: [],
         is_f2f_course: false,
         is_f2f_course_sell: false,
+        playback_rate_1x_only: false,
         course_canonical_name: '',
         course_contents_provider: '',
         teacher_name: '',

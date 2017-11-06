@@ -5,6 +5,7 @@ Acceptance tests for Studio's Settings Details pages
 from flaky import flaky
 
 from .base_studio_test import StudioCourseTest
+from .test_studio_settings_details import StudioSettingsDetailsTest
 
 from ...pages.studio.ga_settings import SettingsPage
 
@@ -202,3 +203,38 @@ class SettingsNotStaffTest(StudioCourseTest):
         )
         # Second, verify course category has not displayed.
         self.assertFalse(self.settings_detail.is_course_category_displayed)
+
+
+class SettingsPlaybackRateTest(StudioSettingsDetailsTest):
+
+    def setUp(self):
+        super(SettingsPlaybackRateTest, self).setUp(True)
+        self.settings_detail = SettingsPage(
+            self.browser,
+            self.course_info['org'],
+            self.course_info['number'],
+            self.course_info['run']
+        )
+
+    def _add_playback_rate_settings(self):
+        self.course_fixture.add_advanced_settings({'advanced_modules': {'value': ['jwplayerxblock']}})
+        self.course_fixture._add_advanced_settings()
+        self.browser.refresh()
+
+    def test_invisible_playback_rate(self):
+        self.settings_detail.visit()
+        self.assertFalse(self.settings_detail.is_playback_rate_1_only_displayed)
+
+    def test_visible_playback_rate_and_checked(self):
+        self._add_playback_rate_settings()
+
+        self.settings_detail.visit()
+        self.assertTrue(self.settings_detail.is_playback_rate_1_only_displayed)
+
+        self.settings_detail.playback_rate_1_only.click()
+        self.assertTrue(self.settings_detail.playback_rate_1_only_checked)
+        self.settings_detail.save_changes()
+        self.assertEqual(
+            'Your changes have been saved.',
+            self.settings_detail.alert_confirmation_title.text
+        )

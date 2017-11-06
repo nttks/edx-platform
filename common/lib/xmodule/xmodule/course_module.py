@@ -827,6 +827,13 @@ class CourseFields(object):
         default=[]
     )
 
+    playback_rate_1x_only = Boolean(
+        display_name=_("Hide Playback Rate"),
+        default=False,
+        help=_("JW Player playbackrate setting 1.0x only."),
+        scope=Scope.settings,
+    )
+
 
 class CourseModule(CourseFields, SequenceModule):  # pylint: disable=abstract-method
     """
