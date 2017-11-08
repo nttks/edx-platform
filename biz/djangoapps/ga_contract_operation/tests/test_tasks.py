@@ -1,21 +1,12 @@
 """Tests for task"""
 
-from datetime import timedelta
 import json
-from mock import patch
+from datetime import timedelta
 
-from social.apps.django_app.default.models import UserSocialAuth
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
-
-from bulk_email.models import Optout
-from certificates.models import CertificateStatuses, GeneratedCertificate
-from certificates.tests.factories import GeneratedCertificateFactory
-from student.models import CourseEnrollmentAllowed, ManualEnrollmentAudit, PendingEmailChange
-from student.tests.factories import (
-    CourseEnrollmentFactory, CourseEnrollmentAllowedFactory, PendingEmailChangeFactory, UserFactory
-)
-from third_party_auth.tests.testutil import ThirdPartyAuthTestMixin
+from mock import patch
+from social.apps.django_app.default.models import UserSocialAuth
 from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
 from xmodule.modulestore.tests.factories import CourseFactory
 
@@ -24,16 +15,24 @@ from biz.djangoapps.ga_contract.tests.factories import AdditionalInfoFactory, Co
 from biz.djangoapps.ga_contract_operation.models import ContractTaskTarget
 from biz.djangoapps.ga_contract_operation.tasks import personalinfo_mask
 from biz.djangoapps.ga_contract_operation.tests.factories import ContractTaskTargetFactory
-from biz.djangoapps.ga_invitation.models import AdditionalInfoSetting, INPUT_INVITATION_CODE
+from biz.djangoapps.ga_invitation.models import AdditionalInfoSetting, INPUT_INVITATION_CODE, \
+    UNREGISTER_INVITATION_CODE, ContractRegister
 from biz.djangoapps.ga_invitation.tests.factories import AdditionalInfoSettingFactory, ContractRegisterFactory
-from biz.djangoapps.ga_login.models import BizUser
-from biz.djangoapps.util import mask_utils
 from biz.djangoapps.ga_login.tests.factories import BizUserFactory
+from biz.djangoapps.util import mask_utils
 from biz.djangoapps.util.datetime_utils import timezone_today
 from biz.djangoapps.util.tests.testcase import BizTestBase
+from bulk_email.models import Optout
+from certificates.models import CertificateStatuses, GeneratedCertificate
+from certificates.tests.factories import GeneratedCertificateFactory
 from openedx.core.djangoapps.course_global.tests.factories import CourseGlobalSettingFactory
 from openedx.core.djangoapps.ga_task.models import Task
 from openedx.core.djangoapps.ga_task.tests.test_task import TaskTestMixin
+from student.models import CourseEnrollmentAllowed, ManualEnrollmentAudit, PendingEmailChange, CourseEnrollment
+from student.tests.factories import (
+    CourseEnrollmentFactory, CourseEnrollmentAllowedFactory, PendingEmailChangeFactory, UserFactory
+)
+from third_party_auth.tests.testutil import ThirdPartyAuthTestMixin
 
 
 class StudentsTaskTestMixin(TaskTestMixin):
@@ -1422,4 +1421,53 @@ class PersonalinfoMaskTaskTest(BizTestBase, ModuleStoreTestCase, ThirdPartyAuthT
         self.assertEqual("Line 4:You can not change of yourself.",
                          ContractTaskTarget.objects.get(history=history, inputdata=inputdata_list[3]).message)
 
+        self.mock_log.exception.assert_not_called()
+
+    def test_unregister(self):
+        # ----------------------------------------------------------
+        # Setup test data
+        # ----------------------------------------------------------
+        self._configure_dummy_provider(enabled=True)
+
+        self._setup_courses()
+        display_names = ['settting1', 'setting2', ]
+        contract = self._create_contract(courses=self.spoc_courses, display_names=display_names)
+        history = self._create_task_history(contract=contract)
+        # users: enrolled only target spoc courses
+        registers = [self._create_user_and_register(contract, display_names=display_names) for _ in range(5)]
+        self._create_targets(history, registers)
+        self._create_enrollments(registers, self.spoc_courses)
+        # This is `NOT` the target contract
+        other_contract = self._create_contract(courses=self.other_enabled_spoc_courses, display_names=display_names)
+        other_registers = [self._create_user_and_register(other_contract, display_names=display_names) for _ in range(5)]
+        self._create_contract(courses=self.other_not_enabled_spoc_courses, display_names=display_names, enabled=False)
+
+        entry = self._create_input_entry(contract=contract, history=history)
+
+        # ----------------------------------------------------------
+        # Execute task
+        # ----------------------------------------------------------
+        self._test_run_with_task(personalinfo_mask, 'personalinfo_mask', 5, 0, 0, 5, 5, entry)
+
+        # ----------------------------------------------------------
+        # Assertion
+        # ----------------------------------------------------------
+        for register in registers:
+            user = User.objects.get(pk=register.user.id)
+            self.assertFalse('@' in user.email)
+            contract_register = ContractRegister.objects.get(pk=register.id)
+            self.assertEquals(UNREGISTER_INVITATION_CODE, contract_register.status)
+            for course_key in [detail.course_id for detail in contract.details.all()]:
+                self.assertFalse(CourseEnrollment.is_enrolled(register.user, course_key))
+
+        for register in other_registers:
+            user = User.objects.get(pk=register.user.id)
+            self.assertTrue('@' in user.email)
+            contract_register = ContractRegister.objects.get(pk=register.id)
+            self.assertNotEqual(UNREGISTER_INVITATION_CODE, contract_register.status)
+
+        # Assert all of target is completed
+        self.assertEqual(5, ContractTaskTarget.objects.filter(history=history, completed=True).count())
+
+        self._assert_success_message(registers)
         self.mock_log.exception.assert_not_called()

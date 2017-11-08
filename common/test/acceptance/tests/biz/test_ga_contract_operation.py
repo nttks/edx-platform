@@ -1317,18 +1317,12 @@ class BizStudentListTest(BizStudentManagementTestBase):
 class BizPersonalinfoMaskTestBase(BizStudentManagementTestBase):
 
     def _assert_masked_grid_row(self, grid_row, expected_user):
-        expected_status = expected_user.get('status', 'Input Invitation')
-        expected_info1 = 'info1-{}'.format(expected_user['username']) if expected_status == 'Register Invitation' else ''
-        expected_info2 = 'info2-{}'.format(expected_user['username']) if expected_status == 'Register Invitation' else ''
         # not masked value
-        self.assertEqual(grid_row['Register Status'], expected_status)
+        self.assertEqual(grid_row['Register Status'], 'Unregister Invitation')
         self.assertEqual(grid_row['Username'], expected_user['username'])
         # masked value
         self.assertNotEqual(grid_row['Email Address'], expected_user['email'])
         self.assertNotEqual(grid_row['Full Name'], expected_user['username'])
-        if expected_status == 'Register Invitation':
-            self.assertNotEqual(grid_row['info1'], expected_info1)
-            self.assertNotEqual(grid_row['info2'], expected_info2)
 
     def _assert_personalinfo_mask_task_history(self, grid_row, username, total=0, success=0, skipped=0, failed=0):
         self._assert_task_history(grid_row,

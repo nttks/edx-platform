@@ -1,4 +1,3 @@
-
 import logging
 import time
 
@@ -8,8 +7,9 @@ from django.utils.translation import ugettext as _
 
 from biz.djangoapps.ga_contract.models import ContractDetail
 from biz.djangoapps.ga_contract_operation.models import ContractTaskHistory, ContractTaskTarget
-from biz.djangoapps.ga_invitation.models import AdditionalInfoSetting, ContractRegister
+from biz.djangoapps.ga_invitation.models import AdditionalInfoSetting, ContractRegister, UNREGISTER_INVITATION_CODE
 from biz.djangoapps.util import mask_utils
+from biz.djangoapps.util.access_utils import has_staff_access
 from openedx.core.djangoapps.course_global.models import CourseGlobalSetting
 from openedx.core.djangoapps.ga_task.models import Task
 from openedx.core.djangoapps.ga_task.task import TaskProgress
@@ -75,15 +75,24 @@ class _PersonalinfoMaskExecutor(object):
         mask_utils.mask_login_code(user)
         mask_utils.delete_certificates(user)
 
-    def disable_additional_info(self, user):
+    def disable_additional_info(self, contract_register):
         """
         Override masked value to additional information.
 
         Note: We can `NEVER` restore the masked value.
         """
-        for additional_setting in AdditionalInfoSetting.find_by_user_and_contract(user, self.contract):
+        for additional_setting in AdditionalInfoSetting.find_by_user_and_contract(contract_register.user, self.contract):
             additional_setting.value = mask_utils.hash(additional_setting.value)
             additional_setting.save()
+
+        # ContractRegister and ContractRegisterHistory for end-of-month
+        contract_register.status = UNREGISTER_INVITATION_CODE
+        contract_register.save()
+        # CourseEnrollment only spoc
+        if self.contract.is_spoc_available:
+            for course_key in self.target_spoc_course_ids:
+                if CourseEnrollment.is_enrolled(contract_register.user, course_key) and not has_staff_access(contract_register.user, course_key):
+                    CourseEnrollment.unenroll(contract_register.user, course_key)
 
 
 def _validate_and_get_arguments(task_id, task_input):
@@ -133,12 +142,12 @@ def perform_delegate_personalinfo_mask(entry_id, task_input, action_name):
 
     for line_number, target in enumerate(targets, start=1):
         task_progress.attempt()
+        contract_register = target.register if target.register else None
         try:
-            user = target.register.user if target.register else None
             with transaction.atomic():
                 # bulk operation case
                 # use inputdata
-                if not user:
+                if not contract_register:
                     inputdata_columns = target.inputdata.split(',') if target.inputdata else []
                     len_inputdata_columns = len(inputdata_columns)
 
@@ -154,7 +163,6 @@ def perform_delegate_personalinfo_mask(entry_id, task_input, action_name):
                         task_progress.fail()
                         continue
 
-                    contract_register = None
                     try:
                         contract_register = ContractRegister.get_by_user_contract(
                             User.objects.get(username=inputdata_columns[0]),
@@ -177,7 +185,7 @@ def perform_delegate_personalinfo_mask(entry_id, task_input, action_name):
                         task_progress.fail()
                         continue
 
-                    user = contract_register.user
+                user = contract_register.user
 
                 # already mask
                 if ContractTaskTarget.is_completed_by_user_and_contract(user, contract):
@@ -188,7 +196,7 @@ def perform_delegate_personalinfo_mask(entry_id, task_input, action_name):
 
                 # Mask of additional information will run for all users even if it does not mask an user
                 # information. Therefore, it might be run more than once, but this is not a problem.
-                executor.disable_additional_info(user)
+                executor.disable_additional_info(contract_register)
                 # Try to mask user information if contract is SPOC.
                 if contract.is_spoc_available:
                     if not executor.check_enrollment(user):
@@ -198,7 +206,8 @@ def perform_delegate_personalinfo_mask(entry_id, task_input, action_name):
                 target.complete()
         except:
             # If an exception occur, logging it and to continue processing next target.
-            log.exception("Task {task_id}: Failed to process of the personal information mask to User {user_id}".format(task_id=task_id, user_id=user.id if user else ''))
+            log.exception("Task {task_id}: Failed to process of the personal information mask to User {user_id}".format(
+                task_id=task_id, user_id=contract_register.user.id if contract_register.user else ''))
             task_progress.fail()
             target.incomplete(_("Line {line_number}:{message}").format(
                 line_number=line_number,
@@ -206,7 +215,8 @@ def perform_delegate_personalinfo_mask(entry_id, task_input, action_name):
             ))
 
         else:
-            log.info("Task {task_id}: Success to process of mask to User {user_id}".format(task_id=task_id, user_id=user.id))
+            log.info("Task {task_id}: Success to process of mask to User {user_id}".format(
+                task_id=task_id, user_id=contract_register.user.id))
             task_progress.success()
 
     return task_progress.update_task_state()
