@@ -52,6 +52,7 @@ from edxmako.shortcuts import render_to_response, render_to_string, marketing_li
 from course_modes.models import CourseMode
 from shoppingcart.api import paid_course_order_history 
 from student.models import (
+    get_user_by_username_or_email,
     Registration, UserProfile,
     PendingEmailChange, CourseEnrollment, CourseEnrollmentAttribute, unique_id_for_user,
     CourseEnrollmentAllowed, UserStanding, LoginFailures,
@@ -1408,10 +1409,10 @@ def disable_account_ajax(request):
     """
     if not request.user.is_staff:
         raise Http404
-    username = request.POST.get('username')
+    username_or_email = request.POST.get('username_or_email')
     context = {}
-    if username is None or username.strip() == '':
-        context['message'] = _('Please enter a username')
+    if username_or_email is None or username_or_email.strip() == '':
+        context['message'] = _('Please enter a username or email.')
         return JsonResponse(context, status=400)
 
     account_action = request.POST.get('account_action')
@@ -1419,13 +1420,16 @@ def disable_account_ajax(request):
         context['message'] = _('Please choose an option')
         return JsonResponse(context, status=400)
 
-    username = username.strip()
+    username_or_email = username_or_email.strip()
     try:
-        user = User.objects.get(username=username)
+        user = get_user_by_username_or_email(username_or_email=username_or_email)
     except User.DoesNotExist:
-        context['message'] = _("User with username {} does not exist").format(username)
+        context['message'] = _("{} does not exist").format(username_or_email)
         return JsonResponse(context, status=400)
     else:
+        username = user.username
+        context['user_name'] = str(username)
+        context['user_mail'] = str(user.email)
         context['is_active'] = _('activated') if user.is_active else _('not activated')
         user_account, _success = UserStanding.objects.get_or_create(
             user=user, defaults={'changed_by': request.user},
@@ -1445,6 +1449,16 @@ def disable_account_ajax(request):
             else:
                 context['account_status'] = _(UserStanding.ACCOUNT_ENABLED)
             context['message'] = ""
+            return JsonResponse(context)
+        elif account_action == 'view_course_enrollment':
+            course_enrollment_rows = [
+                ','.join([str(e.course_id), str(e.is_active), str(e.created) + '(UTC)'])
+                for e in CourseEnrollment.objects.filter(user=user).order_by('-created')
+            ]
+            context['course_enrollment_header'] = 'course_id,is_active,created'
+            context['course_enrollment_rows'] = course_enrollment_rows
+            return JsonResponse(context)
+        elif account_action in ['view_profile', 'remove_profile_image']:
             return JsonResponse(context)
         else:
             context['message'] = _("Unexpected account status")

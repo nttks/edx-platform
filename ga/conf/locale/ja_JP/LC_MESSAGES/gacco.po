@@ -1448,6 +1448,10 @@ msgid "Manage Library"
 msgstr "ライブラリ管理"
 
 #: lms/templates/manage_user_standing.html
+msgid "Email:"
+msgstr "メールアドレス："
+
+#: lms/templates/manage_user_standing.html
 msgid "Account status:"
 msgstr "アカウント状態："
 
@@ -1458,6 +1462,10 @@ msgstr "アクティベート状態："
 #: lms/templates/manage_user_standing.html
 msgid "View Account Status"
 msgstr "アカウント状態・アクティベート状態を見る"
+
+#: lms/templates/manage_user_standing.html
+msgid "View Course Enrollment"
+msgstr "受講状況を見る"
 
 #: django_countries/data.py
 msgid "Holy See"
@@ -1676,6 +1684,14 @@ msgid ""
 msgstr ""
 "会員登録はまだ完了しておりません。会員登録時に入力されたメールアドレス宛に会員登録のご案内メールを送信しました。メール内のURLをクリックし、会員登録を完了してください。"
 "<br/>※URLの有効期限は、配信された日の翌日24時までです。"
+
+#: common/djangoapps/student/views.py
+msgid "Please enter a username or email."
+msgstr "メールアドレスかユーザー名を入力してください。"
+
+#: common/djangoapps/student/views.py
+msgid "{} does not exist"
+msgstr "「{}」は存在しません。"
 
 #: lms/templates/registration/activation_invalid.html
 msgid "Activation Invalid"

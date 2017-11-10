@@ -7,8 +7,15 @@ from django.utils.translation import ugettext as _
 
 <h2>${_("Manage student accounts")}</h2>
 <form action="${reverse('disable_account_ajax')}" method="post" data-remote="true" class="manage-accounts-form">
-    <label for="username">${_("Username:")}</label>
-    <input type="text" id="username" name="username" required="true" autofocus>
+    <label for="username_or_email">${_("Username or email:")}</label>
+    <input type="text" id="username_or_email" name="username_or_email" required="true" autofocus>
+    <br>
+    <label for="user_name">${_("Username:")}</label>
+    <span id="user_name"></span>
+    <br>
+    <label for="user_mail">${_("Email:")}</label>
+    <span id="user_mail"></span>
+    <br>
     <br>
     <label for="account_status">${_("Account status:")}</label>
     <span id="account_status"></span>
@@ -30,7 +37,10 @@ from django.utils.translation import ugettext as _
     <input type="radio" name="account_action" value="view_account_status" id="view_account_status_action" checked="checked">
     <br>
     <label for="view_profile_action">${_("View Profile")}</label>
-    <input type="radio" name="account_action" value="" id="view_profile_action">
+    <input type="radio" name="account_action" value="view_profile" id="view_profile_action">
+    <br>
+    <label for="view_course_enrollment_action">${_("View Course Enrollment")}</label>
+    <input type="radio" name="account_action" value="view_course_enrollment" id="view_course_enrollment_action">
     <br>
     <label for="disable_action">${_("Disable Account")}</label>
     <input type="radio" name="account_action" value="disable" id="disable_action">
@@ -47,6 +57,7 @@ from django.utils.translation import ugettext as _
 
 
 <p class="account-change-status"></p>
+<div id="course_enrollment_list"></div>
 
 <%
 PLACEHOLDER_USERNAME = '__PLACEHOLDER_USERNAME'
@@ -59,51 +70,127 @@ $(function() {
         removeProfileUrl = "${reverse('accounts_profile_image_api', kwargs={'username': PLACEHOLDER_USERNAME})}",
         refreshProfile;
 
+    removeProfile = function(username) {
+        $.ajax({
+            type: "POST",
+            url: removeProfileUrl.replace('${PLACEHOLDER_USERNAME}', username),
+            success: function(response) {
+                refreshProfile(username).always(function() {
+                    $("#profile-image", form).focus();
+                    $(".account-change-status").html("");
+                })
+            },
+            error: function() {
+                $(".account-change-status").html("${_('An error has occurred.')}");
+            }
+        });
+    }
+
     refreshProfile = function(username) {
         return $.ajax({
             type: "GET",
             url: profileUrl.replace('${PLACEHOLDER_USERNAME}', username),
             success: function(response) {
+                setUserData(response)
                 var imageUrl = response["profile_image"]["image_url_medium"];
                 $("#profile-image", form).attr("src", imageUrl);
                 $("#profile-image", form).attr("src", imageUrl);
                 $("#profile-name", form).text(response["name"]);
                 $("#view_profile_action", form).attr('checked', 'checked');
                 $("#view_profile_action", form).focus();
+            },
+            error: function() {
+                $(".account-change-status").html("${_('An error has occurred.')}");
             }
         });
     };
 
+    errorAction = function(request) {
+        var response_json;
+        try {
+            response_json = $.parseJSON(request.responseText);
+        } catch(e) {
+            response_json = { message: "${_('An error has occurred.')}" };
+        }
+        $(".account-change-status").html(response_json.message);
+    }
+
+    clearMessages = function() {
+        $("#user_name").text("");
+        $("#user_mail").text("");
+        $("#account_status").text("");
+        $("#is_active").text("");
+        $("#profile-image", form).attr("src", "");
+        $("#profile-name", form).text("");
+        $(".account-change-status").html("");
+        $("#course_enrollment_list").html("")
+    }
+
+    setUserData = function(response) {
+        $("#user_name").text(response["user_name"]);
+        $("#user_mail").text(response["user_mail"]);
+    }
+
     form.submit(function(event) {
         event.preventDefault();
-        var username = $('#username', form).val(),
+        var username_or_email = $('#username_or_email', form).val(),
             action = $("input:radio[name=account_action]:checked", form).val();
+        clearMessages();
+        $(".account-change-status").text("${_('working')}");
         if (action === 'remove_profile_image') {
-            $(".account-change-status").text("${_('working')}");
-            $.ajax({
-                type: "POST",
-                url: removeProfileUrl.replace('${PLACEHOLDER_USERNAME}', username),
-                success: function(response) {
-                    refreshProfile(username).always(function() {
-                        $("#profile-image", form).focus();
-                        $(".account-change-status").html("");
-                    })
-                }
-            });
-        } else if (action) {
-            $(".account-change-status").text("${_('working')}");
             $.ajax({
                 type: "POST",
                 url: form.attr('action'),
                 data: form.serialize(),
                 success: function(response) {
+                    $(".account-change-status").html("");
+                    setUserData(response)
+                    removeProfile(response["user_name"])
+                },
+                error: errorAction
+            });
+        } else if (action === 'view_course_enrollment') {
+            $.ajax({
+                type: "POST",
+                url: form.attr('action'),
+                data: form.serialize(),
+                success: function(response) {
+                    setUserData(response)
+                    $(".account-change-status").html("");
+                    $("#course_enrollment_list").html(
+                        Array(20+1).join("-") + "<br>"
+                        + response["course_enrollment_header"] + "<br>"
+                        + response["course_enrollment_rows"].join([separator = "<br>"]) + "<br>"
+                        + Array(20+1).join("-") + "<br>"
+                    );
+                },
+                error: errorAction
+            });
+        } else if (action === 'view_profile') {
+            $.ajax({
+                type: "POST",
+                url: form.attr('action'),
+                data: form.serialize(),
+                success: function(response) {
+                    $(".account-change-status").html("");
+                    setUserData(response)
+                    refreshProfile(response["user_name"]);
+                },
+                error: errorAction
+            });
+        } else if (action) {
+            $.ajax({
+                type: "POST",
+                url: form.attr('action'),
+                data: form.serialize(),
+                success: function(response) {
+                    setUserData(response)
                     $(".account-change-status").html(response.message);
                     $("#account_status").text(response["account_status"]);
                     $("#is_active").text(response["is_active"]);
-                }
+                },
+                error: errorAction
             });
-        } else {
-            refreshProfile(username);
         }
     });
 });
