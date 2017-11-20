@@ -37,6 +37,7 @@ define(['jquery', 'backbone', 'underscore', 'gettext', 'js/views/baseview',
             this.options.title = this.getTitle();
             this.listenTo(this.model, 'invalid', this.disableSaveButton);
             this.listenTo(this.model, 'valid', this.enableSaveButton);
+            this.model.validationErrors = [];
         },
 
         afterRender: function () {
@@ -194,6 +195,7 @@ define(['jquery', 'backbone', 'underscore', 'gettext', 'js/views/baseview',
     BaseDateEditor = AbstractEditor.extend({
         // Attribute name in the model, should be defined in children classes.
         fieldName: null,
+        errorSelector: null,
 
         events : {
             'click .clear-date': 'clearValue'
@@ -212,6 +214,30 @@ define(['jquery', 'backbone', 'underscore', 'gettext', 'js/views/baseview',
                     this.model.get(this.fieldName)
                 );
             }
+        },
+
+        validate: function() {
+            var errorMessages = this.$(this.errorSelector),
+                isValid = true,
+                value = this.getValue();
+            errorMessages.empty();
+            if (value && value.getFullYear() < 1900) {
+                isValid = false;
+                errorMessages.append(
+                    $('<li>').text(gettext('Please enter the date on and after 1900.'))
+                );
+            }
+            var errorIndex = $.inArray(this.errorSelector, this.model.validationErrors);
+            if (isValid) {
+                if (errorIndex >= 0) this.model.validationErrors.splice(errorIndex, 1);
+            } else {
+                if (errorIndex < 0) this.model.validationErrors.push(this.errorSelector);
+            }
+            if ($.isEmptyObject(this.model.validationErrors)) {
+                this.model.trigger('valid');
+            } else {
+                this.model.trigger('invalid');
+            }
         }
     });
 
@@ -219,6 +245,7 @@ define(['jquery', 'backbone', 'underscore', 'gettext', 'js/views/baseview',
         fieldName: 'due',
         templateName: 'due-date-editor',
         className: 'modal-section-content has-actions due-date-input grading-due-date',
+        errorSelector: '#due-date-error-message',
 
         events: {
             'change #due_date': 'validate'
@@ -244,24 +271,6 @@ define(['jquery', 'backbone', 'underscore', 'gettext', 'js/views/baseview',
                     'due': this.getValue()
                 }
             };
-        },
-
-        validate: function() {
-            var errorMessages = this.$('#due-date-error-message'),
-                isValid = true,
-                value = this.getValue();
-            errorMessages.empty();
-            if (value && value.getFullYear() < 1900) {
-                isValid = false;
-                errorMessages.append(
-                    $('<li>').text(gettext('Please enter the date on and after 1900.'))
-                );
-            }
-            if (isValid) {
-                this.model.trigger('valid');
-            } else {
-                this.model.trigger('invalid');
-            }
         }
     });
 
@@ -270,6 +279,7 @@ define(['jquery', 'backbone', 'underscore', 'gettext', 'js/views/baseview',
         templateName: 'release-date-editor',
         className: 'edit-settings-release scheduled-date-input',
         startingReleaseDate: null,
+        errorSelector: '#release-date-error-message',
 
         events: {
             'change #start_date': 'validate'
@@ -306,24 +316,6 @@ define(['jquery', 'backbone', 'underscore', 'gettext', 'js/views/baseview',
                     'start': newReleaseDate
                 }
             };
-        },
-
-        validate: function() {
-            var errorMessages = this.$('#release-date-error-message'),
-                isValid = true,
-                value = this.getValue();
-            errorMessages.empty();
-            if (value && value.getFullYear() < 1900) {
-                isValid = false;
-                errorMessages.append(
-                    $('<li>').text(gettext('Please enter the date on and after 1900.'))
-                );
-            }
-            if (isValid) {
-                this.model.trigger('valid');
-            } else {
-                this.model.trigger('invalid');
-            }
         }
     });
     BaseIndividualDaysEditor = AbstractEditor.extend({
