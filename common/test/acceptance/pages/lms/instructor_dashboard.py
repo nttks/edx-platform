@@ -832,6 +832,20 @@ class DataDownloadPage(PageObject):
         return self.q(css='input[name=problem-grade-report]')
 
     @property
+    def generate_score_detail_report_button(self):
+        """
+        Returns the "Generate Score Detail Report" button.
+        """
+        return self.q(css='input[name=generate-score-detail-report]')
+
+    @property
+    def generate_playback_status_report_button(self):
+        """
+        Returns the "Generate Playback Status Report" button.
+        """
+        return self.q(css='input[name=generate-playback-status-report]')
+
+    @property
     def report_download_links(self):
         """
         Returns the download links for the current page.

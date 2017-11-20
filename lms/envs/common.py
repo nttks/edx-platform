@@ -2009,6 +2009,9 @@ INSTALLED_APPS = (
     'ga_advanced_course',
     'ga_shoppingcart',
 
+    # Celery Task for instructor task of gacco.org
+    'ga_instructor_task',
+
     # Celery Task Management
     'openedx.core.djangoapps.ga_task',
 

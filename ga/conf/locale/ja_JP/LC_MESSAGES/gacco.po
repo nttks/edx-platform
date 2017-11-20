@@ -1265,12 +1265,18 @@ msgstr "その他"
 
 #: lms/templates/courseware/course_navigation.html
 #: lms/templates/instructor/instructor_dashboard_2/membership.html
+#: djangoapps/instructor_task/ga_instructor_report_record.py
 msgid "Staff"
 msgstr "講座スタッフ"
 
 #: lms/templates/instructor/instructor_dashboard_2/membership.html
+#: djangoapps/instructor_task/ga_instructor_report_record.py
 msgid "Admin"
 msgstr "講座管理者"
+
+#: djangoapps/instructor_task/ga_instructor_report_record.py
+msgid "Global Staff"
+msgstr "グローバルスタッフ"
 
 #: lms/templates/instructor/instructor_dashboard_2/certificates.html
 #: lms/templates/instructor/instructor_dashboard_2/course_info.html
@@ -1696,3 +1702,57 @@ msgstr "「{}」は存在しません。"
 #: lms/templates/registration/activation_invalid.html
 msgid "Activation Invalid"
 msgstr "会員登録が完了できませんでした"
+
+#: djangoapps/instructor_task/ga_instructor_report_record.py
+msgid "Resign Status"
+msgstr "退会ステータス"
+
+#: djangoapps/instructor_task/ga_instructor_report_record.py
+msgid "Resign Date"
+msgstr "退会日"
+
+#: lms/templates/instructor/instructor_dashboard_2/data_download.html
+msgid "Generate Score Detail Report"
+msgstr "スコア詳細レポートを生成する"
+
+#: lms/templates/instructor/instructor_dashboard_2/data_download.html
+msgid ""
+"The score detail report is being created. To view the status of the report, see "
+"Pending Instructor Tasks below."
+msgstr ""
+"スコア詳細レポートが作成されます。レポートのステータスを見るには、以下の仕掛り中講師タスクを参照してください。"
+
+#: lms/templates/instructor/instructor_dashboard_2/data_download.html
+msgid ""
+"A score detail report is already being generated. To view the status of the"
+" report, see Pending Instructor Tasks below. You will be able to download "
+"the report when it is complete."
+msgstr ""
+"すでにスコア詳細レポートの作成が行われています。レポートのステータスを見るには、以下の仕掛り中講師タスクを参照してください。ステータスが完了になればレポートをダウンロードできるようになります。"
+
+#: lms/static/coffee/src/instructor_dashboard/data_download.js
+msgid "Error generating score detail report. Please try again."
+msgstr "スコア詳細レポート作成に失敗しました。再試行してください。"
+
+#: lms/templates/instructor/instructor_dashboard_2/data_download.html
+msgid "Generate Playback Status Report"
+msgstr "動画視聴状況レポートを生成する"
+
+#: lms/templates/instructor/instructor_dashboard_2/data_download.html
+msgid ""
+"The playback status report is being created. To view the status of the report, see "
+"Pending Instructor Tasks below."
+msgstr ""
+"動画視聴状況レポートが作成されます。レポートのステータスを見るには、以下の仕掛り中講師タスクを参照してください。"
+
+#: lms/templates/instructor/instructor_dashboard_2/data_download.html
+msgid ""
+"A playback status report is already being generated. To view the status of the"
+" report, see Pending Instructor Tasks below. You will be able to download "
+"the report when it is complete."
+msgstr ""
+"すでに動画視聴状況レポートの作成が行われています。レポートのステータスを見るには、以下の仕掛り中講師タスクを参照してください。ステータスが完了になればレポートをダウンロードできるようになります。"
+
+#: lms/static/coffee/src/instructor_dashboard/data_download.js
+msgid "Error generating playback status report. Please try again."
+msgstr "動画視聴状況レポート作成に失敗しました。再試行してください。"

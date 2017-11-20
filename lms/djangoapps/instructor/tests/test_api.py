@@ -190,6 +190,8 @@ INSTRUCTOR_POST_ENDPOINTS = set([
     'get_survey',
     'get_students_advanced_course',
     'get_students_paid_course',
+    'generate_score_detail_report',
+    'generate_playback_status_report',
 ])
 
 
@@ -390,6 +392,8 @@ class TestInstructorAPIDenyLevels(SharedModuleStoreTestCase, LoginEnrollmentTest
             ('get_oa_rubric_scores', {}),
             ('get_proctored_exam_results', {}),
             ('get_problem_responses', {}),
+            ('generate_score_detail_report', {}),
+            ('generate_playback_status_report', {}),
         ]
         # Endpoints that only Instructors can access
         self.instructor_level_endpoints = [

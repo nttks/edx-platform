@@ -89,6 +89,14 @@
     <p><input type="button" name="problem-grade-report" value="${_("Generate Problem Grade Report")}" data-endpoint="${ section_data['problem_grade_report_url'] }"/></p>
   %endif
 
+  % if not is_spoc_course:
+    <p><input type="button" name="generate-score-detail-report" value="${_("Generate Score Detail Report")}" data-endpoint="${ section_data['generate_score_detail_report_url'] }" /></p>
+
+    % if use_jwplayer:
+      <p><input type="button" name="generate-playback-status-report" value="${_("Generate Playback Status Report")}" data-endpoint="${ section_data['generate_playback_status_report_url'] }" /></p>
+    % endif
+  % endif
+
     <div class="request-response msg msg-confirm copy" id="report-request-response"></div>
     <div class="request-response-error msg msg-error copy" id="report-request-response-error"></div>
     <br>

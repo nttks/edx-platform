@@ -7,6 +7,7 @@ import requests
 from bok_choy.web_app_test import WebAppTest
 from ...fixtures.course import CourseFixture
 from ...fixtures.ga_course_team import CourseTeamFixture
+from ...pages.biz.ga_contract import BizContractPage
 from ...pages.common.logout import LogoutPage
 from ...pages.lms import BASE_URL
 from ...pages.lms.auto_auth import AutoAuthPage
@@ -14,11 +15,31 @@ from ...pages.lms.ga_advanced_course import AdvancedF2FCoursesPage
 from ...pages.lms.ga_dashboard import DashboardPage
 from ...pages.lms.ga_instructor_dashboard import InstructorDashboardPage
 from ...pages.lms.login_and_register import CombinedLoginAndRegisterPage
+from ...tests.biz import PLATFORMER_USER_INFO, A_COMPANY, GaccoBizTestMixin
 from ..ga_helpers import GaccoTestMixin
+from ..helpers import EventsTestMixin
 from lms.envs.ga_bok_choy import EMAIL_FILE_PATH
 
 
-class SendEmailTest(WebAppTest, GaccoTestMixin):
+class GaccoLmsInstructorDashboardTestMixin(GaccoTestMixin):
+    def _create_user(self, user, course_key, staff):
+        AutoAuthPage(
+            self.browser,
+            username=user['username'],
+            email=user['email'],
+            password='edx',
+            course_id=course_key,
+            staff=staff
+        ).visit()
+        LogoutPage(self.browser).visit()
+
+    def _login(self, email, password='edx'):
+        self.login_page.visit()
+        self.login_page.login(email, password)
+        self.dashboard_page.wait_for_page()
+
+
+class SendEmailTest(WebAppTest, GaccoLmsInstructorDashboardTestMixin):
     """
     Test the send email process.
     """
@@ -74,22 +95,6 @@ class SendEmailTest(WebAppTest, GaccoTestMixin):
 
         # Set window size
         self.setup_window_size_for_pc()
-
-    def _create_user(self, user, course_key, staff):
-        AutoAuthPage(
-            self.browser,
-            username=user['username'],
-            email=user['email'],
-            password='edx',
-            course_id=course_key,
-            staff=staff
-        ).visit()
-        LogoutPage(self.browser).visit()
-
-    def _login(self, email, password='edx'):
-        self.login_page.visit()
-        self.login_page.login(email, password)
-        self.dashboard_page.wait_for_page()
 
     def test_displayed_optout_checkbox_only_global_staff(self):
         """
@@ -314,3 +319,190 @@ class SendEmailTest(WebAppTest, GaccoTestMixin):
         messages = filter(lambda msg: msg['to_addresses'].startswith('test_'), self.email_client.get_messages())
 
         self.assertItemsEqual(_expected_emails, [msg['to_addresses'] for msg in messages])
+
+
+class DataDownloadsTest(WebAppTest, GaccoLmsInstructorDashboardTestMixin, GaccoBizTestMixin, EventsTestMixin):
+    """
+    Bok Choy tests for the "Data Downloads" tab.
+    """
+    COURSE_ORG = 'test_org'
+    COURSE_RUN = 'test_run'
+    COURSE_DISPLAY = 'test_course'
+
+    def _setup_course(self):
+        course_fixture = CourseFixture(
+            self.COURSE_ORG, self._testMethodName,
+            self.COURSE_RUN, self.COURSE_DISPLAY,
+        ).install()
+        self.course_key = course_fixture._course_key
+
+    def _setup_course_with_jwplayer(self):
+        course_fixture = CourseFixture(
+            self.COURSE_ORG, self._testMethodName,
+            self.COURSE_RUN, self.COURSE_DISPLAY,
+        )
+        course_fixture.add_advanced_settings({u'advanced_modules': {u'value': [u'jwplayerxblock']}})
+        course_fixture.install()
+        self.course_key = course_fixture._course_key
+
+    def _setup_spoc_course_with_jwplayer(self):
+        course_info = {
+            'org': 'plat',
+            'number': self._testMethodName,
+            'run': 'biz_test_run',
+            'display_name': 'Biz Test Course ' + self._testMethodName
+        }
+        course_fixture = CourseFixture(**course_info)
+        course_fixture.add_advanced_settings({u'advanced_modules': {u'value': [u'jwplayerxblock']}})
+        course_fixture.install()
+        self.course_key = course_fixture._course_key
+
+        # Register a contract with platfomer
+        self.switch_to_user(PLATFORMER_USER_INFO)
+        self.create_contract(BizContractPage(self.browser).visit(),
+                             'PF', '2016/01/01', '2100/01/01',
+                             contractor_organization=A_COMPANY,
+                             detail_info=[self.course_key], additional_info=[u'部署'])
+
+        # Logout
+        LogoutPage(self.browser).visit()
+
+    def _setup_user(self):
+        username_global_staff = 'test_globalstaff_' + self.unique_id[0:6]
+        self.user_global_staff = {'username': username_global_staff, 'email': username_global_staff + '@example.com'}
+        self._create_user(self.user_global_staff, self.course_key, True)
+
+    def _setup_pages(self):
+        self.dashboard_page = DashboardPage(self.browser)
+        self.instructor_dashboard_page = InstructorDashboardPage(self.browser, self.course_key)
+        self.login_page = CombinedLoginAndRegisterPage(self.browser, start_page='login')
+        self.logout_page = LogoutPage(self.browser)
+
+    def _login_and_visit(self):
+        ## login as global staff ##
+        self._login(self.user_global_staff['email'])
+
+        # Visit instructor dashboard and data download section
+        self.instructor_dashboard_page.visit()
+        self.data_download_section = self.instructor_dashboard_page.select_data_download()
+
+    def verify_report_requested_event(self, report_type):
+        """
+        Verifies that the correct event is emitted when a report is requested.
+        cf. test_lms_instructor_dashboard.py
+        """
+        self.assert_matching_events_were_emitted(
+            event_filter={'name': u'edx.instructor.report.requested', 'report_type': report_type}
+        )
+
+    def verify_report_downloaded_event(self, report_url):
+        """
+        Verifies that the correct event is emitted when a report is downloaded.
+        cf. test_lms_instructor_dashboard.py
+        """
+        self.assert_matching_events_were_emitted(
+            event_filter={'name': u'edx.instructor.report.downloaded', 'report_url': report_url}
+        )
+
+    def verify_report_download(self, report_name):
+        """
+        Verifies that a report can be downloaded and an event fired.
+        cf. test_lms_instructor_dashboard.py
+        """
+        download_links = self.data_download_section.report_download_links
+        self.assertEquals(len(download_links), 1)
+        download_links[0].click()
+        expected_url = download_links.attrs('href')[0]
+        self.assertIn(report_name, expected_url)
+        self.verify_report_downloaded_event(expected_url)
+
+    def test_score_detail_report_download(self):
+        """
+        Scenario: Verify that an instructor can download a score detail report
+
+        Given that I am an instructor
+        And I visit the instructor dashboard's "Data Downloads" tab
+        And I click on the "Generate Score Detail Report" button
+        Then a report should be generated
+        And a report requested event should be emitted
+        When I click on the report
+        Then a report downloaded event should be emitted
+        """
+        report_name = u"score_detail_report"
+        self._setup_course()
+        self._setup_user()
+        self._setup_pages()
+        self._login_and_visit()
+
+        self.data_download_section.generate_score_detail_report_button.click()
+        self.data_download_section.wait_for_available_report()
+        self.verify_report_requested_event(report_name)
+        self.verify_report_download(report_name)
+
+    def test_score_detail_report_spoc_course(self):
+        """
+        Scenario: Verify that an instructor can not use "Generate Score Detail Report" button
+
+        Given that I am an instructor
+        And I visit the instructor dashboard's "Data Downloads" tab
+        Then a not display "Generate Score Detail Report" button
+        """
+        self._setup_spoc_course_with_jwplayer()
+        self._setup_user()
+        self._setup_pages()
+        self._login_and_visit()
+
+        self.assertFalse(self.data_download_section.generate_score_detail_report_button.present)
+
+    def test_playback_status_report_download(self):
+        """
+        Scenario: Verify that an instructor can download a playback status report
+
+        Given that I am an instructor
+        And I visit the instructor dashboard's "Data Downloads" tab
+        And I click on the "Generate Playback Status Report" button
+        Then a report should be generated
+        And a report requested event should be emitted
+        When I click on the report
+        Then a report downloaded event should be emitted
+        """
+        report_name = u"playback_status_report"
+        self._setup_course_with_jwplayer()
+        self._setup_user()
+        self._setup_pages()
+        self._login_and_visit()
+
+        self.data_download_section.generate_playback_status_report_button.click()
+        self.data_download_section.wait_for_available_report()
+        self.verify_report_requested_event(report_name)
+        self.verify_report_download(report_name)
+
+    def test_playback_status_report_no_jwplayer(self):
+        """
+        Scenario: Verify that an instructor can not use "Generate Playback Status Report" button
+
+        Given that I am an instructor
+        And I visit the instructor dashboard's "Data Downloads" tab
+        Then a not display "Generate Playback Status Report" button
+        """
+        self._setup_course()
+        self._setup_user()
+        self._setup_pages()
+        self._login_and_visit()
+
+        self.assertFalse(self.data_download_section.generate_playback_status_report_button.present)
+
+    def test_playback_status_report_spoc_course(self):
+        """
+        Scenario: Verify that an instructor can not use "Generate Playback Status Report" button
+
+        Given that I am an instructor
+        And I visit the instructor dashboard's "Data Downloads" tab
+        Then a not display "Generate Playback Status Report" button
+        """
+        self._setup_spoc_course_with_jwplayer()
+        self._setup_user()
+        self._setup_pages()
+        self._login_and_visit()
+
+        self.assertFalse(self.data_download_section.generate_playback_status_report_button.present)

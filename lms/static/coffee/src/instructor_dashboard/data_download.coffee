@@ -85,6 +85,8 @@ class DataDownload
     @$problem_grade_report_csv_btn = @$section.find("input[name='problem-grade-report']'")
     @$list_advanced_course_csv_btn = @$section.find("input[name='list-advanced-course-csv']'")
     @$list_paid_course_csv_btn = @$section.find("input[name='list-paid-course-csv']'")
+    @$generate_score_detail_report_csv_btn = @$section.find("input[name='generate-score-detail-report']'")
+    @$generate_playback_status_report_csv_btn = @$section.find("input[name='generate-playback-status-report']'")
 
     # response areas
     @$download                        = @$section.find '.data-download-container'
@@ -270,6 +272,12 @@ class DataDownload
 
     @$problem_grade_report_csv_btn.click (e) =>
       @onClickGradeDownload @$problem_grade_report_csv_btn, gettext("Error generating problem grade report. Please try again.")
+
+    @$generate_score_detail_report_csv_btn.click (e) =>
+      @onClickGradeDownload @$generate_score_detail_report_csv_btn, gettext("Error generating score detail report. Please try again.")
+
+    @$generate_playback_status_report_csv_btn.click (e) =>
+      @onClickGradeDownload @$generate_playback_status_report_csv_btn, gettext("Error generating playback status report. Please try again.")
 
   onClickGradeDownload: (button, errorMessage) ->
       # Clear any CSS styling from the request-response areas

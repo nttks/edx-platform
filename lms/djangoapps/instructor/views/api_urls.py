@@ -171,4 +171,11 @@ urlpatterns = patterns(
 
     url(r'^get_students_paid_course(?P<csv>/csv)?$',
         'instructor.views.api.get_students_paid_course', name="get_students_paid_course"),
+
+    # Score detail report, Playback status report downloads
+    url(r'^generate_score_detail_report$',
+        'instructor.views.ga_api.generate_score_detail_report', name="generate_score_detail_report"),
+
+    url(r'^generate_playback_status_report$',
+        'instructor.views.ga_api.generate_playback_status_report', name="generate_playback_status_report"),
 )

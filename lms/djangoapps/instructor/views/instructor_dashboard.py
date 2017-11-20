@@ -23,6 +23,7 @@ from util.json_request import JsonResponse
 from mock import patch
 
 from lms.djangoapps.lms_xblock.runtime import quote_slashes
+from openedx.core.lib.ga_course_utils import is_using_jwplayer_course
 from openedx.core.lib.xblock_utils import wrap_xblock
 from xmodule.html_module import HtmlDescriptor
 from xmodule.modulestore.django import modulestore
@@ -186,6 +187,8 @@ def instructor_dashboard_2(request, course_id):
         kwargs={'course_id': unicode(course_key)}
     )
 
+    spoc_status = getattr(request, 'spoc_status', None)
+
     context = {
         'course': course,
         'studio_url': get_studio_url(course, 'course'),
@@ -195,7 +198,9 @@ def instructor_dashboard_2(request, course_id):
         'certificate_white_list': certificate_white_list,
         'generate_certificate_exceptions_url': generate_certificate_exceptions_url,
         'generate_bulk_certificate_exceptions_url': generate_bulk_certificate_exceptions_url,
-        'certificate_exception_view_url': certificate_exception_view_url
+        'certificate_exception_view_url': certificate_exception_view_url,
+        'is_spoc_course': spoc_status and spoc_status.is_spoc_course,
+        'use_jwplayer': is_using_jwplayer_course(course),
     }
     if settings.FEATURES['ENABLE_INSTRUCTOR_LEGACY_DASHBOARD']:
         context['old_dashboard_url'] = reverse('instructor_dashboard_legacy', kwargs={'course_id': unicode(course_key)})
@@ -563,6 +568,8 @@ def _section_data_download(course, access):
         'course_survey_results_url': reverse('get_course_survey_results', kwargs={'course_id': unicode(course_key)}),
         'get_students_advanced_course_url': reverse('get_students_advanced_course', kwargs={'course_id': unicode(course_key)}),
         'get_students_paid_course_url': reverse('get_students_paid_course', kwargs={'course_id': unicode(course_key)}),
+        'generate_score_detail_report_url': reverse('generate_score_detail_report', kwargs={'course_id': unicode(course_key)}),
+        'generate_playback_status_report_url': reverse('generate_playback_status_report', kwargs={'course_id': unicode(course_key)}),
     }
     return section_data
 
