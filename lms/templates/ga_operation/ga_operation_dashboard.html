@@ -254,6 +254,11 @@
             <p class="error" id="student_ids"></p>
         <li>
         <li>
+            <label for="email">結果返却用Eメールアドレス</label>
+            <input type="email" name="email" value="${callback_email}">
+            <label id="email" for="text" class="error"></label>
+        </li>
+        <li>
             <div class="form_action">
                 <button id="publish_certs" class="button" name="publish_certs">公開</button>
                 <img id="indicator" src="${static.url('images/spinner.gif')}" alt="実行中..." hidden>

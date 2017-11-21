@@ -6,7 +6,7 @@ from django.test import TestCase
 from django.test.utils import override_settings
 
 from certificates.tests.factories import GeneratedCertificateFactory
-from ga_operation.tasks import create_certs_task
+from ga_operation.tasks import create_certs_task, publish_certs_task
 from opaque_keys.edx.keys import CourseKey
 from pdfgen.certificate import CertPDFException, CertPDFUserNotFoundException
 from pdfgen.views import CertException
@@ -501,3 +501,123 @@ class CreateCertsTest(TestCase):
         )
         mock_log.exception.assert_not_called()
         get_course_by_id_mock.assert_called_once_with(course_key=CourseKey.from_string(self.course_id))
+
+
+@ddt.ddt
+@override_settings(GA_OPERATION_EMAIL_SENDER='sender@example.com')
+class PublishCertsTest(TestCase):
+
+    @staticmethod
+    def _create_certificate(course_id, status, user=None):
+        if user is None:
+            user = UserFactory.create()
+        course_key = CourseKey.from_string(course_id)
+        return GeneratedCertificateFactory.create(user=user, course_id=course_key, status=status)
+
+    @patch('openedx.core.djangoapps.ga_operation.task_base.send_mail')
+    @patch('ga_operation.tasks.log')
+    @patch('ga_operation.tasks.call_command')
+    @ddt.data([], ['user1', 'user2'])
+    def test_success(self, student_ids, mock_call_command, mock_log, mock_send_mail):
+        # Create certificate data
+        for status, target_count, no_target_count in [
+            ('deleted', 1, 2),
+            ('deleting', 2, 3),
+            ('downloadable', 3, 4),
+            ('error', 4, 5),
+            ('generating', 5, 6),
+            ('notpassing', 6, 7),
+            ('regenerating', 7, 8),
+            ('restricted', 8, 9),
+            ('unavailable', 9, 10),
+        ]:
+            for __ in range(target_count):
+                self._create_certificate('course-v1:org+course+run', status)
+            for __ in range(no_target_count):
+                self._create_certificate('course-v1:org+courseX+run', status)
+
+        publish_certs_task('course-v1:org+course+run', 'test@example.com', student_ids)
+
+        if student_ids:
+            self.assertEqual(mock_call_command.call_count, len(student_ids))
+            for student_id in student_ids:
+                mock_call_command.assert_any_call(
+                    'create_certs', 'publish', 'course-v1:org+course+run',
+                    username=student_id, debug=False, noop=False, prefix='', exclude=None
+                )
+        else:
+            mock_call_command.assert_called_once_with(
+                'create_certs', 'publish', 'course-v1:org+course+run',
+                username=False, debug=False, noop=False, prefix='', exclude=None
+            )
+        status_counts = '\n'.join(student_ids) + '\n' if student_ids else ''
+        status_counts += '\n\n--CertificateStatuses--\n\n' + '\n'.join([
+            'deleted: 1',
+            'deleting: 2',
+            'downloadable: 3',
+            'error: 4',
+            'generating: 5',
+            'notpassing: 6',
+            'regenerating: 7',
+            'restricted: 8',
+            'unavailable: 9',
+        ]) + '\n'
+        mock_send_mail.assert_called_once_with(
+            'create_certs(publish) has succeeded. (course-v1:org+course+run)',
+            status_counts,
+            'sender@example.com',
+            ['test@example.com'],
+            fail_silently=False,
+        )
+
+    @patch('openedx.core.djangoapps.ga_operation.task_base.send_mail')
+    @patch('ga_operation.tasks.log')
+    @patch('ga_operation.tasks.call_command')
+    def test_success_with_wrong_user(self, mock_call_command, mock_log, mock_send_mail):
+        student_ids = ['user1', 'user2', 'user3']
+        mock_call_command.side_effect = [None, CertPDFUserNotFoundException, None]
+
+        publish_certs_task('course-v1:org+course+run', 'test@example.com', student_ids)
+
+        self.assertEqual(mock_call_command.call_count, len(student_ids))
+        for student_id in student_ids:
+            mock_call_command.assert_any_call(
+                'create_certs', 'publish', 'course-v1:org+course+run',
+                username=student_id, debug=False, noop=False, prefix='', exclude=None
+            )
+
+        status_counts = 'user1\nUser(user2) was not found\nuser3\n\n\n--CertificateStatuses--\n\n' + '\n'.join([
+            'deleted: 0',
+            'deleting: 0',
+            'downloadable: 0',
+            'error: 0',
+            'generating: 0',
+            'notpassing: 0',
+            'regenerating: 0',
+            'restricted: 0',
+            'unavailable: 0',
+        ]) + '\n'
+        mock_log.warning.assert_any_call('User(user2) was not found\n')
+        mock_send_mail.assert_called_once_with(
+            'create_certs(publish) has succeeded. (course-v1:org+course+run)',
+            status_counts,
+            'sender@example.com',
+            ['test@example.com'],
+            fail_silently=False,
+        )
+
+    @patch('ga_operation.tasks.traceback.format_exc', return_value='dummy_traceback')
+    @patch('openedx.core.djangoapps.ga_operation.task_base.send_mail')
+    @patch('ga_operation.tasks.call_command')
+    def test_error(self, mock_call_command, mock_send_mail, mock_traceback):
+        mock_call_command.side_effect = Exception('error')
+
+        publish_certs_task('course-v1:org+course+run', 'test@example.com', [])
+
+        mock_send_mail.assert_called_once_with(
+            'create_certs(publish) has failed. (course-v1:org+course+run)',
+            'create_certs(publish) has failed.\n\nCaught the exception: Exception\ndummy_traceback',
+            'sender@example.com',
+            ['test@example.com'],
+            fail_silently=False,
+        )

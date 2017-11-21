@@ -3,6 +3,7 @@ from datetime import date, datetime, time
 import logging
 import os
 import pytz
+import traceback
 
 from boto import connect_s3
 from boto.s3.key import Key
@@ -602,3 +603,83 @@ class DisabledAccountInfo(AggregateInHouseOperationTaskBase):
     @staticmethod
     def _get_subject_name():
         return "student_userstanding"
+
+
+@CELERY_APP.task
+def publish_certs_task(course_id, email, student_ids):
+    """publish_certs_task main."""
+    PublishCerts(course_id, email, student_ids).run()
+
+
+class PublishCerts(TaskBase):
+    """Publish certificate class"""
+
+    def __init__(self, course_id, email, student_ids=()):
+        super(PublishCerts, self).__init__(email)
+        self.student_ids = student_ids
+        self.course_id = course_id
+        self.operation = "publish"
+        self.response_msg = ""
+
+    def run(self):
+        try:
+            if self.student_ids:
+                for student in self.student_ids:
+                    try:
+                        call_command(
+                            CreateCerts.get_command_name(),
+                            self.operation, self.course_id,
+                            username=student, debug=False, noop=False, prefix="", exclude=None
+                        )
+                        self.response_msg += "{}\n".format(student)
+                    except CertPDFUserNotFoundException:
+                        # continue the process when got error that not found certificate user.
+                        warn_msg = "User({}) was not found\n".format(student)
+                        log.warning(warn_msg)
+                        self.response_msg += warn_msg
+                        continue
+            else:
+                call_command(CreateCerts.get_command_name(),
+                             self.operation, self.course_id,
+                             username=False, debug=False, noop=False, prefix="", exclude=None)
+            self.response_msg += "\n\n--CertificateStatuses--\n\n"
+            course_key = CourseKey.from_string(self.course_id)
+            attr_list = [
+                CertificateStatuses.deleted,
+                CertificateStatuses.deleting,
+                CertificateStatuses.downloadable,
+                CertificateStatuses.error,
+                CertificateStatuses.generating,
+                CertificateStatuses.notpassing,
+                CertificateStatuses.regenerating,
+                CertificateStatuses.restricted,
+                CertificateStatuses.unavailable,
+            ]
+            # Describe message on a email body to be counting each CertificateStatuses class's attribute.
+            for status in attr_list:
+                self.response_msg += "{}: {}\n".format(status, GeneratedCertificate.objects.filter(
+                    course_id=course_key,
+                    status=status
+                ).count())
+        except Exception as e:
+            msg = "Caught the exception: " + type(e).__name__
+            log.exception(msg)
+            self.err_msg = "{}\n{}".format(msg, traceback.format_exc())
+        finally:
+            self._send_email()
+
+    def _get_email_body(self):
+        if self.err_msg:
+            return "{}({}) has failed.\n\n{}".format(self.get_command_name(), self.operation, self.err_msg)
+        else:
+            return self.response_msg
+
+    def _get_email_subject(self):
+        if self.err_msg:
+            return "{}({}) has failed. ({})".format(self.get_command_name(), self.operation, self.course_id)
+        else:
+            return "{}({}) has succeeded. ({})".format(self.get_command_name(), self.operation, self.course_id)
+
+    @staticmethod
+    def get_command_name():
+        return "create_certs"

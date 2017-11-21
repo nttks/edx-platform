@@ -24,7 +24,7 @@ from ga_operation.forms.aggregate_g1528_form import AggregateG1528Form
 from ga_operation.forms.search_by_email_and_period_date_form import SearchByEmailAndPeriodDateForm
 from ga_operation.tasks import (CreateCerts, create_certs_task, dump_oa_scores_task, ga_get_grades_g1528_task,
                                 all_users_info_task, create_certs_status_task, enrollment_status_task,
-                                disabled_account_info_task)
+                                disabled_account_info_task, publish_certs_task)
 from ga_operation.mongo_utils import CommentStore
 from opaque_keys.edx.keys import CourseKey
 from opaque_keys import InvalidKeyError
@@ -125,44 +125,18 @@ def create_certs_meeting(request, form_instance):
 @handle_operation(PublishCertsForm)
 def publish_certs(request, form_instance):
     """Ajax call to publish certificates."""
+    email = form_instance.cleaned_data['email']
     course_id = form_instance.cleaned_data['course_id']
     student_ids = form_instance.cleaned_data['student_ids']
-    response_msg = "--CertificateStatuses--\n\n"
-    try:
-        if student_ids:
-            for student in student_ids:
-                try:
-                    call_command(
-                        CreateCerts.get_command_name(),
-                        'publish', course_id,
-                        username=student, debug=False, noop=False, prefix='', exclude=None
-                    )
-                except CertPDFUserNotFoundException:
-                    # continue the process when got error that not found certificate user.
-                    log.warning("User({}) was not found".format(student))
-                    continue
-        else:
-            call_command(CreateCerts.get_command_name(),
-                         'publish', course_id,
-                         username=False, debug=False, noop=False, prefix='', exclude=None)
-        course_key = CourseKey.from_string(course_id)
-        attr_list = ['deleted', 'deleting', 'downloadable',
-                     'error', 'generating', 'notpassing',
-                     'regenerating', 'restricted', 'unavailable']
-        # Describe message on a web browser to be counting each CertificateStatuses class's attribute.
-        for status in attr_list:
-            response_msg += "{}: {}\n".format(status, GeneratedCertificate.objects.filter(
-                course_id=course_key,
-                status=status
-            ).count())
-    except CertPDFException as e:
-        log.exception("Failure to publish certificates from create_certs command.")
-        return JsonResponse({
-            RESPONSE_FIELD_ID: "{}".format(e)
-        }, status=500)
-    else:
-        return JsonResponse(
-            {RESPONSE_FIELD_ID: u'対象講座ID: {} の修了証公開処理が完了しました。\n\n{}'.format(course_id, response_msg)})
+
+    publish_certs_task.delay(
+        course_id=course_id,
+        email=email,
+        student_ids=student_ids,
+    )
+    return JsonResponse({
+        RESPONSE_FIELD_ID: u'修了証の公開を開始しました。\n処理が完了したら{}のアドレスに処理の完了通知が来ます。'.format(email)
+    })
 
 
 @staff_only
