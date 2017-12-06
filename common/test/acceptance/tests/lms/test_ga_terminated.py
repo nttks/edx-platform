@@ -66,7 +66,7 @@ class TerminatedCourseTest(WebAppTest, GaccoTestMixin):
         self.switch_to_user(GA_OLD_COURSE_VIEWER_USER_INFO, self.course_id)
 
         self.dashboard_page.visit()
-        self.assertEqual(self.dashboard_page.hidden_course_text, "This course has been closed.")
+        self.assertEqual(self.dashboard_page.hidden_course_text, "")
         self.assertTrue(self.dashboard_page.is_hidden_course_link_active(self.course_id))
 
     def test_dashboard_unenroll_when_course_has_terminated(self):
@@ -138,5 +138,5 @@ class HiddenCourseTest(UniqueCourseTest, GaccoTestMixin):
         self.switch_to_user(GA_OLD_COURSE_VIEWER_USER_INFO, self.course_id)
 
         self.dashboard_page.visit()
-        self.assertEqual(self.dashboard_page.hidden_course_text, "This course has been closed.")
+        self.assertEqual(self.dashboard_page.hidden_course_text, "")
         self.assertTrue(self.dashboard_page.is_hidden_course_link_active(self.course_id))

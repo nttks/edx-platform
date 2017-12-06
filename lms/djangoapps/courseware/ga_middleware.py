@@ -51,9 +51,7 @@ class CourseTerminatedCheckMiddleware(object):
             # If course does not exist, nothing to do.
             return
 
-        is_staff = has_access(request.user, 'staff', course)
-        is_old_course_viewer = has_access(request.user, GA_ACCESS_CHECK_TYPE_OLD_COURSE_VIEW, 'global')
-        if is_terminated(course, request.user, is_staff, is_old_course_viewer):
+        if is_terminated(course, request.user):
             log.warning(
                 'Cannot access to the terminated course. User({user_id}), Path({path})'.format(
                     user_id=request.user.id, path=request.path

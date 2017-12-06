@@ -50,6 +50,7 @@ from social.exceptions import AuthException, AuthAlreadyAssociated
 from edxmako.shortcuts import render_to_response, render_to_string, marketing_link
 
 from course_modes.models import CourseMode
+from courseware.ga_access import is_terminated
 from shoppingcart.api import paid_course_order_history 
 from student.models import (
     get_user_by_username_or_email,
@@ -686,9 +687,7 @@ def dashboard(request):
             ),
             enrollment.course_id
         ) or (
-            enrollment.course_overview.extra and enrollment.course_overview.extra.has_terminated and not (staff_access or ga_old_course_viewer_access)
-        ) or (
-            enrollment.is_individual_closed() and not (staff_access or ga_old_course_viewer_access)
+            is_terminated(enrollment.course_overview, user)
         )
     )
 

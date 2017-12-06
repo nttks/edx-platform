@@ -325,10 +325,7 @@ def get_course_tab_list(request, course):
     course_tab_list += _get_dynamic_tabs(course, user)
 
     # Filter for the terminated course.
-    is_staff = has_access(user, 'staff', course, course.id)
-    is_old_course_viewer = has_access(user, GA_ACCESS_CHECK_TYPE_OLD_COURSE_VIEW, 'global')
-    course_tab_list = [tab for tab in course_tab_list if not is_terminated_tab(tab, course, user, is_staff, is_old_course_viewer)]
-    return course_tab_list
+    return [tab for tab in course_tab_list if not is_terminated_tab(tab, course, user)]
 
 
 def _get_dynamic_tabs(course, user):
