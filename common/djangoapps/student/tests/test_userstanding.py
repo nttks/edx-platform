@@ -5,10 +5,12 @@ that students with disabled accounts are unable to access the courseware.
 import ddt
 import json
 import unittest
+import uuid
 
-from student.tests.factories import CourseEnrollmentFactory, UserFactory, UserStandingFactory
+from student.tests.factories import CourseEnrollmentFactory, RegistrationFactory, UserFactory, UserStandingFactory
 from student.models import CourseEnrollment, UserStanding
 from django.conf import settings
+from django.contrib.auth.models import User
 from django.test import TestCase, Client
 from django.core.urlresolvers import reverse
 from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
@@ -58,6 +60,9 @@ class UserStandingTest(ModuleStoreTestCase):
             account_status=UserStanding.ACCOUNT_DISABLED,
             changed_by=self.admin
         )
+        RegistrationFactory.create(user=self.admin, activation_key=uuid.uuid4().hex, masked=False)
+        RegistrationFactory.create(user=self.bad_user, activation_key=uuid.uuid4().hex, masked=False)
+        RegistrationFactory.create(user=self.good_user, activation_key=uuid.uuid4().hex, masked=False)
 
         # set stock url to test disabled accounts' access to site
         self.some_url = '/'
@@ -78,12 +83,33 @@ class UserStandingTest(ModuleStoreTestCase):
             UserStanding.objects.get(user=self.good_user).account_status,
             UserStanding.ACCOUNT_DISABLED
         )
+        self.assertTrue(User.objects.get(pk=self.good_user.id).registration.masked)
         content = json.loads(response.content)
         self.assertEqual(content['user_name'], self.good_user.username)
         self.assertEqual(content['user_mail'], self.good_user.email)
         self.assertEqual(
             content['account_status'],
             UserStanding.ACCOUNT_DISABLED
+        )
+
+    @unittest.skipUnless(settings.ROOT_URLCONF == 'lms.urls', 'Test only valid in lms')
+    def test_cant_disable_account_for_myself(self):
+        response = self.admin_client.post(reverse('disable_account_ajax'), {
+            'username_or_email': self.admin.username,
+            'user': self.admin,
+            'account_action': 'disable',
+        })
+        self.assertFalse(User.objects.get(pk=self.admin.id).registration.masked)
+        content = json.loads(response.content)
+        self.assertEqual(content['user_name'], self.admin.username)
+        self.assertEqual(content['user_mail'], self.admin.email)
+        self.assertEqual(
+            content['account_status'],
+            UserStanding.ACCOUNT_ENABLED
+        )
+        self.assertEqual(
+            content['message'],
+            'You can not change of yourself.'
         )
 
     def test_disabled_account_redirect_to_disabled_account_page(self):

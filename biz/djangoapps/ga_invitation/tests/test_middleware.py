@@ -14,7 +14,7 @@ from django.utils.functional import SimpleLazyObject
 from courseware.access_utils import ACCESS_DENIED, ACCESS_GRANTED
 from courseware.tests.helpers import LoginEnrollmentTestCase
 from opaque_keys.edx.keys import CourseKey
-from student.roles import CourseBetaTesterRole, CourseStaffRole, GaOldCourseViewerStaffRole, GlobalStaff
+from student.roles import CourseBetaTesterRole, CourseStaffRole, GaCourseScorerRole, GaGlobalCourseCreatorRole, GaOldCourseViewerStaffRole, GlobalStaff
 from student.tests.factories import UserFactory
 from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
 from xmodule.modulestore.tests.factories import CourseFactory, ItemFactory
@@ -206,7 +206,13 @@ class SpocStatusMiddlewareTest(SpocStatusTestBase):
         # has_spoc_access is True if user is not enroll betatesters
         self.assertEqual((True, True), self.request.spoc_status)
 
-    @ddt.data((GlobalStaff, ACCESS_GRANTED), (GaOldCourseViewerStaffRole, ACCESS_GRANTED), (CourseBetaTesterRole, False))
+    @ddt.data(
+        (GlobalStaff, ACCESS_GRANTED),
+        (GaOldCourseViewerStaffRole, ACCESS_GRANTED),
+        (GaGlobalCourseCreatorRole, ACCESS_GRANTED),
+        (GaCourseScorerRole, True),
+        (CourseBetaTesterRole, False),
+    )
     @ddt.unpack
     def test_process_request_spoc_disabled_and_specificate_role(self, data_role, expected_has_access):
         course_id = CourseKey.from_string('course-v1:org+course+run')
@@ -220,7 +226,7 @@ class SpocStatusMiddlewareTest(SpocStatusTestBase):
         )
 
         # Add Role
-        if data_role is CourseBetaTesterRole:
+        if data_role is CourseBetaTesterRole or data_role is GaCourseScorerRole:
             data_role(course_id).add_users(self.user)
         else:
             data_role().add_users(self.user)
@@ -233,7 +239,7 @@ class SpocStatusMiddlewareTest(SpocStatusTestBase):
         SpocStatusMiddleware().process_request(self.request)
 
         # If contract is disabled, has_access is False regardless of the status of ContractRegister
-        # But global staff and ga_old_course_viewer is True
+        # But global staff, ga_old_course_viewer and ga_global_course_creator is True
         self.assertEqual((True, expected_has_access), self.request.spoc_status)
 
     @ddt.data(
@@ -439,6 +445,43 @@ class CourseAboutTest(SpocStatusTestBase):
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
 
+    def test_spoc_course_with_ga_global_course_creator(self):
+        self.setup_user()
+
+        # Make user to ga_global_course_creator
+        GaGlobalCourseCreatorRole().add_users(User.objects.get(pk=self.user.id))
+
+        # Create Contract but not SPOC
+        contract_detail = self._create_contract(
+            user=self.user,
+            course_id=self.course.id,
+            contract_type=CONTRACT_TYPE_PF[0]
+        )
+        # Not Create ContractRegister
+
+        url = reverse('about_course', args=[self.course.id.to_deprecated_string()])
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+
+    def test_spoc_course_with_ga_course_scorer(self):
+        self.setup_user()
+
+        # Make user to ga_course_scorer
+        GaCourseScorerRole(self.course.id).add_users(User.objects.get(pk=self.user.id))
+
+        # Create Contract but not SPOC
+        contract_detail = self._create_contract(
+            user=self.user,
+            course_id=self.course.id,
+            contract_type=CONTRACT_TYPE_PF[0]
+        )
+        # Not Create ContractRegister
+
+        url = reverse('about_course', args=[self.course.id.to_deprecated_string()])
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+
+
 
 @ddt.ddt
 class CourseInfoTest(SpocStatusTestBase):
@@ -607,6 +650,42 @@ class CourseInfoTest(SpocStatusTestBase):
 
         # Make user to course staff
         CourseStaffRole(self.course.id).add_users(User.objects.get(pk=self.user.id))
+
+        # Create Contract but not SPOC
+        contract_detail = self._create_contract(
+            user=self.user,
+            course_id=self.course.id,
+            contract_type=CONTRACT_TYPE_PF[0]
+        )
+        # Not Create ContractRegister
+
+        url = reverse('info', args=[self.course.id.to_deprecated_string()])
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+
+    def test_spoc_course_with_ga_global_course_creator(self):
+        self.setup_user()
+
+        # Make user to ga_global_course_creator
+        GaGlobalCourseCreatorRole().add_users(User.objects.get(pk=self.user.id))
+
+        # Create Contract but not SPOC
+        contract_detail = self._create_contract(
+            user=self.user,
+            course_id=self.course.id,
+            contract_type=CONTRACT_TYPE_PF[0]
+        )
+        # Not Create ContractRegister
+
+        url = reverse('info', args=[self.course.id.to_deprecated_string()])
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+
+    def test_spoc_course_with_ga_course_scorer(self):
+        self.setup_user()
+
+        # Make user to ga_course_scorer
+        GaCourseScorerRole(self.course.id).add_users(User.objects.get(pk=self.user.id))
 
         # Create Contract but not SPOC
         contract_detail = self._create_contract(

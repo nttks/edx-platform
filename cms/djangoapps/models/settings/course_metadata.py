@@ -70,6 +70,7 @@ class CourseMetadata(object):
         'individual_due_minutes',
         'target_library',
         'playback_rate_1x_only',
+        'progress_restriction',
     ]
 
     @classmethod

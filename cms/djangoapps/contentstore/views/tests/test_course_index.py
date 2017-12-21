@@ -14,7 +14,7 @@ from django.test.utils import override_settings
 from django.utils.translation import ugettext as _
 
 from contentstore.courseware_index import CoursewareSearchIndexer, SearchIndexingError
-from contentstore.tests.utils import CourseTestCase
+from contentstore.tests.utils import CourseTestCase, switch_ga_global_course_creator
 from contentstore.utils import reverse_course_url, reverse_library_url, add_instructor, reverse_usage_url
 from contentstore.views.course import (
     course_outline_initial_state, reindex_course_and_check_access, _deprecated_blocks_info
@@ -282,6 +282,18 @@ class TestCourseIndex(CourseTestCase):
         self.assertEqual(response.status_code, 404)
 
 
+class TestCourseIndexWithGaGlobalCourseCreator(TestCourseIndex):
+    """
+    Unit tests for getting the list of courses and the course outline.
+    """
+    def setUp(self):
+        """
+        Add a course with odd characters in the fields
+        """
+        super(TestCourseIndexWithGaGlobalCourseCreator, self).setUp()
+        switch_ga_global_course_creator(self.user)
+
+
 @ddt.ddt
 class TestCourseOutline(CourseTestCase):
     """
@@ -540,6 +552,18 @@ class TestCourseOutline(CourseTestCase):
             info['blocks'],
             [[reverse_usage_url('container_handler', vertical2.location), 'notes problem in vert2']]
         )
+
+
+class TestCourseOutlineWithGaGlobalCourseCreator(TestCourseOutline):
+    """
+    Unit tests for the course outline.
+    """
+    def setUp(self):
+        """
+        Set up the for the course outline tests.
+        """
+        super(TestCourseOutlineWithGaGlobalCourseCreator, self).setUp()
+        switch_ga_global_course_creator(self.user)
 
 
 class TestCourseReIndex(CourseTestCase):

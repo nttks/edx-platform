@@ -1,6 +1,6 @@
 import json
 from unittest import TestCase
-from contentstore.tests.utils import CourseTestCase
+from contentstore.tests.utils import CourseTestCase, switch_ga_global_course_creator
 from contentstore.utils import reverse_course_url
 
 from contentstore.views.course import (
@@ -105,6 +105,14 @@ class TextbookIndexTestCase(CourseTestCase):
         self.assertIn("error", obj)
 
 
+class TextbookIndexTestCaseWithGaGlobalCourseCreator(TextbookIndexTestCase):
+    "Test cases for the textbook index page"
+    def setUp(self):
+        "Set the URL for tests"
+        super(TextbookIndexTestCaseWithGaGlobalCourseCreator, self).setUp()
+        switch_ga_global_course_creator(self.user)
+
+
 class TextbookCreateTestCase(CourseTestCase):
     "Test cases for creating a new PDF textbook"
 
@@ -163,6 +171,15 @@ class TextbookCreateTestCase(CourseTestCase):
         )
         self.assertEqual(resp.status_code, 400)
         self.assertNotIn("Location", resp)
+
+
+class TextbookCreateTestCaseWithGaGlobalCourseCreator(TextbookCreateTestCase):
+    "Test cases for creating a new PDF textbook"
+
+    def setUp(self):
+        "Set up a url and some textbook content for tests"
+        super(TextbookCreateTestCaseWithGaGlobalCourseCreator, self).setUp()
+        switch_ga_global_course_creator(self.user)
 
 
 class TextbookDetailTestCase(CourseTestCase):
@@ -285,6 +302,14 @@ class TextbookDetailTestCase(CourseTestCase):
             course.pdf_textbooks,
             [self.textbook1, replacement]
         )
+
+
+class TextbookDetailTestCaseWithGaGlobalCourseCreator(TextbookDetailTestCase):
+    "Test cases for the `textbook_detail_handler` view"
+    def setUp(self):
+        "Set some useful content and URLs for tests"
+        super(TextbookDetailTestCaseWithGaGlobalCourseCreator, self).setUp()
+        switch_ga_global_course_creator(self.user)
 
 
 class TextbookValidationTestCase(TestCase):

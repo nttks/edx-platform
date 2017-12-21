@@ -84,6 +84,34 @@ class @Problem
         @el.data('progress_status', response.progress_status)
         @el.data('progress_detail', response.progress_detail)
         @el.trigger('progressChanged')
+
+    # update restricted subsections list
+    if typeof response.restricted_list isnt 'undefined'
+        $('.progress_restriction_info .restricted').data('list', response.restricted_list)
+
+    # remove restricted-chapter classes from chapters not restricted
+    if typeof response.restricted_chapters isnt 'undefined'
+        $('#modal-accordion .chapter-wrapper').removeClass('restricted-chapter')
+        $('#modal-accordion .chapter-wrapper .button-chapter').removeClass('restricted-chapter')
+        $('#modal-accordion .chapter-wrapper .chapter-content-container .chapter-menu').removeClass('restricted-chapter')
+        $('.course-index .accordion .course-navigation .button-chapter').removeClass('restricted-chapter')
+        $('.course-index .accordion .course-navigation .chapter-content-container .chapter-menu').removeClass('restricted-chapter')
+        for chapter_idx in response.restricted_chapters
+            $($('#modal-accordion .chapter-wrapper')[parseInt(chapter_idx, 10)]).addClass('restricted-chapter')
+            $($('#modal-accordion .chapter-wrapper .button-chapter')[parseInt(chapter_idx, 10)]).addClass('restricted-chapter')
+            $($('#modal-accordion .chapter-wrapper .chapter-content-container .chapter-menu')[parseInt(chapter_idx, 10)]).addClass('restricted-chapter')
+            $($('.course-index .accordion .course-navigation .button-chapter')[parseInt(chapter_idx, 10)]).addClass('restricted-chapter')
+            $($('.course-index .accordion .course-navigation .chapter-content-container .chapter-menu')[parseInt(chapter_idx, 10)]).addClass('restricted-chapter')
+
+    # remove restricted-section classes from sections not restricted
+    if typeof response.restricted_sections isnt 'undefined'
+        $('#modal-accordion .chapter-wrapper .chapter-content-container .chapter-menu .menu-item').removeClass('restricted-section')
+        $('.course-index .accordion .course-navigation .chapter-content-container .chapter-menu .menu-item').removeClass('restricted-section')
+        for chapter_idx, sections of response.restricted_sections
+            for idx in sections
+                $($('#modal-accordion .chapter-wrapper .chapter-content-container .chapter-menu')[parseInt(chapter_idx, 10)]).children(".menu-item:nth-child(#{idx})").addClass('restricted-section')
+                $($('.course-index .accordion .course-navigation .chapter-content-container .chapter-menu')[parseInt(chapter_idx, 10)]).children(".menu-item:nth-child(#{idx})").addClass('restricted-section')
+
     @renderProgressState()
 
   forceUpdate: (response) =>

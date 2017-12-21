@@ -2,6 +2,7 @@
 Integration tests for importing courses containing pure XBlocks.
 """
 
+from contentstore.tests.utils import switch_ga_global_course_creator
 from xblock.core import XBlock
 from xblock.fields import String
 
@@ -83,3 +84,9 @@ class XBlockImportTest(ModuleStoreTestCase):
             self.assertTrue(getattr(draft_xblock, 'is_draft', False))
             self.assertTrue(isinstance(draft_xblock, StubXBlock))
             self.assertEqual(draft_xblock.test_field, expected_field_val)
+
+
+class XBlockImportTestWithGaGlobalCourseCreator(XBlockImportTest):
+    def setUp(self):
+        super(XBlockImportTestWithGaGlobalCourseCreator, self).setUp()
+        switch_ga_global_course_creator(self.user)

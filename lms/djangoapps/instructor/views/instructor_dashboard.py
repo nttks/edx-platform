@@ -37,7 +37,7 @@ from django_comment_common.models import FORUM_ROLE_ADMINISTRATOR
 from student.models import CourseEnrollment
 from shoppingcart.models import Coupon, PaidCourseRegistration, CourseRegCodeItem
 from course_modes.models import CourseMode, CourseModesArchive
-from student.roles import CourseFinanceAdminRole, CourseSalesAdminRole
+from student.roles import CourseFinanceAdminRole, CourseSalesAdminRole, GaCourseScorerRole, GaGlobalCourseCreatorRole
 from certificates.models import (
     CertificateGenerationConfiguration,
     CertificateWhitelist,
@@ -73,6 +73,11 @@ class InstructorDashboardTab(CourseTab):
         """
         Returns true if the specified user has staff access.
         """
+        if user and (GaGlobalCourseCreatorRole().has_user(user) and not user.is_staff):
+            # Note: GaGlobalCourseCreator cannot see the instructor tab (#2150)
+            #       GaGlobalCourseCreatorRole is not a staff at LMS,
+            #       but because courses made by oneself will become course instructor.
+            return False
         return bool(user and has_access(user, 'staff', course, course.id))
 
 
@@ -191,7 +196,8 @@ def instructor_dashboard_2(request, course_id):
 
     context = {
         'course': course,
-        'studio_url': get_studio_url(course, 'course'),
+        # Note: GaCourseScorer cannot see the studio link (#2150)
+        'studio_url': None if GaCourseScorerRole(course_key).has_user(request.user) else get_studio_url(course, 'course'),
         'sections': [s for s in sections if s is not None],
         'disable_buttons': disable_buttons,
         'analytics_dashboard_message': analytics_dashboard_message,

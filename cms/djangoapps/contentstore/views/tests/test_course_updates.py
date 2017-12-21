@@ -7,6 +7,7 @@ from django.test.utils import override_settings
 
 from contentstore.models import PushNotificationConfig
 from contentstore.tests.test_course_settings import CourseTestCase
+from contentstore.tests.utils import switch_ga_global_course_creator
 from contentstore.utils import reverse_course_url, reverse_usage_url
 from opaque_keys.edx.keys import UsageKey
 from xmodule.modulestore.django import modulestore
@@ -314,3 +315,10 @@ class CourseUpdateTest(CourseTestCase):
         mock_parse_push.alert.side_effect = ParseError
         self.post_course_update(send_push_notification=True)
         self.assertTrue(mock_log_exception.called)
+
+
+class CourseUpdateTestWithGaGlobalCourseCreator(CourseUpdateTest):
+
+    def setUp(self):
+        super(CourseUpdateTestWithGaGlobalCourseCreator, self).setUp()
+        switch_ga_global_course_creator(self.user)

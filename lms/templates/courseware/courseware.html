@@ -238,3 +238,7 @@ ${fragment.foot_html()}
 </nav>
 
 <%include file="../modal/accessible_confirm.html" />
+
+<div class="progress_restriction_info">
+    <div class="restricted" data-list="[${','.join(map(lambda m: "{}".format(m), restricted_list))}]"></div>
+</div>

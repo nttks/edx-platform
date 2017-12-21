@@ -9,6 +9,7 @@ from django.test.utils import override_settings
 from courseware.tabs import get_course_tab_list
 from courseware.tests.helpers import get_request_for_user, LoginEnrollmentTestCase
 from courseware.tests.test_tabs import TabTestCase
+from student.roles import GaCourseScorerRole, GaGlobalCourseCreatorRole
 from student.tests.factories import CourseAccessRoleFactory
 
 
@@ -76,3 +77,74 @@ class CourseTerminatedCheckTabTest(LoginEnrollmentTestCase, TabTestCase):
 
         if is_blocked and not is_staff:
             self.assertEqual(mock_is_course_closed.call_count, 4)
+
+
+@ddt.ddt
+class CourseTerminatedCheckTabTestWithGaGlobalCourseCreator(LoginEnrollmentTestCase, TabTestCase):
+
+    def _create_request(self):
+        self.setup_user()
+        GaGlobalCourseCreatorRole().add_users(self.user)
+        self.enroll(self.course)
+        return get_request_for_user(self.user)
+
+    def _assert_tabs(self, tabs):
+        tab_types = [tab.type for tab in tabs]
+        self.assertItemsEqual(tab_types, ['courseware', 'course_info', 'wiki', 'progress'])
+
+    def test_course_opened(self):
+        request = self._create_request()
+        tab_list = get_course_tab_list(request, self.course)
+        self._assert_tabs(tab_list)
+
+    def test_course_terminated(self):
+        self.course.terminate_start = timezone.now() - timedelta(days=1)
+        self.update_course(self.course, self.user.id)
+
+        request = self._create_request()
+        tab_list = get_course_tab_list(request, self.course)
+        self._assert_tabs(tab_list)
+
+    @patch('openedx.core.djangoapps.ga_self_paced.api.is_course_closed', return_value=True)
+    def test_self_paced_course_closed(self, mock_is_course_closed):
+        self.course.self_paced = True
+        self.update_course(self.course, self.user.id)
+
+        request = self._create_request()
+        tab_list = get_course_tab_list(request, self.course)
+        self._assert_tabs(tab_list)
+
+
+class CourseTerminatedCheckTabTestWithGaCourseScorer(LoginEnrollmentTestCase, TabTestCase):
+
+    def _create_request(self):
+        self.setup_user()
+        GaCourseScorerRole(self.course.id).add_users(self.user)
+        self.enroll(self.course)
+        return get_request_for_user(self.user)
+
+    def _assert_tabs(self, tabs):
+        tab_types = [tab.type for tab in tabs]
+        self.assertItemsEqual(tab_types, ['courseware', 'course_info', 'wiki', 'progress', 'instructor'])
+
+    def test_course_opened(self):
+        request = self._create_request()
+        tab_list = get_course_tab_list(request, self.course)
+        self._assert_tabs(tab_list)
+
+    def test_course_terminated(self):
+        self.course.terminate_start = timezone.now() - timedelta(days=1)
+        self.update_course(self.course, self.user.id)
+
+        request = self._create_request()
+        tab_list = get_course_tab_list(request, self.course)
+        self.assertItemsEqual(tab_list, [])
+
+    @patch('openedx.core.djangoapps.ga_self_paced.api.is_course_closed', return_value=True)
+    def test_self_paced_course_closed(self, mock_is_course_closed):
+        self.course.self_paced = True
+        self.update_course(self.course, self.user.id)
+
+        request = self._create_request()
+        tab_list = get_course_tab_list(request, self.course)
+        self._assert_tabs(tab_list)

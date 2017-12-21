@@ -302,10 +302,14 @@ class CourseDetails(object):
             descriptor.self_paced = jsondict['self_paced']
             dirty = True
 
+        # Import here to avoid circular import.
+        from student.roles import GaGlobalCourseCreatorRole
+
         if 'course_category' in jsondict \
-                and user.is_staff \
+                and (user.is_staff or GaGlobalCourseCreatorRole().has_user(user)) \
                 and sorted(jsondict['course_category']) != sorted(descriptor.course_category):
             # course_category can be updated by only staff user
+            # Note: GaGlobalCourseCreator can updated course_category (#2150)
             descriptor.course_category = jsondict['course_category']
             dirty = True
 

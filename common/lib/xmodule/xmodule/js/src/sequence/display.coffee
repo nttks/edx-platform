@@ -102,6 +102,17 @@ class @Sequence
       @mark_active new_position
 
       current_tab = @contents.eq(new_position - 1)
+      if $('.progress_restriction_info').length > 0
+        restricted_list = $('.progress_restriction_info .restricted').data('list')
+        if restricted_list.indexOf(new_position - 1) >= 0
+          current_tab = $('<div>').text(
+            '<div class="xblock">' +
+            gettext(
+              'You need to make correct answers for the some problems in the before quiz.'
+            ) +
+            '</div>'
+          )
+          current_tab.addClass('xblock')
       @content_container.html(current_tab.text()).attr("aria-labelledby", current_tab.attr("aria-labelledby"))
 
       XBlock.initializeBlocks(@content_container, @requestToken)

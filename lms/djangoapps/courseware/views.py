@@ -48,6 +48,7 @@ from courseware.courses import (
     sort_by_start_date,
     UserNotEnrolled
 )
+from courseware.ga_progress_restriction import ProgressRestriction
 from courseware.masquerade import setup_masquerade
 from openedx.core.djangoapps.credit.api import (
     get_credit_requirement_status,
@@ -55,7 +56,7 @@ from openedx.core.djangoapps.credit.api import (
     is_credit_course
 )
 from openedx.core.djangoapps.ga_optional.api import is_available
-from openedx.core.djangoapps.ga_optional.models import DISCCUSION_IMAGE_UPLOAD_KEY
+from openedx.core.djangoapps.ga_optional.models import DISCCUSION_IMAGE_UPLOAD_KEY, PROGRESS_RESTRICTION_OPTION_KEY
 from courseware.models import StudentModuleHistory
 from courseware.model_data import FieldDataCache, ScoresClient
 from .module_render import toc_for_course, get_module_for_descriptor, get_module, get_module_by_usage_id
@@ -71,6 +72,7 @@ from course_modes.models import CourseMode
 
 from pdfgen import api as pdfgen_api
 from student.models import UserTestGroup, CourseEnrollment
+from student.roles import GaCourseScorerRole, GaGlobalCourseCreatorRole
 from student.views import is_course_blocked
 from util.cache import cache, cache_if_anonymous
 from util.date_utils import strftime_localized
@@ -153,7 +155,7 @@ def courses(request):
     )
 
 
-def render_accordion(user, request, course, chapter, section, field_data_cache, is_modal=False):
+def render_accordion(user, request, course, chapter, section, field_data_cache, progress_restriction, is_modal=False):
     """
     Draws navigation bar. Takes current position in accordion as
     parameter.
@@ -166,6 +168,18 @@ def render_accordion(user, request, course, chapter, section, field_data_cache, 
     """
     # grab the table of contents
     toc = toc_for_course(user, request, course, chapter, section, field_data_cache)
+
+    # to gray out chapters and sections restricted by progress restriction
+    if progress_restriction:
+        for ch_toc in toc:
+            ch_toc['restricted'] = progress_restriction.is_restricted_chapter(ch_toc['url_name'])
+            for sc_toc in ch_toc['sections']:
+                sc_toc['restricted'] = progress_restriction.is_restricted_section(sc_toc['url_name'])
+    else:
+        for ch_toc in toc:
+            ch_toc['restricted'] = False
+            for sc_toc in ch_toc['sections']:
+                sc_toc['restricted'] = False
 
     context = dict([
         ('toc', toc),
@@ -415,12 +429,17 @@ def _index_bulk_op(request, course_key, chapter, section, position):
                         u' far, should have gotten a course module for this user')
             return redirect(reverse('about_course', args=[course_key.to_deprecated_string()]))
 
-        studio_url = get_studio_url(course, 'course')
+        studio_url = _get_studio_url(user, course, 'course')
+
+        progress_restriction = ProgressRestriction(course.id, user, course_module) \
+            if is_available(PROGRESS_RESTRICTION_OPTION_KEY, course_key) and not staff_access else None
 
         context = {
             'csrf': csrf(request)['csrf_token'],
-            'accordion': render_accordion(user, request, course, chapter, section, field_data_cache),
-            'accordion_modal': render_accordion(user, request, course, chapter, section, field_data_cache, is_modal=True),
+            'accordion': render_accordion(user, request, course, chapter, section, field_data_cache,
+                                          progress_restriction),
+            'accordion_modal': render_accordion(user, request, course, chapter, section, field_data_cache,
+                                                progress_restriction, is_modal=True),
             'COURSE_TITLE': course.display_name_with_default,
             'course': course,
             'init': '',
@@ -430,6 +449,7 @@ def _index_bulk_op(request, course_key, chapter, section, position):
             'masquerade': masquerade,
             'xqa_server': settings.FEATURES.get('XQA_SERVER', "http://your_xqa_server.com"),
             'is_image_upload': is_available(DISCCUSION_IMAGE_UPLOAD_KEY, course_key),
+            'restricted_list': [],
         }
 
         now = datetime.now(UTC())
@@ -528,6 +548,10 @@ def _index_bulk_op(request, course_key, chapter, section, position):
                 # they don't have access to.
                 raise Http404
 
+            # Add list of subsections(sequence nubmers) restricted by progress restriction
+            if progress_restriction is not None:
+                context['restricted_list'] = progress_restriction.get_restricted_list_in_section(section)
+
             # Save where we are in the chapter.
             save_child_position(chapter_module, section)
             section_render_context = {'activate_block_id': request.GET.get('activate_block_id')}
@@ -535,7 +559,7 @@ def _index_bulk_op(request, course_key, chapter, section, position):
             context['section_title'] = section_descriptor.display_name_with_default
         else:
             # section is none, so display a message
-            studio_url = get_studio_url(course, 'course')
+            studio_url = _get_studio_url(user, course, 'course')
             prev_section = get_current_child(chapter_module)
             if prev_section is None:
                 # Something went wrong -- perhaps this chapter has no sections visible to the user.
@@ -696,7 +720,7 @@ def course_info(request, course_id):
         if request.user.is_authenticated() and survey.utils.must_answer_survey(course, user):
             return redirect(reverse('course_survey', args=[unicode(course.id)]))
 
-        studio_url = get_studio_url(course, 'course_info')
+        studio_url = _get_studio_url(user, course, 'course_info')
 
         # link to where the student should go to enroll in the course:
         # about page if there is not marketing site, SITE_NAME if there is
@@ -839,7 +863,7 @@ def course_about(request, course_id):
         registered = registered_for_course(course, request.user)
 
         staff_access = bool(has_access(request.user, 'staff', course))
-        studio_url = get_studio_url(course, 'settings/details')
+        studio_url = _get_studio_url(request.user, course, 'settings/details')
 
         if has_access(request.user, 'load', course):
             course_target = reverse('info', args=[course.id.to_deprecated_string()])
@@ -981,7 +1005,7 @@ def _progress(request, course_key, student_id):
     grade_summary = grades.grade(
         student, request, course, field_data_cache=field_data_cache, scores_client=scores_client
     )
-    studio_url = get_studio_url(course, 'settings/grading')
+    studio_url = _get_studio_url(request.user, course, 'settings/grading')
 
     if courseware_summary is None:
         #This means the student didn't have access to the course (which the instructor requested)
@@ -1641,3 +1665,10 @@ def financial_assistance_form(request):
             }
         ],
     })
+
+
+def _get_studio_url(user, course, page):
+    # Note: GaGlobalCourseCreator and GaCourseScorer cannot see the studio link (#2150)
+    if GaGlobalCourseCreatorRole().has_user(user) or GaCourseScorerRole(course.id).has_user(user):
+        return None
+    return get_studio_url(course, page)

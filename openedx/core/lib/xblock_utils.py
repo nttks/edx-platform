@@ -212,7 +212,7 @@ def grade_histogram(module_id):
 
 
 @contract(user=User, has_instructor_access=bool, block=XBlock, view=basestring, frag=Fragment, context="dict|None")
-def add_staff_markup(user, has_instructor_access, disable_staff_debug_info, block, view, frag, context):  # pylint: disable=unused-argument
+def add_staff_markup(user, has_instructor_access, disable_staff_debug_info, block, view, frag, context, **kwargs):  # pylint: disable=unused-argument
     """
     Updates the supplied module with a new get_html function that wraps
     the output of the old get_html function with additional information
@@ -227,8 +227,11 @@ def add_staff_markup(user, has_instructor_access, disable_staff_debug_info, bloc
         # check that the course is a mongo backed Studio course before doing work
         is_mongo_course = modulestore().get_modulestore_type(block.location.course_key) != ModuleStoreEnum.Type.xml
         is_studio_course = block.course_edit_method == "Studio"
+        # Note: GaCourseScorer has access to staff tools, but cannot see the studio link (#2150)
+        #       The default is True, It is the same behavior as before
+        enable_studio_link = kwargs.get('enable_studio_link', True)
 
-        if is_studio_course and is_mongo_course:
+        if is_studio_course and is_mongo_course and enable_studio_link:
             # build edit link to unit in CMS. Can't use reverse here as lms doesn't load cms's urls.py
             edit_link = "//" + settings.CMS_BASE + '/container/' + unicode(block.location)
 

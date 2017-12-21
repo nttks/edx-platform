@@ -22,7 +22,7 @@ from contentstore.utils import reverse_course_url
 
 from xmodule.modulestore.tests.factories import ItemFactory, LibraryFactory
 
-from contentstore.tests.utils import CourseTestCase
+from contentstore.tests.utils import CourseTestCase, switch_ga_global_course_creator
 from openedx.core.djangoapps.ga_optional.models import CourseOptionalConfiguration
 from openedx.core.lib.extract_tar import safetar_extractall
 from student import auth
@@ -132,6 +132,15 @@ class ImportEntranceExamTestCase(CourseTestCase):
         self.assertIsNotNone(course)
         self.assertEquals(course.entrance_exam_enabled, True)
         self.assertEquals(course.entrance_exam_minimum_score_pct, 0.7)
+
+
+class ImportEntranceExamTestCaseWithGaGlobalCourseCreator(ImportEntranceExamTestCase):
+    """
+    Unit tests for importing a course with entrance exam
+    """
+    def setUp(self):
+        super(ImportEntranceExamTestCaseWithGaGlobalCourseCreator, self).setUp()
+        switch_ga_global_course_creator(self.user)
 
 
 @override_settings(CONTENTSTORE=TEST_DATA_CONTENTSTORE)
@@ -447,6 +456,15 @@ class ImportTestCase(CourseTestCase):
         self.assertIn(test_block4.url_name, children)
 
 
+class ImportTestCaseWithGaGlobalCourseCreator(ImportTestCase):
+    """
+    Unit tests for importing a course or Library
+    """
+    def setUp(self):
+        super(ImportTestCaseWithGaGlobalCourseCreator, self).setUp()
+        switch_ga_global_course_creator(self.user)
+
+
 @override_settings(CONTENTSTORE=TEST_DATA_CONTENTSTORE)
 class ExportTestCase(CourseTestCase):
     """
@@ -585,3 +603,15 @@ class ExportTestCase(CourseTestCase):
         )
 
         self.test_export_targz_urlparam()
+
+
+class ExportTestCaseWithGaGlobalCourseCreator(ExportTestCase):
+    """
+    Tests for export_handler.
+    """
+    def setUp(self):
+        """
+        Sets up the test course.
+        """
+        super(ExportTestCaseWithGaGlobalCourseCreator, self).setUp()
+        switch_ga_global_course_creator(self.user)

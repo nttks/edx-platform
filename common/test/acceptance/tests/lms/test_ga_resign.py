@@ -72,11 +72,11 @@ class ResignTest(WebAppTest, GaccoTestMixin):
         resign_complete_page = ResignCompletePage(self.browser).wait_for_page()
         bok_choy.browser.save_screenshot(self.browser, 'test_resign_success__2')
 
-        # Fail to login and redirect to disabled account page
+        # Fail to login
         login_page = CombinedLoginAndRegisterPage(self.browser, start_page='login')
         login_page.visit()
         login_page.login(self.email, self.password)
-        DisabledAccountPage(self.browser).wait_for_page()
+        login_page.wait_for_errors()
         bok_choy.browser.save_screenshot(self.browser, 'test_resign_success__3')
 
     def test_resign_with_empty_reason(self):

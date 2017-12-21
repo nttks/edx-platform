@@ -14,7 +14,7 @@ define(['jquery', 'backbone', 'underscore', 'gettext', 'js/views/baseview',
     'use strict';
     var CourseOutlineXBlockModal, SettingsXBlockModal, PublishXBlockModal, AbstractEditor, BaseDateEditor, BaseIndividualDaysEditor,
         ReleaseDateEditor, IndividualReleaseDaysEditor, DueDateEditor, IndividualDueDaysEditor, GradingEditor, PublishEditor, StaffLockEditor,
-        VerificationAccessEditor, TimedExaminationPreferenceEditor;
+        VerificationAccessEditor, TimedExaminationPreferenceEditor, ProgressRestrictionEditor;
 
     CourseOutlineXBlockModal = BaseModal.extend({
         events : {
@@ -195,6 +195,7 @@ define(['jquery', 'backbone', 'underscore', 'gettext', 'js/views/baseview',
     BaseDateEditor = AbstractEditor.extend({
         // Attribute name in the model, should be defined in children classes.
         fieldName: null,
+        jstDateFieldName: null,
         errorSelector: null,
 
         events : {
@@ -212,6 +213,19 @@ define(['jquery', 'backbone', 'underscore', 'gettext', 'js/views/baseview',
                 DateUtils.setDate(
                     this.$('input.date'), this.$('input.time'),
                     this.model.get(this.fieldName)
+                );
+                this.setJstDate(this.getValue());
+            } else {
+                this.setJstDate('');
+            }
+        },
+
+        setJstDate: function(utcDate) {
+            var jstDateField = this.$(this.jstDateFieldName);
+            jstDateField.empty();
+            if (utcDate && utcDate !== '') {
+                jstDateField.append(
+                    $('<li>').text(DateUtils.getJstDate(utcDate))
                 );
             }
         },
@@ -235,20 +249,24 @@ define(['jquery', 'backbone', 'underscore', 'gettext', 'js/views/baseview',
             }
             if ($.isEmptyObject(this.model.validationErrors)) {
                 this.model.trigger('valid');
+                this.setJstDate(this.getValue());
             } else {
                 this.model.trigger('invalid');
+                this.setJstDate('');
             }
         }
     });
 
     DueDateEditor = BaseDateEditor.extend({
         fieldName: 'due',
+        jstDateFieldName: '#due_jst_date',
         templateName: 'due-date-editor',
         className: 'modal-section-content has-actions due-date-input grading-due-date',
         errorSelector: '#due-date-error-message',
 
         events: {
-            'change #due_date': 'validate'
+            'change #due_date': 'validate',
+            'change #due_time': 'validate'
         },
 
         initialize: function() {
@@ -276,13 +294,15 @@ define(['jquery', 'backbone', 'underscore', 'gettext', 'js/views/baseview',
 
     ReleaseDateEditor = BaseDateEditor.extend({
         fieldName: 'start',
+        jstDateFieldName: '#start_jst_date',
         templateName: 'release-date-editor',
         className: 'edit-settings-release scheduled-date-input',
         startingReleaseDate: null,
         errorSelector: '#release-date-error-message',
 
         events: {
-            'change #start_date': 'validate'
+            'change #start_date': 'validate',
+            'change #start_time': 'validate'
         },
 
         initialize: function() {
@@ -709,6 +729,85 @@ define(['jquery', 'backbone', 'underscore', 'gettext', 'js/views/baseview',
         }
     });
 
+    ProgressRestrictionEditor = AbstractEditor.extend({
+        templateName: 'progress-restriction-editor',
+        className: 'edit-progress-restriction',
+        PROGRESS_RESTRICTION_TYPE: {
+          'no-restriction': 'No Restriction',
+          'correct-answer-rate': 'Correct Answer Rate'
+        },
+
+        events: {
+            'change #progress-restriction-passing-mark': 'validate'
+        },
+        errorSelector: '#progress-restriction-passing-mark-error-message',
+
+        getPassingMark: function() {
+            var passingMarkInfo = this.model.get('progress_restriction');
+
+            if (typeof passingMarkInfo === 'undefined') {
+                return '';
+            } else if (passingMarkInfo['type'] === this.PROGRESS_RESTRICTION_TYPE['correct-answer-rate']) {
+                if (typeof passingMarkInfo['passing_mark'] !== 'undefined') {
+                    return passingMarkInfo['passing_mark'];
+                } else {
+                    return 0;
+                }
+            } else {
+                return '';
+            }
+        },
+        getValue: function() {
+            return this.$('#progress-restriction-passing-mark').val();
+        },
+        setValue: function(passingMark) {
+            this.$('#progress-restriction-passing-mark').val(passingMark);
+        },
+        validate: function() {
+            var errorMessages = this.$(this.errorSelector),
+                isValid = true,
+                value = this.getValue();
+            errorMessages.empty();
+            if (value && (value.match(/[^0-9]/) || parseInt(value, 10) < 0 || 100 < parseInt(value, 10))) {
+                isValid = false;
+                errorMessages.append(
+                    $('<li>').text(gettext('Please enter an integer between 0 and 100.'))
+                );
+            }
+            if (isValid) {
+                this.model.trigger('valid');
+            } else {
+                this.model.trigger('invalid');
+            }
+        },
+        getPassingMarkInfo: function() {
+            var passingMark = parseInt(this.getValue(), 10);
+
+            if (0 < passingMark && passingMark <= 100) {
+                return {
+                    'type': this.PROGRESS_RESTRICTION_TYPE['correct-answer-rate'],
+                    'passing_mark': passingMark
+                };
+            } else {
+                return {
+                    'type': this.PROGRESS_RESTRICTION_TYPE['no-restriction']
+                };
+            }
+        },
+        afterRender: function() {
+            AbstractEditor.prototype.afterRender.call(this);
+            this.setValue(this.getPassingMark().toString());
+        },
+        getRequestData: function() {
+            return {
+                publish: 'republish',
+                metadata: {
+                    progress_restriction: this.getPassingMarkInfo()
+                }
+            };
+        }
+    });
+
     return {
         getModal: function (type, xblockInfo, options) {
             if (type === 'edit') {
@@ -738,6 +837,12 @@ define(['jquery', 'backbone', 'underscore', 'gettext', 'js/views/baseview',
 
                 if (xblockInfo.hasVerifiedCheckpoints()) {
                     editors.push(VerificationAccessEditor);
+                }
+
+                /* globals is_restricted_in_progress */
+                if (is_restricted_in_progress) {
+                    // add form when set is_restricted_in_progress to true with django admin
+                    editors.push(ProgressRestrictionEditor);
                 }
             }
             /* globals course */

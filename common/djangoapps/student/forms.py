@@ -23,7 +23,8 @@ from util.password_policy_validators import validate_password_strength
 
 from django.utils.translation import ugettext_lazy as _
 
-from student.models import UserStanding
+from biz.djangoapps.util import mask_utils
+from student.models import Registration, UserStanding
 
 from openedx.core.djangoapps.user_api.accounts import EMPLOYEE_NUMBER_LENGTH, EMPLOYEE_NUMBER_REGEX
 
@@ -165,6 +166,11 @@ class SetResignReasonForm(forms.Form):
         # NOTE(yokose): store resign_reason into db
         user_account.resign_reason = self.cleaned_data["resign_reason"]
         user_account.save()
+        if '@' in self.user.email:
+            mask_utils.disable_all_additional_info(self.user)
+            mask_utils.disable_user_info(self.user)
+            Registration.objects.get(user=self.user).update_masked()
+
 
 class TrueCheckbox(widgets.CheckboxInput):
     """

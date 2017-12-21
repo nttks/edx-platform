@@ -9791,7 +9791,7 @@ msgstr "プロファイル画像を削除"
 
 #: lms/templates/manage_user_standing.html
 msgid "Students whose accounts have been disabled"
-msgstr "失効となっているアカウント"
+msgstr "失効となっているアカウントです"
 
 #: lms/templates/manage_user_standing.html
 msgid "(reload your page to refresh)"

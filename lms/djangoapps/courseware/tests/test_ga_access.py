@@ -8,6 +8,8 @@ from xmodule.modulestore.tests.factories import CourseFactory
 from courseware.ga_access import is_terminated
 from courseware.tests.factories import (
     BetaTesterFactory,
+    GaCourseScorerFactory,
+    GaGlobalCourseCreatorFactory,
     GaOldCourseViewerStaffFactory,
     StaffFactory,
     UserFactory,
@@ -28,6 +30,8 @@ class IsTerminatedTestCase(LoginEnrollmentTestCase, ModuleStoreTestCase):
         course_staff = StaffFactory(course_key=course.id)
         course_beta_tester = BetaTesterFactory(course_key=course.id)
         student = UserFactory()
+        global_course_creator = GaGlobalCourseCreatorFactory()
+        course_scorer = GaCourseScorerFactory(course_key=course.id)
 
         # enroll to course
         enroll_global_staff = CourseEnrollment.enroll(global_staff, course.id)
@@ -45,8 +49,14 @@ class IsTerminatedTestCase(LoginEnrollmentTestCase, ModuleStoreTestCase):
         enroll_student = CourseEnrollment.enroll(student, course.id)
         enroll_student.created = datetime.now() - timedelta(days=enroll_days_ago)
         enroll_student.save()
+        enroll_global_course_creator = CourseEnrollment.enroll(global_course_creator, course.id)
+        enroll_global_course_creator.created = datetime.now() - timedelta(days=enroll_days_ago)
+        enroll_global_course_creator.save()
+        enroll_course_scorer = CourseEnrollment.enroll(course_scorer, course.id)
+        enroll_course_scorer.created = datetime.now() - timedelta(days=enroll_days_ago)
+        enroll_course_scorer.save()
 
-        return global_staff, old_course_viewer, course_staff, course_beta_tester, student
+        return global_staff, old_course_viewer, course_staff, course_beta_tester, student, global_course_creator, course_scorer
 
     def setUp(self):
         super(IsTerminatedTestCase, self).setUp()
@@ -71,7 +81,7 @@ class IsTerminatedTestCase(LoginEnrollmentTestCase, ModuleStoreTestCase):
         course_overview = CourseOverview.get_from_id(course.id)
 
         # create users and enroll to course
-        global_staff, old_course_viewer, course_staff, course_beta_tester, student = self._create_enrolled_users(course)
+        global_staff, old_course_viewer, course_staff, course_beta_tester, student, global_course_creator, course_scorer = self._create_enrolled_users(course)
 
         # assert is_terminated
         self.assertFalse(is_terminated(course_overview, global_staff))
@@ -79,6 +89,8 @@ class IsTerminatedTestCase(LoginEnrollmentTestCase, ModuleStoreTestCase):
         self.assertFalse(is_terminated(course_overview, course_staff))
         self.assertFalse(is_terminated(course_overview, course_beta_tester))
         self.assertFalse(is_terminated(course_overview, student))
+        self.assertFalse(is_terminated(course_overview, global_course_creator))
+        self.assertFalse(is_terminated(course_overview, course_scorer))
 
     def test_self_paced_course_after_self_pace_course_finished(self):
         """
@@ -100,7 +112,7 @@ class IsTerminatedTestCase(LoginEnrollmentTestCase, ModuleStoreTestCase):
         course_overview = CourseOverview.get_from_id(course.id)
 
         # create users and enroll to course
-        global_staff, old_course_viewer, course_staff, course_beta_tester, student = self._create_enrolled_users(
+        global_staff, old_course_viewer, course_staff, course_beta_tester, student, global_course_creator, course_scorer = self._create_enrolled_users(
             course=course, enroll_days_ago=20)
 
         # assert is_terminated
@@ -109,6 +121,8 @@ class IsTerminatedTestCase(LoginEnrollmentTestCase, ModuleStoreTestCase):
         self.assertFalse(is_terminated(course_overview, course_staff))
         self.assertFalse(is_terminated(course_overview, course_beta_tester))
         self.assertTrue(is_terminated(course_overview, student))
+        self.assertFalse(is_terminated(course_overview, global_course_creator))
+        self.assertFalse(is_terminated(course_overview, course_scorer))
 
     def test_self_paced_course_after_course_closed(self):
         """
@@ -130,7 +144,7 @@ class IsTerminatedTestCase(LoginEnrollmentTestCase, ModuleStoreTestCase):
         course_overview = CourseOverview.get_from_id(course.id)
 
         # create users and enroll to course
-        global_staff, old_course_viewer, course_staff, course_beta_tester, student = self._create_enrolled_users(course)
+        global_staff, old_course_viewer, course_staff, course_beta_tester, student, global_course_creator, course_scorer = self._create_enrolled_users(course)
 
         # assert is_terminated
         self.assertFalse(is_terminated(course_overview, global_staff))
@@ -138,6 +152,8 @@ class IsTerminatedTestCase(LoginEnrollmentTestCase, ModuleStoreTestCase):
         self.assertTrue(is_terminated(course_overview, course_staff))
         self.assertTrue(is_terminated(course_overview, course_beta_tester))
         self.assertTrue(is_terminated(course_overview, student))
+        self.assertFalse(is_terminated(course_overview, global_course_creator))
+        self.assertTrue(is_terminated(course_overview, course_scorer))
 
     def test_self_paced_course_after_course_start(self):
         """
@@ -159,7 +175,7 @@ class IsTerminatedTestCase(LoginEnrollmentTestCase, ModuleStoreTestCase):
         course_overview = CourseOverview.get_from_id(course.id)
 
         # create users and enroll to course
-        global_staff, old_course_viewer, course_staff, course_beta_tester, student = self._create_enrolled_users(course)
+        global_staff, old_course_viewer, course_staff, course_beta_tester, student, global_course_creator, course_scorer = self._create_enrolled_users(course)
 
         # assert is_terminated
         self.assertFalse(is_terminated(course_overview, global_staff))
@@ -167,6 +183,8 @@ class IsTerminatedTestCase(LoginEnrollmentTestCase, ModuleStoreTestCase):
         self.assertFalse(is_terminated(course_overview, course_staff))
         self.assertFalse(is_terminated(course_overview, course_beta_tester))
         self.assertFalse(is_terminated(course_overview, student))
+        self.assertFalse(is_terminated(course_overview, global_course_creator))
+        self.assertFalse(is_terminated(course_overview, course_scorer))
 
     def test_self_paced_course_before_course_start(self):
         """
@@ -188,7 +206,7 @@ class IsTerminatedTestCase(LoginEnrollmentTestCase, ModuleStoreTestCase):
         course_overview = CourseOverview.get_from_id(course.id)
 
         # create users and enroll to course
-        global_staff, old_course_viewer, course_staff, course_beta_tester, student = self._create_enrolled_users(course)
+        global_staff, old_course_viewer, course_staff, course_beta_tester, student, global_course_creator, course_scorer = self._create_enrolled_users(course)
 
         # assert is_terminated
         self.assertFalse(is_terminated(course_overview, global_staff))
@@ -196,6 +214,8 @@ class IsTerminatedTestCase(LoginEnrollmentTestCase, ModuleStoreTestCase):
         self.assertFalse(is_terminated(course_overview, course_staff))
         self.assertFalse(is_terminated(course_overview, course_beta_tester))
         self.assertFalse(is_terminated(course_overview, student))  # note
+        self.assertFalse(is_terminated(course_overview, global_course_creator))
+        self.assertFalse(is_terminated(course_overview, course_scorer))
 
     def test_instructor_paced_course_after_registration_close(self):
         """
@@ -216,7 +236,7 @@ class IsTerminatedTestCase(LoginEnrollmentTestCase, ModuleStoreTestCase):
         course_overview = CourseOverview.get_from_id(course.id)
 
         # create users and enroll to course
-        global_staff, old_course_viewer, course_staff, course_beta_tester, student = self._create_enrolled_users(course)
+        global_staff, old_course_viewer, course_staff, course_beta_tester, student, global_course_creator, course_scorer = self._create_enrolled_users(course)
 
         # assert is_terminated
         self.assertFalse(is_terminated(course_overview, global_staff))
@@ -224,6 +244,8 @@ class IsTerminatedTestCase(LoginEnrollmentTestCase, ModuleStoreTestCase):
         self.assertFalse(is_terminated(course_overview, course_staff))
         self.assertFalse(is_terminated(course_overview, course_beta_tester))
         self.assertFalse(is_terminated(course_overview, student))
+        self.assertFalse(is_terminated(course_overview, global_course_creator))
+        self.assertFalse(is_terminated(course_overview, course_scorer))
 
     def test_instructor_paced_course_after_course_closed(self):
         """
@@ -244,7 +266,7 @@ class IsTerminatedTestCase(LoginEnrollmentTestCase, ModuleStoreTestCase):
         course_overview = CourseOverview.get_from_id(course.id)
 
         # create users and enroll to course
-        global_staff, old_course_viewer, course_staff, course_beta_tester, student = self._create_enrolled_users(course)
+        global_staff, old_course_viewer, course_staff, course_beta_tester, student, global_course_creator, course_scorer = self._create_enrolled_users(course)
 
         # assert is_terminated
         self.assertFalse(is_terminated(course_overview, global_staff))
@@ -252,6 +274,8 @@ class IsTerminatedTestCase(LoginEnrollmentTestCase, ModuleStoreTestCase):
         self.assertTrue(is_terminated(course_overview, course_staff))
         self.assertTrue(is_terminated(course_overview, course_beta_tester))
         self.assertTrue(is_terminated(course_overview, student))
+        self.assertFalse(is_terminated(course_overview, global_course_creator))
+        self.assertTrue(is_terminated(course_overview, course_scorer))
 
     def test_instructor_paced_course_after_course_finished(self):
         """
@@ -272,7 +296,7 @@ class IsTerminatedTestCase(LoginEnrollmentTestCase, ModuleStoreTestCase):
         course_overview = CourseOverview.get_from_id(course.id)
 
         # create users and enroll to course
-        global_staff, old_course_viewer, course_staff, course_beta_tester, student = self._create_enrolled_users(course)
+        global_staff, old_course_viewer, course_staff, course_beta_tester, student, global_course_creator, course_scorer = self._create_enrolled_users(course)
 
         # assert is_terminated
         self.assertFalse(is_terminated(course_overview, global_staff))
@@ -280,6 +304,8 @@ class IsTerminatedTestCase(LoginEnrollmentTestCase, ModuleStoreTestCase):
         self.assertFalse(is_terminated(course_overview, course_staff))
         self.assertFalse(is_terminated(course_overview, course_beta_tester))
         self.assertFalse(is_terminated(course_overview, student))
+        self.assertFalse(is_terminated(course_overview, global_course_creator))
+        self.assertFalse(is_terminated(course_overview, course_scorer))
 
     def test_instructor_paced_course_after_course_start(self):
         """
@@ -300,7 +326,7 @@ class IsTerminatedTestCase(LoginEnrollmentTestCase, ModuleStoreTestCase):
         course_overview = CourseOverview.get_from_id(course.id)
 
         # create users and enroll to course
-        global_staff, old_course_viewer, course_staff, course_beta_tester, student = self._create_enrolled_users(course)
+        global_staff, old_course_viewer, course_staff, course_beta_tester, student, global_course_creator, course_scorer = self._create_enrolled_users(course)
 
         # assert is_terminated
         self.assertFalse(is_terminated(course_overview, global_staff))
@@ -308,6 +334,8 @@ class IsTerminatedTestCase(LoginEnrollmentTestCase, ModuleStoreTestCase):
         self.assertFalse(is_terminated(course_overview, course_staff))
         self.assertFalse(is_terminated(course_overview, course_beta_tester))
         self.assertFalse(is_terminated(course_overview, student))
+        self.assertFalse(is_terminated(course_overview, global_course_creator))
+        self.assertFalse(is_terminated(course_overview, course_scorer))
 
     def test_instructor_paced_course_before_course_start(self):
         """
@@ -328,7 +356,7 @@ class IsTerminatedTestCase(LoginEnrollmentTestCase, ModuleStoreTestCase):
         course_overview = CourseOverview.get_from_id(course.id)
 
         # create users and enroll to course
-        global_staff, old_course_viewer, course_staff, course_beta_tester, student = self._create_enrolled_users(course)
+        global_staff, old_course_viewer, course_staff, course_beta_tester, student, global_course_creator, course_scorer = self._create_enrolled_users(course)
 
         # assert is_terminated
         self.assertFalse(is_terminated(course_overview, global_staff))
@@ -336,3 +364,5 @@ class IsTerminatedTestCase(LoginEnrollmentTestCase, ModuleStoreTestCase):
         self.assertFalse(is_terminated(course_overview, course_staff))
         self.assertFalse(is_terminated(course_overview, course_beta_tester))
         self.assertFalse(is_terminated(course_overview, student))
+        self.assertFalse(is_terminated(course_overview, global_course_creator))
+        self.assertFalse(is_terminated(course_overview, course_scorer))

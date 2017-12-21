@@ -8,7 +8,7 @@ from mock import patch
 from contentstore.utils import reverse_course_url, reverse_usage_url
 from contentstore.views.component import SPLIT_TEST_COMPONENT_TYPE
 from contentstore.course_group_config import GroupConfiguration
-from contentstore.tests.utils import CourseTestCase
+from contentstore.tests.utils import CourseTestCase, switch_ga_global_course_creator
 from xmodule.partitions.partitions import Group, UserPartition
 from xmodule.modulestore.tests.factories import ItemFactory
 from xmodule.validation import StudioValidation, StudioValidationMessage
@@ -296,6 +296,15 @@ class GroupConfigurationsListHandlerTestCase(CourseTestCase, GroupConfigurations
         self.client.get(self._url())
         self.reload_course()
         self.assertEqual(len(self.course.user_partitions), 0)
+
+
+class GroupConfigurationsListHandlerTestCaseWithGaGlobalCourseCreator(GroupConfigurationsListHandlerTestCase):
+    """
+    Test cases for group_configurations_list_handler.
+    """
+    def setUp(self):
+        super(GroupConfigurationsListHandlerTestCaseWithGaGlobalCourseCreator, self).setUp()
+        switch_ga_global_course_creator(self.user)
 
 
 class GroupConfigurationsDetailHandlerTestCase(CourseTestCase, GroupConfigurationsBaseTestCase, HelperMethods):
@@ -601,6 +610,15 @@ class GroupConfigurationsDetailHandlerTestCase(CourseTestCase, GroupConfiguratio
         self.assertEqual(user_partititons[0].name, 'Name 0')
 
 
+class GroupConfigurationsDetailHandlerTestCaseWithGaGlobalCourseCreator(GroupConfigurationsDetailHandlerTestCase):
+    """
+    Test cases for group_configurations_detail_handler.
+    """
+    def setUp(self):
+        super(GroupConfigurationsDetailHandlerTestCaseWithGaGlobalCourseCreator, self).setUp()
+        switch_ga_global_course_creator(self.user)
+
+
 class GroupConfigurationsUsageInfoTestCase(CourseTestCase, HelperMethods):
     """
     Tests for usage information of configurations and content groups.
@@ -897,6 +915,15 @@ class GroupConfigurationsUsageInfoTestCase(CourseTestCase, HelperMethods):
 
         actual = GroupConfiguration.get_content_groups_items_usage_info(self.store, self.course)
         self.assertEqual(actual.keys(), [0])
+
+
+class GroupConfigurationsUsageInfoTestCaseWithGaGlobalCourseCreator(GroupConfigurationsUsageInfoTestCase):
+    """
+    Tests for usage information of configurations and content groups.
+    """
+    def setUp(self):
+        super(GroupConfigurationsUsageInfoTestCaseWithGaGlobalCourseCreator, self).setUp()
+        switch_ga_global_course_creator(self.user)
 
 
 class GroupConfigurationsValidationTestCase(CourseTestCase, HelperMethods):

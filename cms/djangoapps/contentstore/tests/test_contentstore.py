@@ -52,7 +52,7 @@ from student import auth
 from student.models import CourseEnrollment
 from student.roles import CourseCreatorRole, CourseInstructorRole
 from opaque_keys import InvalidKeyError
-from contentstore.tests.utils import get_url
+from contentstore.tests.utils import get_url, switch_ga_global_course_creator
 from course_action_state.models import CourseRerunState, CourseRerunUIStateManager
 
 from course_action_state.managers import CourseActionStateItemNotFoundError
@@ -609,6 +609,15 @@ class ImportRequiredTestCases(ContentStoreTestCase):
         )
 
 
+class ImportRequiredTestCasesWithGaGlobalCourseCreator(ImportRequiredTestCases):
+    """
+    Tests which legitimately need to import a course
+    """
+    def setUp(self):
+        super(ImportRequiredTestCasesWithGaGlobalCourseCreator, self).setUp()
+        switch_ga_global_course_creator(self.user)
+
+
 @ddt.ddt
 class MiscCourseTests(ContentStoreTestCase):
     """
@@ -1123,6 +1132,15 @@ class MiscCourseTests(ContentStoreTestCase):
         for loc in locations:
             resp = self.client.get_html(get_url('container_handler', loc))
             self.assertEqual(resp.status_code, 200)
+
+
+class MiscCourseTestsWithGaGlobalCourseCreator(MiscCourseTests):
+    """
+    Tests that rely on the toy courses.
+    """
+    def setUp(self):
+        super(MiscCourseTestsWithGaGlobalCourseCreator, self).setUp()
+        switch_ga_global_course_creator(self.user)
 
 
 @ddt.ddt
@@ -1750,6 +1768,27 @@ class ContentStoreTest(ContentStoreTestCase, XssTestMixin):
         self.assertEquals(response.status_code, 404)
 
 
+class ContentStoreTestWithGaGlobalCourseCreator(ContentStoreTest):
+    """
+    Tests for the CMS ContentStore application.
+    """
+    def setUp(self):
+        super(ContentStoreTestWithGaGlobalCourseCreator, self).setUp()
+        switch_ga_global_course_creator(self.user)
+
+    def test_create_course_no_course_creators_not_staff(self):
+        """
+        Exclude this test case
+        """
+        pass
+
+    def test_create_course_with_course_creation_disabled_not_staff(self):
+        """
+        Exclude this test case
+        """
+        pass
+
+
 class MetadataSaveTestCase(ContentStoreTestCase):
     """Test that metadata is correctly cached and decached."""
 
@@ -1807,6 +1846,14 @@ class MetadataSaveTestCase(ContentStoreTestCase):
         # TODO: create the same test as `test_metadata_not_persistence`,
         # but check persistence for some other module.
         pass
+
+
+class MetadataSaveTestCaseWithGaGlobalCourseCreator(MetadataSaveTestCase):
+    """Test that metadata is correctly cached and decached."""
+
+    def setUp(self):
+        super(MetadataSaveTestCaseWithGaGlobalCourseCreator, self).setUp()
+        switch_ga_global_course_creator(self.user)
 
 
 class RerunCourseTest(ContentStoreTestCase):
@@ -2059,6 +2106,21 @@ class RerunCourseTest(ContentStoreTestCase):
         self.assertEquals(destination_course.wiki_slug, destination_wiki_slug)
 
 
+class RerunCourseTestWithGaGlobalCourseCreator(RerunCourseTest):
+    """
+    Tests for Rerunning a course via the view handler
+    """
+    def setUp(self):
+        super(RerunCourseTestWithGaGlobalCourseCreator, self).setUp()
+        switch_ga_global_course_creator(self.user)
+
+    def test_rerun_with_permission_denied(self):
+        """
+        Exclude this test case
+        """
+        pass
+
+
 class ContentLicenseTest(ContentStoreTestCase):
     """
     Tests around content licenses
@@ -2095,6 +2157,15 @@ class ContentLicenseTest(ContentStoreTestCase):
         self.assertEqual(course.license, "creative-commons: BY")
         videos = self.store.get_items(course.id, qualifiers={'category': 'video'})
         self.assertEqual(videos[0].license, "all-rights-reserved")
+
+
+class ContentLicenseTestWithGaGlobalCourseCreator(ContentLicenseTest):
+    """
+    Tests around content licenses
+    """
+    def setUp(self):
+        super(ContentLicenseTestWithGaGlobalCourseCreator, self).setUp()
+        switch_ga_global_course_creator(self.user)
 
 
 class EntryPageTestCase(TestCase):

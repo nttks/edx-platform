@@ -3,7 +3,7 @@
 import json
 
 from contentstore.views import tabs
-from contentstore.tests.utils import CourseTestCase
+from contentstore.tests.utils import CourseTestCase, switch_ga_global_course_creator
 from contentstore.utils import reverse_course_url
 from openedx.core.djangoapps.ga_optional.models import CourseOptionalConfiguration
 from xmodule.x_module import STUDENT_VIEW
@@ -202,6 +202,12 @@ class TabsPageTests(CourseTestCase):
         self.assertIn('<span data-tooltip="Drag to reorder" class="drag-handle action"></span>', html)
 
 
+class TabsPageTestsWithGaGlobalCourseCreator(TabsPageTests):
+    def setUp(self):
+        super(TabsPageTestsWithGaGlobalCourseCreator, self).setUp()
+        switch_ga_global_course_creator(self.user)
+
+
 class PrimitiveTabEdit(ModuleStoreTestCase):
     """Tests for the primitive tab edit data manipulations"""
 
@@ -235,3 +241,10 @@ class PrimitiveTabEdit(ModuleStoreTestCase):
         tabs.primitive_insert(course, 3, 'notes', 'aname')
         course2 = modulestore().get_course(course.id)
         self.assertEquals(course2.tabs[3], {'type': 'notes', 'name': 'aname'})
+
+
+class PrimitiveTabEditWithGaGlobalCourseCreator(PrimitiveTabEdit):
+    """Tests for the primitive tab edit data manipulations"""
+    def setUp(self, **kwargs):
+        super(PrimitiveTabEditWithGaGlobalCourseCreator, self).setUp()
+        switch_ga_global_course_creator(self.user)

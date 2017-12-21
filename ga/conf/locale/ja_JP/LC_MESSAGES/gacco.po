@@ -1102,12 +1102,16 @@ msgid "Display Order"
 msgstr "表示順"
 
 #: lms/djangoapps/ga_advanced_course/models.py
-msgid "Start Time"
-msgstr "開始時間"
+msgid "Start Date (JST)"
+msgstr "開始日 (JST)"
 
 #: lms/djangoapps/ga_advanced_course/models.py
-msgid "End Time"
-msgstr "終了時間"
+msgid "Start Time (JST)"
+msgstr "開始時間 (JST)"
+
+#: lms/djangoapps/ga_advanced_course/models.py
+msgid "End Time (JST)"
+msgstr "終了時間 (JST)"
 
 #: lms/djangoapps/ga_advanced_course/models.py
 msgid "Capacity"
@@ -1192,6 +1196,10 @@ msgstr "ユーザーのオプション機能設定"
 #: openedx/core/djangoapps/ga_optional/models.py
 msgid "Hide the e-mail on the Account Settings"
 msgstr "アカウント設定画面のメールアドレス欄非表示"
+
+#: openedx/core/djangoapps/ga_optional/models.py
+msgid "Progress Restriction by Correct Answer Rate"
+msgstr "問題正答率による進行制限"
 
 #: cms/templates/settings.html
 msgid "Custom Logo for Settings"
@@ -1644,6 +1652,14 @@ msgid "Account is not valid anymore"
 msgstr "このアカウントは既に退会しています"
 
 #: lms/templates/disabled_account.html
+msgid "The user is resigned."
+msgstr "指定されたユーザーは退会済みです。"
+
+#: lms/templates/disabled_account.html
+msgid "Resigned User"
+msgstr "退会済みユーザー"
+
+#: lms/templates/disabled_account.html
 msgid "The log-in email address is already withdrawn from gacco."
 msgstr "ログイン時に利用されたメールアドレスは既に退会されています。"
 
@@ -1756,3 +1772,19 @@ msgstr ""
 #: lms/static/coffee/src/instructor_dashboard/data_download.js
 msgid "Error generating playback status report. Please try again."
 msgstr "動画視聴状況レポート作成に失敗しました。再試行してください。"
+
+#: lms/templates/instructor/instructor_dashboard_2/membership.html
+msgid "Course Scorer"
+msgstr "講座スタッフ（採点用権限）"
+
+#: lms/templates/instructor/instructor_dashboard_2/membership.html
+msgid ""
+"Course scorer members help you manage your course. Course scorer can browse "
+"to the students' reports, and view the assignment submission history. Course scorer does not "
+"have access to Studio."
+msgstr ""
+"講座スタッフ（採点用権限）は講座の一部の管理業務を支援することができます。受講者のレポートの閲覧や採点、課題提出履歴を見ることができます。Studioへのアクセス権はありません。"
+
+#: lms/templates/instructor/instructor_dashboard_2/membership.html
+msgid "Add Course Scorer"
+msgstr "講座スタッフ（採点用権限）を追加する"

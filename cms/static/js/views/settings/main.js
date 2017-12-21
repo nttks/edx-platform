@@ -212,6 +212,7 @@ var DetailsView = ValidatingView.extend({
         var div = this.$el.find('#' + this.fieldToSelectorMap[fieldName]);
         var datefield = $(div).find("input.date");
         var timefield = $(div).find("input.time");
+        var jstfield = $(div).find("input.jst");
         var cachethis = this;
         var setfield = function () {
             var newVal = DateUtils.getDate(datefield, timefield),
@@ -220,6 +221,7 @@ var DetailsView = ValidatingView.extend({
                 if (!cacheModel.has(fieldName) || oldTime !== newVal.getTime()) {
                     cachethis.clearValidationErrors();
                     cachethis.setAndValidate(fieldName, newVal);
+                    jstfield.val(DateUtils.getJstDate(newVal));
                 }
             }
             else {
@@ -228,6 +230,7 @@ var DetailsView = ValidatingView.extend({
                 // (start date is required by the back end).
                 cachethis.clearValidationErrors();
                 cachethis.setAndValidate(fieldName, null);
+                jstfield.val('');
             }
         };
 
@@ -245,10 +248,13 @@ var DetailsView = ValidatingView.extend({
         // timepicker doesn't let us set null, so check that we have a time
         if (date) {
             DateUtils.setDate(datefield, timefield, date);
+            var newVal = DateUtils.getDate(datefield, timefield);
+            jstfield.val(DateUtils.getJstDate(newVal));
         } // but reset fields either way
         else {
             timefield.val('');
             datefield.val('');
+            jstfield.val('');
         }
     },
 

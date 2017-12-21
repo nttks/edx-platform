@@ -22,6 +22,8 @@ from courseware.masquerade import CourseMasquerade
 from courseware.tests.factories import (
     BetaTesterFactory,
     GlobalStaffFactory,
+    GaCourseScorerFactory,
+    GaGlobalCourseCreatorFactory,
     GaOldCourseViewerStaffFactory,
     InstructorFactory,
     StaffFactory,
@@ -79,6 +81,8 @@ class AccessTestCase(LoginEnrollmentTestCase, ModuleStoreTestCase):
         self.course_instructor = InstructorFactory(course_key=self.course.id)
         self.staff = GlobalStaffFactory()
         self.ga_old_course_viewer = GaOldCourseViewerStaffFactory()
+        self.ga_global_course_creator = GaGlobalCourseCreatorFactory()
+        self.ga_course_scorer = GaCourseScorerFactory(course_key=self.course.id)
 
     def verify_access(self, mock_unit, student_should_have_access, expected_error_type=None):
         """ Verify the expected result from _has_access_descriptor """
@@ -92,6 +96,12 @@ class AccessTestCase(LoginEnrollmentTestCase, ModuleStoreTestCase):
 
         self.assertTrue(
             access._has_access_descriptor(self.course_staff, 'load', mock_unit, course_key=self.course.id)
+        )
+        self.assertTrue(
+            access._has_access_descriptor(self.ga_global_course_creator, 'load', mock_unit, course_key=self.course.id)
+        )
+        self.assertTrue(
+            access._has_access_descriptor(self.ga_course_scorer, 'load', mock_unit, course_key=self.course.id)
         )
 
     def test_has_staff_access_to_preview_mode(self):
@@ -129,13 +139,17 @@ class AccessTestCase(LoginEnrollmentTestCase, ModuleStoreTestCase):
         self.assertTrue(
             bool(access.has_staff_access_to_preview_mode(self.global_staff, obj=self.course, course_key=course_key))
         )
+        self.assertTrue(
+            bool(access.has_staff_access_to_preview_mode(self.ga_course_scorer, obj=self.course, course_key=course_key))
+        )
 
-        for user in [self.global_staff, self.course_staff, self.course_instructor]:
+        for user in [self.global_staff, self.course_staff, self.course_instructor, self.ga_course_scorer]:
             for obj in modules:
                 self.assertTrue(bool(access.has_staff_access_to_preview_mode(user, obj=obj)))
                 self.assertFalse(bool(access.has_staff_access_to_preview_mode(self.student, obj=obj)))
         for obj in modules:
             self.assertFalse(bool(access.has_staff_access_to_preview_mode(self.ga_old_course_viewer, obj=obj)))
+            self.assertFalse(bool(access.has_staff_access_to_preview_mode(self.ga_global_course_creator, obj=obj)))
 
     def test_student_has_access(self):
         """
@@ -172,6 +186,7 @@ class AccessTestCase(LoginEnrollmentTestCase, ModuleStoreTestCase):
         self.assertFalse(bool(access.has_staff_access_to_preview_mode(self.course_instructor, obj='global')))
         self.assertFalse(bool(access.has_staff_access_to_preview_mode(self.student, obj='global')))
         self.assertFalse(bool(access.has_staff_access_to_preview_mode(self.ga_old_course_viewer, obj='global')))
+        self.assertFalse(bool(access.has_staff_access_to_preview_mode(self.ga_global_course_creator, obj='global')))
 
     @patch('courseware.access.in_preview_mode', Mock(return_value=True))
     def test_has_access_with_preview_mode(self):
@@ -187,6 +202,10 @@ class AccessTestCase(LoginEnrollmentTestCase, ModuleStoreTestCase):
         self.assertFalse(bool(access.has_access(self.student, 'load', self.course, course_key=self.course.id)))
         self.assertFalse(bool(access.has_access(self.ga_old_course_viewer, 'staff', self.course, course_key=self.course.id)))
         self.assertFalse(bool(access.has_access(self.ga_old_course_viewer, 'load', self.course, course_key=self.course.id)))
+        self.assertFalse(bool(access.has_access(self.ga_global_course_creator, 'staff', self.course, course_key=self.course.id)))
+        self.assertFalse(bool(access.has_access(self.ga_global_course_creator, 'load', self.course, course_key=self.course.id)))
+        self.assertTrue(bool(access.has_access(self.ga_course_scorer, 'staff', self.course, course_key=self.course.id)))
+        self.assertTrue(bool(access.has_access(self.ga_course_scorer, 'load', self.course, course_key=self.course.id)))
 
         # User should be able to preview when masquerade.
         with patch('courseware.access.is_masquerading_as_student') as mock_masquerade:
@@ -199,6 +218,12 @@ class AccessTestCase(LoginEnrollmentTestCase, ModuleStoreTestCase):
             )
             self.assertFalse(
                 bool(access.has_access(self.ga_old_course_viewer, 'staff', self.course, course_key=self.course.id))
+            )
+            self.assertFalse(
+                bool(access.has_access(self.ga_global_course_creator, 'staff', self.course, course_key=self.course.id))
+            )
+            self.assertTrue(
+                bool(access.has_access(self.ga_course_scorer, 'staff', self.course, course_key=self.course.id))
             )
 
     def test_has_access_to_course(self):
@@ -250,12 +275,27 @@ class AccessTestCase(LoginEnrollmentTestCase, ModuleStoreTestCase):
         self.assertFalse(access._has_access_to_course(
             self.ga_old_course_viewer, 'instructor', self.course.id
         ))
+        self.assertFalse(access._has_access_to_course(
+            self.ga_global_course_creator, 'staff', self.course.id
+        ))
+        self.assertFalse(access._has_access_to_course(
+            self.ga_global_course_creator, 'instructor', self.course.id
+        ))
+        self.assertTrue(access._has_access_to_course(
+            self.ga_course_scorer, 'staff', self.course.id
+        ))
+        self.assertFalse(access._has_access_to_course(
+            self.ga_course_scorer, 'instructor', self.course.id
+        ))
 
         self.assertFalse(access._has_access_to_course(
             self.student, 'not_staff_or_instructor', self.course.id
         ))
         self.assertFalse(access._has_access_to_course(
             self.ga_old_course_viewer, 'not_staff_or_instructor', self.course.id
+        ))
+        self.assertFalse(access._has_access_to_course(
+            self.ga_global_course_creator, 'not_staff_or_instructor', self.course.id
         ))
 
     def test__has_access_string(self):
@@ -268,17 +308,20 @@ class AccessTestCase(LoginEnrollmentTestCase, ModuleStoreTestCase):
         self.assertRaises(ValueError, access._has_access_string, user, 'not_staff', 'global')
 
     @ddt.data(
-        ('staff', False, True, False),
-        ('support', False, True, False),
-        ('certificates', False, True, False),
-        ('ga_old_course_view', False, True, True)
+        ('staff', False, True, False, False),
+        ('support', False, True, False, False),
+        ('certificates', False, True, False, False),
+        ('ga_old_course_view', False, True, True, False),
+        ('ga_global_course_creator', False, False, False, True),
     )
     @ddt.unpack
-    def test__has_access_string_some_roles(self, action, expected_student, expected_staff, expected_ga_old_course_viewer):
+    def test__has_access_string_some_roles(self, action, expected_student, expected_staff, expected_ga_old_course_viewer, expected_ga_global_course_creator):
+        idx = 0
         for (user, expected_response) in (
             (self.student, expected_student),
             (self.staff, expected_staff),
-            (self.ga_old_course_viewer, expected_ga_old_course_viewer)
+            (self.ga_old_course_viewer, expected_ga_old_course_viewer),
+            (self.ga_global_course_creator, expected_ga_global_course_creator)
         ):
             self.assertEquals(
                 bool(access._has_access_string(user, action, 'global')),
@@ -400,6 +443,14 @@ class AccessTestCase(LoginEnrollmentTestCase, ModuleStoreTestCase):
         user = StaffFactory.create(course_key=course.id)
         self.assertTrue(access._has_access_course(user, 'enroll', course))
 
+        # GaGlobalCourseCreator can always enroll even outside the open enrollment period
+        user = GaGlobalCourseCreatorFactory.create()
+        self.assertTrue(access._has_access_course(user, 'enroll', course))
+
+        # GaCourseScorer can always enroll even outside the open enrollment period
+        user = GaCourseScorerFactory.create(course_key=course.id)
+        self.assertTrue(access._has_access_course(user, 'enroll', course))
+
         # Non-staff cannot enroll if it is between the start and end dates and invitation only
         # and not specifically allowed
         course = Mock(
@@ -437,6 +488,8 @@ class AccessTestCase(LoginEnrollmentTestCase, ModuleStoreTestCase):
         user = UserFactory.create()
         course_id = SlashSeparatedCourseKey('edX', 'test', '2012_Fall')
         staff = StaffFactory.create(course_key=course_id)
+        ga_global_course_creator = GaGlobalCourseCreatorFactory.create()
+        ga_course_scorer = GaCourseScorerFactory.create(course_key=course_id)
 
         course = Mock(
             id=course_id,
@@ -446,6 +499,10 @@ class AccessTestCase(LoginEnrollmentTestCase, ModuleStoreTestCase):
         self.assertTrue(access._has_access_course(user, 'see_about_page', course))
         self.assertTrue(access._has_access_course(staff, 'see_in_catalog', course))
         self.assertTrue(access._has_access_course(staff, 'see_about_page', course))
+        self.assertTrue(access._has_access_course(ga_global_course_creator, 'see_in_catalog', course))
+        self.assertTrue(access._has_access_course(ga_global_course_creator, 'see_about_page', course))
+        self.assertTrue(access._has_access_course(ga_course_scorer, 'see_in_catalog', course))
+        self.assertTrue(access._has_access_course(ga_course_scorer, 'see_about_page', course))
 
         # Now set visibility to just about page
         course = Mock(
@@ -456,6 +513,10 @@ class AccessTestCase(LoginEnrollmentTestCase, ModuleStoreTestCase):
         self.assertTrue(access._has_access_course(user, 'see_about_page', course))
         self.assertTrue(access._has_access_course(staff, 'see_in_catalog', course))
         self.assertTrue(access._has_access_course(staff, 'see_about_page', course))
+        self.assertTrue(access._has_access_course(ga_global_course_creator, 'see_in_catalog', course))
+        self.assertTrue(access._has_access_course(ga_global_course_creator, 'see_about_page', course))
+        self.assertTrue(access._has_access_course(ga_course_scorer, 'see_in_catalog', course))
+        self.assertTrue(access._has_access_course(ga_course_scorer, 'see_about_page', course))
 
         # Now set visibility to none, which means neither in catalog nor about pages
         course = Mock(
@@ -466,6 +527,10 @@ class AccessTestCase(LoginEnrollmentTestCase, ModuleStoreTestCase):
         self.assertFalse(access._has_access_course(user, 'see_about_page', course))
         self.assertTrue(access._has_access_course(staff, 'see_in_catalog', course))
         self.assertTrue(access._has_access_course(staff, 'see_about_page', course))
+        self.assertTrue(access._has_access_course(ga_global_course_creator, 'see_in_catalog', course))
+        self.assertTrue(access._has_access_course(ga_global_course_creator, 'see_about_page', course))
+        self.assertTrue(access._has_access_course(ga_course_scorer, 'see_in_catalog', course))
+        self.assertTrue(access._has_access_course(ga_course_scorer, 'see_about_page', course))
 
     @patch.dict("django.conf.settings.FEATURES", {'ENABLE_PREREQUISITE_COURSES': True, 'MILESTONES_APP': True})
     def test_access_on_course_with_pre_requisites(self):
@@ -649,15 +714,17 @@ class CourseOverviewAccessTestCase(ModuleStoreTestCase):
         fulfill_course_milestone(self.user_completed_pre_requisite, self.course_started.id)
         self.user_staff = UserFactory.create(is_staff=True)
         self.user_anonymous = AnonymousUserFactory.create()
+        self.ga_global_course_creator = GaGlobalCourseCreatorFactory.create()
+        self.ga_course_scorer = GaCourseScorerFactory.create(course_key=self.course_not_started.id)
 
     ENROLL_TEST_DATA = list(itertools.product(
-        ['user_normal', 'user_staff', 'user_anonymous'],
+        ['user_normal', 'user_staff', 'user_anonymous', 'ga_global_course_creator', 'ga_course_scorer'],
         ['enroll'],
         ['course_default', 'course_started', 'course_not_started', 'course_staff_only'],
     ))
 
     LOAD_TEST_DATA = list(itertools.product(
-        ['user_normal', 'user_beta_tester', 'user_staff'],
+        ['user_normal', 'user_beta_tester', 'user_staff', 'ga_global_course_creator', 'ga_course_scorer'],
         ['load'],
         ['course_default', 'course_started', 'course_not_started', 'course_staff_only'],
     ))
@@ -669,7 +736,7 @@ class CourseOverviewAccessTestCase(ModuleStoreTestCase):
     ))
 
     PREREQUISITES_TEST_DATA = list(itertools.product(
-        ['user_normal', 'user_completed_pre_requisite', 'user_staff', 'user_anonymous'],
+        ['user_normal', 'user_completed_pre_requisite', 'user_staff', 'user_anonymous', 'ga_global_course_creator', 'ga_course_scorer'],
         ['view_courseware_with_prerequisites'],
         ['course_default', 'course_with_pre_requisite', 'course_with_pre_requisites'],
     ))
@@ -693,6 +760,8 @@ class CourseOverviewAccessTestCase(ModuleStoreTestCase):
         """
         user = getattr(self, user_attr_name)
         course = getattr(self, course_attr_name)
+        if user_attr_name == 'ga_course_scorer':
+            user = GaCourseScorerFactory.create(course_key=course.id)
 
         course_overview = CourseOverview.get_from_id(course.id)
         self.assertEqual(

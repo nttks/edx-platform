@@ -11,7 +11,7 @@ import warnings
 
 from lxml import etree
 from xblock.core import XBlock
-from xblock.fields import Integer, Scope, Boolean
+from xblock.fields import Integer, Scope, Boolean, Dict
 from xblock.fragment import Fragment
 
 from .exceptions import NotFoundError
@@ -78,6 +78,14 @@ class SequenceFields(object):
     )
     individual_due_minutes = Integer(
         help=_("Number of minutes from the base date to the due"),
+        scope=Scope.settings
+    )
+
+    progress_restriction = Dict(
+        help=_("Settings for progress restriction"),
+        default={
+            "type": "No Restriction",
+        },
         scope=Scope.settings
     )
 

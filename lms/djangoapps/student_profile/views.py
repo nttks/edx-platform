@@ -21,7 +21,7 @@ from openedx.core.djangoapps.user_api.accounts.api import get_account_settings
 from openedx.core.djangoapps.user_api.accounts.serializers import PROFILE_IMAGE_KEY_PREFIX
 from openedx.core.djangoapps.user_api.errors import UserNotFound, UserNotAuthorized
 from openedx.core.djangoapps.user_api.preferences.api import get_user_preferences
-from student.models import User, CourseEnrollment
+from student.models import User, UserStanding, CourseEnrollment
 from microsite_configuration import microsite
 from xmodule.modulestore.django import modulestore
 
@@ -46,10 +46,17 @@ def learner_profile(request, username):
         GET /account/profile
     """
     try:
-        return render_to_response(
-            'student_profile/learner_profile.html',
-            learner_profile_context(request, username, request.user.is_staff)
-        )
+        is_disabled = UserStanding.objects.filter(
+            user__username=username,
+            account_status=UserStanding.ACCOUNT_DISABLED
+        ).exists()
+        if is_disabled:
+            return render_to_response('disabled_account.html')
+        else:
+            return render_to_response(
+                'student_profile/learner_profile.html',
+                learner_profile_context(request, username, request.user.is_staff)
+            )
     except (UserNotAuthorized, UserNotFound, ObjectDoesNotExist):
         raise Http404
 

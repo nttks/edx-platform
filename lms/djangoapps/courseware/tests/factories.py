@@ -15,6 +15,8 @@ from student.roles import (
     CourseInstructorRole,
     CourseStaffRole,
     CourseBetaTesterRole,
+    GaCourseScorerRole,
+    GaGlobalCourseCreatorRole,
     GaOldCourseViewerStaffRole,
     GlobalStaff,
     OrgStaffRole,
@@ -130,6 +132,30 @@ class GaOldCourseViewerStaffFactory(UserFactory):
     @factory.post_generation
     def set_staff(self, create, extracted, **kwargs):
         GaOldCourseViewerStaffRole().add_users(self)
+
+
+class GaGlobalCourseCreatorFactory(UserFactory):
+    """
+    Returns a User object with GaGlobalCourseCreator members access
+    """
+    last_name = "GaGlobalCourseCreator"
+
+    @factory.post_generation
+    def set_staff(self, create, extracted, **kwargs):
+        GaGlobalCourseCreatorRole().add_users(self)
+
+
+class GaCourseScorerFactory(UserFactory):
+    """
+    Returns a User object with GaCourseScorer members access
+    """
+    last_name = "GaCourseScorer"
+
+    @factory.post_generation
+    def course_key(self, create, extracted, **kwargs):
+        if extracted is None:
+            raise ValueError("Must specify a CourseKey for a ga_course_scorer user")
+        GaCourseScorerRole(extracted).add_users(self)
 
 
 class StudentModuleFactory(DjangoModelFactory):

@@ -1,5 +1,6 @@
 import unittest
 
+from contentstore.tests.utils import switch_ga_global_course_creator
 from xmodule import templates
 from xmodule.modulestore import ModuleStoreEnum
 from xmodule.modulestore.tests.factories import CourseFactory, ItemFactory
@@ -135,3 +136,12 @@ class TemplateTests(ModuleStoreTestCase):
         self.assertIsNone(self.store.get_course(id_locator))
         # But can retrieve by guid -- same TODO as above
         # self.assertIsInstance(self.store.get_item(guid_locator), CourseDescriptor)
+
+
+class TemplateTestsWithGaGlobalCourseCreator(TemplateTests):
+    """
+    Test finding and using the templates (boilerplates) for xblocks.
+    """
+    def setUp(self):
+        super(TemplateTestsWithGaGlobalCourseCreator, self).setUp()
+        switch_ga_global_course_creator(self.user)

@@ -28,6 +28,7 @@ import newrelic.agent
 
 from capa.xqueue_interface import XQueueInterface
 from courseware.access import has_access, get_user_role
+from courseware.ga_progress_restriction import ProgressRestriction
 from courseware.masquerade import (
     MasqueradingKeyValueStore,
     filter_displayed_blocks,
@@ -49,6 +50,8 @@ from lms.djangoapps.lms_xblock.models import XBlockAsidesConfig
 from opaque_keys import InvalidKeyError
 from opaque_keys.edx.keys import UsageKey, CourseKey
 from opaque_keys.edx.locations import SlashSeparatedCourseKey
+from openedx.core.djangoapps.ga_optional.api import is_available
+from openedx.core.djangoapps.ga_optional.models import PROGRESS_RESTRICTION_OPTION_KEY
 from openedx.core.lib.xblock_utils import (
     replace_course_urls,
     replace_jump_to_id_urls,
@@ -58,7 +61,7 @@ from openedx.core.lib.xblock_utils import (
     request_token as xblock_request_token,
 )
 from student.models import anonymous_id_for_user, user_by_anonymous_id
-from student.roles import CourseBetaTesterRole
+from student.roles import CourseBetaTesterRole, GaCourseScorerRole, GaGlobalCourseCreatorRole
 from xblock.core import XBlock
 from xblock.django.request import django_to_webob_request, webob_to_django_response
 from xblock_django.user_service import DjangoXBlockUserService
@@ -648,7 +651,11 @@ def get_module_system_for_user(user, student_data,  # TODO  # pylint: disable=to
             staff_access = has_access(user, 'staff', descriptor, course_id)
             instructor_access = bool(has_access(user, 'instructor', descriptor, course_id))
         if staff_access:
-            block_wrappers.append(partial(add_staff_markup, user, instructor_access, disable_staff_debug_info))
+            # Note: GaGlobalCourseCreator has not access to staff tools (#2150)
+            if not GaGlobalCourseCreatorRole().has_user(user):
+                # Note: GaCourseScorer has access to staff tools, but cannot see the studio link (#2150)
+                block_wrappers.append(partial(add_staff_markup, user, instructor_access, disable_staff_debug_info,
+                                              enable_studio_link=not GaCourseScorerRole(course_id).has_user(user)))
 
     # These modules store data using the anonymous_student_id as a key.
     # To prevent loss of data, we will continue to provide old modules with
@@ -1017,6 +1024,27 @@ def _invoke_xblock_handler(request, course_id, usage_id, handler, suffix, course
         try:
             with tracker.get_tracker().context(tracking_context_name, tracking_context):
                 resp = instance.handle(handler, req, suffix)
+
+                # add list of subsections(sequence numbers) restricted by progress restriction
+                # to unblock next subsection when passed
+                staff_access = has_access(request.user, 'staff', course.id)
+                if (suffix == 'problem_check' and
+                        is_available(PROGRESS_RESTRICTION_OPTION_KEY, course.id) and
+                        not staff_access):
+                    field_data_cache = FieldDataCache.cache_for_descriptor_descendents(
+                        course_key, request.user, course, depth=2)
+                    course_module = get_module_for_descriptor(
+                        request.user, request, course, field_data_cache, course.id, course=course
+                    )
+                    progress_restriction = ProgressRestriction(course.id, request.user, course_module)
+
+                    restricted_list = progress_restriction.get_restricted_list_in_same_section(instance.parent.name)
+                    restricted_chapters = progress_restriction.get_restricted_chapters()
+                    restricted_sections = progress_restriction.get_restricted_sections()
+                    resp = append_data_to_webob_response(resp, {'restricted_list': restricted_list,
+                                                                'restricted_chapters': restricted_chapters,
+                                                                'restricted_sections': restricted_sections})
+
                 if suffix == 'problem_check' \
                         and course \
                         and getattr(course, 'entrance_exam_enabled', False) \

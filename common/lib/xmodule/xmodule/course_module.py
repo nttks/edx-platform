@@ -5,6 +5,7 @@ import logging
 from cStringIO import StringIO
 from lxml import etree
 from path import Path as path
+from pytz import utc
 import requests
 from datetime import datetime
 from lazy import lazy
@@ -21,7 +22,6 @@ import json
 from xblock.core import XBlock
 from xblock.fields import Scope, List, String, Dict, Boolean, Integer, Float
 from .fields import Date
-from django.utils.timezone import UTC
 
 
 log = logging.getLogger(__name__)
@@ -109,7 +109,7 @@ class Textbook(object):
             # see if we already fetched this
             if toc_url in _cached_toc:
                 (table_of_contents, timestamp) = _cached_toc[toc_url]
-                age = datetime.now(UTC) - timestamp
+                age = datetime.now(utc) - timestamp
                 # expire every 10 minutes
                 if age.seconds < 600:
                     return table_of_contents
@@ -1038,7 +1038,7 @@ class CourseDescriptor(CourseFields, SequenceDescriptor, LicenseMixin):
         if self.terminate_start is None:
             return False
 
-        return datetime.now(UTC()) > self.terminate_start
+        return datetime.now(utc) > self.terminate_start
 
     def is_course_deadline(self):
         """
@@ -1048,7 +1048,7 @@ class CourseDescriptor(CourseFields, SequenceDescriptor, LicenseMixin):
         if self.deadline_start is None:
             return False
 
-        return datetime.now(UTC()) > self.deadline_start
+        return datetime.now(utc) > self.deadline_start
 
     def may_certify(self):
         """
@@ -1299,16 +1299,17 @@ class CourseDescriptor(CourseFields, SequenceDescriptor, LicenseMixin):
         """Return the course_id for this course"""
         return self.location.course_key
 
-    def start_datetime_text(self, format_string="SHORT_DATE"):
+    def start_datetime_text(self, format_string="SHORT_DATE", time_zone=utc):
         """
-        Returns the desired text corresponding the course's start date and time in UTC.  Prefers .advertised_start,
-        then falls back to .start
+        Returns the desired text corresponding the course's start date and time in specified time zone, defaulted
+        to UTC. Prefers .advertised_start, then falls back to .start
         """
         i18n = self.runtime.service(self, "i18n")
         return course_metadata_utils.course_start_datetime_text(
             self.start,
             self.advertised_start,
             format_string,
+            time_zone,
             i18n.ugettext,
             i18n.strftime
         )
@@ -1324,13 +1325,14 @@ class CourseDescriptor(CourseFields, SequenceDescriptor, LicenseMixin):
             self.advertised_start
         )
 
-    def end_datetime_text(self, format_string="SHORT_DATE"):
+    def end_datetime_text(self, format_string="SHORT_DATE", time_zone=utc):
         """
         Returns the end date or date_time for the course formatted as a string.
         """
         return course_metadata_utils.course_end_datetime_text(
             self.end,
             format_string,
+            time_zone,
             self.runtime.service(self, "i18n").strftime
         )
 
@@ -1365,7 +1367,7 @@ class CourseDescriptor(CourseFields, SequenceDescriptor, LicenseMixin):
         setting
         """
         blackouts = self.get_discussion_blackout_datetimes()
-        now = datetime.now(UTC())
+        now = datetime.now(utc)
         for blackout in blackouts:
             if blackout["start"] <= now <= blackout["end"]:
                 return False
@@ -1493,4 +1495,57 @@ class CourseDescriptor(CourseFields, SequenceDescriptor, LicenseMixin):
         Returns:
           bool: False if the course has already started, True otherwise.
         """
-        return datetime.now(UTC()) <= self.start
+        return datetime.now(utc) <= self.start
+
+
+class CourseSummary(object):
+    """
+    A lightweight course summary class, which constructs split/mongo course summary without loading
+    the course. It is used at cms for listing courses to global staff user.
+    """
+    course_info_fields = ['display_name', 'display_coursenumber', 'display_organization']
+
+    def __init__(self, course_locator, display_name=u"Empty", display_coursenumber=None, display_organization=None):
+        """
+        Initialize and construct course summary
+
+        Arguments:
+        course_locator (CourseLocator):  CourseLocator object of the course.
+
+        display_name (unicode): display name of the course. When you create a course from console, display_name
+        isn't set (course block has no key `display_name`). "Empty" name is returned when we load the course.
+        If `display_name` isn't present in the course block, use the `Empty` as default display name.
+        We can set None as a display_name in Course Advance Settings; Do not use "Empty" when display_name is
+        set to None.
+
+        display_coursenumber (unicode|None): Course number that is specified & appears in the courseware
+
+        display_organization (unicode|None): Course organization that is specified & appears in the courseware
+
+        """
+        self.display_coursenumber = display_coursenumber
+        self.display_organization = display_organization
+        self.display_name = display_name
+
+        self.id = course_locator  # pylint: disable=invalid-name
+        self.location = course_locator.make_usage_key('course', 'course')
+
+    @property
+    def display_org_with_default(self):
+        """
+        Return a display organization if it has been specified, otherwise return the 'org' that
+        is in the location
+        """
+        if self.display_organization:
+            return self.display_organization
+        return self.location.org
+
+    @property
+    def display_number_with_default(self):
+        """
+        Return a display course number if it has been specified, otherwise return the 'course' that
+        is in the location
+        """
+        if self.display_coursenumber:
+            return self.display_coursenumber
+        return self.location.course

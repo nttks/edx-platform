@@ -82,6 +82,9 @@ div.info-wrapper section.handouts ol li a:hover{
   background-image: none;
   box-shadow: 0 1px 0 #fff inset, 0 -1px 0 rgba(0, 0, 0, 0.3) inset;
 }
+.course-index .accordion .course-navigation .button-chapter.restricted-chapter {
+  background-color: #aaa;
+}
 .course-index .accordion .course-navigation .chapter-content-container.is-open {
   border-bottom: 1px solid rgba(0,0,0,0.3);
 }
@@ -196,6 +199,9 @@ div.course-wrapper > a[href="#course-accordion-modal"] span i {
 #modal-accordion .chapter-wrapper:focus {
   background-color: #fff;
 }
+#modal-accordion .chapter-wrapper.restricted-chapter {
+  background-color: #aaa;
+}
 #modal-accordion .chapter {
   position: relative;
   display: block;
@@ -215,6 +221,9 @@ div.course-wrapper > a[href="#course-accordion-modal"] span i {
 #modal-accordion .chapter:focus {
   color: #666;
 }
+#modal-accordion .chapter.restricted-chapter {
+  background-color: #aaa;
+}
 #modal-accordion .chapter .icon {
   position: absolute;
   left: 20px;
@@ -232,6 +241,9 @@ div.course-wrapper > a[href="#course-accordion-modal"] span i {
 }
 #modal-accordion .chapter-content-container .chapter-menu {
   display: none;
+}
+#modal-accordion .chapter-content-container .chapter-menu.restricted-chapter {
+  background-color: #aaa;
 }
 #modal-accordion .chapter-content-container .menu-item {
   border-bottom: 0;
@@ -277,6 +289,10 @@ div.course-wrapper > a[href="#course-accordion-modal"] span i {
 #modal-accordion .chapter-content-container .menu-item a:active:after {
   opacity: 1.0;
   right: 15px;
+}
+#modal-accordion .chapter-content-container .menu-item.restricted-section,
+#modal-accordion .chapter-content-container .menu-item.restricted-section a {
+  background-color: #aaa;
 }
 
 @media screen and (max-width: 800px) {

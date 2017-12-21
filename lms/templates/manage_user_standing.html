@@ -45,9 +45,6 @@ from django.utils.translation import ugettext as _
     <label for="disable_action">${_("Disable Account")}</label>
     <input type="radio" name="account_action" value="disable" id="disable_action">
     <br>
-    <label for="reenable_action">${_("Reenable Account")}</label>
-    <input type="radio" name="account_action" value="reenable" id="reenable_action">
-    <br>
     <label for="remove_profile_image_action">${_("Remove Profile Image")}</label>
     <input type="radio" name="account_action" value="remove_profile_image" id="remove_profile_image_action">
     <br>
@@ -120,7 +117,7 @@ $(function() {
         $("#user_mail").text("");
         $("#account_status").text("");
         $("#is_active").text("");
-        $("#profile-image", form).attr("src", "");
+        $("#profile-image", form).removeAttr("src");
         $("#profile-name", form).text("");
         $(".account-change-status").html("");
         $("#course_enrollment_list").html("")
@@ -135,6 +132,10 @@ $(function() {
         event.preventDefault();
         var username_or_email = $('#username_or_email', form).val(),
             action = $("input:radio[name=account_action]:checked", form).val();
+        if (action === 'disable'
+                && !confirm("${_('After execution of the personal information mask processing,, it can not be undone. Are you sure?')}")) {
+            return false;
+        }
         clearMessages();
         $(".account-change-status").text("${_('working')}");
         if (action === 'remove_profile_image') {

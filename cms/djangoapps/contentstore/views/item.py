@@ -964,6 +964,10 @@ def create_xblock_info(xblock, data=None, metadata=None, include_ancestor_info=F
         else:
             xblock_info["staff_only_message"] = False
 
+        if xblock.category == "vertical":
+            xblock_info["progress_restriction"] = \
+                xblock.fields['progress_restriction'].to_json(xblock.progress_restriction)
+
     return xblock_info
 
 

@@ -16,7 +16,7 @@ from edxval.api import create_profile, create_video, get_video_info
 
 from contentstore.models import VideoUploadConfig
 from contentstore.views.videos import KEY_EXPIRATION_IN_SECONDS, StatusDisplayStrings
-from contentstore.tests.utils import CourseTestCase
+from contentstore.tests.utils import CourseTestCase, switch_ga_global_course_creator
 from contentstore.utils import reverse_course_url
 from xmodule.modulestore.tests.factories import CourseFactory
 
@@ -298,6 +298,13 @@ class VideosHandlerTestCase(VideoUploadTestMixin, CourseTestCase):
             self.assertEqual(response_file["upload_url"], mock_key_instance.generate_url())
 
 
+class VideosHandlerTestCaseWithGaGlobalCourseCreator(VideosHandlerTestCase):
+    """Test cases for the main video upload endpoint"""
+    def setUp(self):
+        super(VideosHandlerTestCaseWithGaGlobalCourseCreator, self).setUp()
+        switch_ga_global_course_creator(self.user)
+
+
 @patch.dict("django.conf.settings.FEATURES", {"ENABLE_VIDEO_UPLOAD_PIPELINE": True})
 @override_settings(VIDEO_UPLOAD_PIPELINE={"BUCKET": "test_bucket", "ROOT_PATH": "test_root"})
 class VideoUrlsCsvTestCase(VideoUploadTestMixin, CourseTestCase):
@@ -377,3 +384,10 @@ class VideoUrlsCsvTestCase(VideoUploadTestMixin, CourseTestCase):
             response["Content-Disposition"],
             "attachment; filename=video_urls.csv; filename*=utf-8''n%C3%B3n-%C3%A4scii_video_urls.csv"
         )
+
+
+class VideoUrlsCsvTestCaseWithGaGlobalCourseCreator(VideoUrlsCsvTestCase):
+    """Test cases for the CSV download endpoint for video uploads"""
+    def setUp(self):
+        super(VideoUrlsCsvTestCaseWithGaGlobalCourseCreator, self).setUp()
+        switch_ga_global_course_creator(self.user)

@@ -710,5 +710,13 @@
         margin-bottom: 0;
       }
     }
+
+    // UI: passing mark for progress restriction section
+    .edit-progress-restriction {
+      .progress-restriction-percentage {
+        display: inline-block;
+        width: 30%;
+      }
+    }
   }
 }

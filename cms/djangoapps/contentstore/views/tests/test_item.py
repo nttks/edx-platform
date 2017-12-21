@@ -21,7 +21,7 @@ from contentstore.views.component import (
 from contentstore.views.item import (
     create_xblock_info, ALWAYS, VisibilityState, _xblock_type_and_display_name, add_container_page_publishing_info
 )
-from contentstore.tests.utils import CourseTestCase
+from contentstore.tests.utils import CourseTestCase, switch_ga_global_course_creator
 from student.tests.factories import UserFactory
 from xmodule.capa_module import CapaDescriptor
 from xmodule.modulestore import ModuleStoreEnum
@@ -85,6 +85,13 @@ class ItemTest(CourseTestCase):
         resp = self.create_xblock(category='vertical', parent_usage_key=parent_usage_key)
         self.assertEqual(resp.status_code, 200)
         return self.response_usage_key(resp)
+
+
+class ItemTestWithGaGlobalCourseCreator(ItemTest):
+    """ Base test class for create, save, and delete """
+    def setUp(self):
+        super(ItemTestWithGaGlobalCourseCreator, self).setUp()
+        switch_ga_global_course_creator(self.user)
 
 
 @ddt.ddt
@@ -358,6 +365,13 @@ class GetItemTest(ItemTest):
         self.assertEqual(result["group_access"], {})
 
 
+class GetItemTestWithGaGlobalCourseCreator(GetItemTest):
+    """Tests for '/xblock' GET url."""
+    def setUp(self):
+        super(GetItemTestWithGaGlobalCourseCreator, self).setUp()
+        switch_ga_global_course_creator(self.user)
+
+
 @ddt.ddt
 class DeleteItem(ItemTest):
     """Tests for '/xblock' DELETE url."""
@@ -371,6 +385,13 @@ class DeleteItem(ItemTest):
         # Now delete it. There was a bug that the delete was failing (static tabs do not exist in draft modulestore).
         resp = self.client.delete(reverse_usage_url('xblock_handler', usage_key))
         self.assertEqual(resp.status_code, 204)
+
+
+class DeleteItemWithGaGlobalCourseCreator(DeleteItem):
+    """Tests for '/xblock' DELETE url."""
+    def setUp(self):
+        super(DeleteItemWithGaGlobalCourseCreator, self).setUp()
+        switch_ga_global_course_creator(self.user)
 
 
 class TestCreateItem(ItemTest):
@@ -442,6 +463,15 @@ class TestCreateItem(ItemTest):
         # Check that its name is not None
         new_tab = self.get_item_from_modulestore(usage_key)
         self.assertEquals(new_tab.display_name, 'Empty')
+
+
+class TestCreateItemWithGaGlobalCourseCreator(TestCreateItem):
+    """
+    Test the create_item handler thoroughly
+    """
+    def setUp(self):
+        super(TestCreateItemWithGaGlobalCourseCreator, self).setUp()
+        switch_ga_global_course_creator(self.user)
 
 
 class TestDuplicateItem(ItemTest):
@@ -610,6 +640,15 @@ class TestDuplicateItem(ItemTest):
         return self.response_usage_key(resp)
 
 
+class TestDuplicateItemWithGaGlobalCourseCreator(TestDuplicateItem):
+    """
+    Test the duplicate method.
+    """
+    def setUp(self):
+        super(TestDuplicateItemWithGaGlobalCourseCreator, self).setUp()
+        switch_ga_global_course_creator(self.user)
+
+
 class TestEditItemSetup(ItemTest):
     """
     Setup for xblock update tests.
@@ -638,6 +677,17 @@ class TestEditItemSetup(ItemTest):
         self.problem_update_url = reverse_usage_url("xblock_handler", self.problem_usage_key)
 
         self.course_update_url = reverse_usage_url("xblock_handler", self.usage_key)
+
+
+
+class TestEditItemSetupWithGaGlobalCourseCreator(TestEditItemSetup):
+    """
+    Setup for xblock update tests.
+    """
+    def setUp(self):
+        """ Creates the test course structure and a couple problems to 'edit'. """
+        super(TestEditItemSetupWithGaGlobalCourseCreator, self).setUp()
+        switch_ga_global_course_creator(self.user)
 
 
 class TestEditItem(TestEditItemSetup):
@@ -1061,6 +1111,15 @@ class TestEditItem(TestEditItemSetup):
         self.assertIn("Incorrect RelativeTime value", parsed["error"])  # See xmodule/fields.py
 
 
+class TestEditItemWithGaGlobalCourseCreator(TestEditItem):
+    """
+    Test xblock update.
+    """
+    def setUp(self):
+        super(TestEditItemWithGaGlobalCourseCreator, self).setUp()
+        switch_ga_global_course_creator(self.user)
+
+
 class TestEditItemSplitMongo(TestEditItemSetup):
     """
     Tests for EditItem running on top of the SplitMongoModuleStore.
@@ -1080,6 +1139,15 @@ class TestEditItemSplitMongo(TestEditItemSetup):
             self.assertEqual(resp.status_code, 200)
             content = json.loads(resp.content)
             self.assertEqual(len(PyQuery(content['html'])('.xblock-{}'.format(STUDIO_VIEW))), 1)
+
+
+class TestEditItemSplitMongoWithGaGlobalCourseCreator(TestEditItemSplitMongo):
+    """
+    Tests for EditItem running on top of the SplitMongoModuleStore.
+    """
+    def setUp(self):
+        super(TestEditItemSplitMongoWithGaGlobalCourseCreator, self).setUp()
+        switch_ga_global_course_creator(self.user)
 
 
 class TestEditSplitModule(ItemTest):
@@ -1263,6 +1331,15 @@ class TestEditSplitModule(ItemTest):
         self.assertEqual(group_id_to_child, split_test.group_id_to_child)
 
 
+class TestEditSplitModuleWithGaGlobalCourseCreator(TestEditSplitModule):
+    """
+    Tests around editing instances of the split_test module.
+    """
+    def setUp(self):
+        super(TestEditSplitModuleWithGaGlobalCourseCreator, self).setUp()
+        switch_ga_global_course_creator(self.user)
+
+
 @ddt.ddt
 class TestComponentHandler(TestCase):
     def setUp(self):
@@ -1318,6 +1395,12 @@ class TestComponentHandler(TestCase):
         self.descriptor.handle = create_response
 
         self.assertEquals(component_handler(self.request, self.usage_key_string, 'dummy_handler').status_code, status_code)
+
+
+class TestComponentHandlerWithGaGlobalCourseCreator(TestComponentHandler):
+    def setUp(self):
+        super(TestComponentHandlerWithGaGlobalCourseCreator, self).setUp()
+        switch_ga_global_course_creator(self.user)
 
 
 class TestComponentTemplates(CourseTestCase):
@@ -1430,6 +1513,16 @@ class TestComponentTemplates(CourseTestCase):
         self.assertEqual(len(templates[0]['templates']), 3)
         template_display_names = [template['display_name'] for template in templates[0]['templates']]
         self.assertEqual(template_display_names, ['Annotation', 'Poll', 'Survey'])
+
+
+class TestComponentTemplatesWithGaGlobalCourseCreator(TestComponentTemplates):
+    """
+    Unit tests for the generation of the component templates for a course.
+    """
+
+    def setUp(self):
+        super(TestComponentTemplatesWithGaGlobalCourseCreator, self).setUp()
+        switch_ga_global_course_creator(self.user)
 
 
 @ddt.ddt
@@ -1897,6 +1990,15 @@ class TestXBlockInfo(ItemTest):
         self.assertEqual(xblock_info['default_time_limit_minutes'], 100)
 
 
+class TestXBlockInfoWithGaGlobalCourseCreator(TestXBlockInfo):
+    """
+    Unit tests for XBlock's outline handling.
+    """
+    def setUp(self):
+        super(TestXBlockInfoWithGaGlobalCourseCreator, self).setUp()
+        switch_ga_global_course_creator(self.user)
+
+
 class TestLibraryXBlockInfo(ModuleStoreTestCase):
     """
     Unit tests for XBlock Info for XBlocks in a content library
@@ -1946,6 +2048,15 @@ class TestLibraryXBlockInfo(ModuleStoreTestCase):
         self.assertIsNone(xblock_info.get('graders', None))
 
 
+class TestLibraryXBlockInfoWithGaGlobalCourseCreator(TestLibraryXBlockInfo):
+    """
+    Unit tests for XBlock Info for XBlocks in a content library
+    """
+    def setUp(self):
+        super(TestLibraryXBlockInfoWithGaGlobalCourseCreator, self).setUp()
+        switch_ga_global_course_creator(self.user)
+
+
 class TestLibraryXBlockCreation(ItemTest):
     """
     Tests the adding of XBlocks to Library
@@ -1979,6 +2090,15 @@ class TestLibraryXBlockCreation(ItemTest):
         self.assertEqual(response.status_code, 400)
         lib = self.store.get_library(lib.location.library_key)
         self.assertFalse(lib.children)
+
+
+class TestLibraryXBlockCreationWithGaGlobalCourseCreator(TestLibraryXBlockCreation):
+    """
+    Tests the adding of XBlocks to Library
+    """
+    def setUp(self):
+        super(TestLibraryXBlockCreationWithGaGlobalCourseCreator, self).setUp()
+        switch_ga_global_course_creator(self.user)
 
 
 @ddt.ddt
@@ -2364,3 +2484,12 @@ class TestXBlockPublishingInfo(ItemTest):
         self._verify_has_staff_only_message(xblock_info, True)
         self._verify_has_staff_only_message(xblock_info, True, path=self.FIRST_SUBSECTION_PATH)
         self._verify_has_staff_only_message(xblock_info, True, path=self.FIRST_UNIT_PATH)
+
+
+class TestXBlockPublishingInfoWithGaGlobalCourseCreator(TestXBlockPublishingInfo):
+    """
+    Unit tests for XBlock's outline handling.
+    """
+    def setUp(self):
+        super(TestXBlockPublishingInfoWithGaGlobalCourseCreator, self).setUp()
+        switch_ga_global_course_creator(self.user)

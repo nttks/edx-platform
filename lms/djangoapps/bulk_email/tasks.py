@@ -43,7 +43,7 @@ from bulk_email.models import (
 from courseware.courses import get_course
 from openedx.core.lib.courses import course_image_url
 from student.models import UserStanding
-from student.roles import CourseStaffRole, CourseInstructorRole
+from student.roles import CourseStaffRole, CourseInstructorRole, GaCourseScorerRole
 from instructor_task.models import InstructorTask
 from instructor_task.subtasks import (
     SubtaskStatus,
@@ -120,7 +120,9 @@ def _get_recipient_querysets(user_id, to_option, course_id):
     else:
         staff_qset = CourseStaffRole(course_id).users_with_role()
         instructor_qset = CourseInstructorRole(course_id).users_with_role()
-        staff_instructor_qset = (staff_qset | instructor_qset).distinct()
+        # Note: Include GaCourseScorer in mail sending (#2150)
+        ga_course_scorer_qset = GaCourseScorerRole(course_id).users_with_role()
+        staff_instructor_qset = (staff_qset | instructor_qset | ga_course_scorer_qset).distinct()
         if to_option == SEND_TO_STAFF:
             return [use_read_replica_if_available(staff_instructor_qset)]
 
@@ -165,7 +167,9 @@ def _get_advanced_course_recipient_querysets(course_id, advanced_course_id):
     # members here
     staff_qset = CourseStaffRole(course_id).users_with_role()
     instructor_qset = CourseInstructorRole(course_id).users_with_role()
-    staff_instructor_qset = (staff_qset | instructor_qset).distinct()
+    # Note: Include GaCourseScorer in mail sending (#2150)
+    ga_course_scorer_qset = GaCourseScorerRole(course_id).users_with_role()
+    staff_instructor_qset = (staff_qset | instructor_qset | ga_course_scorer_qset).distinct()
 
     unpurchased_staff_qset = staff_instructor_qset.exclude(
         id__in=purchased_user_ids,

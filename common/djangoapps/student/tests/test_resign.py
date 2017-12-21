@@ -18,7 +18,7 @@ from textwrap import dedent
 
 from student.models import UserStanding
 from student.views import resign, resign_confirm
-from student.tests.factories import UserFactory
+from student.tests.factories import RegistrationFactory, UserFactory
 from student.tests.test_email import mock_render_to_string
 
 
@@ -29,12 +29,13 @@ class ResignTests(TestCase):
     request_factory = RequestFactory()
 
     def setUp(self):
-        self.user = UserFactory.create()
+        self.user = UserFactory.create(email='user@example.com')
         self.user.is_active = False
         self.user.save()
         self.token = default_token_generator.make_token(self.user)
         self.uidb36 = int_to_base36(self.user.id)
         self.resign_reason = 'a' * 1000
+        RegistrationFactory.create(user=self.user, masked=False)
 
     def test_resign_404(self):
         """Ensures that no get request to /resign/ is allowed"""
@@ -115,13 +116,17 @@ class ResignTests(TestCase):
             UserStanding.objects.get,
             user=self.user)
 
+    @patch('biz.djangoapps.util.mask_utils.disable_all_additional_info')
+    @patch('biz.djangoapps.util.mask_utils.disable_user_info')
     @patch('student.views.logout_user')
-    def test_resign_confirm_with_good_reason(self, logout_user):
+    def test_resign_confirm_with_good_reason(self, disable_all_additional_info, disable_user_info, logout_user):
         """Ensures that post request with good resign_reason to /resign_confirm/ makes the user logged out and disabled
         """
         good_req = self.request_factory.post('/resign_confirm/{0}-{1}/'.format(self.uidb36, self.token),
                                              {'resign_reason': self.resign_reason})
         good_resp = resign_confirm(good_req, self.uidb36, self.token)
+        self.assertTrue(disable_all_additional_info.called)
+        self.assertTrue(disable_user_info.called)
         self.assertTrue(logout_user.called)
 
         self.assertEquals(good_resp.status_code, 200)

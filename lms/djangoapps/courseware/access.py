@@ -42,6 +42,8 @@ from student.roles import (
     CourseInstructorRole,
     CourseStaffRole,
     GaAnalyzerRole,
+    GaCourseScorerRole,
+    GaGlobalCourseCreatorRole,
     GaOldCourseViewerStaffRole,
     GlobalStaff,
     SupportStaffRole,
@@ -70,6 +72,7 @@ from courseware.access_utils import (
 log = logging.getLogger(__name__)
 GA_ACCESS_CHECK_TYPE_ANALYZER = 'ga_analyzer'
 GA_ACCESS_CHECK_TYPE_OLD_COURSE_VIEW = 'ga_old_course_view'
+GA_ACCESS_CHECK_TYPE_GLOBAL_COURSE_CREATOR = 'ga_global_course_creator'
 
 
 def has_access(user, action, obj, course_key=None):
@@ -311,6 +314,9 @@ def _can_enroll_courselike(user, courselike):
         is_old_course_viewer = _has_access_string(user, GA_ACCESS_CHECK_TYPE_OLD_COURSE_VIEW, 'global')
         if CourseEnrollmentAllowed.objects.filter(email=user.email, course_id=course_key):
             return ACCESS_GRANTED
+        # Note: GaGlobalCourseCreator can enroll courses regardless of the course start or terminate (#2150)
+        if _has_access_string(user, GA_ACCESS_CHECK_TYPE_GLOBAL_COURSE_CREATOR, 'global'):
+            return ACCESS_GRANTED
 
     if _has_staff_access_to_descriptor(user, courselike, course_key):
         return ACCESS_GRANTED
@@ -365,7 +371,8 @@ def _has_access_course(user, action, courselike):
         )
 
         return (
-            ACCESS_GRANTED if (response or _has_staff_access_to_descriptor(user, courselike, courselike.id))
+            ACCESS_GRANTED if (response or _has_staff_access_to_descriptor(user, courselike, courselike.id)
+                               or _has_access_string(user, GA_ACCESS_CHECK_TYPE_GLOBAL_COURSE_CREATOR, 'global'))
             else response
         )
 
@@ -391,6 +398,7 @@ def _has_access_course(user, action, courselike):
         return (
             _has_catalog_visibility(courselike, CATALOG_VISIBILITY_CATALOG_AND_ABOUT)
             or _has_staff_access_to_descriptor(user, courselike, courselike.id)
+            or _has_access_string(user, GA_ACCESS_CHECK_TYPE_GLOBAL_COURSE_CREATOR, 'global')
         )
 
     def can_see_about_page():
@@ -403,6 +411,7 @@ def _has_access_course(user, action, courselike):
             _has_catalog_visibility(courselike, CATALOG_VISIBILITY_CATALOG_AND_ABOUT)
             or _has_catalog_visibility(courselike, CATALOG_VISIBILITY_ABOUT)
             or _has_staff_access_to_descriptor(user, courselike, courselike.id)
+            or _has_access_string(user, GA_ACCESS_CHECK_TYPE_GLOBAL_COURSE_CREATOR, 'global')
         )
 
     checkers = {
@@ -544,7 +553,8 @@ def _has_access_descriptor(user, action, descriptor, course_key=None):
         )
 
         return (
-            ACCESS_GRANTED if (response or _has_staff_access_to_descriptor(user, descriptor, course_key))
+            ACCESS_GRANTED if (response or _has_staff_access_to_descriptor(user, descriptor, course_key)
+                               or _has_access_string(user, GA_ACCESS_CHECK_TYPE_GLOBAL_COURSE_CREATOR, 'global'))
             else response
         )
 
@@ -663,12 +673,22 @@ def _has_access_string(user, action, perm):
             else ACCESS_DENIED
         )
 
+    def check_ga_global_course_creator():
+        """Checks for ga_global_course_creator access. """
+        if perm != 'global':
+            return ACCESS_DENIED
+        return (
+            ACCESS_GRANTED if GaGlobalCourseCreatorRole().has_user(user)
+            else ACCESS_DENIED
+        )
+
     checkers = {
         'staff': check_staff,
         'support': check_support,
         'certificates': check_support,
         GA_ACCESS_CHECK_TYPE_ANALYZER: check_ga_analyzer,
         GA_ACCESS_CHECK_TYPE_OLD_COURSE_VIEW: check_old_course_view,
+        GA_ACCESS_CHECK_TYPE_GLOBAL_COURSE_CREATOR: check_ga_global_course_creator,
     }
 
     return _dispatch(checkers, action, user, perm)
@@ -750,14 +770,20 @@ def _has_access_to_course(user, access_level, course_key):
         debug("Allow: user.is_staff")
         return ACCESS_GRANTED
 
+    # Note: GaGlobalCourseCreator is not a staff at LMS (#2150)
+    if _has_access_string(user, GA_ACCESS_CHECK_TYPE_GLOBAL_COURSE_CREATOR, 'global'):
+        return ACCESS_DENIED
+
     if access_level not in ('staff', 'instructor'):
         log.debug("Error in access._has_access_to_course access_level=%s unknown", access_level)
         debug("Deny: unknown access level")
         return ACCESS_DENIED
 
+    # Note: GaCourseScorer is a staff at LMS (#2150)
     staff_access = (
         CourseStaffRole(course_key).has_user(user) or
-        OrgStaffRole(course_key.org).has_user(user)
+        OrgStaffRole(course_key.org).has_user(user) or
+        GaCourseScorerRole(course_key).has_user(user)
     )
     if staff_access and access_level == 'staff':
         debug("Allow: user has course staff access")

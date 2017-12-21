@@ -9,7 +9,7 @@ from django.conf import settings
 from opaque_keys.edx.locator import LibraryLocator
 
 from student.roles import GlobalStaff, CourseCreatorRole, CourseStaffRole, CourseInstructorRole, CourseRole, \
-    CourseBetaTesterRole, OrgInstructorRole, OrgStaffRole, LibraryUserRole, OrgLibraryUserRole
+    CourseBetaTesterRole, OrgInstructorRole, OrgStaffRole, LibraryUserRole, OrgLibraryUserRole, GaGlobalCourseCreatorRole
 
 
 # Studio permissions:
@@ -63,6 +63,9 @@ def get_user_permissions(user, course_key, org=None):
     all_perms = STUDIO_EDIT_ROLES | STUDIO_VIEW_USERS | STUDIO_EDIT_CONTENT | STUDIO_VIEW_CONTENT
     # global staff, org instructors, and course instructors have all permissions:
     if GlobalStaff().has_user(user) or OrgInstructorRole(org=org).has_user(user):
+        return all_perms
+    if GaGlobalCourseCreatorRole().has_user(user):
+        # Note: GaGlobalCourseCreator has same authority a global staff in studio (#2150)
         return all_perms
     if course_key and user_has_role(user, CourseInstructorRole(course_key)):
         return all_perms
@@ -147,8 +150,11 @@ def _check_caller_authority(caller, role):
     # superuser
     if GlobalStaff().has_user(caller):
         return
+    if GaGlobalCourseCreatorRole().has_user(caller):
+        # Note: GaGlobalCourseCreator has same authority a global staff in studio (#2150)
+        return
 
-    if isinstance(role, (GlobalStaff, CourseCreatorRole)):
+    if isinstance(role, (GlobalStaff, CourseCreatorRole, GaGlobalCourseCreatorRole)):
         raise PermissionDenied
     elif isinstance(role, CourseRole):  # instructors can change the roles w/in their course
         if not user_has_role(caller, CourseInstructorRole(role.course_key)):

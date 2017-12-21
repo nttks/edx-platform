@@ -29,3 +29,36 @@ class DateTimeUtilsTest(TestCase):
             datetime(2015, 12, 31, 15, 0, 0, tzinfo=pytz.utc),
             datetime_utils.to_timezone(datetime(2015, 12, 31, 15, 0, 0, tzinfo=pytz.utc), pytz.utc)
         )
+
+    def test_format_for_csv(self):
+        with override_settings(TIME_ZONE='Asia/Tokyo'):
+            # naive
+            self.assertEqual(
+                '2016-01-01 00:00:00.000000',
+                datetime_utils.format_for_csv(datetime(2016, 1, 1, 0, 0, 0))
+            )
+            # aware
+            self.assertEqual(
+                '2016-01-01 00:00:00.000000 JST',
+                datetime_utils.format_for_csv(datetime(2016, 1, 1, 0, 0, 0, tzinfo=pytz.timezone('Asia/Tokyo')))
+            )
+            self.assertEqual(
+                '2016-01-01 09:00:00.000000 JST',
+                datetime_utils.format_for_csv(datetime(2016, 1, 1, 0, 0, 0, tzinfo=pytz.utc))
+            )
+
+        with override_settings(TIME_ZONE='Europe/Paris'):
+            # naive
+            self.assertEqual(
+                '2016-01-01 00:00:00.000000',
+                datetime_utils.format_for_csv(datetime(2016, 1, 1, 0, 0, 0))
+            )
+            # aware
+            self.assertEqual(
+                '2015-12-31 16:00:00.000000 CET',
+                datetime_utils.format_for_csv(datetime(2016, 1, 1, 0, 0, 0, tzinfo=pytz.timezone('Asia/Tokyo')))
+            )
+            self.assertEqual(
+                '2016-01-01 01:00:00.000000 CET',
+                datetime_utils.format_for_csv(datetime(2016, 1, 1, 0, 0, 0, tzinfo=pytz.utc))
+            )

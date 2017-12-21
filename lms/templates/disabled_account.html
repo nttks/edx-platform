@@ -1,7 +1,7 @@
 <%! from django.utils.translation import ugettext as _ %>
 <%inherit file="main.html" />
 
-<%block name="pagetitle">${_("Disabled Account")}</%block>
+<%block name="pagetitle">${_("Resigned User")}</%block>
 
 <%block name="headextra">
 <style>
@@ -12,7 +12,5 @@ section.outside-app h1 {
 </%block>
 
 <section class="outside-app">
-<h1>${_("Account is not valid anymore")}</h1>
-<p>${_("The log-in email address is already withdrawn from gacco.")}</p>
-<p>${_("The email address which is withdrawn can't be used again, please register as new member with other email address.")}</p>
+<h1>${_("The user is resigned.")}</h1>
 </section>

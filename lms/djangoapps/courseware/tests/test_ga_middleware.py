@@ -9,6 +9,7 @@ from django.test.utils import override_settings
 from courseware.ga_middleware import CourseTerminatedCheckMiddleware, CustomLogoMiddleware
 from courseware.tests.helpers import get_request_for_user, LoginEnrollmentTestCase
 from openedx.core.djangoapps.ga_optional.models import CourseOptionalConfiguration
+from student.roles import GaCourseScorerRole, GaGlobalCourseCreatorRole
 from student.tests.factories import CourseAccessRoleFactory
 from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
 from xmodule.modulestore.tests.factories import CourseFactory
@@ -135,6 +136,104 @@ class CourseTerminatedCheckMiddlewareTest(LoginEnrollmentTestCase, ModuleStoreTe
             self.assertEqual(mock_is_course_closed.call_count, 1)
 
 
+class CourseTerminatedCheckMiddlewareTestWithGaGlobalCourseCreator(LoginEnrollmentTestCase, ModuleStoreTestCase):
+    """
+    Tests for CourseTerminatedCheckMiddleware.
+    """
+
+    def setUp(self):
+        super(CourseTerminatedCheckMiddlewareTestWithGaGlobalCourseCreator, self).setUp()
+        self.course = CourseFactory.create(start=timezone.now() - timedelta(days=10))
+
+    def _create_request(self, path):
+        self.setup_user()
+        GaGlobalCourseCreatorRole().add_users(self.user)
+        self.enroll(self.course)
+        request = get_request_for_user(self.user)
+        request.path = path.format(unicode(self.course.id))
+        return request
+
+    def test_course_opened(self):
+        """
+        Tests that the opened course always does not block the access.
+        """
+        request = self._create_request('/courses/{}/courseware/')
+        response = CourseTerminatedCheckMiddleware().process_request(request)
+        self.assertIsNone(response)
+
+    def test_course_terminated(self):
+        """
+        Tests that the terminated course the access by GaGlobalCourseCreator.
+        """
+        self.course.terminate_start = timezone.now() - timedelta(days=1)
+        self.update_course(self.course, self.user.id)
+
+        request = self._create_request('/courses/{}/courseware/')
+        response = CourseTerminatedCheckMiddleware().process_request(request)
+        self.assertIsNone(response)
+
+    @patch('openedx.core.djangoapps.ga_self_paced.api.is_course_closed', return_value=True)
+    def test_self_paced_course_closed(self, mock_is_course_closed):
+        """
+        Tests that the self-paced closed course the access by GaGlobalCourseCreator.
+        """
+        self.course.self_paced = True
+        self.update_course(self.course, self.user.id)
+
+        request = self._create_request('/courses/{}/courseware/')
+        response = CourseTerminatedCheckMiddleware().process_request(request)
+        self.assertIsNone(response)
+
+
+class CourseTerminatedCheckMiddlewareTestWithGaCourseScorer(LoginEnrollmentTestCase, ModuleStoreTestCase):
+    """
+    Tests for CourseTerminatedCheckMiddleware.
+    """
+
+    def setUp(self):
+        super(CourseTerminatedCheckMiddlewareTestWithGaCourseScorer, self).setUp()
+        self.course = CourseFactory.create(start=timezone.now() - timedelta(days=10))
+
+    def _create_request(self, path):
+        self.setup_user()
+        GaCourseScorerRole(self.course.id).add_users(self.user)
+        self.enroll(self.course)
+        request = get_request_for_user(self.user)
+        request.path = path.format(unicode(self.course.id))
+        return request
+
+    def test_course_opened(self):
+        """
+        Tests that the opened course always does not block the access.
+        """
+        request = self._create_request('/courses/{}/courseware/')
+        response = CourseTerminatedCheckMiddleware().process_request(request)
+        self.assertIsNone(response)
+
+    def test_course_terminated(self):
+        """
+        Tests that the terminated course block the access by GaCourseScorer.
+        """
+        self.course.terminate_start = timezone.now() - timedelta(days=1)
+        self.update_course(self.course, self.user.id)
+
+        request = self._create_request('/courses/{}/courseware/')
+        response = CourseTerminatedCheckMiddleware().process_request(request)
+        self.assertEquals(response.status_code, 302)
+
+    @patch('openedx.core.djangoapps.ga_self_paced.api.is_course_closed', return_value=True)
+    def test_self_paced_course_closed(self, mock_is_course_closed):
+        """
+        Tests that the self-paced closed course the access by GaCourseScorer.
+        """
+        self.course.self_paced = True
+        self.update_course(self.course, self.user.id)
+
+        request = self._create_request('/courses/{}/courseware/')
+        response = CourseTerminatedCheckMiddleware().process_request(request)
+        self.assertIsNone(response)
+
+
 @ddt.ddt
 class CourseTerminatedCheckViewTest(LoginEnrollmentTestCase, ModuleStoreTestCase):
     """
@@ -215,6 +314,80 @@ class CourseTerminatedCheckViewTest(LoginEnrollmentTestCase, ModuleStoreTestCase
 
         response = self._access_page(False, False, True)
         self._assert_redirect_login(response)
+
+
+class CourseTerminatedCheckViewTestWithGaGlobalCourseCreator(LoginEnrollmentTestCase, ModuleStoreTestCase):
+    """
+    Tests for the courseware view to confirm the execute CourseTerminatedCheckMiddleware.
+    """
+
+    def setUp(self):
+        super(CourseTerminatedCheckViewTestWithGaGlobalCourseCreator, self).setUp()
+
+        self.course = CourseFactory.create(start=timezone.now() - timedelta(days=10))
+
+    def _access_page(self):
+        self.setup_user()
+        GaGlobalCourseCreatorRole().add_users(self.user)
+        self.enroll(self.course)
+        path = '/courses/{}/progress'.format(unicode(self.course.id))
+        return self.client.get(path)
+
+    def test_course_opened(self):
+        response = self._access_page()
+        self.assertEqual(response.status_code, 200)
+
+    def test_course_terminated(self):
+        self.course.terminate_start = timezone.now() - timedelta(days=1)
+        self.update_course(self.course, self.user.id)
+
+        response = self._access_page()
+        self.assertEqual(response.status_code, 200)
+
+    @patch('openedx.core.djangoapps.ga_self_paced.api.is_course_closed', return_value=True)
+    def test_self_paced_course_closed(self, mock_is_course_closed):
+        self.course.self_paced = True
+        self.update_course(self.course, self.user.id)
+
+        response = self._access_page()
+        self.assertEqual(response.status_code, 200)
+
+
+class CourseTerminatedCheckViewTestWithGaCourseScorer(LoginEnrollmentTestCase, ModuleStoreTestCase):
+    """
+    Tests for the courseware view to confirm the execute CourseTerminatedCheckMiddleware.
+    """
+
+    def setUp(self):
+        super(CourseTerminatedCheckViewTestWithGaCourseScorer, self).setUp()
+
+        self.course = CourseFactory.create(start=timezone.now() - timedelta(days=10))
+
+    def _access_page(self):
+        self.setup_user()
+        GaCourseScorerRole(self.course.id).add_users(self.user)
+        self.enroll(self.course)
+        path = '/courses/{}/progress'.format(unicode(self.course.id))
+        return self.client.get(path)
+
+    def test_course_opened(self):
+        response = self._access_page()
+        self.assertEqual(response.status_code, 200)
+
+    def test_course_terminated(self):
+        self.course.terminate_start = timezone.now() - timedelta(days=1)
+        self.update_course(self.course, self.user.id)
+
+        response = self._access_page()
+        self.assertEqual(response.status_code, 302)
+
+    @patch('openedx.core.djangoapps.ga_self_paced.api.is_course_closed', return_value=True)
+    def test_self_paced_course_closed(self, mock_is_course_closed):
+        self.course.self_paced = True
+        self.update_course(self.course, self.user.id)
+
+        response = self._access_page()
+        self.assertEqual(response.status_code, 200)
 
 
 class CustomLogoMiddlewareTest(LoginEnrollmentTestCase, ModuleStoreTestCase):

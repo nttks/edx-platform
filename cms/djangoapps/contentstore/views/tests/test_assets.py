@@ -9,7 +9,7 @@ import json
 from mock import patch
 from django.conf import settings
 
-from contentstore.tests.utils import CourseTestCase
+from contentstore.tests.utils import CourseTestCase, switch_ga_global_course_creator
 from contentstore.views import assets
 from contentstore.utils import reverse_course_url
 from xmodule.assetstore import AssetMetadata
@@ -70,6 +70,15 @@ class AssetsTestCase(CourseTestCase):
             sample_asset.write(sample_file_contents)
         sample_asset.seek(0)
         return sample_asset
+
+
+class AssetsTestCaseWithGaGlobalCourseCreator(AssetsTestCase):
+    """
+    Parent class for all asset tests.
+    """
+    def setUp(self):
+        super(AssetsTestCaseWithGaGlobalCourseCreator, self).setUp()
+        switch_ga_global_course_creator(self.user)
 
 
 class BasicAssetsTestCase(AssetsTestCase):
@@ -161,6 +170,15 @@ class BasicAssetsTestCase(AssetsTestCase):
         url = reverse_course_url('assets_handler', course.id)
         resp = self.client.get(url, HTTP_ACCEPT='text/html')
         self.assertIn('class="nav-item nav-manage-library"', resp.content)
+
+
+class BasicAssetsTestCaseWithGaGlobalCourseCreator(BasicAssetsTestCase):
+    """
+    Test getting assets via html w/o additional args
+    """
+    def setUp(self):
+        super(BasicAssetsTestCaseWithGaGlobalCourseCreator, self).setUp()
+        switch_ga_global_course_creator(self.user)
 
 
 class PaginationTestCase(AssetsTestCase):
@@ -282,6 +300,15 @@ class PaginationTestCase(AssetsTestCase):
                     self.assertIn(content_type, requested_file_types)
 
 
+class PaginationTestCaseWithGaGlobalCourseCreator(PaginationTestCase):
+    """
+    Tests the pagination of assets returned from the REST API.
+    """
+    def setUp(self):
+        super(PaginationTestCaseWithGaGlobalCourseCreator, self).setUp()
+        switch_ga_global_course_creator(self.user)
+
+
 @ddt
 class UploadTestCase(AssetsTestCase):
     """
@@ -322,6 +349,15 @@ class UploadTestCase(AssetsTestCase):
         self.assertEquals(resp.status_code, status_code)
 
 
+class UploadTestCaseWithGaGlobalCourseCreator(UploadTestCase):
+    """
+    Unit tests for uploading a file
+    """
+    def setUp(self):
+        super(UploadTestCaseWithGaGlobalCourseCreator, self).setUp()
+        switch_ga_global_course_creator(self.user)
+
+
 class DownloadTestCase(AssetsTestCase):
     """
     Unit tests for downloading a file.
@@ -353,6 +389,15 @@ class DownloadTestCase(AssetsTestCase):
         patched_find_asset_metadata.return_value = None
         self.client.get(self.uploaded_url, HTTP_ACCEPT='text/html')
         self.assertFalse(patched_find_asset_metadata.called)
+
+
+class DownloadTestCaseWithGaGlobalCourseCreator(DownloadTestCase):
+    """
+    Unit tests for downloading a file.
+    """
+    def setUp(self):
+        super(DownloadTestCaseWithGaGlobalCourseCreator, self).setUp()
+        switch_ga_global_course_creator(self.user)
 
 
 class AssetToJsonTestCase(AssetsTestCase):
@@ -441,6 +486,15 @@ class LockAssetTestCase(AssetsTestCase):
         verify_asset_locked_state(False)
 
 
+class LockAssetTestCaseWithGaGlobalCourseCreator(LockAssetTestCase):
+    """
+    Unit test for locking and unlocking an asset.
+    """
+    def setUp(self):
+        super(LockAssetTestCaseWithGaGlobalCourseCreator, self).setUp()
+        switch_ga_global_course_creator(self.user)
+
+
 class DeleteAssetTestCase(AssetsTestCase):
     """
     Unit test for removing an asset.
@@ -511,3 +565,12 @@ class DeleteAssetTestCase(AssetsTestCase):
         contentstore().save(self.content)
         resp = self.client.delete(test_url, HTTP_ACCEPT="application/json")
         self.assertEquals(resp.status_code, 204)
+
+
+class DeleteAssetTestCaseWithGaGlobalCourseCreator(DeleteAssetTestCase):
+    """
+    Unit test for removing an asset.
+    """
+    def setUp(self):
+        super(DeleteAssetTestCaseWithGaGlobalCourseCreator, self).setUp()
+        switch_ga_global_course_creator(self.user)

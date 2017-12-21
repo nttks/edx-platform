@@ -184,6 +184,10 @@ msgstr "選びなおす"
 msgid "Is this your final answer?"
 msgstr "解答を提出します。よろしいですか？"
 
+#: common/lib/xmodule/xmodule/js/src/sequence/display.coffee
+msgid "You need to make correct answers for the some problems in the before quiz."
+msgstr "前の課題に合格するまでアクセスできません。"
+
 #: lms/static/js/progress_report.js
 msgid "Course"
 msgstr "コース"
@@ -283,7 +287,7 @@ msgstr "このサイトを利用するための言語です。現在、このサ
 
 #: lms/static/js/student_account/views/account_settings_fields.js
 msgid "An email has been sent to {email_address}. Follow the link in the email to resign."
-msgstr "まだ退会手続きは完了していません。「{email_address}」宛に確認メールが送信されます。メール文中にある退会手続き用のリンクをクリックをすることで、退会処理をすることができます。<span style=\"color: red;\">なお、退会したメールアドレスの再利用や再登録はできませんのでご注意ください。</span>"
+msgstr "まだ退会手続きは完了していません。「{email_address}」宛に確認メールが送信されます。メール文中にある退会手続き用のリンクをクリックをすることで、退会処理をすることができます。"
 
 #: lms/templates/student_account/register.underscore
 msgid "<span class=\"required\">Asterisk (*) marked fields</span> are required."
@@ -544,6 +548,14 @@ msgstr "時："
 #: cms/templates/js/individual-release-days-editor.underscore
 msgid "Minutes:"
 msgstr "分："
+
+#: cms/templates/js/progress-restriction-editor.underscore
+msgid "Passing Mark"
+msgstr "合格基準"
+
+#: cms/templates/js/progress-restriction-editor.underscore
+msgid "Pass Mark Needed for Progress:"
+msgstr "合格に必要な正答率："
 
 #: cms/static/js/views/modals/course_outline_modals.js
 msgid "Please enter the date on and after 1900."

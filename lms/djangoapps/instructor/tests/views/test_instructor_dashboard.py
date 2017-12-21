@@ -12,7 +12,7 @@ from edxmako.shortcuts import render_to_response
 
 from ccx.tests.test_views import setup_students_and_grades
 from courseware.tabs import get_course_tab_list
-from courseware.tests.factories import UserFactory
+from courseware.tests.factories import GaCourseScorerFactory, GaGlobalCourseCreatorFactory, UserFactory
 from courseware.tests.helpers import LoginEnrollmentTestCase
 from instructor.views.gradebook_api import calculate_page_info
 
@@ -100,6 +100,10 @@ class TestInstructorDashboard(ModuleStoreTestCase, LoginEnrollmentTestCase, XssT
         self.assertTrue(has_instructor_tab(self.instructor, self.course))
         student = UserFactory.create()
         self.assertFalse(has_instructor_tab(student, self.course))
+        ga_global_course_creator = GaGlobalCourseCreatorFactory.create()
+        self.assertFalse(has_instructor_tab(ga_global_course_creator, self.course))
+        ga_course_scorer = GaCourseScorerFactory.create(course_key=self.course.id)
+        self.assertTrue(has_instructor_tab(ga_course_scorer, self.course))
 
     def test_default_currency_in_the_html_response(self):
         """

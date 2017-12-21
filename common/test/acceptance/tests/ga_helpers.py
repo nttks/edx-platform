@@ -32,6 +32,16 @@ GA_OLD_COURSE_VIEWER_USER_INFO = {
     'password': 'GaOldCourse1',
     'email': 'gaoldcourseviewer@example.com',
 }
+GA_GLOBAL_COURSE_CREATOR_USER_INFO = {
+    'username': 'Ga_Global_Course_Creator',
+    'password': 'GaGlobalCourseCreator1',
+    'email': 'ga_global_course_creator@example.com',
+}
+GA_COURSE_SCORER_USER_INFO = {
+    'username': 'Ga_Course_Scorer',
+    'password': 'Ga_Course_Scorer1',
+    'email': 'ga_course_scorer@example.com',
+}
 
 
 @unittest.skipUnless(os.environ.get('ENABLE_BOKCHOY_GA'), "Test only valid in gacco")

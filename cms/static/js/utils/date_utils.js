@@ -1,4 +1,4 @@
-define(["jquery", "date", "jquery.ui", "jquery.timepicker"], function($, date) {
+define(["jquery", "date", "moment", "jquery.ui", "jquery.timepicker"], function($, date, moment) {
     var getDate = function (datepickerInput, timepickerInput) {
         // given a pair of inputs (datepicker and timepicker), return a JS Date
         // object that corresponds to the datetime.js that they represent. Assume
@@ -53,11 +53,17 @@ define(["jquery", "date", "jquery.ui", "jquery.timepicker"], function($, date) {
         return obj;
     };
 
+    var getJstDate = function(targetDate) {
+        var dt = moment(targetDate).utcOffset('+0900');
+        return dt.format('MM/DD/YYYY HH:mm') + ' (JST)';
+    };
+
     return {
         getDate: getDate,
         setDate: setDate,
         renderDate: renderDate,
         convertDateStringsToObjects: convertDateStringsToObjects,
+        getJstDate: getJstDate,
         parseDateFromString: parseDateFromString
     };
 });

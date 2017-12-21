@@ -25,5 +25,6 @@
           </li>
       </ul>
     <% } %>
+    <ul id="start_jst_date" class="jst-date"></ul>
     <ul id="release-date-error-message" class="error-message"></ul>
 </div>

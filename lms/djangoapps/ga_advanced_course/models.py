@@ -42,11 +42,11 @@ class AdvancedCourse(models.Model):
 
     display_name = models.CharField(max_length=255, verbose_name=_("Display Name"))
 
-    start_date = models.DateField(verbose_name=_("Start Date"))
+    start_date = models.DateField(verbose_name=_("Start Date (JST)"))
 
-    start_time = models.TimeField(verbose_name=_("Start Time"))
+    start_time = models.TimeField(verbose_name=_("Start Time (JST)"))
 
-    end_time = models.TimeField(verbose_name=_("End Time"))
+    end_time = models.TimeField(verbose_name=_("End Time (JST)"))
 
     capacity = models.IntegerField(default=0, verbose_name=_("Capacity"))
 

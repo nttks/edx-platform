@@ -172,6 +172,10 @@ function(Backbone, _, str, ModuleUtils) {
              * (for example, which groups are selected for this particular XBlock).
              */
              'user_partitions': null,
+            /**
+             * Settings for progress restriction.
+             */
+             'progress_restriction': null,
         },
 
         initialize: function () {

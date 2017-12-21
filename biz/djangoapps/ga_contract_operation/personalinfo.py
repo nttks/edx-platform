@@ -61,20 +61,6 @@ class _PersonalinfoMaskExecutor(object):
 
         return True
 
-    def disable_user_info(self, user):
-        """
-        Override masked value to user information.
-
-        Note: We can `NEVER` restore the masked value.
-        """
-        # To force opt-out state since global course is to be registered on a daily batch.
-        mask_utils.optout_receiving_global_course_emails(user, self.global_course_ids)
-        mask_utils.disconnect_third_party_auth(user)
-        mask_utils.mask_name(user)
-        mask_utils.mask_email(user)
-        mask_utils.mask_login_code(user)
-        mask_utils.delete_certificates(user)
-
     def disable_additional_info(self, contract_register):
         """
         Override masked value to additional information.
@@ -202,7 +188,7 @@ def perform_delegate_personalinfo_mask(entry_id, task_input, action_name):
                     if not executor.check_enrollment(user):
                         task_progress.skip()
                         continue
-                    executor.disable_user_info(user)
+                    mask_utils.disable_user_info(user)
                 target.complete()
         except:
             # If an exception occur, logging it and to continue processing next target.

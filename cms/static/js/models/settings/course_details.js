@@ -41,8 +41,9 @@ var CourseDetails = Backbone.Model.extend({
         // Returns either nothing (no return call) so that validate works or an object of {field: errorstring} pairs
         // A bit funny in that the video key validation is asynchronous; so, it won't stop the validation.
         var errors = {};
+        var dateFields = ["start_date", "end_date", "enrollment_start", "enrollment_end", "deadline_start", "terminate_start"];
         newattrs = DateUtils.convertDateStringsToObjects(
-            newattrs, ["start_date", "end_date", "enrollment_start", "enrollment_end", "deadline_start", "terminate_start"]
+            newattrs, dateFields
         );
 
         if (newattrs.start_date === null) {
@@ -102,6 +103,11 @@ var CourseDetails = Backbone.Model.extend({
                 errors.entrance_exam_minimum_score_pct = interpolate(gettext("Please enter an integer between %(min)s and %(max)s."), range, true);
             }
         }
+        dateFields.forEach(function (key) {
+            if (newattrs[key] && newattrs[key].getFullYear() < 1900) {
+                errors[key] = gettext("Please enter the date on and after 1900.");
+            }
+        });
         if (!_.isEmpty(errors)) return errors;
         // NOTE don't return empty errors as that will be interpreted as an error state
     },

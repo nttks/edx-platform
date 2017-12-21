@@ -1,6 +1,6 @@
 """ Helper methods for determining user access permissions in Studio """
 
-from student.roles import CourseInstructorRole
+from student.roles import CourseInstructorRole, GaGlobalCourseCreatorRole
 from student import auth
 
 
@@ -16,7 +16,8 @@ def get_user_role(user, course_id):
     :param course_id: the course_id of the course we're interested in
     """
     # afaik, this is only used in lti
-    if auth.user_has_role(user, CourseInstructorRole(course_id)):
+    # Note: GaGlobalCourseCreator has more authority than a instructor in studio (#2150)
+    if auth.user_has_role(user, CourseInstructorRole(course_id)) or auth.user_has_role(user, GaGlobalCourseCreatorRole()):
         return 'instructor'
     else:
         return 'staff'

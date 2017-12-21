@@ -16,12 +16,12 @@ from ...pages.lms.ga_dashboard import DashboardPage
 from ...pages.lms.ga_instructor_dashboard import InstructorDashboardPage
 from ...pages.lms.login_and_register import CombinedLoginAndRegisterPage
 from ...tests.biz import PLATFORMER_USER_INFO, A_COMPANY, GaccoBizTestMixin
-from ..ga_helpers import GaccoTestMixin
+from ..ga_role_helpers import GaccoTestRoleMixin
 from ..helpers import EventsTestMixin
 from lms.envs.ga_bok_choy import EMAIL_FILE_PATH
 
 
-class GaccoLmsInstructorDashboardTestMixin(GaccoTestMixin):
+class GaccoLmsInstructorDashboardTestMixin(GaccoTestRoleMixin):
     def _create_user(self, user, course_key, staff):
         AutoAuthPage(
             self.browser,
@@ -71,18 +71,22 @@ class SendEmailTest(WebAppTest, GaccoLmsInstructorDashboardTestMixin):
         username_global_staff = 'test_globalstaff_' + self.unique_id[0:6]
         username_course_staff = 'test_coursestaff_' + self.unique_id[0:6]
         username_course_instructor = 'test_courseinstructor_' + self.unique_id[0:6]
+        username_course_ga_course_scorer = 'test_gacoursescorer_' + self.unique_id[0:6]
 
         self.user_global_staff = {'username': username_global_staff, 'email': username_global_staff + '@example.com'}
         self.user_course_staff = {'username': username_course_staff, 'email': username_course_staff + '@example.com'}
         self.user_course_instructor = {'username': username_course_instructor, 'email': username_course_instructor + '@example.com'}
+        self.user_course_ga_course_scorer = {'username': username_course_ga_course_scorer, 'email': username_course_ga_course_scorer + '@example.com'}
 
         self._create_user(self.user_global_staff, self.course_key, True)
         self._create_user(self.user_course_staff, self.course_key, False)
         self._create_user(self.user_course_instructor, self.course_key, False)
+        self._create_user(self.user_course_ga_course_scorer, self.course_key, False)
 
         # Add course team members
         CourseTeamFixture(self.course_key, self.user_course_staff['email'], False).install()
         CourseTeamFixture(self.course_key, self.user_course_instructor['email'], True).install()
+        self.add_course_role(self.course_key, 'Course Scorer', self.user_course_ga_course_scorer['email'])
 
         # Initialize pages.
         self.dashboard_page = DashboardPage(self.browser)
@@ -152,6 +156,20 @@ class SendEmailTest(WebAppTest, GaccoLmsInstructorDashboardTestMixin):
         # Logout
         self.logout_page.visit()
 
+        ## login as ga lms course staff ##
+        self._login(self.user_course_ga_course_scorer['email'])
+
+        # Visit instructor dashboard and send email section
+        self.instructor_dashboard_page.visit()
+        send_email_section = self.instructor_dashboard_page.select_send_email()
+
+        # Select all
+        send_email_section.select_send_to('all')
+        self.assertFalse(send_email_section.is_visible_optout_container())
+
+        # Logout
+        self.logout_page.visit()
+
     def test_send_to_all_include_optout(self):
         """
         Scenario:
@@ -189,7 +207,8 @@ class SendEmailTest(WebAppTest, GaccoLmsInstructorDashboardTestMixin):
         self.assertItemsEqual([
             self.user_global_staff['email'],
             self.user_course_instructor['email'],
-            self.user_course_staff['email']
+            self.user_course_staff['email'],
+            self.user_course_ga_course_scorer['email'],
         ], [message['to_addresses'] for message in messages])
 
         self.email_client.clear_messages()
@@ -208,6 +227,7 @@ class SendEmailTest(WebAppTest, GaccoLmsInstructorDashboardTestMixin):
             self.user_global_staff['email'],
             self.user_course_instructor['email'],
             self.user_course_staff['email'],
+            self.user_course_ga_course_scorer['email'],
             user_optout['email']
         ], [message['to_addresses'] for message in messages])
 
@@ -313,7 +333,7 @@ class SendEmailTest(WebAppTest, GaccoLmsInstructorDashboardTestMixin):
 
         _expected_emails = [
             user['email'] for user in users
-        ] + [self.user_course_instructor['email'], self.user_course_staff['email']]
+        ] + [self.user_course_instructor['email'], self.user_course_staff['email'], self.user_course_ga_course_scorer['email']]
 
         # this filtering is the process for excluding users to be automatically created by fixture.
         messages = filter(lambda msg: msg['to_addresses'].startswith('test_'), self.email_client.get_messages())

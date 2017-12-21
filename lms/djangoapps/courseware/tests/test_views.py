@@ -35,9 +35,10 @@ from certificates.models import CertificateStatuses, CertificateGenerationConfig
 from certificates.tests.factories import GeneratedCertificateFactory
 from course_modes.models import CourseMode
 from course_modes.tests.factories import CourseModeFactory
+from courseware.ga_progress_restriction import ProgressRestriction
 from courseware.model_data import set_score
 from courseware.testutils import RenderXBlockTestMixin
-from courseware.tests.factories import StudentModuleFactory
+from courseware.tests.factories import GaCourseScorerFactory, GaGlobalCourseCreatorFactory, StudentModuleFactory
 from courseware.user_state_client import DjangoXBlockUserStateClient
 from edxmako.tests import mako_middleware_process_request
 from openedx.core.djangoapps.self_paced.models import SelfPacedConfiguration
@@ -450,6 +451,51 @@ class ViewsTestCase(ModuleStoreTestCase):
         self.assertIn("Score: 3.0 / 3.0", response_content)
         self.assertIn('#4', response_content)
 
+    def test_submission_history_contents_with_ga_course_scorer(self):
+        # log into a GaCourseScorer
+        ga_course_scorer = GaCourseScorerFactory(course_key=self.course.id)
+
+        self.client.login(username=ga_course_scorer.username, password='test')
+
+        usage_key = self.course_key.make_usage_key('problem', 'test-history')
+        state_client = DjangoXBlockUserStateClient(ga_course_scorer)
+
+        # store state via the UserStateClient
+        state_client.set(
+            username=ga_course_scorer.username,
+            block_key=usage_key,
+            state={'field_a': 'x', 'field_b': 'y'}
+        )
+
+        set_score(ga_course_scorer.id, usage_key, 0, 3)
+
+        state_client.set(
+            username=ga_course_scorer.username,
+            block_key=usage_key,
+            state={'field_a': 'a', 'field_b': 'b'}
+        )
+        set_score(ga_course_scorer.id, usage_key, 3, 3)
+
+        url = reverse('submission_history', kwargs={
+            'course_id': unicode(self.course_key),
+            'student_username': ga_course_scorer.username,
+            'location': unicode(usage_key),
+        })
+        response = self.client.get(url)
+        response_content = HTMLParser().unescape(response.content.decode('utf-8'))
+
+        # We have update the state 4 times: twice to change content, and twice
+        # to set the scores. We'll check that the identifying content from each is
+        # displayed (but not the order), and also the indexes assigned in the output
+        # #1 - #4
+
+        self.assertIn('#1', response_content)
+        self.assertIn(json.dumps({'field_a': 'a', 'field_b': 'b'}, sort_keys=True, indent=2), response_content)
+        self.assertIn("Score: 0.0 / 3.0", response_content)
+        self.assertIn(json.dumps({'field_a': 'x', 'field_b': 'y'}, sort_keys=True, indent=2), response_content)
+        self.assertIn("Score: 3.0 / 3.0", response_content)
+        self.assertIn('#4', response_content)
+
     @ddt.data(('America/New_York', -5),  # UTC - 5
               ('Asia/Pyongyang', 9),  # UTC + 9
               ('Europe/London', 0),  # UTC
@@ -741,9 +787,11 @@ class TestAccordionDueDate(BaseDueDateTests):
 
     def get_text(self, course):
         """ Returns the HTML for the accordion """
+        progress_restriction = ProgressRestriction(course.id, self.user, None)
+
         return views.render_accordion(
             self.request.user, self.request, course,
-            unicode(course.get_children()[0].scope_ids.usage_id), None, None
+            unicode(course.get_children()[0].scope_ids.usage_id), None, None, progress_restriction
         )
 
 
@@ -1351,3 +1399,24 @@ class TestRenderXBlockSelfPaced(TestRenderXBlock):
 
     def course_options(self):
         return {'self_paced': True}
+
+
+class TestVisibleStudioUrl(ModuleStoreTestCase):
+    """
+    Tests for the view studio url
+    """
+    def setUp(self):
+        super(TestVisibleStudioUrl, self).setUp()
+        self.course = CourseFactory.create()
+
+    def test_get_studio_url(self):
+        # Global staff
+        self.assertIsNotNone(views._get_studio_url(self.user, self.course, 'course'))
+
+        # GaGlobalCourseCreatorFactory
+        ga_global_course_creator = GaGlobalCourseCreatorFactory()
+        self.assertIsNone(views._get_studio_url(ga_global_course_creator, self.course, 'course'))
+
+        # GaCourseScorer
+        ga_course_scorer = GaCourseScorerFactory(course_key=self.course.id)
+        self.assertIsNone(views._get_studio_url(ga_course_scorer, self.course, 'course'))

@@ -399,3 +399,25 @@ class GaOldCourseViewerStaffRole(RoleBase):
 
     def __init__(self, *args, **kwargs):
         super(GaOldCourseViewerStaffRole, self).__init__(self.ROLE, *args, **kwargs)
+
+
+@register_access_role
+class GaGlobalCourseCreatorRole(RoleBase):
+    """
+    Course creator members. (#2150)
+    """
+    ROLE = "ga_global_course_creator"
+
+    def __init__(self, *args, **kwargs):
+        super(GaGlobalCourseCreatorRole, self).__init__(self.ROLE, *args, **kwargs)
+
+
+@register_access_role
+class GaCourseScorerRole(CourseRole):
+    """
+    A scoring staff member of a course (#2150)
+    """
+    ROLE = "ga_course_scorer"
+
+    def __init__(self, *args, **kwargs):
+        super(GaCourseScorerRole, self).__init__(self.ROLE, *args, **kwargs)

@@ -65,7 +65,11 @@ from openedx.core.djangoapps.content.course_structures.api.v0 import api, errors
 from openedx.core.djangoapps.credit.api import is_credit_course, get_credit_requirements
 from openedx.core.djangoapps.credit.tasks import update_credit_course_requirements
 from openedx.core.djangoapps.ga_optional.api import is_available
-from openedx.core.djangoapps.ga_optional.models import CUSTOM_LOGO_OPTION_KEY, LIBRARY_OPTION_KEY
+from openedx.core.djangoapps.ga_optional.models import (
+    CUSTOM_LOGO_OPTION_KEY,
+    LIBRARY_OPTION_KEY,
+    PROGRESS_RESTRICTION_OPTION_KEY
+)
 from openedx.core.djangoapps.models.course_details import CourseDetails
 from openedx.core.djangoapps.programs.models import ProgramsApiConfig
 from openedx.core.djangoapps.programs.utils import get_programs
@@ -77,7 +81,7 @@ from openedx.core.lib.js_utils import escape_json_dumps
 from student import auth
 from student.auth import has_course_author_access, has_studio_write_access, has_studio_read_access
 from student.roles import (
-    CourseInstructorRole, CourseStaffRole, CourseCreatorRole, GlobalStaff, UserBasedRole
+    CourseInstructorRole, CourseStaffRole, CourseCreatorRole, GaGlobalCourseCreatorRole, GlobalStaff, UserBasedRole,
 )
 from util.date_utils import get_default_time_display
 from util.json_request import JsonResponse, JsonResponseBadRequest, expect_json
@@ -293,8 +297,9 @@ def course_rerun_handler(request, course_key_string):
     GET
         html: return html page with form to rerun a course for the given course id
     """
-    # Only global staff (PMs) are able to rerun courses during the soft launch
-    if not GlobalStaff().has_user(request.user):
+    # Only global staff (PMs) and GaGlobalCourseCreator are able to rerun courses during the soft launch
+    # Note: GaGlobalCourseCreator has access to rerun (#2150)
+    if not GlobalStaff().has_user(request.user) and not GaGlobalCourseCreatorRole().has_user(request.user):
         raise PermissionDenied()
     course_key = CourseKey.from_string(course_key_string)
     with modulestore().bulk_operations(course_key):
@@ -319,8 +324,9 @@ def course_search_index_handler(request, course_key_string):
         html: return status of indexing task
         json: return status of indexing task
     """
-    # Only global staff (PMs) are able to index courses
-    if not GlobalStaff().has_user(request.user):
+    # Only global staff (PMs) and GaGlobalCourseCreator are able to index courses
+    # Note: GaGlobalCourseCreator has access to course search index (#2150)
+    if not GlobalStaff().has_user(request.user) and not GaGlobalCourseCreatorRole().has_user(request.user):
         raise PermissionDenied()
     course_key = CourseKey.from_string(course_key_string)
     content_type = request.META.get('CONTENT_TYPE', None)
@@ -489,11 +495,14 @@ def course_listing(request):
         'user': request.user,
         'request_course_creator_url': reverse('contentstore.views.request_course_creator'),
         'course_creator_status': _get_course_creator_status(request.user),
-        'rerun_creator_status': GlobalStaff().has_user(request.user),
+        # Note: GaGlobalCourseCreator can see the rerun status (#2150)
+        'rerun_creator_status': GlobalStaff().has_user(request.user) or GaGlobalCourseCreatorRole().has_user(request.user),
         'allow_unicode_course_id': settings.FEATURES.get('ALLOW_UNICODE_COURSE_ID', False),
         'allow_course_reruns': settings.FEATURES.get('ALLOW_COURSE_RERUNS', True),
         'maintenance_message': maintenance_message,
-        'is_programs_enabled': programs_config.is_studio_tab_enabled and request.user.is_staff,
+        # Note: GaGlobalCourseCreator has same authority a global staff in studio (#2150)
+        'is_programs_enabled': programs_config.is_studio_tab_enabled and (
+            request.user.is_staff or GaGlobalCourseCreatorRole().has_user(request.user)),
         'programs': programs,
         'program_authoring_url': reverse('programs'),
     })
@@ -527,9 +536,11 @@ def library_listing(request, course_key_string=None):
 
         instructor_courses = UserBasedRole(request.user, CourseInstructorRole.ROLE).courses_with_role()
         global_staff = GlobalStaff().has_user(request.user)
+        # Note: GaGlobalCourseCreator has access to library listing (#2150)
+        ga_global_course_creator = GaGlobalCourseCreatorRole().has_user(request.user)
         if not course_module or not is_available(LIBRARY_OPTION_KEY, course_key):
             raise Http404
-        if not instructor_courses and not global_staff:
+        if not instructor_courses and not global_staff and not ga_global_course_creator:
             raise Http404
 
         target_libraries = course_module.target_library
@@ -643,7 +654,8 @@ def course_index(request, course_key):
                     'action_state_id': current_action.id,
                 },
             ) if current_action else None,
-            'library_option': is_available(LIBRARY_OPTION_KEY, course_key)
+            'library_option': is_available(LIBRARY_OPTION_KEY, course_key),
+            'is_restricted_in_progress': is_available(PROGRESS_RESTRICTION_OPTION_KEY, course_key),
         })
 
 
@@ -652,7 +664,8 @@ def get_courses_accessible_to_user(request):
     Try to get all courses by first reversing django groups and fallback to old method if it fails
     Note: overhead of pymongo reads will increase if getting courses from django groups fails
     """
-    if GlobalStaff().has_user(request.user):
+    # Note: GaGlobalCourseCreator has access to courses (#2150)
+    if GlobalStaff().has_user(request.user) or GaGlobalCourseCreatorRole().has_user(request.user):
         # user has global access so no need to get courses from django groups
         courses, in_process_course_actions = _accessible_courses_list(request)
     else:
@@ -742,7 +755,9 @@ def _create_or_rerun_course(request):
     Returns the destination course_key and overriding fields for the new course.
     Raises DuplicateCourseError and InvalidKeyError
     """
-    if not auth.user_has_role(request.user, CourseCreatorRole()):
+    # Note: GaGlobalCourseCreator has access to create or rerun course (#2150)
+    if not auth.user_has_role(request.user, CourseCreatorRole()) \
+            and not auth.user_has_role(request.user, GaGlobalCourseCreatorRole()):
         raise PermissionDenied()
 
     try:
@@ -1022,7 +1037,9 @@ def settings_handler(request, course_key_string):
             )
 
             about_page_editable = not marketing_site_enabled
-            enrollment_end_editable = GlobalStaff().has_user(request.user) or not marketing_site_enabled
+            # Note: GaGlobalCourseCreator can edit enrollment end date the course (#2150)
+            enrollment_end_editable = GlobalStaff().has_user(request.user) or not marketing_site_enabled or \
+                                      GaGlobalCourseCreatorRole().has_user(request.user)
             short_description_editable = settings.FEATURES.get('EDITABLE_SHORT_DESCRIPTION', True)
 
             self_paced_enabled = SelfPacedConfiguration.current().enabled
@@ -1668,7 +1685,8 @@ def _get_course_creator_status(user):
     If the user passed in has not previously visited the index page, it will be
     added with status 'unrequested' if the course creator group is in use.
     """
-    if user.is_staff:
+    # Note: GaGlobalCourseCreator can create a course (#2150)
+    if user.is_staff or GaGlobalCourseCreatorRole().has_user(user):
         course_creator_status = 'granted'
     elif settings.FEATURES.get('DISABLE_COURSE_CREATION', False):
         course_creator_status = 'disallowed_for_this_site'

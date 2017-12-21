@@ -117,6 +117,7 @@ from opaque_keys.edx.keys import CourseKey, UsageKey
 from opaque_keys.edx.locations import SlashSeparatedCourseKey
 from opaque_keys import InvalidKeyError
 from openedx.core.djangoapps.course_groups.cohorts import is_course_cohorted
+from openedx.core.lib.ga_datetime_utils import format_for_csv
 
 
 log = logging.getLogger(__name__)
@@ -812,11 +813,12 @@ def modify_access(request, course_id):
     return JsonResponse(response_payload)
 
 
+# Note: GaCourseScorer is registered by instructor from membership of instructor tab (#2150)
 @require_POST
 @ensure_csrf_cookie
 @cache_control(no_cache=True, no_store=True, must_revalidate=True)
 @require_level('instructor')
-@require_post_params(rolename="'instructor', 'staff', or 'beta'")
+@require_post_params(rolename="'instructor', 'staff', or 'beta', 'ga_course_scorer'")
 def list_course_role_members(request, course_id):
     """
     List instructors and staff.
@@ -2720,7 +2722,7 @@ def create_survey_response(request, course_id):
                 msg = "Couldn't parse JSON in survey_answer, so treat each item as 'N/A'. course_id={0}, unit_id={1}, username={2}".format(
                     course_id, s.unit_id, s.username)
                 log.warning(msg)
-            row = [s.unit_id, s.survey_name, s.created, s.username]
+            row = [s.unit_id, s.survey_name, format_for_csv(s.created), s.username]
             row.append('1' if s.account_status == UserStanding.ACCOUNT_DISABLED else '')
             row.append('1' if not s.is_active else '')
             for key in keys:

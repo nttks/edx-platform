@@ -11,6 +11,7 @@ from django.test.client import RequestFactory
 from django.utils import http
 
 import contentstore.views.component as views
+from contentstore.tests.utils import switch_ga_global_course_creator
 from contentstore.views.tests.utils import StudioPageTestCase
 from xmodule.modulestore.django import modulestore
 from xmodule.modulestore.tests.factories import ItemFactory
@@ -185,3 +186,13 @@ class ContainerPageTestCase(StudioPageTestCase):
             usage_key_string=unicode(self.vertical.location)
         )
         self.assertEqual(response.status_code, 200)
+
+
+class ContainerPageTestCaseWithGaGlobalCourseCreator(ContainerPageTestCase):
+    """
+    Unit tests for the container page.
+    """
+
+    def setUp(self):
+        super(ContainerPageTestCaseWithGaGlobalCourseCreator, self).setUp()
+        switch_ga_global_course_creator(self.user)

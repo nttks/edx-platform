@@ -3,7 +3,7 @@ Unit tests for contentstore.views.library
 
 More important high-level tests are in contentstore/tests/test_libraries.py
 """
-from contentstore.tests.utils import AjaxEnabledTestClient, parse_json
+from contentstore.tests.utils import AjaxEnabledTestClient, parse_json, switch_ga_global_course_creator
 from contentstore.utils import reverse_course_url, reverse_library_url
 from contentstore.views.component import get_component_templates
 from contentstore.views.library import _get_course_and_check_access
@@ -247,6 +247,17 @@ class UnitTestLibraries(ModuleStoreTestCase):
     def test_get_course_and_check_access(self):
         course_module = _get_course_and_check_access(self.course.id, self.user)
         self.assertIsNotNone(course_module)
+
+
+@ddt.ddt
+class UnitTestLibrariesWithGaGlobalCourseCreator(UnitTestLibraries):
+    """
+    Unit tests for library views
+    """
+
+    def setUp(self):
+        super(UnitTestLibrariesWithGaGlobalCourseCreator, self).setUp()
+        switch_ga_global_course_creator(self.user)
 
 
 class TestEnableLibraryContent(ModuleStoreTestCase):

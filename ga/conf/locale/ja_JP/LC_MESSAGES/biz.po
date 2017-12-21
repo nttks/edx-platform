@@ -319,9 +319,12 @@ msgstr "{0}には重複した値を入力できません。"
 
 ##### Course Operation
 #: biz/templates/ga_course_operation/survey.html
-msgid "The survey result can be downloaded as a CSV file. When you try to open a CSV file as it is in Excel, because that would garbled in the case that contains the Japanese, once you save the file, please re- open it in a text editor that corresponds to the 'UTF-8'. In addition, data on the date and time in the CSV file all UTC we (the world standard time, from Japan Standard Time minus 9 hours) are listed in the."
-msgstr "アンケート結果がCSVファイルでダウンロードできます。<br/>"
-"CSVファイルをそのままExcelで開こうとすると、日本語が含まれている場合に文字化けしてしまいますので、一旦ファイルを保存した後、「UTF-8」に対応したテキストエディタで開き直してください。また、CSVファイル内の日時に関するデータは全てUTC(世界標準時、日本標準時からマイナス9時間)で記載されています。"
+msgid ""
+"The survey result can be downloaded as a CSV file. <br/>"
+"When you try to open a CSV file as it is in Excel, because that would garbled in the case that contains the Japanese, once you save the file, please re-open it in a text editor that corresponds to the 'UTF-8'."
+msgstr ""
+"アンケート結果がCSVファイルでダウンロードできます。<br/>"
+"CSVファイルをそのままExcelで開こうとすると、日本語が含まれている場合に文字化けしてしまいますので、一旦ファイルを保存した後、「UTF-8」に対応したテキストエディタで開き直してください。"
 
 ##### Course Selection
 #: biz/djangoapps/util/decorators.py

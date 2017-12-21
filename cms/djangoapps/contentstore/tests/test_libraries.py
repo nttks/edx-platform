@@ -3,7 +3,7 @@ Content library unit tests that require the CMS runtime.
 """
 from django.test.client import RequestFactory
 from django.test.utils import override_settings
-from contentstore.tests.utils import AjaxEnabledTestClient, parse_json
+from contentstore.tests.utils import AjaxEnabledTestClient, parse_json, switch_ga_global_course_creator
 from contentstore.utils import reverse_url, reverse_usage_url, reverse_course_url
 from contentstore.views.item import _duplicate_item
 from contentstore.views.library import _list_libraries
@@ -492,6 +492,12 @@ class TestLibraries(LibraryTestCase):
         self.assertEqual(resp.status_code, 200)
         with self.assertRaises(ValueError):
             self._refresh_children(lc_block, status_code_expected=400)
+
+
+class TestLibrariesWithGaGlobalCourseCreator(TestLibraries):
+    def setUp(self):
+        super(TestLibrariesWithGaGlobalCourseCreator, self).setUp()
+        switch_ga_global_course_creator(self.user)
 
 
 @ddt.ddt
@@ -1018,6 +1024,15 @@ class TestOverrides(LibraryTestCase):
         self.assertEqual(self.lc_block.source_library_version, duplicate.source_library_version)
         problem2_in_course = store.get_item(duplicate.children[0])
         self.assertEqual(problem2_in_course.display_name, self.original_display_name)
+
+
+class TestOverridesWithGaGlobalCourseCreator(TestOverrides):
+    """
+    Test that overriding block Scope.settings fields from a library in a specific course works
+    """
+    def setUp(self):
+        super(TestOverridesWithGaGlobalCourseCreator, self).setUp()
+        switch_ga_global_course_creator(self.user)
 
 
 class TestIncompatibleModuleStore(LibraryTestCase):

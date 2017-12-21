@@ -6,7 +6,7 @@ Course Header Menu Tests.
 from django.conf import settings
 from django.test.utils import override_settings
 
-from contentstore.tests.utils import CourseTestCase
+from contentstore.tests.utils import CourseTestCase, switch_ga_global_course_creator
 from contentstore.utils import reverse_course_url
 
 FEATURES_WITH_CERTS_ENABLED = settings.FEATURES.copy()
@@ -45,3 +45,12 @@ class TestHeaderMenu(CourseTestCase):
         resp = self.client.get(outline_url, HTTP_ACCEPT='text/html')
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, '<li class="nav-item nav-course-settings-certificates">')
+
+
+class TestHeaderMenuWithGaGlobalCourseCreator(TestHeaderMenu):
+    """
+    Unit tests for the course header menu.
+    """
+    def setUp(self):
+        super(TestHeaderMenuWithGaGlobalCourseCreator, self).setUp()
+        switch_ga_global_course_creator(self.user)

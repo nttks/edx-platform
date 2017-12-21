@@ -10,6 +10,7 @@ from django.conf import settings
 import ddt
 import copy
 
+from contentstore.tests.utils import switch_ga_global_course_creator
 from openedx.core.djangoapps.content.course_structures.tests import SignalDisconnectTestMixin
 from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
 from xmodule.modulestore import ModuleStoreEnum
@@ -282,3 +283,13 @@ class ContentStoreImportTest(SignalDisconnectTestMixin, ModuleStoreTestCase):
 
             video = module_store.get_item(vertical.children[1])
             self.assertEqual(video.display_name, 'default')
+
+
+class ContentStoreImportTestWithGaGlobalCourseCreator(ContentStoreImportTest):
+    """
+    Tests that rely on the toy and test_import_course courses.
+    NOTE: refactor using CourseFactory so they do not.
+    """
+    def setUp(self):
+        super(ContentStoreImportTestWithGaGlobalCourseCreator, self).setUp()
+        switch_ga_global_course_creator(self.user)

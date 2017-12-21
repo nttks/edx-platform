@@ -1,0 +1,19 @@
+<form>
+<h3 class="modal-section-title"><%= gettext('Passing Mark') %></h3>
+<div class="modal-section-content progress-restriction">
+    <ul class="list-fields list-input">
+        <li class="field field-text field-progress-restriction-passing-mark">
+            <label for="progress-restriction-passing-mark"><%= gettext('Pass Mark Needed for Progress:') %></label>
+            <span class="progress-restriction-percentage">
+                <input type="text" id="progress-restriction-passing-mark"
+                    name="progress-restriction-passing-mark" value="" placeholder=""
+                    class="progress-restriction-passing-mark input input-text" autocomplete="off"/>
+            </span>
+            <span class="progress-restriction-percentage">
+                <label>%</label>
+            </span>
+        </li>
+    </ul>
+    <ul id="progress-restriction-passing-mark-error-message" class="error-message"></ul>
+</div>
+</form>

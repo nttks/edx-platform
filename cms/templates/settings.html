@@ -9,6 +9,7 @@
   from django.utils.translation import ugettext as _
   from contentstore import utils
   from openedx.core.lib.js_utils import escape_json_dumps
+  from student.roles import GaGlobalCourseCreatorRole
 %>
 
 <%block name="header_extras">
@@ -189,6 +190,10 @@ CMS.URL.UPLOAD_ASSET = '${upload_asset_url}';
                 <input type="text" class="time start timepicker" id="course-start-time" value="" placeholder="HH:MM" autocomplete="off" />
                 <span class="tip tip-stacked timezone">${_("(UTC)")}</span>
               </div>
+
+              <div class="field jst-date is-not-editable" id="field-course-start-jst">
+                <input type="text" class="jst" id="course-start-jst" value="" readonly />
+              </div>
             </li>
 
             <li class="field-group field-group-course-end" id="individual-course-end" style="display: none;">
@@ -223,6 +228,10 @@ CMS.URL.UPLOAD_ASSET = '${upload_asset_url}';
                 <input type="text" class="time end" id="course-end-time" value="" placeholder="HH:MM" autocomplete="off" />
                 <span class="tip tip-stacked timezone">${_("(UTC)")}</span>
               </div>
+
+              <div class="field jst-date is-not-editable" id="field-course-end-jst">
+                <input type="text" class="jst" id="course-end-jst" value="" readonly />
+              </div>
             </li>
           </ol>
 
@@ -238,6 +247,10 @@ CMS.URL.UPLOAD_ASSET = '${upload_asset_url}';
                 <label for="course-enrollment-start-time">${_("Enrollment Start Time")}</label>
                 <input type="text" class="time start" id="course-enrollment-start-time" value="" placeholder="HH:MM" autocomplete="off" />
                 <span class="tip tip-stacked timezone">${_("(UTC)")}</span>
+              </div>
+
+              <div class="field jst-date is-not-editable" id="field-enrollment-start-jst">
+                <input type="text" class="jst" id="course-enrollment-start-jst" value="" readonly />
               </div>
             </li>
             <%
@@ -261,6 +274,10 @@ CMS.URL.UPLOAD_ASSET = '${upload_asset_url}';
                 <input type="text" class="time end" id="course-enrollment-end-time" value="" placeholder="HH:MM" autocomplete="off" ${enrollment_end_readonly} />
                 <span class="tip tip-stacked timezone">${_("(UTC)")}</span>
               </div>
+
+              <div class="field jst-date is-not-editable" id="field-enrollment-end-jst">
+                <input type="text" class="jst" id="course-enrollment-end-jst" value="" readonly />
+              </div>
             </li>
           </ol>
 
@@ -277,6 +294,10 @@ CMS.URL.UPLOAD_ASSET = '${upload_asset_url}';
                 <input type="text" class="time start" id="course-deadline-start-time" value="" placeholder="HH:MM" autocomplete="off" />
                 <span class="tip tip-stacked timezone">${_("(UTC)")}</span>
               </div>
+
+              <div class="field jst-date is-not-editable" id="field-deadline-start-jst">
+                <input type="text" class="jst" id="course-deadline-start-jst" value="" readonly />
+              </div>
             </li>
 
             <li class="field-group field-group-terminate-start" id="terminate-start">
@@ -290,6 +311,10 @@ CMS.URL.UPLOAD_ASSET = '${upload_asset_url}';
                 <label for="course-terminate-start-time">${_("Course Terminate Time")}</label>
                 <input type="text" class="time end" id="course-terminate-start-time" value="" placeholder="HH:MM" autocomplete="off" />
                 <span class="tip tip-stacked timezone">${_("(UTC)")}</span>
+              </div>
+
+              <div class="field jst-date is-not-editable" id="field-terminate-start-jst">
+                <input type="text" class="jst" id="course-terminate-start-jst" value="" readonly />
               </div>
             </li>
           </ol>
@@ -337,7 +362,8 @@ CMS.URL.UPLOAD_ASSET = '${upload_asset_url}';
                 <span class="tip">${_("Information for prospective students")}</span>
               </header>
               <ol class="list-input">
-                % if user.is_staff:
+                ## Note: GaGlobalCourseCreator can edit course category (#2150)
+                % if user.is_staff or GaGlobalCourseCreatorRole().has_user(user):
                 <li class="field" id="field-course-category">
                   <label for="course-category">${_("Course Category")}</label>
                   <input type="text" class="placeholder" id="course-category" value="" autocomplete="off" />

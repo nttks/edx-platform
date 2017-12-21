@@ -10,13 +10,40 @@ from django.conf import settings
 from django.utils.crypto import get_random_string
 from social.apps.django_app import utils as social_utils
 
+from biz.djangoapps.ga_invitation.models import AdditionalInfoSetting
 from bulk_email.models import Optout
 from certificates.models import CertificateStatuses, GeneratedCertificate
 from student.models import CourseEnrollmentAllowed, ManualEnrollmentAudit, PendingEmailChange
 from third_party_auth import pipeline
+from openedx.core.djangoapps.course_global.models import CourseGlobalSetting
 from pdfgen.certificate import CertificatePDF
 
+from ga_shoppingcart.models import PersonalInfo
+
 log = logging.getLogger(__name__)
+
+
+def disable_user_info(user):
+    """
+    Override masked value to user information.
+
+    Note: We can `NEVER` restore the masked value.
+    """
+    # To force opt-out state since global course is to be registered on a daily batch.
+    global_course_ids = set(CourseGlobalSetting.all_course_id())
+    optout_receiving_global_course_emails(user, global_course_ids)
+    disconnect_third_party_auth(user)
+    mask_name(user)
+    mask_login_code(user)
+    delete_certificates(user)
+    mask_shoppingcart_personalinfo(user)
+    mask_email(user)
+
+
+def disable_all_additional_info(user):
+    for additional_setting in AdditionalInfoSetting.find_by_user(user):
+        additional_setting.value = hash(additional_setting.value)
+        additional_setting.save()
 
 
 def optout_receiving_global_course_emails(user, global_course_ids):
@@ -50,7 +77,7 @@ def mask_email(user):
     for cea in CourseEnrollmentAllowed.objects.filter(email=user.email):
         cea.email = hashed_email
         cea.save()
-    for mea in ManualEnrollmentAudit.objects.filter(enrolled_by_id=user.id):
+    for mea in ManualEnrollmentAudit.objects.filter(enrolled_email=user.email):
         mea.enrolled_email = hashed_email
         mea.save()
     for pec in PendingEmailChange.objects.filter(user_id=user.id):
@@ -61,6 +88,22 @@ def mask_email(user):
     # If the user has changed the email address, it has been stored in the meta.
     user.profile.meta = ''
     user.profile.save()
+
+
+def mask_shoppingcart_personalinfo(user):
+    for pis in PersonalInfo.objects.filter(user=user):
+        pis.full_name = hash(pis.full_name) if pis.full_name is not None else None
+        pis.kana = hash(pis.kana) if pis.kana is not None else None
+        pis.postal_code = None
+        pis.address_line_1 = hash(pis.address_line_1) if pis.address_line_1 is not None else None
+        pis.address_line_2 = hash(pis.address_line_2) if pis.address_line_2 is not None else None
+        pis.phone_number = None
+        pis.free_entry_field_1 = hash(pis.free_entry_field_1) if pis.free_entry_field_1 is not None else None
+        pis.free_entry_field_2 = hash(pis.free_entry_field_2) if pis.free_entry_field_2 is not None else None
+        pis.free_entry_field_3 = hash(pis.free_entry_field_3) if pis.free_entry_field_3 is not None else None
+        pis.free_entry_field_4 = hash(pis.free_entry_field_4) if pis.free_entry_field_4 is not None else None
+        pis.free_entry_field_5 = hash(pis.free_entry_field_5) if pis.free_entry_field_5 is not None else None
+        pis.save()
 
 
 def disconnect_third_party_auth(user):

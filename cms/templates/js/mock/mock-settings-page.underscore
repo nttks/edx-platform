@@ -17,6 +17,10 @@
         <input type="text" class="time start timepicker" id="course-start-time" value="" placeholder="HH:MM" autocomplete="off" />
         <span class="tip tip-stacked timezone">(UTC)</span>
       </div>
+
+      <div class="field jst-date is-not-editable" id="field-course-start-jst">
+        <input type="text" class="jst" id="course-start-jst" value="" readonly />
+      </div>
     </li>
 
     <li class="field-group field-group-course-end" id="course-end">
@@ -30,6 +34,10 @@
         <label for="course-end-time">Course End Time</label>
         <input type="text" class="time end" id="course-end-time" value="" placeholder="HH:MM" autocomplete="off" />
         <span class="tip tip-stacked timezone">(UTC)</span>
+      </div>
+
+      <div class="field jst-date is-not-editable" id="field-course-end-jst">
+        <input type="text" class="jst" id="course-end-jst" value="" readonly />
       </div>
     </li>
 
@@ -67,6 +75,10 @@
         <input type="text" class="time start" id="course-enrollment-start-time" value="" placeholder="HH:MM" autocomplete="off" />
         <span class="tip tip-stacked timezone">(UTC)</span>
       </div>
+
+      <div class="field jst-date is-not-editable" id="field-enrollment-start-jst">
+        <input type="text" class="jst" id="course-enrollment-start-jst" value="" readonly />
+      </div>
     </li>
 
     <li class="field-group field-group-enrollment-end" id="enrollment-end">
@@ -80,6 +92,10 @@
         <label for="course-enrollment-end-time">Enrollment End Time</label>
         <input type="text" class="time end" id="course-enrollment-end-time" value="" placeholder="HH:MM" autocomplete="off" />
         <span class="tip tip-stacked timezone">(UTC)</span>
+      </div>
+
+      <div class="field jst-date is-not-editable" id="field-enrollment-end-jst">
+        <input type="text" class="jst" id="course-enrollment-end-jst" value="" readonly />
       </div>
     </li>
     <li>
@@ -113,7 +129,7 @@
     <li id="deadline-start" class="field-group field-group-deadline-start">
       <div id="field-deadline-start-date" class="field date">
         <label for="course-deadline-start-date" class="">Course Deadline Date</label>
-        <input type="text" autocomplete="off" placeholder="MM/DD/YYYY" id="course-deadline-start-date" class="start-date date start hasDatepicker">
+        <input type="text" autocomplete="off" placeholder="MM/DD/YYYY" id="course-deadline-start-date" class="start-date date start datepicker">
         <span class="tip tip-stacked">First day problems can't submit, this setting is only affect to course list</span>
       </div>
 
@@ -122,12 +138,16 @@
         <input type="text" autocomplete="off" placeholder="HH:MM" value="" id="course-deadline-start-time" class="time start ui-timepicker-input">
         <span class="tip tip-stacked timezone">(UTC)</span>
       </div>
+
+      <div class="field jst-date is-not-editable" id="field-deadline-start-jst">
+        <input type="text" class="jst" id="course-deadline-start-jst" value="" readonly />
+      </div>
     </li>
 
     <li id="terminate-start" class="field-group field-group-terminate-start">
       <div id="field-terminate-start-date" class="field date">
         <label for="course-terminate-start-date" class="">Course Terminate Date</label>
-        <input type="text" autocomplete="off" placeholder="MM/DD/YYYY" id="course-terminate-start-date" class="end-date date end hasDatepicker">
+        <input type="text" autocomplete="off" placeholder="MM/DD/YYYY" id="course-terminate-start-date" class="end-date date end datepicker">
         <span class="tip tip-stacked">First day the course is hidden</span>
       </div>
 
@@ -135,6 +155,10 @@
         <label for="course-terminate-start-time" class="">Course Terminate Time</label>
         <input type="text" autocomplete="off" placeholder="HH:MM" value="" id="course-terminate-start-time" class="time end ui-timepicker-input">
         <span class="tip tip-stacked timezone">(UTC)</span>
+      </div>
+
+      <div class="field jst-date is-not-editable" id="field-terminate-start-jst">
+        <input type="text" class="jst" id="course-terminate-start-jst" value="" readonly />
       </div>
     </li>
   </ol>

@@ -12,6 +12,7 @@ from opaque_keys.edx.locations import SlashSeparatedCourseKey, AssetLocation
 
 from contentstore.utils import reverse_url
 from student.models import Registration
+from student.roles import GaGlobalCourseCreatorRole
 from xmodule.modulestore.split_mongo.split import SplitMongoModuleStore
 from xmodule.contentstore.django import contentstore
 from xmodule.modulestore import ModuleStoreEnum
@@ -391,3 +392,9 @@ def get_url(handler_name, key_value, key_name='usage_key_string', kwargs=None):
     Helper function for getting HTML for a page in Studio and checking that it does not error.
     """
     return reverse_url(handler_name, key_name, key_value, kwargs)
+
+
+def switch_ga_global_course_creator(global_staff):
+    global_staff.is_staff = False
+    global_staff.save()
+    GaGlobalCourseCreatorRole().add_users(global_staff)

@@ -4,12 +4,14 @@ Tests of student.roles
 import ddt
 from django.test import TestCase
 
-from courseware.tests.factories import GaOldCourseViewerStaffFactory, UserFactory, StaffFactory, InstructorFactory
+from courseware.tests.factories import GaCourseScorerFactory, GaGlobalCourseCreatorFactory, GaOldCourseViewerStaffFactory, \
+    UserFactory, StaffFactory, InstructorFactory
 from student.tests.factories import AnonymousUserFactory
 
 from student.roles import (
     GlobalStaff, CourseRole, CourseStaffRole, CourseInstructorRole,
-    OrgStaffRole, OrgInstructorRole, RoleCache, CourseBetaTesterRole
+    OrgStaffRole, OrgInstructorRole, RoleCache, CourseBetaTesterRole,
+    GaCourseScorerRole
 )
 from opaque_keys.edx.locations import SlashSeparatedCourseKey
 
@@ -29,12 +31,16 @@ class RolesTestCase(TestCase):
         self.course_staff = StaffFactory(course_key=self.course_key)
         self.course_instructor = InstructorFactory(course_key=self.course_key)
         self.ga_old_course_viewer = GaOldCourseViewerStaffFactory()
+        self.ga_global_course_creator = GaGlobalCourseCreatorFactory()
+        self.ga_course_scorer = GaCourseScorerFactory(course_key=self.course_key)
 
     def test_global_staff(self):
         self.assertFalse(GlobalStaff().has_user(self.student))
         self.assertFalse(GlobalStaff().has_user(self.course_staff))
         self.assertFalse(GlobalStaff().has_user(self.course_instructor))
         self.assertFalse(GlobalStaff().has_user(self.ga_old_course_viewer))
+        self.assertFalse(GlobalStaff().has_user(self.ga_global_course_creator))
+        self.assertFalse(GlobalStaff().has_user(self.ga_course_scorer))
         self.assertTrue(GlobalStaff().has_user(self.global_staff))
 
     def test_group_name_case_sensitive(self):
@@ -73,6 +79,27 @@ class RolesTestCase(TestCase):
         CourseStaffRole(self.course_key).remove_users(self.student)
         self.assertFalse(
             CourseStaffRole(self.course_key).has_user(self.student),
+            "Student still has access to {}".format(self.course_key)
+        )
+
+    def test_course_role_with_ga_course_scorer(self):
+        """
+        Test that giving a user a course role enables access appropriately
+            """
+        self.assertFalse(
+            GaCourseScorerRole(self.course_key).has_user(self.student),
+            "Student has premature access to {}".format(self.course_key)
+        )
+        GaCourseScorerRole(self.course_key).add_users(self.student)
+        self.assertTrue(
+            GaCourseScorerRole(self.course_key).has_user(self.student),
+            "Student doesn't have access to {}".format(unicode(self.course_key))
+        )
+
+        # remove access and confirm
+        GaCourseScorerRole(self.course_key).remove_users(self.student)
+        self.assertFalse(
+            GaCourseScorerRole(self.course_key).has_user(self.student),
             "Student still has access to {}".format(self.course_key)
         )
 
@@ -171,6 +198,7 @@ class RoleCacheTestCase(TestCase):
         (OrgStaffRole(IN_KEY.org), ('staff', None, 'edX')),
         (OrgInstructorRole(IN_KEY.org), ('instructor', None, 'edX')),
         (CourseBetaTesterRole(IN_KEY), ('beta_testers', IN_KEY, 'edX')),
+        (GaCourseScorerRole(IN_KEY), ('ga_course_scorer', IN_KEY, 'edX')),
     )
 
     def setUp(self):

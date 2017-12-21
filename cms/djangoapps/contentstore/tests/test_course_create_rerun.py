@@ -12,7 +12,7 @@ from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
 from xmodule.modulestore.tests.factories import CourseFactory
 from xmodule.modulestore import ModuleStoreEnum
 from xmodule.modulestore.django import modulestore
-from student.roles import CourseInstructorRole, CourseStaffRole
+from student.roles import CourseInstructorRole, CourseStaffRole, GaGlobalCourseCreatorRole
 from student.tests.factories import UserFactory
 from contentstore.tests.utils import AjaxEnabledTestClient, parse_json
 from datetime import datetime
@@ -156,3 +156,17 @@ class TestCourseListing(ModuleStoreTestCase):
             course_orgs = get_course_organizations(new_course_key)
             self.assertEqual(len(course_orgs), 1)
             self.assertEqual(course_orgs[0]['short_name'], 'orgX')
+
+
+class TestCourseListingWithGaGlobalCourseCreator(TestCourseListing):
+    """
+    Unit tests for getting the list of courses for a logged in user
+    """
+    def setUp(self):
+        """
+        Add a user and a course
+        """
+        super(TestCourseListingWithGaGlobalCourseCreator, self).setUp()
+        for role in [CourseInstructorRole, CourseStaffRole]:
+            role(self.source_course_key).remove_users(self.user)
+        GaGlobalCourseCreatorRole().add_users(self.user)

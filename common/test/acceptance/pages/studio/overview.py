@@ -527,6 +527,7 @@ class CourseOutlinePage(CoursePage, CourseOutlineContainer):
         """
         self.q(css=".subsection-header-actions .configure-button").first.click()
         self.q(css="#start_date").fill("01/01/2030")
+        self.q(css="#start_time").click()
         self.q(css=".action-save").first.click()
         self.wait_for_ajax()
 

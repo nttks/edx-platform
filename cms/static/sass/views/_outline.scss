@@ -696,6 +696,12 @@
       }
     }
 
+    .jst-date {
+      @extend %t-strong;
+      @include text-align(right);
+      width: ($baseline*15);
+    }
+
     .individual-error, .error-message {
         margin-bottom: $baseline/2;
         li {

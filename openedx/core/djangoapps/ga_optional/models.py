@@ -9,11 +9,13 @@ from xmodule_django.models import CourseKeyField
 CUSTOM_LOGO_OPTION_KEY = 'custom-logo-for-settings'
 DISCCUSION_IMAGE_UPLOAD_KEY = 'disccusion-image-upload-settings'
 LIBRARY_OPTION_KEY = 'library-for-settings'
+PROGRESS_RESTRICTION_OPTION_KEY = 'progress-restriction-settings'
 OPTIONAL_FEATURES = [
     ('ora2-staff-assessment', _("Staff Assessment for Peer Grading")),
     (CUSTOM_LOGO_OPTION_KEY, _("Custom Logo for Settings")),
     (DISCCUSION_IMAGE_UPLOAD_KEY, _("Providing Image Server for Discussion")),
     (LIBRARY_OPTION_KEY, _("Library for Settings")),
+    (PROGRESS_RESTRICTION_OPTION_KEY, _("Progress Restriction by Correct Answer Rate")),
 ]
 
 

@@ -33,7 +33,8 @@ from .component import get_component_templates, CONTAINER_TEMPLATES
 from student.auth import (
     STUDIO_VIEW_USERS, STUDIO_EDIT_ROLES, get_user_permissions, has_studio_read_access, has_studio_write_access
 )
-from student.roles import CourseInstructorRole, CourseStaffRole, LibraryUserRole, GlobalStaff, UserBasedRole
+from student.roles import CourseInstructorRole, CourseStaffRole, LibraryUserRole, GlobalStaff, UserBasedRole, \
+    GaGlobalCourseCreatorRole
 from util.json_request import expect_json, JsonResponse, JsonResponseBadRequest
 
 __all__ = ['library_handler', 'course_library_handler', 'manage_library_users']
@@ -92,10 +93,12 @@ def course_library_handler(request, course_key_string=None, library_key_string=N
 
     instructor_courses = UserBasedRole(request.user, CourseInstructorRole.ROLE).courses_with_role()
     global_staff = GlobalStaff().has_user(request.user)
+    # Note: GaGlobalCourseCreator has access to course libraries (#2150)
+    ga_global_course_creator = GaGlobalCourseCreatorRole().has_user(request.user)
     course_key = CourseKey.from_string(course_key_string)
     if not is_available(LIBRARY_OPTION_KEY, course_key):
         raise Http404
-    if not instructor_courses and not global_staff:
+    if not instructor_courses and not global_staff and not ga_global_course_creator:
         raise Http404
 
     if request.method == 'POST':

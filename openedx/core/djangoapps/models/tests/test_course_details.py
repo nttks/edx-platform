@@ -12,6 +12,7 @@ from xmodule.modulestore.tests.factories import CourseFactory
 
 from openedx.core.djangoapps.self_paced.models import SelfPacedConfiguration
 from openedx.core.djangoapps.models.course_details import CourseDetails, ABOUT_ATTRIBUTES
+from student.roles import GaGlobalCourseCreatorRole
 
 
 @ddt.ddt
@@ -158,3 +159,15 @@ class CourseDetailsTestCase(ModuleStoreTestCase):
         self.assertEqual(CourseDetails.fetch_youtube_video_id(self.course.id), video_value)
         video_url = CourseDetails.fetch_video_url(self.course.id)
         self.assertRegexpMatches(video_url, r'http://.*{}'.format(video_value))
+
+
+class CourseDetailsTestCaseWithGaGlobalCourseCreator(CourseDetailsTestCase):
+    """
+    Tests the first course settings page (course dates, overview, etc.).
+    """
+    def setUp(self):
+        super(CourseDetailsTestCaseWithGaGlobalCourseCreator, self).setUp()
+        # GaGlobalCourseCreatorRole has access to view all courses
+        self.user.is_staff = False
+        self.user.save()
+        GaGlobalCourseCreatorRole().add_users(self.user)

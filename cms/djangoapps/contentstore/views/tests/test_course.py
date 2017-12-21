@@ -3,11 +3,14 @@ Unit tests for course.py
 """
 import json
 
+from django.core.urlresolvers import reverse
 from django.test.utils import override_settings
 
-from contentstore.tests.utils import CourseTestCase
+from contentstore.tests.utils import CourseTestCase, switch_ga_global_course_creator
 from contentstore.utils import reverse_course_url
 from openedx.core.djangoapps.ga_optional.models import CourseOptionalConfiguration
+from student.roles import CourseInstructorRole, CourseStaffRole
+from student.tests.factories import UserFactory
 from xmodule.modulestore.tests.factories import CourseFactory
 
 
@@ -83,6 +86,26 @@ class TestSettingsHandlerForGet(CourseTestCase):
         self.assertIn('custom_logo_name', whole_model)
         self.assertEqual(whole_model['custom_logo_name'], '')
 
+    def test_permission(self):
+        # Global staff
+        response = self.client.get_html(self.course_details_url)
+        self.assertEquals(response.status_code, 200)
+        self.assertIn("Course Category", response.content)
+
+        # GaGlobalCourseCreator
+        switch_ga_global_course_creator(self.user)
+        response = self.client.get_html(self.course_details_url)
+        self.assertEquals(response.status_code, 200)
+        self.assertIn("Course Category", response.content)
+
+        # Course staff
+        user = UserFactory()
+        CourseStaffRole(self.course.id).add_users(user)
+        self.client.login(username=user.username, password='test')
+        response = self.client.get_html(self.course_details_url)
+        self.assertEquals(response.status_code, 200)
+        self.assertNotIn("Course Category", response.content)
+
 
 class TestLibraryOption(CourseTestCase):
 
@@ -134,3 +157,102 @@ class TestLibraryOption(CourseTestCase):
         self.client.login(username=ns_user, password=password)
         response = self.client.get(library_listing_url)
         self.assertEqual(response.status_code, 403)
+
+    def test_permission(self):
+        self.url = reverse_course_url('library_listing', self.course.id)
+
+        # Global staff
+        response = self.client.get_html(self.url)
+        self.assertEquals(response.status_code, 200)
+
+        # GaGlobalCourseCreator
+        switch_ga_global_course_creator(self.user)
+        response = self.client.get_html(self.url)
+        self.assertEquals(response.status_code, 200)
+
+        # Course staff
+        user = UserFactory()
+        CourseStaffRole(self.course.id).add_users(user)
+        self.client.login(username=user.username, password='test')
+        response = self.client.get_html(self.url)
+        self.assertEquals(response.status_code, 404)
+
+
+class TestLibraryOptionWithGaGlobalCourseCreator(TestLibraryOption):
+    def setUp(self):
+        super(TestLibraryOptionWithGaGlobalCourseCreator, self).setUp()
+        switch_ga_global_course_creator(self.user)
+
+
+class TestCourseRerunHandler(CourseTestCase):
+    def setUp(self):
+        super(TestCourseRerunHandler, self).setUp()
+        self.url = reverse_course_url('course_rerun_handler', self.course.id)
+
+    def test_permission(self):
+        # Global staff
+        response = self.client.get_html(self.url)
+        self.assertEquals(response.status_code, 200)
+
+        # GaGlobalCourseCreator
+        switch_ga_global_course_creator(self.user)
+        response = self.client.get_html(self.url)
+        self.assertEquals(response.status_code, 200)
+
+        # Course staff
+        user = UserFactory()
+        CourseStaffRole(self.course.id).add_users(user)
+        self.client.login(username=user.username, password='test')
+        response = self.client.get_html(self.url)
+        self.assertEquals(response.status_code, 403)
+
+
+class TestCourseSearchIndexHandler(CourseTestCase):
+    def setUp(self):
+        super(TestCourseSearchIndexHandler, self).setUp()
+        self.url = reverse_course_url('course_search_index_handler', self.course.id)
+
+    def test_permission(self):
+        # Global staff
+        response = self.client.get_html(self.url)
+        self.assertEquals(response.status_code, 200)
+
+        # GaGlobalCourseCreator
+        switch_ga_global_course_creator(self.user)
+        response = self.client.get_html(self.url)
+        self.assertEquals(response.status_code, 200)
+
+        # Course staff
+        user = UserFactory()
+        CourseStaffRole(self.course.id).add_users(user)
+        self.client.login(username=user.username, password='test')
+        response = self.client.get_html(self.url)
+        self.assertEquals(response.status_code, 403)
+
+
+class TestCourseListing(CourseTestCase):
+    def setUp(self):
+        super(TestCourseListing, self).setUp()
+        self.url = reverse('home')
+
+    def test_has_rerun(self):
+        rerun_hanler_url = reverse_course_url('course_rerun_handler', self.course.id)
+
+        # Global staff
+        response = self.client.get_html(self.url)
+        self.assertEquals(response.status_code, 200)
+        self.assertIn(rerun_hanler_url, response.content)
+
+        # GaGlobalCourseCreator
+        switch_ga_global_course_creator(self.user)
+        response = self.client.get_html(self.url)
+        self.assertEquals(response.status_code, 200)
+        self.assertIn(rerun_hanler_url, response.content)
+
+        # Course staff
+        user = UserFactory()
+        CourseStaffRole(self.course.id).add_users(user)
+        self.client.login(username=user.username, password='test')
+        response = self.client.get_html(self.url)
+        self.assertEquals(response.status_code, 200)
+        self.assertNotIn(rerun_hanler_url, response.content)

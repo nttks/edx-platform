@@ -1,6 +1,6 @@
 from django.conf import settings
 
-from courseware.access import has_access, GA_ACCESS_CHECK_TYPE_OLD_COURSE_VIEW
+from courseware.access import has_access, GA_ACCESS_CHECK_TYPE_GLOBAL_COURSE_CREATOR, GA_ACCESS_CHECK_TYPE_OLD_COURSE_VIEW
 from openedx.core.djangoapps.content.course_overviews.models import CourseOverview
 from student.models import CourseEnrollment
 from student.roles import CourseBetaTesterRole
@@ -20,16 +20,18 @@ def is_terminated(courselike, user):
 
     is_global_staff = has_access(user, 'staff', 'global')
     is_old_course_viewer = has_access(user, GA_ACCESS_CHECK_TYPE_OLD_COURSE_VIEW, 'global')
+    is_ga_global_course_creator = has_access(user, GA_ACCESS_CHECK_TYPE_GLOBAL_COURSE_CREATOR, 'global')
     is_course_staff = has_access(user, 'staff', courselike)
     is_course_beta_tester = CourseBetaTesterRole(courselike.id).has_user(user)
 
-    # Note1: Even if course terminate date has passed, GlobalStaff and OldCourseViewer can access it. (#2197)
+    # Note1: Even if course terminate date has passed, GlobalStaff, OldCourseViewer and GaGlobalCourseCreator can access it. (#2197, #2150)
     # Note2: Even if self-paced course and its individual end date has passed,
-    #        GlobalStaff, OldCourseViewer, CourseAdmin(Instructor), CourseStaff and BetaTester can access it. (#2197)
+    #        GlobalStaff, OldCourseViewer, GaGlobalCourseCreator, CourseAdmin(Instructor), CourseStaff and BetaTester can access it. (#2197, #2150)
     return (
-              not (is_global_staff or is_old_course_viewer) and _is_terminated(courselike)
+              not (is_global_staff or is_old_course_viewer or is_ga_global_course_creator) and _is_terminated(courselike)
            ) or (
-              not (is_global_staff or is_old_course_viewer or is_course_staff or is_course_beta_tester) and _is_individual_closed(courselike, user)
+              not (is_global_staff or is_old_course_viewer or is_ga_global_course_creator or is_course_staff or is_course_beta_tester)
+              and _is_individual_closed(courselike, user)
            )
 
 

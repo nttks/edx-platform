@@ -35,7 +35,8 @@ from xmodule.modulestore import ModuleStoreEnum
 from course_modes.models import CourseMode
 from courseware.models import StudentModule
 from courseware.tests.factories import (
-    BetaTesterFactory, GlobalStaffFactory, InstructorFactory, StaffFactory, UserProfileFactory
+    BetaTesterFactory, GlobalStaffFactory, InstructorFactory, StaffFactory, UserProfileFactory,
+    GaCourseScorerFactory
 )
 from courseware.tests.helpers import LoginEnrollmentTestCase
 from django_comment_common.models import FORUM_ROLE_COMMUNITY_TA
@@ -74,6 +75,7 @@ from certificates.tests.factories import GeneratedCertificateFactory
 from certificates.models import CertificateStatuses
 
 from openedx.core.djangoapps.course_groups.cohorts import set_course_cohort_settings
+from openedx.core.lib.ga_datetime_utils import format_for_csv
 from openedx.core.lib.xblock_utils import grade_histogram
 
 from .test_tools import msk_from_problem_urlname
@@ -1943,6 +1945,7 @@ class TestInstructorAPILevelsAccess(SharedModuleStoreTestCase, LoginEnrollmentTe
         self.other_instructor = InstructorFactory(course_key=self.course.id)
         self.other_staff = StaffFactory(course_key=self.course.id)
         self.other_user = UserFactory()
+        self.other_ga_course_scorer = GaCourseScorerFactory(course_key=self.course.id)
 
     def test_modify_access_noparams(self):
         """ Test missing all query parameters. """
@@ -1979,6 +1982,15 @@ class TestInstructorAPILevelsAccess(SharedModuleStoreTestCase, LoginEnrollmentTe
         })
         self.assertEqual(response.status_code, 200)
 
+    def test_modify_access_allow_ga_course_scorer(self):
+        url = reverse('modify_access', kwargs={'course_id': self.course.id.to_deprecated_string()})
+        response = self.client.post(url, {
+            'unique_student_identifier': self.other_user.email,
+            'rolename': 'ga_course_scorer',
+            'action': 'allow',
+        })
+        self.assertEqual(response.status_code, 200)
+
     def test_modify_access_allow_with_uname(self):
         url = reverse('modify_access', kwargs={'course_id': self.course.id.to_deprecated_string()})
         response = self.client.post(url, {
@@ -1993,6 +2005,15 @@ class TestInstructorAPILevelsAccess(SharedModuleStoreTestCase, LoginEnrollmentTe
         response = self.client.post(url, {
             'unique_student_identifier': self.other_staff.email,
             'rolename': 'staff',
+            'action': 'revoke',
+        })
+        self.assertEqual(response.status_code, 200)
+
+    def test_modify_access_revoke_ga_course_scorer(self):
+        url = reverse('modify_access', kwargs={'course_id': self.course.id.to_deprecated_string()})
+        response = self.client.post(url, {
+            'unique_student_identifier': self.other_ga_course_scorer.email,
+            'rolename': 'ga_course_scorer',
             'action': 'revoke',
         })
         self.assertEqual(response.status_code, 200)
@@ -2099,6 +2120,28 @@ class TestInstructorAPILevelsAccess(SharedModuleStoreTestCase, LoginEnrollmentTe
                     'email': self.other_staff.email,
                     'first_name': self.other_staff.first_name,
                     'last_name': self.other_staff.last_name,
+                }
+            ]
+        }
+        res_json = json.loads(response.content)
+        self.assertEqual(res_json, expected)
+
+    def test_list_course_role_members_ga_course_scorer(self):
+        url = reverse('list_course_role_members', kwargs={'course_id': self.course.id.to_deprecated_string()})
+        response = self.client.post(url, {
+            'rolename': 'ga_course_scorer',
+        })
+        self.assertEqual(response.status_code, 200)
+
+        # check response content
+        expected = {
+            'course_id': self.course.id.to_deprecated_string(),
+            'ga_course_scorer': [
+                {
+                    'username': self.other_ga_course_scorer.username,
+                    'email': self.other_ga_course_scorer.email,
+                    'first_name': self.other_ga_course_scorer.first_name,
+                    'last_name': self.other_ga_course_scorer.last_name,
                 }
             ]
         }
@@ -3452,6 +3495,14 @@ class TestInstructorSendEmail(SharedModuleStoreTestCase, LoginEnrollmentTestCase
         response = self.client.post(url, self.full_test_message)
         self.assertEqual(response.status_code, 200)
 
+    def test_send_email_as_logged_in_ga_course_scorer(self):
+        self.client.logout()
+        ga_course_scorer = GaCourseScorerFactory(course_key=self.course.id)
+        self.client.login(username=ga_course_scorer.username, password='test')
+        url = reverse('send_email', kwargs={'course_id': self.course.id.to_deprecated_string()})
+        response = self.client.post(url, self.full_test_message)
+        self.assertEqual(response.status_code, 200)
+
     def test_send_email_but_not_logged_in(self):
         self.client.logout()
         url = reverse('send_email', kwargs={'course_id': self.course.id.to_deprecated_string()})
@@ -3606,9 +3657,52 @@ class TestInstructorAPITaskLists(SharedModuleStoreTestCase, LoginEnrollmentTestC
             self.assertDictEqual(exp_task, act_task)
         self.assertEqual(actual_tasks, expected_tasks)
 
+    @patch.object(instructor_task.api, 'get_running_instructor_tasks')
+    def test_list_instructor_tasks_running_with_ga_course_scorer(self, act):
+        """ Test list of all running tasks. """
+        self.client.logout()
+        self.instructor = GaCourseScorerFactory(course_key=self.course.id)
+        self.client.login(username=self.instructor.username, password='test')
+        act.return_value = self.tasks
+        url = reverse('list_instructor_tasks', kwargs={'course_id': self.course.id.to_deprecated_string()})
+        mock_factory = MockCompletionInfo()
+        with patch('instructor.views.instructor_task_helpers.get_task_completion_info') as mock_completion_info:
+            mock_completion_info.side_effect = mock_factory.mock_get_task_completion_info
+            response = self.client.post(url, {})
+        self.assertEqual(response.status_code, 200)
+
+        # check response
+        self.assertTrue(act.called)
+        expected_tasks = [ftask.to_dict() for ftask in self.tasks]
+        actual_tasks = json.loads(response.content)['tasks']
+        for exp_task, act_task in zip(expected_tasks, actual_tasks):
+            self.assertDictEqual(exp_task, act_task)
+        self.assertEqual(actual_tasks, expected_tasks)
+
     @patch.object(instructor_task.api, 'get_instructor_task_history')
     def test_list_background_email_tasks(self, act):
         """Test list of background email tasks."""
+        act.return_value = self.tasks
+        url = reverse('list_background_email_tasks', kwargs={'course_id': self.course.id.to_deprecated_string()})
+        mock_factory = MockCompletionInfo()
+        with patch('instructor.views.instructor_task_helpers.get_task_completion_info') as mock_completion_info:
+            mock_completion_info.side_effect = mock_factory.mock_get_task_completion_info
+            response = self.client.post(url, {})
+        self.assertEqual(response.status_code, 200)
+
+        # check response
+        self.assertTrue(act.called)
+        expected_tasks = [ftask.to_dict() for ftask in self.tasks]
+        actual_tasks = json.loads(response.content)['tasks']
+        for exp_task, act_task in zip(expected_tasks, actual_tasks):
+            self.assertDictEqual(exp_task, act_task)
+        self.assertEqual(actual_tasks, expected_tasks)
+
+    @patch.object(instructor_task.api, 'get_instructor_task_history')
+    def test_list_background_email_tasks_with_ga_course_scorer(self, act):
+        """Test list of background email tasks."""
+        self.instructor = GaCourseScorerFactory(course_key=self.course.id)
+        self.client.login(username=self.instructor.username, password='test')
         act.return_value = self.tasks
         url = reverse('list_background_email_tasks', kwargs={'course_id': self.course.id.to_deprecated_string()})
         mock_factory = MockCompletionInfo()
@@ -3802,6 +3896,18 @@ class TestInstructorEmailContentList(SharedModuleStoreTestCase, LoginEnrollmentT
         returned_info = returned_info_list[0]
         expected_info = email_info.to_dict()
         self.assertDictEqual(expected_info, returned_info)
+
+
+@attr('shard_1')
+class TestInstructorEmailContentListWithGaCourseScorer(TestInstructorEmailContentList):
+    """
+    Test the instructor email content history endpoint.
+    """
+    def setUp(self):
+        super(TestInstructorEmailContentListWithGaCourseScorer, self).setUp()
+        self.client.logout()
+        self.instructor = GaCourseScorerFactory(course_key=self.course.id)
+        self.client.login(username=self.instructor.username, password='test')
 
 
 @attr('shard_1')
@@ -4774,6 +4880,7 @@ class TestBulkCohorting(SharedModuleStoreTestCase):
             'username,email,cohort\r\nfoo_username,bar_email,baz_cohort', mock_store_upload, mock_cohort_task
         )
 
+
 class InstructorAPISurveyDownloadTestMixin(object):
     """
     Test instructor survey mix-in.
@@ -4876,17 +4983,17 @@ class InstructorAPISurveyDownloadTestMixin(object):
         self.assertEqual(
             rows[1],
             '"11111111111111111111111111111111","survey #1","%s","%s","","","1","1,2","submission #1","N/A"'
-            % (submission1.created, submission1.user.username)
+            % (format_for_csv(submission1.created), submission1.user.username)
         )
         self.assertEqual(
             rows[2],
             '"11111111111111111111111111111111","survey #1","%s","%s","1","1","1","2","submission #2","N/A"'
-            % (submission2.created, submission2.user.username)
+            % (format_for_csv(submission2.created), submission2.user.username)
         )
         self.assertEqual(
             rows[3],
             '"22222222222222222222222222222222","survey #2","%s","%s","","1","","","","extra"'
-            % (submission3.created, submission3.user.username)
+            % (format_for_csv(submission3.created), submission3.user.username)
         )
 
     def test_get_survey_when_data_is_empty(self):
@@ -4910,12 +5017,12 @@ class InstructorAPISurveyDownloadTestMixin(object):
         self.assertEqual(
             rows[1],
             '"11111111111111111111111111111111","survey #1","%s","%s","","","1","1,2","submission #1"'
-            % (submission1.created, submission1.user.username)
+            % (format_for_csv(submission1.created), submission1.user.username)
         )
         self.assertEqual(
             rows[2],
             '"22222222222222222222222222222222","survey #5","%s","%s","","","N/A","N/A","N/A"'
-            % (submission5.created, submission5.user.username)
+            % (format_for_csv(submission5.created), submission5.user.username)
         )
 
 

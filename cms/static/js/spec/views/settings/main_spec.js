@@ -15,7 +15,7 @@ define([
             modelData = {
                 start_date: "2014-10-05T00:00:00Z",
                 end_date: "2014-11-05T20:00:00Z",
-                enrollment_start: "2014-10-00T00:00:00Z",
+                enrollment_start: "2014-10-01T00:00:00Z",
                 enrollment_end: "2014-11-05T00:00:00Z",
                 deadline_start: "2014-11-05T10:00:00Z",
                 terminate_start: "2014-12-05T00:00:00Z",
@@ -66,6 +66,88 @@ define([
             $('.ui-datepicker').remove();
         });
 
+        it('Shows JST times on Initial display', function () {
+            expect(this.view.$el.find('#course-start-jst').val()).toEqual("10/05/2014 09:00 (JST)");
+            expect(this.view.$el.find('#course-end-jst').val()).toEqual("11/06/2014 05:00 (JST)");
+            expect(this.view.$el.find('#course-enrollment-start-jst').val()).toEqual("10/01/2014 09:00 (JST)");
+            expect(this.view.$el.find('#course-enrollment-end-jst').val()).toEqual("11/05/2014 09:00 (JST)");
+            expect(this.view.$el.find('#course-deadline-start-jst').val()).toEqual("11/05/2014 19:00 (JST)");
+            expect(this.view.$el.find('#course-terminate-start-jst').val()).toEqual("12/05/2014 09:00 (JST)");
+        });
+
+        it('Shows JST time when change course start date and time', function () {
+            this.view.$el.find('#course-start-date')
+                .val('10/10/2014')
+                .trigger('change');
+            expect(this.view.$el.find('#course-start-jst').val()).toEqual("10/10/2014 09:00 (JST)");
+            this.view.$el.find('#course-start-time')
+                .val('15:00')
+                .trigger('input');
+            expect(this.view.$el.find('#course-start-jst').val()).toEqual("10/11/2014 00:00 (JST)");
+        });
+
+        it('Shows JST time when change course end date and time', function () {
+            this.view.$el.find('#course-end-date')
+                .val('02/28/2015')
+                .trigger('change');
+            expect(this.view.$el.find('#course-end-jst').val()).toEqual("03/01/2015 05:00 (JST)");
+            this.view.$el.find('#course-end-time')
+                .val('14:00')
+                .trigger('input');
+            expect(this.view.$el.find('#course-end-jst').val()).toEqual("02/28/2015 23:00 (JST)");
+        });
+
+        it('Shows JST time when change course enrollment start date and time', function () {
+            this.view.$el.find('#course-enrollment-start-date')
+                .val('10/02/2014')
+                .trigger('change');
+            expect(this.view.$el.find('#course-enrollment-start-jst').val()).toEqual("10/02/2014 09:00 (JST)");
+            this.view.$el.find('#course-enrollment-start-time')
+                .val('14:30')
+                .trigger('input');
+            expect(this.view.$el.find('#course-enrollment-start-jst').val()).toEqual("10/02/2014 23:30 (JST)");
+        });
+
+        it('Shows JST time when change course enrollment end date and time', function () {
+            this.view.$el.find('#course-enrollment-end-date')
+                .val('11/04/2014')
+                .trigger('change');
+            expect(this.view.$el.find('#course-enrollment-end-jst').val()).toEqual("11/04/2014 09:00 (JST)");
+            this.view.$el.find('#course-enrollment-end-time')
+                .val('23:30')
+                .trigger('input');
+            expect(this.view.$el.find('#course-enrollment-end-jst').val()).toEqual("11/05/2014 08:30 (JST)");
+        });
+
+        it('Shows JST time when change course deadline start date and time', function () {
+            this.view.$el.find('#course-deadline-start-date')
+                .val('11/06/2014')
+                .trigger('change');
+            expect(this.view.$el.find('#course-deadline-start-jst').val()).toEqual("11/06/2014 19:00 (JST)");
+            this.view.$el.find('#course-deadline-start-time')
+                .val('19:00')
+                .trigger('input');
+            expect(this.view.$el.find('#course-deadline-start-jst').val()).toEqual("11/07/2014 04:00 (JST)");
+        });
+
+        it('Shows JST time when change course terminate start date and time', function () {
+            this.view.$el.find('#course-terminate-start-date')
+                .val('02/28/2015')
+                .trigger('change');
+            expect(this.view.$el.find('#course-terminate-start-jst').val()).toEqual("02/28/2015 09:00 (JST)");
+            this.view.$el.find('#course-terminate-start-time')
+                .val('15:30')
+                .trigger('input');
+            expect(this.view.$el.find('#course-terminate-start-jst').val()).toEqual("03/01/2015 00:30 (JST)");
+        });
+
+        it('Changing course start date before 1900 should result in error', function () {
+            this.view.$el.find('#course-start-date')
+                .val('11/06/201')
+                .trigger('change');
+            expect(this.view.$el.find('span.message-error').text()).toContain("Please enter the date on and after 1900.");
+        });
+
         it('Changing course start date after course deadline start date should result in error', function () {
             this.view.$el.find('#course-start-date')
                 .val('11/06/2014')
@@ -80,11 +162,46 @@ define([
             expect(this.view.$el.find('span.message-error').text()).toContain("terminate start date cannot be before the course start date");
         });
 
+        it('Changing course end date before 1900 should result in error', function () {
+            this.view.$el.find('#course-end-date')
+                .val('11/05/201')
+                .trigger('change');
+            expect(this.view.$el.find('span.message-error').text()).toContain("Please enter the date on and after 1900.");
+        });
+
+        it('Changing course enrollment start date before 1900 should result in error', function () {
+            this.view.$el.find('#course-enrollment-start-date')
+                .val('11/05/201')
+                .trigger('change');
+            expect(this.view.$el.find('span.message-error').text()).toContain("Please enter the date on and after 1900.");
+        });
+
+        it('Changing course enrollment end date before 1900 should result in error', function () {
+            this.view.$el.find('#course-enrollment-end-date')
+                .val('11/05/201')
+                .trigger('change');
+            expect(this.view.$el.find('span.message-error').text()).toContain("Please enter the date on and after 1900.");
+        });
+
         it('Changing course enrollment end date after course terminate start date should result in error', function () {
             this.view.$el.find('#course-enrollment-end-date')
                 .val('12/06/2014')
                 .trigger('change');
             expect(this.view.$el.find('span.message-error').text()).toContain("terminate start date cannot be before the enrollment end date");
+        });
+
+        it('Changing course deadline start date before 1900 should result in error', function () {
+            this.view.$el.find('#course-deadline-start-date')
+                .val('11/05/201')
+                .trigger('change');
+            expect(this.view.$el.find('span.message-error').text()).toContain("Please enter the date on and after 1900.");
+        });
+
+        it('Changing course terminate start date before 1900 should result in error', function () {
+            this.view.$el.find('#course-terminate-start-date')
+                .val('12/05/201')
+                .trigger('change');
+            expect(this.view.$el.find('span.message-error').text()).toContain("Please enter the date on and after 1900.");
         });
 
         it('Input empty course canonical name should result in error', function () {

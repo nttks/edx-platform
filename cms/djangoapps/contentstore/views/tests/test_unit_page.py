@@ -3,6 +3,7 @@ Unit tests for the unit page.
 """
 
 from contentstore.views.tests.utils import StudioPageTestCase
+from contentstore.tests.utils import switch_ga_global_course_creator
 from xmodule.modulestore.django import modulestore
 from xmodule.modulestore.tests.factories import ItemFactory
 from xmodule.x_module import STUDENT_VIEW
@@ -57,3 +58,13 @@ class UnitPageTestCase(StudioPageTestCase):
                            category='html', display_name='grandchild')
         draft_child_container = self.store.get_item(child_container.location)
         self.validate_preview_html(draft_child_container, STUDENT_VIEW, can_add=False)
+
+
+class UnitPageTestCaseWithGaGlobalCourseCreator(UnitPageTestCase):
+    """
+    Unit tests for the unit page.
+    """
+
+    def setUp(self):
+        super(UnitPageTestCaseWithGaGlobalCourseCreator, self).setUp()
+        switch_ga_global_course_creator(self.user)

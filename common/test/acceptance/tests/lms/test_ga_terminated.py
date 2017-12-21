@@ -5,7 +5,7 @@ import datetime
 
 from bok_choy.web_app_test import WebAppTest
 from ..helpers import UniqueCourseTest
-from ..ga_helpers import GaccoTestMixin, GA_OLD_COURSE_VIEWER_USER_INFO
+from ..ga_helpers import GaccoTestMixin, GA_GLOBAL_COURSE_CREATOR_USER_INFO, GA_OLD_COURSE_VIEWER_USER_INFO
 from ...pages.lms.auto_auth import AutoAuthPage
 from ...pages.common.logout import LogoutPage
 from ...pages.lms.ga_dashboard import DashboardPage
@@ -64,6 +64,13 @@ class TerminatedCourseTest(WebAppTest, GaccoTestMixin):
 
         # Logout and login as a ga_old_course_viewer.
         self.switch_to_user(GA_OLD_COURSE_VIEWER_USER_INFO, self.course_id)
+
+        self.dashboard_page.visit()
+        self.assertEqual(self.dashboard_page.hidden_course_text, "")
+        self.assertTrue(self.dashboard_page.is_hidden_course_link_active(self.course_id))
+
+        # Logout and login as a ga_global_course_creator.
+        self.switch_to_user(GA_GLOBAL_COURSE_CREATOR_USER_INFO, self.course_id)
 
         self.dashboard_page.visit()
         self.assertEqual(self.dashboard_page.hidden_course_text, "")
@@ -136,6 +143,13 @@ class HiddenCourseTest(UniqueCourseTest, GaccoTestMixin):
 
         # Logout and login as a ga_old_course_viewer.
         self.switch_to_user(GA_OLD_COURSE_VIEWER_USER_INFO, self.course_id)
+
+        self.dashboard_page.visit()
+        self.assertEqual(self.dashboard_page.hidden_course_text, "")
+        self.assertTrue(self.dashboard_page.is_hidden_course_link_active(self.course_id))
+
+        # Logout and login as a ga_global_course_creator.
+        self.switch_to_user(GA_GLOBAL_COURSE_CREATOR_USER_INFO, self.course_id)
 
         self.dashboard_page.visit()
         self.assertEqual(self.dashboard_page.hidden_course_text, "")

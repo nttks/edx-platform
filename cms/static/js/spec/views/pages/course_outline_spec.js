@@ -546,6 +546,34 @@ define(["jquery", "common/js/spec_helpers/ajax_helpers", "common/js/components/u
                     expect($(".outline-section .status-release-value")).toContainText("Jan 02, 2015 at 00:00 UTC");
                 });
 
+                it('can show JST time correctly', function() {
+                    createCourseOutlinePage(this, mockCourseJSON, false);
+                    outlinePage.$('.section-header-actions .configure-button').click();
+                    $("#start_date").val("1/2/2015").trigger('change');
+                    expect($('#start_jst_date')).toContainText('01/02/2015 09:00 (JST)');
+                    $("#start_time").val('16:00').trigger('change');
+                    expect($('#start_jst_date')).toContainText('01/03/2015 01:00 (JST)');
+                    expect($("#start_time").val()).toBe('16:00');
+
+                    $('.wrapper-modal-window .action-save').click();
+                    // This is the response for the change operation.
+                    var mockResponseSectionJSON = createMockSectionJSON({
+                            release_date: 'Jan 02, 2015 at 16:00 UTC',
+                            start: "2015-01-02T16:00:00Z",
+                        }, [
+                            createMockSubsectionJSON({}, [
+                                createMockVerticalJSON()
+                            ])
+                        ]);
+                    AjaxHelpers.respondWithJson(requests, mockResponseSectionJSON);
+                    expect($(".outline-section .status-release-value")).toContainText("Jan 02, 2015 at 16:00 UTC");
+
+                    outlinePage.$('.section-header-actions .configure-button').click();
+                    expect($("#start_date").val()).toBe('1/2/2015');
+                    expect($("#start_time").val()).toBe('16:00');
+                    expect($('#start_jst_date')).toContainText('01/03/2015 01:00 (JST)');
+                });
+
                 it('Input date before 1900 should result in error', function() {
                     var errorMessage = 'Please enter the date on and after 1900.';
                     createCourseOutlinePage(this, mockCourseJSON, false);
@@ -976,6 +1004,51 @@ define(["jquery", "common/js/spec_helpers/ajax_helpers", "common/js/components/u
                     expect($("#id_not_timed").is(":checked")).toBe(false);
                     expect($("#id_practice_exam").is(":checked")).toBe(false);
                     expect($("#id_time_limit").val()).toBe("02:30");
+                });
+
+                it('can show JST time correctly', function() {
+                    createCourseOutlinePage(this, mockCourseJSON, false);
+                    outlinePage.$('.outline-subsection .configure-button').click();
+                    $("#grading_type").val("Lab");
+
+                    $("#start_date").val('07/15/2014').trigger('change');
+                    expect($('#start_jst_date')).toContainText('07/15/2014 09:00 (JST)');
+                    $("#start_time").val('09:00').trigger('change');
+                    expect($('#start_jst_date')).toContainText('07/15/2014 18:00 (JST)');
+                    $("#due_date").val('08/10/2014').trigger('change');
+                    expect($('#due_jst_date')).toContainText('08/10/2014 09:00 (JST)');
+                    $("#due_time").val('15:00').trigger('change');
+                    expect($('#due_jst_date')).toContainText('08/11/2014 00:00 (JST)');
+                    selectProctoredExam("02:30");
+                    $(".wrapper-modal-window .action-save").click();
+
+                    var mockResponseSectionJSON = createMockSectionJSON({
+                            release_date: 'Jul 09, 2014 at 00:00 UTC',
+                            start: "2014-07-09T00:00:00Z",
+                        }, [
+                            createMockSubsectionJSON({
+                                due_date: 'Aug 10, 2014 at 15:00 UTC',
+                                release_date: 'Jul 15, 2014 at 09:00 UTC',
+                                start: "2014-07-15T09:00:00Z",
+                                due: "2014-08-10T15:00:00Z",
+                            }, [
+                                createMockVerticalJSON()
+                            ])
+                        ]);
+                    AjaxHelpers.respondWithJson(requests, mockResponseSectionJSON);
+
+                    expect($(".outline-subsection .status-release-value")).toContainText(
+                        "Jul 15, 2014 at 09:00 UTC"
+                    );
+                    expect($(".outline-subsection .status-grading-date")).toContainText(
+                        "Due: Aug 10, 2014 at 15:00 UTC"
+                    );
+
+                    outlinePage.$('.outline-item .outline-subsection .configure-button').click();
+                    expect($("#start_date").val()).toBe('7/15/2014');
+                    expect($('#start_jst_date')).toContainText('07/15/2014 18:00 (JST)');
+                    expect($("#due_date").val()).toBe('8/10/2014');
+                    expect($('#due_jst_date')).toContainText('08/11/2014 00:00 (JST)');
                 });
 
                 it('Input date before 1900 should result in error', function() {

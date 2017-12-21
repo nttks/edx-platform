@@ -70,6 +70,7 @@ lib_paths:
     - xmodule_js/common_static/js/vendor/jQuery-File-Upload/js/jquery.fileupload-validate.js
     - xmodule_js/common_static/js/vendor/mock-ajax.js
     - xmodule_js/common_static/js/vendor/requirejs/text.js
+    - xmodule_js/common_static/js/vendor/moment.min.js
 
 # Paths to source JavaScript files
 src_paths:

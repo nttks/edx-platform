@@ -20,4 +20,5 @@
         </a>
     </li>
 </ul>
+<ul id="due_jst_date" class="jst-date"></ul>
 <ul id="due-date-error-message" class="error-message"></ul>

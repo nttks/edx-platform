@@ -78,6 +78,10 @@ class AdditionalInfoSetting(models.Model):
         return cls.objects.filter(user=user, contract=contract)
 
     @classmethod
+    def find_by_user(cls, user):
+        return cls.objects.filter(user=user)
+
+    @classmethod
     def find_by_contract(cls, contract):
         return cls.objects.filter(contract=contract).order_by('id')
 

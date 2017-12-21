@@ -33,7 +33,11 @@ from django.core.management import call_command
 from xmodule.modulestore.tests.factories import CourseFactory
 
 from bulk_email.models import CourseEmail, Optout, SEND_TO_ALL, SEND_TO_ALL_INCLUDE_OPTOUT, SEND_TO_ADVANCED_COURSE
-
+from courseware.tests.factories import (
+    GaCourseScorerFactory,
+    InstructorFactory,
+    StaffFactory,
+)
 from instructor_task.tasks import send_bulk_course_email
 from instructor_task.subtasks import update_subtask_status, SubtaskStatus
 from instructor_task.models import InstructorTask
@@ -225,6 +229,18 @@ class TestBulkEmailInstructorTask(InstructorTaskCourseTestCase):
         num_emails = settings.BULK_EMAIL_EMAILS_PER_TASK
         # We also send email to the instructor:
         self._create_students(num_emails - 1)
+        with patch('bulk_email.tasks.get_connection', autospec=True) as get_conn:
+            get_conn.return_value.send_messages.side_effect = cycle([None])
+            self._test_run_with_task(send_bulk_course_email, 'emailed', num_emails, num_emails)
+
+    def test_successful_includes_course_staff(self):
+        # Select number of emails to fit into a single subtask.
+        num_emails = settings.BULK_EMAIL_EMAILS_PER_TASK
+        # Add course staff
+        StaffFactory(course_key=self.course.id)
+        GaCourseScorerFactory(course_key=self.course.id)
+        # We also send email to the instructor:
+        self._create_students(num_emails - 3)
         with patch('bulk_email.tasks.get_connection', autospec=True) as get_conn:
             get_conn.return_value.send_messages.side_effect = cycle([None])
             self._test_run_with_task(send_bulk_course_email, 'emailed', num_emails, num_emails)

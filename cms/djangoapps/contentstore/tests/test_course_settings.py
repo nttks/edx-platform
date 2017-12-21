@@ -13,6 +13,7 @@ from django.conf import settings
 from django.utils.timezone import UTC
 from django.test.utils import override_settings
 
+from contentstore.tests.utils import switch_ga_global_course_creator
 from contentstore.utils import reverse_course_url, reverse_usage_url
 from contentstore.views.component import ADVANCED_COMPONENT_POLICY_KEY
 from models.settings.course_grading import CourseGradingModel
@@ -20,6 +21,7 @@ from models.settings.course_metadata import CourseMetadata
 from models.settings.encoder import CourseSettingsEncoder
 from openedx.core.djangoapps.self_paced.models import SelfPacedConfiguration
 from openedx.core.djangoapps.models.course_details import CourseDetails
+from student.models import CourseEnrollment
 from student.roles import CourseInstructorRole, CourseStaffRole
 from student.tests.factories import UserFactory
 from xmodule.fields import Date
@@ -80,6 +82,12 @@ class CourseSettingsEncoderTest(CourseTestCase):
 
         self.assertEquals(1, jsondetails['number'])
         self.assertEqual(jsondetails['string'], 'string')
+
+
+class CourseSettingsEncoderTestWithGaGlobalCourseCreator(CourseSettingsEncoderTest):
+    def setUp(self):
+        super(CourseSettingsEncoderTestWithGaGlobalCourseCreator, self).setUp()
+        switch_ga_global_course_creator(self.user)
 
 
 @ddt.ddt
@@ -482,6 +490,16 @@ class CourseDetailsViewTest(CourseTestCase):
             self.assertContains(response, "Hide Playback Rate")
 
 
+class CourseDetailsViewTestWithGaGlobalCourseCreator(CourseDetailsViewTest):
+    """
+    Tests for modifying content on the first course settings page (course dates, overview, etc.).
+    """
+    def setUp(self):
+        super(CourseDetailsViewTestWithGaGlobalCourseCreator, self).setUp()
+        switch_ga_global_course_creator(self.user)
+        SelfPacedConfiguration(enabled=False).save()
+
+
 @ddt.ddt
 class CourseGradingTest(CourseTestCase):
     """
@@ -691,6 +709,15 @@ class CourseGradingTest(CourseTestCase):
         self.assertEqual(200, response.status_code)
         response = self.client.get_json(grade_type_url + '?fields=graderType')
         self.assertEqual(json.loads(response.content).get('graderType'), u'notgraded')
+
+
+class CourseGradingTestWithGaGlobalCourseCreator(CourseGradingTest):
+    """
+    Tests for the course settings grading page.
+    """
+    def setUp(self):
+        super(CourseGradingTestWithGaGlobalCourseCreator, self).setUp()
+        switch_ga_global_course_creator(self.user)
 
 
 @ddt.ddt
@@ -1100,6 +1127,34 @@ class CourseMetadataEditingTest(CourseTestCase):
         self.assertEqual(response.status_code, 200)
 
 
+@ddt.ddt
+class CourseMetadataEditingTestWithGaGlobalCourseCreator(CourseMetadataEditingTest):
+    """
+    Tests for CourseMetadata.
+    """
+    def setUp(self):
+        super(CourseMetadataEditingTestWithGaGlobalCourseCreator, self).setUp()
+        switch_ga_global_course_creator(self.user)
+        # Note: Test on the course tab needs enrollment
+        #       cf. EnrolledTab.is_enabled
+        CourseEnrollment.enroll(self.user, self.course.id)
+
+    # Note: It does not pass unless it is overridden
+    @ddt.data(
+        [{'type': 'courseware'}, {'type': 'course_info'}, {'type': 'wiki', 'is_hidden': True}],
+        [{'type': 'courseware', 'name': 'Courses'}, {'type': 'course_info', 'name': 'Info'}],
+    )
+    def test_course_tab_configurations(self, tab_list):
+        self.course.tabs = tab_list
+        modulestore().update_item(self.course, self.user.id)
+        self.client.ajax_post(self.course_setting_url, {
+            ADVANCED_COMPONENT_POLICY_KEY: {"value": ["notes"]}
+        })
+        course = modulestore().get_course(self.course.id)
+        tab_list.append(self.notes_tab)
+        self.assertEqual(tab_list, course.tabs)
+
+
 class CourseGraderUpdatesTest(CourseTestCase):
     """
     Test getting, deleting, adding, & updating graders
@@ -1162,6 +1217,16 @@ class CourseGraderUpdatesTest(CourseTestCase):
         self.assertEqual(obj, grader)
         current_graders = CourseGradingModel.fetch(self.course.id).graders
         self.assertEqual(len(self.starting_graders) + 1, len(current_graders))
+
+
+class CourseGraderUpdatesTestWithGaGlobalCourseCreator(CourseGraderUpdatesTest):
+    """
+    Test getting, deleting, adding, & updating graders
+    """
+    def setUp(self):
+        """Compute the url to use in tests"""
+        super(CourseGraderUpdatesTestWithGaGlobalCourseCreator, self).setUp()
+        switch_ga_global_course_creator(self.user)
 
 
 class CourseEnrollmentEndFieldTest(CourseTestCase):
@@ -1275,3 +1340,13 @@ id=\"course-enrollment-end-time\" value=\"\" placeholder=\"HH:MM\" autocomplete=
         User is non-global staff.
         """
         self._verify_not_editable(self._get_course_details_response(False))
+
+
+class CourseEnrollmentEndFieldTestWithGaGlobalCourseCreator(CourseEnrollmentEndFieldTest):
+    """
+    Base class to test the enrollment end fields in the course settings details view in Studio
+    when using marketing site flag and global vs non-global staff to access the page.
+    """
+    def setUp(self):
+        super(CourseEnrollmentEndFieldTestWithGaGlobalCourseCreator, self).setUp()
+        switch_ga_global_course_creator(self.user)

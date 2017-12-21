@@ -79,7 +79,7 @@ from xmodule.modulestore import ModuleStoreEnum
 from collections import namedtuple
 
 from courseware.courses import get_courses, sort_by_announcement, sort_by_start_date  # pylint: disable=import-error
-from courseware.access import has_access, GA_ACCESS_CHECK_TYPE_OLD_COURSE_VIEW
+from courseware.access import has_access
 
 from django_comment_common.models import Role
 
@@ -134,6 +134,7 @@ from openedx.core.djangoapps.course_global.models import CourseGlobalSetting
 from openedx.core.djangoapps.ga_self_paced import api as self_paced_api
 
 from biz.djangoapps.ga_contract.models import ContractDetail
+from biz.djangoapps.util import mask_utils
 
 
 log = logging.getLogger("edx.student")
@@ -593,8 +594,6 @@ def dashboard(request):
         # Show any courses that errored on load
         staff_access = True
         errored_courses = modulestore().get_errored_courses()
-
-    ga_old_course_viewer_access = has_access(user, GA_ACCESS_CHECK_TYPE_OLD_COURSE_VIEW, 'global')
 
     show_courseware_links_for = frozenset(
         enrollment.course_id for enrollment in course_enrollments
@@ -1433,20 +1432,31 @@ def disable_account_ajax(request):
         user_account, _success = UserStanding.objects.get_or_create(
             user=user, defaults={'changed_by': request.user},
         )
+        if user.standing and user.standing.account_status == UserStanding.ACCOUNT_DISABLED:
+            account_status = UserStanding.ACCOUNT_DISABLED
+        else:
+            account_status = UserStanding.ACCOUNT_ENABLED
+
         if account_action == 'disable':
-            user_account.account_status = UserStanding.ACCOUNT_DISABLED
-            context['message'] = _("Successfully disabled {}'s account").format(username)
-            log.info(u"%s disabled %s's account", request.user, username)
+            if user == request.user:
+                context['message'] = _("You can not change of yourself.")
+                context['account_status'] = _(account_status)
+                return JsonResponse(context)
+            elif '@' in user.email:
+                mask_utils.disable_all_additional_info(user)
+                mask_utils.disable_user_info(user)
+                Registration.objects.get(user=user).update_masked()
+                user_account.account_status = UserStanding.ACCOUNT_DISABLED
+                context['message'] = _("Successfully disabled {}'s account").format(username)
+                log.info(u"%s disabled %s's account", request.user, username)
+            else:
+                context['message'] = _("Students whose accounts have been disabled")
         elif account_action == 'reenable':
             user_account.account_status = UserStanding.ACCOUNT_ENABLED
             context['message'] = _("Successfully reenabled {}'s account").format(username)
             log.info(u"%s reenabled %s's account", request.user, username)
         elif account_action == 'view_account_status':
-            account_status = user.standing.account_status if user.standing else None
-            if account_status == UserStanding.ACCOUNT_DISABLED:
-                context['account_status'] = _(UserStanding.ACCOUNT_DISABLED)
-            else:
-                context['account_status'] = _(UserStanding.ACCOUNT_ENABLED)
+            context['account_status'] = _(account_status)
             context['message'] = ""
             return JsonResponse(context)
         elif account_action == 'view_course_enrollment':

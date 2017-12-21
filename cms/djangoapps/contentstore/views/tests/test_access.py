@@ -4,7 +4,7 @@ Tests access.py
 from django.test import TestCase
 from django.contrib.auth.models import User
 
-from student.roles import CourseInstructorRole, CourseStaffRole
+from student.roles import CourseInstructorRole, CourseStaffRole, GaGlobalCourseCreatorRole
 from student.tests.factories import AdminFactory
 from student.auth import add_users
 from contentstore.views.access import get_user_role
@@ -22,6 +22,7 @@ class RolesTest(TestCase):
         self.global_admin = AdminFactory()
         self.instructor = User.objects.create_user('testinstructor', 'testinstructor+courses@edx.org', 'foo')
         self.staff = User.objects.create_user('teststaff', 'teststaff+courses@edx.org', 'foo')
+        self.ga_global_course_creator = User.objects.create_user('gaglobalcoursecreator', 'gaglobalcoursecreator+courses@edx.org', 'foo')
         self.course_key = SlashSeparatedCourseKey('mitX', '101', 'test')
 
     def test_get_user_role_instructor(self):
@@ -37,6 +38,11 @@ class RolesTest(TestCase):
         self.assertEqual(
             'instructor',
             get_user_role(self.instructor, self.course_key)
+        )
+        add_users(self.global_admin, GaGlobalCourseCreatorRole(), self.ga_global_course_creator)
+        self.assertEqual(
+            'instructor',
+            get_user_role(self.ga_global_course_creator, self.course_key)
         )
 
     def test_get_user_role_staff(self):

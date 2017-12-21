@@ -6,7 +6,7 @@ from django.conf import settings
 
 from opaque_keys.edx.locator import CourseLocator
 from xmodule.modulestore import ModuleStoreEnum, EdxJSONEncoder
-from contentstore.tests.utils import CourseTestCase
+from contentstore.tests.utils import CourseTestCase, switch_ga_global_course_creator
 from contentstore.tasks import rerun_course
 from student.auth import has_course_author_access
 from course_action_state.models import CourseRerunState
@@ -144,3 +144,12 @@ class CloneCourseTest(CourseTestCase):
                 course_key=split_course4_id,
                 state=CourseRerunUIStateManager.State.FAILED
             )
+
+
+class CloneCourseTestWithGaGlobalCourseCreator(CloneCourseTest):
+    """
+    Unit tests for cloning a course
+    """
+    def setUp(self):
+        super(CloneCourseTestWithGaGlobalCourseCreator, self).setUp()
+        switch_ga_global_course_creator(self.user)

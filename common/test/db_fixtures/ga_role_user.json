@@ -37,5 +37,75 @@
       "role": "ga_old_course_viewer",
       "user": 9092
     }
+  },
+  {
+    "pk": 9093,
+    "model": "auth.user",
+    "fields": {
+      "date_joined": "2017-01-01 00:00:00",
+      "username": "Ga_Global_Course_Creator",
+      "first_name": "Ga_Global_Course_Creator",
+      "last_name": "test",
+      "email": "ga_global_course_creator@example.com",
+      "password": "Ga_Global_Course_Creator1",
+      "is_active": true
+    }
+  },
+  {
+    "pk": 9093,
+    "model": "student.userprofile",
+    "fields": {
+      "user": 9093,
+      "name": "ga course editor test",
+      "courseware": "course.xml",
+      "allow_certificate": true
+    }
+  },
+  {
+    "pk": 9093,
+    "model": "student.registration",
+    "fields": {
+      "user": 9093,
+      "activation_key": "TuC53PTAh6Kb3wEyaRi3HFQcKieB9093"
+    }
+  },
+  {
+    "pk": 9093,
+    "model": "student.courseaccessrole",
+    "fields": {
+      "role": "ga_global_course_creator",
+      "user": 9093
+    }
+  },
+  {
+    "pk": 9094,
+    "model": "auth.user",
+    "fields": {
+      "date_joined": "2017-01-01 00:00:00",
+      "username": "Ga_Course_Scorer",
+      "first_name": "Ga_Course_Scorer",
+      "last_name": "test",
+      "email": "ga_course_scorer@example.com",
+      "password": "Ga_Course_Scorer1",
+      "is_active": true
+    }
+  },
+  {
+    "pk": 9094,
+    "model": "student.userprofile",
+    "fields": {
+      "user": 9094,
+      "name": "ga lms course staff test",
+      "courseware": "course.xml",
+      "allow_certificate": true
+    }
+  },
+  {
+    "pk": 9094,
+    "model": "student.registration",
+    "fields": {
+      "user": 9094,
+      "activation_key": "TuC53PTAh6Kb3wEyaRi3HFQcKieB9094"
+    }
   }
 ]

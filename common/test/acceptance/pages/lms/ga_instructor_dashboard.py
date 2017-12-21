@@ -101,3 +101,9 @@ class MembershipPageMemberListSection(EdXMembershipPage):
         self.q(css='div[data-rolename="{}"] input.add-field'.format(role_name)).fill(member)
         self.q(css='div[data-rolename="{}"] input.add'.format(role_name)).click()
         self.wait_for_ajax()
+
+    def add_role_by_display_name(self, role_name, member):
+        self.select_role(role_name)
+        self.q(css='div[data-display-name="{}"] input.add-field'.format(role_name)).fill(member)
+        self.q(css='div[data-display-name="{}"] input.add'.format(role_name)).click()
+        self.wait_for_ajax()

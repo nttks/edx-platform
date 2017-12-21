@@ -8,7 +8,7 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.test.client import RequestFactory
 
-from contentstore.tests.utils import AjaxEnabledTestClient, CourseTestCase
+from contentstore.tests.utils import AjaxEnabledTestClient, CourseTestCase, switch_ga_global_course_creator
 from contentstore.utils import reverse_url
 from contentstore.views.entrance_exam import create_entrance_exam, update_entrance_exam, delete_entrance_exam,\
     add_entrance_exam_milestone, remove_entrance_exam_milestone_reference
@@ -327,3 +327,9 @@ class EntranceExamHandlerTests(CourseTestCase):
 
         # No return, so we'll just ensure no exception is thrown
         update_entrance_exam(request, self.course.id, {})
+
+
+class EntranceExamHandlerTestsWithGaGlobalCourseCreator(EntranceExamHandlerTests):
+    def setUp(self):
+        super(EntranceExamHandlerTestsWithGaGlobalCourseCreator, self).setUp()
+        switch_ga_global_course_creator(self.user)
