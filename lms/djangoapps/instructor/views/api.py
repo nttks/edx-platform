@@ -2681,13 +2681,13 @@ def create_survey_response(request, course_id):
             writer.writerow(encoded)
         return response
 
-    header = ['Unit ID', 'Survey Name', 'Created', 'User Name', 'Resigned', 'Unenrolled']
+    header = ['Unit ID', 'Survey Name', 'Created', 'User Name', 'Full Name', 'Email', 'Resigned', 'Unenrolled']
     rows = []
 
     #Note(yokose): raw() raises InterfaceError when using CourseKey
     #course_id = SlashSeparatedCourseKey.from_deprecated_string(course_id)
     submissions = list(SurveySubmission.objects.raw(
-        '''SELECT s.*, u.*, p.*, t.account_status, e.is_active
+        '''SELECT s.*, u.*, p.*, t.account_status, e.is_active, b.login_code
            FROM ga_survey_surveysubmission s
            LEFT OUTER JOIN auth_user u
            ON s.user_id = u.id
@@ -2697,10 +2697,17 @@ def create_survey_response(request, course_id):
            ON s.user_id = t.user_id
            LEFT OUTER JOIN student_courseenrollment e
            ON s.user_id = e.user_id and s.course_id = e.course_id
+           LEFT OUTER JOIN ga_login_bizuser b
+           ON s.user_id = b.user_id
            WHERE s.course_id = %s
            ORDER BY s.unit_id, s.created''',
         [course_id]
     ))
+
+    HEADER_LOGIN_CODE = 'Login Code'
+    # NOTE: Try to add login code when called from biz and contract has auth info
+    if hasattr(request, 'current_contract') and request.current_contract.has_auth:
+        header.append(HEADER_LOGIN_CODE)
 
     if len(submissions) > 0:
         # NOTE: eliminate duplication of question names
@@ -2722,9 +2729,11 @@ def create_survey_response(request, course_id):
                 msg = "Couldn't parse JSON in survey_answer, so treat each item as 'N/A'. course_id={0}, unit_id={1}, username={2}".format(
                     course_id, s.unit_id, s.username)
                 log.warning(msg)
-            row = [s.unit_id, s.survey_name, format_for_csv(s.created), s.username]
+            row = [s.unit_id, s.survey_name, format_for_csv(s.created), s.username, s.name, s.email]
             row.append('1' if s.account_status == UserStanding.ACCOUNT_DISABLED else '')
             row.append('1' if not s.is_active else '')
+            if HEADER_LOGIN_CODE in header:
+                row.append(s.login_code)
             for key in keys:
                 value = ans_dict.get(key, 'N/A')
                 # NOTE: replace list into commified str

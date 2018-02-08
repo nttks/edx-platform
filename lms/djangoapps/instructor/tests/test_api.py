@@ -22,6 +22,7 @@ from django.core.urlresolvers import reverse as django_reverse
 from django.http import HttpRequest, HttpResponse
 from django.test import RequestFactory, TestCase
 from django.test.utils import override_settings
+from django.utils.crypto import get_random_string
 from django.utils.timezone import utc
 from django.utils.translation import ugettext as _
 
@@ -32,6 +33,11 @@ from opaque_keys.edx.locations import SlashSeparatedCourseKey
 from opaque_keys.edx.locator import UsageKey
 from xmodule.modulestore import ModuleStoreEnum
 
+from biz.djangoapps.ga_contract.tests.factories import ContractFactory, ContractDetailFactory, ContractAuthFactory
+from biz.djangoapps.ga_login.tests.factories import BizUserFactory
+from biz.djangoapps.ga_organization.models import Organization
+from biz.djangoapps.ga_organization.tests.factories import OrganizationFactory
+from biz.djangoapps.util.datetime_utils import timezone_today
 from course_modes.models import CourseMode
 from courseware.models import StudentModule
 from courseware.tests.factories import (
@@ -4979,21 +4985,21 @@ class InstructorAPISurveyDownloadTestMixin(object):
         body = response.content.rstrip('\n').replace('\r', '')
         rows = body.split('\n')
         self.assertEqual(4, len(rows))
-        self.assertEqual(rows[0], '"Unit ID","Survey Name","Created","User Name","Resigned","Unenrolled","Q1","Q2","Q3","Q4"')
+        self.assertEqual(rows[0], '"Unit ID","Survey Name","Created","User Name","Full Name","Email","Resigned","Unenrolled","Q1","Q2","Q3","Q4"')
         self.assertEqual(
             rows[1],
-            '"11111111111111111111111111111111","survey #1","%s","%s","","","1","1,2","submission #1","N/A"'
-            % (format_for_csv(submission1.created), submission1.user.username)
+            '"11111111111111111111111111111111","survey #1","%s","%s","%s","%s","","","1","1,2","submission #1","N/A"'
+            % (format_for_csv(submission1.created), submission1.user.username, submission1.user.profile.name, submission1.user.email)
         )
         self.assertEqual(
             rows[2],
-            '"11111111111111111111111111111111","survey #1","%s","%s","1","1","1","2","submission #2","N/A"'
-            % (format_for_csv(submission2.created), submission2.user.username)
+            '"11111111111111111111111111111111","survey #1","%s","%s","%s","%s","1","1","1","2","submission #2","N/A"'
+            % (format_for_csv(submission2.created), submission2.user.username, submission2.user.profile.name, submission2.user.email)
         )
         self.assertEqual(
             rows[3],
-            '"22222222222222222222222222222222","survey #2","%s","%s","","1","","","","extra"'
-            % (format_for_csv(submission3.created), submission3.user.username)
+            '"22222222222222222222222222222222","survey #2","%s","%s","%s","%s","","1","","","","extra"'
+            % (format_for_csv(submission3.created), submission3.user.username, submission3.user.profile.name, submission3.user.email)
         )
 
     def test_get_survey_when_data_is_empty(self):
@@ -5002,7 +5008,7 @@ class InstructorAPISurveyDownloadTestMixin(object):
         body = response.content.rstrip('\n').replace('\r', '')
         rows = body.split('\n')
         self.assertEqual(1, len(rows))
-        self.assertEqual(rows[0], '"Unit ID","Survey Name","Created","User Name","Resigned","Unenrolled"')
+        self.assertEqual(rows[0], '"Unit ID","Survey Name","Created","User Name","Full Name","Email","Resigned","Unenrolled"')
 
     def test_get_survey_when_data_is_broken(self):
         submission1 = SurveySubmissionFactory.create(**self.submission1)
@@ -5013,16 +5019,16 @@ class InstructorAPISurveyDownloadTestMixin(object):
         body = response.content.rstrip('\n').replace('\r', '')
         rows = body.split('\n')
         self.assertEqual(3, len(rows))
-        self.assertEqual(rows[0], '"Unit ID","Survey Name","Created","User Name","Resigned","Unenrolled","Q1","Q2","Q3"')
+        self.assertEqual(rows[0], '"Unit ID","Survey Name","Created","User Name","Full Name","Email","Resigned","Unenrolled","Q1","Q2","Q3"')
         self.assertEqual(
             rows[1],
-            '"11111111111111111111111111111111","survey #1","%s","%s","","","1","1,2","submission #1"'
-            % (format_for_csv(submission1.created), submission1.user.username)
+            '"11111111111111111111111111111111","survey #1","%s","%s","%s","%s","","","1","1,2","submission #1"'
+            % (format_for_csv(submission1.created), submission1.user.username, submission1.user.profile.name, submission1.user.email)
         )
         self.assertEqual(
             rows[2],
-            '"22222222222222222222222222222222","survey #5","%s","%s","","","N/A","N/A","N/A"'
-            % (format_for_csv(submission5.created), submission5.user.username)
+            '"22222222222222222222222222222222","survey #5","%s","%s","%s","%s","","","N/A","N/A","N/A"'
+            % (format_for_csv(submission5.created), submission5.user.username, submission5.user.profile.name, submission5.user.email)
         )
 
 
@@ -5033,3 +5039,232 @@ class TestInstructorAPISurveyDownload(InstructorAPISurveyDownloadTestMixin, Shar
 
     def get_url(self):
         return reverse('get_survey', kwargs={'course_id': self.course.id.to_deprecated_string()})
+
+
+class LoginCodeEnabledInstructorAPISurveyDownloadTestMixin(object):
+    """
+    Test login code enabled instructor survey mix-in.
+    """
+
+    def get_url(self):
+        raise NotImplementedError()
+
+    def enable_login_code_check(self):
+        raise NotImplementedError()
+
+    def setUp(self):
+        class _UserProfileFactory(UserProfileFactory):
+            year_of_birth = None
+
+        super(LoginCodeEnabledInstructorAPISurveyDownloadTestMixin, self).setUp()
+
+        self.gacco_organization = Organization(
+            org_name='docomo gacco',
+            org_code='gacco',
+            creator_org_id=1,  # It means the first of Organization
+            created_by=UserFactory.create(),
+        )
+        self.gacco_organization.save()
+
+        self.test_organization = OrganizationFactory.create(
+            org_name='test org',
+            org_code='contractor',
+            creator_org=self.gacco_organization,
+            created_by=UserFactory.create(),
+        )
+
+        self.course = CourseFactory.create(org=self.gacco_organization.org_code)
+        self.instructor = InstructorFactory(course_key=self.course.id)
+        self.client.login(username=self.instructor.username, password='test')
+
+        self.contract = ContractFactory.create(
+            contract_name='test contract',
+            contract_type='PF',
+            register_type='ERS',
+            contractor_organization=self.test_organization,
+            owner_organization=self.gacco_organization,
+            end_date=timezone_today() + datetime.timedelta(days=1),
+            created_by=UserFactory.create(),
+        )
+        ContractDetailFactory.create(contract=self.contract, course_id=self.course.id)
+        ContractAuthFactory.create(contract=self.contract, url_code=get_random_string(16), send_mail=False)
+
+        self.user1 = UserFactory.create(
+            profile__gender='m',
+            profile__year_of_birth=1980,
+            profile__level_of_education='p',
+        )
+        self.user1_standing = UserStandingFactory.create(
+            user=self.user1,
+            account_status=UserStanding.ACCOUNT_ENABLED,
+            changed_by=self.user1,
+        )
+        CourseEnrollment.enroll(self.user1, self.course.id)
+        self.biz_user1 = BizUserFactory.create(user=self.user1, login_code=get_random_string(8))
+        # Resigned user
+        self.user2 = UserFactory.create(
+            profile__gender='foo',
+            profile__year_of_birth=None,
+            profile__level_of_education='bar',
+        )
+        self.user2_standing = UserStandingFactory.create(
+            user=self.user2,
+            account_status=UserStanding.ACCOUNT_DISABLED,
+            changed_by=self.user2,
+        )
+        self.biz_user2 = BizUserFactory.create(user=self.user2, login_code=get_random_string(8))
+        # Unenrolled user
+        self.user3 = UserFactory.create(
+            profile__gender=None,
+            profile__year_of_birth=None,
+            profile__level_of_education=None,
+        )
+        self.biz_user3 = BizUserFactory.create(user=self.user3, login_code=get_random_string(8))
+        # Dummy user
+        self.user4 = UserFactory.create()
+        self.biz_user4 = BizUserFactory.create(user=self.user4, login_code=get_random_string(8))
+
+        self.submission1 = {
+            'course_id': self.course.id,
+            'unit_id': '11111111111111111111111111111111',
+            'user': self.user1,
+            'survey_name': 'survey #1',
+            'survey_answer': '{"Q1": "1", "Q2": ["1", "2"], "Q3": "submission #1"}',
+        }
+        self.submission2 = {
+            'course_id': self.course.id,
+            'unit_id': '11111111111111111111111111111111',
+            'user': self.user2,
+            'survey_name': 'survey #1',
+            'survey_answer': '{"Q3": "submission #2", "Q1": "1", "Q2": "2"}',
+        }
+        self.submission3 = {
+            'course_id': self.course.id,
+            'unit_id': '22222222222222222222222222222222',
+            'user': self.user3,
+            'survey_name': 'survey #2',
+            'survey_answer': '{"Q1": "", "Q2": "", "Q3": "", "Q4": "extra"}',
+        }
+        self.submission4 = {
+            'course_id': SlashSeparatedCourseKey('edX', 'test', 'dummy'),
+            'unit_id': '22222222222222222222222222222222',
+            'user': self.user4,
+            'survey_name': 'survey #2',
+            'survey_answer': '{"Q1": "1", "Q2": "2", "Q3": "submission #4"}',
+        }
+        self.submission5 = {
+            'course_id': self.course.id,
+            'unit_id': '22222222222222222222222222222222',
+            'user': self.user1,
+            'survey_name': 'survey #5',
+            'survey_answer': '{"Q1": "1", "Q2": "Invalid JSON format"',
+        }
+
+    def test_get_survey(self):
+        """
+        Test the CSV output for the survey result.
+        """
+        submission1 = SurveySubmissionFactory.create(**self.submission1)
+        submission2 = SurveySubmissionFactory.create(**self.submission2)
+        submission3 = SurveySubmissionFactory.create(**self.submission3)
+        submission4 = SurveySubmissionFactory.create(**self.submission4)
+
+        response = self.client.post(self.get_url(), {})
+        self.assertEqual(response['Content-Type'], 'text/csv')
+        body = response.content.rstrip('\n').replace('\r', '')
+        rows = body.split('\n')
+        self.assertEqual(4, len(rows))
+        if self.enable_login_code_check():
+            self.assertEqual(rows[0], '"Unit ID","Survey Name","Created","User Name","Full Name","Email","Resigned","Unenrolled","Login Code","Q1","Q2","Q3","Q4"')
+            self.assertEqual(
+                rows[1],
+                '"11111111111111111111111111111111","survey #1","%s","%s","%s","%s","","","%s","1","1,2","submission #1","N/A"'
+                % (format_for_csv(submission1.created), submission1.user.username, submission1.user.profile.name, submission1.user.email, self.biz_user1.login_code)
+            )
+            self.assertEqual(
+                rows[2],
+                '"11111111111111111111111111111111","survey #1","%s","%s","%s","%s","1","1","%s","1","2","submission #2","N/A"'
+                % (format_for_csv(submission2.created), submission2.user.username, submission2.user.profile.name, submission2.user.email, self.biz_user2.login_code)
+            )
+            self.assertEqual(
+                rows[3],
+                '"22222222222222222222222222222222","survey #2","%s","%s","%s","%s","","1","%s","","","","extra"'
+                % (format_for_csv(submission3.created), submission3.user.username, submission3.user.profile.name, submission3.user.email, self.biz_user3.login_code)
+            )
+        else:
+            self.assertEqual(rows[0], '"Unit ID","Survey Name","Created","User Name","Full Name","Email","Resigned","Unenrolled","Q1","Q2","Q3","Q4"')
+            self.assertEqual(
+                rows[1],
+                '"11111111111111111111111111111111","survey #1","%s","%s","%s","%s","","","1","1,2","submission #1","N/A"'
+                % (format_for_csv(submission1.created), submission1.user.username, submission1.user.profile.name,
+                   submission1.user.email)
+            )
+            self.assertEqual(
+                rows[2],
+                '"11111111111111111111111111111111","survey #1","%s","%s","%s","%s","1","1","1","2","submission #2","N/A"'
+                % (format_for_csv(submission2.created), submission2.user.username, submission2.user.profile.name,
+                   submission2.user.email)
+            )
+            self.assertEqual(
+                rows[3],
+                '"22222222222222222222222222222222","survey #2","%s","%s","%s","%s","","1","","","","extra"'
+                % (format_for_csv(submission3.created), submission3.user.username, submission3.user.profile.name,
+                   submission3.user.email)
+            )
+
+    def test_get_survey_when_data_is_empty(self):
+        response = self.client.post(self.get_url(), {})
+        self.assertEqual(response['Content-Type'], 'text/csv')
+        body = response.content.rstrip('\n').replace('\r', '')
+        rows = body.split('\n')
+        self.assertEqual(1, len(rows))
+        if self.enable_login_code_check():
+            self.assertEqual(rows[0],'"Unit ID","Survey Name","Created","User Name","Full Name","Email","Resigned","Unenrolled","Login Code"')
+        else:
+            self.assertEqual(rows[0],'"Unit ID","Survey Name","Created","User Name","Full Name","Email","Resigned","Unenrolled"')
+
+    def test_get_survey_when_data_is_broken(self):
+        submission1 = SurveySubmissionFactory.create(**self.submission1)
+        submission5 = SurveySubmissionFactory.create(**self.submission5)
+
+        response = self.client.post(self.get_url(), {})
+        self.assertEqual(response['Content-Type'], 'text/csv')
+        body = response.content.rstrip('\n').replace('\r', '')
+        rows = body.split('\n')
+        self.assertEqual(3, len(rows))
+        if self.enable_login_code_check():
+            self.assertEqual(rows[0], '"Unit ID","Survey Name","Created","User Name","Full Name","Email","Resigned","Unenrolled","Login Code","Q1","Q2","Q3"')
+            self.assertEqual(
+                rows[1],
+                '"11111111111111111111111111111111","survey #1","%s","%s","%s","%s","","","%s","1","1,2","submission #1"'
+                % (format_for_csv(submission1.created), submission1.user.username, submission1.user.profile.name, submission1.user.email, self.biz_user1.login_code)
+            )
+            self.assertEqual(
+                rows[2],
+                '"22222222222222222222222222222222","survey #5","%s","%s","%s","%s","","","%s","N/A","N/A","N/A"'
+                % (format_for_csv(submission5.created), submission5.user.username, submission5.user.profile.name, submission5.user.email, self.biz_user1.login_code)
+            )
+        else:
+            self.assertEqual(rows[0], '"Unit ID","Survey Name","Created","User Name","Full Name","Email","Resigned","Unenrolled","Q1","Q2","Q3"')
+            self.assertEqual(
+                rows[1],
+                '"11111111111111111111111111111111","survey #1","%s","%s","%s","%s","","","1","1,2","submission #1"'
+                % (format_for_csv(submission1.created), submission1.user.username, submission1.user.profile.name, submission1.user.email)
+            )
+            self.assertEqual(
+                rows[2],
+                '"22222222222222222222222222222222","survey #5","%s","%s","%s","%s","","","N/A","N/A","N/A"'
+                % (format_for_csv(submission5.created), submission5.user.username, submission5.user.profile.name, submission5.user.email)
+            )
+
+
+class TestLoginCodeEnabledInstructorAPISurveyDownload(LoginCodeEnabledInstructorAPISurveyDownloadTestMixin, SharedModuleStoreTestCase, LoginEnrollmentTestCase):
+    """
+    Test login code enabled instructor survey endpoint.
+    """
+
+    def get_url(self):
+        return reverse('get_survey', kwargs={'course_id': self.course.id.to_deprecated_string()})
+
+    def enable_login_code_check(self):
+        return False
