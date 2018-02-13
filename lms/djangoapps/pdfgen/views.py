@@ -90,7 +90,7 @@ class CertificateHonor(CertificateBase):
             log.error(msg)
             return json.dumps({"error": msg})
 
-        if not self.grade:
+        if self.grade is None:
             msg = "grade is required."
             log.error(msg)
             return json.dumps({"error": msg})

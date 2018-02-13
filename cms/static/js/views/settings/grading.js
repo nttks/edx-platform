@@ -210,8 +210,8 @@ var GradingView = ValidatingView.extend({
         var widthPerPoint = cachethis.gradeBarWidth / 100;
         return function(event, ui) {
             var barIndex = ui.element.index();
-            // min and max represent limits not labels (note, can's make smaller than 3 points wide)
-            var min = (barIndex < cachethis.descendingCutoffs.length ? cachethis.descendingCutoffs[barIndex]['cutoff'] + 3 : 3);
+            // min and max represent limits not labels
+            var min = (barIndex < cachethis.descendingCutoffs.length ? cachethis.descendingCutoffs[barIndex]['cutoff'] + 3 : 0);
             // minus 2 b/c minus 1 is the element we're effecting. It's max is just shy of the next one above it
             var max = (barIndex >= 2 ? cachethis.descendingCutoffs[barIndex - 2]['cutoff'] - 3 : 100);
             ui.element.resizable("option",{minWidth : min * widthPerPoint, maxWidth : max * widthPerPoint});
@@ -223,8 +223,8 @@ var GradingView = ValidatingView.extend({
         var cachethis = this;
         return function(event, ui) {
             var barIndex = ui.element.index();
-            // min and max represent limits not labels (note, can's make smaller than 3 points wide)
-            var min = (barIndex < cachethis.descendingCutoffs.length ? cachethis.descendingCutoffs[barIndex]['cutoff'] + 3 : 3);
+            // min and max represent limits not labels
+            var min = (barIndex < cachethis.descendingCutoffs.length ? cachethis.descendingCutoffs[barIndex]['cutoff'] + 3 : 0);
             // minus 2 b/c minus 1 is the element we're effecting. It's max is just shy of the next one above it
             var max = (barIndex >= 2 ? cachethis.descendingCutoffs[barIndex - 2]['cutoff'] - 3 : 100);
             var percentage = Math.min(Math.max(ui.size.width / cachethis.gradeBarWidth * 100, min), max);

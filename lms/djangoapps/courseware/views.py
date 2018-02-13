@@ -1308,13 +1308,14 @@ def is_course_passed(course, grade_summary=None, student=None, request=None):
     Returns:
         returns bool value
     """
-    nonzero_cutoffs = [cutoff for cutoff in course.grade_cutoffs.values() if cutoff > 0]
-    success_cutoff = min(nonzero_cutoffs) if nonzero_cutoffs else None
+    # Allow min grade cutoff to zero (#2427)
+    cutoffs = [cutoff for cutoff in course.grade_cutoffs.values()]
+    success_cutoff = min(cutoffs) if cutoffs else None
 
     if grade_summary is None:
         grade_summary = grades.grade(student, request, course)
 
-    return success_cutoff and grade_summary['percent'] >= success_cutoff
+    return success_cutoff is not None and grade_summary['percent'] >= success_cutoff
 
 
 # Grades can potentially be written - if so, let grading manage the transaction.
