@@ -198,9 +198,10 @@ class Command(BaseCommand):
             for contract_detail in contract.details.all():
                 try:
                     course_key = contract_detail.course_id
+                    unicode_course_key = unicode(course_key)
                     log.info(
                         u"Command update_biz_score_status for contract({}) and course({}) is now processing...".format(
-                            contract.id, unicode(course_key)))
+                            contract.id, unicode_course_key))
                     ScoreBatchStatus.save_for_started(contract.id, course_key)
 
                     # Check if course exists in modulestore
@@ -214,7 +215,7 @@ class Command(BaseCommand):
                     # Column
                     column = OrderedDict()
                     column[ScoreStore.FIELD_CONTRACT_ID] = contract.id
-                    column[ScoreStore.FIELD_COURSE_ID] = unicode(course_key)
+                    column[ScoreStore.FIELD_COURSE_ID] = unicode_course_key
                     column[ScoreStore.FIELD_DOCUMENT_TYPE] = ScoreStore.FIELD_DOCUMENT_TYPE__COLUMN
                     if ContractAuth.objects.filter(contract_id=contract.id).exists():
                         column[_(ScoreStore.FIELD_LOGIN_CODE)] = ScoreStore.COLUMN_TYPE__TEXT
@@ -240,8 +241,9 @@ class Command(BaseCommand):
 
                     # Records
                     records = []
-                    for contract_register in ContractRegister.find_input_and_register_by_contract(
-                            contract.id).select_related('user__standing', 'user__profile'):
+                    q_contract_register = ContractRegister.find_input_and_register_by_contract(contract.id)
+                    count_contract_register = q_contract_register.count()
+                    for contract_register in q_contract_register.select_related('user__standing', 'user__profile'):
                         user = contract_register.user
                         # Student Status
                         course_enrollment = CourseEnrollment.get_enrollment(user, course_key)
@@ -267,7 +269,7 @@ class Command(BaseCommand):
                         # Records
                         record = OrderedDict()
                         record[ScoreStore.FIELD_CONTRACT_ID] = contract.id
-                        record[ScoreStore.FIELD_COURSE_ID] = unicode(course_key)
+                        record[ScoreStore.FIELD_COURSE_ID] = unicode_course_key
                         record[ScoreStore.FIELD_DOCUMENT_TYPE] = ScoreStore.FIELD_DOCUMENT_TYPE__RECORD
                         # Only in the case of a contract using login code, setting processing of data is performed.
                         if ContractAuth.objects.filter(contract_id=contract.id).exists():
@@ -310,16 +312,37 @@ class Command(BaseCommand):
                         record[_(ScoreStore.FIELD_TOTAL_SCORE)] = score_calculator.get_total_score()
                         records.append(record)
 
-                    score_store = ScoreStore(contract.id, unicode(course_key))
+                    score_store = ScoreStore(contract.id, unicode_course_key)
                     score_store.remove_documents()
+
+                    # Confirm remove_documents.
+                    count_score_store = score_store.get_record_count()
+                    if count_score_store == 0:
+                        log.info(u"Removed ScoreStore records. contract_id={} course_id={}".format(
+                            contract.id, unicode_course_key))
+                    else:
+                        raise Exception(u"Can not remove ScoreStore records({}). contract_id={} course_id={}".format(
+                            count_score_store, contract.id, unicode_course_key))
+
+                    len_records = len(records)
+
                     if records:
                         score_store.set_documents([column])
                         score_store.set_documents(records)
                         score_store.drop_indexes()
                         score_store.ensure_indexes()
 
+                    # Confirm set_documents.
+                    count_score_store = score_store.get_record_count()
+                    if count_score_store == count_contract_register == len_records:
+                        log.info(u"Stored ScoreStore records({}). contract_id={} course_id={}".format(
+                            count_score_store, contract.id, unicode_course_key))
+                    else:
+                        raise Exception(u"ScoreStore record count({}) does not mutch Contract Register record count({}) or records count({}). contract_id={} course_id={}".format(
+                            count_score_store, count_contract_register, len_records, contract.id, unicode_course_key))
+
                 except CourseDoesNotExist:
-                    log.warning(u"This course does not exist in modulestore. course_id={}".format(unicode(course_key)))
+                    log.warning(u"This course does not exist in modulestore. course_id={}".format(unicode_course_key))
                     ScoreBatchStatus.save_for_error(contract.id, course_key)
                 except Exception as ex:
                     error_flag = True

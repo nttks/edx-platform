@@ -844,6 +844,78 @@ class UpdateBizScoreStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEnrol
         self.assert_finished(1, self.contract, self.course1)
         self.assert_finished(1, self.contract, self.course2)
 
+    @patch('biz.djangoapps.ga_achievement.management.commands.update_biz_score_status.log.info')
+    def test_success_log(self, mock_log_info):
+        for var in range(0, 50):
+            user = UserFactory.create()
+            self._input_contract(self.contract, user)
+        for var in range(0, 50):
+            user = UserFactory.create()
+            self._register_contract(self.contract, user, additional_value=ADDITIONAL_SETTINGS_VALUE)
+
+        call_command('update_biz_score_status', self.contract.id)
+
+        mock_log_info.assert_any_call(
+            u'Removed ScoreStore records. contract_id={} course_id={}'.format(
+                self.contract.id, self.course1.id))
+        mock_log_info.assert_any_call(
+            u'Removed ScoreStore records. contract_id={} course_id={}'.format(
+                self.contract.id, self.course2.id))
+
+        mock_log_info.assert_any_call(
+            u'Stored ScoreStore records(100). contract_id={} course_id={}'.format(
+                self.contract.id, self.course1.id))
+        mock_log_info.assert_any_call(
+            u'Stored ScoreStore records(100). contract_id={} course_id={}'.format(
+                self.contract.id, self.course2.id))
+
+        ScoreBatchStatus.objects.get(contract=self.contract, course_id=self.course1.id, status=BATCH_STATUS_FINISHED, student_count=100)
+        ScoreBatchStatus.objects.get(contract=self.contract, course_id=self.course2.id, status=BATCH_STATUS_FINISHED, student_count=100)
+
+    @patch('biz.djangoapps.ga_achievement.management.commands.update_biz_score_status.log.error')
+    def test_error_log_can_not_remove_documents(self, mock_log_error):
+        for var in range(0, 50):
+            user = UserFactory.create()
+            self._input_contract(self.contract, user)
+        for var in range(0, 50):
+            user = UserFactory.create()
+            self._register_contract(self.contract, user, additional_value=ADDITIONAL_SETTINGS_VALUE)
+
+        with patch('biz.djangoapps.ga_achievement.management.commands.update_biz_score_status.ScoreStore.get_record_count', return_value=100):
+            call_command('update_biz_score_status', self.contract.id)
+
+        mock_log_error.assert_any_call(
+            u'Unexpected error occurred: Can not remove ScoreStore records(100). contract_id={} course_id={}'.format(
+                self.contract.id, self.course1.id))
+        mock_log_error.assert_any_call(
+            u'Unexpected error occurred: Can not remove ScoreStore records(100). contract_id={} course_id={}'.format(
+                self.contract.id, self.course2.id))
+
+        ScoreBatchStatus.objects.get(contract=self.contract, course_id=self.course1.id, status=BATCH_STATUS_ERROR, student_count=None)
+        ScoreBatchStatus.objects.get(contract=self.contract, course_id=self.course2.id, status=BATCH_STATUS_ERROR, student_count=None)
+
+    @patch('biz.djangoapps.ga_achievement.management.commands.update_biz_score_status.log.error')
+    def test_error_log_can_not_set_documents(self, mock_log_error):
+        for var in range(0, 50):
+            user = UserFactory.create()
+            self._input_contract(self.contract, user)
+        for var in range(0, 50):
+            user = UserFactory.create()
+            self._register_contract(self.contract, user, additional_value=ADDITIONAL_SETTINGS_VALUE)
+
+        with patch('biz.djangoapps.ga_achievement.management.commands.update_biz_score_status.ScoreStore.get_record_count', return_value=0):
+            call_command('update_biz_score_status', self.contract.id)
+
+        mock_log_error.assert_any_call(
+            u'Unexpected error occurred: ScoreStore record count(0) does not mutch Contract Register record count(100) or records count(100). contract_id={} course_id={}'.format(
+                self.contract.id, self.course1.id))
+        mock_log_error.assert_any_call(
+            u'Unexpected error occurred: ScoreStore record count(0) does not mutch Contract Register record count(100) or records count(100). contract_id={} course_id={}'.format(
+                self.contract.id, self.course2.id))
+
+        ScoreBatchStatus.objects.get(contract=self.contract, course_id=self.course1.id, status=BATCH_STATUS_ERROR, student_count=None)
+        ScoreBatchStatus.objects.get(contract=self.contract, course_id=self.course2.id, status=BATCH_STATUS_ERROR, student_count=None)
+
 
 class TestGroupedTargetSections(ModuleStoreTestCase):
     """
