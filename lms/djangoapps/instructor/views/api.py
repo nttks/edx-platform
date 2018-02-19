@@ -2733,7 +2733,7 @@ def create_survey_response(request, course_id):
             row.append('1' if s.account_status == UserStanding.ACCOUNT_DISABLED else '')
             row.append('1' if not s.is_active else '')
             if HEADER_LOGIN_CODE in header:
-                row.append(s.login_code)
+                row.append(s.login_code or '')
             for key in keys:
                 value = ans_dict.get(key, 'N/A')
                 # NOTE: replace list into commified str
