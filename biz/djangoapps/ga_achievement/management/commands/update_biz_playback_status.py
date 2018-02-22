@@ -2,8 +2,9 @@
 Management command to generate a list of playback summary
 for all biz students who registered any SPOC course.
 """
-from collections import defaultdict, OrderedDict
 import logging
+import time
+from collections import defaultdict, OrderedDict
 from optparse import make_option
 
 from django.conf import settings
@@ -169,12 +170,15 @@ class Command(BaseCommand):
             # Save the existence of ContractAuth object
             use_contract_auth = ContractAuth.objects.filter(contract=contract).exists()
 
+            q_contract_register = ContractRegister.find_input_and_register_by_contract(contract.id)
+            count_contract_register = q_contract_register.count()
             for contract_detail in contract.details.all():
                 try:
                     course_key = contract_detail.course_id
+                    unicode_course_key = unicode(course_key)
                     log.info(
                         u"Command update_biz_playback_status for contract({}) and course({}) is now processing...".format(
-                            contract.id, unicode(course_key)))
+                            contract.id, unicode_course_key))
                     PlaybackBatchStatus.save_for_started(contract.id, course_key)
 
                     # Check if course exists in modulestore
@@ -188,7 +192,7 @@ class Command(BaseCommand):
                     # Column
                     column = OrderedDict()
                     column[PlaybackStore.FIELD_CONTRACT_ID] = contract.id
-                    column[PlaybackStore.FIELD_COURSE_ID] = unicode(course_key)
+                    column[PlaybackStore.FIELD_COURSE_ID] = unicode_course_key
                     column[PlaybackStore.FIELD_DOCUMENT_TYPE] = PlaybackStore.FIELD_DOCUMENT_TYPE__COLUMN
                     # Only in the case of a contract using login code, setting processing of column is performed.
                     if use_contract_auth:
@@ -216,8 +220,7 @@ class Command(BaseCommand):
 
                     # Records
                     records = []
-                    for contract_register in ContractRegister.find_input_and_register_by_contract(
-                            contract.id).select_related('user__standing', 'user__profile'):
+                    for contract_register in q_contract_register.select_related('user__standing', 'user__profile'):
                         user = contract_register.user
                         # Student Status
                         course_enrollment = CourseEnrollment.get_enrollment(user, course_key)
@@ -236,7 +239,7 @@ class Command(BaseCommand):
                         # Records
                         record = OrderedDict()
                         record[PlaybackStore.FIELD_CONTRACT_ID] = contract.id
-                        record[PlaybackStore.FIELD_COURSE_ID] = unicode(course_key)
+                        record[PlaybackStore.FIELD_COURSE_ID] = unicode_course_key
                         record[PlaybackStore.FIELD_DOCUMENT_TYPE] = PlaybackStore.FIELD_DOCUMENT_TYPE__RECORD
                         # Only in the case of a contract using login code, setting processing of data is performed.
                         if use_contract_auth:
@@ -258,7 +261,7 @@ class Command(BaseCommand):
                             record[_(PlaybackStore.FIELD_TOTAL_PLAYBACK_TIME)] = None
 
                             # Get duration summary from playback log store
-                            playback_log_store = PlaybackLogStore(unicode(course_key), to_target_id(user.id))
+                            playback_log_store = PlaybackLogStore(unicode_course_key, to_target_id(user.id))
                             duration_summary = playback_log_store.aggregate_duration_by_vertical()
 
                             total_playback_time = 0
@@ -280,16 +283,55 @@ class Command(BaseCommand):
                             record[_(PlaybackStore.FIELD_TOTAL_PLAYBACK_TIME)] = total_playback_time
                         records.append(record)
 
-                    playback_store = PlaybackStore(contract.id, unicode(course_key))
-                    playback_store.remove_documents()
-                    if records:
+                    playback_store = PlaybackStore(contract.id, unicode_course_key)
+
+                    for i in range(settings.MAX_RETRY_SET_DOCUMENTS + 1):
+                        for j in range(settings.MAX_RETRY_REMOVE_DOCUMENTS + 1):
+                            playback_store.remove_documents()
+
+                            # Confirm remove_documents.
+                            count_playback_store = playback_store.get_record_count()
+                            if count_playback_store == 0:
+                                log.info(u"Removed PlaybackStore records. contract_id={} course_id={}".format(
+                                    contract.id, unicode_course_key))
+                                break;
+
+                            if j >= settings.MAX_RETRY_REMOVE_DOCUMENTS:
+                                raise Exception(u"Can not remove PlaybackStore record count({}). contract_id={} course_id={}".format(
+                                    count_playback_store, contract.id, unicode_course_key))
+
+                            log.warning(u"Can not remove(try:{},sleep:{}) PlaybackStore record count({}). contract_id={} course_id={}".format(
+                                j + 1, settings.SLEEP_RETRY_REMOVE_DOCUMENTS, count_playback_store, contract.id, unicode_course_key))
+                            if settings.SLEEP_RETRY_REMOVE_DOCUMENTS:
+                                time.sleep(settings.SLEEP_RETRY_REMOVE_DOCUMENTS)
+
+                        len_records = len(records)
+                        if len_records == 0:
+                            break;
+
                         playback_store.set_documents([column])
                         playback_store.set_documents(records)
                         playback_store.drop_indexes()
                         playback_store.ensure_indexes()
 
+                        # Confirm set_documents.
+                        count_playback_store = playback_store.get_record_count()
+                        if count_playback_store == count_contract_register == len_records:
+                            log.info(u"Stored PlaybackStore record count({}). contract_id={} course_id={}".format(
+                                count_playback_store, contract.id, unicode_course_key))
+                            break;
+
+                        if i >= settings.MAX_RETRY_SET_DOCUMENTS:
+                            raise Exception(u"PlaybackStore record count({}) does not mutch Contract Register record count({}) or records count({}). contract_id={} course_id={}".format(
+                                count_playback_store, count_contract_register, len_records, contract.id, unicode_course_key))
+
+                        log.warning(u"Can not store(try:{},sleep:{}) PlaybackStore record count({}) does not mutch Contract Register record count({}) or records count({}). contract_id={} course_id={}".format(
+                            i + 1, settings.SLEEP_RETRY_SET_DOCUMENTS, count_playback_store, count_contract_register, len_records, contract.id, unicode_course_key))
+                        if settings.SLEEP_RETRY_SET_DOCUMENTS:
+                            time.sleep(settings.SLEEP_RETRY_SET_DOCUMENTS)
+
                 except CourseDoesNotExist:
-                    log.warning(u"This course does not exist in modulestore. course_id={}".format(unicode(course_key)))
+                    log.warning(u"This course does not exist in modulestore. course_id={}".format(unicode_course_key))
                     PlaybackBatchStatus.save_for_error(contract.id, course_key)
                 except Exception as ex:
                     error_flag = True

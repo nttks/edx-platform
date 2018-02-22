@@ -715,6 +715,119 @@ class UpdateBizPlaybackStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEn
         self.assert_finished(1, self.multiple_courses_contract, self.single_spoc_video_course)
         self.assert_finished(1, self.multiple_courses_contract, self.multiple_spoc_video_course)
 
+    def test_success_log(self):
+        for var in range(0, 50):
+            user = UserFactory.create()
+            self._input_contract(self.multiple_courses_contract, user)
+        for var in range(0, 50):
+            user = UserFactory.create()
+            self._register_contract(self.multiple_courses_contract, user, additional_value=ADDITIONAL_SETTINGS_VALUE)
+
+        call_command('update_biz_playback_status', self.multiple_courses_contract.id)
+
+        self.mock_log.info.assert_any_call(
+            u'Removed PlaybackStore records. contract_id={} course_id={}'.format(
+                self.multiple_courses_contract.id, self.single_spoc_video_course.id))
+        self.mock_log.info.assert_any_call(
+            u'Removed PlaybackStore records. contract_id={} course_id={}'.format(
+                self.multiple_courses_contract.id, self.multiple_spoc_video_course.id))
+
+        self.mock_log.info.assert_any_call(
+            u'Stored PlaybackStore record count(100). contract_id={} course_id={}'.format(
+                self.multiple_courses_contract.id, self.single_spoc_video_course.id))
+        self.mock_log.info.assert_any_call(
+            u'Stored PlaybackStore record count(100). contract_id={} course_id={}'.format(
+                self.multiple_courses_contract.id, self.multiple_spoc_video_course.id))
+
+        PlaybackBatchStatus.objects.get(contract=self.multiple_courses_contract, course_id=self.single_spoc_video_course.id, status=BATCH_STATUS_FINISHED, student_count=100)
+        PlaybackBatchStatus.objects.get(contract=self.multiple_courses_contract, course_id=self.multiple_spoc_video_course.id, status=BATCH_STATUS_FINISHED, student_count=100)
+
+    @override_settings(
+        MAX_RETRY_REMOVE_DOCUMENTS=3,
+        SLEEP_RETRY_REMOVE_DOCUMENTS=3,
+        MAX_RETRY_SET_DOCUMENTS=3,
+        SLEEP_RETRY_SET_DOCUMENTS=3,
+    )
+    @patch('biz.djangoapps.ga_achievement.management.commands.update_biz_playback_status.time.sleep')
+    def test_error_log_can_not_remove_documents(self, mock_time_sleep):
+        for var in range(0, 50):
+            user = UserFactory.create()
+            self._input_contract(self.multiple_courses_contract, user)
+        for var in range(0, 50):
+            user = UserFactory.create()
+            self._register_contract(self.multiple_courses_contract, user, additional_value=ADDITIONAL_SETTINGS_VALUE)
+
+        with patch('biz.djangoapps.ga_achievement.management.commands.update_biz_playback_status.PlaybackStore.get_record_count', return_value=100):
+            call_command('update_biz_playback_status', self.multiple_courses_contract.id)
+
+        for i in range(3):
+            self.mock_log.warning.assert_any_call(
+                u'Can not remove(try:{},sleep:3) PlaybackStore record count(100). contract_id={} course_id={}'.format(
+                    i + 1, self.multiple_courses_contract.id, self.single_spoc_video_course.id))
+        for i in range(3):
+            self.mock_log.warning.assert_any_call(
+                u'Can not remove(try:{},sleep:3) PlaybackStore record count(100). contract_id={} course_id={}'.format(
+                    i + 1, self.multiple_courses_contract.id, self.multiple_spoc_video_course.id))
+
+        self.assertEqual(6, mock_time_sleep.call_count)
+        mock_time_sleep.assert_any_call(3)
+
+        self.mock_log.error.assert_any_call(
+            u'Unexpected error occurred: Can not remove PlaybackStore record count(100). contract_id={} course_id={}'.format(
+                self.multiple_courses_contract.id, self.single_spoc_video_course.id))
+        self.mock_log.error.assert_any_call(
+            u'Unexpected error occurred: Can not remove PlaybackStore record count(100). contract_id={} course_id={}'.format(
+                self.multiple_courses_contract.id, self.multiple_spoc_video_course.id))
+
+        PlaybackBatchStatus.objects.get(contract=self.multiple_courses_contract, course_id=self.single_spoc_video_course.id, status=BATCH_STATUS_ERROR, student_count=None)
+        PlaybackBatchStatus.objects.get(contract=self.multiple_courses_contract, course_id=self.multiple_spoc_video_course.id, status=BATCH_STATUS_ERROR, student_count=None)
+
+    @override_settings(
+        MAX_RETRY_REMOVE_DOCUMENTS=3,
+        SLEEP_RETRY_REMOVE_DOCUMENTS=0,
+        MAX_RETRY_SET_DOCUMENTS=3,
+        SLEEP_RETRY_SET_DOCUMENTS=0,
+    )
+    @patch('biz.djangoapps.ga_achievement.management.commands.update_biz_playback_status.time.sleep')
+    def test_error_log_can_not_set_documents(self, mock_time_sleep):
+        for var in range(0, 50):
+            user = UserFactory.create()
+            self._input_contract(self.multiple_courses_contract, user)
+        for var in range(0, 50):
+            user = UserFactory.create()
+            self._register_contract(self.multiple_courses_contract, user, additional_value=ADDITIONAL_SETTINGS_VALUE)
+
+        with patch('biz.djangoapps.ga_achievement.management.commands.update_biz_playback_status.PlaybackStore.get_record_count', return_value=0):
+            call_command('update_biz_playback_status', self.multiple_courses_contract.id)
+
+        self.mock_log.info.assert_any_call(
+            u'Removed PlaybackStore records. contract_id={} course_id={}'.format(
+                self.multiple_courses_contract.id, self.single_spoc_video_course.id))
+        self.mock_log.info.assert_any_call(
+            u'Removed PlaybackStore records. contract_id={} course_id={}'.format(
+                self.multiple_courses_contract.id, self.multiple_spoc_video_course.id))
+
+        for i in range(3):
+            self.mock_log.warning.assert_any_call(
+                u'Can not store(try:{},sleep:0) PlaybackStore record count(0) does not mutch Contract Register record count(100) or records count(100). contract_id={} course_id={}'.format(
+                    i + 1, self.multiple_courses_contract.id, self.single_spoc_video_course.id))
+        for i in range(3):
+            self.mock_log.warning.assert_any_call(
+                u'Can not store(try:{},sleep:0) PlaybackStore record count(0) does not mutch Contract Register record count(100) or records count(100). contract_id={} course_id={}'.format(
+                    i + 1, self.multiple_courses_contract.id, self.multiple_spoc_video_course.id))
+
+        mock_time_sleep.assert_not_called()
+
+        self.mock_log.error.assert_any_call(
+            u'Unexpected error occurred: PlaybackStore record count(0) does not mutch Contract Register record count(100) or records count(100). contract_id={} course_id={}'.format(
+                self.multiple_courses_contract.id, self.single_spoc_video_course.id))
+        self.mock_log.error.assert_any_call(
+            u'Unexpected error occurred: PlaybackStore record count(0) does not mutch Contract Register record count(100) or records count(100). contract_id={} course_id={}'.format(
+                self.multiple_courses_contract.id, self.multiple_spoc_video_course.id))
+
+        PlaybackBatchStatus.objects.get(contract=self.multiple_courses_contract, course_id=self.single_spoc_video_course.id, status=BATCH_STATUS_ERROR, student_count=None)
+        PlaybackBatchStatus.objects.get(contract=self.multiple_courses_contract, course_id=self.multiple_spoc_video_course.id, status=BATCH_STATUS_ERROR, student_count=None)
+
 
 class TestGroupedTargetVerticals(ModuleStoreTestCase):
     """

@@ -3,10 +3,11 @@
 Management command to generate a list of grade summary
 for all biz students who registered any SPOC course.
 """
-from collections import defaultdict, OrderedDict
 import logging
-from optparse import make_option
 import time
+from collections import defaultdict, OrderedDict
+from mock import patch
+from optparse import make_option
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
@@ -195,6 +196,9 @@ class Command(BaseCommand):
                             contract.id))
                     continue
 
+            q_contract_register = ContractRegister.find_input_and_register_by_contract(contract.id)
+            count_contract_register = q_contract_register.count()
+
             for contract_detail in contract.details.all():
                 try:
                     course_key = contract_detail.course_id
@@ -241,8 +245,6 @@ class Command(BaseCommand):
 
                     # Records
                     records = []
-                    q_contract_register = ContractRegister.find_input_and_register_by_contract(contract.id)
-                    count_contract_register = q_contract_register.count()
                     for contract_register in q_contract_register.select_related('user__standing', 'user__profile'):
                         user = contract_register.user
                         # Student Status
@@ -313,33 +315,51 @@ class Command(BaseCommand):
                         records.append(record)
 
                     score_store = ScoreStore(contract.id, unicode_course_key)
-                    score_store.remove_documents()
 
-                    # Confirm remove_documents.
-                    count_score_store = score_store.get_record_count()
-                    if count_score_store == 0:
-                        log.info(u"Removed ScoreStore records. contract_id={} course_id={}".format(
-                            contract.id, unicode_course_key))
-                    else:
-                        raise Exception(u"Can not remove ScoreStore records({}). contract_id={} course_id={}".format(
-                            count_score_store, contract.id, unicode_course_key))
+                    for i in range(settings.MAX_RETRY_SET_DOCUMENTS + 1):
+                        for j in range(settings.MAX_RETRY_REMOVE_DOCUMENTS + 1):
+                            score_store.remove_documents()
 
-                    len_records = len(records)
+                            # Confirm remove_documents.
+                            count_score_store = score_store.get_record_count()
+                            if count_score_store == 0:
+                                log.info(u"Removed ScoreStore records. contract_id={} course_id={}".format(
+                                    contract.id, unicode_course_key))
+                                break;
 
-                    if records:
+                            if j >= settings.MAX_RETRY_REMOVE_DOCUMENTS:
+                                raise Exception(u"Can not remove ScoreStore record count({}). contract_id={} course_id={}".format(
+                                    count_score_store, contract.id, unicode_course_key))
+
+                            log.warning(u"Can not remove(try:{},sleep:{}) ScoreStore record count({}). contract_id={} course_id={}".format(
+                                j + 1, settings.SLEEP_RETRY_REMOVE_DOCUMENTS, count_score_store, contract.id, unicode_course_key))
+                            if settings.SLEEP_RETRY_REMOVE_DOCUMENTS:
+                                time.sleep(settings.SLEEP_RETRY_REMOVE_DOCUMENTS)
+
+                        len_records = len(records)
+                        if len_records == 0:
+                            break;
+
                         score_store.set_documents([column])
                         score_store.set_documents(records)
                         score_store.drop_indexes()
                         score_store.ensure_indexes()
 
-                    # Confirm set_documents.
-                    count_score_store = score_store.get_record_count()
-                    if count_score_store == count_contract_register == len_records:
-                        log.info(u"Stored ScoreStore records({}). contract_id={} course_id={}".format(
-                            count_score_store, contract.id, unicode_course_key))
-                    else:
-                        raise Exception(u"ScoreStore record count({}) does not mutch Contract Register record count({}) or records count({}). contract_id={} course_id={}".format(
-                            count_score_store, count_contract_register, len_records, contract.id, unicode_course_key))
+                        # Confirm set_documents.
+                        count_score_store = score_store.get_record_count()
+                        if count_score_store == count_contract_register == len_records:
+                            log.info(u"Stored ScoreStore record count({}). contract_id={} course_id={}".format(
+                                count_score_store, contract.id, unicode_course_key))
+                            break;
+
+                        if i >= settings.MAX_RETRY_SET_DOCUMENTS:
+                            raise Exception(u"ScoreStore record count({}) does not mutch Contract Register record count({}) or records count({}). contract_id={} course_id={}".format(
+                                count_score_store, count_contract_register, len_records, contract.id, unicode_course_key))
+
+                        log.warning(u"Can not store(try:{},sleep:{}) ScoreStore record count({}) does not mutch Contract Register record count({}) or records count({}). contract_id={} course_id={}".format(
+                            i + 1, settings.SLEEP_RETRY_SET_DOCUMENTS, count_score_store, count_contract_register, len_records, contract.id, unicode_course_key))
+                        if settings.SLEEP_RETRY_SET_DOCUMENTS:
+                            time.sleep(settings.SLEEP_RETRY_SET_DOCUMENTS)
 
                 except CourseDoesNotExist:
                     log.warning(u"This course does not exist in modulestore. course_id={}".format(unicode_course_key))
@@ -360,7 +380,8 @@ class ScoreCalculator(object):
         request = RequestFactory().get('/')
         try:
             start = time.clock()
-            self.grade_summary = grades.grade(user, request, course)
+            with patch('courseware.grades.log.info'):
+                self.grade_summary = grades.grade(user, request, course)
             end = time.clock()
             log.debug(u"Processed time for grades.grade ... {:.2f}s".format(end - start))
         except Exception as e:
