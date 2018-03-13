@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 """ Tests for student profile views. """
 
+import boto
+from boto.s3.key import Key
 import ddt
 import pytz
 from copy import copy
@@ -200,6 +202,9 @@ class LearnerProfileCertificatesTestBase(UrlResetMixin, ModuleStoreTestCase):
 @ddt.ddt
 class LearnerProfileCertificatesTest(LearnerProfileCertificatesTestBase):
     """ Tests for certificates on student profile. """
+
+    TEST_BUCKET_NAME = 'testbucket'
+
     def setUp(self):
         super(LearnerProfileCertificatesTest, self).setUp()
 
@@ -207,10 +212,11 @@ class LearnerProfileCertificatesTest(LearnerProfileCertificatesTestBase):
     @override_settings(
         AWS_ACCESS_KEY_ID='foobar',
         AWS_SECRET_ACCESS_KEY='bizbaz',
-        PDFGEN_BASE_BUCKET_NAME='test_bucket'
+        PDFGEN_BASE_BUCKET_NAME=TEST_BUCKET_NAME
     )
     @patch('student_profile.views._is_certificate_visible_to_public')
     @patch('student_profile.views.get_user_preferences')
+    @patch('student_profile.views.handle_file_from_s3')
     @ddt.data(
         (True, True),
         (False, True),
@@ -219,6 +225,7 @@ class LearnerProfileCertificatesTest(LearnerProfileCertificatesTestBase):
     )
     @ddt.unpack
     def test_certificate_own_profile(self, is_profile_public, is_cert_public,
+                                     mock_handle_file_from_s3,
                                      mock_get_user_preferences,
                                      mock_is_visible_to_public):
         """Verify if certificate is shown on learner's own profile page"""
@@ -233,6 +240,11 @@ class LearnerProfileCertificatesTest(LearnerProfileCertificatesTestBase):
             'course_category': ['gacco'],
         })
 
+        conn = boto.connect_s3()
+        f = Key(conn.create_bucket(self.TEST_BUCKET_NAME))
+        f.key = 'thumbnail-{}.jpg'.format(course.id)
+        mock_handle_file_from_s3.return_value = f
+
         self._create_certificate(self.user, course)
 
         request = RequestFactory().get('/url')
@@ -240,7 +252,7 @@ class LearnerProfileCertificatesTest(LearnerProfileCertificatesTestBase):
 
         context = learner_profile_context(request, self.USERNAME, self.user.is_staff)
 
-        self.assertIn('test_bucket', context['data']['cert_infos'][0]['image_url'])
+        self.assertIn(self.TEST_BUCKET_NAME, context['data']['cert_infos'][0]['image_url'])
         self.assertIn('thumbnail-', context['data']['cert_infos'][0]['image_url'])
         self.assertIn('.jpg', context['data']['cert_infos'][0]['image_url'])
         self.assertEqual(course.display_name, context['data']['cert_infos'][0]['course_name'])
@@ -249,10 +261,11 @@ class LearnerProfileCertificatesTest(LearnerProfileCertificatesTestBase):
     @override_settings(
         AWS_ACCESS_KEY_ID='foobar',
         AWS_SECRET_ACCESS_KEY='bizbaz',
-        PDFGEN_BASE_BUCKET_NAME='test_bucket'
+        PDFGEN_BASE_BUCKET_NAME=TEST_BUCKET_NAME
     )
     @patch('student_profile.views._is_certificate_visible_to_public')
     @patch('student_profile.views.get_user_preferences')
+    @patch('student_profile.views.handle_file_from_s3')
     @ddt.data(
         (True, True),
         (False, True),
@@ -261,6 +274,7 @@ class LearnerProfileCertificatesTest(LearnerProfileCertificatesTestBase):
     )
     @ddt.unpack
     def test_certificate_other_profile(self, is_profile_public, is_cert_public,
+                                       mock_handle_file_from_s3,
                                        mock_get_user_preferences,
                                        mock_is_visible_to_public):
         """Verify if certificate is shown on other learner's profile page"""
@@ -274,6 +288,12 @@ class LearnerProfileCertificatesTest(LearnerProfileCertificatesTestBase):
         course = self._create_course({
             'course_category': ['gacco'],
         })
+
+        conn = boto.connect_s3()
+        f = Key(conn.create_bucket(self.TEST_BUCKET_NAME))
+        f.key = 'thumbnail-{}.jpg'.format(course.id)
+        mock_handle_file_from_s3.return_value = f
+
         self._create_certificate(self.other_user, course)
 
         request = RequestFactory().get('/url')
@@ -282,7 +302,7 @@ class LearnerProfileCertificatesTest(LearnerProfileCertificatesTestBase):
         context = learner_profile_context(request, self.OTHER_USERNAME, self.other_user.is_staff)
 
         if is_profile_public and is_cert_public:
-            self.assertIn('test_bucket', context['data']['cert_infos'][0]['image_url'])
+            self.assertIn(self.TEST_BUCKET_NAME, context['data']['cert_infos'][0]['image_url'])
             self.assertIn('thumbnail-', context['data']['cert_infos'][0]['image_url'])
             self.assertIn('.jpg', context['data']['cert_infos'][0]['image_url'])
             self.assertEqual(course.display_name, context['data']['cert_infos'][0]['course_name'])
@@ -318,7 +338,7 @@ class LearnerProfileCertificatesTest(LearnerProfileCertificatesTestBase):
     @override_settings(
         AWS_ACCESS_KEY_ID='foobar',
         AWS_SECRET_ACCESS_KEY='bizbaz',
-        PDFGEN_BASE_BUCKET_NAME='test_bucket'
+        PDFGEN_BASE_BUCKET_NAME=TEST_BUCKET_NAME
     )
     @patch('student_profile.views._is_certificate_visible_to_public')
     @patch('student_profile.views.get_user_preferences')
