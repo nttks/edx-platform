@@ -35,8 +35,9 @@
       }
 
       a {
-        border-radius: 3px;
-        color: #555;
+        background: linear-gradient(to bottom, rgb(255, 255, 255), rgb(228, 228, 228));
+        border-radius: 0;
+        color: #222;
         display: block;
         text-align: center;
         padding: ($baseline/2) 13px 12px;
@@ -47,16 +48,21 @@
 
         &:hover, &:focus {
           color: #333;
-          background: rgba(255, 255, 255, .6);
+          background: linear-gradient(to bottom, rgb(255, 244, 247), rgb(255, 207, 219));
         }
 
         &.active {
           // background: $shadow;
-          @include linear-gradient(top, rgba(0, 0, 0, .4), rgba(0, 0, 0, .25));
-          background-color: transparent;
+          background: linear-gradient(to bottom, rgb(255, 0, 64), rgb(167, 0, 42));
           box-shadow: 0 1px 0 rgba(255, 255, 255, .5), 0 1px 1px rgba(0, 0, 0, .3) inset;
           color: $white;
           text-shadow: 0 1px 0 rgba(0, 0, 0, .4);
+          transition: background-color 300ms ease-out;
+          transition-delay: 300ms;
+          
+          &:hover, &:focus {
+            background: linear-gradient(to bottom, rgb(204, 0, 51), rgb(138, 0, 35));
+          }
         }
       }
     }

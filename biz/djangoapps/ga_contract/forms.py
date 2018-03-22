@@ -86,19 +86,12 @@ class ContractForm(forms.ModelForm):
             self.errors["contract"] = ErrorList([_("Contract end date is before contract start date.")])
 
         # check contract detail inputs
-        course_id_list = self.data.getlist('detail_course')
-        detail_delete_list = self.data.getlist('detail_delete')
-        valid_course_id_list = [v for i, v in enumerate(course_id_list) if not detail_delete_list[i]]
-        if len(valid_course_id_list) != len(set(valid_course_id_list)):
-            self.errors["contract_detail"] = ErrorList(
-                    [_("You can not enter duplicate values in {0}.").format(_('Contract Detail Info'))])
-
-        # check contract detail inputs
-        display_name_list = self.data.getlist('additional_info_display_name')
-        additional_info_delete_list = self.data.getlist('additional_info_delete')
-        valid_display_name_list = [v for i, v in enumerate(display_name_list) if not additional_info_delete_list[i]]
-        if len(valid_display_name_list) != len(set(valid_display_name_list)):
-            self.errors["additional_info"] = ErrorList(
-                    [_("You can not enter duplicate values in {0}.").format(_('Additional Info'))])
+        if len(self.data.getlist('detail_id')) == len(self.data.getlist('detail_course')) == len(self.data.getlist('detail_delete')):
+            course_id_list = self.data.getlist('detail_course')
+            detail_delete_list = self.data.getlist('detail_delete')
+            valid_course_id_list = [v for i, v in enumerate(course_id_list) if not detail_delete_list[i]]
+            if len(valid_course_id_list) != len(set(valid_course_id_list)):
+                self.errors["contract_detail"] = ErrorList(
+                        [_("You can not enter duplicate values in {0}.").format(_('Contract Detail Info'))])
 
         return cleaned_data

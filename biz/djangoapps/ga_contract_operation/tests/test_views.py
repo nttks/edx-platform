@@ -13,9 +13,12 @@ from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.db import IntegrityError
 from django.test.utils import override_settings
+from django.utils.crypto import get_random_string
 
 from biz.djangoapps.ga_achievement.management.commands.update_biz_score_status import get_grouped_target_sections
-from biz.djangoapps.ga_contract_operation.models import ContractMail, ContractReminderMail, ContractTaskHistory
+from biz.djangoapps.ga_contract.models import AdditionalInfo
+from biz.djangoapps.ga_contract_operation.models import ContractMail, ContractReminderMail, ContractTaskHistory, AdditionalInfoUpdateTaskTarget
+from biz.djangoapps.ga_contract_operation.tasks import ADDITIONALINFO_UPDATE
 from biz.djangoapps.ga_contract_operation.tests.factories import ContractTaskHistoryFactory, ContractTaskTargetFactory, StudentRegisterTaskTargetFactory, StudentUnregisterTaskTargetFactory
 from biz.djangoapps.ga_invitation.models import ContractRegister, INPUT_INVITATION_CODE, REGISTER_INVITATION_CODE, UNREGISTER_INVITATION_CODE
 from biz.djangoapps.ga_invitation.tests.factories import ContractRegisterFactory
@@ -27,6 +30,8 @@ from openedx.core.lib.ga_datetime_utils import to_timezone
 from student.models import CourseEnrollment
 from student.tests.factories import UserFactory
 from xmodule.modulestore.tests.factories import ItemFactory
+
+ERROR_MSG = "Test Message"
 
 
 @ddt.ddt
@@ -57,6 +62,20 @@ class ContractOperationViewTest(BizContractTestBase):
         self.assertEqual(400, response.status_code)
         data = json.loads(response.content)
         self.assertEquals(data['error'], 'Current contract is changed. Please reload this page.')
+
+    def test_register_validate_task_error(self):
+        self.setup_user()
+        csv_content = u"test_student1@example.com,test_student_1,テスター１\n" \
+                      u"test_student2@example.com,test_student_1,テスター２"
+
+        with self.skip_check_course_selection(current_contract=self.contract), patch(
+                'biz.djangoapps.ga_contract_operation.views.validate_task') as mock_validate_task:
+            mock_validate_task.return_value = ERROR_MSG
+            response = self.client.post(self._url_register_students_ajax(), {'contract_id': self.contract.id, 'students_list': csv_content})
+
+        self.assertEqual(400, response.status_code)
+        data = json.loads(response.content)
+        self.assertEqual(data['error'], ERROR_MSG)
 
     def test_register_no_param(self):
         self.setup_user()
@@ -171,7 +190,9 @@ class ContractOperationViewTest(BizContractTestBase):
         csv_content = u"test_student1@example.com,test_student_1,テスター１\n" \
                       u"test_student2@example.com,test_student_1,テスター２"
 
-        with self.skip_check_course_selection(current_contract=self.contract):
+        with self.skip_check_course_selection(current_contract=self.contract), patch(
+                'biz.djangoapps.ga_contract_operation.views.validate_task') as mock_validate_task:
+            mock_validate_task.return_value = None
             response = self.client.post(self._url_register_students_ajax(), {'contract_id': self.contract.id, 'students_list': csv_content})
 
         self.assertEqual(400, response.status_code)
@@ -352,6 +373,21 @@ class ContractOperationViewTest(BizContractTestBase):
         self.assertTrue(CourseEnrollment.is_enrolled(self.user, self.course_spoc1.id))
         self.assertTrue(CourseEnrollment.is_enrolled(self.user, self.course_spoc2.id))
 
+    def test_personalinfo_mask_validate_task_error(self):
+        self.setup_user()
+        register = ContractRegisterFactory.create(user=self.user, contract=self.contract, status=REGISTER_INVITATION_CODE)
+        CourseEnrollment.enroll(self.user, self.course_spoc1.id)
+        CourseEnrollment.enroll(self.user, self.course_spoc2.id)
+
+        with self.skip_check_course_selection(current_contract=self.contract), patch(
+                'biz.djangoapps.ga_contract_operation.views.validate_task') as mock_validate_task:
+            mock_validate_task.return_value = ERROR_MSG
+            response = self.client.post(self._url_unregister_students_ajax(), {'contract_id': self.contract.id, 'target_list': [register.id]})
+
+        self.assertEqual(response.status_code, 400)
+        data = json.loads(response.content)
+        self.assertEquals(ERROR_MSG, data['error'])
+
     def test_unregister_spoc_staff(self):
         self.setup_user()
         # to be staff
@@ -442,7 +478,9 @@ class ContractOperationViewTest(BizContractTestBase):
 
         self.setup_user()
 
-        with self.skip_check_course_selection(current_contract=self.contract):
+        with self.skip_check_course_selection(current_contract=self.contract), patch(
+                'biz.djangoapps.ga_contract_operation.views.validate_task') as mock_validate_task:
+            mock_validate_task.return_value = None
             response = self.client.post(self._url_personalinfo_mask, params)
 
         self.assertEqual(400, response.status_code)
@@ -450,6 +488,25 @@ class ContractOperationViewTest(BizContractTestBase):
         self.assertEqual("Processing of Personal Information Mask is running.Execution status, please check from the task history.", data['error'])
         # assert not to be created new Task instance.
         self.assertEqual(1, Task.objects.count())
+
+    def test_personalinfo_mask_validate_task_error(self):
+        registers = [
+            self.create_contract_register(UserFactory.create(), self.contract),
+            self.create_contract_register(UserFactory.create(), self.contract),
+        ]
+        params = {'target_list': [register.id for register in registers], 'contract_id': self.contract.id}
+        TaskFactory.create(task_type='personalinfo_mask', task_key=hashlib.md5(str(self.contract.id)).hexdigest())
+
+        self.setup_user()
+
+        with self.skip_check_course_selection(current_contract=self.contract), patch(
+                'biz.djangoapps.ga_contract_operation.views.validate_task') as mock_validate_task:
+            mock_validate_task.return_value = ERROR_MSG
+            response = self.client.post(self._url_personalinfo_mask, params)
+
+        self.assertEqual(400, response.status_code)
+        data = json.loads(response.content)
+        self.assertEqual(ERROR_MSG, data['error'])
 
     @ddt.data('target_list', 'contract_id')
     def test_personalinfo_mask_missing_params(self, param):
@@ -1615,6 +1672,20 @@ class ContractOperationViewBulkStudentTest(BizContractTestBase):
         data = json.loads(response.content)
         self.assertEqual(data['error'], 'Unauthorized access.')
 
+    def test_bulk_unregister_validate_task_error(self):
+        self.setup_user()
+        csv_content = u"test_student_1\n" \
+                      u"test_student_2"
+
+        with self.skip_check_course_selection(current_contract=self.contract), patch(
+                'biz.djangoapps.ga_contract_operation.views.validate_task') as mock_validate_task:
+            mock_validate_task.return_value = ERROR_MSG
+            response = self.client.post(self._url_bulk_unregister_students_ajax, {'contract_id': self.contract.id, 'students_list': csv_content})
+
+        self.assertEqual(400, response.status_code)
+        data = json.loads(response.content)
+        self.assertEqual(data['error'], ERROR_MSG)
+
     def test_bulk_unregister_no_param_students_list(self):
         self.setup_user()
 
@@ -1737,7 +1808,9 @@ class ContractOperationViewBulkStudentTest(BizContractTestBase):
         self.setup_user()
         csv_content = self.user.username
 
-        with self.skip_check_course_selection(current_contract=self.contract):
+        with self.skip_check_course_selection(current_contract=self.contract), patch(
+                'biz.djangoapps.ga_contract_operation.views.validate_task') as mock_validate_task:
+            mock_validate_task.return_value = None
             response = self.client.post(self._url_bulk_unregister_students_ajax, {'contract_id': self.contract.id, 'students_list': csv_content})
 
         self.assertEqual(400, response.status_code)
@@ -1794,6 +1867,20 @@ class ContractOperationViewBulkStudentTest(BizContractTestBase):
         self.assertEqual(400, response.status_code)
         data = json.loads(response.content)
         self.assertEqual(data['error'], 'Unauthorized access.')
+
+    def test_bulk_personalinfo_mask_validate_task_error(self):
+        self.setup_user()
+        csv_content = u"test_student_1\n" \
+                      u"test_student_2"
+
+        with self.skip_check_course_selection(current_contract=self.contract), patch(
+                'biz.djangoapps.ga_contract_operation.views.validate_task') as mock_validate_task:
+            mock_validate_task.return_value = ERROR_MSG
+            response = self.client.post(self._url_bulk_personalinfo_mask_students_ajax, {'contract_id': self.contract.id, 'students_list': csv_content})
+
+        self.assertEqual(400, response.status_code)
+        data = json.loads(response.content)
+        self.assertEqual(data['error'], ERROR_MSG)
 
     def test_bulk_personalinfo_mask_no_param_students_list(self):
         self.setup_user()
@@ -1872,7 +1959,9 @@ class ContractOperationViewBulkStudentTest(BizContractTestBase):
         self.setup_user()
         csv_content = self.user.username
 
-        with self.skip_check_course_selection(current_contract=self.contract):
+        with self.skip_check_course_selection(current_contract=self.contract), patch(
+                'biz.djangoapps.ga_contract_operation.views.validate_task') as mock_validate_task:
+            mock_validate_task.return_value = None
             response = self.client.post(self._url_bulk_personalinfo_mask_students_ajax, {'contract_id': self.contract.id, 'students_list': csv_content})
 
         self.assertEqual(400, response.status_code)
@@ -1945,7 +2034,7 @@ class ContractOperationViewBulkStudentTest(BizContractTestBase):
             self._create_task('personalinfo_mask', 'key1', 'task_id1', 'SUCCESS', 1, 1, 1, 0, 0),
             self._create_task('student_unregister', 'key2', 'task_id2', 'FAILURE', 1, 1, 0, 1, 0),
             self._create_task('student_register', 'key3', 'task_id3', 'QUEUING', 1, 1, 0, 0, 1),
-            self._create_task('dummy_task', 'key4', 'task_id4', 'PROGRESS'),
+            self._create_task('additionalinfo_update', 'key4', 'task_id4', 'PROGRESS'),
             self._create_task('dummy_task', 'key5', 'tesk_id5', 'DUMMY'),
         ]
         # Create histories for target contract
@@ -1971,7 +2060,415 @@ class ContractOperationViewBulkStudentTest(BizContractTestBase):
         self.assertEqual(5, data['total'])
         records = data['records']
         self._assert_task_history(records[0], 1, 'Unknown', 'Unknown', self.user.username, histories[4].created)
-        self._assert_task_history(records[1], 2, 'Unknown', 'In Progress', self.user.username, histories[3].created)
+        self._assert_task_history(records[1], 2, 'Additional Item Update', 'In Progress', self.user.username, histories[3].created)
         self._assert_task_history(records[2], 3, 'Student Register', 'Waiting', self.user.username, histories[2].created, 1, 0, 0, 1, task_target_register.id, 'message3')
         self._assert_task_history(records[3], 4, 'Student Unregister', 'Complete', self.user.username, histories[1].created, 1, 0, 1, 0, task_target_unregister.id, 'message2')
         self._assert_task_history(records[4], 5, 'Personal Information Mask', 'Complete', self.user.username, histories[0].created, 1, 1, 0, 0, task_target_mask.id, 'message1')
+
+
+@ddt.ddt
+class ContractOperationViewAdditionalInfoTest(BizContractTestBase):
+
+    def setUp(self):
+        super(ContractOperationViewAdditionalInfoTest, self).setUp()
+        self.setup_user()
+
+    def _register_additional_info_ajax(self, params):
+        return self.client.post(reverse('biz:contract_operation:register_additional_info_ajax'), params)
+
+    def _edit_additional_info_ajax(self, params):
+        return self.client.post(reverse('biz:contract_operation:edit_additional_info_ajax'), params)
+
+    def _delete_additional_info_ajax(self, params):
+        return self.client.post(reverse('biz:contract_operation:delete_additional_info_ajax'), params)
+
+    def _update_additional_info_ajax(self, params):
+        return self.client.post(reverse('biz:contract_operation:update_additional_info_ajax'), params)
+
+    def _assert_response_error_json(self, response, error_message):
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(error_message, json.loads(response.content)['error'])
+
+    # ------------------------------------------------------------
+    # register_additional_info_ajax
+    # ------------------------------------------------------------
+    @ddt.data('display_name', 'contract_id')
+    def test_register_additional_info_no_param(self, param):
+        params = {'display_name': 'test',
+                  'contract_id': self.contract.id, }
+        del params[param]
+
+        with self.skip_check_course_selection(current_contract=self.contract):
+            self._assert_response_error_json(self._register_additional_info_ajax(params),
+                                             "Unauthorized access.")
+
+    def test_register_additional_info_different_contract(self):
+        params = {'display_name': 'test',
+                  'contract_id': self._create_contract().id, }
+
+        with self.skip_check_course_selection(current_contract=self.contract):
+            self._assert_response_error_json(self._register_additional_info_ajax(params),
+                                             "Current contract is changed. Please reload this page.")
+
+    def test_register_additional_info_validate_task_error(self):
+        params = {'display_name': 'test',
+                  'contract_id': self.contract.id, }
+
+        with self.skip_check_course_selection(current_contract=self.contract), patch(
+                'biz.djangoapps.ga_contract_operation.views.validate_task') as mock_validate_task:
+            mock_validate_task.return_value = ERROR_MSG
+            self._assert_response_error_json(self._register_additional_info_ajax(params), ERROR_MSG)
+
+    def test_register_additional_info_empty_display_name(self):
+        params = {'display_name': '',
+                  'contract_id': self.contract.id, }
+
+        with self.skip_check_course_selection(current_contract=self.contract):
+            self._assert_response_error_json(self._register_additional_info_ajax(params),
+                                             "Please enter the name of item you wish to add.")
+
+    def test_register_additional_info_over_length_display_name(self):
+        max_length = AdditionalInfo._meta.get_field('display_name').max_length
+        params = {'display_name': get_random_string(max_length + 1),
+                  'contract_id': self.contract.id, }
+
+        with self.skip_check_course_selection(current_contract=self.contract):
+            self._assert_response_error_json(self._register_additional_info_ajax(params),
+                                             "Please enter the name of item within {max_number} characters.".format(max_number=max_length))
+
+    def test_register_additional_info_same_display_name(self):
+        self._create_additional_info(contract=self.contract, display_name='test')
+        params = {'display_name': 'test',
+                  'contract_id': self.contract.id, }
+
+        with self.skip_check_course_selection(current_contract=self.contract):
+            self._assert_response_error_json(self._register_additional_info_ajax(params),
+                                             "The same item has already been registered.")
+
+    @override_settings(BIZ_MAX_REGISTER_ADDITIONAL_INFO=1)
+    def test_register_additional_info_max_additional_info(self):
+        self._create_additional_info(contract=self.contract, display_name='hoge')
+        params = {'display_name': 'test',
+                  'contract_id': self.contract.id, }
+
+        with self.skip_check_course_selection(current_contract=self.contract):
+            self._assert_response_error_json(self._register_additional_info_ajax(params),
+                                             "Up to {max_number} number of additional item is created.".format(max_number=1))
+
+    def test_register_additional_info_db_error(self):
+        params = {'display_name': 'test',
+                  'contract_id': self.contract.id, }
+
+        with self.skip_check_course_selection(current_contract=self.contract), patch.object(AdditionalInfo, 'objects') as patched_manager:
+            patched_manager.create.side_effect = Exception
+            patched_manager.filter.return_value.exists.return_value = False
+            patched_manager.filter.return_value.count.return_value = 0
+
+            self._assert_response_error_json(self._register_additional_info_ajax(params),
+                                             "Failed to register item.")
+
+    def test_register_additional_info_success(self):
+        params = {'display_name': 'test',
+                  'contract_id': self.contract.id, }
+
+        with self.skip_check_course_selection(current_contract=self.contract):
+            response = self._register_additional_info_ajax(params)
+        self.assertEqual(200, response.status_code)
+        self.assertEqual("New item has been registered.", json.loads(response.content)['info'])
+
+    # ------------------------------------------------------------
+    # edit_additional_info_ajax
+    # ------------------------------------------------------------
+    @ddt.data('additional_info_id', 'display_name', 'contract_id')
+    def test_edit_additional_info_no_param(self, param):
+        additional_info = self._create_additional_info(contract=self.contract)
+        params = {'additional_info_id': additional_info.id,
+                  'display_name': 'test',
+                  'contract_id': self.contract.id, }
+        del params[param]
+
+        with self.skip_check_course_selection(current_contract=self.contract):
+            self._assert_response_error_json(self._edit_additional_info_ajax(params),
+                                             "Unauthorized access.")
+
+    def test_edit_additional_info_different_contract(self):
+        additional_info = self._create_additional_info(contract=self.contract)
+        params = {'additional_info_id': additional_info.id,
+                  'display_name': 'test',
+                  'contract_id': self._create_contract().id, }
+
+        with self.skip_check_course_selection(current_contract=self.contract):
+            self._assert_response_error_json(self._edit_additional_info_ajax(params),
+                                             "Current contract is changed. Please reload this page.")
+
+    def test_edit_additional_info_validate_task_error(self):
+        additional_info = self._create_additional_info(contract=self.contract)
+        params = {'additional_info_id': additional_info.id,
+                  'display_name': 'test',
+                  'contract_id': self.contract.id, }
+
+        with self.skip_check_course_selection(current_contract=self.contract), patch(
+                'biz.djangoapps.ga_contract_operation.views.validate_task') as mock_validate_task:
+            mock_validate_task.return_value = ERROR_MSG
+            self._assert_response_error_json(self._edit_additional_info_ajax(params), ERROR_MSG)
+
+    def test_edit_additional_info_empty_display_name(self):
+        additional_info = self._create_additional_info(contract=self.contract)
+        params = {'additional_info_id': additional_info.id,
+                  'display_name': '',
+                  'contract_id': self.contract.id, }
+
+        with self.skip_check_course_selection(current_contract=self.contract):
+            self._assert_response_error_json(self._edit_additional_info_ajax(params),
+                                             "Please enter the name of item you wish to add.")
+
+    def test_edit_additional_info_over_length_display_name(self):
+        max_length = AdditionalInfo._meta.get_field('display_name').max_length
+        additional_info = self._create_additional_info(contract=self.contract)
+        params = {'additional_info_id': additional_info.id,
+                  'display_name': get_random_string(max_length + 1),
+                  'contract_id': self.contract.id, }
+
+        with self.skip_check_course_selection(current_contract=self.contract):
+            self._assert_response_error_json(self._edit_additional_info_ajax(params),
+                                             "Please enter the name of item within {max_number} characters.".format(max_number=max_length))
+
+    def test_edit_additional_info_same_display_name(self):
+        self._create_additional_info(contract=self.contract, display_name='test')
+        additional_info = self._create_additional_info(contract=self.contract)
+        params = {'additional_info_id': additional_info.id,
+                  'display_name': 'test',
+                  'contract_id': self.contract.id, }
+
+        with self.skip_check_course_selection(current_contract=self.contract):
+            self._assert_response_error_json(self._edit_additional_info_ajax(params),
+                                             "The same item has already been registered.")
+
+    def test_edit_additional_info_db_error(self):
+        additional_info = self._create_additional_info(contract=self.contract)
+        params = {'additional_info_id': additional_info.id,
+                  'display_name': 'test',
+                  'contract_id': self.contract.id, }
+
+        with self.skip_check_course_selection(current_contract=self.contract), patch.object(AdditionalInfo, 'objects') as patched_manager:
+            patched_manager.filter.return_value.exclude.return_value.exists.return_value = False
+            patched_manager.filter.return_value.update.side_effect = Exception
+
+            self._assert_response_error_json(self._edit_additional_info_ajax(params),
+                                             "Failed to edit item.")
+
+    def test_edit_additional_info_success(self):
+        additional_info = self._create_additional_info(contract=self.contract)
+        params = {'additional_info_id': additional_info.id,
+                  'display_name': 'test',
+                  'contract_id': self.contract.id, }
+
+        with self.skip_check_course_selection(current_contract=self.contract):
+            response = self._edit_additional_info_ajax(params)
+        self.assertEqual(200, response.status_code)
+        self.assertEqual("New item has been updated.", json.loads(response.content)['info'])
+
+    # ------------------------------------------------------------
+    # delete_additional_info_ajax
+    # ------------------------------------------------------------
+    @ddt.data('additional_info_id', 'contract_id')
+    def test_delete_additional_info_no_param(self, param):
+        additional_info = self._create_additional_info(contract=self.contract)
+        params = {'additional_info_id': additional_info.id,
+                  'contract_id': self.contract.id, }
+        del params[param]
+
+        with self.skip_check_course_selection(current_contract=self.contract):
+            self._assert_response_error_json(self._delete_additional_info_ajax(params),
+                                             "Unauthorized access.")
+
+    def test_delete_additional_info_different_contract(self):
+        additional_info = self._create_additional_info(contract=self.contract)
+        params = {'additional_info_id': additional_info.id,
+                  'contract_id': self._create_contract().id, }
+
+        with self.skip_check_course_selection(current_contract=self.contract):
+            self._assert_response_error_json(self._delete_additional_info_ajax(params),
+                                             "Current contract is changed. Please reload this page.")
+
+    def test_delete_additional_info_validate_task_error(self):
+        additional_info = self._create_additional_info(contract=self.contract)
+        params = {'additional_info_id': additional_info.id,
+                  'contract_id': self.contract.id, }
+
+        with self.skip_check_course_selection(current_contract=self.contract), patch(
+                'biz.djangoapps.ga_contract_operation.views.validate_task') as mock_validate_task:
+            mock_validate_task.return_value = ERROR_MSG
+            self._assert_response_error_json(self._delete_additional_info_ajax(params), ERROR_MSG)
+
+    def test_delete_additional_info_does_not_exist(self):
+        additional_info = self._create_additional_info(contract=self.contract)
+        params = {'additional_info_id': additional_info.id,
+                  'contract_id': self.contract.id, }
+
+        with self.skip_check_course_selection(current_contract=self.contract), patch.object(AdditionalInfo, 'objects') as patched_manager:
+            patched_manager.get.side_effect = AdditionalInfo.DoesNotExist
+
+            self._assert_response_error_json(self._delete_additional_info_ajax(params),
+                                             "Already deleted.")
+
+    def test_delete_additional_info_db_error(self):
+        additional_info = self._create_additional_info(contract=self.contract)
+        params = {'additional_info_id': additional_info.id,
+                  'contract_id': self.contract.id, }
+
+        with self.skip_check_course_selection(current_contract=self.contract), patch.object(AdditionalInfo, 'objects') as patched_manager:
+            patched_manager.get.return_value.delete.side_effect = Exception
+
+            self._assert_response_error_json(self._delete_additional_info_ajax(params),
+                                             "Failed to deleted item.")
+
+    def test_delete_additional_info_success(self):
+        additional_info = self._create_additional_info(contract=self.contract)
+        params = {'additional_info_id': additional_info.id,
+                  'contract_id': self.contract.id, }
+
+        with self.skip_check_course_selection(current_contract=self.contract):
+            response = self._delete_additional_info_ajax(params)
+        self.assertEqual(200, response.status_code)
+        self.assertEqual("New item has been deleted.", json.loads(response.content)['info'])
+
+
+class ContractOperationViewUpdateAdditionalInfoTest(BizContractTestBase):
+
+    def setUp(self):
+        super(ContractOperationViewUpdateAdditionalInfoTest, self).setUp()
+        self.setup_user()
+
+    def _update_additional_info_ajax(self, params):
+        return self.client.post(reverse('biz:contract_operation:update_additional_info_ajax'), params)
+
+    def _assert_response_error_json(self, response, error_message):
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(error_message, json.loads(response.content)['error'])
+
+    # ------------------------------------------------------------
+    # update_additional_info_ajax
+    # ------------------------------------------------------------
+    def test_update_additional_info_success(self):
+        contract = self._create_contract(contract_name='test_update_additional_info_success')
+        self._create_user_and_contract_register(contract=contract, email='test_student1@example.com')
+        self._create_user_and_contract_register(contract=contract, email='test_student2@example.com')
+        additional_info1 = self._create_additional_info(contract=contract)
+        additional_info2 = self._create_additional_info(contract=contract)
+        input_line = u"test_student1@example.com,add1,add2\n" \
+                     u"test_student2@example.com,add1,add2"
+
+        params = {'additional_info': [additional_info1.id, additional_info2.id],
+                  'contract_id': contract.id,
+                  'update_students_list': input_line}
+
+        with self.skip_check_course_selection(current_contract=contract):
+            response = self._update_additional_info_ajax(params)
+
+        self.assertEqual(200, response.status_code)
+        data = json.loads(response.content)
+
+        # get latest task and assert
+        task = Task.objects.all().order_by('-id')[0]
+        self.assertEqual(ADDITIONALINFO_UPDATE, task.task_type)
+        task_input = json.loads(task.task_input)
+        self.assertEqual(contract.id, task_input['contract_id'])
+        history = ContractTaskHistory.objects.get(pk=task_input['history_id'])
+        self.assertEqual(history.task_id, task.task_id)
+        for target in AdditionalInfoUpdateTaskTarget.objects.filter(history=history):
+            self.assertIn(target.inputline, input_line)
+        self.assertEqual(
+            "Began the processing of Additional Item Update.Execution status, please check from the task history.",
+            data['info'])
+
+    def test_update_additional_info_contract_id_no_param(self):
+        params = {'update_students_list': 'test',
+                  'additional_info': 'test', }
+
+        with self.skip_check_course_selection(current_contract=self.contract):
+            self._assert_response_error_json(self._update_additional_info_ajax(params),
+                                             "Unauthorized access.")
+
+    def test_update_additional_info_student_list_no_param(self):
+        params = {'contract_id': self.contract.id,
+                  'additional_info': 'test', }
+
+        with self.skip_check_course_selection(current_contract=self.contract):
+            self._assert_response_error_json(self._update_additional_info_ajax(params),
+                                             "Unauthorized access.")
+
+    def test_update_additional_info_additional_info_no_param(self):
+        params = {'update_students_list': 'test',
+                  'contract_id': self.contract.id, }
+
+        with self.skip_check_course_selection(current_contract=self.contract):
+            self._assert_response_error_json(self._update_additional_info_ajax(params),
+                                             "No additional item registered.")
+
+    def test_update_additional_info_different_contract(self):
+        params = {'update_students_list': 'test',
+                  'contract_id': self._create_contract().id,
+                  'additional_info': 'test'}
+
+        with self.skip_check_course_selection(current_contract=self.contract):
+            self._assert_response_error_json(self._update_additional_info_ajax(params),
+                                             "Current contract is changed. Please reload this page.")
+
+    def test_update_additional_info_validate_task_error(self):
+        contract = self._create_contract(contract_name='test_update_additional_info_success')
+        self._create_user_and_contract_register(contract=contract, email='test_student1@example.com')
+        self._create_user_and_contract_register(contract=contract, email='test_student2@example.com')
+        additional_info1 = self._create_additional_info(contract=contract)
+        additional_info2 = self._create_additional_info(contract=contract)
+        input_line = u"test_student1@example.com,add1,add2\n" \
+                     u"test_student2@example.com,add1,add2"
+
+        params = {'additional_info': [additional_info1.id, additional_info2.id],
+                  'contract_id': contract.id,
+                  'update_students_list': input_line}
+
+        with self.skip_check_course_selection(current_contract=contract), patch(
+                'biz.djangoapps.ga_contract_operation.views.validate_task') as mock_validate_task:
+            mock_validate_task.return_value = ERROR_MSG
+            self._assert_response_error_json(self._update_additional_info_ajax(params), ERROR_MSG)
+
+    def test_update_additional_info_not_find_student_list(self):
+        params = {'update_students_list': '',
+                  'contract_id': self.contract.id,
+                  'additional_info': 'test'}
+
+        self._assert_response_error_json(self._update_additional_info_ajax(params),
+                                         "Could not find student list.")
+
+    @override_settings(BIZ_MAX_REGISTER_NUMBER=2)
+    def test_update_additional_info_over_max_line(self):
+        input_line = u"test_student1@example.com,add1,add2\n" \
+                     u"test_student2@example.com,add1,add2\n" \
+                     u"test_student3@example.com,add1,add2"
+
+        params = {'update_students_list': input_line,
+                  'contract_id': self.contract.id,
+                  'additional_info': 'test'}
+
+        self._assert_response_error_json(self._update_additional_info_ajax(params),
+                                         "It has exceeded the number(2) of cases that can be a time of registration.")
+
+    def test_update_additional_info_over_max_char_length(self):
+        input_line = get_random_string(3001)
+        params = {'update_students_list': input_line,
+                  'contract_id': self.contract.id,
+                  'additional_info': 'test'}
+
+        self._assert_response_error_json(self._update_additional_info_ajax(params),
+                                         "The number of lines per line has exceeded the 3000 characters.")
+
+    def test_update_additional_info_different_id(self):
+        additional_info1 = self._create_additional_info(contract=self.contract)
+        input_line = u"test_student1@example.com,add1"
+        params = {'additional_info': additional_info1.id,
+                  'contract_id': self.contract.id,
+                  'update_students_list': input_line}
+
+        self._assert_response_error_json(self._update_additional_info_ajax(params),
+                                         "New item registered. Please reload browser.")

@@ -685,6 +685,7 @@ def _section_survey(course, access):
         'section_display_name': _('Survey'),
         'access': access,
         'get_survey_url': reverse('get_survey', kwargs={'course_id': course_key.to_deprecated_string()}),
+        'get_survey_utf8_url': reverse('get_survey_utf8', kwargs={'course_id': course_key.to_deprecated_string()}),
     }
     return section_data
 

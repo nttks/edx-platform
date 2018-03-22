@@ -41,7 +41,7 @@ class BizCourseAboutTest(WebAppTest, GaccoBizTestMixin):
         contract = self.create_contract(BizContractPage(self.browser).visit(),
                                         self.CONTRACT_TYPE_PF, '2016/01/01', '2100/01/01',
                                         contractor_organization=A_COMPANY,
-                                        detail_info=[course._course_key], additional_info=[u'部署'])
+                                        detail_info=[course._course_key])
         invitation_code = contract['Invitation Code']
 
         # Logout
@@ -66,10 +66,9 @@ class BizCourseAboutTest(WebAppTest, GaccoBizTestMixin):
         CourseAboutPage(self.browser, course._course_key).visit()
 
         # Case 68
-        # Register invitation code and additional info
+        # Register invitation code
         BizInvitationPage(self.browser).visit().input_invitation_code(invitation_code).click_register_button()
-        BizInvitationConfirmPage(self.browser, invitation_code).wait_for_page().input_additional_info(u'マーケティング部', 0) \
-            .click_register_button()
+        BizInvitationConfirmPage(self.browser, invitation_code).wait_for_page().click_register_button()
         DashboardPage(self.browser).wait_for_page()
         CourseAboutPage(self.browser, course._course_key).visit()
 
@@ -87,8 +86,7 @@ class BizCourseAboutTest(WebAppTest, GaccoBizTestMixin):
         # Register a contract with platfomer
         self.switch_to_user(PLATFORMER_USER_INFO)
         self.create_contract(BizContractPage(self.browser).visit(), self.CONTRACT_TYPE_PF, '2016/01/01', '2100/01/01',
-                             contractor_organization=A_COMPANY, detail_info=[course._course_key],
-                             additional_info=[u'部署'])
+                             contractor_organization=A_COMPANY, detail_info=[course._course_key])
 
         # Case 70
         # Login with gacco staff
@@ -116,8 +114,7 @@ class BizCourseAboutTest(WebAppTest, GaccoBizTestMixin):
         # Register a contract with platfomer
         self.switch_to_user(PLATFORMER_USER_INFO)
         self.create_contract(BizContractPage(self.browser).visit(), self.CONTRACT_TYPE_PF, '2016/01/01', '2100/01/01',
-                             contractor_organization=A_COMPANY, detail_info=[course._course_key],
-                             additional_info=[u'部署'])
+                             contractor_organization=A_COMPANY, detail_info=[course._course_key])
 
         # Case 72
         # Add course staff role for A company director

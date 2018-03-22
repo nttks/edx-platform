@@ -657,6 +657,13 @@ w2ui-popup .w2ui-msg-title {
     padding: 0.3rem 1rem;
 }
 
+#form p.operation,
 #form span.operation {
     font-size: 1rem;
+}
+
+#form label.encoding-utf8 {
+    font-size: 0.8rem;
+    font-weight: normal;
+    font-style: normal;
 }

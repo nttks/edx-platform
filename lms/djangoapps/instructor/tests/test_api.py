@@ -2,6 +2,7 @@
 """
 Unit tests for instructor.api methods.
 """
+import codecs
 import datetime
 import ddt
 import functools
@@ -196,6 +197,7 @@ INSTRUCTOR_POST_ENDPOINTS = set([
     'get_submission_scores',
     'get_oa_rubric_scores',
     'get_survey',
+    'get_survey_utf8',
     'get_students_advanced_course',
     'get_students_paid_course',
     'generate_score_detail_report',
@@ -4887,13 +4889,45 @@ class TestBulkCohorting(SharedModuleStoreTestCase):
         )
 
 
-class InstructorAPISurveyDownloadTestMixin(object):
+class SurveyDownloadTestMixin(object):
     """
-    Test instructor survey mix-in.
+    Test survey mix-in.
     """
 
     def get_url(self):
         raise NotImplementedError()
+
+    def validate_bom(self, content):
+        raise NotImplementedError()
+
+    def get_survey_csv_rows_unicode(self, content):
+        raise NotImplementedError()
+
+    def validate_bom_utf16(self, content):
+        # UTF16LE with BOM
+        return content.startswith(codecs.BOM_UTF16_LE)
+
+    def validate_bom_utf8(self, content):
+        # UTF8 no BOM
+        return not content.startswith(codecs.BOM_UTF8)
+
+    def get_survey_csv_rows_unicode_from_utf16(self, content):
+        content_none_bom = content[len(codecs.BOM_UTF16_LE):]
+        content_decoded = content_none_bom.decode('utf-16-le')
+        return self._get_servey_csv_rows(content_decoded)
+
+    def get_survey_csv_rows_unicode_from_utf8(self, content):
+        return self._get_servey_csv_rows(content)
+
+    def _get_servey_csv_rows(self, content):
+        body = content.rstrip('\n').replace('\r', '')
+        return body.split('\n')
+
+
+class InstructorAPISurveyDownloadTestMixin(SurveyDownloadTestMixin):
+    """
+    Test instructor survey mix-in.
+    """
 
     def setUp(self):
         class _UserProfileFactory(UserProfileFactory):
@@ -4981,73 +5015,94 @@ class InstructorAPISurveyDownloadTestMixin(object):
         submission4 = SurveySubmissionFactory.create(**self.submission4)
 
         response = self.client.post(self.get_url(), {})
-        self.assertEqual(response['Content-Type'], 'text/csv')
-        body = response.content.rstrip('\n').replace('\r', '')
-        rows = body.split('\n')
+        self.assertEqual(response['Content-Type'], 'text/tab-separated-values')
+        content = response.content
+        self.assertTrue(self.validate_bom(content))
+        rows = self.get_survey_csv_rows_unicode(content)
         self.assertEqual(4, len(rows))
-        self.assertEqual(rows[0], '"Unit ID","Survey Name","Created","User Name","Full Name","Email","Resigned","Unenrolled","Q1","Q2","Q3","Q4"')
+        self.assertEqual(rows[0], u'"Unit ID"\t"Survey Name"\t"Created"\t"User Name"\t"Full Name"\t"Email"\t"Resigned"\t"Unenrolled"\t"Q1"\t"Q2"\t"Q3"\t"Q4"')
         self.assertEqual(
             rows[1],
-            '"11111111111111111111111111111111","survey #1","%s","%s","%s","%s","","","1","1,2","submission #1","N/A"'
+            u'"11111111111111111111111111111111"\t"survey #1"\t"%s"\t"%s"\t"%s"\t"%s"\t""\t""\t"1"\t"1,2"\t"submission #1"\t"N/A"'
             % (format_for_csv(submission1.created), submission1.user.username, submission1.user.profile.name, submission1.user.email)
         )
         self.assertEqual(
             rows[2],
-            '"11111111111111111111111111111111","survey #1","%s","%s","%s","%s","1","1","1","2","submission #2","N/A"'
+            u'"11111111111111111111111111111111"\t"survey #1"\t"%s"\t"%s"\t"%s"\t"%s"\t"1"\t"1"\t"1"\t"2"\t"submission #2"\t"N/A"'
             % (format_for_csv(submission2.created), submission2.user.username, submission2.user.profile.name, submission2.user.email)
         )
         self.assertEqual(
             rows[3],
-            '"22222222222222222222222222222222","survey #2","%s","%s","%s","%s","","1","","","","extra"'
+            u'"22222222222222222222222222222222"\t"survey #2"\t"%s"\t"%s"\t"%s"\t"%s"\t""\t"1"\t""\t""\t""\t"extra"'
             % (format_for_csv(submission3.created), submission3.user.username, submission3.user.profile.name, submission3.user.email)
         )
 
     def test_get_survey_when_data_is_empty(self):
         response = self.client.post(self.get_url(), {})
-        self.assertEqual(response['Content-Type'], 'text/csv')
-        body = response.content.rstrip('\n').replace('\r', '')
-        rows = body.split('\n')
+        self.assertEqual(response['Content-Type'], 'text/tab-separated-values')
+        content = response.content
+        self.assertTrue(self.validate_bom(content))
+        rows = self.get_survey_csv_rows_unicode(content)
         self.assertEqual(1, len(rows))
-        self.assertEqual(rows[0], '"Unit ID","Survey Name","Created","User Name","Full Name","Email","Resigned","Unenrolled"')
+        self.assertEqual(rows[0], u'"Unit ID"\t"Survey Name"\t"Created"\t"User Name"\t"Full Name"\t"Email"\t"Resigned"\t"Unenrolled"')
 
     def test_get_survey_when_data_is_broken(self):
         submission1 = SurveySubmissionFactory.create(**self.submission1)
         submission5 = SurveySubmissionFactory.create(**self.submission5)
 
         response = self.client.post(self.get_url(), {})
-        self.assertEqual(response['Content-Type'], 'text/csv')
-        body = response.content.rstrip('\n').replace('\r', '')
-        rows = body.split('\n')
+        self.assertEqual(response['Content-Type'], 'text/tab-separated-values')
+        content = response.content
+        self.assertTrue(self.validate_bom(content))
+        rows = self.get_survey_csv_rows_unicode(content)
         self.assertEqual(3, len(rows))
-        self.assertEqual(rows[0], '"Unit ID","Survey Name","Created","User Name","Full Name","Email","Resigned","Unenrolled","Q1","Q2","Q3"')
+        self.assertEqual(rows[0], u'"Unit ID"\t"Survey Name"\t"Created"\t"User Name"\t"Full Name"\t"Email"\t"Resigned"\t"Unenrolled"\t"Q1"\t"Q2"\t"Q3"')
         self.assertEqual(
             rows[1],
-            '"11111111111111111111111111111111","survey #1","%s","%s","%s","%s","","","1","1,2","submission #1"'
+            u'"11111111111111111111111111111111"\t"survey #1"\t"%s"\t"%s"\t"%s"\t"%s"\t""\t""\t"1"\t"1,2"\t"submission #1"'
             % (format_for_csv(submission1.created), submission1.user.username, submission1.user.profile.name, submission1.user.email)
         )
         self.assertEqual(
             rows[2],
-            '"22222222222222222222222222222222","survey #5","%s","%s","%s","%s","","","N/A","N/A","N/A"'
+            u'"22222222222222222222222222222222"\t"survey #5"\t"%s"\t"%s"\t"%s"\t"%s"\t""\t""\t"N/A"\t"N/A"\t"N/A"'
             % (format_for_csv(submission5.created), submission5.user.username, submission5.user.profile.name, submission5.user.email)
         )
 
 
 class TestInstructorAPISurveyDownload(InstructorAPISurveyDownloadTestMixin, SharedModuleStoreTestCase, LoginEnrollmentTestCase):
     """
-    Test instructor survey endpoint.
+    Test instructor survey utf16 endpoint.
     """
 
     def get_url(self):
         return reverse('get_survey', kwargs={'course_id': self.course.id.to_deprecated_string()})
 
+    def validate_bom(self, content):
+        return self.validate_bom_utf16(content)
 
-class LoginCodeEnabledInstructorAPISurveyDownloadTestMixin(object):
+    def get_survey_csv_rows_unicode(self, content):
+        return self.get_survey_csv_rows_unicode_from_utf16(content)
+
+
+class TestInstructorAPISurveyDownloadUTF8(InstructorAPISurveyDownloadTestMixin, SharedModuleStoreTestCase, LoginEnrollmentTestCase):
     """
-    Test login code enabled instructor survey mix-in.
+    Test instructor survey utf8 endpoint.
     """
 
     def get_url(self):
-        raise NotImplementedError()
+        return reverse('get_survey_utf8', kwargs={'course_id': self.course.id.to_deprecated_string()})
+
+    def validate_bom(self, content):
+        return self.validate_bom_utf8(content)
+
+    def get_survey_csv_rows_unicode(self, content):
+        return self.get_survey_csv_rows_unicode_from_utf8(content)
+
+
+class LoginCodeEnabledInstructorAPISurveyDownloadTestMixin(SurveyDownloadTestMixin):
+    """
+    Test login code enabled instructor survey mix-in.
+    """
 
     def enable_login_code_check(self):
         raise NotImplementedError()
@@ -5191,108 +5246,111 @@ class LoginCodeEnabledInstructorAPISurveyDownloadTestMixin(object):
         submission6 = SurveySubmissionFactory.create(**self.submission6)
 
         response = self.client.post(self.get_url(), {})
-        self.assertEqual(response['Content-Type'], 'text/csv')
-        body = response.content.rstrip('\n').replace('\r', '')
-        rows = body.split('\n')
+        self.assertEqual(response['Content-Type'], 'text/tab-separated-values')
+        content = response.content
+        self.assertTrue(self.validate_bom(content))
+        rows = self.get_survey_csv_rows_unicode(content)
         self.assertEqual(5, len(rows))
         if self.enable_login_code_check():
-            self.assertEqual(rows[0], '"Unit ID","Survey Name","Created","User Name","Full Name","Email","Resigned","Unenrolled","Login Code","Q1","Q2","Q3","Q4"')
+            self.assertEqual(rows[0], u'"Unit ID"\t"Survey Name"\t"Created"\t"User Name"\t"Full Name"\t"Email"\t"Resigned"\t"Unenrolled"\t"Login Code"\t"Q1"\t"Q2"\t"Q3"\t"Q4"')
             self.assertEqual(
                 rows[1],
-                '"11111111111111111111111111111111","survey #1","%s","%s","%s","%s","","","%s","1","1,2","submission #1","N/A"'
+                u'"11111111111111111111111111111111"\t"survey #1"\t"%s"\t"%s"\t"%s"\t"%s"\t""\t""\t"%s"\t"1"\t"1,2"\t"submission #1"\t"N/A"'
                 % (format_for_csv(submission1.created), submission1.user.username, submission1.user.profile.name, submission1.user.email, self.biz_user1.login_code)
             )
             self.assertEqual(
                 rows[2],
-                '"11111111111111111111111111111111","survey #1","%s","%s","%s","%s","1","1","%s","1","2","submission #2","N/A"'
+                u'"11111111111111111111111111111111"\t"survey #1"\t"%s"\t"%s"\t"%s"\t"%s"\t"1"\t"1"\t"%s"\t"1"\t"2"\t"submission #2"\t"N/A"'
                 % (format_for_csv(submission2.created), submission2.user.username, submission2.user.profile.name, submission2.user.email, self.biz_user2.login_code)
             )
             self.assertEqual(
                 rows[3],
-                '"11111111111111111111111111111111","survey #1","%s","%s","%s","%s","","","%s","1","1,2","submission #6","N/A"'
+                u'"11111111111111111111111111111111"\t"survey #1"\t"%s"\t"%s"\t"%s"\t"%s"\t""\t""\t"%s"\t"1"\t"1,2"\t"submission #6"\t"N/A"'
                 % (format_for_csv(submission6.created), submission6.user.username, submission6.user.profile.name, submission6.user.email, '')
             )
             self.assertEqual(
                 rows[4],
-                '"22222222222222222222222222222222","survey #2","%s","%s","%s","%s","","1","%s","","","","extra"'
+                u'"22222222222222222222222222222222"\t"survey #2"\t"%s"\t"%s"\t"%s"\t"%s"\t""\t"1"\t"%s"\t""\t""\t""\t"extra"'
                 % (format_for_csv(submission3.created), submission3.user.username, submission3.user.profile.name, submission3.user.email, self.biz_user3.login_code)
             )
         else:
-            self.assertEqual(rows[0], '"Unit ID","Survey Name","Created","User Name","Full Name","Email","Resigned","Unenrolled","Q1","Q2","Q3","Q4"')
+            self.assertEqual(rows[0], u'"Unit ID"\t"Survey Name"\t"Created"\t"User Name"\t"Full Name"\t"Email"\t"Resigned"\t"Unenrolled"\t"Q1"\t"Q2"\t"Q3"\t"Q4"')
             self.assertEqual(
                 rows[1],
-                '"11111111111111111111111111111111","survey #1","%s","%s","%s","%s","","","1","1,2","submission #1","N/A"'
+                u'"11111111111111111111111111111111"\t"survey #1"\t"%s"\t"%s"\t"%s"\t"%s"\t""\t""\t"1"\t"1,2"\t"submission #1"\t"N/A"'
                 % (format_for_csv(submission1.created), submission1.user.username, submission1.user.profile.name,
                    submission1.user.email)
             )
             self.assertEqual(
                 rows[2],
-                '"11111111111111111111111111111111","survey #1","%s","%s","%s","%s","1","1","1","2","submission #2","N/A"'
+                u'"11111111111111111111111111111111"\t"survey #1"\t"%s"\t"%s"\t"%s"\t"%s"\t"1"\t"1"\t"1"\t"2"\t"submission #2"\t"N/A"'
                 % (format_for_csv(submission2.created), submission2.user.username, submission2.user.profile.name,
                    submission2.user.email)
             )
             self.assertEqual(
                 rows[3],
-                '"11111111111111111111111111111111","survey #1","%s","%s","%s","%s","","","1","1,2","submission #6","N/A"'
+                u'"11111111111111111111111111111111"\t"survey #1"\t"%s"\t"%s"\t"%s"\t"%s"\t""\t""\t"1"\t"1,2"\t"submission #6"\t"N/A"'
                 % (format_for_csv(submission6.created), submission6.user.username, submission6.user.profile.name,
                    submission6.user.email)
             )
             self.assertEqual(
                 rows[4],
-                '"22222222222222222222222222222222","survey #2","%s","%s","%s","%s","","1","","","","extra"'
+                u'"22222222222222222222222222222222"\t"survey #2"\t"%s"\t"%s"\t"%s"\t"%s"\t""\t"1"\t""\t""\t""\t"extra"'
                 % (format_for_csv(submission3.created), submission3.user.username, submission3.user.profile.name,
                    submission3.user.email)
             )
 
     def test_get_survey_when_data_is_empty(self):
         response = self.client.post(self.get_url(), {})
-        self.assertEqual(response['Content-Type'], 'text/csv')
-        body = response.content.rstrip('\n').replace('\r', '')
-        rows = body.split('\n')
+        self.assertEqual(response['Content-Type'], 'text/tab-separated-values')
+        content = response.content
+        self.assertTrue(self.validate_bom(content))
+        rows = self.get_survey_csv_rows_unicode(content)
         self.assertEqual(1, len(rows))
         if self.enable_login_code_check():
-            self.assertEqual(rows[0],'"Unit ID","Survey Name","Created","User Name","Full Name","Email","Resigned","Unenrolled","Login Code"')
+            self.assertEqual(rows[0],u'"Unit ID"\t"Survey Name"\t"Created"\t"User Name"\t"Full Name"\t"Email"\t"Resigned"\t"Unenrolled"\t"Login Code"')
         else:
-            self.assertEqual(rows[0],'"Unit ID","Survey Name","Created","User Name","Full Name","Email","Resigned","Unenrolled"')
+            self.assertEqual(rows[0],u'"Unit ID"\t"Survey Name"\t"Created"\t"User Name"\t"Full Name"\t"Email"\t"Resigned"\t"Unenrolled"')
 
     def test_get_survey_when_data_is_broken(self):
         submission1 = SurveySubmissionFactory.create(**self.submission1)
         submission5 = SurveySubmissionFactory.create(**self.submission5)
 
         response = self.client.post(self.get_url(), {})
-        self.assertEqual(response['Content-Type'], 'text/csv')
-        body = response.content.rstrip('\n').replace('\r', '')
-        rows = body.split('\n')
+        self.assertEqual(response['Content-Type'], 'text/tab-separated-values')
+        content = response.content
+        self.assertTrue(self.validate_bom(content))
+        rows = self.get_survey_csv_rows_unicode(content)
         self.assertEqual(3, len(rows))
         if self.enable_login_code_check():
-            self.assertEqual(rows[0], '"Unit ID","Survey Name","Created","User Name","Full Name","Email","Resigned","Unenrolled","Login Code","Q1","Q2","Q3"')
+            self.assertEqual(rows[0], u'"Unit ID"\t"Survey Name"\t"Created"\t"User Name"\t"Full Name"\t"Email"\t"Resigned"\t"Unenrolled"\t"Login Code"\t"Q1"\t"Q2"\t"Q3"')
             self.assertEqual(
                 rows[1],
-                '"11111111111111111111111111111111","survey #1","%s","%s","%s","%s","","","%s","1","1,2","submission #1"'
+                u'"11111111111111111111111111111111"\t"survey #1"\t"%s"\t"%s"\t"%s"\t"%s"\t""\t""\t"%s"\t"1"\t"1,2"\t"submission #1"'
                 % (format_for_csv(submission1.created), submission1.user.username, submission1.user.profile.name, submission1.user.email, self.biz_user1.login_code)
             )
             self.assertEqual(
                 rows[2],
-                '"22222222222222222222222222222222","survey #5","%s","%s","%s","%s","","","%s","N/A","N/A","N/A"'
+                u'"22222222222222222222222222222222"\t"survey #5"\t"%s"\t"%s"\t"%s"\t"%s"\t""\t""\t"%s"\t"N/A"\t"N/A"\t"N/A"'
                 % (format_for_csv(submission5.created), submission5.user.username, submission5.user.profile.name, submission5.user.email, self.biz_user1.login_code)
             )
         else:
-            self.assertEqual(rows[0], '"Unit ID","Survey Name","Created","User Name","Full Name","Email","Resigned","Unenrolled","Q1","Q2","Q3"')
+            self.assertEqual(rows[0], u'"Unit ID"\t"Survey Name"\t"Created"\t"User Name"\t"Full Name"\t"Email"\t"Resigned"\t"Unenrolled"\t"Q1"\t"Q2"\t"Q3"')
             self.assertEqual(
                 rows[1],
-                '"11111111111111111111111111111111","survey #1","%s","%s","%s","%s","","","1","1,2","submission #1"'
+                u'"11111111111111111111111111111111"\t"survey #1"\t"%s"\t"%s"\t"%s"\t"%s"\t""\t""\t"1"\t"1,2"\t"submission #1"'
                 % (format_for_csv(submission1.created), submission1.user.username, submission1.user.profile.name, submission1.user.email)
             )
             self.assertEqual(
                 rows[2],
-                '"22222222222222222222222222222222","survey #5","%s","%s","%s","%s","","","N/A","N/A","N/A"'
+                u'"22222222222222222222222222222222"\t"survey #5"\t"%s"\t"%s"\t"%s"\t"%s"\t""\t""\t"N/A"\t"N/A"\t"N/A"'
                 % (format_for_csv(submission5.created), submission5.user.username, submission5.user.profile.name, submission5.user.email)
             )
 
 
 class TestLoginCodeEnabledInstructorAPISurveyDownload(LoginCodeEnabledInstructorAPISurveyDownloadTestMixin, SharedModuleStoreTestCase, LoginEnrollmentTestCase):
     """
-    Test login code enabled instructor survey endpoint.
+    Test login code enabled instructor survey utf16 endpoint.
     """
 
     def get_url(self):
@@ -5300,3 +5358,27 @@ class TestLoginCodeEnabledInstructorAPISurveyDownload(LoginCodeEnabledInstructor
 
     def enable_login_code_check(self):
         return False
+
+    def validate_bom(self, content):
+        return self.validate_bom_utf16(content)
+
+    def get_survey_csv_rows_unicode(self, content):
+        return self.get_survey_csv_rows_unicode_from_utf16(content)
+
+
+class TestLoginCodeEnabledInstructorAPISurveyDownloadUTF8(LoginCodeEnabledInstructorAPISurveyDownloadTestMixin, SharedModuleStoreTestCase, LoginEnrollmentTestCase):
+    """
+    Test login code enabled instructor survey utf8 endpoint.
+    """
+
+    def get_url(self):
+        return reverse('get_survey_utf8', kwargs={'course_id': self.course.id.to_deprecated_string()})
+
+    def enable_login_code_check(self):
+        return False
+
+    def validate_bom(self, content):
+        return self.validate_bom_utf8(content)
+
+    def get_survey_csv_rows_unicode(self, content):
+        return self.get_survey_csv_rows_unicode_from_utf8(content)

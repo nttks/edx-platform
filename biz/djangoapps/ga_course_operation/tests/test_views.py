@@ -15,11 +15,17 @@ class CourseOperationViewsTest(BizContractTestBase):
 
 class CourseOperationSurveyDownloadTest(InstructorAPISurveyDownloadTestMixin, BizContractTestBase):
     """
-    Test instructor survey for biz endpoint.
+    Test instructor survey utf16 for biz endpoint.
     """
 
     def get_url(self):
         return reverse('biz:course_operation:survey_download')
+
+    def validate_bom(self, content):
+        return self.validate_bom_utf16(content)
+
+    def get_survey_csv_rows_unicode(self, content):
+        return self.get_survey_csv_rows_unicode_from_utf16(content)
 
     def test_get_survey_not_allowed_method(self):
         with self.skip_check_course_selection(current_contract=self.contract, current_course=self.course):
@@ -39,9 +45,24 @@ class CourseOperationSurveyDownloadTest(InstructorAPISurveyDownloadTestMixin, Bi
             super(CourseOperationSurveyDownloadTest, self).test_get_survey_when_data_is_broken()
 
 
+class CourseOperationSurveyDownloadUTF8Test(CourseOperationSurveyDownloadTest, BizContractTestBase):
+    """
+    Test instructor survey utf8 for biz endpoint.
+    """
+
+    def get_url(self):
+        return reverse('biz:course_operation:survey_download_utf8')
+
+    def validate_bom(self, content):
+        return self.validate_bom_utf8(content)
+
+    def get_survey_csv_rows_unicode(self, content):
+        return self.get_survey_csv_rows_unicode_from_utf8(content)
+
+
 class LoginCodeEnabledCourseOperationSurveyDownloadTest(LoginCodeEnabledInstructorAPISurveyDownloadTestMixin, BizContractTestBase):
     """
-    Test instructor survey for biz endpoint.
+    Test instructor survey utf16 for biz endpoint.
     """
 
     def get_url(self):
@@ -49,6 +70,12 @@ class LoginCodeEnabledCourseOperationSurveyDownloadTest(LoginCodeEnabledInstruct
 
     def enable_login_code_check(self):
         return True
+
+    def validate_bom(self, content):
+        return self.validate_bom_utf16(content)
+
+    def get_survey_csv_rows_unicode(self, content):
+        return self.get_survey_csv_rows_unicode_from_utf16(content)
 
     def test_get_survey_not_allowed_method(self):
         with self.skip_check_course_selection(current_contract=self.contract, current_course=self.course):
@@ -66,3 +93,22 @@ class LoginCodeEnabledCourseOperationSurveyDownloadTest(LoginCodeEnabledInstruct
     def test_get_survey_when_data_is_broken(self):
         with self.skip_check_course_selection(current_contract=self.contract, current_course=self.course):
             super(LoginCodeEnabledCourseOperationSurveyDownloadTest, self).test_get_survey_when_data_is_broken()
+
+
+class LoginCodeEnabledCourseOperationSurveyDownloadUTF8Test(LoginCodeEnabledCourseOperationSurveyDownloadTest, BizContractTestBase):
+    """
+    Test instructor survey utf8 for biz endpoint.
+    """
+
+    def get_url(self):
+        return reverse('biz:course_operation:survey_download_utf8')
+
+    def enable_login_code_check(self):
+        return True
+
+    def validate_bom(self, content):
+        return self.validate_bom_utf8(content)
+
+    def get_survey_csv_rows_unicode(self, content):
+        return self.get_survey_csv_rows_unicode_from_utf8(content)
+

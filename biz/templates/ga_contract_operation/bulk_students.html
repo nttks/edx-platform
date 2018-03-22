@@ -64,7 +64,7 @@ from django.utils.translation import ugettext as _
     </div>
     <div class="w2ui-buttons">
         <input type="button" id="bulk-unregister-btn" class="bulk-operation" data-confirm-message="${_('Do the bulk students unregister. Are you sure?')}" data-endpoint="${reverse('biz:contract_operation:bulk_unregister_students_ajax')}" value="&#xf014 ${_('Unregister Student')}" />
-        <input type="button" id="bulk-personalinfo-mask-btn" class="bulk-operation" data-confirm-message="${_('After execution of the personal information mask processing,, it can not be undone. Are you sure?')}" data-endpoint="${reverse('biz:contract_operation:bulk_personalinfo_mask_ajax')}" value="&#xf235 ${_('Personal Information Mask')}" />
+        <input type="button" id="bulk-personalinfo-mask-btn" class="bulk-operation" data-confirm-message="${_('After execution of the personal information mask processing, it can not be undone. Are you sure?')}" data-endpoint="${reverse('biz:contract_operation:bulk_personalinfo_mask_ajax')}" value="&#xf235 ${_('Personal Information Mask')}" />
     </div>
 </div>
 <%include file="_task_history.html" />

@@ -35,21 +35,6 @@ from django.core.urlresolvers import reverse
             resize_form($("#detail-container").height() - height_before);
         }
 
-        function show_additional_info(items) {
-            var height_before = $("#additional-container").height();
-            $.each(items, function (i, item) {
-                var clone = $("#additional-info-template").clone();
-                clone.find("a").on('click', delete_additional_info);
-                clone.find("input[name=additional_info_display_name]").val(item.display_name);
-                clone.find("input[name=additional_info_id]").val(item.id);
-                clone.find("input[name=additional_info_delete]").val(item.delete_flg);
-                clone.find(".err-msg").text(item.error);
-                $('#additional-container .w2ui-group').append(clone);
-                clone.show();
-            });
-            resize_form($("#additional-container").height() - height_before);
-        }
-
         function delete_detail() {
             var height_before = $("#detail-container").height();
             var detail = $(this).parent().parent();
@@ -144,7 +129,6 @@ from django.core.urlresolvers import reverse
         $('#id_end_date').w2field('date', {format: 'yyyy/mm/dd'});
 
         show_detail(${detail_list});
-        show_additional_info(${additional_info_list});
     });
 </script>
 
@@ -219,7 +203,7 @@ from django.core.urlresolvers import reverse
 
     .add-plus {
         text-align: right;
-        cursor: pointer;
+        font-size: 1rem;
     }
 </style>
 
@@ -267,13 +251,17 @@ from django.core.urlresolvers import reverse
                 % if form.errors.has_key('contract_detail'):
                 ${form.errors['contract_detail']}
                 % endif
+                % if course_list:
                 <div class="add-plus"><a id="add-detail">${_('Add Contract Detail Info')}</a></div>
+                % else:
+                <div class="add-plus">${_('Not found course for Contract Detail Info')}</div>
+                % endif
                 <div class="w2ui-group">
                     <div class="w2ui-field" id="detail-template" style="display: none">
                         <label>${_("Course Name")}：</label>
                         <div>
                             <select name="detail_course">
-                                % for course in course_list :
+                                % for course in course_list:
                                 <option value="${course[0]}">${course[1] | h}</option>
                                 % endfor
                             </select>
@@ -285,28 +273,6 @@ from django.core.urlresolvers import reverse
                     </div>
                 </div>
             </div>
-            <br>
-            <hr>
-            <br>
-            <div id="additional-container">
-                <h2>${_('Additional Info')}</h2>
-                % if form.errors.has_key('additional_info'):
-                ${form.errors['additional_info']}
-                % endif
-                <div class="add-plus"><a id="add-additional" >${_('Add Additional Info')}</a></div>
-                <div class="w2ui-group">
-                    <div class="w2ui-field add-info" id="additional-info-template" style="display: none">
-                        <label>${_("Display Name")}：</label>
-                        <div>
-                            <input type="hidden" name="additional_info_id" value="" />
-                            <input type="text" name="additional_info_display_name" value="..." maxlength="255" placeholder="${_('max {0} character').format(255)}"/>
-                            <input type="hidden" name="additional_info_delete" value="" />
-                            <a>${_('Delete')}</a>
-                            <span class="err-msg red"></span>
-                        </div>
-                    </div>
-                </div>
-             </div>
         </div>
 
         <div class="w2ui-buttons">

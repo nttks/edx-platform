@@ -133,7 +133,7 @@ $(function() {
         var username_or_email = $('#username_or_email', form).val(),
             action = $("input:radio[name=account_action]:checked", form).val();
         if (action === 'disable'
-                && !confirm("${_('After execution of the personal information mask processing,, it can not be undone. Are you sure?')}")) {
+                && !confirm("${_('After execution of the personal information mask processing, it can not be undone. Are you sure?')}")) {
             return false;
         }
         clearMessages();

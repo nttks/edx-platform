@@ -41,12 +41,13 @@ class TestStudentDashboardEmailView(ModuleStoreTestCase):
         # URL for email settings modal
         self.email_modal_link = (
             '<a href="#email-settings-modal" class="action action-email-settings" rel="leanModal" '
-            'data-course-id="{org}/{num}/{name}" data-course-number="{num}" '
+            'data-course-id="{org}/{num}/{name}" data-course-number="{num}" data-course-name="{display_name}" '
             'data-dashboard-index="0" data-optout="False">Email Settings</a>'
         ).format(
             org=self.course.org,
             num=self.course.number,
             name=self.course.display_name.replace(' ', '_'),
+            display_name=self.course.display_name,
         )
 
     @patch.dict(settings.FEATURES, {'ENABLE_INSTRUCTOR_EMAIL': True, 'REQUIRE_COURSE_EMAIL_AUTH': False})

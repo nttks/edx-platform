@@ -48,6 +48,16 @@ class SurveyPageSection(PageObject):
         self.wait_for_ajax()
         return self
 
+    def check_encoding_utf8(self, checked):
+        checkbox = self.q(css='input#encoding-utf8')
+        if checkbox.selected != checked:
+            checkbox.click()
+            self.wait_for(lambda: checked == checkbox.selected, 'Checkbox is not clicked')
+        return self
+
+    def is_encoding_utf8_selected(self):
+        return self.q(css='input#encoding-utf8').selected
+
 
 class SendEmailPage(PageObject):
     """

@@ -382,7 +382,7 @@ class DataDownloadsTest(WebAppTest, GaccoLmsInstructorDashboardTestMixin, GaccoB
         self.create_contract(BizContractPage(self.browser).visit(),
                              'PF', '2016/01/01', '2100/01/01',
                              contractor_organization=A_COMPANY,
-                             detail_info=[self.course_key], additional_info=[u'部署'])
+                             detail_info=[self.course_key])
 
         # Logout
         LogoutPage(self.browser).visit()

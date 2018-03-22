@@ -91,7 +91,7 @@ class BizStudentRegisterMixin(object):
         self.assertIn('Please ask your administrator to register the invitation code.', self.invitation_page.messages)
 
 
-@attr('shard_ga_biz_3')
+@attr('shard_ga_biz_2')
 @flaky
 class BizStudentRegisterTest(WebAppTest, GaccoBizTestMixin, BizStudentRegisterMixin):
     """
@@ -1172,8 +1172,7 @@ class BizStudentManagementTestBase(WebAppTest, GaccoBizTestMixin, BizStudentRegi
         self.new_course_key, _ = self.install_course(PLAT_COMPANY_CODE)
         self.new_contract = self.register_contract(
             PLATFORMER_USER_INFO, new_org_info['Organization Name'],
-            detail_info=[self.new_course_key],
-            additional_info=['info1', 'info2']
+            detail_info=[self.new_course_key]
         )
 
         self.users = [self.register_user() for _ in range(3)]
@@ -1203,15 +1202,11 @@ class BizStudentManagementTestBase(WebAppTest, GaccoBizTestMixin, BizStudentRegi
     def _assert_grid_row(self, grid_row, expected_user, expected_status=None):
         if expected_status is None:
             expected_status = expected_user['status']
-        expected_info1 = 'info1-{}'.format(expected_user['username']) if expected_user['status'] == 'Register Invitation' else ''
-        expected_info2 = 'info2-{}'.format(expected_user['username']) if expected_user['status'] == 'Register Invitation' else ''
         self.assert_grid_row(grid_row, {
             'Register Status': expected_status,
             'Email Address': expected_user['email'],
             'Username': expected_user['username'],
             'Full Name': expected_user['username'],
-            'info1': expected_info1,
-            'info2': expected_info2,
         })
 
     def _assert_task_history(self, grid_row, task_type, state, username, total=0, success=0, skipped=0, failed=0):
@@ -1241,7 +1236,7 @@ class BizStudentListTest(BizStudentManagementTestBase):
         # Check default columns
         grid_columns = self.students_page.student_grid.grid_columns
         self.assertItemsEqual(grid_columns, [
-            '', 'Register Status', 'Full Name', 'Username', 'Email Address', 'info1', 'info2',
+            '', 'Register Status', 'Full Name', 'Username', 'Email Address',
         ])
 
         # Check icon columns on/off
@@ -1256,14 +1251,14 @@ class BizStudentListTest(BizStudentManagementTestBase):
 
         grid_columns = self.students_page.student_grid.grid_columns
         self.assertItemsEqual(grid_columns, [
-            '', 'Full Name', 'Username', 'Email Address', 'info1', 'info2',
+            '', 'Full Name', 'Username', 'Email Address',
         ])
 
         self.students_page.student_grid.click_grid_icon_columns_checkbox('Register Status')
 
         grid_columns = self.students_page.student_grid.grid_columns
         self.assertItemsEqual(grid_columns, [
-            '', 'Register Status', 'Full Name', 'Username', 'Email Address', 'info1', 'info2',
+            '', 'Register Status', 'Full Name', 'Username', 'Email Address',
         ])
 
         # Check columns of grid for search
@@ -1275,7 +1270,7 @@ class BizStudentListTest(BizStudentManagementTestBase):
         self.students_page.student_grid.click_grid_icon_search()
         grid_icon_search = self.students_page.student_grid.grid_icon_search
         self.assertItemsEqual(grid_icon_search, [
-            u'\u5168\u3066\u306e\u691c\u7d22\u9805\u76ee', 'Register Status', 'Full Name', 'Username', 'Email Address', 'info1', 'info2',
+            u'\u5168\u3066\u306e\u691c\u7d22\u9805\u76ee', 'Register Status', 'Full Name', 'Username', 'Email Address',
         ])
         self.assertTrue(self.students_page.student_grid.is_checked_grid_icon_search(u'\u5168\u3066\u306e\u691c\u7d22\u9805\u76ee'))
 
@@ -1442,7 +1437,7 @@ class BizStudentUnregisterTest(BizStudentUnregisterTestBase):
         self._assert_access_course_about(self.users[0], False)
 
 
-@attr('shard_ga_biz_1')
+@attr('shard_ga_biz_2')
 @flaky
 class BizStudentRegisterWithDisableRegisterStudentSelfTest(WebAppTest, GaccoBizTestMixin, BizStudentRegisterMixin):
     """
@@ -1774,7 +1769,7 @@ class BizStudentRegisterWithContractAuthAndDisableRegisterStudentSelfTest(WebApp
         ], self.biz_login_page.error_messages)
 
 
-@attr('shard_ga_biz_3')
+@attr('shard_ga_biz_2')
 class BizMailTest(WebAppTest, GaccoBizTestMixin, BizStudentRegisterMixin):
     """
     Tests that the mail functionality of biz works
@@ -2019,7 +2014,7 @@ class BizMailTest(WebAppTest, GaccoBizTestMixin, BizStudentRegisterMixin):
         self.email_client.clear_messages()
 
         # Register
-        register = nav.click_register_students()
+        register_page = nav.click_register_students()
         register_page.input_students(self._make_students([
             self.new_user,
         ])).click_register_button().click_popup_yes()
@@ -2096,7 +2091,7 @@ class BizMailTest(WebAppTest, GaccoBizTestMixin, BizStudentRegisterMixin):
         self.email_client.clear_messages()
 
         # Register
-        register = nav.click_register_students()
+        register_page = nav.click_register_students()
         register_page.input_students(self._make_students_auth([
             self.new_user,
         ])).click_register_button().click_popup_yes()

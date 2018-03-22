@@ -139,10 +139,6 @@ div.course-wrapper > a[href="#course-accordion-modal"] span i {
 .xmodule_display.xmodule_SequenceModule .sequence-nav .sequence-list-wrapper {
   z-index: auto;
 }
-.xmodule_display.xmodule_SequenceModule .sequence-nav .sequence-list-wrapper ol li a:hover,
-.xmodule_display.xmodule_SequenceModule .sequence-nav .sequence-list-wrapper ol li a.active {
-  border-bottom: solid 3px #008cba;
-}
 
 #course-accordion-modal .course-index {
   background-color: #f6f6f6;
@@ -892,6 +888,7 @@ body.discussion .forum-nav-header > .forum-nav-toggle li:hover {
   z-index: 1001;
 }
 #more-menu > ul > li > a {
+  background-image: initial;
   background-color: rgba(0, 0, 0, 0.7);
   border: 1px solid;
   color: #fff;
@@ -952,7 +949,6 @@ nav.wrapper-course-material ol.course-tabs li .tab-icon {
 .xmodule_display.xmodule_SequenceModule nav.sequence-bottom button:hover:not(:disabled),
 .xmodule_display.xmodule_SequenceModule nav.sequence-bottom button:active:not(:disabled),
 .xmodule_display.xmodule_SequenceModule nav.sequence-bottom button:focus:not(:disabled) {
-  background-color: #e4e4e4;
   transition: none;
   box-shadow: none;
 }
@@ -996,6 +992,10 @@ nav.wrapper-course-material ol.course-tabs li .tab-icon {
   .xmodule_display.xmodule_SequenceModule nav.sequence-bottom ul li.next {
     border-left: 1px solid #ccc;
     right: 0;
+  }
+
+  .xmodule_display.xmodule_SequenceModule .sequence-nav-button:hover {
+    background: #cc0033;
   }
 }
 
@@ -1074,21 +1074,6 @@ nav.wrapper-course-material {
 }
 nav.wrapper-course-material ol.course-tabs {
   padding: 15px 0 10px;
-}
-nav.wrapper-course-material ol.course-tabs li a {
-  color: #222;
-  border-radius: 0;
-}
-nav.wrapper-course-material ol.course-tabs li a.active {
-  background-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0.5));
-/* 	background-color: #43AC6A; */
-  transition: background-color 300ms ease-out;
-  color: #fff;
-  transition-delay: 300ms;
-}
-nav.wrapper-course-material ol.course-tabs li a.active:hover {
-    background-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.3));
-/*   background-color: #368a55; */
 }
 
 @media screen and (max-width: 800px) {

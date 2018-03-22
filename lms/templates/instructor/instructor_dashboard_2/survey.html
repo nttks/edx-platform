@@ -3,6 +3,9 @@
 
 <div class="survey-download-container action-type-container">
   <h2>${_("Survey Download")}</h2>
-  <p>${_("The survey result can be downloaded as a CSV file.")}</p>
-  <p><input type="button" name="list-survey" value="${_("Get Survey CSV")}" data-csv="true" class="csv" data-endpoint="${ section_data['get_survey_url'] }"></p>
+  <p>${_("You can download the survey results.")}</p>
+  <p>
+      <input type="button" name="list-survey" value="${_("Get Survey CSV")}" data-csv="true" class="csv" data-endpoint="${ section_data['get_survey_url'] }" data-endpoint-utf8="${ section_data['get_survey_utf8_url'] }"><br/>
+      <input type="checkbox" id="encoding-utf8" /><label for="encoding-utf8">${_("If you want to download the file in UTF-8, please place a check mark and then push the button.")}</label>
+  </p>
 </div>

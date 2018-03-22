@@ -288,13 +288,13 @@ from openedx.core.djangoapps.ga_optional.models import DashboardOptionalConfigur
                     % elif enrollment.mode != "verified":
                       % if advanced_course_status.is_purchased():
                       <a href="#unenroll-modal" class="action action-unenroll" rel="leanModal" data-course-id="${course_overview.id | h}" data-course-number="${course_overview.number | h}" data-course-name="${course_overview.display_name_with_default | h}" data-dashboard-index="${dashboard_index}"
-                         data-track-info="${_("Are you sure you want to unenroll from %(course_name)s (%(course_number)s)?") | h}"
+                         data-track-info="${_("Are you sure you want to unenroll from %(course_name)s?") | h}"
                          data-refund-info="${_("If you unenroll, ticket, such as face-to-face classroom you have purchased will not be canceled. Please contact us through the Help If you would like to cancel the ticket.") | h}">
                         ${_('Unenroll')}
                       </a>
                       % else:
                       <a href="#unenroll-modal" class="action action-unenroll" rel="leanModal" data-course-id="${course_overview.id | h}" data-course-number="${course_overview.number | h}" data-course-name="${course_overview.display_name_with_default | h}" data-dashboard-index="${dashboard_index}"
-                         data-track-info="${_("Are you sure you want to unenroll from %(course_name)s (%(course_number)s)?") | h}"
+                         data-track-info="${_("Are you sure you want to unenroll from %(course_name)s?") | h}"
                          data-refund-info="">
                         ${_('Unenroll')}
                       </a>
@@ -332,7 +332,7 @@ from openedx.core.djangoapps.ga_optional.models import DashboardOptionalConfigur
                   % endif
                   <li class="actions-item" id="actions-item-email-settings-${dashboard_index}">
                     % if show_email_settings:
-                      <a href="#email-settings-modal" class="action action-email-settings" rel="leanModal" data-course-id="${course_overview.id | h}" data-course-number="${course_overview.number | h}" data-dashboard-index="${dashboard_index}" data-optout="${unicode(course_overview.id) in course_optouts}">${_('Email Settings')}</a>
+                      <a href="#email-settings-modal" class="action action-email-settings" rel="leanModal" data-course-id="${course_overview.id | h}" data-course-number="${course_overview.number | h}" data-course-name="${course_overview.display_name_with_default | h}" data-dashboard-index="${dashboard_index}" data-optout="${unicode(course_overview.id) in course_optouts}">${_('Email Settings')}</a>
                     % endif
                   </li>
                 </ul>

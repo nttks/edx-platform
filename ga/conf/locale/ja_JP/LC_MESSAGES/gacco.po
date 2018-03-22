@@ -324,12 +324,16 @@ msgid "Survey Download"
 msgstr "アンケート結果ダウンロード"
 
 #: lms/templates/instructor/instructor_dashboard_2/survey.html
-msgid "The survey result can be downloaded as a CSV file."
-msgstr "アンケート結果がCSVファイルでダウンロードできます。<br />CSVファイルをそのままExcelで開こうとすると、日本語が含まれている場合に文字化けしてしまいますので、一旦ファイルを保存した後、「UTF-8」に対応したテキストエディタで開き直してください。"
+msgid "You can download the survey results."
+msgstr "アンケート結果がCSVファイルでダウンロードできます。"
 
 #: lms/templates/instructor/instructor_dashboard_2/survey.html
 msgid "Get Survey CSV"
 msgstr "アンケート結果をCSVとしてダウンロードする"
+
+#: lms/templates/instructor/instructor_dashboard_2/survey.html
+msgid "If you want to download the file in UTF-8, please place a check mark and then push the button."
+msgstr "アンケート結果をエンコード「UTF-8」でダウンロードしたい場合は、チェックを入れてダウンロードしてください。<br />チェックを入れていない場合は、エンコード「UTF-16」になります。"
 
 #: lms/templates/dashboard/_dashboard_certificate_information.html
 msgid "Certificate"
@@ -642,6 +646,10 @@ msgstr "開く"
 msgid "Search..."
 msgstr "講座名で検索"
 
+#: lms/templates/dashboard.html
+msgid "Email Settings for {course_name}"
+msgstr "「{course_name}」のメール受信設定"
+
 #: lms/templates/courseware/progress.html
 msgid "Your certificate is available"
 msgstr "修了証発行が完了しました"
@@ -692,6 +700,10 @@ msgstr "（有料）"
 #: templates/courseware/course_about.html
 msgid "[Free of charge] Enroll in {course_name}"
 msgstr "{course_name}を受講登録する（無料）"
+
+#: templates/courseware/course_about.html
+msgid "[Free of charge] Enroll"
+msgstr "受講登録する（無料）"
 
 #: templates/register-sidebar.html
 msgid "Please check the 'FAQs' if you experience any problems."
@@ -840,6 +852,10 @@ msgstr "対面学習コース 購入済み"
 #: templates/dashboard/_dashboard_course_listing.html
 msgid "View your MDA"
 msgstr "MDA診断結果を確認する"
+
+#: templates/dashboard/_dashboard_course_listing.html
+msgid "Are you sure you want to unenroll from %(course_name)s?"
+msgstr "「%(course_name)s」の受講を取り消します。よろしいですか？"
 
 #: templates/ga_advanced_course/choose.html
 msgid "Recommended: Online and Face-to-face course"
@@ -1176,6 +1192,10 @@ msgstr "機能"
 #: openedx/core/djangoapps/ga_optional/models.py
 msgid "Staff Assessment for Peer Grading"
 msgstr "相互採点のスタッフ採点"
+
+#: openedx/core/djangoapps/ga_optional/models.py
+msgid "Video Upload Option for Peer Grading"
+msgstr "相互採点の動画アップロード"
 
 #: openedx/core/djangoapps/ga_optional/models.py
 msgid "Providing Image Server for Discussion"
@@ -1788,3 +1808,8 @@ msgstr ""
 #: lms/templates/instructor/instructor_dashboard_2/membership.html
 msgid "Add Course Scorer"
 msgstr "講座スタッフ（採点用権限）を追加する"
+
+#: lms/templates/seq_module.html
+msgctxt "sequence_nav"
+msgid "Video"
+msgstr "動画"

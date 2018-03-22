@@ -117,6 +117,7 @@ from opaque_keys.edx.keys import CourseKey, UsageKey
 from opaque_keys.edx.locations import SlashSeparatedCourseKey
 from opaque_keys import InvalidKeyError
 from openedx.core.djangoapps.course_groups.cohorts import is_course_cohorted
+from openedx.core.lib.ga_csv_utils import create_tsv_response
 from openedx.core.lib.ga_datetime_utils import format_for_csv
 
 
@@ -2662,25 +2663,23 @@ def enable_certificate_generation(request, course_id=None):
 @require_level('staff')
 def get_survey(request, course_id):  # pylint: disable=W0613
     """
-    Gets survey result as a CSV file.
+    Gets survey result as a CSV(UTF-16) file.
     """
-    return create_survey_response(request, course_id)
+    return create_survey_response(request, course_id, 'utf-16')
 
 
-def create_survey_response(request, course_id):
-    def csv_response(filename, header, rows):
-        """Returns a CSV http response for the given header and rows (excel/cp932)."""
-        import unicodecsv as csv
-        response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = 'attachment; filename={0}'.format(filename)
-        writer = csv.writer(response, dialect='excel', quotechar='"', quoting=csv.QUOTE_ALL)
-        encoded = [unicode(s).encode('utf-8') for s in header]
-        writer.writerow(encoded)
-        for row in rows:
-            encoded = [unicode(s).encode('utf-8') for s in row]
-            writer.writerow(encoded)
-        return response
+@require_POST
+@ensure_csrf_cookie
+@cache_control(no_cache=True, no_store=True, must_revalidate=True)
+@require_level('staff')
+def get_survey_utf8(request, course_id):  # pylint: disable=W0613
+    """
+    Gets survey result as a CSV(UTF-8) file.
+    """
+    return create_survey_response(request, course_id, 'utf-8')
 
+
+def create_survey_response(request, course_id, encoding):
     header = ['Unit ID', 'Survey Name', 'Created', 'User Name', 'Full Name', 'Email', 'Resigned', 'Unenrolled']
     rows = []
 
@@ -2742,8 +2741,9 @@ def create_survey_response(request, course_id):
                 row.append(value)
             rows.append(row)
     course_key = SlashSeparatedCourseKey.from_deprecated_string(course_id)
+    # To open this file by Excel by default, will set the extension to csv.
     file_name = '{org}-{course}-{run}-survey.csv'.format(org=course_key.org, course=course_key.course, run=course_key.run)
-    return csv_response(file_name, header, rows)
+    return create_tsv_response(file_name, header, rows, encoding)
 
 
 @ensure_csrf_cookie

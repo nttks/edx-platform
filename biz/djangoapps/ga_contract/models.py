@@ -359,6 +359,11 @@ class AdditionalInfo(models.Model):
         """
         return cls.objects.filter(contract_id=contract_id).order_by('id')
 
+    @classmethod
+    def validate_and_find_by_ids(cls, contract, additional_info_ids):
+        additional_info_list = cls.objects.filter(contract=contract)
+        return None if cls.objects.filter(contract=contract).exclude(id__in=additional_info_ids).exists() else additional_info_list
+
 
 class ContractAuth(models.Model):
     """

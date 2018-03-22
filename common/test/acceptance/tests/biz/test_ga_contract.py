@@ -96,8 +96,6 @@ class BizContractTest(WebAppTest, GaccoBizTestMixin):
                           start_date=start_date, end_date=end_date,
                           contractor_organization=self.CONTRACTOR_ORGANIZATION) \
             .add_detail_info(self.course_id, 1) \
-            .add_additional_info(u'部署', 1) \
-            .add_additional_info(u'社員番号', 2) \
             .click_register_button()
         contract_page = BizContractPage(self.browser).wait_for_page()
         bok_choy.browser.save_screenshot(self.browser, 'test_register_all_as_owner_1')
@@ -181,8 +179,6 @@ class BizContractTest(WebAppTest, GaccoBizTestMixin):
                           invitation_code=invitation_code,
                           start_date=start_date, end_date=end_date,
                           contractor_organization=self.CONTRACTOR_ORGANIZATION) \
-            .add_additional_info(u'部署', 1) \
-            .add_additional_info(u'社員番号', 2) \
             .click_register_button()
         contract_page = BizContractPage(self.browser).wait_for_page()
         bok_choy.browser.save_screenshot(self.browser, 'test_register_contract_and_additinaol_by_owner_1')
@@ -214,7 +210,7 @@ class BizContractTest(WebAppTest, GaccoBizTestMixin):
         detail_page = BizContractDetailPage(self.browser).wait_for_page()
 
         # Register a contract
-        detail_page.add_additional_info('name', 1).click_register_button()
+        detail_page.click_register_button().wait_for_page()
         bok_choy.browser.save_screenshot(self.browser, 'test_register_required_error_1')
 
         # Verify that required errors are displayed
@@ -267,7 +263,6 @@ class BizContractTest(WebAppTest, GaccoBizTestMixin):
                           invitation_code=invitation_code,
                           start_date=start_date, end_date=end_date,
                           contractor_organization=self.CONTRACTOR_ORGANIZATION) \
-            .add_additional_info(u'部署', 1) \
             .click_register_button()
         contract_page = BizContractPage(self.browser).wait_for_page()
         contract_page.click_register_button()
@@ -357,31 +352,6 @@ class BizContractTest(WebAppTest, GaccoBizTestMixin):
         # Verify that error is displayed
         self.assertEqual(detail_page.detail_info_error, 'You can not enter duplicate values in Contract Detail Info.')
 
-    def test_register_additional_info_error(self):
-        """
-        Tests contract additional validation.
-        """
-        # Visit register view
-        BizNavPage(self.browser).visit().click_contract().click_register_button()
-        detail_page = BizContractDetailPage(self.browser).wait_for_page()
-
-        # Case 51
-        # input duplicate detail info
-        contract_name = self.CONTRACTOR_ORGANIZATION_NAME + self.unique_id[0:8]
-        invitation_code = self.unique_id[0:8]
-        detail_page.input(contract_name=contract_name,
-                          contract_type=self.CONTRACT_TYPE,
-                          register_type=self.REGISTER_TYPE,
-                          invitation_code=invitation_code,
-                          start_date='2016/01/01',
-                          end_date='2100/01/01') \
-            .add_additional_info(u'部署', 1) \
-            .add_additional_info(u'部署', 2).click_register_button().wait_for_page()
-        bok_choy.browser.save_screenshot(self.browser, 'test_register_additional_info_error_1')
-
-        # Verify that error is displayed
-        self.assertEqual(detail_page.additional_info_error, 'You can not enter duplicate values in Additional Info.')
-
     def test_edit_success(self):
         """
         Tests edit contract.
@@ -405,7 +375,6 @@ class BizContractTest(WebAppTest, GaccoBizTestMixin):
                           invitation_code=invitation_code,
                           start_date=start_date, end_date=end_date) \
             .add_detail_info(self.course_id, 1) \
-            .add_additional_info(u'部署', 1) \
             .click_register_button()
         contract_page = BizContractPage(self.browser).wait_for_page()
         bok_choy.browser.save_screenshot(self.browser, 'test_edit_success_1')
@@ -425,7 +394,6 @@ class BizContractTest(WebAppTest, GaccoBizTestMixin):
                           invitation_code=invitation_code,
                           start_date=start_date, end_date=end_date) \
             .input_detail_info(course2._course_key, 1) \
-            .input_additional_info(u'社員番号', 1) \
             .click_register_button()
         contract_page = contract_page.wait_for_page()
         bok_choy.browser.save_screenshot(self.browser, 'test_edit_success_3')
@@ -468,7 +436,6 @@ class BizContractTest(WebAppTest, GaccoBizTestMixin):
                           invitation_code=invitation_code,
                           start_date=start_date, end_date=end_date) \
             .add_detail_info(self.course_id, 1) \
-            .add_additional_info(u'部署', 1) \
             .click_register_button()
         contract_page = BizContractPage(self.browser).wait_for_page()
         bok_choy.browser.save_screenshot(self.browser, 'test_delete_success_1')

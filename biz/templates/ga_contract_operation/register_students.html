@@ -6,12 +6,23 @@ from django.core.urlresolvers import reverse
 from biz.djangoapps.ga_invitation.models import REGISTER_INVITATION_CODE
 %>
 
-<%block name="pagetitle">${_("Register Students")}</%block>
+<%namespace name='static' file='/static_content.html'/>
+<%block name="pagetitle">${_("Enrolling New Learners")}</%block>
 
 <%block name="js_extra">
 <script type="text/javascript">
     $(function () {
-        $('#form').w2form({ name: 'form' });
+        var additional_info_tpl = _.template($('#additional-info-tpl').text()), messages = $('.messages');
+        $('#form').w2form({
+            name: 'form',
+            tabs: [
+                { id: 'tab0', caption: '${_(u"Enrolling Learners")}' },
+                { id: 'tab1', caption: '${_(u"Editing Additional Item")}' },
+                { id: 'tab2', caption: '${_(u"Enrolling Learners to Additional Item")}' },
+            ]
+        });
+        resize_form();
+
         $('#register-status>input[type="checkbox"]').on('click', function() {
             if ($(this).prop('checked')) {
                 w2popup.open({
@@ -23,7 +34,7 @@ from biz.djangoapps.ga_invitation.models import REGISTER_INVITATION_CODE
                 });
             }
         });
-        $('.w2ui-buttons').on('click', '#register-btn', function () {
+        $('.register-students-buttons').on('click', '#register-btn', function () {
             var clickButton = $(this), messages = $('.messages'), registerForm = $('#form'), registerStatus = $('#register-status>input[type="checkbox"]');
             messages.empty();
             if ($('#list-students').val() == '') {
@@ -41,7 +52,7 @@ from biz.djangoapps.ga_invitation.models import REGISTER_INVITATION_CODE
                     type: 'POST',
                     data: {
                         students_list: $('#list-students').val(),
-                        contract_id: clickButton.data('contract-id'),
+                        contract_id: registerForm.data('contract-id'),
                         register_status: (registerStatus.prop('checked') ? registerStatus.val() : ''),
                     }
                 }).done(function (data) {
@@ -54,8 +65,161 @@ from biz.djangoapps.ga_invitation.models import REGISTER_INVITATION_CODE
                 });
             });
         });
+
+        $('.w2ui-field').on('click', '.biz-btn.register-btn.add-additional-info-btn', function() {
+            var registerDisplayName = $('[name="register_display_name"]'), newVar = registerDisplayName.val();
+            messages.empty();
+            if (newVar === '') {
+                messages.append($('<li class="error"></li>').text('${_(u"Please enter the name of item you wish to add.")}'));
+                return;
+            }
+            $.ajax({
+                url: "${reverse('biz:contract_operation:register_additional_info_ajax')}",
+                type: 'POST',
+                data: {
+                    display_name: newVar,
+                    contract_id: $('#form').data('contract-id'),
+                },
+            }).done(function (data) {
+                var newRegisterHtml = gettext("· {additional_item_name}: {max_length} characters or less.");
+                newRegisterHtml = newRegisterHtml.replace(/{additional_item_name}/, newVar).replace(/{max_length}/, ${max_length_additional_info_display_name});
+                $('.list-additional-info').append($(additional_info_tpl({
+                    display_name: newVar,
+                    id: data.id,
+                    max_length_display_name: ${max_length_additional_info_display_name},
+                    delete_label: '${_(u"Delete")}',
+                })));
+                registerDisplayName.val('');
+                messages.append('<li class="info">' + data.info + '</li>');
+                $('.setting-list:last').after('<p class="operation setting-list additional-info additional-info-'+data.id+'" data-id="'+data.id+'">'+newRegisterHtml+'</p>');
+                resize_form();
+            }).fail(function(jqXHR) {
+                var data = JSON.parse(jqXHR.responseText);
+                messages.append('<li class="error">' + data.error + '</li>');
+            }).always(function () {
+                w2ui.form.refresh();
+            });
+        });
+
+        $('.w2ui-field.list-additional-info').on('focus', '[name="display_name"]', function() {
+            $(this).data('pre-value', $(this).val());
+        }).on('change', '[name="display_name"]', function() {
+            var registerDisplayName = $(this), newVar = registerDisplayName.val(), targetId = registerDisplayName.parent().data('target-id');
+            messages.empty();
+            if (newVar === '') {
+                messages.append($('<li class="error"></li>').text('${_(u"Please enter the name of item you wish to add.")}'));
+                return;
+            }
+            $.ajax({
+                url: "${reverse('biz:contract_operation:edit_additional_info_ajax')}",
+                type: 'POST',
+                data: {
+                    additional_info_id: targetId,
+                    display_name: newVar,
+                    contract_id: $('#form').data('contract-id'),
+                },
+            }).done(function (data) {
+                var newRegisterHtml = gettext("· {additional_item_name}: {max_length} characters or less.");
+                newRegisterHtml = newRegisterHtml.replace(/{additional_item_name}/, newVar).replace(/{max_length}/, ${max_length_additional_info_display_name});
+                registerDisplayName.data('pre-value', newVar);
+                messages.append('<li class="info">' + data.info + '</li>');
+                $('.setting-list.additional-info.additional-info-'+targetId).html(newRegisterHtml);
+            }).fail(function(jqXHR) {
+                var data = JSON.parse(jqXHR.responseText);
+                messages.append('<li class="error">' + data.error + '</li>');
+                registerDisplayName.val(registerDisplayName.data('pre-value'));
+            }).always(function () {
+                w2ui.form.refresh();
+            });
+        });
+
+        $('.w2ui-field.list-additional-info').on('click', '.biz-btn.remove-btn', function() {
+            var clickButton = $(this), targetId = clickButton.parent().data('target-id');
+            messages.empty();
+            w2confirm({
+                msg: '${_(u"Each user enter the additional item will be delete. Is it OK?")}',
+                yes_class: 'btn-right',
+                no_class: 'btn-left'
+            }).yes(function () {
+                $.ajax({
+                    url: "${reverse('biz:contract_operation:delete_additional_info_ajax')}",
+                    type: 'POST',
+                    data: {
+                        additional_info_id: targetId,
+                        contract_id: $('#form').data('contract-id'),
+                    },
+                }).done(function (data) {
+                    clickButton.parent().remove();
+                    messages.append('<li class="info">' + data.info + '</li>');
+                    $('.setting-list.additional-info.additional-info-'+targetId).remove();
+                    resize_form();
+                }).fail(function(jqXHR) {
+                    var data = JSON.parse(jqXHR.responseText);
+                    messages.append('<li class="error">' + data.error + '</li>');
+                }).always(function () {
+                    w2ui.form.refresh();
+                });
+            });
+        });
+
+        $('.register-students-buttons').on('click', '#update-btn', function() {
+            var messages = $('.messages'),
+                additional_infos = $('.setting-list.additional-info'),
+                registerStudentsForm = $('#form'),
+                postData = {
+                    update_students_list: $('#additional-info-list').val(),
+                    contract_id: registerStudentsForm.data('contract-id'),
+                    additional_info: []
+                };
+
+            $.each(additional_infos, function() {
+                postData.additional_info.push($(this).data('id'));
+            });
+
+            messages.empty();
+            if ($('#additional-info-list').val() == '') {
+                messages.append('<li class="error">${_("Could not find student list.")}</li>');
+                return;
+            }
+
+            w2confirm({
+                msg: '${_(u"You will register additional item for students. Are you sure?")}',
+                yes_class: 'btn-right',
+                no_class: 'btn-left'
+            }).yes(function () {
+                w2utils.lock(registerStudentsForm, '', true);
+                $.ajax({
+                    url: "${reverse('biz:contract_operation:update_additional_info_ajax')}",
+                    type: 'POST',
+                    data: postData,
+                    traditional: true
+                }).done(function (data) {
+                    messages.append('<li class="info">' + data.info + '</li>');
+                    resize_form();
+                }).fail(function(jqXHR) {
+                    var data = JSON.parse(jqXHR.responseText);
+                    messages.append('<li class="error">' + data.error + '</li>');
+                }).always(function () {
+                    w2utils.unlock(registerStudentsForm);
+                });
+            });
+        });
+
+        $('.w2ui-tabs').on('click', function() {
+            messages.empty();
+            resize_form();
+        });
+
+        function resize_form() {
+            $('#content').height($('#form').height() + $('#task-history-wrapper').height());
+        }
     });
 </script>
+
+<script type="text/template" id="additional-info-tpl">
+<%static:include path="ga_contract_operation/additional_info.underscore" />
+</script>
+
 <style>
   .content-wrapper {
     min-height: 650px;
@@ -63,21 +227,55 @@ from biz.djangoapps.ga_invitation.models import REGISTER_INVITATION_CODE
   #register-status {
     font-style: normal;
   }
+  .w2ui-field {
+    clear: both;
+    position: relative;
+    display: block;
+    width: auto;
+  }
+  #additional-info-list {
+    margin: 1rem;
+    width: 90%;
+  }
+  .register-students-buttons {
+    text-align: center;
+    border-top: 1px solid #d5d8d8;
+    padding-bottom: 20px;
+  }
 </style>
 </%block>
 
 <%block name="custom_content">
-<div id="form" class="field-area">
+<div id="form" class="field-area" data-contract-id="${request.current_contract.id}" >
     <div class="w2ui-page page-0">
         <div class="field">
-          %if hasattr(request.current_contract, 'contractauth'):
-            <span class="operation">${_("To register a list of users in this course, contains the following columns in this exact order: e-mail, username, name, login code, and password. Please include one user per row and do not include any headers, footers, or blank lines.")}</span>
+          %if request.current_contract.has_auth:
+            <p class="operation">${_(u"Enroll each Learner by a single command-line using comma(,), in the order of [E-mail address], [User name], [Name], [Login code], [Password].<br/>These Items cannot be changed.")}</p>
+            <p class="operation">${_(u"ex. username1@domain.com,gaccotarou,gaccoutarou,gacco,Gacco12345")}</p>
           %else:
-            <span class="operation">${_("To register a list of users in this course, contains the following columns in this exact order: e-mail, username, and name. Please include one user per row and do not include any headers, footers, or blank lines.")}</span>
+            <p class="operation">${_(u"Enroll each Learner by a single command-line using comma(,), in the order of [E-mail address], [User name], [Name]. These Items cannot be changed.")}</p>
+            <p class="operation">${_(u"ex. username1@domain.com,gaccotarou,gaccoutarou")}</p>
           %endif
         </div>
+        <br/>
         <div class="field">
-            <span class="operation red">${_("Once can be registered number is {max_register_number}.").format(max_register_number=max_register_number)}</span>
+            <p class="operation">${_(u"< Note >")}</p>
+            <p class="operation">${_(u"Please be aware that once you press the \"Register Signup\" button, a welcome e-mail of the course will be sent automatically. This welcome e-mail cannot be reissued.")}</p>
+            <br/>
+            <p class="operation">${_(u"· Should not include headers, footers or blank lines.")}</p>
+            <p class="operation">${_(u"· Up to {max_students_number} Learners can be enrolled at a time.").format(max_students_number=max_register_number)}</p>
+        </div>
+        <br/>
+        <br/>
+        <div class="field">
+            <p class="operation">${_(u"< Entry item >")}</p>
+            <p class="operation setting-list">${_(u"· E-mail address: Half-width alphanumeric characters, hyphen (-), underscore (_), period (.).")}</p>
+            <p class="operation setting-list">${_(u"· User name: Two or more half-width alphabets, up to 30 characters. (It will be the User name displayed during the discussion. Once registered, it can not be changed.)")}</p>
+            <p class="operation setting-list">${_(u"· Name: \"Name\" will be included in the certificate for the course if the Learner successfully gets one.")}</p>
+          %if request.current_contract.has_auth:
+            <p class="operation setting-list">${_(u"· Login code: 2 or more half-width alphabets and 30 or less.")}</p>
+            <p class="operation setting-list">${_(u"· Password: 8 characters or more. (Must include at least one upper case letter, one lower case letter, and one number, all in one byte characters.)")}</p>
+          % endif
         </div>
         <div class="field">
             <textarea id="list-students" name="students_list" rows="12" placeholder="${_("username1@domain.com,gaccotarou,gacco taro,gacco,Gacco12345") if hasattr(request.current_contract, 'contractauth') else _("username1@domain.com,gaccotarou,gacco taro")}"></textarea>
@@ -85,9 +283,62 @@ from biz.djangoapps.ga_invitation.models import REGISTER_INVITATION_CODE
         <div class="field">
             <label id="register-status"><input type="checkbox" name="register_status" value="${REGISTER_INVITATION_CODE}"/>${_("Register with the invitation code. (Unnecessary invitation code by user)")}</label>
         </div>
+        <div class="register-students-buttons">
+            <input type="button" id="register-btn" data-endpoint="${reverse('biz:contract_operation:register_students_ajax')}" data-confirm-message="${_('Do the bulk students register. Are you sure?')}" value="&#xf044 ${_('Register Signup')}" />
+        </div>
     </div>
-    <div class="w2ui-buttons">
-        <input type="button" id="register-btn" data-endpoint="${reverse('biz:contract_operation:register_students_ajax')}" data-confirm-message="${_('Do the bulk students register. Are you sure?')}" data-contract-id="${request.current_contract.id}" value="&#xf044 ${_('Register Signup')}"/>
+
+    <div id="additional_form" class="w2ui-page page-1">
+        <div class="w2ui-field">
+            <p class="operation">${_(u"If the course instructor wishes to Enroll more information to the existing list, add/delete item as follows:")}</p>
+        </div>
+        <br/>
+        <div class="w2ui-field">
+            <p class="operation">${_(u"Add new item here:")}</p><br>
+            <div>
+                <input name="register_display_name" type="text" maxlength="${max_length_additional_info_display_name}" />
+                <button class="biz-btn register-btn add-additional-info-btn" name="register">&#xf067 ${_('Create Additional Item')}</button>
+            </div>
+        </div>
+        <br/>
+        <div class="w2ui-field list-additional-info">
+            <span class="operation">${_(u"Delete item here:<br/>*If deleted item, each user input the additional item will be delete.")}</span><br>
+            % for a in additional_info_list:
+              <div data-target-id="${a.id}">
+                  <input name="display_name" type="text" maxlength="${max_length_additional_info_display_name}" value="${a.display_name}" />
+                  <button class="biz-btn remove-btn small-btn" name="remove">&#xf00d ${_(u"Delete")}</button>
+              </div>
+            % endfor
+        </div>
+    </div>
+
+    <div class="w2ui-page page-2">
+        <div class="field">
+            <p class="operation">${_(u"To enroll additional item of the Learners separately from the first registration, enroll each Learner by a single command-line using comma(,), in the order.")}</p>
+            <p class="operation">${_(u"ex. username1@domain.com,system department,manager")}</p>
+        </div>
+        <br/>
+        <div class="field">
+            <p class="operation">${_(u"< Note >")}</p>
+            <p class="operation">${_(u"· Should not include headers, footers or blank lines.")}</p>
+            <p class="operation">${_(u"· Additional item use comma(,) after the E-mail address, then enter the additional item.")}</p>
+            <p class="operation">${_(u"· Up to {max_students_number} Learners can be enrolled at a time.").format(max_students_number=max_register_number)}</p>
+        </div>
+        <br/>
+        <br/>
+        <div class="field">
+            <p class="operation">${_(u"< Entry item >")}</p>
+            <p class="operation setting-list">${_(u"· E-mail address: The same e-mail address as the Learners already registered.")}</p>
+          % for a in additional_info_list:
+            <p class="operation setting-list additional-info additional-info-${a.id}" data-id="${a.id}">${_(u"· {additional_item_name}: {max_length} characters or less.").format(additional_item_name=a.display_name, max_length=max_length_additional_info_display_name)}</p>
+          % endfor
+        </div>
+        <div class="field">
+            <textarea id="additional-info-list" class="additional-info-list" name="additional_info_list" rows="12" placeholder="${_(u"username1@domain.com, [additional item]*")}"></textarea>
+        </div>
+        <div class="register-students-buttons">
+            <input type="button" id="update-btn" class="biz-btn register-btn update-btn" value="&#xf044 ${_(u"Register additional item")}"/>
+        </div>
     </div>
 </div>
 <%include file="_task_history.html" />

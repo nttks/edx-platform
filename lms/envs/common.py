@@ -2794,6 +2794,8 @@ CSRF_FAILURE_VIEW = 'openedx.core.djangoapps.ga_csrf.views.csrf_failure'
 # ]
 COURSE_TERMINATED_CHECK_EXCLUDE_PATH = []
 
+COURSEWARE_UNIT_LIMIT_DISPLAY_TEXT = 10
+
 ##### Settings for Biz #####
 from biz.envs.common import *
 

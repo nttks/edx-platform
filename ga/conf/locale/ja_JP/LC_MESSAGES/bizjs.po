@@ -23,6 +23,10 @@ msgstr ""
 msgid "Please select a target."
 msgstr "対象を選択してください。"
 
+#: biz/templates/ga_contract_operation/register_students.html
+msgid "· {additional_item_name}: {max_length} characters or less."
+msgstr "・{additional_item_name}：{max_length}文字以下"
+
 ##### Course Operation
 
 ##### Course Selection

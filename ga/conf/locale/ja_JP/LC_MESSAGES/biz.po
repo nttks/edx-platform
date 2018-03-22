@@ -214,10 +214,6 @@ msgid "Total Course Count"
 msgstr "講座数"
 
 #: biz/templates/ga_contract/index.html
-msgid "Additional Info Count"
-msgstr "追加情報数"
-
-#: biz/templates/ga_contract/index.html
 msgid "Created By Name"
 msgstr "作成者名"
 
@@ -246,6 +242,10 @@ msgid "Add Contract Detail Info"
 msgstr "新しい講座情報を追加"
 
 #: biz/templates/ga_contract/detail.html
+msgid "Not found course for Contract Detail Info"
+msgstr "追加できる講座情報がありません"
+
+#: biz/templates/ga_contract/detail.html
 msgid "Add Additional Info"
 msgstr "新しい追加情報を追加"
 
@@ -257,9 +257,17 @@ msgstr "登録"
 msgid "Url code is invalid. Please enter alphanumeric {min_length}-{max_length} characters."
 msgstr "URLコードが不正です。英字で{min_length}～{max_length}文字で入力してください。"
 
+#: biz/djangoapps/ga_contract/admin.py
+msgid "Url code is duplicated. Please change url code."
+msgstr "URLコードが重複しています。URLコードを変更してください。"
+
 #: biz/djangoapps/ga_contract/views.py
 msgid "You need to create an organization first."
 msgstr "組織を先に作成する必要があります。"
+
+#: biz/djangoapps/ga_contract/views.py
+msgid "Invalid contract details."
+msgstr "講座情報が不正です。再度、入力してください。"
 
 #: biz/djangoapps/ga_contract/views.py
 msgid "The new contract has been added."
@@ -432,7 +440,7 @@ msgid "Confirm Course"
 msgstr "コース内容を確認する"
 
 #: biz/templates/ga_invitation/confirm.html
-msgid "To take {contract_name} are required to enter the additional information below."
+msgid "To take {contract_name} are required to enter the additional item below."
 msgstr "{contract_name}を受講するには下記の追加情報の入力が必要です。"
 
 #: biz/templates/ga_invitation/confirm.html
@@ -579,24 +587,133 @@ msgstr "登録済の契約が存在するため、組織を削除できません
 
 ##### Contract Operation
 #: biz/templates/ga_contract_operation/register_students.html
-msgid "To register a list of users in this course, contains the following columns in this exact order: e-mail, username, and name. Please include one user per row and do not include any headers, footers, or blank lines."
-msgstr "区切り文字カンマ(,)で、次に示す項目の順序に従い値を指定してください。なお、1受講者につき1行で記載し、ヘッダー、フッターや空行を含んではいけません。<br/>"
-"・メールアドレス：半角英数字、ハイフン(-)、アンダーバー(_)、ピリオド(.)。<br/>"
-"・ユーザー名：半角英数2文字以上、30文字以下。ディスカッションの際に表示されるユーザー名となります。(一度、登録すると変更できません)<br/>"
-"・氏名：修了証に表示するために用いる情報です。"
+msgid "Enrolling Learners"
+msgstr "受講者登録"
 
 #: biz/templates/ga_contract_operation/register_students.html
-msgid "To register a list of users in this course, contains the following columns in this exact order: e-mail, username, name, login code, and password. Please include one user per row and do not include any headers, footers, or blank lines."
-msgstr "区切り文字カンマ(,)で、次に示す項目の順序に従い値を指定してください。なお、1受講者につき1行で記載し、ヘッダー、フッターや空行を含んではいけません。<br/>"
-"・メールアドレス：半角英数字、ハイフン(-)、アンダーバー(_)、ピリオド(.)。<br/>"
-"・ユーザー名：半角英数2文字以上、30文字以下。ディスカッションの際に表示されるユーザー名となります。(一度、登録すると変更できません)<br/>"
-"・氏名：修了証に表示するために用いる情報です。<br/>"
-"・ログインコード：半角英数2文字以上、30文字以下<br/>"
-"・パスワード：半角英数8文字以上(半角アルファベットの大文字、小文字、数字を1文字以上含めてください)<br/>"
+msgid "Enroll each Learner by a single command-line using comma(,), in the order of [E-mail address], [User name], [Name]. These Items cannot be changed."
+msgstr "1受講者につき1行で【メールアドレス】,【ユーザー名】,【氏名】の順に区切り文字カンマ（,）で区切って記入ください。"
 
 #: biz/templates/ga_contract_operation/register_students.html
-msgid "Once can be registered number is {max_register_number}."
-msgstr "一度に登録できる受講者は{max_register_number}件です。"
+msgid "Enroll each Learner by a single command-line using comma(,), in the order of [E-mail address], [User name], [Name], [Login code], [Password].<br/>These Items cannot be changed."
+msgstr "1受講者につき1行で【メールアドレス】,【ユーザー名】,【氏名】,【ログインコード】,【パスワード】の順に区切り文字カンマ（,）で区切って記入ください。"
+
+#: biz/templates/ga_contract_operation/register_students.html
+msgid "ex. username1@domain.com,gaccotarou,gaccoutarou"
+msgstr "（例）username1@domain.com,gaccotarou,学校 太郎"
+
+#: biz/templates/ga_contract_operation/register_students.html
+msgid "ex. username1@domain.com,gaccotarou,gaccoutarou,gacco,Gacco12345"
+msgstr "（例）username1@domain.com,gaccotarou,学校 太郎,gacco,Gacco12345"
+
+#: biz/templates/ga_contract_operation/register_students.html
+msgid "< Note >"
+msgstr "＜記入する際の注意点＞"
+
+#: biz/templates/ga_contract_operation/register_students.html
+msgid "< Entry item >"
+msgstr "＜記入情報＞"
+
+#: biz/templates/ga_contract_operation/register_students.html
+msgid "Please be aware that once you press the \"Register Signup\" button, a welcome e-mail of the course will be sent automatically. This welcome e-mail cannot be reissued."
+msgstr "<span style=\"color:red;\">「登録」を押下すると、受講者へ即時メールが自動送信されますのでご注意ください。自動送信メールは再発行できません。</span>"
+
+#: biz/templates/ga_contract_operation/register_students.html
+msgid "· Should not include headers, footers or blank lines."
+msgstr "・ヘッダーやフッター、空行を含めないでください"
+
+#: biz/templates/ga_contract_operation/register_students.html
+msgid "· E-mail address: Half-width alphanumeric characters, hyphen (-), underscore (_), period (.)."
+msgstr "・メールアドレス：半角英数字、ハイフン(-)、アンダーバー(_)、ピリオド(.)"
+
+#: biz/templates/ga_contract_operation/register_students.html
+msgid "· User name: Two or more half-width alphabets, up to 30 characters. (It will be the User name displayed during the discussion. Once registered, it can not be changed.)"
+msgstr "・ユーザー名：半角英数2文字以上、30文字以下(ディスカッションの際に表示されるユーザー名です、一度登録すると変更できません)"
+
+#: biz/templates/ga_contract_operation/register_students.html
+msgid "· Name: \"Name\" will be included in the certificate for the course if the Learner successfully gets one."
+msgstr "・氏名：修了証に表示するために用いる情報です"
+
+#: biz/templates/ga_contract_operation/register_students.html
+msgid "· Login code: 2 or more half-width alphabets and 30 or less."
+msgstr "・ログインコード：半角英数2文字以上、30文字以下"
+
+#: biz/templates/ga_contract_operation/register_students.html
+msgid "· Password: 8 characters or more. (Must include at least one upper case letter, one lower case letter, and one number, all in one byte characters.)"
+msgstr "・パスワード：半角英数8文字以上(半角アルファベットの大文字、小文字、数字を1文字以上含めてください)"
+
+#: biz/templates/ga_contract_operation/register_students.html
+msgid ""
+"Delete item here:<br/>"
+"*If deleted item, each user input the additional item will be delete."
+msgstr ""
+"削除する追加情報を選択してください。<br/>"
+"※追加情報を削除すると、受講者がすでに登録した追加情報もすべて削除されます。"
+
+#: biz/templates/ga_contract_operation/register_students.html
+msgid "Add new item here:"
+msgstr "追加情報の名称を入力してください。"
+
+#: biz/templates/ga_contract_operation/register_students.html
+#: biz/templates/ga_contract_operation/views.py
+msgid "Please enter the name of item you wish to add."
+msgstr "追加情報の名称を入力してください。"
+
+#: biz/templates/ga_contract_operation/register_students.html
+msgid "Create Additional Item"
+msgstr "追加情報作成"
+
+#: biz/templates/ga_contract_operation/register_students.html
+msgid "Editing Additional Item"
+msgstr "追加情報設定"
+
+#: biz/templates/ga_contract_operation/register_students.html
+msgid "Enrolling Learners to Additional Item"
+msgstr "追加情報登録"
+
+#: biz/templates/ga_contract_operation/register_students.html
+msgid "· Up to {max_students_number} Learners can be enrolled at a time."
+msgstr "<span style=\"color:red;\">・一度に登録できる受講者数は、{max_students_number}人です</span>"
+
+#: biz/templates/ga_contract_operation/register_students.html
+msgid "· {additional_item_name}: {max_length} characters or less."
+msgstr "・{additional_item_name}：{max_length}文字以下"
+
+#: biz/templates/ga_contract_operation/register_students.html
+msgid "If the course instructor wishes to Enroll more information to the existing list, add/delete item as follows:"
+msgstr "追加情報の設定を行います。"
+
+#: biz/templates/ga_contract_operation/register_students.html
+msgid "Each user enter the additional item will be delete. Is it OK?"
+msgstr "受講者がすでに入力した追加情報も削除されます。よろしいですか？"
+
+#: biz/templates/ga_contract_operation/register_students.html
+msgid "Up to {max_number} number of additional item is created."
+msgstr "登録できる追加情報は{max_number}件までです。"
+
+#: biz/templates/ga_contract_operation/register_students.html
+msgid "To enroll additional item of the Learners separately from the first registration, enroll each Learner by a single command-line using comma(,), in the order."
+msgstr "受講者の追加情報を個別に登録できます。<br/>1受講者につき1行で【メールアドレス】,【追加情報】の順に区切り文字カンマ（,）で区切って記入ください。"
+
+#: biz/templates/ga_contract_operation/register_students.html
+msgid "· E-mail address: The same e-mail address as the Learners already registered."
+msgstr "・メールアドレス：受講者一覧に記載されているメールアドレス"
+
+#: biz/templates/ga_contract_operation/register_students.html
+msgid "ex. username1@domain.com,system department,manager"
+msgstr "（例）username1@domain.com,システム事業部,部長"
+
+#: biz/templates/ga_contract_operation/register_students.html
+msgid "username1@domain.com, [additional item]*"
+msgstr "username1@domain.com, [追加情報]*"
+
+#: biz/templates/ga_contract_operation/register_students.html
+msgid "You will register additional item for students. Are you sure?"
+msgstr "受講者に対して追加情報の登録を行います。よろしいですか？"
+
+#: biz/templates/ga_contract_operation/register_students.html
+msgid "Register additional item"
+msgstr "追加情報を登録する"
 
 #: biz/templates/ga_contract_operation/register_students.html
 msgid "username1@domain.com,gaccotarou,gacco taro"
@@ -619,6 +736,10 @@ msgstr "受講ユーザーが直ちに受講が開始できる状態となりま
 #: biz/templates/ga_contract_operation/register_students.html
 msgid "No messages."
 msgstr "メッセージはありません。"
+
+#: biz/templates/ga_contract_operation/register_students.html
+msgid "· Additional item use comma(,) after the E-mail address, then enter the additional item."
+msgstr "・追加情報は、メールアドレスの後に区切り文字カンマ(,)を入れて、記入ください"
 
 #: biz/djangoapps/ga_contract_operation/student_register.py
 msgid "Invalid email {email}."
@@ -756,7 +877,7 @@ msgid "Submission Reminder Mail"
 msgstr "未提出課題督促メール"
 
 #: biz/templates/ga_contract_operation/register_students.html
-msgid "Register Students"
+msgid "Enrolling New Learners"
 msgstr "受講者を新規登録"
 
 #: biz/templates/ga_contract_operation/register_students.html
@@ -857,6 +978,46 @@ msgstr "実行状況はタスク履歴から確認してください。"
 msgid "Total: {total}, Success: {succeeded}, Skipped: {skipped}, Failed: {failed}"
 msgstr "対象: {total}件、成功: {succeeded}件、スキップ: {skipped}件、失敗: {failed}件"
 
+#: biz/templates/ga_contract_operation/views.py
+msgid "Please enter the name of item within {max_number} characters."
+msgstr "追加情報は{max_number}文字以内で入力してください。"
+
+#: biz/templates/ga_contract_operation/views.py
+msgid "The same item has already been registered."
+msgstr "同じ追加情報の名称が登録されています。"
+
+#: biz/templates/ga_contract_operation/views.py
+msgid "New item has been registered."
+msgstr "追加情報が登録されました。"
+
+#: biz/templates/ga_contract_operation/views.py
+msgid "New item has been updated."
+msgstr "追加情報が更新されました。"
+
+#: biz/templates/ga_contract_operation/views.py
+msgid "New item has been deleted."
+msgstr "追加情報が削除されました。"
+
+#: biz/templates/ga_contract_operation/views.py
+msgid "Failed to register item."
+msgstr "追加情報の登録に失敗しました。"
+
+#: biz/templates/ga_contract_operation/views.py
+msgid "Failed to edit item."
+msgstr "追加情報の更新に失敗しました。"
+
+#: biz/templates/ga_contract_operation/views.py
+msgid "Failed to deleted item."
+msgstr "追加情報の削除に失敗しました。"
+
+#: biz/templates/ga_contract_operation/views.py
+msgid "Already deleted."
+msgstr "既に削除されています。"
+
+#: biz/templates/ga_contract_operation/views.py
+msgid "New item registered. Please reload browser."
+msgstr "追加情報が変更されました。ブラウザを更新してください。"
+
 #: biz/templates/ga_contract_operation/students.html
 msgid "Do the bulk students register. Are you sure?"
 msgstr "受講者登録を行います。よろしいですか？"
@@ -866,8 +1027,8 @@ msgid "Do the bulk students unregister. Are you sure?"
 msgstr "一括受講解除を行います。本当によろしいですか？"
 
 #: biz/templates/ga_contract_operation/students.html
-msgid "After execution of the personal information mask processing,, it can not be undone. Are you sure?"
-msgstr "個人情報削除処理の実行後、元に戻すことはできません。本当によろしいですか？"
+msgid "After execution of the personal information mask processing, it can not be undone. Are you sure?"
+msgstr "個人情報削除を実行すると復元することができません。個人情報削除してよろしいですか？"
 
 #: biz/templates/ga_contract_operation/students.html
 msgid "Unregister Student"
@@ -880,6 +1041,26 @@ msgstr "受講者新規登録"
 #: biz/djangoapps/ga_contract_operation/tasks.py
 msgid "Student Unregister"
 msgstr "受講解除"
+
+#: biz/djangoapps/ga_contract_operation/tasks.py
+msgid "Additional Item Update"
+msgstr "追加情報登録"
+
+#: biz/djangoapps/ga_contract_operation/additionalinfo.py
+msgid "Number of [emails] and [new items] must be the same."
+msgstr "メールアドレス、追加情報設定値は同数でなければなりません。"
+
+#: biz/djangoapps/ga_contract_operation/additionalinfo.py
+msgid "Could not find target user."
+msgstr "入力された受講者が見つかりませんでした。"
+
+#: biz/djangoapps/ga_contract_operation/additionalinfo.py
+msgid "No additional item registered."
+msgstr "追加情報はこの契約に登録されておりません。"
+
+#: biz/djangoapps/ga_manager/views.py
+msgid "The user does not exist. ({email})"
+msgstr "指定されたユーザーは存在しません。({email})"
 
 #: biz/templates/ga_contract_operation/students.html
 msgid "Personal Information Mask"
@@ -894,7 +1075,7 @@ msgid "Show Task History"
 msgstr "タスク履歴を表示"
 
 #: biz/templates/ga_contract_operation/students.html
-msgid "To see the status of the tasks that have been run in the background, please click this button."
+msgid "To see the status of tasks running in the background, click the button below."
 msgstr "バックグラウンドで実行されたタスクの状況を見るには、このボタンをクリックしてください。"
 
 #: biz/templates/ga_contract_operation/students.html
@@ -959,6 +1140,10 @@ msgstr "日前"
 msgid "(The target courses and the section are listed. This part can not be edited.)"
 msgstr "（対象の講座名および節が列挙されます。この部分は編集できません。）"
 
+#: biz/templates/ga_contract_operation/_task_history.html
+msgid "Task Type"
+msgstr "タスク種別"
+
 ##### Login
 #: biz/djangoapps/ga_login/views.py
 msgid "Login code or password is incorrect."
@@ -971,6 +1156,11 @@ msgstr "ログインコード"
 #: biz/djangoapps/ga_login/views.py
 msgid "example: loginCode123"
 msgstr "例：loginCode123"
+
+##### util
+#: biz/djangoapps/util/task_util.py
+msgid "{task_type_name} is being executed. Please check task history, leave time and try again."
+msgstr "{task_type_name}が実行されています。タスク履歴を確認し時間を空けて再度、操作してください。"
 
 ##### Common
 #: */forms.py

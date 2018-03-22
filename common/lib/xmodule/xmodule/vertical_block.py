@@ -17,7 +17,7 @@ log = logging.getLogger(__name__)
 
 # HACK: This shouldn't be hard-coded to two types
 # OBSOLETE: This obsoletes 'type'
-CLASS_PRIORITY = ['video', 'problem']
+CLASS_PRIORITY = ['problem', 'video']
 
 
 class VerticalBlock(SequenceFields, XModuleFields, StudioEditableBlock, XmlParserMixin, MakoTemplateBlockBase, XBlock):

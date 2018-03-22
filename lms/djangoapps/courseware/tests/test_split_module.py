@@ -22,7 +22,6 @@ class SplitTestBase(ModuleStoreTestCase):
     """
     __test__ = False
     COURSE_NUMBER = 'split-test-base'
-    ICON_CLASSES = None
     TOOLTIPS = None
     HIDDEN_CONTENT = None
     VISIBLE_CONTENT = None
@@ -119,7 +118,7 @@ class SplitTestBase(ModuleStoreTestCase):
         content = resp.content
 
         # Assert we see the proper icon in the top display
-        self.assertIn('<a class="{} inactive progress-0"'.format(self.ICON_CLASSES[user_tag]), content)
+        self.assertIn('<a class="{} inactive progress-0"'.format('seq_video'), content)
         # And proper tooltips
         for tooltip in self.TOOLTIPS[user_tag]:
             self.assertIn(tooltip, content)
@@ -140,10 +139,6 @@ class TestVertSplitTestVert(SplitTestBase):
 
     COURSE_NUMBER = 'vert-split-vert'
 
-    ICON_CLASSES = [
-        'seq_problem',
-        'seq_video',
-    ]
     TOOLTIPS = [
         ['Group 0 Sees This Video', "Group 0 Sees This Problem"],
         ['Group 1 Sees This Video', 'Group 1 Sees This HTML'],
@@ -211,10 +206,6 @@ class TestSplitTestVert(SplitTestBase):
 
     COURSE_NUMBER = 'split-vert'
 
-    ICON_CLASSES = [
-        'seq_problem',
-        'seq_video',
-    ]
     TOOLTIPS = [
         ['Group 0 Sees This Video', "Group 0 Sees This Problem"],
         ['Group 1 Sees This Video', 'Group 1 Sees This HTML'],

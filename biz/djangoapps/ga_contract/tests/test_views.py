@@ -1,20 +1,22 @@
 """
 Test for contract feature
 """
+import ddt
 from datetime import date, timedelta
 
 from biz.djangoapps.ga_invitation.models import REGISTER_INVITATION_CODE
 
 from biz.djangoapps.ga_invitation.tests.factories import ContractRegisterFactory
 
-from biz.djangoapps.ga_contract.models import Contract, ContractDetail, AdditionalInfo, CONTRACT_TYPE_GACCO_SERVICE, REGISTER_TYPE_DISABLE_REGISTER_BY_STUDENT, REGISTER_TYPE_ENABLE_REGISTER_BY_STUDENT
-from biz.djangoapps.ga_contract.tests.factories import ContractFactory, ContractDetailFactory, AdditionalInfoFactory
+from biz.djangoapps.ga_contract.models import Contract, ContractDetail, CONTRACT_TYPE_GACCO_SERVICE, REGISTER_TYPE_DISABLE_REGISTER_BY_STUDENT, REGISTER_TYPE_ENABLE_REGISTER_BY_STUDENT
+from biz.djangoapps.ga_contract.tests.factories import ContractFactory, ContractDetailFactory
 from biz.djangoapps.util.tests.testcase import BizViewTestBase
 from django.core.urlresolvers import reverse
 from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
 from xmodule.modulestore.tests.factories import CourseFactory
 
 
+@ddt.ddt
 class ContractViewTest(BizViewTestBase, ModuleStoreTestCase):
     def _index_view(self):
         return reverse('biz:contract:index')
@@ -37,9 +39,6 @@ class ContractViewTest(BizViewTestBase, ModuleStoreTestCase):
 
     def _create_contract_detail(self, contract, course_id):
         return ContractDetailFactory.create(course_id=course_id, contract=contract)
-
-    def _create_additional_info(self, contract, display_name):
-        return AdditionalInfoFactory.create(display_name=display_name, contract=contract)
 
     def _setup_course_data(self):
         self.course_gacco1 = CourseFactory.create(org='gacco', number='course1', run='run1')
@@ -66,9 +65,6 @@ class ContractViewTest(BizViewTestBase, ModuleStoreTestCase):
 
         self._create_contract_detail(self.contract_b, 'gacco/course1/run1')
         self._create_contract_detail(self.contract_b, 'gacco/course2/run2')
-
-        self._create_additional_info(self.contract_b, 'first name')
-        self._create_additional_info(self.contract_b, 'last name')
 
     def test_index_for_aggregator(self):
         # Create account and logged in.
@@ -202,7 +198,7 @@ class ContractViewTest(BizViewTestBase, ModuleStoreTestCase):
         self.assertIn('Contract Detail', response.content)
         self.assertIn('The invitation code has been used.', response.content)
 
-    def test_register_contract_detail_field_invalid_error(self):
+    def test_register_contract_detail_field_duplicate(self):
         # Create account and logged in.
         self.setup_user()
 
@@ -228,7 +224,16 @@ class ContractViewTest(BizViewTestBase, ModuleStoreTestCase):
         self.assertIn('Contract Detail Info', response.content)
         self.assertIn('You can not enter duplicate values in Contract Detail Info.', response.content)
 
-    def test_register_additional_info__field_invalid_error(self):
+    @ddt.data(
+        (['course-v1:edX+k01+2016_03', 'course-v1:edX+k01+2016_02'], [''], ['']),
+        (['course-v1:edX+k01+2016_03'], ['', ''], ['']),
+        (['course-v1:edX+k01+2016_03'], [''], ['', '']),
+        (['course-v1:edX+k01+2016_03'], ['', ''], ['', '']),
+        (['course-v1:edX+k01+2016_03', 'course-v1:edX+k01+2016_02'], [''], ['', '']),
+        (['course-v1:edX+k01+2016_03', 'course-v1:edX+k01+2016_02'], ['', ''], ['']),
+    )
+    @ddt.unpack
+    def test_register_contract_detail_field_invalid(self, data_detail_course, data_detail_delete, data_detail_id):
         # Create account and logged in.
         self.setup_user()
 
@@ -242,20 +247,17 @@ class ContractViewTest(BizViewTestBase, ModuleStoreTestCase):
             'contractor_organization': self.org_tac.id,
             'start_date': '2016/03/01',
             'end_date': '2016/03/31',
-            'detail_course': ['course-v1:edX+k01+2016_03', 'course-v1:edX+k02+2016_03'],
-            'detail_delete': ['', ''],
-            'detail_id': ['', ''],
-            'additional_info_display_name': ['english name', 'english name'],
-            'additional_info_delete': ['', ''],
-            'additional_info_id': ['', '']
+            'detail_course': data_detail_course,
+            'detail_delete': data_detail_delete,
+            'detail_id': data_detail_id
         }
 
         with self.skip_check_course_selection(current_organization=self.gacco_organization):
             response = self.client.post(self._register_view(), data=data)
 
         self.assertEqual(200, response.status_code)
-        self.assertIn('Contract Detail', response.content)
-        self.assertIn('You can not enter duplicate values in Additional Info.', response.content)
+        self.assertIn('Contract Detail Info', response.content)
+        self.assertIn('Invalid contract details.', response.content)
 
     def test_register_by_platfomer_success(self):
         # Create account and logged in.
@@ -274,9 +276,6 @@ class ContractViewTest(BizViewTestBase, ModuleStoreTestCase):
             'detail_course': ['course-v1:edX+k01+2016_03', 'course-v1:edX+k02+2016_03'],
             'detail_delete': ['', ''],
             'detail_id': ['', ''],
-            'additional_info_display_name': ['first name', 'family name'],
-            'additional_info_delete': ['', ''],
-            'additional_info_id': ['', '']
         }
 
         with self.skip_check_course_selection(current_organization=self.gacco_organization):
@@ -305,9 +304,6 @@ class ContractViewTest(BizViewTestBase, ModuleStoreTestCase):
             'detail_course': ['course-v1:edX+k01+2016_03', 'course-v1:edX+k02+2016_03'],
             'detail_delete': ['', ''],
             'detail_id': ['', ''],
-            'additional_info_display_name': ['first name', 'last name'],
-            'additional_info_delete': ['', ''],
-            'additional_info_id': ['', '']
         }
 
         with self.skip_check_course_selection(current_organization=self.org_tac):
@@ -426,7 +422,7 @@ class ContractViewTest(BizViewTestBase, ModuleStoreTestCase):
         self.assertIn('Ensure this value has at least 8 characters (it has 6).', response.content)
         self.assertIn('Contract end date is before contract start date.', response.content)
 
-    def test_edit_contract_detail_field_invalid_error(self):
+    def test_edit_contract_detail_field_duplicate(self):
         # Create account and logged in.
         self.setup_user()
 
@@ -454,7 +450,16 @@ class ContractViewTest(BizViewTestBase, ModuleStoreTestCase):
         self.assertIn('Contract Detail Info', response.content)
         self.assertIn('You can not enter duplicate values in Contract Detail Info.', response.content)
 
-    def test_edit_additional_info__field_invalid_error(self):
+    @ddt.data(
+        (['course-v1:edX+k01+2016_03', 'course-v1:edX+k01+2016_02'], [''], ['']),
+        (['course-v1:edX+k01+2016_03'], ['', ''], ['']),
+        (['course-v1:edX+k01+2016_03'], [''], ['', '']),
+        (['course-v1:edX+k01+2016_03'], ['', ''], ['', '']),
+        (['course-v1:edX+k01+2016_03', 'course-v1:edX+k01+2016_02'], [''], ['', '']),
+        (['course-v1:edX+k01+2016_03', 'course-v1:edX+k01+2016_02'], ['', ''], ['']),
+    )
+    @ddt.unpack
+    def test_edit_contract_detail_field_invalid(self, data_detail_course, data_detail_delete, data_detail_id):
         # Create account and logged in.
         self.setup_user()
 
@@ -464,26 +469,23 @@ class ContractViewTest(BizViewTestBase, ModuleStoreTestCase):
 
         data = {
             'contract_name': 'owner contract for tac',
-            'contract_type': 'O',
+            'contract_type': 'PF',
             'register_type': REGISTER_TYPE_ENABLE_REGISTER_BY_STUDENT[0],
             'invitation_code': 'invitationcodea',
             'contractor_organization': self.org_a.id,
             'start_date': '2016/03/01',
             'end_date': '2016/03/31',
-            'detail_course': ['gacco/course1/run1', 'gacco/course2/run2'],
-            'detail_delete': ['', ''],
-            'detail_id': ['', ''],
-            'additional_info_display_name': ['english name', 'english name'],
-            'additional_info_delete': ['', ''],
-            'additional_info_id': ['', '']
+            'detail_course': data_detail_course,
+            'detail_delete': data_detail_delete,
+            'detail_id': data_detail_id
         }
 
         with self.skip_check_course_selection(current_organization=self.gacco_organization):
             response = self.client.post(self._edit_view(self.contract_a.id), data=data)
 
         self.assertEqual(200, response.status_code)
-        self.assertIn('Contract Detail', response.content)
-        self.assertIn('You can not enter duplicate values in Additional Info.', response.content)
+        self.assertIn('Contract Detail Info', response.content)
+        self.assertIn('Invalid contract details.', response.content)
 
     def test_edit_update_contract(self):
         # Create account and logged in.
@@ -520,7 +522,7 @@ class ContractViewTest(BizViewTestBase, ModuleStoreTestCase):
         self.assertIn(_new_start_date.strftime("%Y/%m/%d"), response.content)
         self.assertIn(_new_end_date.strftime("%Y/%m/%d"), response.content)
 
-    def test_edit_add_contract_detail_and_additional_info(self):
+    def test_edit_add_contract_detail(self):
         # Create account and logged in.
         self.setup_user()
 
@@ -545,9 +547,6 @@ class ContractViewTest(BizViewTestBase, ModuleStoreTestCase):
             'detail_course': ['gacco/course1/run1', 'gacco/course2/run2'],
             'detail_delete': ['', ''],
             'detail_id': ['', ''],
-            'additional_info_display_name': ['first name', 'last name'],
-            'additional_info_delete': ['', ''],
-            'additional_info_id': ['', '']
         }
 
         with self.skip_check_course_selection(current_organization=self.gacco_organization):
@@ -555,10 +554,9 @@ class ContractViewTest(BizViewTestBase, ModuleStoreTestCase):
 
         self.assertRedirects(response, self._index_view())
         self.assertIn('The contract changes have been saved.', response.content)
-        self.assertEqual(2, len(AdditionalInfo.find_by_contract_id(self.contract_b)))
         self.assertEqual(2, len(ContractDetail.find_enabled_by_contractor_and_contract_id(self.org_b.id, self.contract_b.id)))
 
-    def test_edit_remove_contract_detail_and_additional_info(self):
+    def test_edit_remove_contract_detail(self):
         # Create account and logged in.
         self.setup_user()
 
@@ -583,9 +581,6 @@ class ContractViewTest(BizViewTestBase, ModuleStoreTestCase):
             'detail_course': ['gacco/course1/run1', 'gacco/course2/run2'],
             'detail_delete': ['', '1'],
             'detail_id': ['1', '2'],
-            'additional_info_display_name': ['first name', 'last name'],
-            'additional_info_delete': ['', '1'],
-            'additional_info_id': ['1', '2']
         }
 
         with self.skip_check_course_selection(current_organization=self.gacco_organization):
@@ -594,10 +589,7 @@ class ContractViewTest(BizViewTestBase, ModuleStoreTestCase):
         self.assertRedirects(response, self._index_view())
         self.assertIn('The contract changes have been saved.', response.content)
 
-        after_additional_info_list = AdditionalInfo.find_by_contract_id(self.contract_b)
         after_contract_detail_list = ContractDetail.find_enabled_by_contractor_and_contract_id(self.org_b.id, self.contract_b.id)
-        self.assertEqual(1, len(after_additional_info_list))
-        self.assertEqual('first name', after_additional_info_list[0].display_name)
         self.assertEqual(1, len(after_contract_detail_list))
         self.assertEqual('gacco/course1/run1', unicode(after_contract_detail_list[0].course_id))
 
@@ -620,9 +612,6 @@ class ContractViewTest(BizViewTestBase, ModuleStoreTestCase):
             'detail_course': ['gacco/course1/run1', 'gacco/course2/run2'],
             'detail_delete': ['', ''],
             'detail_id': ['1', '2'],
-            'additional_info_display_name': ['first name', 'last name'],
-            'additional_info_delete': ['', ''],
-            'additional_info_id': ['1', '2'],
             'action_name': 'delete'
         }
 

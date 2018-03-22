@@ -119,7 +119,7 @@
 
         $(".action-email-settings").click(function(event) {
             $("#email_settings_course_id").val( $(event.target).data("course-id") );
-            $("#email_settings_course_number").text( $(event.target).data("course-number") );
+            $("#email_settings_course_name").text( $(event.target).data("course-name") );
             if($(event.target).data("optout") === "False") {
                 $("#receive_emails").prop('checked', true);
             }

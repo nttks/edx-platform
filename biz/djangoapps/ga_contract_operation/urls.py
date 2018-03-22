@@ -8,6 +8,10 @@ urlpatterns = patterns(
 
     url(r'^students$', 'students', name='students'),
     url(r'^register_students$', 'register_students', name='register_students'),
+    url(r'^register_students/register_additional_info$', 'register_additional_info_ajax', name='register_additional_info_ajax'),
+    url(r'^register_students/edit_additional_info$', 'edit_additional_info_ajax', name='edit_additional_info_ajax'),
+    url(r'^register_students/delete_additional_info$', 'delete_additional_info_ajax', name='delete_additional_info_ajax'),
+    url(r'^register_students/update_additional_info$', 'update_additional_info_ajax', name='update_additional_info_ajax'),
     url(r'^bulk_students$', 'bulk_students', name='bulk_students'),
     url(r'^register_students_ajax$', 'register_students_ajax', name='register_students_ajax'),
     url(r'^unregister_students_ajax$', 'unregister_students_ajax', name='unregister_students_ajax'),

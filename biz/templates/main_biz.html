@@ -45,7 +45,8 @@ from microsite_configuration import microsite
     }
 
     .w2ui-overlay {
-        min-width: 80%;
+        min-width: 40%;
+        max-width: 60%;
         margin-left: -15px;
     }
 
@@ -193,6 +194,81 @@ from microsite_configuration import microsite
         border-bottom: 1px solid #fff;
         padding-top: 10px;
     }
+
+    /* Biz icon */
+    .biz-icon:before, .biz-icon:after {
+        font-family: FontAwesome;
+        font-style: normal;
+        margin: 0 5px 0 0;
+        color: #126f9a;
+    }
+    .biz-icon.contract:before {
+        content: ' \f0f6 ';
+    }
+    .biz-icon.course:before {
+        content: ' \f19d ';
+        margin: 0 2px 0 0;
+    }
+    .biz-manager {
+        margin: 0 0 5px 10px;
+        top: 2px;
+    }
+
+    /* Biz button */
+    .biz-wrap .biz-btn {
+        background-color: #777;
+        background-image: none;
+        border-bottom: 2px solid #333;
+        color: #fff;
+        font-family: FontAwesome;
+        font-weight: initial;
+        min-height: 2rem;
+        min-width: 6rem;
+        padding: 0.1rem 1rem;
+        -moz-transition: .3s;
+        -o-transition: .3s;
+        -webkit-transition: .3s;
+        transition: .3s;
+    }
+    .biz-wrap .biz-btn:disabled {
+        background-color: #777777;
+        border-color: #333333;
+        pointer-events: auto;
+    }
+    .biz-btn.register-btn {
+        background-color: #43ac6a;
+        border-color: #2f8a7d;
+    }
+    .biz-btn.register-btn:hover:not(:disabled) {
+        background-color: green;
+    }
+    .biz-btn.remove-btn {
+        background-color: #cc3333;
+        border-color: #8a2f2f;
+    }
+    .biz-btn.remove-btn:hover:not(:disabled) {
+        background-color: #c30707;
+    }
+    .biz-btn.small-btn {
+        min-width: 2rem;
+    }
+    .w2ui-tabs~.w2ui-page .w2ui-buttons {
+        position: inherit;
+        padding: 0 !important;
+    }
+    .w2ui-tabs .w2ui-tab {
+        background-color: #777777;
+        color: #DDDDDD;
+        font-size: 1rem;
+        margin: 1px 1px -2px 0;
+        cursor: pointer;
+    }
+    /* Etc. */
+    .operation {
+        font-size: 1rem;
+        line-height: 1.3rem;
+    }
+
 </style>
 </%block>
 
@@ -246,19 +322,26 @@ from microsite_configuration import microsite
                     <p>${_("Organization not specified")}</p>
                 </div>
                 % elif current_manager.is_director() or current_manager.is_manager():
-                    % if not current_course:
+                    % if not current_contract:
                     <div class="message">
-                        <p>${_("Course not specified")}</p>
+                        <p>${_("Contract not specified")}</p>
                     </div>
                     % else:
-                    <div class="">
-                        <label>${_("Contract Name")}：</label>
-                        <div>${current_contract.contract_name | h}</div>
-                    </div>
-                    <div class="">
-                        <label>${_("Course Name")}：</label>
-                        <div>${current_course.course_canonical_name or current_course.display_name | h}</div>
-                    </div>
+                        <div class="">
+                            <label class="biz-icon contract">${_("Contract Name")}：</label>
+                            <div class="biz-manager">${current_contract.contract_name | h}</div>
+                        </div>
+                        % if not current_course:
+                        <div class="">
+                            <label class="biz-icon course">${_("Course Name")}：</label>
+                            <div class="biz-manager">--</div>
+                        </div>
+                        % else:
+                        <div class="">
+                            <label class="biz-icon course">${_("Course Name")}：</label>
+                            <div class="biz-manager">${current_course.course_canonical_name or current_course.display_name | h}</div>
+                        </div>
+                        % endif
                     % endif
                 % endif
             </div>

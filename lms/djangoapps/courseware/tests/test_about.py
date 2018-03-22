@@ -80,7 +80,7 @@ class AboutTestCase(LoginEnrollmentTestCase, ModuleStoreTestCase, EventTrackingT
 
         # Check that registration button is present
         self.assertIn(REG_STR, resp.content)
-        self.assertIn("[Free of charge] Enroll in {}".format(self.course.display_number_with_default), resp.content)
+        self.assertIn("[Free of charge] Enroll", resp.content)
         self.assertNotIn("fee-charging", resp.content)
 
     @ddt.data(CourseMode.PROFESSIONAL, CourseMode.NO_ID_PROFESSIONAL_MODE)
@@ -109,7 +109,7 @@ class AboutTestCase(LoginEnrollmentTestCase, ModuleStoreTestCase, EventTrackingT
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
         self.assertIn("OOGIE BLOOGIE", resp.content)
-        self.assertIn("[Free of charge] Enroll in {}".format(self.course.display_number_with_default), resp.content)
+        self.assertIn("[Free of charge] Enroll", resp.content)
         self.assertNotIn("fee-charging", resp.content)
 
     @ddt.data(CourseMode.PROFESSIONAL, CourseMode.NO_ID_PROFESSIONAL_MODE)
@@ -347,7 +347,7 @@ class AboutWithInvitationOnly(ModuleStoreTestCase):
         url = reverse('about_course', args=[self.course.id.to_deprecated_string()])
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
-        self.assertIn(u"[Free of charge] Enroll in {}".format(self.course.id.course), resp.content.decode('utf-8'))
+        self.assertIn(u"[Free of charge] Enroll", resp.content.decode('utf-8'))
 
         # Check that registration button is present
         self.assertIn(REG_STR, resp.content)
@@ -377,7 +377,7 @@ class AboutTestCaseShibCourse(LoginEnrollmentTestCase, ModuleStoreTestCase):
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
         self.assertIn("OOGIE BLOOGIE", resp.content)
-        self.assertIn(u"[Free of charge] Enroll in {}".format(self.course.id.course), resp.content.decode('utf-8'))
+        self.assertIn(u"[Free of charge] Enroll", resp.content.decode('utf-8'))
         self.assertIn(SHIB_ERROR_STR, resp.content)
         self.assertIn(REG_STR, resp.content)
 
@@ -389,7 +389,7 @@ class AboutTestCaseShibCourse(LoginEnrollmentTestCase, ModuleStoreTestCase):
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
         self.assertIn("OOGIE BLOOGIE", resp.content)
-        self.assertIn(u"[Free of charge] Enroll in {}".format(self.course.id.course), resp.content.decode('utf-8'))
+        self.assertIn(u"[Free of charge] Enroll", resp.content.decode('utf-8'))
         self.assertIn(SHIB_ERROR_STR, resp.content)
         self.assertIn(REG_STR, resp.content)
 

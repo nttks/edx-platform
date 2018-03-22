@@ -142,7 +142,7 @@ def confirm(request, invitation_code):
         additionals.append({
             'name': ADDITIONAL_NAME.format(additional_id=additional.id),
             'display_name': additional.display_name,
-            'value': AdditionalInfoSetting.get_value(request.user, contract, additional) if contract_register.is_registered() else ''
+            'value': AdditionalInfoSetting.get_value(request.user, contract, additional),
         })
 
     context = {

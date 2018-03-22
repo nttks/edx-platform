@@ -21,11 +21,15 @@ class ContractAuthForm(forms.ModelForm):
         super(ContractAuthForm, self).__init__(*args, **kargs)
 
     def clean(self):
-        url_code = self.cleaned_data['url_code']
-        if not re.match(r'^{url_code}$'.format(url_code=URL_CODE_PATTERN), url_code):
+        url_code = self.cleaned_data['url_code'] if 'url_code' in self.cleaned_data else None
+        if url_code is None or not re.match(r'^{url_code}$'.format(url_code=URL_CODE_PATTERN), url_code):
             raise forms.ValidationError(
                 _("Url code is invalid. Please enter alphanumeric {min_length}-{max_length} characters.").format(
                     min_length=URL_CODE_MIN_LENGTH, max_length=URL_CODE_MAX_LENGTH))
+
+        if 'contract' in self.cleaned_data and ContractAuth.objects.filter(url_code=url_code).exclude(contract=self.cleaned_data['contract']).exists():
+            raise forms.ValidationError(_("Url code is duplicated. Please change url code."))
+
         return self.cleaned_data
 
     class Meta:

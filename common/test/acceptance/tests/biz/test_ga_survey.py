@@ -2,11 +2,11 @@
 """
 End-to-end tests for survey of biz feature
 """
+import codecs
 import csv
 import os
 import shutil
 
-import bok_choy
 from bok_choy.web_app_test import WebAppTest
 from django.utils.crypto import get_random_string
 from nose.plugins.attrib import attr
@@ -50,7 +50,7 @@ class BizSurveyTest(WebAppTest, GaccoBizTestMixin):
         self.switch_to_user(PLATFORMER_USER_INFO)
         self.contract = self.create_contract(BizContractPage(self.browser).visit(), 'PF', '2016/01/01',
                                              '2100/01/01', contractor_organization=A_COMPANY,
-                                             detail_info=[self.course._course_key], additional_info=[u'部署'])
+                                             detail_info=[self.course._course_key])
 
         # Change login user and answer survey
         acom_employees = [self.register_user(), self.register_user()]
@@ -68,10 +68,18 @@ class BizSurveyTest(WebAppTest, GaccoBizTestMixin):
         Tests that director of contractor can download survey.
         """
         self.switch_to_user(A_DIRECTOR_USER_INFO)
-        BizNavPage(self.browser).visit().change_role(A_COMPANY, self.contract['Contract Name'],
-                                                     self.course._course_key).click_survey().click_download_button()
-        bok_choy.browser.save_screenshot(self.browser, 'test_survey_as_director__1')
-        self._verify_csv_answers(self.answers)
+        BizNavPage(self.browser).visit().change_role(A_COMPANY, self.contract['Contract Name'], self.course._course_key)\
+            .click_survey().check_encoding_utf8(False).click_download_button()
+        self._verify_csv_answers(self.answers, 'utf16')
+
+    def test_survey_as_director_utf8(self):
+        """
+        Tests that director of contractor can download survey.
+        """
+        self.switch_to_user(A_DIRECTOR_USER_INFO)
+        BizNavPage(self.browser).visit().change_role(A_COMPANY, self.contract['Contract Name'], self.course._course_key)\
+            .click_survey().check_encoding_utf8(True).click_download_button()
+        self._verify_csv_answers(self.answers, 'utf8')
 
     def test_survey_as_staff(self):
         """
@@ -80,9 +88,54 @@ class BizSurveyTest(WebAppTest, GaccoBizTestMixin):
         self.switch_to_user(SUPER_USER_INFO)
         instructor_dashboard_page = InstructorDashboardPage(self.browser, self.course._course_key).visit()
         survey_page_section = instructor_dashboard_page.select_survey()
-        survey_page_section.click_download_button()
-        bok_choy.browser.save_screenshot(self.browser, 'test_survey_as_staff__1')
-        self._verify_csv_answers(self.answers)
+        survey_page_section.check_encoding_utf8(False).click_download_button()
+        self._verify_csv_answers(self.answers, 'utf16')
+
+    def test_survey_as_staff_utf8(self):
+        """
+        Tests that staff of platfomer can download survey.
+        """
+        self.switch_to_user(SUPER_USER_INFO)
+        instructor_dashboard_page = InstructorDashboardPage(self.browser, self.course._course_key).visit()
+        survey_page_section = instructor_dashboard_page.select_survey()
+        survey_page_section.check_encoding_utf8(True).click_download_button()
+        self._verify_csv_answers(self.answers, 'utf8')
+
+    def test_utf8_checkbox_is_saved_as_biz(self):
+        """
+        Test that the value of the checkbox is saved as biz.
+        """
+        # checked
+        self.switch_to_user(A_DIRECTOR_USER_INFO)
+        bizSurveyPage = BizNavPage(self.browser).visit().change_role(A_COMPANY, self.contract['Contract Name'],
+                                                                     self.course._course_key).click_survey()
+        bizSurveyPage.check_encoding_utf8(True).click_download_button()
+        bizSurveyPage = BizNavPage(self.browser).visit().change_role(A_COMPANY, self.contract['Contract Name'], 
+                                                                     self.course._course_key).click_survey()
+        self.assertTrue(bizSurveyPage.is_encoding_utf8_selected())
+        # unchecked
+        bizSurveyPage.check_encoding_utf8(False).click_download_button()
+        bizSurveyPage = BizNavPage(self.browser).visit().change_role(A_COMPANY, self.contract['Contract Name'],
+                                                                     self.course._course_key).click_survey()
+        self.assertFalse(bizSurveyPage.is_encoding_utf8_selected())
+
+    def test_utf8_checkbox_is_saved_as_instructor(self):
+        """
+        Test that the value of the checkbox is saved as instructor.
+        """
+        # checked
+        self.switch_to_user(SUPER_USER_INFO)
+        instructor_dashboard_page = InstructorDashboardPage(self.browser, self.course._course_key).visit()
+        survey_page_section = instructor_dashboard_page.select_survey()
+        survey_page_section.check_encoding_utf8(True).click_download_button()
+        instructor_dashboard_page = InstructorDashboardPage(self.browser, self.course._course_key).visit()
+        survey_page_section = instructor_dashboard_page.select_survey()
+        self.assertTrue(survey_page_section.is_encoding_utf8_selected())
+        # unchecked
+        survey_page_section.check_encoding_utf8(False).click_download_button()
+        instructor_dashboard_page = InstructorDashboardPage(self.browser, self.course._course_key).visit()
+        survey_page_section = instructor_dashboard_page.select_survey()
+        self.assertFalse(survey_page_section.is_encoding_utf8_selected())
 
     def _answer_survey(self, login_user, answer):
         """
@@ -109,21 +162,21 @@ class BizSurveyTest(WebAppTest, GaccoBizTestMixin):
         self.assertIn(u"ご回答ありがとうございました。", survey_page.wait_for_messages())
         self.assertFalse(survey_page.is_submit_button_enabled())
 
-    def _verify_csv_answers(self, expect_data):
+    def _verify_csv_answers(self, expect_data, encoding):
         """
         Verify csv file.
         """
-        # Get csv file
+        # Get csv file. (Content_type is 'text/tab-separated-values')
         tmp_file = max(
-                [os.path.join(DOWNLOAD_DIR, f) for f in os.listdir(DOWNLOAD_DIR) if f.count('.csv')],
+                [os.path.join(DOWNLOAD_DIR, f) for f in os.listdir(DOWNLOAD_DIR) if f.count('.tsv')],
                 key=os.path.getctime)
         csv_file = os.path.join(os.environ.get('SELENIUM_DRIVER_LOG_DIR', ''), self._testMethodName + '.csv')
         shutil.move(os.path.join(DOWNLOAD_DIR, tmp_file), csv_file)
         # Read csv
-        reader = csv.DictReader(open(csv_file))
+        with codecs.open(csv_file, encoding=encoding) as f:
+            reader = csv.DictReader([row.encode('utf8') for row in f], delimiter="\t")
         csv_data = [[row.get('Q1').decode('utf8'), row.get('Q2').decode('utf8'), row.get('Q3').decode('utf8'),
                      row.get('Q4').decode('utf8'), row.get('User Name').decode('utf8')] for row in reader]
-
         self.assertEqual(csv_data, expect_data)
 
 
@@ -162,7 +215,7 @@ class LoginCodeEnabledBizSurveyTest(WebAppTest, GaccoBizTestMixin):
         self.switch_to_user(PLATFORMER_USER_INFO)
         self.contract = self.create_contract(BizContractPage(self.browser).visit(), 'PF', '2016/01/01',
                                              '2100/01/01', contractor_organization=A_COMPANY,
-                                             detail_info=[self.course._course_key], additional_info=[u'部署'])
+                                             detail_info=[self.course._course_key])
 
         # Make contract auth
         self.django_admin_page = DjangoAdminPage(self.browser)
@@ -222,10 +275,18 @@ class LoginCodeEnabledBizSurveyTest(WebAppTest, GaccoBizTestMixin):
         Tests that director of contractor can download survey.
         """
         self.switch_to_user(A_DIRECTOR_USER_INFO)
-        BizNavPage(self.browser).visit().change_role(A_COMPANY, self.contract['Contract Name'],
-                                                     self.course._course_key).click_survey().click_download_button()
-        bok_choy.browser.save_screenshot(self.browser, 'test_survey_as_director__1')
-        self._verify_csv_answers(self.expect_datas_as_director,True)
+        BizNavPage(self.browser).visit().change_role(A_COMPANY, self.contract['Contract Name'], self.course._course_key)\
+            .click_survey().check_encoding_utf8(False).click_download_button()
+        self._verify_csv_answers(self.expect_datas_as_director, True, 'utf16')
+
+    def test_survey_as_director_utf8(self):
+        """
+        Tests that director of contractor can download survey.
+        """
+        self.switch_to_user(A_DIRECTOR_USER_INFO)
+        BizNavPage(self.browser).visit().change_role(A_COMPANY, self.contract['Contract Name'], self.course._course_key)\
+            .click_survey().check_encoding_utf8(True).click_download_button()
+        self._verify_csv_answers(self.expect_datas_as_director, True, 'utf8')
 
     def test_survey_as_staff(self):
         """
@@ -234,9 +295,18 @@ class LoginCodeEnabledBizSurveyTest(WebAppTest, GaccoBizTestMixin):
         self.switch_to_user(SUPER_USER_INFO)
         instructor_dashboard_page = InstructorDashboardPage(self.browser, self.course._course_key).visit()
         survey_page_section = instructor_dashboard_page.select_survey()
-        survey_page_section.click_download_button()
-        bok_choy.browser.save_screenshot(self.browser, 'test_survey_as_staff__1')
-        self._verify_csv_answers(self.expect_datas_as_staff, False)
+        survey_page_section.check_encoding_utf8(False).click_download_button()
+        self._verify_csv_answers(self.expect_datas_as_staff, False, 'utf16')
+
+    def test_survey_as_staff_utf8(self):
+        """
+        Tests that staff of platfomer can download survey.
+        """
+        self.switch_to_user(SUPER_USER_INFO)
+        instructor_dashboard_page = InstructorDashboardPage(self.browser, self.course._course_key).visit()
+        survey_page_section = instructor_dashboard_page.select_survey()
+        survey_page_section.check_encoding_utf8(True).click_download_button()
+        self._verify_csv_answers(self.expect_datas_as_staff, False, 'utf8')
 
     def _answer_survey(self, login_user, answer):
         """
@@ -263,18 +333,19 @@ class LoginCodeEnabledBizSurveyTest(WebAppTest, GaccoBizTestMixin):
         self.assertIn(u"ご回答ありがとうございました。", survey_page.wait_for_messages())
         self.assertFalse(survey_page.is_submit_button_enabled())
 
-    def _verify_csv_answers(self, expect_data, enable_login_code_check):
+    def _verify_csv_answers(self, expect_data, enable_login_code_check, encoding):
         """
         Verify csv file.
         """
-        # Get csv file
+        # Get csv file. (Content_type is 'text/tab-separated-values')
         tmp_file = max(
-                [os.path.join(DOWNLOAD_DIR, f) for f in os.listdir(DOWNLOAD_DIR) if f.count('.csv')],
+                [os.path.join(DOWNLOAD_DIR, f) for f in os.listdir(DOWNLOAD_DIR) if f.count('.tsv')],
                 key=os.path.getctime)
         csv_file = os.path.join(os.environ.get('SELENIUM_DRIVER_LOG_DIR', ''), self._testMethodName + '.csv')
         shutil.move(os.path.join(DOWNLOAD_DIR, tmp_file), csv_file)
         # Read csv
-        reader = csv.DictReader(open(csv_file))
+        with codecs.open(csv_file, encoding=encoding) as f:
+            reader = csv.DictReader([row.encode('utf8') for row in f], delimiter="\t")
         if enable_login_code_check:
             csv_data = [[row.get('Login Code').decode('utf8'), row.get('Q1').decode('utf8'), row.get('Q2').decode('utf8'),
                          row.get('Q3').decode('utf8'), row.get('Q4').decode('utf8'), row.get('User Name').decode('utf8')

@@ -168,7 +168,7 @@ class ConditionalModule(ConditionalFields, XModule):
         new_class = 'other'
         # HACK: This shouldn't be hard-coded to two types
         # OBSOLETE: This obsoletes 'type'
-        class_priority = ['video', 'problem']
+        class_priority = ['problem', 'video']
 
         child_classes = [self.system.get_module(child_descriptor).get_icon_class()
                          for child_descriptor in self.descriptor.get_children()]

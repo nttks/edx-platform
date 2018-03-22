@@ -113,8 +113,7 @@ class GaccoBizTestMixin(GaccoTestMixin):
         )
 
     def create_contract(self, biz_contract_page, contract_type, start_date, end_date, contractor_organization='', contractor_organization_name=None,
-                        detail_info=None,
-                        additional_info=None, register_type='ERS'):
+                        detail_info=None, register_type='ERS'):
         """
         Register a contract.
         """
@@ -131,10 +130,6 @@ class GaccoBizTestMixin(GaccoTestMixin):
         if detail_info:
             for i, course_id in enumerate(detail_info):
                 biz_contract_detail_page.add_detail_info(course_id, i + 1)
-
-        if additional_info:
-            for i, additional_name in enumerate(additional_info):
-                biz_contract_detail_page.add_additional_info(additional_name, i + 1)
 
         biz_contract_detail_page.click_register_button()
         BizContractPage(self.browser).wait_for_page()
@@ -189,7 +184,7 @@ class GaccoBizTestMixin(GaccoTestMixin):
         self.assertIn(grant_to_user_info['email'], biz_manager_page.emails)
 
     def register_contract(self, operator, contractor_organization_name, contract_type='PF', register_type='ERS',
-                          start_date='2000/01/01', end_date='2100/12/31', detail_info=None, additional_info=None):
+                          start_date='2000/01/01', end_date='2100/12/31', detail_info=None):
         self.switch_to_user(operator)
         return self.create_contract(
             DashboardPage(self.browser).visit().click_biz().click_contract(),
@@ -198,7 +193,6 @@ class GaccoBizTestMixin(GaccoTestMixin):
             end_date,
             contractor_organization_name=contractor_organization_name,
             detail_info=detail_info,
-            additional_info=additional_info,
             register_type=register_type,
         )
 

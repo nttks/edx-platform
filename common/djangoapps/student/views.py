@@ -560,6 +560,11 @@ def dashboard(request):
     # sort the enrollment pairs by the enrollment date
     course_enrollments.sort(key=lambda x: x.created, reverse=True)
 
+    # mod order non-global-course before global-course
+    global_courses = CourseGlobalSetting.all_course_id()
+    course_enrollments = [c for c in course_enrollments if c.course_id not in global_courses] + [
+        c for c in course_enrollments if c.course_id in global_courses]
+
     # Retrieve the course modes for each course
     enrolled_course_ids = [enrollment.course_id for enrollment in course_enrollments]
     __, unexpired_course_modes = CourseMode.all_and_unexpired_modes_for_courses(enrolled_course_ids)
@@ -644,7 +649,6 @@ def dashboard(request):
     }
 
     # only show email settings for Mongo course and when bulk email is turned on
-    global_courses = CourseGlobalSetting.all_course_id()
     show_email_settings_for = frozenset(
         enrollment.course_id for enrollment in course_enrollments if (
             settings.FEATURES['ENABLE_INSTRUCTOR_EMAIL'] and

@@ -5,7 +5,7 @@ from xmodule.vertical_block import VerticalBlock
 
 # HACK: This shouldn't be hard-coded to two types
 # OBSOLETE: This obsoletes 'type'
-class_priority = ['video', 'problem']
+class_priority = ['problem', 'video']
 
 
 class WrapperBlock(VerticalBlock):

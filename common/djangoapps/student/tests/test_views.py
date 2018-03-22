@@ -150,7 +150,8 @@ class TestStudentDashboardUnenrollments(ModuleStoreTestCase):
             self.assertEqual(response.status_code, 200)
 
 
-YESTERDAY = datetime.now(pytz.UTC) - timedelta(days=1)
+TODAY = datetime.now(pytz.UTC)
+YESTERDAY = TODAY - timedelta(days=1)
 
 
 @ddt.ddt
@@ -299,3 +300,45 @@ class TestNoticeUnactivated(TestCase):
         self.client.login(username=self.USERNAME, password=self.PASSWORD)
         response = self.client.get(reverse('notice_unactivated'))
         self.assertRedirects(response, '/login?unactivated=true', status_code=302, target_status_code=200)
+
+
+@ddt.ddt
+@unittest.skipUnless(settings.ROOT_URLCONF == 'lms.urls', 'Test only valid in lms')
+class TestOrderGlobalCourse(ModuleStoreTestCase):
+
+    def setUp(self):
+        super(TestOrderGlobalCourse, self).setUp()
+
+        user = UserFactory.create()
+
+        course = CourseFactory.create()
+        self.course_enrollment = CourseEnrollmentFactory.create(course_id=course.id, user=user)
+        self.course_id = str(course.id)
+
+        global_course = CourseFactory.create()
+        CourseGlobalSettingFactory.create(course_id=global_course.id)
+        self.global_course_enrollment = CourseEnrollmentFactory.create(course_id=global_course.id, user=user)
+        self.global_course_id = str(global_course.id)
+
+        self.client.login(username=user.username, password='test')
+
+    @ddt.data(
+        (YESTERDAY, TODAY),
+        (TODAY, YESTERDAY),
+    )
+    @ddt.unpack
+    def test_order(self, course_enrollment_created, global_course_enrollment_created):
+        # mod created of course_enrollment
+        self.course_enrollment.created = course_enrollment_created
+        self.course_enrollment.save()
+
+        # mod created of global_course_enrollment
+        self.global_course_enrollment.created = global_course_enrollment_created
+        self.global_course_enrollment.save()
+
+        response = self.client.get(reverse('dashboard'))
+
+        self.assertIn(self.course_id, response.content)
+        self.assertIn(self.global_course_id, response.content)
+
+        self.assertTrue(response.content.find(self.course_id) < response.content.find(self.global_course_id))

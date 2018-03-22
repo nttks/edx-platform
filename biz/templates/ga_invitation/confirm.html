@@ -264,7 +264,7 @@ from openedx.core.lib.courses import course_image_url
   % endfor
   <form id="form-invitation-code" class="add-form" action="${reverse('biz:invitation:register')}" method="post">
     % if additionals:
-      <h3 class="add-info">${_("To take {contract_name} are required to enter the additional information below.").format(contract_name=contract.contract_name) | h}</h3>
+      <h3 class="add-info">${_("To take {contract_name} are required to enter the additional item below.").format(contract_name=contract.contract_name) | h}</h3>
       <div id="message-invitation-code" class="error-message" class="red"></div>
       % for additional in additionals:
         <div class="additional">

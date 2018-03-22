@@ -136,6 +136,9 @@ urlpatterns = patterns(
     url(r'^get_survey$',
         'instructor.views.api.get_survey', name="get_survey"),
 
+    url(r'^get_survey_utf8$',
+        'instructor.views.api.get_survey_utf8', name="get_survey_utf8"),
+
     # Certificates
     url(r'^generate_example_certificates$',
         'instructor.views.api.generate_example_certificates',

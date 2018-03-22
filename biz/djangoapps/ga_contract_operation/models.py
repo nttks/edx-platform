@@ -168,6 +168,25 @@ class StudentUnregisterTaskTarget(ContractTaskTargetBase):
         )
 
 
+class AdditionalInfoUpdateTaskTarget(ContractTaskTargetBase):
+
+    inputline = models.TextField()
+
+    @classmethod
+    def bulk_create(cls, history, inputline_list):
+        targets = [cls(
+            history=history,
+            inputline=inputline,
+        ) for inputline in inputline_list]
+        cls.objects.bulk_create(targets)
+
+    @classmethod
+    def find_by_history_id(cls, history_id):
+        return cls.objects.filter(
+            history_id=history_id,
+        )
+
+
 class ContractMailBase(models.Model):
     """
     Abstract base class for mail settings for contract

@@ -25,7 +25,7 @@ log = logging.getLogger(__name__)
 
 # HACK: This shouldn't be hard-coded to two types
 # OBSOLETE: This obsoletes 'type'
-class_priority = ['video', 'problem']
+class_priority = ['problem', 'video']
 
 # Make '_' a no-op so we can scrape strings. Using lambda instead of
 #  `django.utils.translation.ugettext_noop` because Django cannot be imported in this file

@@ -95,7 +95,7 @@ class BizRegisterStudentsPage(BizNavPage, BizTaskHistoryMixin, W2uiMixin):
         """
         Check if browser is showing the page.
         """
-        return 'Register Students' in self.browser.title
+        return 'Enrolling New Learners' in self.browser.title
 
     def input_students(self, value):
         """
@@ -104,21 +104,21 @@ class BizRegisterStudentsPage(BizNavPage, BizTaskHistoryMixin, W2uiMixin):
         Arguments:
             value : target students
         """
-        self.q(css='textarea#list-students').fill(value)
+        self.q(css='.w2ui-page.page-0 textarea#list-students').fill(value)
         return self
 
     def click_register_status(self):
         """
         Click the register status checkbox
         """
-        self.q(css='#register-status').click()
+        self.q(css='.w2ui-page.page-0 #register-status').click()
         return self
 
     def click_register_button(self):
         """
         Click the register button
         """
-        self.q(css='#register-btn').click()
+        self.q(css='.w2ui-page.page-0 #register-btn').click()
         self.wait_for_ajax()
         return self
 
@@ -126,6 +126,57 @@ class BizRegisterStudentsPage(BizNavPage, BizTaskHistoryMixin, W2uiMixin):
     def messages(self):
         """Return a list of errors displayed to the list view. """
         return self.q(css="div.main ul.messages li").text
+
+    def click_tab_register_student(self):
+        self.click_tab('Enrolling Learners')
+        self.wait_for_ajax()
+        return self
+
+    def click_tab_additional_info(self):
+        self.click_tab('Editing Additional Item')
+        self.wait_for_ajax()
+        return self
+
+    def click_tab_update_additional_info(self):
+        self.click_tab('Enrolling Learners to Additional Item')
+        self.wait_for_ajax()
+        return self
+
+    def click_additional_info_register_button(self):
+        self.q(css='.w2ui-page.page-1 .add-additional-info-btn').click()
+        self.wait_for_ajax()
+        return self
+
+    def click_additional_info_delete_button(self, index=0):
+        self.q(css='.w2ui-page.page-1 .remove-btn').nth(index).click()
+        self.wait_for_ajax()
+        return self
+
+    def click_additional_info_update_button(self):
+        self.q(css='.w2ui-page.page-2 .biz-btn.register-btn.update-btn').click()
+        self.wait_for_ajax()
+        return self
+
+    def edit_additional_info_value(self, value, index=0):
+        self.q(css='.w2ui-page.page-1 [name="display_name"]').nth(index).fill(value)
+        # focus out.
+        self.q(css='.w2ui-page.page-1 [name="register_display_name"]').click()
+        self.wait_for_ajax()
+        return self
+
+    def input_additional_info_register(self, value):
+        self.q(css='.w2ui-page.page-1 [name="register_display_name"]').fill(value)
+        return self
+
+    def input_additional_info_list(self, value):
+        self.q(css='.w2ui-page.page-2 textarea#additional-info-list').fill(value)
+        return self
+
+    def get_display_name_values(self, index=0):
+        return self.q(css='[name="display_name"]').nth(index).attrs('value')
+
+    def get_additional_infos(self):
+        return self.q(css='.operation.setting-list').text
 
 
 class BizMailPage(BizNavPage, W2uiMixin):

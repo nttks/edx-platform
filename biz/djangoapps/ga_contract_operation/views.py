@@ -3,7 +3,6 @@ Views for contract_operation feature
 """
 from collections import defaultdict
 from functools import wraps
-import hashlib
 import json
 import logging
 
@@ -16,12 +15,16 @@ from django.utils.translation import ugettext as _
 from django.views.decorators.http import require_GET, require_POST
 
 from biz.djangoapps.ga_achievement.management.commands.update_biz_score_status import get_grouped_target_sections
+from biz.djangoapps.ga_contract.models import AdditionalInfo
 from biz.djangoapps.ga_contract_operation.models import (
     ContractMail, ContractReminderMail,
-    ContractTaskHistory, ContractTaskTarget, StudentRegisterTaskTarget, StudentUnregisterTaskTarget,
+    ContractTaskHistory, ContractTaskTarget, StudentRegisterTaskTarget,
+    StudentUnregisterTaskTarget, AdditionalInfoUpdateTaskTarget,
 )
-from biz.djangoapps.ga_contract_operation.tasks import personalinfo_mask, student_register, student_unregister, \
-                                                        TASKS, STUDENT_REGISTER, STUDENT_UNREGISTER, PERSONALINFO_MASK
+from biz.djangoapps.ga_contract_operation.tasks import (
+    personalinfo_mask, student_register, student_unregister, additional_info_update,
+    TASKS, STUDENT_REGISTER, STUDENT_UNREGISTER, PERSONALINFO_MASK, ADDITIONALINFO_UPDATE,
+)
 from biz.djangoapps.ga_contract_operation.utils import send_mail
 from biz.djangoapps.ga_invitation.models import (
     AdditionalInfoSetting,
@@ -34,7 +37,7 @@ from biz.djangoapps.ga_invitation.models import (
 from biz.djangoapps.util.access_utils import has_staff_access
 from biz.djangoapps.util.decorators import check_course_selection
 from biz.djangoapps.util.json_utils import EscapedEdxJSONEncoder
-from biz.djangoapps.util.task_utils import submit_task
+from biz.djangoapps.util.task_utils import submit_task, validate_task, get_task_key
 from edxmako.shortcuts import render_to_response
 
 from openedx.core.djangoapps.ga_task.api import AlreadyRunningError
@@ -60,6 +63,7 @@ def check_contract_register_selection(func):
             return _error_response(_("Unauthorized access."))
         if str(request.current_contract.id) != request.POST['contract_id']:
             return _error_response(_("Current contract is changed. Please reload this page."))
+
         target_list = request.POST.getlist('target_list')
         if not target_list:
             return _error_response(_("Please select a target."))
@@ -158,6 +162,11 @@ def unregister_students_ajax(request, registers):
     valid_register_list = []
     warning_register_list = []
 
+    # Check the task running within the same contract.
+    validate_task_message = validate_task(request.current_contract)
+    if validate_task_message:
+        return _error_response(validate_task_message)
+
     # validate
     for register in registers:
         # Validate status
@@ -201,7 +210,9 @@ def register_students(request):
     return render_to_response(
         'ga_contract_operation/register_students.html',
         {
-            'max_register_number': settings.BIZ_MAX_REGISTER_NUMBER,
+            'max_register_number': "{:,d}".format(int(settings.BIZ_MAX_REGISTER_NUMBER)),
+            'additional_info_list': AdditionalInfo.objects.filter(contract=request.current_contract),
+            'max_length_additional_info_display_name': AdditionalInfo._meta.get_field('display_name').max_length,
         }
     )
 
@@ -270,16 +281,23 @@ def bulk_students(request):
     )
 
 
-def _submit_task(request, task_type, task_class, history):
+def _submit_task(request, task_type, task_class, history, additional_info_list=None):
 
     try:
         task_input = {
             'contract_id': request.current_contract.id,
             'history_id': history.id,
         }
+        if additional_info_list:
+            task_input['additional_info_ids'] = [a.id for a in additional_info_list]
+
+        # Check the task running within the same contract.
+        validate_task_message = validate_task(request.current_contract)
+        if validate_task_message:
+            return _error_response(validate_task_message)
+
         # task prevents duplicate execution by contract_id
-        task_key = hashlib.md5(str(request.current_contract.id)).hexdigest()
-        task = submit_task(request, task_type, task_class, task_input, task_key)
+        task = submit_task(request, task_type, task_class, task_input, get_task_key(request.current_contract))
         history.link_to_task(task)
     except AlreadyRunningError:
         return _error_response(
@@ -327,6 +345,8 @@ def task_history_ajax(request):
                 _task_targets = StudentUnregisterTaskTarget.find_by_history_id_and_message(history.id)
             elif task.task_type == PERSONALINFO_MASK:
                 _task_targets = ContractTaskTarget.find_by_history_id_and_message(history.id)
+            elif task.task_type == ADDITIONALINFO_UPDATE:
+                _task_targets = AdditionalInfoUpdateTaskTarget.find_by_history_id_and_message(history.id)
         return [
             {
                 'recid': task_target.id,
@@ -670,3 +690,164 @@ def bulk_personalinfo_mask_ajax(request, students):
     ContractTaskTarget.bulk_create_by_text(history, students)
 
     return _submit_task(request, PERSONALINFO_MASK, personalinfo_mask, history)
+
+
+@require_POST
+@login_required
+@check_course_selection
+def register_additional_info_ajax(request):
+
+    if any(k not in request.POST for k in ['display_name', 'contract_id']):
+        return _error_response(_("Unauthorized access."))
+
+    if str(request.current_contract.id) != request.POST['contract_id']:
+        return _error_response(_("Current contract is changed. Please reload this page."))
+
+    validate_task_message = validate_task(request.current_contract)
+    if validate_task_message:
+        return _error_response(validate_task_message)
+
+    display_name = request.POST['display_name']
+    if not display_name:
+        return _error_response(_("Please enter the name of item you wish to add."))
+
+    max_length_display_name = AdditionalInfo._meta.get_field('display_name').max_length
+    if len(display_name) > max_length_display_name:
+        return _error_response(_("Please enter the name of item within {max_number} characters.").format(max_number=max_length_display_name))
+
+    if AdditionalInfo.objects.filter(contract=request.current_contract, display_name=display_name).exists():
+        return _error_response(_("The same item has already been registered."))
+
+    max_additional_info = settings.BIZ_MAX_REGISTER_ADDITIONAL_INFO
+    if AdditionalInfo.objects.filter(contract=request.current_contract).count() >= max_additional_info:
+        return _error_response(_("Up to {max_number} number of additional item is created.").format(max_number=max_additional_info))
+
+    try:
+        additional_info = AdditionalInfo.objects.create(
+            contract=request.current_contract,
+            display_name=display_name,
+        )
+    except:
+        log.exception('Failed to register the display-name of an additional-info.')
+        return _error_response(_("Failed to register item."))
+
+    return JsonResponse({
+        'info': _("New item has been registered."),
+        'id': additional_info.id,
+    })
+
+
+@require_POST
+@login_required
+@check_course_selection
+def edit_additional_info_ajax(request):
+
+    if any(k not in request.POST for k in ['additional_info_id', 'display_name', 'contract_id']):
+        return _error_response(_("Unauthorized access."))
+
+    if str(request.current_contract.id) != request.POST['contract_id']:
+        return _error_response(_("Current contract is changed. Please reload this page."))
+
+    validate_task_message = validate_task(request.current_contract)
+    if validate_task_message:
+        return _error_response(validate_task_message)
+
+    display_name = request.POST['display_name']
+    if not display_name:
+        return _error_response(_("Please enter the name of item you wish to add."))
+
+    max_length_display_name = AdditionalInfo._meta.get_field('display_name').max_length
+    if len(display_name) > max_length_display_name:
+        return _error_response(_("Please enter the name of item within {max_number} characters.").format(max_number=max_length_display_name))
+
+    additional_info_id = request.POST['additional_info_id']
+    if AdditionalInfo.objects.filter(contract=request.current_contract, display_name=display_name).exclude(id=additional_info_id).exists():
+        return _error_response(_("The same item has already been registered."))
+
+    try:
+        AdditionalInfo.objects.filter(
+            id=additional_info_id,
+            contract=request.current_contract,
+        ).update(
+            display_name=display_name,
+        )
+    except:
+        log.exception('Failed to edit the display-name of an additional-info id:{}.'.format(request.POST['additional_info_id']))
+        return _error_response(_("Failed to edit item."))
+
+    return JsonResponse({
+        'info': _("New item has been updated."),
+    })
+
+
+@require_POST
+@login_required
+@check_course_selection
+def delete_additional_info_ajax(request):
+
+    if any(k not in request.POST for k in ['additional_info_id', 'contract_id']):
+        return _error_response(_("Unauthorized access."))
+
+    if str(request.current_contract.id) != request.POST['contract_id']:
+        return _error_response(_("Current contract is changed. Please reload this page."))
+
+    validate_task_message = validate_task(request.current_contract)
+    if validate_task_message:
+        return _error_response(validate_task_message)
+
+    try:
+        additional_info = AdditionalInfo.objects.get(id=request.POST['additional_info_id'], contract=request.current_contract)
+        AdditionalInfoSetting.objects.filter(contract=request.current_contract, display_name=additional_info.display_name).delete()
+        additional_info.delete()
+    except AdditionalInfo.DoesNotExist:
+        log.info('Already deleted additional-info id:{}.'.format(request.POST['additional_info_id']))
+        return _error_response(_("Already deleted."))
+    except:
+        log.exception('Failed to delete the display-name of an additional-info id:{}.'.format(request.POST['additional_info_id']))
+        return _error_response(_("Failed to deleted item."))
+
+    return JsonResponse({
+        'info': _("New item has been deleted."),
+    })
+
+
+@transaction.non_atomic_requests
+@require_POST
+@login_required
+@check_course_selection
+def update_additional_info_ajax(request):
+
+    if any(k not in request.POST for k in ['update_students_list', 'contract_id']):
+        return _error_response(_("Unauthorized access."))
+
+    if any(k not in request.POST for k in ['additional_info']):
+        return _error_response(_("No additional item registered."))
+
+    if str(request.current_contract.id) != request.POST['contract_id']:
+        return _error_response(_("Current contract is changed. Please reload this page."))
+
+    students = request.POST['update_students_list'].splitlines()
+    if not students:
+        return _error_response(_("Could not find student list."))
+
+    if len(students) > settings.BIZ_MAX_REGISTER_NUMBER:
+        return _error_response(_(
+            "It has exceeded the number({max_register_number}) of cases that can be a time of registration."
+        ).format(max_register_number=settings.BIZ_MAX_REGISTER_NUMBER))
+
+    if any([len(s) > settings.BIZ_MAX_CHAR_LENGTH_REGISTER_ADD_INFO_LINE for s in students]):
+        return _error_response(_(
+            "The number of lines per line has exceeded the {biz_max_char_length_register_line} characters."
+        ).format(biz_max_char_length_register_line=settings.BIZ_MAX_CHAR_LENGTH_REGISTER_ADD_INFO_LINE))
+
+    additional_info_list = AdditionalInfo.validate_and_find_by_ids(
+        request.current_contract,
+        request.POST.getlist('additional_info') if 'additional_info' in request.POST else []
+    )
+    if additional_info_list is None:
+        return _error_response(_("New item registered. Please reload browser."))
+
+    history = ContractTaskHistory.create(request.current_contract, request.user)
+    AdditionalInfoUpdateTaskTarget.bulk_create(history, students)
+
+    return _submit_task(request, ADDITIONALINFO_UPDATE, additional_info_update, history, additional_info_list)

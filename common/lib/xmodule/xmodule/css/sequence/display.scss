@@ -94,9 +94,13 @@ $sequence--border-color: #C8C8C8;
       @extend .block-link;
     }
 
+    li.over-unit-limit-display-text {
+      min-width: 20px;
+    }
+
     li {
       display: table-cell;
-      min-width: 20px;
+      min-width: 60px;
 
       a {
         @extend %ui-fake-link;
@@ -117,10 +121,18 @@ $sequence--border-color: #C8C8C8;
           color: rgb(90, 90, 90);
           -webkit-font-smoothing: antialiased; // Clear up the lines on the icons
         }
+        .copy {
+          line-height: 42px; // same as the icons.
+          font-size: 90%;  // same as the icons.
+          color: rgb(90, 90, 90);
+        }
 
         &.inactive {
-
           .icon {
+            color: rgb(90, 90, 90);
+          }
+
+          .copy {
             color: rgb(90, 90, 90);
           }
         }
@@ -128,8 +140,13 @@ $sequence--border-color: #C8C8C8;
         &.active {
           @extend %ui-depth1;
           background-color: $white;
+          border-bottom: solid 3px #cc0033;
 
           .icon {
+            color: rgb(10, 10, 10);
+          }
+
+          .copy {
             color: rgb(10, 10, 10);
           }
 
@@ -141,6 +158,10 @@ $sequence--border-color: #C8C8C8;
             .icon {
               color: rgb(10, 10, 10);
             }
+
+            .copy {
+              color: rgb(10, 10, 10);
+            }
           }
         }
 
@@ -148,13 +169,14 @@ $sequence--border-color: #C8C8C8;
           background-color: $white;
           background-repeat: no-repeat;
           background-position: center 14px;
+          border-bottom: solid 3px #cc0033;
         }
 
         //video
         &.seq_video {
 
           .icon:before {
-            content: "\f008"; // .fa-film
+            content: "\f16a"; // .fa-youtube-play
           }
         }
 
@@ -250,7 +272,8 @@ $sequence--border-color: #C8C8C8;
   width: ($baseline*2);
   height: 46px;
   padding: 0;
-  background: #282c2e;
+  background: #cc0033;
+  box-shadow: none;
 
   &.button-previous {
     @include border-radius(35px, 0, 0, 35px);
@@ -264,12 +287,18 @@ $sequence--border-color: #C8C8C8;
 
   &:hover,
   &:active {
-    background: #eef1f4;
+    background: #8a0023;
+
+    &.disabled {
+      cursor: normal;
+      background: #eef1f4;
+      opacity: 1.0;
+    }
   }
 
   &.disabled {
     cursor: normal;
-    background: #50575b;
+    background: #eef1f4;
     opacity: 1.0;
   }
 }

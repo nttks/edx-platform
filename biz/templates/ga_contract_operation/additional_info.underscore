@@ -1,0 +1,4 @@
+<div data-target-id="<%= id %>">
+    <input name="display_name" type="text" maxlength="<%= max_length_display_name %>" value="<%= display_name %>" />
+    <button class="biz-btn remove-btn small-btn" name="remove">&#xf00d <%= delete_label %></button>
+</div>

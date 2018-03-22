@@ -6,6 +6,7 @@ from django.conf import settings
 from django.db.models.query import QuerySet
 from django.test import TestCase
 from django.test.utils import override_settings
+from django.utils.crypto import get_random_string
 from mock import patch
 
 from biz.djangoapps.ga_contract.tests.factories import (
@@ -84,13 +85,26 @@ class BizTestBase(TestCase):
             course_id = c.id if isinstance(c, CourseDescriptor) else c
             ContractDetailFactory.create(contract=contract, course_id=course_id)
         for d in additional_display_names:
-            AdditionalInfoFactory.create(contract=contract, display_name=d)
+            self._create_additional_info(contract=contract, display_name=d)
         if url_code:
             ContractAuthFactory.create(contract=contract, url_code=url_code, send_mail=send_mail)
         if customize_mail or send_submission_reminder:
             ContractOptionFactory.create(contract=contract, customize_mail=customize_mail,
                                          send_submission_reminder=send_submission_reminder)
         return contract
+
+    def _create_additional_info(self, contract=None, display_name=None):
+        return AdditionalInfoFactory.create(
+            contract=contract or self._create_contract(),
+            display_name=display_name or get_random_string(8),
+        )
+
+    def _create_user_and_contract_register(self, contract, email=None):
+        if email:
+            user = UserFactory.create(email=email)
+        else:
+            user = UserFactory.create()
+        return self._input_contract(user=user, contract=contract)
 
     def _input_contract(self, contract, user):
         register = ContractRegister.get_by_user_contract(user, contract)

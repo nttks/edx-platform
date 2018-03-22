@@ -97,21 +97,6 @@ class BizContractDetailPage(BizNavPage, W2uiMixin):
         self.q(css='select[name=detail_course]>option[value="{}"]'.format(value)).nth(index).first.click()
         return self
 
-    def add_additional_info(self, value, index):
-        """
-        Click add additional info link and input value for it
-        """
-        self.q(css='a#add-additional').click()
-        self.input_additional_info(value, index)
-        return self
-
-    def input_additional_info(self, value, index):
-        """
-        Input additional info
-        """
-        self.q(css='input[name=additional_info_display_name]').nth(index).fill(value)
-        return self
-
     def click_register_button(self):
         """
         Click the register button
@@ -140,8 +125,3 @@ class BizContractDetailPage(BizNavPage, W2uiMixin):
     def detail_info_error(self):
         """Return a error displayed to the contract detail info. """
         return self.q(css='div#detail-container .errorlist li').text[0]
-
-    @property
-    def additional_info_error(self):
-        """Return a error displayed to the contract additional_info. """
-        return self.q(css='div#additional-container .errorlist li').text[0]

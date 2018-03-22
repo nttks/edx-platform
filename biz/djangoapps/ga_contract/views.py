@@ -2,6 +2,7 @@
 Views for contract feature
 """
 import json
+import logging
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -9,15 +10,17 @@ from django.core.urlresolvers import reverse
 from django.shortcuts import get_object_or_404, redirect
 from django.utils.translation import ugettext as _
 from django.views.decorators.http import require_GET, require_POST
-from xmodule.modulestore.django import modulestore
 
 from biz.djangoapps.ga_contract.forms import ContractForm
-from biz.djangoapps.ga_contract.models import Contract, ContractDetail, AdditionalInfo, CONTRACT_TYPE, REGISTER_TYPE
+from biz.djangoapps.ga_contract.models import Contract, ContractDetail, CONTRACT_TYPE, REGISTER_TYPE
 from biz.djangoapps.ga_organization.models import Organization
 from biz.djangoapps.util.datetime_utils import format_for_w2ui
 from biz.djangoapps.util.decorators import check_course_selection
 from biz.djangoapps.util.json_utils import EscapedEdxJSONEncoder, LazyEncoder
 from edxmako.shortcuts import render_to_response
+from openedx.core.djangoapps.content.course_overviews.models import CourseOverview
+
+log = logging.getLogger(__name__)
 
 
 class ContractEncoder(LazyEncoder, EscapedEdxJSONEncoder):
@@ -35,12 +38,11 @@ def index(request):
     :return: HttpResponse
     """
     search_contract_list = Contract.find_by_owner(request.current_organization).select_related(
-            'contractor_organization', 'owner_organization', 'created_by').prefetch_related('additional_info')
+            'contractor_organization', 'owner_organization', 'created_by')
 
-    show_contract_list = []
-    for i, contract in enumerate(search_contract_list):
-        show_contract_list.append({
-            'recid': i + 1,
+    return render_to_response("ga_contract/index.html", {
+        'contract_show_list': json.dumps([{
+            'recid': i,
             'contract_name': contract.contract_name,
             'contract_type': dict(CONTRACT_TYPE).get(contract.contract_type, contract.contract_type),
             'register_type': dict(REGISTER_TYPE).get(contract.register_type, contract.register_type),
@@ -52,14 +54,9 @@ def index(request):
             'created_by': contract.created_by.profile.name,
             'created': format_for_w2ui(contract.created),
             'course_count': contract.details.count(),
-            'additional_info_count': contract.additional_info.count(),
             'detail_url': reverse('biz:contract:detail', kwargs={'selected_contract_id': contract.id}),
-        })
-
-    context = {
-        'contract_show_list': json.dumps(show_contract_list, cls=ContractEncoder)
-    }
-    return render_to_response("ga_contract/index.html", context)
+        } for i, contract in enumerate(search_contract_list, start=1)], cls=ContractEncoder)
+    })
 
 
 @require_GET
@@ -79,14 +76,11 @@ def show_register(request):
         messages.error(request, _("You need to create an organization first."))
         return redirect(reverse('biz:contract:index'))
 
-    form = ContractForm(current_org)
-    context = {
-        'course_list': _get_course_name_list(current_org.org_code),
-        'form': form,
+    return render_to_response("ga_contract/detail.html", {
+        'form': ContractForm(current_org),
         'detail_list': [],
-        'additional_info_list': [],
-    }
-    return render_to_response("ga_contract/detail.html", context)
+        'course_list': _get_course_name_list(current_org.org_code),
+    })
 
 
 @require_POST
@@ -103,9 +97,15 @@ def register(request):
     form = ContractForm(current_org, request.POST)
 
     # contract detail list
-    detail_input_list = _get_detail_input_list(request)
-    # additional info list
-    additional_info_input_list = _get_additional_info_input_list(request)
+    detail_list = _get_detail_input_list(request)
+    if detail_list is None:
+        # validation failed
+        messages.error(request, _("Invalid contract details."))
+        return render_to_response("ga_contract/detail.html", {
+            'form': form,
+            'detail_list': [],
+            'course_list': _get_course_name_list(current_org.org_code),
+        })
 
     if form.is_valid():
         # validation successful
@@ -117,28 +117,20 @@ def register(request):
         contract.save()
 
         # add new contract detail info
-        for detail_info in detail_input_list:
+        for detail_info in detail_list:
             contract_detail = ContractDetail(contract=contract, course_id=detail_info['course_id'])
             contract_detail.save()
-
-        # add new additional info
-        for additional_info in additional_info_input_list:
-            contract_additional_info = AdditionalInfo(contract=contract, display_name=additional_info['display_name'])
-            contract_additional_info.save()
 
         # return to list view
         messages.info(request, _('The new contract has been added.'))
         return redirect(reverse('biz:contract:index'))
     else:
         # validation failed
-        context = {
+        return render_to_response("ga_contract/detail.html", {
             'form': form,
-            'detail_list': json.dumps(detail_input_list),
+            'detail_list': json.dumps(detail_list),
             'course_list': _get_course_name_list(current_org.org_code),
-            'additional_info_list': json.dumps(additional_info_input_list, cls=ContractEncoder),
-        }
-
-        return render_to_response("ga_contract/detail.html", context)
+        })
 
 
 @require_GET
@@ -154,32 +146,17 @@ def detail(request, selected_contract_id):
     """
     current_org = request.current_organization
     selected_contract = get_object_or_404(Contract, pk=selected_contract_id, owner_organization=current_org)
-    form = ContractForm(current_org, instance=selected_contract)
 
-    detail_list = []
-    for contract_detail in selected_contract.details.all():
-        detail_list.append({
+    return render_to_response("ga_contract/detail.html", {
+        'selected_contract_id': selected_contract_id,
+        'form': ContractForm(current_org, instance=selected_contract),
+        'detail_list': json.dumps([{
             'id': contract_detail.id,
             'course_id': unicode(contract_detail.course_id),
             'delete_flg': '',
-        })
-
-    additional_info_list = []
-    for additional_info in selected_contract.additional_info.all():
-        additional_info_list.append({
-            'id': additional_info.id,
-            'display_name': additional_info.display_name,
-            'delete_flg': '',
-        })
-
-    context = {
-        'form': form,
-        'selected_contract_id': selected_contract_id,
-        'detail_list': json.dumps(detail_list),
+        } for contract_detail in selected_contract.details.all()]),
         'course_list': _get_course_name_list(current_org.org_code),
-        'additional_info_list': json.dumps(additional_info_list, cls=ContractEncoder),
-    }
-    return render_to_response("ga_contract/detail.html", context)
+    })
 
 
 @require_POST
@@ -195,18 +172,29 @@ def edit(request, selected_contract_id):
     """
     current_org = request.current_organization
     selected_contract = get_object_or_404(Contract, pk=selected_contract_id, owner_organization=current_org)
-    # contract detail list
-    detail_list = _get_detail_input_list(request)
-    # additional info list
-    additional_info_list = _get_additional_info_input_list(request)
     form = ContractForm(request.current_organization, request.POST, instance=selected_contract)
 
+    # contract detail list
+    detail_list = _get_detail_input_list(request)
+    if detail_list is None:
+        # validation failed
+        messages.error(request, _("Invalid contract details."))
+        return render_to_response("ga_contract/detail.html", {
+            'selected_contract_id': selected_contract_id,
+            'form': form,
+            'detail_list': json.dumps([{
+                'id': contract_detail.id,
+                'course_id': unicode(contract_detail.course_id),
+                'delete_flg': '',
+            } for contract_detail in selected_contract.details.all()]),
+            'course_list': _get_course_name_list(current_org.org_code),
+        })
+
     context = {
-        'form': form,
         'selected_contract_id': selected_contract_id,
+        'form': form,
         'detail_list': json.dumps(detail_list),
         'course_list': _get_course_name_list(request.current_organization.org_code),
-        'additional_info_list': json.dumps(additional_info_list, cls=ContractEncoder),
         'url': reverse('biz:contract:edit', kwargs={'selected_contract_id': selected_contract_id}),
     }
 
@@ -242,17 +230,6 @@ def edit(request, selected_contract_id):
             else:
                 contract_detail.save()
 
-        # Update contract detail info
-        for additional_info in additional_info_list:
-            contract_additional_info = AdditionalInfo(contract=selected_contract,
-                                                      display_name=additional_info['display_name'])
-            if additional_info['id']:
-                contract_additional_info.id = additional_info['id']
-            if additional_info['delete_flg']:
-                contract_additional_info.delete()
-            else:
-                contract_additional_info.save()
-
         # return to list view
         messages.info(request, _("The contract changes have been saved."))
         return redirect(reverse('biz:contract:index'))
@@ -268,35 +245,23 @@ def _get_detail_input_list(request):
     :param request: HttpRequest
     :return: course list
     """
-    detail_list = []
-    for num in range(len(request.POST.getlist('detail_id'))):
-        detail_info = {
-            'id': request.POST.getlist('detail_id')[num],
-            'course_id': request.POST.getlist('detail_course')[num],
-            'delete_flg': request.POST.getlist('detail_delete')[num],
-        }
-        detail_list.append(detail_info)
+    if not (len(request.POST.getlist('detail_id')) == len(request.POST.getlist('detail_course')) == len(request.POST.getlist('detail_delete'))):
+        log.warning('Invalid contract details. detail_id:{}, detail_course:{}, detail_delete:{}.'.format(
+            request.POST.getlist('detail_id'),
+            request.POST.getlist('detail_course'),
+            request.POST.getlist('detail_delete'),
+        ))
+        return None
 
-    return detail_list
-
-
-def _get_additional_info_input_list(request):
-    """
-    return the list of additional info input
-
-    :param request: HttpRequest
-    :return: additional info list
-    """
-    additional_info_list = []
-    for num in range(len(request.POST.getlist('additional_info_id'))):
-        additional_info = {
-            'id': request.POST.getlist('additional_info_id')[num],
-            'display_name': request.POST.getlist('additional_info_display_name')[num],
-            'delete_flg': request.POST.getlist('additional_info_delete')[num],
-        }
-        additional_info_list.append(additional_info)
-
-    return additional_info_list
+    return [{
+        'id': detail_id,
+        'course_id': course_id,
+        'delete_flg': detail_delete,
+    } for detail_id, course_id, detail_delete in zip(
+        request.POST.getlist('detail_id'),
+        request.POST.getlist('detail_course'),
+        request.POST.getlist('detail_delete')
+    )]
 
 
 def _get_course_name_list(org_code):
@@ -306,10 +271,7 @@ def _get_course_name_list(org_code):
     :param org_code: organization code
     :return: course list
     """
-    course_list = []
-    courses = modulestore().get_courses(org=org_code)
-    # courses = sorted(courses, key=lambda c: c.id)
-    for course in courses:
-        name = course.course_canonical_name or course.display_name_with_default
-        course_list.append((unicode(course.id), u'{} ({})'.format(name, unicode(course.id))))
-    return course_list
+    return [
+        (unicode(c.id), u'{} ({})'.format(c.display_name, c.id))
+        for c in CourseOverview.objects.filter(org=org_code).order_by('id')
+    ]

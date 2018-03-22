@@ -15,6 +15,10 @@ from openedx.core.lib.courses import course_image_url
   ## (https://developers.facebook.com/docs/opengraph/howtos/maximizing-distribution-media-content#tags)
   <meta property="og:title" content="${course.display_name_with_default}" />
   <meta property="og:description" content="${get_course_about_section(request, course, 'short_description')}" />
+  <script type="text/javascript">
+    var isLoggedIn = ${"true" if user.is_authenticated() else "false"};
+    var isRegistered = ${"true" if registered else "false"};
+  </script>
 </%block>
 
 <%block name="js_extra">
@@ -145,7 +149,7 @@ from openedx.core.lib.courses import course_image_url
       <section class="intro">
         <hgroup>
           <h1>
-            ${course.display_number_with_default | h}: ${course.display_name_with_default | h}
+            ${course.display_name_with_default | h}
           </h1>
         </hgroup>
 
@@ -200,7 +204,7 @@ from openedx.core.lib.courses import course_image_url
             </a>
             % else:
             <a href="#" class="register">
-              ${_("[Free of charge] Enroll in {course_name}").format(course_name=course.display_number_with_default) | h}
+              ${_("[Free of charge] Enroll")}
             </a>
             % endif
           <div id="register_error"></div>

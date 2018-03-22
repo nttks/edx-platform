@@ -28,4 +28,12 @@ def survey(request):
 @check_course_selection
 @require_survey
 def survey_download(request):
-    return create_survey_response(request, unicode(request.current_course.id))
+    return create_survey_response(request, unicode(request.current_course.id), 'utf-16')
+
+
+@require_POST
+@login_required
+@check_course_selection
+@require_survey
+def survey_download_utf8(request):
+    return create_survey_response(request, unicode(request.current_course.id), 'utf-8')
