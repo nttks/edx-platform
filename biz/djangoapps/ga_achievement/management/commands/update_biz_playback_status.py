@@ -290,7 +290,7 @@ class Command(BaseCommand):
                             playback_store.remove_documents()
 
                             # Confirm remove_documents.
-                            count_playback_store = playback_store.get_record_count()
+                            count_playback_store = playback_store.get_count()
                             if count_playback_store == 0:
                                 log.info(u"Removed PlaybackStore records. contract_id={} course_id={}".format(
                                     contract.id, unicode_course_key))
@@ -314,18 +314,18 @@ class Command(BaseCommand):
                         playback_store.drop_indexes()
                         playback_store.ensure_indexes()
 
-                        # Confirm set_documents.
-                        count_playback_store = playback_store.get_record_count()
+                        # Confirm set_documents. (compare with record count without column)
+                        count_playback_store = playback_store.get_count() - 1
                         if count_playback_store == count_contract_register == len_records:
                             log.info(u"Stored PlaybackStore record count({}). contract_id={} course_id={}".format(
                                 count_playback_store, contract.id, unicode_course_key))
                             break;
 
                         if i >= settings.MAX_RETRY_SET_DOCUMENTS:
-                            raise Exception(u"PlaybackStore record count({}) does not mutch Contract Register record count({}) or records count({}). contract_id={} course_id={}".format(
+                            raise Exception(u"PlaybackStore record count({}) does not match Contract Register record count({}) or records count({}). contract_id={} course_id={}".format(
                                 count_playback_store, count_contract_register, len_records, contract.id, unicode_course_key))
 
-                        log.warning(u"Can not store(try:{},sleep:{}) PlaybackStore record count({}) does not mutch Contract Register record count({}) or records count({}). contract_id={} course_id={}".format(
+                        log.warning(u"Can not store(try:{},sleep:{}) PlaybackStore record count({}) does not match Contract Register record count({}) or records count({}). contract_id={} course_id={}".format(
                             i + 1, settings.SLEEP_RETRY_SET_DOCUMENTS, count_playback_store, count_contract_register, len_records, contract.id, unicode_course_key))
                         if settings.SLEEP_RETRY_SET_DOCUMENTS:
                             time.sleep(settings.SLEEP_RETRY_SET_DOCUMENTS)

@@ -886,7 +886,7 @@ class UpdateBizScoreStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEnrol
             user = UserFactory.create()
             self._register_contract(self.contract, user, additional_value=ADDITIONAL_SETTINGS_VALUE)
 
-        with patch('biz.djangoapps.ga_achievement.management.commands.update_biz_score_status.ScoreStore.get_record_count', return_value=100):
+        with patch('biz.djangoapps.ga_achievement.management.commands.update_biz_score_status.ScoreStore.get_count', return_value=100):
             call_command('update_biz_score_status', self.contract.id)
 
         for i in range(3):
@@ -926,7 +926,7 @@ class UpdateBizScoreStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEnrol
             user = UserFactory.create()
             self._register_contract(self.contract, user, additional_value=ADDITIONAL_SETTINGS_VALUE)
 
-        with patch('biz.djangoapps.ga_achievement.management.commands.update_biz_score_status.ScoreStore.get_record_count', return_value=0):
+        with patch('biz.djangoapps.ga_achievement.management.commands.update_biz_score_status.ScoreStore.get_count', return_value=0):
             call_command('update_biz_score_status', self.contract.id)
 
         self.mock_log.info.assert_any_call(
@@ -938,20 +938,20 @@ class UpdateBizScoreStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEnrol
 
         for i in range(3):
             self.mock_log.warning.assert_any_call(
-                u'Can not store(try:{},sleep:0) ScoreStore record count(0) does not mutch Contract Register record count(100) or records count(100). contract_id={} course_id={}'.format(
+                u'Can not store(try:{},sleep:0) ScoreStore record count(-1) does not match Contract Register record count(100) or records count(100). contract_id={} course_id={}'.format(
                     i + 1, self.contract.id, self.course1.id))
         for i in range(3):
             self.mock_log.warning.assert_any_call(
-                u'Can not store(try:{},sleep:0) ScoreStore record count(0) does not mutch Contract Register record count(100) or records count(100). contract_id={} course_id={}'.format(
+                u'Can not store(try:{},sleep:0) ScoreStore record count(-1) does not match Contract Register record count(100) or records count(100). contract_id={} course_id={}'.format(
                     i + 1, self.contract.id, self.course2.id))
 
         mock_time_sleep.assert_not_called()
 
         self.mock_log.error.assert_any_call(
-            u'Unexpected error occurred: ScoreStore record count(0) does not mutch Contract Register record count(100) or records count(100). contract_id={} course_id={}'.format(
+            u'Unexpected error occurred: ScoreStore record count(-1) does not match Contract Register record count(100) or records count(100). contract_id={} course_id={}'.format(
                 self.contract.id, self.course1.id))
         self.mock_log.error.assert_any_call(
-            u'Unexpected error occurred: ScoreStore record count(0) does not mutch Contract Register record count(100) or records count(100). contract_id={} course_id={}'.format(
+            u'Unexpected error occurred: ScoreStore record count(-1) does not match Contract Register record count(100) or records count(100). contract_id={} course_id={}'.format(
                 self.contract.id, self.course2.id))
 
         ScoreBatchStatus.objects.get(contract=self.contract, course_id=self.course1.id, status=BATCH_STATUS_ERROR, student_count=None)

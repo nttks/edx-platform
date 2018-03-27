@@ -757,7 +757,7 @@ class UpdateBizPlaybackStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEn
             user = UserFactory.create()
             self._register_contract(self.multiple_courses_contract, user, additional_value=ADDITIONAL_SETTINGS_VALUE)
 
-        with patch('biz.djangoapps.ga_achievement.management.commands.update_biz_playback_status.PlaybackStore.get_record_count', return_value=100):
+        with patch('biz.djangoapps.ga_achievement.management.commands.update_biz_playback_status.PlaybackStore.get_count', return_value=100):
             call_command('update_biz_playback_status', self.multiple_courses_contract.id)
 
         for i in range(3):
@@ -797,7 +797,7 @@ class UpdateBizPlaybackStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEn
             user = UserFactory.create()
             self._register_contract(self.multiple_courses_contract, user, additional_value=ADDITIONAL_SETTINGS_VALUE)
 
-        with patch('biz.djangoapps.ga_achievement.management.commands.update_biz_playback_status.PlaybackStore.get_record_count', return_value=0):
+        with patch('biz.djangoapps.ga_achievement.management.commands.update_biz_playback_status.PlaybackStore.get_count', return_value=0):
             call_command('update_biz_playback_status', self.multiple_courses_contract.id)
 
         self.mock_log.info.assert_any_call(
@@ -809,20 +809,20 @@ class UpdateBizPlaybackStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEn
 
         for i in range(3):
             self.mock_log.warning.assert_any_call(
-                u'Can not store(try:{},sleep:0) PlaybackStore record count(0) does not mutch Contract Register record count(100) or records count(100). contract_id={} course_id={}'.format(
+                u'Can not store(try:{},sleep:0) PlaybackStore record count(-1) does not match Contract Register record count(100) or records count(100). contract_id={} course_id={}'.format(
                     i + 1, self.multiple_courses_contract.id, self.single_spoc_video_course.id))
         for i in range(3):
             self.mock_log.warning.assert_any_call(
-                u'Can not store(try:{},sleep:0) PlaybackStore record count(0) does not mutch Contract Register record count(100) or records count(100). contract_id={} course_id={}'.format(
+                u'Can not store(try:{},sleep:0) PlaybackStore record count(-1) does not match Contract Register record count(100) or records count(100). contract_id={} course_id={}'.format(
                     i + 1, self.multiple_courses_contract.id, self.multiple_spoc_video_course.id))
 
         mock_time_sleep.assert_not_called()
 
         self.mock_log.error.assert_any_call(
-            u'Unexpected error occurred: PlaybackStore record count(0) does not mutch Contract Register record count(100) or records count(100). contract_id={} course_id={}'.format(
+            u'Unexpected error occurred: PlaybackStore record count(-1) does not match Contract Register record count(100) or records count(100). contract_id={} course_id={}'.format(
                 self.multiple_courses_contract.id, self.single_spoc_video_course.id))
         self.mock_log.error.assert_any_call(
-            u'Unexpected error occurred: PlaybackStore record count(0) does not mutch Contract Register record count(100) or records count(100). contract_id={} course_id={}'.format(
+            u'Unexpected error occurred: PlaybackStore record count(-1) does not match Contract Register record count(100) or records count(100). contract_id={} course_id={}'.format(
                 self.multiple_courses_contract.id, self.multiple_spoc_video_course.id))
 
         PlaybackBatchStatus.objects.get(contract=self.multiple_courses_contract, course_id=self.single_spoc_video_course.id, status=BATCH_STATUS_ERROR, student_count=None)

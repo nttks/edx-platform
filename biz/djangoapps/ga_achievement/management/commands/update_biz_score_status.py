@@ -321,7 +321,7 @@ class Command(BaseCommand):
                             score_store.remove_documents()
 
                             # Confirm remove_documents.
-                            count_score_store = score_store.get_record_count()
+                            count_score_store = score_store.get_count()
                             if count_score_store == 0:
                                 log.info(u"Removed ScoreStore records. contract_id={} course_id={}".format(
                                     contract.id, unicode_course_key))
@@ -342,21 +342,19 @@ class Command(BaseCommand):
 
                         score_store.set_documents([column])
                         score_store.set_documents(records)
-                        score_store.drop_indexes()
-                        score_store.ensure_indexes()
 
-                        # Confirm set_documents.
-                        count_score_store = score_store.get_record_count()
+                        # Confirm set_documents. (compare with record count without column)
+                        count_score_store = score_store.get_count() - 1
                         if count_score_store == count_contract_register == len_records:
                             log.info(u"Stored ScoreStore record count({}). contract_id={} course_id={}".format(
                                 count_score_store, contract.id, unicode_course_key))
                             break;
 
                         if i >= settings.MAX_RETRY_SET_DOCUMENTS:
-                            raise Exception(u"ScoreStore record count({}) does not mutch Contract Register record count({}) or records count({}). contract_id={} course_id={}".format(
+                            raise Exception(u"ScoreStore record count({}) does not match Contract Register record count({}) or records count({}). contract_id={} course_id={}".format(
                                 count_score_store, count_contract_register, len_records, contract.id, unicode_course_key))
 
-                        log.warning(u"Can not store(try:{},sleep:{}) ScoreStore record count({}) does not mutch Contract Register record count({}) or records count({}). contract_id={} course_id={}".format(
+                        log.warning(u"Can not store(try:{},sleep:{}) ScoreStore record count({}) does not match Contract Register record count({}) or records count({}). contract_id={} course_id={}".format(
                             i + 1, settings.SLEEP_RETRY_SET_DOCUMENTS, count_score_store, count_contract_register, len_records, contract.id, unicode_course_key))
                         if settings.SLEEP_RETRY_SET_DOCUMENTS:
                             time.sleep(settings.SLEEP_RETRY_SET_DOCUMENTS)
