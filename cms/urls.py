@@ -130,7 +130,7 @@ urlpatterns += patterns(
 JS_INFO_DICT = {
     'domain': 'djangojs',
     # We need to explicitly include external Django apps that are not in LOCALE_PATHS.
-    'packages': ('openassessment', 'jwplayerxblock'),
+    'packages': ('openassessment', 'jwplayerxblock', 'poll'),
 }
 
 urlpatterns += patterns(

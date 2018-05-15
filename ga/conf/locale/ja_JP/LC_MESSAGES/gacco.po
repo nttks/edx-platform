@@ -60,6 +60,12 @@ msgstr "失効"
 msgid "This course can not be unenrolled by user."
 msgstr "本講座はユーザーが受講取消しを行うことはできません"
 
+#: common/lib/xmodule/xmodule/capa_base.py
+msgid ""
+"Your answers have been saved but not graded. Click '{button_name}' to grade "
+"them."
+msgstr "回答は保存されました。提出する場合は、'{button_name}' をクリックしてください。"
+
 #: common/lib/xmodule/xmodule/course_module.py
 msgid "Course Is Hidden"
 msgstr "コース非表示"
