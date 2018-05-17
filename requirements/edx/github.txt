@@ -102,6 +102,6 @@ git+https://github.com/edx/xblock-lti-consumer.git@v1.0.0#egg=xblock-lti-consume
 
 # Third Party XBlocks
 -e git+https://github.com/mitodl/edx-sga@172a90fd2738f8142c10478356b2d9ed3e55334a#egg=edx-sga
--e git+https://github.com/open-craft/xblock-poll.git@v1.3.5#egg=xblock-poll
+-e git+https://github.com/nttks/xblock-poll.git@gacco/dogwood#egg=xblock-poll
 -e git+https://github.com/nttks/gacco-jwplayerxblock.git@gacco/dogwood#egg=jwplayerxblock==0.6.7
--e git+https://github.com/Stanford-Online/xblock-free-text-response@master#egg=xblock-free-text-response
+-e git+https://github.com/nttks/xblock-free-text-response.git@gacco/dogwood#egg=xblock-free-text-response
