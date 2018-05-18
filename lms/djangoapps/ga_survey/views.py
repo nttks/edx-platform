@@ -69,7 +69,8 @@ def survey_ajax(request):
         log.warning("Illegal parameter. survey_answer=%s" % survey_answer)
         raise Http404
     try:
-        json.loads(survey_answer)
+        # Unicode escape the survey answer.
+        survey_answer = json.dumps(json.loads(survey_answer))
     except:
         log.warning("Illegal parameter. survey_answer=%s" % survey_answer)
         raise Http404

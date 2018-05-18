@@ -31,7 +31,15 @@ class SuveyTests(TestCase):
         self.course_id = CourseLocator.from_string('edX/test/course1')
         self.unit_id = '22222222222222222222222222222222'
         self.survey_name = 'survey #2'
-        self.survey_answer = '{"Q1": "1", "Q2": ["2", "3"], "Q3": "test"}'
+        self.survey_answer = u'{"Q1": "1", "Q2": ["2", "3"], "Q3": "\U00000053\U00000054\U00000041\U00000052' \
+                             u'\U00000054\U00002600\U00000074\U00000065\U00000073\U00000074\U0001F600\U00000074' \
+                             u'\U00000065\U00000073\U00000074\U0002000B\U00000074\U00000065\U00000073\U00000074' \
+                             u'\U0001F1EF\U0001F1F5\U00000074\U00000065\U00000073\U00000074\U0001F3F4\U000E0067' \
+                             u'\U000E0062\U000E0065\U000E006E\U000E0067\U000E007F\U00000074\U00000065\U00000073' \
+                             u'\U00000074\U0001F468\U0000200D\U0001F469\U0000200D\U0001F467\U0000200D\U0001F466' \
+                             u'\U00000045\U0000004E\U00000044"}'
+        self.survey_answer = self.survey_answer.encode('utf-8')
+        self.survey_answer_expected_dict = json.loads(self.survey_answer)
 
     def _post_as_ajax(self, path, data):
         return self.request_factory.post(path, urllib.urlencode(data), content_type='application/json')
@@ -167,7 +175,17 @@ class SuveyTests(TestCase):
         )
         self.assertEquals(len(submissions), 1)
         self.assertEquals(submissions[0].survey_name, self.survey_name)
-        self.assertEquals(submissions[0].survey_answer, self.survey_answer)
+
+        ans_dict = submissions[0].get_survey_answer()
+        keyset = ans_dict.keys()
+        keys = sorted(keyset)
+        self.assertEquals(len(keys), 3)
+        self.assertEquals(len(ans_dict), 3)
+        self.assertEquals(len(self.survey_answer_expected_dict), 3)
+        for key in keys:
+            value = ans_dict.get(key, 'N/A')
+            value_expected = self.survey_answer_expected_dict.get(key, 'N/A')
+            self.assertEquals(value, value_expected)
 
     def test_survey_ajax_fail_when_already_submitted(self):
         """Ensures that /survey_ajax/ fails when survey_submission already exists"""
