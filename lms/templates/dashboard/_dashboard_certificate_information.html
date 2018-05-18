@@ -30,8 +30,10 @@ else:
 % if cert_status['status'] == 'processing':
   <p class="message-copy">${_("Final course details are being wrapped up at this time. Your final standing will be available shortly.")}</p>
 % elif cert_status['status'] in ('generating', 'ready', 'notpassing', 'restricted', 'auditing'):
+  % if course_overview.lowest_passing_grade > 0:
   <p class="message-copy">${_("Your final grade:")}
   <span class="grade-value">${"{0:.0f}%".format(float(cert_status['grade'])*100)}</span>
+  % endif
     % if cert_status['status'] == 'notpassing':
       ${_("Grade required for a {cert_name_short}:").format(cert_name_short=cert_name_short)}
       <span class="grade-value">${"{0:.0f}%".format(float(course_overview.lowest_passing_grade)*100)}</span>
