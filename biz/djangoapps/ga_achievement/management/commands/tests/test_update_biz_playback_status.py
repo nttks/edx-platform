@@ -27,6 +27,7 @@ from biz.djangoapps.ga_achievement.tests.factories import PlaybackBatchStatusFac
 from biz.djangoapps.ga_contract.tests.factories import ContractAuthFactory
 from biz.djangoapps.ga_login.tests.factories import BizUserFactory
 from biz.djangoapps.util.decorators import ExitWithWarning
+from biz.djangoapps.util.hash_utils import to_target_id
 from biz.djangoapps.util.tests.testcase import BizStoreTestBase
 from lms.djangoapps.courseware.tests.helpers import LoginEnrollmentTestCase
 from opaque_keys.edx.keys import CourseKey
@@ -225,7 +226,7 @@ class UpdateBizPlaybackStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEn
         )
 
         # Setup mock
-        patcher_aggregate = patch.object(update_biz_playback_status.PlaybackLogStore, 'aggregate')
+        patcher_aggregate = patch.object(update_biz_playback_status.PlaybackLogStore, 'aggregate_sum')
         self.mock_aggregate = patcher_aggregate.start()
         self.mock_aggregate.return_value = {}
         self.addCleanup(patcher_aggregate.stop)
@@ -497,10 +498,10 @@ class UpdateBizPlaybackStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEn
         self._profile(self.user)
         self._register_contract(self.single_spoc_video_contract, self.user, additional_value=ADDITIONAL_SETTINGS_VALUE)
 
-        _aggregate_duration_by_vertical = {
-            u'vertical_x1a': 100.0,
+        target_id = to_target_id(self.user.id)
+        self.mock_aggregate.return_value = {
+            u'vertical_x1a___{}'.format(target_id): 100.0,
         }
-        self.mock_aggregate.return_value = _aggregate_duration_by_vertical
         call_command('update_biz_playback_status', self.single_spoc_video_contract.id)
 
         def assert_playback(contract, course):
@@ -544,12 +545,12 @@ class UpdateBizPlaybackStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEn
         self._profile(self.user)
         self._register_contract(self.multiple_spoc_video_contract, self.user, additional_value=ADDITIONAL_SETTINGS_VALUE)
 
-        _aggregate_duration_by_vertical = {
-            u'vertical_x1a': 100.0,
-            u'vertical_x1c': 200.0,
-            u'vertical_y1a': 400.0,
+        target_id = to_target_id(self.user.id)
+        self.mock_aggregate.return_value = {
+            u'vertical_x1a___{}'.format(target_id): 100.0,
+            u'vertical_x1c___{}'.format(target_id): 200.0,
+            u'vertical_y1a___{}'.format(target_id): 400.0,
         }
-        self.mock_aggregate.return_value = _aggregate_duration_by_vertical
         call_command('update_biz_playback_status', self.multiple_spoc_video_contract.id)
 
         def assert_playback(contract, course):

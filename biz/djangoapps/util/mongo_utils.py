@@ -10,6 +10,8 @@ import pytz
 from mongodb_proxy import autoretry_read
 from pymongo import ASCENDING
 
+from django.conf import settings
+
 from biz.djangoapps.util.biz_mongo_connection import BizMongoConnection
 
 log = logging.getLogger(__name__)
@@ -21,6 +23,8 @@ class BizStore(object):
     """
     Class for a MongoDB operation
     """
+
+    FIELD_DELIMITER = '___'
 
     def __init__(self, store_config, key_conditions=None, key_index_columns=None):
         """
@@ -138,6 +142,58 @@ class BizStore(object):
             return dict([(d['_id'], d['total']) for d in result])
         except Exception as e:
             log.error("Error occurred while processing aggregate to MongoDB: %s" % e)
+            raise
+
+    @autoretry_read()
+    def aggregate_sum(self, key_field_names, sum_field_name, conditions=None):
+        """
+        Aggregate the amount by grouping the specified key
+
+        :param key_field_names: field names for grouping
+        :param sum_field_name: field name for aggregation sum
+        :param conditions: dict for conditions
+        :return: dict
+            e.g.) 1 key
+            {
+                u'key1': 100.0,
+                u'key2': 200.0,
+                u'key3': 300.0,
+            }
+            e.g.) 2 keys
+            {
+                u'key1___KEY1': 100.0,
+                u'key2___KEY2': 200.0,
+                u'key3___KEY3': 300.0,
+            }
+        """
+        if conditions is None:
+            conditions = {}
+        _conditions = copy.deepcopy(self._key_conditions)
+        _conditions.update(conditions)
+        try:
+            all_result = {}
+            skip = 0
+            limit = settings.AGGREGATE_FETCH_LIMIT
+            while (True):
+                result = {
+                    self.FIELD_DELIMITER.join([record['_id'][key_field_name] for key_field_name in key_field_names]): record['_sum']
+                    for record in self._collection.aggregate([
+                        {'$match': _conditions},
+                        {'$group': {'_id': { key: '${}'.format(key) for key in key_field_names }, '_sum': {'$sum': '${}'.format(sum_field_name)}}},
+                        {'$sort': {'_id': 1}},
+                        {'$skip': skip},
+                        {'$limit': limit},
+                    ], allowDiskUse=True)['result']
+                }
+                len_result = len(result)
+                if len_result > 0:
+                    all_result.update(result)
+                if len_result < limit:
+                    break
+                skip += limit
+            return all_result
+        except Exception as e:
+            log.error("Error occurred while processing aggregate sum to MongoDB: %s" % e)
             raise
 
     @autoretry_read()

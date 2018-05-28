@@ -19,17 +19,18 @@ class PlaybackLogStore(BizStore):
     FIELD_DURATION = 'duration'
     FIELD_CREATED_AT = 'created_at'
 
-    def __init__(self, course_id, target_id):
+    def __init__(self, course_id=None, target_id=None):
         """
         Set initial information
 
         :param course_id: course id
         :param target_id: target id
         """
-        key_conditions = {
-            self.FIELD_COURSE_ID: course_id,
-            self.FIELD_TARGET_ID: target_id,
-        }
+        key_conditions = {}
+        if course_id:
+            key_conditions[self.FIELD_COURSE_ID] = course_id
+        if target_id:
+            key_conditions[self.FIELD_TARGET_ID] = target_id
         super(PlaybackLogStore, self).__init__(settings.BIZ_MONGO['playback_log'], key_conditions)
 
     def aggregate_duration_by_vertical(self):
@@ -45,3 +46,20 @@ class PlaybackLogStore(BizStore):
             }
         """
         return self.aggregate(self.FIELD_VERTICAL_ID, self.FIELD_DURATION)
+
+    def aggregate_duration_by_vertical_and_target(self):
+        """
+        Aggregate the amount of duration by grouping vertical id and target id
+
+        :return: summary dict
+            e.g.)
+            {
+                u'bc023973d2bce92f0ee4368e1ceae671f2ad071ae0e92e5a9e8b2a224460e689@86bcaab2af78478e8a1b5f05dd5b5378': 100.0,
+                u'ca42767fa83addcb9f88274fd326bbef4f480b10d77310afae7f967d23bfed5b@2cecf75ed74c4cb6a80f264b7020b490': 200.0,
+                u'20ef8b87fc7c29ccdb5e530bd246a82cdc8328aded830f771ffb0794c0193bc9@bd4ffeb869ba437683dc754685eb1ce1': 300.0,
+            }
+        """
+        return self.aggregate_sum(
+            [self.FIELD_VERTICAL_ID, self.FIELD_TARGET_ID],
+            self.FIELD_DURATION,
+        )

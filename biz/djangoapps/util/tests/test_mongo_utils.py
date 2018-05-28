@@ -1,11 +1,13 @@
 """
 Tests for mongo_utils
 """
-from collections import OrderedDict
 import copy
+import random
+from collections import OrderedDict
 from ddt import data, ddt, unpack
 from mock import MagicMock
 
+from django.test.utils import override_settings
 from pymongo.errors import AutoReconnect
 
 from biz.djangoapps.util.mongo_utils import BizStore
@@ -317,3 +319,82 @@ class BizStoreAggregateTest(BizStoreTestBase):
         with self.assertRaises(AutoReconnect):
             self.test_store.aggregate('subject', 'score')
         self.assertEqual(5, self.test_store._collection.aggregate.call_count)
+
+
+@override_settings(AGGREGATE_FETCH_LIMIT=1)
+class BizStoreAggregateSumTest(BizStoreTestBase):
+
+    def setUp(self):
+        super(BizStoreAggregateSumTest, self).setUp()
+        self.test_store = BizStore(self.BIZ_MONGO.values()[0])
+        self.test_store.set_documents([
+            {'user': 'user1', 'gender': 'male', 'subject': 'math', 'score': 10},
+            {'user': 'user1', 'gender': 'male', 'subject': 'science', 'score': 20},
+            {'user': 'user2', 'gender': 'male', 'subject': 'math', 'score': 30},
+            {'user': 'user2', 'gender': 'male', 'subject': 'science', 'score': 40},
+            {'user': 'user3', 'gender': 'female', 'subject': 'math', 'score': 50},
+            {'user': 'user3', 'gender': 'female', 'subject': 'science', 'score': 60},
+        ])
+
+    def test_aggregate_sum(self):
+        self.assertDictEqual({
+            u'science': 120.0,
+            u'math': 90.0,
+        }, self.test_store.aggregate_sum(['subject'], 'score'))
+
+    def test_aggregate_sum_with_query(self):
+        self.assertDictEqual({
+            u'science': 60.0,
+            u'math': 40.0,
+        }, self.test_store.aggregate_sum(['subject'], 'score', {'gender': 'male'}))
+
+    def test_aggregate_sum_exception(self):
+        self.test_store._collection.aggregate = MagicMock(side_effect=_Exception())
+        with self.assertRaises(_Exception):
+            self.test_store.aggregate_sum(['subject'], 'score')
+        self.assertEqual(1, self.test_store._collection.aggregate.call_count)
+
+    def test_aggregate_sum_auto_retry(self):
+        self.test_store._collection.aggregate = MagicMock(side_effect=AutoReconnect())
+        with self.assertRaises(AutoReconnect):
+            self.test_store.aggregate_sum(['subject'], 'score')
+        self.assertEqual(5, self.test_store._collection.aggregate.call_count)
+
+    def test_aggregate_sum_multiple(self):
+        self.assertDictEqual({
+            u'science___male': 60.0,
+            u'science___female': 60.0,
+            u'math___male': 40.0,
+            u'math___female': 50.0,
+        }, self.test_store.aggregate_sum(['subject', 'gender'], 'score'))
+
+    def test_aggregate_sum_multiple_with_query(self):
+        self.assertDictEqual({
+            u'science___male': 40.0,
+            u'science___female': 60.0,
+            u'math___male': 30.0,
+            u'math___female': 50.0,
+        }, self.test_store.aggregate_sum(['subject', 'gender'], 'score', {'score': {'$gte': 30}}))
+
+
+@ddt
+@override_settings(AGGREGATE_FETCH_LIMIT=100)
+class BizStoreAggregateSumLimitTest(BizStoreTestBase):
+
+    def setUp(self):
+        super(BizStoreAggregateSumLimitTest, self).setUp()
+        self.test_store = BizStore(self.BIZ_MONGO.values()[0])
+
+    @data(99, 100, 101, 199, 200, 201, 999, 1000, 1001)
+    def test_aggregate_sum(self, user_count):
+        subjects = ['math', 'science', 'geography']
+        for s in subjects:
+            self.test_store.set_documents([
+                {
+                    'user': 'user{}'.format(i),
+                    'subject': s,
+                    'score': random.randrange(100)
+                } for i in range(user_count)
+            ])
+        self.assertEqual(user_count, len(self.test_store.aggregate_sum(['user'], 'score')))
+        self.assertEqual(user_count * len(subjects), len(self.test_store.aggregate_sum(['user', 'subject'], 'score')))

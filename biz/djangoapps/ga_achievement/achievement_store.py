@@ -25,7 +25,6 @@ class AchievementStoreBase(BizStore):
     FIELD_DOCUMENT_TYPE = 'document_type'
     FIELD_DOCUMENT_TYPE__COLUMN = 'column'
     FIELD_DOCUMENT_TYPE__RECORD = 'record'
-    FIELD_DELIMITER = '___'
     FIELD_LOGIN_CODE = 'Login Code'
     FIELD_FULL_NAME = 'Full Name'
     FIELD_USERNAME = 'Username'

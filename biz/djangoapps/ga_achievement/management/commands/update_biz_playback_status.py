@@ -186,6 +186,9 @@ class Command(BaseCommand):
                     if not course:
                         raise CourseDoesNotExist()
 
+                    # Get duration summary from playback log store
+                    duration_summary = PlaybackLogStore(unicode_course_key).aggregate_duration_by_vertical_and_target()
+
                     # Get target verticals from course
                     grouped_target_verticals = get_grouped_target_verticals(course)
 
@@ -260,15 +263,13 @@ class Command(BaseCommand):
                             # Note: Set dummy value here to keep its order
                             record[_(PlaybackStore.FIELD_TOTAL_PLAYBACK_TIME)] = None
 
-                            # Get duration summary from playback log store
-                            playback_log_store = PlaybackLogStore(unicode_course_key, to_target_id(user.id))
-                            duration_summary = playback_log_store.aggregate_duration_by_vertical()
+                            target_id = to_target_id(user.id)
 
                             total_playback_time = 0
                             for target_verticals in grouped_target_verticals.values():
                                 section_playback_time = 0
                                 for target_vertical in target_verticals:
-                                    duration = duration_summary.get(target_vertical.vertical_id, 0)
+                                    duration = duration_summary.get(PlaybackStore.FIELD_DELIMITER.join([target_vertical.vertical_id, target_id]), 0)
                                     section_playback_time = section_playback_time + duration
                                     total_playback_time = total_playback_time + duration
                                     # Playback Time for each vertical
