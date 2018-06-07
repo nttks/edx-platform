@@ -232,6 +232,9 @@ class AccessTestCase(LoginEnrollmentTestCase, ModuleStoreTestCase):
         ))
 
         self.assertFalse(access._has_access_to_course(
+            self.anonymous_user, 'beta_tester', self.course.id
+        ))
+        self.assertFalse(access._has_access_to_course(
             self.anonymous_user, 'staff', self.course.id
         ))
         self.assertFalse(access._has_access_to_course(
@@ -239,13 +242,30 @@ class AccessTestCase(LoginEnrollmentTestCase, ModuleStoreTestCase):
         ))
 
         self.assertTrue(access._has_access_to_course(
+            self.global_staff, 'beta_tester', self.course.id
+        ))
+        self.assertTrue(access._has_access_to_course(
             self.global_staff, 'staff', self.course.id
         ))
         self.assertTrue(access._has_access_to_course(
             self.global_staff, 'instructor', self.course.id
         ))
 
+        # A user has beta_tester access if they are in the beta_tester group
+        self.assertTrue(access._has_access_to_course(
+            self.beta_user, 'beta_tester', self.course.id
+        ))
+        self.assertFalse(access._has_access_to_course(
+            self.beta_user, 'staff', self.course.id
+        ))
+        self.assertFalse(access._has_access_to_course(
+            self.beta_user, 'instructor', self.course.id
+        ))
+
         # A user has staff access if they are in the staff group
+        self.assertTrue(access._has_access_to_course(
+            self.course_staff, 'beta_tester', self.course.id
+        ))
         self.assertTrue(access._has_access_to_course(
             self.course_staff, 'staff', self.course.id
         ))
@@ -253,7 +273,21 @@ class AccessTestCase(LoginEnrollmentTestCase, ModuleStoreTestCase):
             self.course_staff, 'instructor', self.course.id
         ))
 
+        # ga_course_scorer has staff access
+        self.assertTrue(access._has_access_to_course(
+            self.ga_course_scorer, 'beta_tester', self.course.id
+        ))
+        self.assertTrue(access._has_access_to_course(
+            self.ga_course_scorer, 'staff', self.course.id
+        ))
+        self.assertFalse(access._has_access_to_course(
+            self.ga_course_scorer, 'instructor', self.course.id
+        ))
+
         # A user has staff and instructor access if they are in the instructor group
+        self.assertTrue(access._has_access_to_course(
+            self.course_instructor, 'beta_tester', self.course.id
+        ))
         self.assertTrue(access._has_access_to_course(
             self.course_instructor, 'staff', self.course.id
         ))
@@ -261,13 +295,19 @@ class AccessTestCase(LoginEnrollmentTestCase, ModuleStoreTestCase):
             self.course_instructor, 'instructor', self.course.id
         ))
 
-        # A user does not have staff or instructor access if they are
-        # not in either the staff or the the instructor group
+        # A user does not have staff or instructor or beta_tester access if they are
+        # not in either the staff or the the instructor or the beta_tester group
+        self.assertFalse(access._has_access_to_course(
+            self.student, 'beta_tester', self.course.id
+        ))
         self.assertFalse(access._has_access_to_course(
             self.student, 'staff', self.course.id
         ))
         self.assertFalse(access._has_access_to_course(
             self.student, 'instructor', self.course.id
+        ))
+        self.assertFalse(access._has_access_to_course(
+            self.ga_old_course_viewer, 'beta_tester', self.course.id
         ))
         self.assertFalse(access._has_access_to_course(
             self.ga_old_course_viewer, 'staff', self.course.id
@@ -276,16 +316,13 @@ class AccessTestCase(LoginEnrollmentTestCase, ModuleStoreTestCase):
             self.ga_old_course_viewer, 'instructor', self.course.id
         ))
         self.assertFalse(access._has_access_to_course(
+            self.ga_global_course_creator, 'beta_tester', self.course.id
+        ))
+        self.assertFalse(access._has_access_to_course(
             self.ga_global_course_creator, 'staff', self.course.id
         ))
         self.assertFalse(access._has_access_to_course(
             self.ga_global_course_creator, 'instructor', self.course.id
-        ))
-        self.assertTrue(access._has_access_to_course(
-            self.ga_course_scorer, 'staff', self.course.id
-        ))
-        self.assertFalse(access._has_access_to_course(
-            self.ga_course_scorer, 'instructor', self.course.id
         ))
 
         self.assertFalse(access._has_access_to_course(

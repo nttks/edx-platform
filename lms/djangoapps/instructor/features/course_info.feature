@@ -1,6 +1,6 @@
 @shard_2
 Feature: LMS.Instructor Dash Course Info
-    As an admin or an instructor or course staff,
+    As an admin or an instructor or course staff or beta tester,
     In order to manage my class
     I want to view course info.
 
@@ -13,3 +13,4 @@ Feature: LMS.Instructor Dash Course Info
        | admin         |
        | instructor    |
        | staff         |
+       | beta_tester   |

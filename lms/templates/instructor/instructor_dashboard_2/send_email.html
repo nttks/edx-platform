@@ -10,14 +10,14 @@
       <select id="id_to" name="send_to">
         <option value="myself">${_("Myself")}</option>
         %if to_option == "staff":
-        <option value="staff" selected="selected">${_("Staff and admins")}</option>
+        <option value="staff" selected="selected">${_("Staff and beta testers and admins")}</option>
         %else:
-        <option value="staff">${_("Staff and admins")}</option>
+        <option value="staff">${_("Staff and beta testers and admins")}</option>
           %endif
           %if to_option == "all":
-            <option value="all" selected="selected">${_("All (students, staff, and admins)")}</option>
+            <option value="all" selected="selected">${_("All (students and staff and beta testers and admins)")}</option>
           %else:
-      <option value="all">${_("All (students, staff, and admins)")}</option>
+      <option value="all">${_("All (students and staff and beta testers and admins)")}</option>
       %endif
         % if section_data['advanced_courses']:
           % if to_option == "advanced_course":

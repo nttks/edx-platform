@@ -196,11 +196,12 @@ def require_level(level):
     Assumes that request is in args[0].
     Assumes that course_id is in kwargs['course_id'].
 
-    `level` is in ['instructor', 'staff']
+    `level` is in ['instructor', 'staff', 'beta_tester']
     if `level` is 'staff', instructors will also be allowed, even
         if they are not in the staff group.
     """
-    if level not in ['instructor', 'staff']:
+    # Note: Add beta_tester. (#2478-2)
+    if level not in ['instructor', 'staff', 'beta_tester']:
         raise ValueError("unrecognized level '{}'".format(level))
 
     def decorator(func):  # pylint: disable=missing-docstring
@@ -871,7 +872,7 @@ def list_course_role_members(request, course_id):
 @require_POST
 @ensure_csrf_cookie
 @cache_control(no_cache=True, no_store=True, must_revalidate=True)
-@require_level('staff')
+@require_level('beta_tester')
 def get_problem_responses(request, course_id):
     """
     Initiate generation of a CSV file containing all student answers
@@ -917,14 +918,14 @@ def get_problem_responses(request, course_id):
 @require_POST
 @ensure_csrf_cookie
 @cache_control(no_cache=True, no_store=True, must_revalidate=True)
-@require_level('staff')
+@require_level('beta_tester')
 def get_grading_config(request, course_id):
     """
     Respond with json which contains a html formatted grade summary.
     """
     course_id = SlashSeparatedCourseKey.from_deprecated_string(course_id)
     course = get_course_with_access(
-        request.user, 'staff', course_id, depth=None
+        request.user, 'beta_tester', course_id, depth=None
     )
     grading_config_summary = instructor_analytics.basic.dump_grading_context(course)
 
@@ -1075,7 +1076,7 @@ def re_validate_invoice(obj_invoice):
 @transaction.non_atomic_requests
 @ensure_csrf_cookie
 @cache_control(no_cache=True, no_store=True, must_revalidate=True)
-@require_level('staff')
+@require_level('beta_tester')
 def get_issued_certificates(request, course_id):
     """
     Responds with JSON if CSV is not required. contains a list of issued certificates.
@@ -1116,7 +1117,7 @@ def get_issued_certificates(request, course_id):
 @require_POST
 @ensure_csrf_cookie
 @cache_control(no_cache=True, no_store=True, must_revalidate=True)
-@require_level('staff')
+@require_level('beta_tester')
 def get_students_features(request, course_id, csv=False):  # pylint: disable=redefined-outer-name
     """
     Respond with json which contains a summary of all enrolled students profile information.
@@ -1196,7 +1197,7 @@ def get_students_features(request, course_id, csv=False):  # pylint: disable=red
 @require_POST
 @ensure_csrf_cookie
 @cache_control(no_cache=True, no_store=True, must_revalidate=True)
-@require_level('staff')
+@require_level('beta_tester')
 def get_students_who_may_enroll(request, course_id):
     """
     Initiate generation of a CSV file containing information about
@@ -1752,7 +1753,7 @@ def spent_registration_codes(request, course_id):
 
 @ensure_csrf_cookie
 @cache_control(no_cache=True, no_store=True, must_revalidate=True)
-@require_level('staff')
+@require_level('beta_tester')
 def get_anon_ids(request, course_id):  # pylint: disable=unused-argument
     """
     Respond with 2-column CSV output of user-id, anonymized-user-id
@@ -1843,7 +1844,7 @@ def reset_student_attempts(request, course_id):
     """
     course_id = SlashSeparatedCourseKey.from_deprecated_string(course_id)
     course = get_course_with_access(
-        request.user, 'staff', course_id, depth=None
+        request.user, 'beta_tester', course_id, depth=None
     )
 
     problem_to_reset = strip_if_string(request.POST.get('problem_to_reset'))
@@ -2078,7 +2079,7 @@ def rescore_entrance_exam(request, course_id):
 @require_POST
 @ensure_csrf_cookie
 @cache_control(no_cache=True, no_store=True, must_revalidate=True)
-@require_level('staff')
+@require_level('beta_tester')
 def list_background_email_tasks(request, course_id):  # pylint: disable=unused-argument
     """
     List background email tasks.
@@ -2097,7 +2098,7 @@ def list_background_email_tasks(request, course_id):  # pylint: disable=unused-a
 @require_POST
 @ensure_csrf_cookie
 @cache_control(no_cache=True, no_store=True, must_revalidate=True)
-@require_level('staff')
+@require_level('beta_tester')
 def list_email_content(request, course_id):  # pylint: disable=unused-argument
     """
     List the content of bulk emails sent
@@ -2116,7 +2117,7 @@ def list_email_content(request, course_id):  # pylint: disable=unused-argument
 @require_POST
 @ensure_csrf_cookie
 @cache_control(no_cache=True, no_store=True, must_revalidate=True)
-@require_level('staff')
+@require_level('beta_tester')
 def list_instructor_tasks(request, course_id):
     """
     List instructor tasks.
@@ -2197,7 +2198,7 @@ def list_entrance_exam_instructor_tasks(request, course_id):  # pylint: disable=
 @require_POST
 @ensure_csrf_cookie
 @cache_control(no_cache=True, no_store=True, must_revalidate=True)
-@require_level('staff')
+@require_level('beta_tester')
 def list_report_downloads(_request, course_id):
     """
     List grade CSV files that are available for download for this course.
@@ -2354,7 +2355,7 @@ def list_forum_members(request, course_id):
 @require_POST
 @ensure_csrf_cookie
 @cache_control(no_cache=True, no_store=True, must_revalidate=True)
-@require_level('staff')
+@require_level('beta_tester')
 @require_post_params(send_to="sending to whom", subject="subject line", message="message text")
 def send_email(request, course_id):
     """
@@ -2660,7 +2661,7 @@ def enable_certificate_generation(request, course_id=None):
 @require_POST
 @ensure_csrf_cookie
 @cache_control(no_cache=True, no_store=True, must_revalidate=True)
-@require_level('staff')
+@require_level('beta_tester')
 def get_survey(request, course_id):  # pylint: disable=W0613
     """
     Gets survey result as a CSV(UTF-16) file.
@@ -2671,7 +2672,7 @@ def get_survey(request, course_id):  # pylint: disable=W0613
 @require_POST
 @ensure_csrf_cookie
 @cache_control(no_cache=True, no_store=True, must_revalidate=True)
-@require_level('staff')
+@require_level('beta_tester')
 def get_survey_utf8(request, course_id):  # pylint: disable=W0613
     """
     Gets survey result as a CSV(UTF-8) file.
@@ -3119,7 +3120,7 @@ def generate_bulk_certificate_exceptions(request, course_id):  # pylint: disable
 @require_POST
 @ensure_csrf_cookie
 @cache_control(no_cache=True, no_store=True, must_revalidate=True)
-@require_level('staff')
+@require_level('beta_tester')
 def get_students_advanced_course(request, course_id, csv=False):  # pylint: disable=redefined-outer-name
     """
     Respond with csv which contains a summary of all students who purchased an advanced course.
@@ -3152,7 +3153,7 @@ def get_students_advanced_course(request, course_id, csv=False):  # pylint: disa
 @require_POST
 @ensure_csrf_cookie
 @cache_control(no_cache=True, no_store=True, must_revalidate=True)
-@require_level('staff')
+@require_level('beta_tester')
 def get_students_paid_course(request, course_id, csv=False):  # pylint: disable=redefined-outer-name
     """
     Respond with csv which contains a summary of all students who purchased a paid course.

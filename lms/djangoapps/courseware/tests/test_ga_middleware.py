@@ -219,7 +219,7 @@ class CourseTerminatedCheckMiddlewareTestWithGaCourseScorer(LoginEnrollmentTestC
 
         request = self._create_request('/courses/{}/courseware/')
         response = CourseTerminatedCheckMiddleware().process_request(request)
-        self.assertEquals(response.status_code, 302)
+        self.assertIsNone(response)
 
     @patch('openedx.core.djangoapps.ga_self_paced.api.is_course_closed', return_value=True)
     def test_self_paced_course_closed(self, mock_is_course_closed):
@@ -379,7 +379,7 @@ class CourseTerminatedCheckViewTestWithGaCourseScorer(LoginEnrollmentTestCase, M
         self.update_course(self.course, self.user.id)
 
         response = self._access_page()
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, 200)
 
     @patch('openedx.core.djangoapps.ga_self_paced.api.is_course_closed', return_value=True)
     def test_self_paced_course_closed(self, mock_is_course_closed):

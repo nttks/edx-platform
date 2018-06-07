@@ -1356,12 +1356,12 @@ msgid "Add Admin"
 msgstr "講座管理者を追加する"
 
 #: lms/templates/instructor/instructor_dashboard_2/send_email.html
-msgid "Staff and admins"
-msgstr "講座スタッフそして講座管理者たち"
+msgid "Staff and beta testers and admins"
+msgstr "講座スタッフ（ベーターテスター、管理者含む）"
 
 #: lms/templates/instructor/instructor_dashboard_2/send_email.html
-msgid "All (students, staff, and admins)"
-msgstr "全て（受講者、講座スタッフ、講座管理者）"
+msgid "All (students and staff and beta testers and admins)"
+msgstr "全て（受講者、講座スタッフ、ベーターテスター、管理者）"
 
 #: lms/djangoapps/instructor/views/instructor_dashboard.py
 msgid "Instructor"
@@ -1814,6 +1814,22 @@ msgstr ""
 #: lms/templates/instructor/instructor_dashboard_2/membership.html
 msgid "Add Course Scorer"
 msgstr "講座スタッフ（採点用権限）を追加する"
+
+#: lms/templates/instructor/instructor_dashboard_2/membership.html
+msgid "Authority to extract data"
+msgstr "データ抽出権限"
+
+#: lms/templates/instructor/instructor_dashboard_2/membership.html
+msgid ""
+"Staff with authority to extract data can extract "
+"the Learners' ID, name, the result of their participation, etc."
+msgstr ""
+"講座の受講者や受講状況のデータを抽出することができるようになります。"
+"講座スタッフ、または講座スタッフ（採点用権限）と組み合わせて権限付与してください。"
+
+#: lms/templates/instructor/instructor_dashboard_2/membership.html
+msgid "Add Authority to Extract Data"
+msgstr "データ抽出権限を追加する"
 
 #: lms/templates/seq_module.html
 msgctxt "sequence_nav"

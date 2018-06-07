@@ -15,7 +15,7 @@ from django.core.management import call_command
 from django.test.utils import override_settings
 
 from bulk_email.models import Optout
-from courseware.tests.factories import StaffFactory, InstructorFactory
+from courseware.tests.factories import StaffFactory, InstructorFactory, BetaTesterFactory
 from instructor_task.subtasks import update_subtask_status
 from student.roles import CourseStaffRole
 from student.models import CourseEnrollment
@@ -60,6 +60,9 @@ class EmailSendFromDashboardTestCase(ModuleStoreTestCase):
         # Create staff
         self.staff = [StaffFactory(course_key=self.course.id)
                       for _ in xrange(STAFF_COUNT)]
+
+        # Create beta tester
+        self.beta_tester = BetaTesterFactory(course_key=self.course.id)
 
         # Create students
         self.students = [UserFactory() for _ in xrange(STUDENT_COUNT)]
@@ -147,11 +150,11 @@ class TestEmailSendFromDashboardMockedHtmlToText(EmailSendFromDashboardTestCase)
         response = self.client.post(self.send_mail_url, test_email)
         self.assertEquals(json.loads(response.content), self.success_content)
 
-        # the 1 is for the instructor in this test and others
-        self.assertEquals(len(mail.outbox), 1 + len(self.staff))
+        # the 2 is for the instructor and the beta tester in this test and others
+        self.assertEquals(len(mail.outbox), 2 + len(self.staff))
         self.assertItemsEqual(
             [e.to[0] for e in mail.outbox],
-            [self.instructor.email] + [s.email for s in self.staff]
+            [self.instructor.email] + [s.email for s in self.staff] + [self.beta_tester.email]
         )
 
     def test_send_to_all(self):
@@ -171,11 +174,11 @@ class TestEmailSendFromDashboardMockedHtmlToText(EmailSendFromDashboardTestCase)
         response = self.client.post(self.send_mail_url, test_email)
         self.assertEquals(json.loads(response.content), self.success_content)
 
-        # the 1 is for the instructor
-        self.assertEquals(len(mail.outbox), 1 + len(self.staff) + len(self.students))
+        # the 2 is for the instructor and the beta tester
+        self.assertEquals(len(mail.outbox), 2 + len(self.staff) + len(self.students))
         self.assertItemsEqual(
             [e.to[0] for e in mail.outbox],
-            [self.instructor.email] + [s.email for s in self.staff] + [s.email for s in self.students]
+            [self.instructor.email] + [s.email for s in self.staff] + [self.beta_tester.email] + [s.email for s in self.students]
         )
 
     @override_settings(BULK_EMAIL_JOB_SIZE_THRESHOLD=1)
@@ -232,10 +235,10 @@ class TestEmailSendFromDashboardMockedHtmlToText(EmailSendFromDashboardTestCase)
         response = self.client.post(self.send_mail_url, test_email)
         self.assertEquals(json.loads(response.content), self.success_content)
 
-        self.assertEquals(len(mail.outbox), 1 + len(self.staff) + len(self.students))
+        self.assertEquals(len(mail.outbox), 2 + len(self.staff) + len(self.students))
         self.assertItemsEqual(
             [e.to[0] for e in mail.outbox],
-            [self.instructor.email] + [s.email for s in self.staff] + [s.email for s in self.students]
+            [self.instructor.email] + [s.email for s in self.staff] + [self.beta_tester.email] + [s.email for s in self.students]
         )
         self.assertEquals(mail.outbox[0].subject, uni_subject)
 
@@ -261,11 +264,11 @@ class TestEmailSendFromDashboardMockedHtmlToText(EmailSendFromDashboardTestCase)
         response = self.client.post(self.send_mail_url, test_email)
         self.assertEquals(json.loads(response.content), self.success_content)
 
-        self.assertEquals(len(mail.outbox), 1 + len(self.staff) + len(self.students))
+        self.assertEquals(len(mail.outbox), 2 + len(self.staff) + len(self.students))
 
         self.assertItemsEqual(
             [e.to[0] for e in mail.outbox],
-            [self.instructor.email] + [s.email for s in self.staff] + [s.email for s in self.students]
+            [self.instructor.email] + [s.email for s in self.staff] + [self.beta_tester.email] + [s.email for s in self.students]
         )
 
     @override_settings(BULK_EMAIL_EMAILS_PER_TASK=3)
@@ -300,10 +303,11 @@ class TestEmailSendFromDashboardMockedHtmlToText(EmailSendFromDashboardTestCase)
         self.assertEquals(json.loads(response.content), self.success_content)
 
         self.assertEquals(mock_factory.emails_sent,
-                          1 + len(self.staff) + len(self.students) + LARGE_NUM_EMAILS - len(optouts))
+                          2 + len(self.staff) + len(self.students) + LARGE_NUM_EMAILS - len(optouts))
         outbox_contents = [e.to[0] for e in mail.outbox]
         should_send_contents = ([self.instructor.email] +
                                 [s.email for s in self.staff] +
+                                [self.beta_tester.email] +
                                 [s.email for s in self.students] +
                                 [s.email for s in added_users if s not in optouts])
         self.assertItemsEqual(outbox_contents, should_send_contents)
@@ -338,10 +342,10 @@ class TestEmailSendFromDashboard(EmailSendFromDashboardTestCase):
         response = self.client.post(self.send_mail_url, test_email)
         self.assertEquals(json.loads(response.content), self.success_content)
 
-        self.assertEquals(len(mail.outbox), 1 + len(self.staff) + len(self.students))
+        self.assertEquals(len(mail.outbox), 2 + len(self.staff) + len(self.students))
         self.assertItemsEqual(
             [e.to[0] for e in mail.outbox],
-            [self.instructor.email] + [s.email for s in self.staff] + [s.email for s in self.students]
+            [self.instructor.email] + [s.email for s in self.staff] + [self.beta_tester.email] + [s.email for s in self.students]
         )
 
         message_body = mail.outbox[0].body

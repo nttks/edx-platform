@@ -352,7 +352,7 @@ class SubmissionReport(ProgressReportBase):
         return scores
 
 
-@require_level('staff')
+@require_level('beta_tester')
 @require_POST
 @cache_control(no_cache=True, no_store=True, must_revalidate=True)
 def ajax_get_pgreport(request, course_id, pgreport):

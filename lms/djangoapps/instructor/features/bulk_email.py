@@ -88,7 +88,7 @@ SEND_TO_OPTIONS = {
 @step(u'I am logged in to the course as "([^"]*)"')
 def log_into_the_course(step, role):  # pylint: disable=unused-argument
     # Store the role
-    assert_in(role, ['instructor', 'staff'])
+    assert_in(role, ['instructor', 'staff', 'beta_tester'])
 
     # Log in as the an instructor or staff for the course
     my_email = world.bulk_email_instructor.email

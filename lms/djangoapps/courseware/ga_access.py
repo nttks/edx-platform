@@ -3,7 +3,6 @@ from django.conf import settings
 from courseware.access import has_access, GA_ACCESS_CHECK_TYPE_GLOBAL_COURSE_CREATOR, GA_ACCESS_CHECK_TYPE_OLD_COURSE_VIEW
 from openedx.core.djangoapps.content.course_overviews.models import CourseOverview
 from student.models import CourseEnrollment
-from student.roles import CourseBetaTesterRole
 from xmodule.course_module import CourseDescriptor
 
 
@@ -22,15 +21,29 @@ def is_terminated(courselike, user):
     is_old_course_viewer = has_access(user, GA_ACCESS_CHECK_TYPE_OLD_COURSE_VIEW, 'global')
     is_ga_global_course_creator = has_access(user, GA_ACCESS_CHECK_TYPE_GLOBAL_COURSE_CREATOR, 'global')
     is_course_staff = has_access(user, 'staff', courselike)
-    is_course_beta_tester = CourseBetaTesterRole(courselike.id).has_user(user)
+    is_course_beta_tester = has_access(user, 'beta_tester', courselike)
 
-    # Note1: Even if course terminate date has passed, GlobalStaff, OldCourseViewer and GaGlobalCourseCreator can access it. (#2197, #2150)
-    # Note2: Even if self-paced course and its individual end date has passed,
-    #        GlobalStaff, OldCourseViewer, GaGlobalCourseCreator, CourseAdmin(Instructor), CourseStaff and BetaTester can access it. (#2197, #2150)
+    # (#2197, #2150, #2478-1)
+    # Note1: Even if course terminate date has passed, these users can access it.
+    #        - is_staff
+    #        - ga_old_course_viewer
+    #        - ga_global_course_creator
+    #        - instructor
+    #        - staff
+    #        - ga_course_scorer
+    # Note2: Even if self-paced course and its individual end date has passed, these users can access it.
+    #        - is_staff
+    #        - ga_old_course_viewer
+    #        - ga_global_course_creator
+    #        - instructor
+    #        - staff
+    #        - ga_course_scorer
+    #        - beta_testers
     return (
-              not (is_global_staff or is_old_course_viewer or is_ga_global_course_creator) and _is_terminated(courselike)
+              not (is_global_staff or is_old_course_viewer or is_ga_global_course_creator or is_course_staff)
+              and _is_terminated(courselike)
            ) or (
-              not (is_global_staff or is_old_course_viewer or is_ga_global_course_creator or is_course_staff or is_course_beta_tester)
+              not (is_global_staff or is_old_course_viewer or is_ga_global_course_creator or is_course_beta_tester)
               and _is_individual_closed(courselike, user)
            )
 

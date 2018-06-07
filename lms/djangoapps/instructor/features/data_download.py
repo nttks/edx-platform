@@ -36,6 +36,14 @@ def find_student_profile_table(step):  # pylint: disable=unused-argument
             world.staff.profile.gender,
             world.staff.profile.goals
         ]
+    elif world.role == 'beta_tester':
+        expected_data = [
+            world.beta_tester.username,
+            world.beta_tester.email,
+            world.beta_tester.profile.name,
+            world.beta_tester.profile.gender,
+            world.beta_tester.profile.goals
+        ]
     elif world.role == 'admin':
         expected_data = [
             world.admin.username,

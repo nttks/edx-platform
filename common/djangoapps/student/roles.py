@@ -421,3 +421,16 @@ class GaCourseScorerRole(CourseRole):
 
     def __init__(self, *args, **kwargs):
         super(GaCourseScorerRole, self).__init__(self.ROLE, *args, **kwargs)
+
+
+@register_access_role
+class GaExtractDataAuthority(CourseRole):
+    """
+    Extra permission to extract personal data within instructor dashboard. (#2478-3)
+
+    This is effective for those who can access instructor dashboard (such as instructor, staff).
+    """
+    ROLE = "ga_extract_data_authority"
+
+    def __init__(self, *args, **kwargs):
+        super(GaExtractDataAuthority, self).__init__(self.ROLE, *args, **kwargs)

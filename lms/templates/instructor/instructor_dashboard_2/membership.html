@@ -235,6 +235,17 @@ from openedx.core.djangoapps.course_groups.partition_scheme import get_cohorted_
     ></div>
 
     <div class="auth-list-container"
+      data-rolename="ga_extract_data_authority"
+      data-display-name="${_("Authority to extract data")}"
+      data-info-text="
+        ${_("Staff with authority to extract data can extract "
+        "the Learners' ID, name, the result of their participation, etc.")}"
+      data-list-endpoint="${ section_data['list_course_role_members_url'] }"
+      data-modify-endpoint="${ section_data['modify_access_url'] }"
+      data-add-button-label="${_("Add Authority to Extract Data")}"
+    ></div>
+
+    <div class="auth-list-container"
       data-rolename="Administrator"
       data-display-name="${_("Discussion Admins")}"
       data-info-text="

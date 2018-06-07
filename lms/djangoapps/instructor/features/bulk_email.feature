@@ -18,3 +18,6 @@ Feature: LMS.Instructor Dash Bulk Email
     | staff         |  myself        |
     | staff         |  course staff  |
     | staff         |  students, staff, and instructors  |
+    | beta_tester   |  myself        |
+    | beta_tester   |  course staff  |
+    | beta_tester   |  students, staff, and instructors  |
