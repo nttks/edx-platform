@@ -40,6 +40,14 @@ class DateTimeUtilsTest(BizTestBase):
             self.assertEqual(date(2016, 1, 1), datetime_utils.timezone_today())
 
     @override_settings(TIME_ZONE='Asia/Tokyo')
+    def test_timezone_timezone_yesterday(self):
+        with patch(
+            'django.utils.timezone.now',
+            side_effect=lambda: datetime(2015, 12, 31, 15, 0, 0).replace(tzinfo=pytz.utc)
+        ):
+            self.assertEqual(date(2015, 12, 31), datetime_utils.timezone_yesterday())
+
+    @override_settings(TIME_ZONE='Asia/Tokyo')
     def test_min_and_max_of_today(self):
         _timezone = pytz.timezone('Asia/Tokyo')
         with patch(

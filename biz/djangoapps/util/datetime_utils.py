@@ -20,9 +20,18 @@ def timezone_today():
     """
     Get current date with server timezone
 
-    :return: current date with server timezone
+    :return: current date on server timezone without time
     """
     return timezone_now().date()
+
+
+def timezone_yesterday():
+    """
+    Get yesterday with server timezone
+
+    :return: yesterday on server timezone without time
+    """
+    return timezone_today() - timedelta(days=1)
 
 
 def min_and_max_of_today():

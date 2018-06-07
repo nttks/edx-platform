@@ -398,3 +398,38 @@ class BizStoreAggregateSumLimitTest(BizStoreTestBase):
             ])
         self.assertEqual(user_count, len(self.test_store.aggregate_sum(['user'], 'score')))
         self.assertEqual(user_count * len(subjects), len(self.test_store.aggregate_sum(['user', 'subject'], 'score')))
+
+
+class BizStoreHasDuplicateTest(BizStoreTestBase):
+
+    def setUp(self):
+        super(BizStoreHasDuplicateTest, self).setUp()
+        self.test_store = BizStore(self.BIZ_MONGO.values()[0])
+        self.test_store.set_documents([
+            {'user': 'user1', 'gender': 'male', 'subject': 'math', 'score': 10},
+            {'user': 'user1', 'gender': 'male', 'subject': 'science', 'score': 20},
+            {'user': 'user2', 'gender': 'male', 'subject': 'math', 'score': 30},
+            {'user': 'user2', 'gender': 'male', 'subject': 'science', 'score': 40},
+            {'user': 'user3', 'gender': 'female', 'subject': 'math', 'score': 50},
+            {'user': 'user3', 'gender': 'female', 'subject': 'science', 'score': 60},
+        ])
+
+    def test_no_query(self):
+        self.assertTrue(self.test_store.has_duplicate(['user', 'gender']))
+        self.assertFalse(self.test_store.has_duplicate(['user', 'gender', 'subject']))
+
+    def test_with_query(self):
+        self.assertTrue(self.test_store.has_duplicate(['user', 'gender'], {'score': {'$lte': 30}}))
+        self.assertFalse(self.test_store.has_duplicate(['user', 'subject'], {'score': {'$gte': 40}}))
+
+    def test_exception(self):
+        self.test_store._collection.aggregate = MagicMock(side_effect=_Exception())
+        with self.assertRaises(_Exception):
+            self.test_store.has_duplicate(['user', 'gender'])
+        self.assertEqual(1, self.test_store._collection.aggregate.call_count)
+
+    def test_auto_retry(self):
+        self.test_store._collection.aggregate = MagicMock(side_effect=AutoReconnect())
+        with self.assertRaises(AutoReconnect):
+            self.test_store.has_duplicate(['user', 'gender'])
+        self.assertEqual(5, self.test_store._collection.aggregate.call_count)

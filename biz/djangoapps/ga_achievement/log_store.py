@@ -19,18 +19,22 @@ class PlaybackLogStore(BizStore):
     FIELD_DURATION = 'duration'
     FIELD_CREATED_AT = 'created_at'
 
-    def __init__(self, course_id=None, target_id=None):
+    def __init__(self, course_id=None, target_id=None, created_at=None):
         """
         Set initial information
 
         :param course_id: course id
         :param target_id: target id
+        :param created_at: created at
         """
         key_conditions = {}
         if course_id:
             key_conditions[self.FIELD_COURSE_ID] = course_id
         if target_id:
             key_conditions[self.FIELD_TARGET_ID] = target_id
+        if created_at:
+            key_conditions[self.FIELD_CREATED_AT] = created_at
+
         super(PlaybackLogStore, self).__init__(settings.BIZ_MONGO['playback_log'], key_conditions)
 
     def aggregate_duration_by_vertical(self):
@@ -63,3 +67,6 @@ class PlaybackLogStore(BizStore):
             [self.FIELD_VERTICAL_ID, self.FIELD_TARGET_ID],
             self.FIELD_DURATION,
         )
+
+    def has_duplicate_record(self):
+        return self.has_duplicate([self.FIELD_COURSE_ID, self.FIELD_VERTICAL_ID, self.FIELD_TARGET_ID, self.FIELD_CREATED_AT])

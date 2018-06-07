@@ -254,3 +254,24 @@ class BizStore(object):
         except Exception as e:
             log.error("Error occurred while remove documents MongoDB: %s" % e)
             raise
+
+    @autoretry_read()
+    def has_duplicate(self, group_field_keys, conditions=None):
+        if conditions is None:
+            conditions = {}
+        _conditions = copy.deepcopy(self._key_conditions)
+        _conditions.update(conditions)
+        try:
+            return bool(self._collection.aggregate([
+                {'$match': _conditions},
+                {'$group': {
+                    '_id': {k: '${}'.format(k) for k in group_field_keys},
+                    'total': {'$sum': 1},
+                }},
+                {'$match': {
+                    'total': {'$gt': 1},
+                }},
+            ], allowDiskUse=True)['result'])
+        except Exception as e:
+            log.error("Error occurred while aggregate(has_duplicate) documents MongoDB: %s" % e)
+            raise
