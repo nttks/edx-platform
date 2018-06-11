@@ -810,7 +810,7 @@ class UpdateBizScoreStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEnrol
         self.assert_error(self.contract, self.course1.id)
         self.assert_error(self.contract, self.course2.id)
         self.assert_error(another_contract, another_course.id)
-        self.mock_log.error.assert_called_once()
+        self.mock_log.exception.assert_called_once()
 
     def _create_batch_status(self, contract, course, status, count=None):
         self.batch_status = ScoreBatchStatusFactory.create(contract=contract,
@@ -901,10 +901,10 @@ class UpdateBizScoreStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEnrol
         self.assertEqual(6, mock_time_sleep.call_count)
         mock_time_sleep.assert_any_call(3)
 
-        self.mock_log.error.assert_any_call(
+        self.mock_log.exception.assert_any_call(
             u'Unexpected error occurred: Can not remove ScoreStore record count(100). contract_id={} course_id={}'.format(
                 self.contract.id, self.course1.id))
-        self.mock_log.error.assert_any_call(
+        self.mock_log.exception.assert_any_call(
             u'Unexpected error occurred: Can not remove ScoreStore record count(100). contract_id={} course_id={}'.format(
                 self.contract.id, self.course2.id))
 
@@ -947,10 +947,10 @@ class UpdateBizScoreStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEnrol
 
         mock_time_sleep.assert_not_called()
 
-        self.mock_log.error.assert_any_call(
+        self.mock_log.exception.assert_any_call(
             u'Unexpected error occurred: ScoreStore record count(-1) does not match Contract Register record count(100) or records count(100). contract_id={} course_id={}'.format(
                 self.contract.id, self.course1.id))
-        self.mock_log.error.assert_any_call(
+        self.mock_log.exception.assert_any_call(
             u'Unexpected error occurred: ScoreStore record count(-1) does not match Contract Register record count(100) or records count(100). contract_id={} course_id={}'.format(
                 self.contract.id, self.course2.id))
 

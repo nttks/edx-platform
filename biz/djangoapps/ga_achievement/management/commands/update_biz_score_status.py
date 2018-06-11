@@ -364,7 +364,7 @@ class Command(BaseCommand):
                     ScoreBatchStatus.save_for_error(contract.id, course_key)
                 except Exception as ex:
                     error_flag = True
-                    log.error(u"Unexpected error occurred: {}".format(ex))
+                    log.exception(u"Unexpected error occurred: {}".format(ex))
                     ScoreBatchStatus.save_for_error(contract.id, course_key)
                 else:
                     ScoreBatchStatus.save_for_finished(contract.id, course_key, len(records))

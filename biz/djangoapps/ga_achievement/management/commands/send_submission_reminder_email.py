@@ -249,7 +249,7 @@ class Command(BaseCommand):
                 SubmissionReminderBatchStatus.save_for_error(contract.id, send_success, send_failure)
             except Exception as ex:
                 error_flag = True
-                log.error(u"Unexpected error occurred: {}".format(ex))
+                log.exception(u"Unexpected error occurred: {}".format(ex))
                 SubmissionReminderBatchStatus.save_for_error(contract.id, send_success, send_failure)
 
             # Success

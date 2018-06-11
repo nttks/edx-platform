@@ -466,4 +466,4 @@ class SendSubmissionReminderEmailTest(BizStoreTestBase, ModuleStoreTestCase, Log
 
         self.assert_error(0, 0, self.contract)
         self.assert_error(0, 0, another_contract)
-        self.mock_log.error.assert_called_with(u"Unexpected error occurred: {}".format(ex))
+        self.mock_log.exception.assert_called_with(u"Unexpected error occurred: {}".format(ex))

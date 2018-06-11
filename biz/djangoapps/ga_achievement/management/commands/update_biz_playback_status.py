@@ -312,8 +312,6 @@ class Command(BaseCommand):
 
                         playback_store.set_documents([column])
                         playback_store.set_documents(records)
-                        playback_store.drop_indexes()
-                        playback_store.ensure_indexes()
 
                         # Confirm set_documents. (compare with record count without column)
                         count_playback_store = playback_store.get_count() - 1
@@ -336,7 +334,7 @@ class Command(BaseCommand):
                     PlaybackBatchStatus.save_for_error(contract.id, course_key)
                 except Exception as ex:
                     error_flag = True
-                    log.error(u"Unexpected error occurred: {}".format(ex))
+                    log.exception(u"Unexpected error occurred: {}".format(ex))
                     PlaybackBatchStatus.save_for_error(contract.id, course_key)
                 else:
                     PlaybackBatchStatus.save_for_finished(contract.id, course_key, len(records))

@@ -683,7 +683,7 @@ class UpdateBizPlaybackStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEn
 
         self.assert_error(self.single_spoc_video_contract, self.single_spoc_video_course.id)
         self.assert_error(self.multiple_spoc_video_contract, self.multiple_spoc_video_course.id)
-        self.mock_log.error.assert_called_once()
+        self.mock_log.exception.assert_called_once()
 
     def _create_batch_status(self, contract, course, status, count=None):
         self.batch_status = PlaybackBatchStatusFactory.create(contract=contract,
@@ -773,10 +773,10 @@ class UpdateBizPlaybackStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEn
         self.assertEqual(6, mock_time_sleep.call_count)
         mock_time_sleep.assert_any_call(3)
 
-        self.mock_log.error.assert_any_call(
+        self.mock_log.exception.assert_any_call(
             u'Unexpected error occurred: Can not remove PlaybackStore record count(100). contract_id={} course_id={}'.format(
                 self.multiple_courses_contract.id, self.single_spoc_video_course.id))
-        self.mock_log.error.assert_any_call(
+        self.mock_log.exception.assert_any_call(
             u'Unexpected error occurred: Can not remove PlaybackStore record count(100). contract_id={} course_id={}'.format(
                 self.multiple_courses_contract.id, self.multiple_spoc_video_course.id))
 
@@ -819,10 +819,10 @@ class UpdateBizPlaybackStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEn
 
         mock_time_sleep.assert_not_called()
 
-        self.mock_log.error.assert_any_call(
+        self.mock_log.exception.assert_any_call(
             u'Unexpected error occurred: PlaybackStore record count(-1) does not match Contract Register record count(100) or records count(100). contract_id={} course_id={}'.format(
                 self.multiple_courses_contract.id, self.single_spoc_video_course.id))
-        self.mock_log.error.assert_any_call(
+        self.mock_log.exception.assert_any_call(
             u'Unexpected error occurred: PlaybackStore record count(-1) does not match Contract Register record count(100) or records count(100). contract_id={} course_id={}'.format(
                 self.multiple_courses_contract.id, self.multiple_spoc_video_course.id))
 
