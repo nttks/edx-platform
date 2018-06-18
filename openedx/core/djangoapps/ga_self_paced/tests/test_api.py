@@ -104,21 +104,30 @@ class TestApi(ModuleStoreTestCase):
         self.assertIsNone(api.get_base_date(None))
 
     @ddt.data(
-        (1, 2, 3),
-        (1, None, None),
-        (None, 1, None),
-        (None, None, 1),
+        (3, None, None, 1),
+        (2, 2, 3, 2),
+        (1, 2, 3, 2),
+        (1, None, None, None),
+        (None, 1, None, None),
+        (None, None, 1, None),
     )
     @ddt.unpack
-    def test_get_course_end_date(self, days, hours, minutes):
+    def test_get_course_end_date(self, days, hours, minutes, terminate_days):
         # Fixed start date to the future in this test
         course_start_date = timezone.now().replace(microsecond=0) + datetime.timedelta(days=1)
 
         self._update_course(course_start_date, True, days, hours, minutes)
 
+        if terminate_days is not None:
+            self.course.terminate_start = course_start_date + datetime.timedelta(days=terminate_days)
+            self.update_course(self.course, self.user.id)
+
         enrollment = CourseEnrollmentFactory.create(user=self.user, course_id=self.course.id)
         end_date = api.get_course_end_date(enrollment)
         expected_date = course_start_date + datetime.timedelta(days=days or 0, hours=hours or 0, minutes=minutes or 0)
+
+        if terminate_days is not None and self.course.terminate_start < expected_date:
+            expected_date = self.course.terminate_start
 
         self.assertEqual(expected_date, end_date)
 

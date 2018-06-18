@@ -728,6 +728,46 @@ class MonthlyReportBizRegisterUser4SelfPaced(MonthlyReportBizRegisterUser):
         self.assertEquals(self.fn_command_log.warning.call_count, 1)
         self.assert_create_report_data(pfgs_contract_list, os_contract_list, assert_len_pfgs, assert_len_os, assert_len_register_pfgs, assert_len_register_os)
 
+    @ddt.data(
+        ('PF', 1, 0, 1, None, 10, 11, 11),
+        ('GS', 1, 0, 1, None, 10, 11, 11),
+        ('OS', 0, 1, None, 1, 10, 11, 11),
+        ('PF', 1, 0, 0, None, 10, 9, 11),
+        ('GS', 1, 0, 0, None, 10, 9, 11),
+        ('OS', 0, 1, None, 0, 10, 9, 11),
+        ('PF', 1, 0, 0, None, 10, 11, 9),
+        ('GS', 1, 0, 0, None, 10, 11, 9),
+        ('OS', 0, 1, None, 0, 10, 11, 9),
+    )
+    @ddt.unpack
+    def test_create_report_data_with_terminate_start(self, contract_type, assert_len_pfgs, assert_len_os, assert_len_register_pfgs, assert_len_register_os, test_enroll_days, test_terminate_start_days, test_individual_end_days):
+
+        _, _, target_date, last_target_date = _target_date(self.today.year, self.today.month)
+
+        number = 'course'
+        run = 'run'
+        org = self.gacco_organization.org_code
+
+        test_enroll_date = last_target_date - timedelta(days=test_enroll_days, seconds=1)
+
+        sp_course1 = CourseFactory.create(
+            org=org, number=number, run=run,
+            start=datetime(1970, 1, 1, 0, 0, 0, tzinfo=tzutc()),  # must be the past date
+            self_paced=True,
+            terminate_start=test_enroll_date + timedelta(days=test_terminate_start_days),
+            individual_end_days=test_individual_end_days,
+        )
+
+        contract = self._create_contract(contract_type=contract_type, detail_courses=[sp_course1])
+        self._input_contract(contract, self.user)
+        self._register_contract(contract, self.user)
+        self._mod_register_history_modified(contract, self.user, self.last_day_of_last_month_jst_59)
+
+        self._mod_enrollment_created(self.user, sp_course1, test_enroll_date)
+        pfgs_contract_list, os_contract_list = _create_report_data(target_date, last_target_date)
+
+        self.assert_create_report_data(pfgs_contract_list, os_contract_list, assert_len_pfgs, assert_len_os, assert_len_register_pfgs, assert_len_register_os)
+
 
 def _create_instructor_paced_course(org, number, run):
     """Create instructor-paced course"""

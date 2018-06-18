@@ -221,6 +221,19 @@ class UpdateBizScoreStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEnrol
             additional_display_names=[ADDITIONAL_DISPLAY_NAME1, ADDITIONAL_DISPLAY_NAME2],
         )
 
+        # Contract with self-paced course with terminate start
+        self.self_paced_course_with_terminate_start = CourseFactory.create(
+            org=self.gacco_organization.org_code, number='self_paced_course_with_terminate_start', run='run',
+            start=datetime(2016, 1, 1, 0, 0, 0, tzinfo=tzutc()),  # must be the past date
+            terminate_start=datetime(2016, 1, 5, 0, 0, 0, tzinfo=tzutc()),
+            self_paced=True,
+            individual_end_days=self.individual_end_days,
+        )
+        self.self_paced_contract_with_terminate_start = self._create_contract(
+            detail_courses=[self.self_paced_course_with_terminate_start],
+            additional_display_names=[ADDITIONAL_DISPLAY_NAME1, ADDITIONAL_DISPLAY_NAME2],
+        )
+
         # Setup mock
         patcher_grade = patch.object(grades, 'grade')
         self.mock_grade = patcher_grade.start()
@@ -717,6 +730,48 @@ class UpdateBizScoreStatusTest(BizStoreTestBase, ModuleStoreTestCase, LoginEnrol
             self.assertRaises(StopIteration, record_items.next)
 
         assert_score(self.self_paced_contract, self.self_paced_course)
+
+    def test_contract_with_self_paced_course_with_terminate_start(self):
+        """
+        When:
+            - The contract includes a self-paced course with a terminate start date.
+            - The user had already enrolled in the course.
+        Then:
+            - 'Student Status' is set to 'Expired'.
+            - 'Expire Date' is stored and set to the terminate start date for the course.
+        """
+        self._profile(self.user)
+        self._register_contract(self.self_paced_contract_with_terminate_start, self.user, additional_value=ADDITIONAL_SETTINGS_VALUE)
+
+        call_command('update_biz_score_status')
+
+        def assert_score(contract, course):
+            column_list, record_list = self.assert_finished(1, contract, course)
+            self.assert_column_list(column_list, contract, course, self_paced=True)
+
+            record_dict = record_list[0]
+            record_items = record_dict.iteritems()
+            self.assertEquals(record_items.next(), (ScoreStore.FIELD_CONTRACT_ID, contract.id))
+            self.assertEquals(record_items.next(), (ScoreStore.FIELD_COURSE_ID, unicode(course.id)))
+            self.assertEquals(record_items.next(), (ScoreStore.FIELD_DOCUMENT_TYPE, ScoreStore.FIELD_DOCUMENT_TYPE__RECORD))
+            self.assertEquals(record_items.next(), (ScoreStore.FIELD_FULL_NAME, self.user.profile.name))
+            self.assertEquals(record_items.next(), (ScoreStore.FIELD_USERNAME, self.user.username))
+            self.assertEquals(record_items.next(), (ScoreStore.FIELD_EMAIL, self.user.email))
+            self.assertEquals(record_items.next(), (ScoreStore.FIELD_ADDITIONAL_INFO + ScoreStore.FIELD_DELIMITER + ADDITIONAL_DISPLAY_NAME1, '{}_{}'.format(ADDITIONAL_DISPLAY_NAME1, ADDITIONAL_SETTINGS_VALUE)))
+            self.assertEquals(record_items.next(), (ScoreStore.FIELD_ADDITIONAL_INFO + ScoreStore.FIELD_DELIMITER + ADDITIONAL_DISPLAY_NAME2, '{}_{}'.format(ADDITIONAL_DISPLAY_NAME2, ADDITIONAL_SETTINGS_VALUE)))
+            self.assertEquals(record_items.next(), (ScoreStore.FIELD_STUDENT_STATUS, ScoreStore.FIELD_STUDENT_STATUS__EXPIRED))
+            self.assertEquals(record_items.next(), (ScoreStore.FIELD_CERTIFICATE_STATUS, ScoreStore.FIELD_CERTIFICATE_STATUS__UNPUBLISHED))
+            k, v = record_items.next()
+            self.assertEquals(k, ScoreStore.FIELD_ENROLL_DATE)
+            self.assert_datetime(v, CourseEnrollment.get_enrollment(self.user, course.id).created)
+            k, v = record_items.next()
+            self.assertEquals(k, ScoreStore.FIELD_EXPIRE_DATE)
+            self.assert_datetime(v, self.self_paced_course_with_terminate_start.terminate_start)
+            self.assertEquals(record_items.next(), (ScoreStore.FIELD_CERTIFICATE_ISSUE_DATE, None))
+            self.assertEquals(record_items.next(), (ScoreStore.FIELD_TOTAL_SCORE, 0.0))
+            self.assertRaises(StopIteration, record_items.next)
+
+        assert_score(self.self_paced_contract_with_terminate_start, self.self_paced_course_with_terminate_start)
 
     def test_contract_with_expired_self_paced_course(self):
         """

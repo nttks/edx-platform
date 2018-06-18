@@ -5,6 +5,7 @@ dates for each block in the course.
 import logging
 
 from openedx.core.djangoapps.content.course_overviews.models import CourseOverview
+from openedx.core.djangoapps.ga_self_paced import api as self_paced_api
 from openedx.core.djangoapps.ga_self_paced.api import get_base_date, get_individual_date
 from openedx.core.djangoapps.self_paced.models import SelfPacedConfiguration
 from student.models import CourseEnrollment
@@ -30,11 +31,14 @@ class SelfPacedDateOverrideProvider(FieldOverrideProvider):
                 return None
             elif self._has_individual_due(block):
                 enrollment = CourseEnrollment.get_enrollment(self.user, course_key)
-                return get_individual_date(get_base_date(enrollment), {
+                individual_due_date = get_individual_date(get_base_date(enrollment), {
                     'days': getattr(block, 'individual_due_days', 0),
                     'hours': getattr(block, 'individual_due_hours', 0),
                     'minutes': getattr(block, 'individual_due_minutes', 0),
                 })
+                # If course end date is earlier than individual due date, then set course end date. #2479
+                course_end_date = self_paced_api.get_course_end_date(enrollment)
+                return individual_due_date if individual_due_date and individual_due_date < course_end_date else course_end_date
             else:
                 # If individual due days are not set, then the due is the end of the course. See #1559
                 return self._get_course_terminate_start(course_key)
