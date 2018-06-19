@@ -19,13 +19,13 @@ from biz.djangoapps.ga_achievement.management.commands.update_biz_score_status i
 from biz.djangoapps.ga_achievement.models import ScoreBatchStatus, SubmissionReminderBatchStatus
 from biz.djangoapps.ga_contract.models import Contract
 from biz.djangoapps.ga_contract_operation.models import ContractReminderMail
-from biz.djangoapps.ga_contract_operation.utils import replace_braces
 from biz.djangoapps.ga_invitation.models import ContractRegister
 from biz.djangoapps.util import datetime_utils
 from biz.djangoapps.util.decorators import handle_command_exception, ExitWithWarning
 from courseware.model_data import FieldDataCache
 from courseware.module_render import get_module_for_descriptor
 from microsite_configuration import microsite
+from openedx.core.lib.ga_mail_utils import replace_braces
 from student.models import UserStanding, CourseEnrollment
 
 log = logging.getLogger(__name__)

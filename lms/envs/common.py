@@ -2020,6 +2020,9 @@ INSTALLED_APPS = (
 
     # Form Tools
     'formtools',
+
+    # Send notice of closure email for self-paced course
+    'ga_bulk_email',
 )
 
 # Migrations which are not in the standard module "migrations"

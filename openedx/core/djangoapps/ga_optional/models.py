@@ -12,6 +12,7 @@ CUSTOM_LOGO_OPTION_KEY = 'custom-logo-for-settings'
 DISCCUSION_IMAGE_UPLOAD_KEY = 'disccusion-image-upload-settings'
 LIBRARY_OPTION_KEY = 'library-for-settings'
 PROGRESS_RESTRICTION_OPTION_KEY = 'progress-restriction-settings'
+SELF_PACED_COURSE_CLOSURE_REMINDER_EMAIL_KEY = 'self-paced-course-closure-reminder-email'
 OPTIONAL_FEATURES = [
     (ORA2_STAFF_ASSESSMENT_OPTION_KEY, _("Staff Assessment for Peer Grading")),
     (ORA2_VIDEO_UPLOAD_OPTION_KEY, _("Video Upload Option for Peer Grading")),
@@ -19,6 +20,7 @@ OPTIONAL_FEATURES = [
     (DISCCUSION_IMAGE_UPLOAD_KEY, _("Providing Image Server for Discussion")),
     (LIBRARY_OPTION_KEY, _("Library for Settings")),
     (PROGRESS_RESTRICTION_OPTION_KEY, _("Progress Restriction by Correct Answer Rate")),
+    (SELF_PACED_COURSE_CLOSURE_REMINDER_EMAIL_KEY, _("Closure reminder email for self-paced course")),
 ]
 
 

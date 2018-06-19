@@ -12,7 +12,6 @@ from django.db import IntegrityError, transaction
 from django.utils.translation import ugettext as _
 
 from biz.djangoapps.ga_contract_operation.models import ContractMail, ContractTaskHistory, StudentRegisterTaskTarget
-from biz.djangoapps.ga_contract_operation.utils import send_mail
 from biz.djangoapps.ga_invitation.models import ContractRegister, INPUT_INVITATION_CODE, REGISTER_INVITATION_CODE
 from biz.djangoapps.ga_login.models import BizUser, LOGIN_CODE_MIN_LENGTH, LOGIN_CODE_MAX_LENGTH
 from biz.djangoapps.ga_contract.models import ContractAuth
@@ -21,6 +20,7 @@ from lms.djangoapps.instructor.views.api import generate_unique_password
 from openedx.core.djangoapps.course_global.models import CourseGlobalSetting
 from openedx.core.djangoapps.ga_task.models import Task
 from openedx.core.djangoapps.ga_task.task import TaskProgress
+from openedx.core.lib.ga_mail_utils import send_mail
 from student.forms import AccountCreationForm
 from student.models import CourseEnrollment, UserProfile
 from student.views import _do_create_account, AccountValidationError

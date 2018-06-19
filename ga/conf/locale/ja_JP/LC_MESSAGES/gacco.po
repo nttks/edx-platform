@@ -1835,3 +1835,7 @@ msgstr "データ抽出権限を追加する"
 msgctxt "sequence_nav"
 msgid "Video"
 msgstr "動画"
+
+#: lms/djangoapps/ga_bulk_email/models.py
+msgid "Closure reminder email for self-paced course"
+msgstr "開始日可変型閉講案内自動メール"

@@ -1,20 +1,21 @@
 """
-Test for contract_operation util
+Test for mail util
 """
 from mock import patch
 
+from django.test import TestCase
 from django.test.utils import override_settings
 
-from biz.djangoapps.util.tests.testcase import BizViewTestBase
-from biz.djangoapps.ga_contract_operation.utils import send_mail
+from courseware.tests.factories import UserFactory
+from openedx.core.lib.ga_mail_utils import send_mail
 
 
-class SendMailTest(BizViewTestBase):
+class SendMailTest(TestCase):
 
     @override_settings(DEFAULT_FROM_EMAIL='test@example.com')
-    @patch('biz.djangoapps.ga_contract_operation.utils.django_send_mail')
+    @patch('openedx.core.lib.ga_mail_utils.django_send_mail')
     def test_no_replace(self, django_send_mail):
-        self.setup_user()
+        self.user = UserFactory.create()
 
         send_mail(self.user, 'Mail Subject {email_address} {username}', 'Mail Body {emailaddress} {user_name}')
 
@@ -26,9 +27,9 @@ class SendMailTest(BizViewTestBase):
         )
 
     @override_settings(DEFAULT_FROM_EMAIL='test@example.com')
-    @patch('biz.djangoapps.ga_contract_operation.utils.django_send_mail')
+    @patch('openedx.core.lib.ga_mail_utils.django_send_mail')
     def test_with_replace(self, django_send_mail):
-        self.setup_user()
+        self.user = UserFactory.create()
 
         send_mail(self.user, 'Mail Subject {email_address} {username}', 'Mail Body {emailaddress} {user_name}', {
             'user_name': self.user.username,
