@@ -57,3 +57,17 @@ class AccountSettingsPage(FieldsMixin, PageObject):
         Wait for loading indicator to become visible.
         """
         EmptyPromise(self._is_loading_in_progress, "Loading is in progress.").fulfill()
+
+    def update_full_name(self, value):
+        """
+        Update full name
+
+        Arguments:
+            value : full name
+        """
+        # Input full name
+        self.q(css='input#u-field-input-name').fill(value)
+        self.wait_for_ajax()
+        # Update full name (focusout)
+        self.q(css='input#u-field-input-email').click()
+        return self

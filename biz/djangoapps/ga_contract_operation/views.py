@@ -613,9 +613,10 @@ def reminder_mail_send_ajax(request):
         try:
             send_mail(
                 request.user,
-                contract_mail.mail_subject,
-                contract_mail.compose_mail_body(target_courses),
-                {'username': request.user.username},
+                contract_mail.mail_subject.encode('utf-8'),
+                contract_mail.compose_mail_body(target_courses).encode('utf-8'),
+                {'username': request.user.username,
+                 'fullname': request.user.profile.name.encode('utf-8')},
             )
         except:
             log.exception('Failed to send the test e-mail.')

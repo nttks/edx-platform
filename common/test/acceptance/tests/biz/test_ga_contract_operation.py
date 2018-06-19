@@ -2131,6 +2131,7 @@ class BizReminderMailTest(WebAppTest, GaccoBizTestMixin, BizStudentRegisterMixin
 
         # page
         self.django_admin_page = DjangoAdminPage(self.browser)
+        self.account_settings_page = AccountSettingsPage(self.browser)
 
         # Register organization
         new_org_info = self.register_organization(PLATFORMER_USER_INFO)
@@ -2138,6 +2139,7 @@ class BizReminderMailTest(WebAppTest, GaccoBizTestMixin, BizStudentRegisterMixin
         # Register user as director
         self.new_director = self.register_user()
         self.grant(PLATFORMER_USER_INFO, new_org_info['Organization Name'], 'director', self.new_director)
+        self.fullname = get_random_string(12)
 
         # Register contract
         new_course_key, new_course_name = self.install_course(PLAT_COMPANY_CODE)
@@ -2161,21 +2163,28 @@ class BizReminderMailTest(WebAppTest, GaccoBizTestMixin, BizStudentRegisterMixin
             'send_submission_reminder': True,
         }).save()
 
-        # Can send submission reminder
+        # Update fullname
         self.switch_to_user(self.new_director)
+        self.account_settings_page.visit().wait_for_ajax()
+        self.account_settings_page.update_full_name(self.fullname)
+
+        # Can send submission reminder
         nav = BizNavPage(self.browser).visit()
 
         self.assertTrue('Reminder Mail Setting' in nav.left_menu_items.keys())
 
         # Reminder Mail Setting
         reminder_mail_page = nav.click_reminder_mail_setting()
-        self.assertEqual([u'username'], reminder_mail_page.parameter_keys)
+        self.assertEqual([u'username', u'fullname'], reminder_mail_page.parameter_keys)
         self.assertEqual('3', reminder_mail_page.reminder_email_days)
         self.assertEqual(u'■gacco 未提出課題のお知らせ', reminder_mail_page.subject)
         self.assertEqual(u'Default Body For Submission Reminder Mail', reminder_mail_page.body)
         self.assertEqual(u'Default Body2 For Submission Reminder Mail', reminder_mail_page.body2)
 
-        reminder_mail_page.input('5', 'Test Subject {username}', 'Test Body {username}', 'Test Body2').click_save_template().click_popup_yes()
+        reminder_mail_page.input('5',
+                                 'Test Subject {username}, {fullname}',
+                                 'Test Body {username}, {fullname}',
+                                 'Test Body2').click_save_template().click_popup_yes()
         reminder_mail_page.wait_for_ajax()
         self.assertEqual([u'Successfully to save the template e-mail.'], reminder_mail_page.messages)
 
@@ -2185,7 +2194,11 @@ class BizReminderMailTest(WebAppTest, GaccoBizTestMixin, BizStudentRegisterMixin
 
         test_mail = self._get_message(self.new_director['email'])
         self.assertIsNotNone(test_mail)
-        self.assertEqual(u'Test Subject {}'.format(self.new_director['username']), test_mail['subject'])
-        self.assertIn(u'Test Body {}'.format(self.new_director['username']), test_mail['body'].decode('utf-8'))
+        self.assertEqual(
+            u'Test Subject {}, {}'.format(self.new_director['username'], self.fullname),
+            test_mail['subject'].decode('utf-8'))
+        self.assertIn(
+            u'Test Body {}, {}'.format(self.new_director['username'], self.fullname),
+            test_mail['body'].decode('utf-8'))
         self.assertIn(u'Test Body2', test_mail['body'].decode('utf-8'))
         self.email_client.clear_messages()

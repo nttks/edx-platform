@@ -1144,7 +1144,7 @@ class ContractOperationReminderMailViewTest(BizContractTestBase):
             response = self.assert_request_status_code(200, self._url_mail())
 
         self.assertIn('Test Subject for Submission Reminder', response.content)
-        self.assertIn('Test Body for Submission Reminder {username}', response.content)
+        self.assertIn('Test Body for Submission Reminder {username} and {fullname}', response.content)
         self.assertIn('Test Body2 for Submission Reminder', response.content)
 
     # ------------------------------------------------------------
@@ -1562,10 +1562,11 @@ class ContractOperationReminderMailViewTest(BizContractTestBase):
                 'mail_body2': 'Test Body2',
             })
 
-        mail_param = {'username': self.user.username}
+        mail_param = {'username': self.user.username,
+                      'fullname': self.user.profile.name.encode('utf-8')}
         target_courses = [get_grouped_target_sections(self.course_spoc1)]
         mail_body = contract_mail.compose_mail_body(target_courses)
-        send_mail.assert_called_with(self.user, 'Test Subject', mail_body, mail_param)
+        send_mail.assert_called_with(self.user, 'Test Subject', mail_body.encode('utf-8'), mail_param)
 
         self.assertEqual(200, response.status_code)
         data = json.loads(response.content)

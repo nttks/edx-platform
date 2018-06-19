@@ -242,7 +242,7 @@ class BizTestBase(TestCase):
             contract=None,
             mail_type=ContractReminderMail.MAIL_TYPE_SUBMISSION_REMINDER,
             mail_subject='Test Subject for Submission Reminder',
-            mail_body='Test Body for Submission Reminder {username}',
+            mail_body='Test Body for Submission Reminder {username} and {fullname}',
             mail_body2='Test Body2 for Submission Reminder',
             reminder_email_days=reminder_email_days,
         )

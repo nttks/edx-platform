@@ -265,15 +265,16 @@ def send_reminder_email(contract, user, target_courses, debug):
     to_addresses = [user.email]
 
     contract_mail = ContractReminderMail.get_or_default(contract, ContractReminderMail.MAIL_TYPE_SUBMISSION_REMINDER)
-    replace_dict = {'username': user.username}
-    subject = replace_braces(contract_mail.mail_subject, replace_dict)
-    message = replace_braces(contract_mail.compose_mail_body(target_courses), replace_dict)
+    replace_dict = {'username': user.username,
+                    'fullname': user.profile.name.encode('utf-8')}
+    subject = replace_braces(contract_mail.mail_subject.encode('utf-8'), replace_dict)
+    message = replace_braces(contract_mail.compose_mail_body(target_courses).encode('utf-8'), replace_dict)
 
     if debug:
         log.warning("This is a debug mode, so we don't send a reminder email.")
         log.debug(u"From Address={}".format(from_address))
         log.debug(u"To Addresses={}".format(to_addresses))
-        log.debug(u"Subject={}".format(subject))
-        log.debug(u"Message={}".format(message))
+        log.debug(u"Subject={}".format(subject.decode('utf-8')))
+        log.debug(u"Message={}".format(message.decode('utf-8')))
     else:
         send_mail(subject, message, from_address, to_addresses)
