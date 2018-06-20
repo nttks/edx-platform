@@ -597,3 +597,6 @@ from biz.envs.test import *
 
 ##### Settings for GaApp #####
 from ga_app.envs.test import *
+
+##### Settings for Gacco.org's Bulk email #####
+GA_BULK_EMAIL_SEND_SELF_PACED_COURSE_CLOSURE_REMINDER_EMAIL_COMMAND_OUTPUT = tempfile.NamedTemporaryFile().name

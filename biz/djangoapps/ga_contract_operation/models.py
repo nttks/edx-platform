@@ -325,9 +325,11 @@ class ContractReminderMail(ContractMailBase):
     )
 
     MAIL_PARAM_USERNAME = ('username', _("Replaced with the user name"))
+    MAIL_PARAM_FULLNAME = ('fullname', _("Replaced with the full name"))
     MAIL_PARAMS = {
         MAIL_TYPE_SUBMISSION_REMINDER: [
             MAIL_PARAM_USERNAME,
+            MAIL_PARAM_FULLNAME,
         ],
     }
 

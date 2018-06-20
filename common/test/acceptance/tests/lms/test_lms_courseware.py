@@ -3,8 +3,14 @@
 End-to-end tests for the LMS.
 """
 import time
+from datetime import datetime, timedelta
+from textwrap import dedent
 
+import ddt
+
+from ..ga_helpers import GaccoTestMixin
 from ..helpers import UniqueCourseTest
+from ...fixtures.config import ConfigModelFixture
 from ...pages.studio.auto_auth import AutoAuthPage
 from ...pages.lms.create_mode import ModeCreationPage
 from ...pages.studio.overview import CourseOutlinePage
@@ -424,3 +430,108 @@ class CoursewareMultipleVerticalsTest(UniqueCourseTest):
             position=4
         ).visit()
         self.assertIn('html 2 dummy body', html2_page.get_selected_tab_content())
+
+
+@ddt.ddt
+class CoursewareSelfPacedDueDateTest(UniqueCourseTest, GaccoTestMixin):
+    """
+    Tests for self paced course on courseware page.
+    """
+
+    def setUp(self):
+        super(CoursewareSelfPacedDueDateTest, self).setUp()
+
+        self.user_info = {
+            'username': 'self_paced_tester',
+            'password': 'self_paced_password',
+            'email': 'self_paced@example.com'
+        }
+
+        self.problem1_xml = dedent("""
+            <problem>
+            <p>Answer is A</p>
+            <stringresponse answer="A">
+                <textline size="20"/>
+            </stringresponse>
+            </problem>
+        """)
+        self.problem2_xml = dedent("""
+            <problem>
+            <p>Answer is B</p>
+            <stringresponse answer="B">
+                <textline size="20"/>
+            </stringresponse>
+            </problem>
+        """)
+
+    @ddt.data(
+        (11, 20, 30, 11),
+        (12, 30, 20, 12),
+        (20, 13, 30, 13),
+        (20, 30, 14, 14),
+        (30, 15, 20, 15),
+        (30, 20, 16, 16),
+    )
+    @ddt.unpack
+    def test_courseware_due_date_self_paced(self, test_individual_due_days, test_individual_end_days, test_terminate_start_days, expected_due_days):
+
+        test_terminate_start_date = datetime.today() + timedelta(days=test_terminate_start_days)
+        expected_due_date_text = (datetime.today() + timedelta(days=expected_due_days)).strftime('due %b %d, %Y')
+
+        # Enable SelfPacedConfiguration for self-paced course
+        ConfigModelFixture('/config/self_paced', {'enabled': True}).install()
+
+        course_settings = {
+            'self_paced': True,
+            'individual_end_days': test_individual_end_days,
+            'individual_end_hours': 0,
+            'individual_end_minutes': 0,
+            'terminate_start': test_terminate_start_date.strftime('%Y/%m/%d'),
+        }
+
+        self.course_info = {
+            'org': 'test_org_self_paced_00001',
+            'number': self._testMethodName,
+            'run': 'test_run_self_paced_00001',
+            'display_name': 'Self Paced Course'
+        }
+
+        course_fixture = CourseFixture(
+            self.course_info['org'],
+            self.course_info['number'],
+            self.course_info['run'],
+            self.course_info['display_name'],
+            # Set the course start date to tomorrow in order to allow setting pacing
+            start_date=datetime.now() + timedelta(days=1),
+            settings=course_settings
+        )
+
+        course_fixture.add_children(
+            XBlockFixtureDesc('static_tab', 'Test Static Tab'),
+            XBlockFixtureDesc('chapter', '1', metadata={'individual_start_days': 0, 'individual_due_days': test_individual_due_days}).add_children(
+                XBlockFixtureDesc('sequential', '1.1').add_children(
+                    XBlockFixtureDesc('problem', 'Test Problem 1', data=self.problem1_xml),
+                    XBlockFixtureDesc('html', 'Test HTML'),
+                )
+            ),
+            XBlockFixtureDesc('chapter', '2', metadata={'individual_start_days': 0}).add_children(
+                XBlockFixtureDesc('sequential', '2.2').add_children(
+                    XBlockFixtureDesc('problem', 'Test Problem 2', data=self.problem2_xml),
+                )
+            )
+        )
+
+        course_fixture.install()
+
+        # Reset the course start date to the past date so that the user can visit courseware
+        course_fixture.add_course_details({'start_date': datetime(1970, 1, 1)})
+        course_fixture.configure_course()
+
+        # go to courseware
+        courseware_page = CoursewarePage(self.browser, self.course_id)
+        self.switch_to_user(self.user_info, course_id=self.course_id, staff=False)
+        courseware_page.visit()
+
+        # assert
+        due_path = '//*[@id=\'accordion\']/nav/div/div/div/a/p[contains( ./text(), \'1.1\')]/following-sibling::p'
+        self.assertTrue(expected_due_date_text in courseware_page.q(xpath=due_path).text[0])

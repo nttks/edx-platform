@@ -26,7 +26,7 @@ log = logging.getLogger(__name__)
 @require_POST
 @ensure_csrf_cookie
 @cache_control(no_cache=True, no_store=True, must_revalidate=True)
-@require_level('staff')
+@require_level('beta_tester')
 def generate_score_detail_report(request, course_id):  # pylint: disable=redefined-outer-name
     """
     Request a CSV showing students' score in the course.
@@ -50,7 +50,7 @@ def generate_score_detail_report(request, course_id):  # pylint: disable=redefin
 @require_POST
 @ensure_csrf_cookie
 @cache_control(no_cache=True, no_store=True, must_revalidate=True)
-@require_level('staff')
+@require_level('beta_tester')
 def generate_playback_status_report(request, course_id):  # pylint: disable=redefined-outer-name
     """
     Request a CSV showing students' playback status report in the course.

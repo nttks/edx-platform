@@ -215,6 +215,29 @@ class Contract(models.Model):
             contract_type__in=contract_types,
         )
 
+    @classmethod
+    def exists_spoc_by_course_key(cls, course_key):
+        return cls.objects.filter(
+            contract_type__in=[
+                CONTRACT_TYPE_PF[0],
+                CONTRACT_TYPE_OWNERS[0],
+                CONTRACT_TYPE_OWNER_SERVICE[0],
+            ],
+        ).filter(
+            details__course_id=course_key
+        ).exists()
+
+    @classmethod
+    def find_enabled_spoc_by_course_key(cls, course_key):
+        return cls.objects.enabled().filter(
+            contract_type__in=[
+                CONTRACT_TYPE_PF[0],
+                CONTRACT_TYPE_OWNERS[0],
+                CONTRACT_TYPE_OWNER_SERVICE[0],
+            ],
+        ).filter(
+            details__course_id=course_key
+        )
 
 class ContractDetail(models.Model):
     """

@@ -105,14 +105,15 @@ class GaccoTestMixin(object):
     def logout(self):
         LogoutPage(self.browser).visit()
 
-    def switch_to_user(self, user_info, course_id=None):
+    def switch_to_user(self, user_info, course_id=None, staff=None):
         self.logout()
         AutoAuthPage(
             self.browser,
             username=user_info['username'],
             password=user_info['password'],
             email=user_info['email'],
-            course_id=course_id
+            course_id=course_id,
+            staff=staff
         ).visit()
         return user_info
 

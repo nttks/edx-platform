@@ -667,3 +667,11 @@ def disable_jquery_animations():
 
     # Disable jQuery animations
     world.browser.execute_script("jQuery.fx.off = true;")
+
+
+@world.absorb
+def is_button_visible_by_text(text):
+    xpath = '//input[@type="button" and @value="{button_text}"]'.format(
+            button_text=text
+    )
+    return len(world.browser.find_by_xpath(xpath)) == 1

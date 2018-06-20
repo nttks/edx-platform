@@ -28,7 +28,8 @@ class SelfPacedDateOverrideTest(ModuleStoreTestCase):
         super(SelfPacedDateOverrideTest, self).setUp()
         self.start = datetime(2016, 1, 1, 0, 0, 0).replace(tzinfo=tzutc())
         self.due_date = datetime(2016, 2, 1, 0, 0, 0).replace(tzinfo=tzutc())
-        self.terminate_start = datetime(2017, 1, 1, 0, 0, 0).replace(tzinfo=tzutc())
+        self.terminate_start = datetime(2030, 1, 1, 0, 0, 0).replace(tzinfo=tzutc())
+        self.individual_end_days = 100
 
     def tearDown(self):
         super(SelfPacedDateOverrideTest, self).tearDown()
@@ -37,7 +38,7 @@ class SelfPacedDateOverrideTest(ModuleStoreTestCase):
     def setup_course(
         self, display_name, self_paced, staff=False,
         individual_start_days=None, individual_start_hours=None, individual_start_minutes=None,
-        individual_due_days=None, individual_due_hours=None, individual_due_minutes=None
+        individual_due_days=None, individual_due_hours=None, individual_due_minutes=None,
     ):
         """Set up a course with `display_name` and `self_paced` attributes.
 
@@ -45,7 +46,7 @@ class SelfPacedDateOverrideTest(ModuleStoreTestCase):
         and ensures that field overrides are correctly applied for both blocks.
         """
         course = CourseFactory.create(
-            display_name=display_name, self_paced=self_paced, start=self.start, terminate_start=self.terminate_start
+            display_name=display_name, self_paced=self_paced, start=self.start, terminate_start=self.terminate_start, individual_end_days=self.individual_end_days,
         )
         user = UserFactory.create()
         enrollment = CourseEnrollmentFactory.create(user=user, course_id=course.id)
@@ -77,16 +78,28 @@ class SelfPacedDateOverrideTest(ModuleStoreTestCase):
         self.assertEqual(self.due_date, section.due)
 
     @ddt.data(
-        (1, 2, 3, 4, 5, 6),
-        (0, None, None, 0, None, None),
-        (None, 0, None, None, 0, None),
-        (None, None, 0, None, None, 0),
+        (1, 2, 3, 4, 5, 6, None, None),
+        (0, None, None, 0, None, None, None, None),
+        (None, 0, None, None, 0, None, None, None),
+        (None, None, 0, None, None, 0, None, None),
+        (0, None, None, 1, None, None, 2, 3),
+        (0, None, None, 1, None, None, 3, 2),
+        (0, None, None, 2, None, None, 1, 3),
+        (0, None, None, 2, None, None, 3, 1),
+        (0, None, None, 3, None, None, 1, 2),
+        (0, None, None, 3, None, None, 2, 1),
     )
     @ddt.unpack
-    def test_self_paced(self, start_days, start_hours, start_minutes, due_days, due_hours, due_minutes):
+    def test_self_paced(self, start_days, start_hours, start_minutes, due_days, due_hours, due_minutes, terminate_days, individual_end_days):
         """
         Tests that individual data apply to the self-paced course.
         """
+        if terminate_days is not None:
+            self.terminate_start = (datetime.today() + timedelta(days=terminate_days)).replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=tzutc())
+
+        if individual_end_days is not None:
+            self.individual_end_days = individual_end_days
+
         enrollment, chapter, section = self.setup_course(
             "Self-Paced Course", True, False, start_days, start_hours, start_minutes, due_days, due_hours, due_minutes
         )
@@ -100,6 +113,15 @@ class SelfPacedDateOverrideTest(ModuleStoreTestCase):
         expected_due = enrollment.created + timedelta(
             days=due_days or 0, hours=due_hours or 0, minutes=due_minutes or 0
         )
+
+        expected_individual_end = enrollment.created + timedelta(days=self.individual_end_days)
+
+        if self.terminate_start < expected_due:
+            expected_due = self.terminate_start
+
+        if expected_individual_end < expected_due:
+            expected_due = expected_individual_end
+
         self.assertEqual(expected_due, section.due)
 
     def test_self_paced_by_staff(self):

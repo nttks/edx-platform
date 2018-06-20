@@ -138,7 +138,7 @@ class CourseTerminatedCheckTabTestWithGaCourseScorer(LoginEnrollmentTestCase, Ta
 
         request = self._create_request()
         tab_list = get_course_tab_list(request, self.course)
-        self.assertItemsEqual(tab_list, [])
+        self._assert_tabs(tab_list)
 
     @patch('openedx.core.djangoapps.ga_self_paced.api.is_course_closed', return_value=True)
     def test_self_paced_course_closed(self, mock_is_course_closed):

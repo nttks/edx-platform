@@ -11,7 +11,9 @@ from lettuce import world, step
 from mock import patch
 from nose.tools import assert_in, assert_true, assert_false  # pylint: disable=no-name-in-module
 
-from courseware.tests.factories import StaffFactory, InstructorFactory, GlobalStaffFactory
+from courseware.tests.factories import (
+    StaffFactory, InstructorFactory, BetaTesterFactory, GlobalStaffFactory, GaExtractDataAuthorityFactory,
+)
 
 
 @step(u'Given I am "([^"]*)" for a very large course')
@@ -26,11 +28,11 @@ def make_large_course(step, role):
 
 @step(u'Given I am "([^"]*)" for a course')
 def i_am_staff_or_instructor(step, role):  # pylint: disable=unused-argument
-    ## In summary: makes a test course, makes a new Staff or Instructor or GlobalStaff user
+    ## In summary: makes a test course, makes a new Staff or Instructor or BetaTester or GlobalStaff user
     ## (depending on `role`), and logs that user in to the course
 
     # Store the role
-    assert_in(role, ['admin', 'instructor', 'staff'])
+    assert_in(role, ['admin', 'instructor', 'staff', 'beta_tester'])
 
     # Clear existing courses to avoid conflicts
     world.clear_courses()
@@ -70,7 +72,7 @@ def i_am_staff_or_instructor(step, role):  # pylint: disable=unused-argument
             name=world.instructor.profile.name
         )
 
-    else:
+    elif role == 'staff':
         world.role = 'staff'
         # Make & register a staff member
         world.staff = StaffFactory(course_key=world.course_key)
@@ -82,6 +84,37 @@ def i_am_staff_or_instructor(step, role):  # pylint: disable=unused-argument
             email=world.staff.email,
             name=world.staff.profile.name
         )
+
+    else:
+        world.role = 'beta_tester'
+        # Make & register a beta tester for the course
+        world.beta_tester = BetaTesterFactory(course_key=world.course_key)
+        world.enroll_user(world.beta_tester, world.course_key)
+
+        world.log_in(
+            username=world.beta_tester.username,
+            password='test',
+            email=world.beta_tester.email,
+            name=world.beta_tester.profile.name
+        )
+
+
+@step(u'I am given extra "([^"]*)" for a course')
+def i_am_given_extra_role(step, extra_role):  # pylint: disable=unused-argument
+    # Should prepare a user with particular role in advance.
+    assert_in(world.role, ['admin', 'instructor', 'staff', 'beta_tester'])
+
+    if world.role == 'admin':
+        user = world.admin
+    elif world.role == 'instructor':
+        user = world.instructor
+    elif world.role == 'staff':
+        user = world.staff
+    elif world.role == 'beta_tester':
+        user = world.beta_tester
+
+    if extra_role == 'ga_extract_data_authority':
+        GaExtractDataAuthorityFactory.add_users(world.course_key, user)
 
 
 def go_to_section(section_name):
@@ -153,6 +186,16 @@ def click_a_button(step, button):  # pylint: disable=unused-argument
 
     else:
         raise ValueError("Unrecognized button option " + button)
+
+
+@step(u'I see "([^"]*)" button')
+def i_see_a_button(step, button_text):  # pylint: disable=unused-argument
+    assert_true(world.is_button_visible_by_text(button_text))
+
+
+@step(u'I do not see "([^"]*)" button')
+def i_do_not_see_a_button(step, button_text):  # pylint: disable=unused-argument
+    assert_false(world.is_button_visible_by_text(button_text))
 
 
 @step(u'I visit the "([^"]*)" tab')

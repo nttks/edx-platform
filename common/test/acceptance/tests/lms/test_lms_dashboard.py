@@ -6,7 +6,11 @@ import datetime
 from nose.plugins.attrib import attr
 import unittest
 
+import ddt
+
+from ..ga_helpers import GaccoTestMixin
 from ..helpers import UniqueCourseTest
+from ...fixtures.config import ConfigModelFixture
 from ...fixtures.course import CourseFixture
 from ...pages.lms.auto_auth import AutoAuthPage
 from ...pages.lms.dashboard import DashboardPage
@@ -242,3 +246,72 @@ class LmsDashboardA11yTest(BaseLmsDashboardTest):
         })
 
         self.dashboard_page.a11y_audit.check_for_accessibility_errors()
+
+
+@ddt.ddt
+class DashboardSelfPacedTerminateDateTest(UniqueCourseTest, GaccoTestMixin):
+    """
+    Tests for self paced course on dashboard
+    """
+    def setUp(self):
+        super(DashboardSelfPacedTerminateDateTest, self).setUp()
+
+        # Enable SelfPacedConfiguration for self-paced course
+        ConfigModelFixture('/config/self_paced', {'enabled': True}).install()
+
+        self.user_info = {
+            'username': 'self_paced_student',
+            'password': 'self_paced_password',
+            'email': 'selfpaced@example.com'
+        }
+
+    @ddt.data(
+        (11, 20, 11),
+        (20, 12, 12),
+    )
+    @ddt.unpack
+    def test_dashboard_end_date_self_paced(self, test_individual_end_days, test_terminate_start_days, expected_end_days):
+
+        test_org_name = 'test_org_' + str(test_individual_end_days) + '_' + str(test_terminate_start_days) + '_' + str(expected_end_days)
+        test_terminate_start_date = datetime.datetime.today() + datetime.timedelta(days=test_terminate_start_days)
+        expected_end_date_text = (datetime.datetime.today() + datetime.timedelta(days=expected_end_days)).strftime('Ended - %b %d, %Y')
+
+        course_settings = {
+            'self_paced': True,
+            'individual_end_days': test_individual_end_days,
+            'individual_end_hours': 0,
+            'individual_end_minutes': 0,
+            'terminate_start': test_terminate_start_date.strftime('%Y/%m/%d'),
+        }
+
+        self.course_info = {
+            'org': test_org_name,
+            'number': self._testMethodName,
+            'run': 'test_run_00001',
+            'display_name': 'Self Paced Course',
+        }
+
+        course_fixture = CourseFixture(
+            self.course_info['org'],
+            self.course_info['number'],
+            self.course_info['run'],
+            self.course_info['display_name'],
+            # Set the course start date to tomorrow in order to allow setting pacing
+            start_date=datetime.datetime.now() + datetime.timedelta(days=1),
+            settings=course_settings
+        )
+
+        course_fixture.install()
+
+        # Reset the course start date to the past date so that the user can visit courseware
+        course_fixture.add_course_details({'start_date': datetime.datetime(1970, 1, 1)})
+        course_fixture.configure_course()
+
+        # go to dashboard
+        dashboard_page = DashboardPage(self.browser)
+        self.switch_to_user(self.user_info, course_id=self.course_id, staff=False)
+        dashboard_page.visit()
+
+        # assert
+        end_date_text_xpath = '//*[@id=\'my-courses\']/ul/li/div/article/section/div/div/span[contains( ./text(), \'' + test_org_name + '\')]/following-sibling::span[2]'
+        self.assertTrue(expected_end_date_text in dashboard_page.q(xpath=end_date_text_xpath).text[0])

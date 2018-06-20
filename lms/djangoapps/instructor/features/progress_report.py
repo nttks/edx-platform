@@ -3,7 +3,7 @@ from lettuce import step, world
 from nose.tools import assert_in, assert_true, assert_false, assert_equal, assert_not_equal, assert_regexp_matches, assert_raises 
 from splinter.exceptions import ElementDoesNotExist
 from capa.tests.response_xml_factory import OptionResponseXMLFactory
-from courseware.tests.factories import StaffFactory, InstructorFactory, StudentModuleFactory
+from courseware.tests.factories import StaffFactory, InstructorFactory, BetaTesterFactory, StudentModuleFactory
 
 from openassessment.assessment.models import Assessment, AssessmentPart, PeerWorkflow
 from openassessment.assessment.serializers import rubric_from_dict
@@ -15,7 +15,7 @@ import json
 
 @step(u'Given I am "([^"]*)" for a course with problem & openassessment')
 def i_am_staff_or_instructor(step, role):  # pylint: disable=unused-argument
-    assert_in(role, ['instructor', 'staff'])
+    assert_in(role, ['instructor', 'staff', 'beta_tester'])
     world.clear_courses()
 
     world.scenario_dict['COURSE'] = world.CourseFactory.create(
@@ -98,7 +98,7 @@ def i_am_staff_or_instructor(step, role):  # pylint: disable=unused-argument
         )
         world.user = world.instructor
 
-    else:
+    elif role == 'staff':
         world.role = 'staff'
         # Make & register a staff member
         world.staff = StaffFactory(course_key=world.course_key)
@@ -111,6 +111,20 @@ def i_am_staff_or_instructor(step, role):  # pylint: disable=unused-argument
             name=world.staff.profile.name
         )
         world.user = world.staff
+
+    else:
+        world.role = 'beta_tester'
+        # Make & register a beta tester for the course
+        world.beta_tester = BetaTesterFactory(course_key=world.course_key)
+        world.enroll_user(world.beta_tester, world.course_key)
+
+        world.log_in(
+            username=world.beta_tester.username,
+            password='test',
+            email=world.beta_tester.email,
+            name=world.beta_tester.profile.name
+        )
+        world.user = world.beta_tester
 
     StudentModuleFactory.create(
         grade=1,
@@ -205,6 +219,8 @@ def then_i_see_a_progress_summary(step):
         summary_text = u'Course name: Test Course\nEnrollment counts: 1\nActive student counts: 1'
     elif world.role == 'staff':
         summary_text = u'Course name: Test Course\nEnrollment counts: 2\nActive student counts: 2'
+    elif world.role == 'beta_tester':
+        summary_text = u'Course name: Test Course\nEnrollment counts: 3\nActive student counts: 3'
 
     assert_true(world.browser.status_code.is_success())
     assert_in(summary_text, world.css_text("div.progress-summary"))

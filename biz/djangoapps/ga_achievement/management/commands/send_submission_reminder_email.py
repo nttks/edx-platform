@@ -19,13 +19,13 @@ from biz.djangoapps.ga_achievement.management.commands.update_biz_score_status i
 from biz.djangoapps.ga_achievement.models import ScoreBatchStatus, SubmissionReminderBatchStatus
 from biz.djangoapps.ga_contract.models import Contract
 from biz.djangoapps.ga_contract_operation.models import ContractReminderMail
-from biz.djangoapps.ga_contract_operation.utils import replace_braces
 from biz.djangoapps.ga_invitation.models import ContractRegister
 from biz.djangoapps.util import datetime_utils
 from biz.djangoapps.util.decorators import handle_command_exception, ExitWithWarning
 from courseware.model_data import FieldDataCache
 from courseware.module_render import get_module_for_descriptor
 from microsite_configuration import microsite
+from openedx.core.lib.ga_mail_utils import replace_braces
 from student.models import UserStanding, CourseEnrollment
 
 log = logging.getLogger(__name__)
@@ -265,15 +265,16 @@ def send_reminder_email(contract, user, target_courses, debug):
     to_addresses = [user.email]
 
     contract_mail = ContractReminderMail.get_or_default(contract, ContractReminderMail.MAIL_TYPE_SUBMISSION_REMINDER)
-    replace_dict = {'username': user.username}
-    subject = replace_braces(contract_mail.mail_subject, replace_dict)
-    message = replace_braces(contract_mail.compose_mail_body(target_courses), replace_dict)
+    replace_dict = {'username': user.username,
+                    'fullname': user.profile.name.encode('utf-8')}
+    subject = replace_braces(contract_mail.mail_subject.encode('utf-8'), replace_dict)
+    message = replace_braces(contract_mail.compose_mail_body(target_courses).encode('utf-8'), replace_dict)
 
     if debug:
         log.warning("This is a debug mode, so we don't send a reminder email.")
         log.debug(u"From Address={}".format(from_address))
         log.debug(u"To Addresses={}".format(to_addresses))
-        log.debug(u"Subject={}".format(subject))
-        log.debug(u"Message={}".format(message))
+        log.debug(u"Subject={}".format(subject.decode('utf-8')))
+        log.debug(u"Message={}".format(message.decode('utf-8')))
     else:
         send_mail(subject, message, from_address, to_addresses)

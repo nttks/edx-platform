@@ -44,11 +44,14 @@ def get_course_end_date(enrollment):
     _extra = enrollment.course_overview.extra
     if not (_extra and _extra.self_paced and _extra.has_individual_end):
         return None
-    return get_individual_date(get_base_date(enrollment), {
+    individual_end_date = get_individual_date(get_base_date(enrollment), {
         'days': _extra.individual_end_days,
         'hours': _extra.individual_end_hours,
         'minutes': _extra.individual_end_minutes
     })
+    # If course terminate date is ealier than individual end date, then set course terminate date. #2479
+    terminate_date = _extra.terminate_start
+    return terminate_date if terminate_date and individual_end_date > terminate_date else individual_end_date
 
 
 def is_course_closed(enrollment):

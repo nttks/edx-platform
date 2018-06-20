@@ -37,7 +37,13 @@ from django_comment_common.models import FORUM_ROLE_ADMINISTRATOR
 from student.models import CourseEnrollment
 from shoppingcart.models import Coupon, PaidCourseRegistration, CourseRegCodeItem
 from course_modes.models import CourseMode, CourseModesArchive
-from student.roles import CourseFinanceAdminRole, CourseSalesAdminRole, GaCourseScorerRole, GaGlobalCourseCreatorRole
+from student.roles import (
+    CourseFinanceAdminRole,
+    CourseSalesAdminRole,
+    GaCourseScorerRole,
+    GaGlobalCourseCreatorRole,
+    GaExtractDataAuthority,
+)
 from certificates.models import (
     CertificateGenerationConfiguration,
     CertificateWhitelist,
@@ -78,7 +84,8 @@ class InstructorDashboardTab(CourseTab):
             #       GaGlobalCourseCreatorRole is not a staff at LMS,
             #       but because courses made by oneself will become course instructor.
             return False
-        return bool(user and has_access(user, 'staff', course, course.id))
+        # Note: CourseBetaTesterRole also can access instructor dashboard. (#2478-2)
+        return bool(user and has_access(user, 'beta_tester', course, course.id))
 
 
 @ensure_csrf_cookie
@@ -99,23 +106,26 @@ def instructor_dashboard_2(request, course_id):
         'finance_admin': CourseFinanceAdminRole(course_key).has_user(request.user),
         'sales_admin': CourseSalesAdminRole(course_key).has_user(request.user),
         'staff': bool(has_access(request.user, 'staff', course)),
+        # Note: CourseBetaTesterRole also can access instructor dashboard. (#2478-2)
+        'beta_tester': bool(has_access(request.user, 'beta_tester', course)),
         'forum_admin': has_forum_access(request.user, course_key, FORUM_ROLE_ADMINISTRATOR),
-        'secret_info': request.user.is_staff,
+        # Note: Only GlobalStaff and those who has GaExtractDataAuthority can extract personal data. (#2478-3)
+        'extract_data': request.user.is_staff or GaExtractDataAuthority(course_key).has_user(request.user),
     }
 
-    if not access['staff']:
+    if not access['beta_tester']:
         raise Http404()
 
     is_white_label = CourseMode.is_white_label(course_key)
 
     sections = [
         _section_course_info(course, access),
-        _section_membership(course, access, is_white_label) if access['secret_info'] else None,
-        _section_cohort_management(course, access) if access['secret_info'] else None,
-        _section_student_admin(course, access) if access['secret_info'] else None,
-        _section_survey(course, access),
+        _section_membership(course, access, is_white_label) if request.user.is_staff else None,
+        _section_cohort_management(course, access) if request.user.is_staff else None,
+        _section_student_admin(course, access) if request.user.is_staff else None,
+        _section_survey(course, access) if access['extract_data'] else None,
         _section_progress_report(course, access),
-        _section_data_download(course, access) if access['secret_info'] else None,
+        _section_data_download(course, access) if access['extract_data'] else None,
     ]
 
     analytics_dashboard_message = None
@@ -176,6 +186,10 @@ def instructor_dashboard_2(request, course_id):
     # Certificates panel
     # NOTE: This panel is not used in gacco
 
+    # Note: GaCourseScorer cannot see the studio link (#2150)
+    studio_url = get_studio_url(course, 'course') \
+        if access['staff'] and not GaCourseScorerRole(course_key).has_user(request.user) else None
+
     disable_buttons = not _is_small_course(course_key)
 
     certificate_white_list = CertificateWhitelist.get_certificate_white_list(course_key)
@@ -196,8 +210,7 @@ def instructor_dashboard_2(request, course_id):
 
     context = {
         'course': course,
-        # Note: GaCourseScorer cannot see the studio link (#2150)
-        'studio_url': None if GaCourseScorerRole(course_key).has_user(request.user) else get_studio_url(course, 'course'),
+        'studio_url': studio_url,
         'sections': [s for s in sections if s is not None],
         'disable_buttons': disable_buttons,
         'analytics_dashboard_message': analytics_dashboard_message,

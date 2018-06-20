@@ -149,11 +149,11 @@ class IsTerminatedTestCase(LoginEnrollmentTestCase, ModuleStoreTestCase):
         # assert is_terminated
         self.assertFalse(is_terminated(course_overview, global_staff))
         self.assertFalse(is_terminated(course_overview, old_course_viewer))
-        self.assertTrue(is_terminated(course_overview, course_staff))
+        self.assertFalse(is_terminated(course_overview, course_staff))
         self.assertTrue(is_terminated(course_overview, course_beta_tester))
         self.assertTrue(is_terminated(course_overview, student))
         self.assertFalse(is_terminated(course_overview, global_course_creator))
-        self.assertTrue(is_terminated(course_overview, course_scorer))
+        self.assertFalse(is_terminated(course_overview, course_scorer))
 
     def test_self_paced_course_after_course_start(self):
         """
@@ -271,11 +271,11 @@ class IsTerminatedTestCase(LoginEnrollmentTestCase, ModuleStoreTestCase):
         # assert is_terminated
         self.assertFalse(is_terminated(course_overview, global_staff))
         self.assertFalse(is_terminated(course_overview, old_course_viewer))
-        self.assertTrue(is_terminated(course_overview, course_staff))
+        self.assertFalse(is_terminated(course_overview, course_staff))
         self.assertTrue(is_terminated(course_overview, course_beta_tester))
         self.assertTrue(is_terminated(course_overview, student))
         self.assertFalse(is_terminated(course_overview, global_course_creator))
-        self.assertTrue(is_terminated(course_overview, course_scorer))
+        self.assertFalse(is_terminated(course_overview, course_scorer))
 
     def test_instructor_paced_course_after_course_finished(self):
         """

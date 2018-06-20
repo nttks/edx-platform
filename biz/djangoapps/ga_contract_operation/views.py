@@ -25,7 +25,6 @@ from biz.djangoapps.ga_contract_operation.tasks import (
     personalinfo_mask, student_register, student_unregister, additional_info_update,
     TASKS, STUDENT_REGISTER, STUDENT_UNREGISTER, PERSONALINFO_MASK, ADDITIONALINFO_UPDATE,
 )
-from biz.djangoapps.ga_contract_operation.utils import send_mail
 from biz.djangoapps.ga_invitation.models import (
     AdditionalInfoSetting,
     ContractRegister,
@@ -43,6 +42,7 @@ from edxmako.shortcuts import render_to_response
 from openedx.core.djangoapps.ga_task.api import AlreadyRunningError
 from openedx.core.djangoapps.ga_task.task import STATES as TASK_STATES
 from openedx.core.lib.ga_datetime_utils import to_timezone
+from openedx.core.lib.ga_mail_utils import send_mail
 from student.models import CourseEnrollment
 from util.json_request import JsonResponse, JsonResponseBadRequest
 from xmodule.modulestore.django import modulestore
@@ -613,9 +613,10 @@ def reminder_mail_send_ajax(request):
         try:
             send_mail(
                 request.user,
-                contract_mail.mail_subject,
-                contract_mail.compose_mail_body(target_courses),
-                {'username': request.user.username},
+                contract_mail.mail_subject.encode('utf-8'),
+                contract_mail.compose_mail_body(target_courses).encode('utf-8'),
+                {'username': request.user.username,
+                 'fullname': request.user.profile.name.encode('utf-8')},
             )
         except:
             log.exception('Failed to send the test e-mail.')

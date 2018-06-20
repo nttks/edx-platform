@@ -421,6 +421,7 @@ def _has_access_course(user, action, courselike):
         'load_mobile': lambda: can_load() and _can_load_course_on_mobile(user, courselike),
         'enroll': can_enroll,
         'see_exists': see_exists,
+        'beta_tester': lambda: _has_beta_tester_access_to_descriptor(user, courselike, courselike.id),
         'staff': lambda: _has_staff_access_to_descriptor(user, courselike, courselike.id),
         'instructor': lambda: _has_instructor_access_to_descriptor(user, courselike, courselike.id),
         'see_in_catalog': can_see_in_catalog,
@@ -750,6 +751,12 @@ def _has_staff_access_to_location(user, location, course_key=None):
     return _has_access_to_course(user, 'staff', course_key)
 
 
+def _has_beta_tester_access_to_location(user, location, course_key=None):
+    if course_key is None:
+        course_key = location.course_key
+    return _has_access_to_course(user, 'beta_tester', course_key)
+
+
 def _has_access_to_course(user, access_level, course_key):
     """
     Returns True if the given user has access_level (= staff or
@@ -774,10 +781,16 @@ def _has_access_to_course(user, access_level, course_key):
     if _has_access_string(user, GA_ACCESS_CHECK_TYPE_GLOBAL_COURSE_CREATOR, 'global'):
         return ACCESS_DENIED
 
-    if access_level not in ('staff', 'instructor'):
+    if access_level not in ('staff', 'instructor', 'beta_tester'):
         log.debug("Error in access._has_access_to_course access_level=%s unknown", access_level)
         debug("Deny: unknown access level")
         return ACCESS_DENIED
+
+    # Note: Add beta_tester. (#2478-2)
+    beta_tester_access = CourseBetaTesterRole(course_key).has_user(user)
+    if beta_tester_access and access_level == 'beta_tester':
+        debug("Allow: user has course beta tester access")
+        return ACCESS_GRANTED
 
     # Note: GaCourseScorer is a staff at LMS (#2150)
     staff_access = (
@@ -785,7 +798,7 @@ def _has_access_to_course(user, access_level, course_key):
         OrgStaffRole(course_key.org).has_user(user) or
         GaCourseScorerRole(course_key).has_user(user)
     )
-    if staff_access and access_level == 'staff':
+    if staff_access and access_level in ('beta_tester', 'staff'):
         debug("Allow: user has course staff access")
         return ACCESS_GRANTED
 
@@ -794,7 +807,7 @@ def _has_access_to_course(user, access_level, course_key):
         OrgInstructorRole(course_key.org).has_user(user)
     )
 
-    if instructor_access and access_level in ('staff', 'instructor'):
+    if instructor_access and access_level in ('beta_tester', 'staff', 'instructor'):
         debug("Allow: user has course instructor access")
         return ACCESS_GRANTED
 
@@ -818,6 +831,15 @@ def _has_staff_access_to_descriptor(user, descriptor, course_key):
     descriptor: something that has a location attribute
     """
     return _has_staff_access_to_location(user, descriptor.location, course_key)
+
+
+def _has_beta_tester_access_to_descriptor(user, descriptor, course_key):
+    """Helper method that checks whether the user has beta tester access to
+    the course of the location.
+
+    descriptor: something that has a location attribute
+    """
+    return _has_beta_tester_access_to_location(user, descriptor.location, course_key)
 
 
 def _visible_to_nonstaff_users(descriptor):

@@ -1,0 +1,14 @@
+[
+    {
+        "pk": 1,
+        "model": "ga_bulk_email.selfpacedcourseclosureremindermail",
+        "fields": {
+            "mail_type": "SPCCR",
+            "mail_subject": "「{course_name}」閉講のご案内",
+            "mail_body": "本メールはgaccoを受講済みの方へお送りしています。\r\n\r\n{fullname}様が受講されています「{course_name}」は、{terminate_date_jp}をもって閉講となります。\r\n閉講日以降、講座へのアクセスができなくなりますので予めご了承ください。\r\n\r\n引き続き閉講までgacco受講を宜しくお願いします。\r\n\r\n━━━━━━━━━━━━━━━━━━━━\r\n本講座についてのお問い合わせ先：support@gacco.org\r\nサイト：https://lms.gacco.org/courses/{course_id}/info\r\n━━━━━━━━━━━━━━━━━━━━\r\n\r\n\r\nThis email is sent to those who have enrolled to this gacco course.\r\n\r\nDear {fullname},\r\nThis is a notice to remind you that \"{course_name}\" will close on {terminate_date_en}. \r\nPlease be reminded that after the course closes, you will not be able to access to the course any more.\r\n\r\nWe hope you will enjoy the course until its closure.\r\n\r\n━━━━━━━━━━━━━━━━━━━━\r\nFor questions about this course :  support@gacco.org\r\nhttps://lms.gacco.org/courses/{course_id}/info\r\n━━━━━━━━━━━━━━━━━━━━",
+            "reminder_email_days": 7,
+            "created": "2018-04-23T00:00:00Z",
+            "modified": "2018-04-23T00:00:00Z"
+        }
+    }
+]

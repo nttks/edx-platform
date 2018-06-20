@@ -1,0 +1,25 @@
+本メールはgaccoを受講済みの方へお送りしています。
+
+{fullname}様が受講されています「{course_name}」は、{terminate_date_jp}をもって閉講となります。
+閉講日以降、講座へのアクセスができなくなりますので予めご了承ください。
+
+引き続き閉講までgacco受講を宜しくお願いします。
+
+━━━━━━━━━━━━━━━━━━━━
+本講座についてのお問い合わせ先：support@gacco.org
+サイト：https://lms.gacco.org/courses/{course_id}/info
+━━━━━━━━━━━━━━━━━━━━
+
+
+This email is sent to those who have enrolled to this gacco course.
+
+Dear {fullname},
+This is a notice to remind you that "{course_name}" will close on {terminate_date_en}. 
+Please be reminded that after the course closes, you will not be able to access to the course any more.
+
+We hope you will enjoy the course until its closure.
+
+━━━━━━━━━━━━━━━━━━━━
+For questions about this course :  support@gacco.org
+https://lms.gacco.org/courses/{course_id}/info
+━━━━━━━━━━━━━━━━━━━━

@@ -1,6 +1,6 @@
 @shard_2
 Feature: LMS.Instructor Dash Progress Report
-    As an instructor or course staff,
+    As an instructor or course staff or beta tester,
     In order to manage my class
     I want to view and download data information about progress.
 
@@ -15,4 +15,4 @@ Feature: LMS.Instructor Dash Progress Report
        | Role          |
        | instructor    |
        | staff         |
-
+       | beta_tester   |

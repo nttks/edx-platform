@@ -18,6 +18,7 @@ from student.roles import (
     CourseCcxCoachRole,
     CourseStaffRole,
     GaCourseScorerRole,
+    GaExtractDataAuthority,
 )
 
 from instructor.enrollment import (
@@ -34,6 +35,7 @@ ROLES = {
     'ccx_coach': CourseCcxCoachRole,
     # Note: GaCourseScorer is registered by instructor from membership of instructor tab (#2150)
     'ga_course_scorer': GaCourseScorerRole,
+    'ga_extract_data_authority': GaExtractDataAuthority,
 }
 
 

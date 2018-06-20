@@ -18,6 +18,7 @@ from student.roles import (
     GaCourseScorerRole,
     GaGlobalCourseCreatorRole,
     GaOldCourseViewerStaffRole,
+    GaExtractDataAuthority,
     GlobalStaff,
     OrgStaffRole,
     OrgInstructorRole,
@@ -156,6 +157,23 @@ class GaCourseScorerFactory(UserFactory):
         if extracted is None:
             raise ValueError("Must specify a CourseKey for a ga_course_scorer user")
         GaCourseScorerRole(extracted).add_users(self)
+
+
+class GaExtractDataAuthorityFactory(UserFactory):
+    """
+    Returns a User object with GaExtractDataAuthority members access
+    """
+    last_name = "GaExtractDataAuthority"
+
+    @factory.post_generation
+    def course_key(self, create, extracted, **kwargs):
+        if extracted is None:
+            raise ValueError("Must specify a CourseKey for a ga_extract_data_authority user")
+        GaExtractDataAuthority(extracted).add_users(self)
+
+    @classmethod
+    def add_users(cls, course_key, user):
+        GaExtractDataAuthority(course_key).add_users(user)
 
 
 class StudentModuleFactory(DjangoModelFactory):

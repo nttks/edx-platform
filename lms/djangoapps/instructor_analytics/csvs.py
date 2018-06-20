@@ -4,7 +4,7 @@ Student and course analytics.
 Format and create csv responses
 """
 
-import csv
+import unicodecsv as csv
 from django.http import HttpResponse
 
 

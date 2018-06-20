@@ -857,6 +857,10 @@ msgid "Replaced with the user name"
 msgstr "ユーザー名に置き換わります"
 
 #: biz/djangoapps/ga_contract_operation/models.py
+msgid "Replaced with the full name"
+msgstr "氏名に置き換わります"
+
+#: biz/djangoapps/ga_contract_operation/models.py
 msgid "Replaced with the user password"
 msgstr "パスワードに置き換わります"
 
