@@ -49,7 +49,7 @@ def get_course_end_date(enrollment):
         'hours': _extra.individual_end_hours,
         'minutes': _extra.individual_end_minutes
     })
-    # If course terminate date is ealier than individual end date, then set course terminate date. #2479
+    # If course terminate date is earlier than individual end date, then set course terminate date. #2479
     terminate_date = _extra.terminate_start
     return terminate_date if terminate_date and individual_end_date > terminate_date else individual_end_date
 

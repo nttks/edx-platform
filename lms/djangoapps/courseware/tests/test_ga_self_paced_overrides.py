@@ -137,10 +137,11 @@ class SelfPacedDateOverrideTest(ModuleStoreTestCase):
         """
         Tests that a start date and a due date to be None if individual data has not been configured.
         """
-        _, chapter, section = self.setup_course("Self-Paced Course", True, False)
+        enrollment, chapter, section = self.setup_course("Self-Paced Course", True, False)
         self.assertEqual(DEFAULT_START_DATE, chapter.start)
         self.assertEqual(DEFAULT_START_DATE, section.start)
-        self.assertEqual(self.terminate_start, section.due)
+        expected_individual_end = enrollment.created + timedelta(days=self.individual_end_days)
+        self.assertEqual(expected_individual_end, section.due)
 
     def test_self_paced_disabled(self):
         """
