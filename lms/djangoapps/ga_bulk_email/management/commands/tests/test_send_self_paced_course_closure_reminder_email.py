@@ -370,7 +370,7 @@ class SendSelfPacedCourseClosureReminderEmailTest(BizStoreTestBase, ModuleStoreT
 
         self.assert_error(0, 50, self.course.id)
         self.assertEquals(self.mock_send_mail.call_count, 50)
-        self.mock_log.error.assert_any_call(u"Error occurred while sending self-paced course closure reminder email: {}".format(ex))
+        self.mock_log.exception.assert_any_call(u"Error occurred while sending self-paced course closure reminder email: {}".format(ex))
         self.mock_log.error.assert_any_call(u"Error occurred while sending emails for the course(id={}).".format(self.course.id))
 
     def test_unexpected_error(self):
@@ -391,7 +391,7 @@ class SendSelfPacedCourseClosureReminderEmailTest(BizStoreTestBase, ModuleStoreT
         self.assert_error(0, 0, spoc.id)
         self.assert_error(0, 0, mooc.id)
         self.assertEquals(self.mock_send_mail.call_count, 0)
-        self.mock_log.error.assert_called_with(u"Unexpected error occurred: {}".format(ex))
+        self.mock_log.exception.assert_called_with(u"Unexpected error occurred: {}".format(ex))
 
     def test_skip_contract_is_not_active(self):
         self._profile(self.user)

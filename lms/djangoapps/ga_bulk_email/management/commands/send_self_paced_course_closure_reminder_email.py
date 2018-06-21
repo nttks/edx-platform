@@ -29,7 +29,7 @@ from openedx.core.djangoapps.ga_optional.api import is_available
 from openedx.core.djangoapps.ga_optional.models import SELF_PACED_COURSE_CLOSURE_REMINDER_EMAIL_KEY
 from openedx.core.djangoapps.ga_self_paced.api import get_course_end_date
 from openedx.core.lib.ga_course_utils import sort_by_start_date
-from openedx.core.lib.ga_mail_utils import send_mail, replace_braces
+from openedx.core.lib.ga_mail_utils import replace_braces
 
 log = logging.getLogger(__name__)
 
@@ -178,7 +178,7 @@ class Command(BaseCommand):
                             log.debug(u"Processed time to self-paced-course-closure-reminder-email ... {:.2f}s".format(end - start))
                         except Exception as ex:
                             send_failure += 1
-                            log.error(u"Error occurred while sending self-paced course closure reminder email: {}".format(ex))
+                            log.exception(u"Error occurred while sending self-paced course closure reminder email: {}".format(ex))
 
                 if send_failure > 0:
                     raise SendMailError()
@@ -198,7 +198,7 @@ class Command(BaseCommand):
                 SelfPacedCourseClosureReminderBatchStatus.save_for_error(course.id, send_success, send_failure)
             except Exception as ex:
                 error_flag = True
-                log.error(u"Unexpected error occurred: {}".format(ex))
+                log.exception(u"Unexpected error occurred: {}".format(ex))
                 SelfPacedCourseClosureReminderBatchStatus.save_for_error(course.id, send_success, send_failure)
             else:
                 # Success
