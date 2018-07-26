@@ -202,6 +202,9 @@ from microsite_configuration import microsite
         margin: 0 5px 0 0;
         color: #126f9a;
     }
+    .biz-icon.organization:before {
+        content: ' \f1ad ';
+    }
     .biz-icon.contract:before {
         content: ' \f0f6 ';
     }
@@ -304,6 +307,10 @@ from microsite_configuration import microsite
                 current_feature = 'course_operation/survey'
             elif re.match('^/biz/manager/', request.path):
                 current_feature = 'manager'
+            elif re.match('^/biz/member/', request.path):
+                current_feature = 'member'
+            elif re.match('^/biz/group/', request.path):
+                current_feature = 'group'
             else:
                 current_feature = None
             current_organization = getattr(request, 'current_organization', None)
@@ -327,6 +334,10 @@ from microsite_configuration import microsite
                         <p>${_("Contract not specified")}</p>
                     </div>
                     % else:
+                        <div class="">
+                            <label class="biz-icon organization">${_("Organization Name")}：</label>
+                            <div class="biz-manager">${current_organization.org_name | h}</div>
+                        </div>
                         <div class="">
                             <label class="biz-icon contract">${_("Contract Name")}：</label>
                             <div class="biz-manager">${current_contract.contract_name | h}</div>
@@ -468,25 +479,33 @@ from microsite_configuration import microsite
 
                     ## Student
                     % if current_manager.can_handle_contract_operation():
-                        % if current_contract.can_customize_mail:
+                        % if current_manager and (current_manager.is_director()) and current_contract and current_contract.is_available_for_director():
+                            % if current_contract.can_customize_mail:
                     <li class="${'current' if current_feature == 'contract_operation/register_mail' else ''}"><a
                         href="${reverse('biz:contract_operation:register_mail')}">${_("Welcome E-Mail Management")}</a></li>
+                            % endif
                         % endif
                         % if current_contract.can_send_submission_reminder:
                     <li class="${'current' if current_feature == 'contract_operation/reminder_mail' else ''}"><a
                         href="${reverse('biz:contract_operation:reminder_mail')}">${_("Reminder Mail Setting")}</a></li>
                         % endif
-                    <li class="${'current' if current_feature == 'contract_operation/register_students' else ''}"><a
-                        href="${reverse('biz:contract_operation:register_students')}">${_("Register User Management")}</a></li>
+                        % if current_manager and (current_manager.is_director()) and current_contract and current_contract.is_available_for_director():
+                        <li class="${'current' if current_feature == 'contract_operation/register_students' else ''}"><a
+                           href="${reverse('biz:contract_operation:register_students')}">${_("Register User Management")}</a></li>
+                        %endif
                     <li class="${'current' if current_feature == 'contract_operation/students' else ''}"><a
                         href="${reverse('biz:contract_operation:students')}">${_("Contract Register Management")}</a></li>
-                    <li class="${'current' if current_feature == 'contract_operation/bulk_students' else ''}"><a
+                        % if current_manager and (current_manager.is_director()) and current_contract and current_contract.is_available_for_director():
+                       <li class="${'current' if current_feature == 'contract_operation/bulk_students' else ''}"><a
                         href="${reverse('biz:contract_operation:bulk_students')}">${_("User Collective Management")}</a></li>
+                        %endif
                     % endif
 
                     ## Manager
                     % if current_manager.can_handle_manager():
                     <li class="${'current' if current_feature == 'manager' else ''}"><a href="${reverse('biz:manager:index')}">${_("Manager Setting")}</a></li>
+                    <li class="${'current' if current_feature == 'member' else ''}"><a href="${reverse('biz:member:index')}">${_("Member Master")}</a></li>
+                    <li class="${'current' if current_feature == 'group' else ''}"><a href="${reverse('biz:group:group_list')}">${_("Organization Master")}</a></li>
                     % endif
                 % endif
             </ul>
@@ -510,21 +529,25 @@ from microsite_configuration import microsite
     $(function () {
         w2utils.locale('${static.url('js/vendor/w2ui/locale/ja-jp.txt')}');
 
+        var grid_toggle_width = 250;
         $('#panel-btn').click(function () {
+            if (typeof grid != "undefined" || typeof task_grid != "undefined") {
+                $('.w2ui-grid').width($('.w2ui-grid').width() + grid_toggle_width);
+                if (typeof grid != "undefined") {
+                    if ($.isArray(grid)) {
+                        $.each(grid, function(i, el) { el.refresh(); });
+                    } else {
+                        grid.refresh();
+                    }
+                }
+                grid_toggle_width *= -1;
+            }
+
             $('#panel-btn-icon').toggleClass('close');
             $('.menu-icon').toggleClass('close');
             $('.side').toggleClass('close');
             $('.main').toggleClass('close');
-
-            if (typeof grid != "undefined") toggleGridWidth();
         });
-
-        var grid_toggle_width = 250;
-        function toggleGridWidth() {
-            $('.w2ui-grid').width($('.w2ui-grid').width() + grid_toggle_width);
-            grid.refresh();
-            grid_toggle_width *= -1;
-        }
     });
 </script>
 </%block>

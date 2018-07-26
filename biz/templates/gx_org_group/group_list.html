@@ -1,0 +1,189 @@
+<%inherit file="../main_biz.html" />
+<%namespace name="static" file="../static_content.html" />
+<%!
+from django.utils.translation import ugettext as _
+from django.core.urlresolvers import reverse
+%>
+
+<%block name="pagetitle">${_("Organization Master")}</%block>
+
+<%block name="js_extra">
+<script type="text/javascript">
+    var grid = grid || [];
+    $(function () {
+        var group_grid,
+            $upload_form = $('#upload-form'),
+            $upload_btn = $('#upload-btn'),
+            $error_area = $('#error_area');
+
+         $upload_btn.on('click', function() {
+            w2utils.lock($('body'), '', true);
+            $error_area.hide().empty();
+            var error_messages = [];
+            if ($('[name=org_group_csv]').val() == '') {
+                error_messages.push('${_("Please select the file.")}');
+            }
+            try{
+                var form_data = new FormData($upload_form.get(0));
+                var json = JSON.parse(form_data);
+            }catch(e){
+                // error_messages.push('${_("File read error occurred. Please select the file, again")}');
+            }
+            if (error_messages.length > 0) {
+                var i, $ul = $('<ul class="messages" />');
+                for ( i = 0; i < error_messages.length; ++i ) {
+                    $ul.append('<li class="error">' + error_messages[i] + '</li>');
+                }
+                $error_area.append($ul).show();
+                w2utils.unlock($('body'));
+            } else {
+                var form_data = new FormData($upload_form.get(0));
+                $.ajax({
+                    url: "${reverse('biz:group:upload_csv')}",
+                    type: 'POST',
+                    cache: false,
+                    data: form_data,
+                    processData: false,
+                    contentType: false,
+                    traditional: true
+                }).done(function(jqXHR) {
+                    var rec_num  = jqXHR.completed_records;
+                    alert( rec_num + '${_(" records had completed")}');
+                    location.reload();
+                }).fail(function(jqXHR) {
+                    display_ajax_error_message(jqXHR);
+                    alert('${_("File upload is failed")}');
+                }).always(function () {
+                    w2utils.unlock($('body'));
+                });
+            }
+        });
+
+         $('form#download-form button').on('click', function(event) {
+            $.fileDownload($(event.target).data('endpoint'), {
+                    httpMethod: "POST",
+                    data: {"csrfmiddlewaretoken": $.cookie("csrftoken")}
+                })
+                .always(function () {
+                    $('#download-btn').attr('disabled', false);
+                });
+        });
+
+        // input_file
+        $(".gc_iptfile input[type='file']").on("change",function(){
+            var file = $(this).prop("files")[0];
+            if(typeof file === "undefined"){
+                $(this).siblings(".gc_iptfile_filename").html('${_("Please select the file.")}');
+            }else {
+                $(this).siblings(".gc_iptfile_filename").html(file.name);
+            }
+        });
+        // input_file disabled
+        $(".gc_iptfile").find('input[type="file"]:disabled').siblings(".gc_iptfile_label,.gc_iptfile_filename").addClass("disabled");
+
+        group_grid = $('#grid').w2grid({
+            name: 'group_grid',
+            fixedBody: true,
+            selectType : 'row',
+            show: {
+                toolbar: false,
+                footer: false,
+                toolbarReload: false
+            },
+            searches: [
+                {field: 'group_code', caption: '${_("Organization Group Code")}', type: 'text'},
+                {field: 'group_name', caption: '${_("Organization Group Name")}', type: 'text'},
+                {field: 'notes', caption: '${_("notes")}', type: 'text'},
+            ],
+            columns: [
+                {field: 'group_name', caption: '${_("Organization Group Name")}', size: '20%', sortable: true, hidden: false},
+                {
+                    field: 'edit', caption: '${_("access right")}', size: '10%', sortable: true, hidden: false,
+                    render: function(record){
+                        return "<a href='" + record.detail_url + "'>" + _.escape(record.edit)  +"</a>";
+                    }
+                },
+                {field: 'group_code', caption: '${_("Organization Group Code")}', size: '15%', sortable: true, hidden: false},
+                {field: 'notes', caption: '${_("notes")}', size: '30%', sortable: true, hidden: false},
+                {field: 'parent_code', caption: '${_("Parent Organization Code")}', size: '20%', sortable: true, hidden: true},
+                {field: 'parent_name', caption: '${_("Parent Organization Name")}', size: '20%', sortable: true, hidden: true},
+                {field: 'created', caption: '${_("created date")}', size: '20%', sortable: true, hidden: true, render: 'date:yyyy/mm/dd'},
+                {field: 'created', caption: '${_("created time")}', size: '20%', sortable: true, hidden: true, render: 'time:h12'},
+                {field: 'modified', caption: '${_("modified date")}', size: '20%', sortable: true, hidden: true, render: 'date:yyyy/mm/dd'},
+                {field: 'modified', caption: '${_("modified time")}', size: '20%', sortable: true, hidden: true, render: 'time:h12'},
+
+            ],
+            records: ${groups},
+        });
+
+        grid.push(group_grid);
+
+        function  display_ajax_error_message(jqXHR) {
+            var data = null;
+            try {
+                data = JSON.parse(jqXHR.responseText);
+            } catch(e) {
+                var $ul = $('<ul class="messages" />');
+                $ul.append('<li class="error">' + '${_("unknown error")}' + '</li>');
+                $error_area.append($ul).show();
+                return;
+            }
+            var len=data.errors.length;
+            var $ul = $('<ul class="messages" />');
+            for (var i=0; i < len; i++) {
+                $ul.append('<li class="error">' + gettext(data.errors[i]) +'</li>')
+            }
+            $error_area.append($ul).show();
+        }
+    });
+
+</script>
+<style>
+    .content-wrapper {
+        min-height: 800px;
+    }
+</style>
+</%block>
+<%block name="custom_content">
+<div id="error_area" class="gc_error_area"></div>
+<div class="gc_content">
+    <div class="gc_column">
+        <div class="gc_column_col gc_column_col_full">
+            <p>${_("When registering master data, be sure to use the specified format")}</p>
+        </div>
+    </div>
+    <div class="gc_step">
+        <div class="gc_step_item">
+            <form id="download-form" method="get">
+                <button id="download-btn" class="btn btn-grn" type="button"
+                    data-endpoint="${reverse('biz:group:download_csv')}">${_("Download format file")}</button>
+                <input type="hidden" name="csrfmiddlewaretoken" value="${csrf_token}" />
+                <input type="hidden" name="organization" value="${request.current_organization.id}" />
+            </form>
+            <span class="gc_step_item_note">${_("Please press the left button and download the format")}</span>
+        </div>
+        <div class="gc_step_item">
+            <form id="upload-form" action="/" method="post" enctype="multipart/form-data">
+                <input type="hidden" name="csrfmiddlewaretoken" value="${csrf_token}" />
+                <input type="hidden" name="organization" value="${request.current_organization.id}" />
+                <div class="gc_iptfile">
+                    <label class="gc_iptfile_label" for="org_group_csv" >${_("Select File")}</label>
+                    <input type="file" id="org_group_csv" name="org_group_csv" accept=".csv" />
+                    <span class="gc_iptfile_filename">${_("Please select the file.")}</span>
+                </div>
+            </form>
+        </div>
+        <div class="gc_step_item">
+            <button id="upload-btn" class="btn btn-blue" type="button"
+                    data-endpoint='${reverse("biz:group:upload_csv")}'>${_('Registration')}</button>
+            <span class="gc_step_item_note">${_("Registration action will over write existing data")}</span>
+        </div>
+    </div>
+    <hr />
+    <h2>${_('Organization Master List' )}</h2>
+    <div class="gc_column_col gc_column_col_full">
+        <p class="gc_mb10">${_('Click [detail settings] to set up the organization group access right ')}</p>
+    </div>
+    <div id="grid" class="w2ui-reset w2ui-grid"></div>
+</div>
+</%block>

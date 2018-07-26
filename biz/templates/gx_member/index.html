@@ -1,0 +1,386 @@
+<%inherit file="../main_biz.html" />
+<%namespace name="static" file="../static_content.html" />
+<%!
+from django.utils.translation import ugettext as _
+from django.core.urlresolvers import reverse
+%>
+
+<%block name="pagetitle">${_('Member Master')}</%block>
+
+<%block name="js_extra">
+<script type="text/javascript">
+    $(function () {
+        $(document).on("keypress", "input:not(.allow_submit)", function (event) {
+            return event.which !== 13;
+        });
+
+        $('#member-form button').on('click', function(event) {
+            var form = $('#member-form');
+            w2utils.lock($('.gc_content'), '', true);
+
+            if (validate_member_form()) {
+                w2confirm({
+                    msg: $(event.target).data('confirm-message'),
+                    yes_class: 'btn-right',
+                    no_class: 'btn-left'
+                }).yes(function () {
+                    var formData = form.find('textarea,input,select').serializeArray();
+                    $.ajax({
+                        url: '${reverse("biz:member:register_ajax")}',
+                        type: 'POST',
+                        data: formData,
+                    }).done(function (data) {
+                        form.find('input,select').val('');
+                        $('#form_success_popup').w2popup();
+                        $('html,body').animate({scrollTop: $('#task-history-wrapper').offset().top}, 500, 'swing');
+                    }).fail(function(jqXHR) {
+                        display_ajax_error_message(jqXHR);
+                        $('html,body').animate({scrollTop: 0}, 500, 'swing');
+                    }).always(function () {
+                        w2ui['task_history_grid'].load('${reverse("biz:member:task_history_ajax")}');
+                        w2utils.unlock($('.gc_content'));
+                    });
+                }).no(function() {
+                    w2utils.unlock($('.gc_content'));
+                });
+            } else {
+                $('html,body').animate({scrollTop: 0}, 500, 'swing');
+                w2utils.unlock($('.gc_content'));
+            }
+        });
+
+        $(".gc_iptfile input[type='file']").on("change",function(){
+            var file = $(this).prop("files")[0];
+            if(typeof file === "undefined"){
+                $(this).siblings(".gc_iptfile_filename").html('${_("Please select the file.")}');
+            }else {
+                $(this).siblings(".gc_iptfile_filename").html(file.name);
+            }
+        });
+        $(".gc_iptfile").find('input[type="file"]:disabled').siblings(".gc_iptfile_label,.gc_iptfile_filename").addClass("disabled");
+
+        $('#member-csv-form-btn').on('click', function(event) {
+            var $form = $('#member-csv-form');
+            w2utils.lock($('.gc_content'), '', true);
+            if (validate_member_csv_form()) {
+                var formData = new FormData($form.get(0));
+                $.ajax({
+                    url: $(event.target).data('endpoint'),
+                    type: 'POST',
+                    cache: false,
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    traditional: true
+                }).done(function (data) {
+                    $('#csv_success_popup').w2popup();
+                    $('html,body').animate({scrollTop: $('#task-history-wrapper').offset().top}, 500, 'swing');
+                }).fail(function(jqXHR) {
+                    display_ajax_error_message(jqXHR);
+                    $('html,body').animate({scrollTop: 0}, 500, 'swing');
+                }).always(function () {
+                    w2ui['task_history_grid'].load('${reverse("biz:member:task_history_ajax")}');
+                    w2utils.unlock($('.gc_content'));
+                });
+            } else {
+                $('html,body').animate({scrollTop: 0}, 500, 'swing');
+                w2utils.unlock($('.gc_content'));
+            }
+            return false;
+        });
+
+
+        $('#member-download-csv button').on('click', function(event) {
+            $('#member-download-csv').submit();
+        });
+
+        function validate_member_form() {
+            $('#error_area').empty().hide();
+            var errorMessages = [];
+            // Member Code
+            var code = $('#id_code').val();
+            if (code === '') {
+                errorMessages.push('${_("The {0} is required.").format(_("Member Code"))}');
+            } else if (code.length > 255) {
+                errorMessages.push('${_("Please enter of {0} within {1} characters.").format(_("Member Code"), 255)}');
+            }
+            // First name
+            var firstName = $('#id_first_name').val();
+            if (firstName === '') {
+                if (firstName.length > 30) {
+                    errorMessages.push('${_("Please enter of {0} within {1} characters.").format(_("Last Name"), 30)}');
+                }
+            }
+            // Last name
+            var lastName = $('#id_last_name').val();
+            if (lastName === '') {
+                if (lastName.length > 30) {
+                    errorMessages.push('${_("Please enter of {0} within {1} characters.").format(_("First Name"), 30)}');
+                }
+            }
+            // Username
+            var username = $('#id_username').val();
+            if (username === '') {
+                errorMessages.push('${_("The {0} is required.").format(_("Username"))}');
+            } else if (username.length > 30) {
+                errorMessages.push('${_("Please enter of {0} within {1} characters.").format(_("Username"), 30)}');
+            }
+            // Login code
+            var loginCode = $('#id_login_code').val();
+            if (loginCode != '') {
+                if (loginCode.length < 2 && 30 < loginCode.length) {
+                    errorMessages.push('${_("Please enter of {0} within {1} characters.").format(_("Login Code"), 30)}');
+                }
+            }
+            // Email
+            var email = $('#id_email').val();
+            if (email === '') {
+                errorMessages.push('${_("The {0} is required.").format(_("Email Address"))}');
+            } else if (email.length > 255) {
+                errorMessages.push('${_("Please enter of {0} within {1} characters.").format(_("Email Address"), 255)}');
+            }
+            // Password
+            var password = $('#id_password').val();
+            if (password != '') {
+                if (password.length > 128) {
+                    errorMessages.push('${_("Please enter of {0} within {1} characters.").format(_("Password"), 128)}');
+                }
+            }
+            // org1-10, item1-10
+            var replaceErrorMessage = '${_("Please enter of {0} within {1} characters.").format("JS_REPLACE_NUM", 255)}';
+            for (var i=1; i < 11; i++) {
+                var org = $('#id_org' + i).val();
+                if (org != '') {
+                    if (org.length > 100) {
+                        errorMessages.push(replaceErrorMessage.replace(/JS_REPLACE_NUM/gi, gettext('Organization') + i))
+                    }
+                }
+            }
+            for (var i=1; i < 11; i++) {
+                var item = $('#id_item' + i).val();
+                if (item != '') {
+                    if (item.length > 100) {
+                        errorMessages.push(replaceErrorMessage.replace(/JS_REPLACE_NUM/gi, gettext('Item') + i))
+                    }
+                }
+            }
+
+            if (errorMessages.length == 0) {
+                return true;
+            } else {
+                display_error_messages(errorMessages)
+                $('html,body').animate({scrollTop: 0}, 500, 'swing');
+                return false;
+            }
+        }
+
+        function validate_member_csv_form() {
+            $('#error_area').empty().hide();
+            var error_messages = [];
+            if ($('[name=member_csv]').val() == '') {
+                error_messages.push('${_("Please select the file.")}');
+            }
+            if (error_messages.length == 0) {
+                return true;
+            } else {
+                display_error_messages(error_messages);
+                return false;
+            }
+        }
+
+        function display_error_messages(messages) {
+            var $ul = $('<ul class="messages" />');
+            $.each(messages || [], function(i, msg) {
+                $ul.append('<li class="error">' + msg + '</li>');
+            });
+            $('#error_area').append($ul).show();
+        }
+
+        function display_ajax_error_message(jqXHR) {
+            try {
+                var errors = JSON.parse(jqXHR.responseText).error;
+            } catch(e) {
+                var errors = '${_("An error happened during the member registration process.")}';
+            }
+            var $ul = $('<ul class="messages" />');
+            if ($.isArray(errors)) {
+                for (var i=0, len=errors.length; i<len; i++) {
+                    $ul.append('<li class="error">' + errors[i] + '</li>');
+                }
+            } else {
+                $ul.append('<li class="error">' + errors + '</p>');
+            }
+            $('#error_area').append($ul).show();
+        }
+    });
+</script>
+<style>
+    .content-wrapper {
+        min-height: 500px;
+    }
+</style>
+</%block>
+
+<%block name="custom_content">
+<div id="error_area" class="gc_error_area"></div>
+<div class="gc_content">
+    <h2>${_("File Registration")}</h2>
+    <div class="gc_column">
+        <div class="gc_column_col gc_column_col_full">
+            <p>${_("When registering master data, be sure to use the specified format")}</p>
+        </div>
+    </div>
+    <div class="gc_step">
+        <div class="gc_step_item">
+            <form id="member-download-csv" action='${reverse("biz:member:download_ajax")}' method="post">
+                <button class="btn btn-grn" type="button">${_("Download format file")}</button>
+                <input type="hidden" name="csrfmiddlewaretoken" value="${csrf_token}" />
+                <input type="hidden" name="organization" value="${request.current_organization.id}" />
+            </form>
+            <span class="gc_step_item_note">${_("Please press the left button and download the format")}</span>
+        </div>
+        <div class="gc_step_item">
+            <form id="member-csv-form" method="post" enctype="multipart/form-data">
+                <input type="hidden" name="csrfmiddlewaretoken" value="${csrf_token}" />
+                <input type="hidden" name="organization" value="${request.current_organization.id}" />
+                <div class="gc_iptfile">
+                    <label class="gc_iptfile_label" for="member_csv" >${_("Select File")}</label>
+                    <input type="file" id="member_csv" name="member_csv" accept=".csv" />
+                    <span class="gc_iptfile_filename">${_("Please select the file.")}</span>
+                </div>
+            </form>
+        </div>
+        <div class="gc_step_item">
+            <button id="member-csv-form-btn" class="btn btn-blue" type="button"
+                    data-endpoint='${reverse("biz:member:register_csv_ajax")}'
+                    data-confirm-message='${_("Are you sure you want to registration this?")}'>
+                ${_('Registration')}</button>
+            <span class="gc_step_item_note">${_("Registration action will over write existing data")}</span>
+        </div>
+    </div>
+    <div class="gc_column">
+        <div class="gc_column_col gc_column_col_full">
+            <p>${_("Please confirm the <a href='#task-history-grid'>registration result</a> after registration")}</p>
+        </div>
+    </div>
+    <br />
+    <br />
+    <br />
+    <!--
+    <hr />
+    <h2>${_("One Registration")}</h2>
+    <form id="member-form" action="${reverse('biz:member:register_ajax')}" method="post">
+        <input type="hidden" name="csrfmiddlewaretoken" value="${csrf_token}" />
+        <div class="gc_column">
+            <div class="gc_column_col">
+                <div class="gc_field">
+                    <label class="gc_field_label" for="id_group_code">${_("Select Organization")}</label>
+                    <select class="gc_field_ipt" id="id_group_code" name="group_code">
+                        <option value=""></option>
+                        % for group in org_group_list :
+                        <option value="${group.group_code}">${group.group_name}</option>
+                        % endfor
+                    </select>
+                </div>
+            </div>
+            <div class="gc_column_col">
+                <div class="gc_field">
+                    <label class="gc_field_label" for="id_code">${_("Member Code")}</label>
+                    <input class="gc_field_ipt" id="id_code" name="code" maxlength="" type="text">
+                </div>
+            </div>
+            <div class="gc_column_col">
+                <div class="gc_field">
+                    <label class="gc_field_label" for="id_first_name">${_("Last Name")}</label>
+                    <input class="gc_field_ipt" id="id_first_name" name="first_name" maxlength="" type="text">
+                </div>
+            </div>
+            <div class="gc_column_col">
+                <div class="gc_field">
+                    <label class="gc_field_label" for="id_last_name">${_("First Name")}</label>
+                    <input class="gc_field_ipt" id="id_last_name" name="last_name" maxlength="" type="text">
+                </div>
+            </div>
+            <div class="gc_column_col">
+                <div class="gc_field">
+                    <label class="gc_field_label" for="id_email">${_("Email Address")}</label>
+                    <input class="gc_field_ipt" id="id_email" name="email" maxlength="" type="text">
+                </div>
+            </div>
+            <div class="gc_column_col">
+                <div class="gc_field">
+                    <label class="gc_field_label" for="id_password">${_("Password")}</label>
+                    <input class="gc_field_ipt" id="id_password" name="password" maxlength="" type="text">
+                </div>
+            </div>
+            <div class="gc_column_col">
+                <div class="gc_field">
+                    <label class="gc_field_label" for="id_username">${_("Username")}</label>
+                    <input class="gc_field_ipt" id="id_username" name="username" maxlength="" type="text">
+                </div>
+            </div>
+            <div class="gc_column_col">
+                <div class="gc_field">
+                    <label class="gc_field_label" for="id_login_code">${_("Login Code")}</label>
+                    <input class="gc_field_ipt" id="id_login_code" name="login_code" maxlength="" type="text">
+                </div>
+            </div>
+        </div>
+        <div class="gc_column">
+            <div class="gc_column_col">
+            % for i in range(1, 11) :
+                <div class="gc_field">
+                    <label class="gc_field_label" for="id_org${i}">${_("Organization")} ${i}</label>
+                    <input id="id_org${i}" class="gc_field_ipt" name="org${i}" type="text" title="" maxlength="100" />
+                </div>
+            % endfor
+            </div>
+            <div class="gc_column_col">
+            % for i in range(1, 11) :
+                <div class="gc_field">
+                    <label class="gc_field_label" for="id_item${i}">${_("Item")} ${i}</label>
+                    <input id="id_item${i}" class="gc_field_ipt" name="item${i}" type="text" title="" maxlength="100" />
+                </div>
+            % endfor
+            </div>
+        </div>
+        <div class="gc_btn_cta gc_btn_cta_center">
+            <button class="btn btn-blue" type="button"
+                    data-endpoint="${reverse('biz:member:download_ajax')}"
+                    data-confirm-message='${_("Are you sure you want to registration this?")}'>${_('Registration')}</button>
+        </div>
+    </form>
+    -->
+</div>
+
+<%include file="_task_history.html" />
+
+<div id="csv_success_popup" style="display: none; width: 300px; height: 150px; overflow: auto">
+    <div rel="title">
+        ${_("Complete file upload.")}
+    </div>
+    <div rel="body">
+        <p>${_("Please check the task if you need know status of registration data in file.")}</p>
+    </div>
+    <div rel="buttons">
+        <button class="btn" onclick="w2popup.close()">${_("Close")}</button>
+    </div>
+</div>
+<div id="form_success_popup" style="display: none; width: 300px; height: 150px; overflow: auto">
+    <div rel="title">
+        ${_("Complete form submit.")}
+    </div>
+    <div rel="body">
+        <p>${_("Please check the task if you need know status of registration data in form.")}</p>
+    </div>
+    <div rel="buttons">
+        <button class="btn" onclick="w2popup.close()">${_("Close")}</button>
+    </div>
+</div>
+<div style="display:none;">
+    <form id="get_member_task">
+        <input type="hidden" name="csrfmiddlewaretoken" value="${csrf_token}" />
+        <input type="hidden" name="organization" value="${request.current_organization.id}" />
+    </form>
+</div>
+</%block>

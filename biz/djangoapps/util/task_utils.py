@@ -5,7 +5,9 @@ import logging
 from django.conf import settings
 from django.utils.translation import ugettext as _
 
-from biz.djangoapps.ga_contract_operation.tasks import TASKS
+from biz.djangoapps.ga_organization.models import Organization
+from biz.djangoapps.ga_contract_operation.tasks import TASKS as CONTRACT_OPERATION_TASKS
+from biz.djangoapps.gx_member.tasks import TASKS as MEMBER_TASKS
 from openedx.core.djangoapps.ga_task import api as task_api
 from openedx.core.djangoapps.ga_task.models import Task
 
@@ -18,11 +20,18 @@ def submit_task(request, task_type, task_class, task_input, task_key, queue=None
     return task_api.submit_task(request, task_type, task_class, task_input, task_key, queue)
 
 
-def validate_task(contract):
+def validate_task(key_model):
     """
     Check specific task is already running.
+    :param key_model is instance of Contract or Organization
+    :return:
     """
-    running_tasks = Task.objects.filter(task_key=get_task_key(contract)).exclude(task_state__in=READY_STATES)
+    if isinstance(key_model, Organization):
+        # Note: Task key of organization was add later.
+        running_tasks = Task.objects.filter(task_key=get_org_task_key(key_model)).exclude(task_state__in=READY_STATES)
+    else:
+        running_tasks = Task.objects.filter(task_key=get_task_key(key_model)).exclude(task_state__in=READY_STATES)
+
     if not running_tasks:
         return None
 
@@ -34,8 +43,20 @@ def validate_task(contract):
 
     return _(
         "{task_type_name} is being executed. Please check task history, leave time and try again."
-    ).format(task_type_name=TASKS[running_tasks[0].task_type])
+    ).format(task_type_name=_get_task_type_name_by_task_type(running_tasks[0].task_type))
+
+
+def _get_task_type_name_by_task_type(task_type):
+    tasks = {}
+    tasks.update(CONTRACT_OPERATION_TASKS)
+    tasks.update(MEMBER_TASKS)
+    return tasks[task_type]
 
 
 def get_task_key(contract):
     return hashlib.md5(str(contract.id)).hexdigest()
+
+
+def get_org_task_key(org):
+    return hashlib.md5(str(org.org_code)).hexdigest()
+

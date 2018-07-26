@@ -8,29 +8,59 @@ from django.core.urlresolvers import reverse
 
 <%block name="js_extra">
 <script type="text/javascript">
+    var grid = grid || [];
     $(function () {
-        var grid = $('#grid').w2grid({
+        $(document).on("keypress", "input:not(.allow_submit)", function (event) {
+            return event.which !== 13;
+        });
+
+        var studentGrid,
+            $girdSearchForm = $('#search_ajax_form'),
+            $csvForm = $('#student-download-csv-form'),
+            $csvFormHidden = $('#student-download-csv-form-hidden'),
+            $pagenation = $('#pagenation'),
+            $searchDetailToggleBtn = $("#search_detail_toggle_btn"),
+            $searchDetailToggleTarget = $('#search_detail_toggle_target');
+
+        studentGrid = $('#grid').w2grid({
                 name: 'student_grid',
                 fixedBody: true,
                 selectType : 'row',
                 show: {
                     toolbar: true,
-                    footer: true,
+                    footer: false,
                     selectColumn: true,
                     toolbarReload: false
                 },
-                multiSearch: true,
-                searches: [
-                    {field: 'contract_register_status', caption: '${_("Register Status")}', type: 'text'},
-                    {field: 'full_name', caption: '${_("Full Name")}', type: 'text'},
-                    {field: 'user_name', caption: '${_("Username")}', type: 'text'},
-                    {field: 'user_email', caption: '${_("Email Address")} ', type: 'text'},
-                ],
+                searches: [],
                 columns: [
-                    {field: 'contract_register_status', caption: '${_("Register Status")}', size: 1, sortable: true, hidden: false},
-                    {field: 'full_name', caption: '${_("Full Name")}', size: 2, sortable: true, hidden: false},
-                    {field: 'user_name', caption: '${_("Username")}', size: 2, sortable: true, hidden: false},
-                    {field: 'user_email', caption: '${_("Email Address")}', size: 3, sortable: true, hidden: false},
+                    {field: 'contract_register_status', caption: '${_("Register Status")}', size: 2, min: 80, sortable: true, hidden: false},
+                    {field: 'full_name', caption: '${_("Full Name")}', size: 2, min: 80, sortable: true, hidden: false},
+                    {field: 'group_name', caption: '${_("Organization Groups")}', size: 2, min: 80, sortable: true, hidden: false},
+                    {field: 'code', caption: '${_("Member Code")}', size: 2, min: 100, sortable: true, hidden: false},
+                    {field: 'user_name', caption: '${_("Username")}', size: 2, min: 120, sortable: true, hidden: false},
+                    {field: 'user_email', caption: '${_("Email Address")}', size: 5, min: 150, sortable: true, hidden: false},
+                    {field: 'login_code', caption: '${_("Login Code")}', size: 2, min: 120, sortable: true, hidden: false},
+                    {field: 'org1', caption: '${_("Organization")} 1', size:3, min: 80, sortable: true, hidden: false},
+                    {field: 'org2', caption: '${_("Organization")} 2', size:3, min: 80, sortable: true, hidden: false},
+                    {field: 'org3', caption: '${_("Organization")} 3', size:3, min: 80, sortable: true, hidden: false},
+                    {field: 'org4', caption: '${_("Organization")} 4', size:3, min: 80, sortable: true, hidden: true},
+                    {field: 'org5', caption: '${_("Organization")} 5', size:3, min: 80, sortable: true, hidden: true},
+                    {field: 'org6', caption: '${_("Organization")} 6', size:3, min: 80, sortable: true, hidden: true},
+                    {field: 'org7', caption: '${_("Organization")} 7', size:3, min: 80, sortable: true, hidden: true},
+                    {field: 'org8', caption: '${_("Organization")} 8', size:3, min: 80, sortable: true, hidden: true},
+                    {field: 'org9', caption: '${_("Organization")} 9', size:3, min: 80, sortable: true, hidden: true},
+                    {field: 'org10', caption: '${_("Organization")} 10',size:3,min: 80, sortable: true, hidden: true},
+                    {field: 'item1', caption: '${_("Item")} 1', size:3, min: 80, sortable: true, hidden: false},
+                    {field: 'item2', caption: '${_("Item")} 2', size:3, min: 80, sortable: true, hidden: false},
+                    {field: 'item3', caption: '${_("Item")} 3', size:3, min: 80, sortable: true, hidden: false},
+                    {field: 'item4', caption: '${_("Item")} 4', size:3, min: 80, sortable: true, hidden: true},
+                    {field: 'item5', caption: '${_("Item")} 5', size:3, min: 80, sortable: true, hidden: true},
+                    {field: 'item6', caption: '${_("Item")} 6', size:3, min: 80, sortable: true, hidden: true},
+                    {field: 'item7', caption: '${_("Item")} 7', size:3, min: 80, sortable: true, hidden: true},
+                    {field: 'item8', caption: '${_("Item")} 8', size:3, min: 80, sortable: true, hidden: true},
+                    {field: 'item9', caption: '${_("Item")} 9', size:3, min: 80, sortable: true, hidden: true},
+                    {field: 'item10', caption: '${_("Item")} 10',size:3, min: 80, sortable: true, hidden: true}
                 ],
                 records: ${show_list},
                 getSelectionRecords: function() {
@@ -43,11 +73,73 @@ from django.core.urlresolvers import reverse
                     return returnRows;
                 }
             });
-        grid.searches = grid.searches.concat(${additional_searches});
-        grid.columns = grid.columns.concat(${additional_columns});
-        grid.refresh();
+        studentGrid.columns = studentGrid.columns.concat(${additional_columns});
+        studentGrid.refresh();
+        grid.push(studentGrid);
+
+        var paging = createPaging(
+            $pagenation, '${max_show_num_on_page}', function(offset, limit) {
+                $.each(grid[1].getSelection(), function(i, id) {
+                    studentGrid.unselect(id)
+                });
+                $girdSearchForm.data('init', 0);
+                $girdSearchForm.find('[name=offset]').val(offset);
+                $girdSearchForm.find('[name=limit]').val(limit);
+                $girdSearchForm.submit();
+            });
+        paging.create('${total_count}', 1);
+
+        $girdSearchForm.on('submit', function() {
+            var form = $(this);
+            var pagingInit = form.data('init') == 1 ? true : false;
+            if (pagingInit) {
+                form.find('[name=offset]').val(0);
+                form.find('[name=limit]').val(${max_show_num_on_page});
+            }
+            w2utils.lock($('.biz-wrap'), '', true);
+            var formData = form.find('textarea,input,select').serializeArray();
+            $.ajax({
+                url: form.data('endpoint'),
+                type: 'POST',
+                data: formData,
+            }).done(function (data) {
+                studentGrid.records = data.show_list ? JSON.parse(data.show_list) : [];
+                studentGrid.refresh();
+                if (pagingInit) {
+                    paging.create(data.total_count, 1);
+                }
+            }).always(function () {
+                $.each(studentGrid.getSelection(), function(i, id) {
+                    studentGrid.unselect(id);
+                });
+                form.data('init', 1);
+                w2utils.unlock($('.biz-wrap'));
+            });
+            return false;
+        });
+
+        $searchDetailToggleBtn.on("click", function() {
+            $(this)
+                .attr('aria-expanded', function (i, attr) {return attr === 'true' ? 'false' : 'true'})
+                .toggleClass('is_open');
+
+            $searchDetailToggleTarget
+                .attr('aria-hidden', function (i, attr) {return attr === 'true' ? 'false' : 'true'})
+                .toggleClass('is_show');
+
+            fit_wrapper_height();
+        });
+
+        $csvForm.find('button').on('click', function() {
+            $csvFormHidden.empty().append($girdSearchForm.find('input,select').clone());
+            $girdSearchForm.find('select').each(function() {
+                $csvFormHidden.find('[name=' + $(this).attr('name') + ']').val($(this).val())
+            });
+            $csvForm.submit();
+        });
+
         $('.grid-operation').click(function () {
-            var clickButton = $(this), gridSelectionRecords = grid.getSelectionRecords(), messages = $('.messages');
+            var clickButton = $(this), gridSelectionRecords = studentGrid.getSelectionRecords(), messages = $('.messages');
             messages.empty();
             if (gridSelectionRecords.length === 0) {
                 messages.append('<li class="error">' + gettext("Please select a target.") + '</li>');
@@ -63,6 +155,7 @@ from django.core.urlresolvers import reverse
                     targetList.push(row.contract_register_id);
                 });
                 w2utils.lock(lockTarget, '', true);
+                $('#task-reload-btn').prop('disabled', true);
                 $.ajax({
                     url: clickButton.data('endpoint'),
                     type: 'post',
@@ -74,35 +167,272 @@ from django.core.urlresolvers import reverse
                     dataType: 'json',
                 }).done(function(data) {
                     if (data.show_list) {
-                        grid.records = data.show_list;
-                        grid.refresh();
+                        // Reset search conditions
+                        $girdSearchForm
+                            .find('input[type=text],select').val('')
+                            .find('[type=radio][value=exclude]').click();
+
+                        studentGrid.records = data.show_list;
+                        studentGrid.refresh();
+                        studentGrid.selectNone();
                     }
                     messages.append('<li class="info">' + data.info + '</li>');
                     if (data.warning != null) {
                         messages.append('<li class="warning">' + data.warning + '</li>');
                     }
+                    $('html,body').animate({scrollTop: 0}, 500, 'swing');
                 }).fail(function(jqXHR) {
                     var data = JSON.parse(jqXHR.responseText);
                     messages.append('<li class="error">' + data.error + '</li>');
                 }).always(function() {
+                    w2ui['task_history_grid'].load('${reverse("biz:contract_operation:task_history")}', function () {
+                        $('#task-reload-btn').prop('disabled', false);
+                    });
                     w2utils.unlock(lockTarget);
                 });
             });
         });
+
+        function createPaging($pagenation, maxView, moveFnc) {
+
+            var Paging = function () {
+                this.$pagenation = $pagenation;
+                this.maxView = maxView;
+                this.total = 0;
+                this.$baseli = $('<li class="gc_pagination_page" />');
+                this.moveFnc = moveFnc;
+            };
+            var p = Paging.prototype;
+
+            p.getBaseLiTag = function () { return this.$baseli.clone(); }
+
+            p.create = function (total, now) {
+                this.total = total;
+                var pages = total % this.maxView == 0 ? total / this.maxView : Math.floor(total / this.maxView) + 1;
+                var $ul = $('<ul class="gc_pagination_list">');
+                if (! (now == 1 || pages == 0)) {
+                    var $prev = this.getBaseLiTag().addClass('gc_pagination_page_prev');
+                    $prev.append('<a href="javascript:void(0)" data-num="' + (now - 1) + '">&lt;&lt;${_("prev")}</a>');
+                    $ul.append($prev);
+                }
+                for (var i=1; i <= pages ;i++) {
+                    var $li = this.getBaseLiTag();
+                    if (i == now) {
+                        $li.append('<a href="javascript:void(0)" data-num="' + i + '" class="is_active">' + i + '</a>');
+                    } else {
+                        $li.append('<a href="javascript:void(0)" data-num="' + i + '">' + i + '</a>');
+                    }
+                    $ul.append($li);
+                }
+                if (! (now == pages || pages == 0)) {
+                    var $next = this.getBaseLiTag().addClass('gc_pagination_page_next');
+                    $next.append('<a href="javascript:void(0)" data-num="' + (now + 1) + '">${_("next")}&gt;&gt;</a>');
+                    $ul.append($next);
+                }
+
+                var _this = this;
+                $ul.find('a:not(.is_active)').on('click', function() {
+                    _this.move.call(_this, $(this).data('num'));
+                });
+
+                this.$pagenation.empty().append($ul);
+
+                return this;
+            };
+            p.move = function(page) {
+                this.create(this.total, page);
+                offset = (page - 1) * this.maxView;
+                limit = page * this.maxView;
+                this.moveFnc(offset, limit);
+
+                return this;
+            };
+
+            return new Paging();
+        }
+
+        function fit_wrapper_height() {
+            var sHeight = $('.side').height();
+            var mHeight = $('.main').height();
+            var height = mHeight > sHeight ? mHeight - 200 : sHeight;
+            $('.content-wrapper').height(height);
+        }
+        fit_wrapper_height();
+
     });
+
 </script>
 <style>
-  .content-wrapper {
-    min-height: 650px;
-  }
+    #w2ui-overlay-searches-student_grid,
+    #tb_student_grid_toolbar_item_w2ui-search,
+    #tb_student_grid_toolbar_item_w2ui-search-advanced{
+        display: none !important;
+    }
+    .content-wrapper {
+        min-height: 1300px;
+    }
 </style>
 </%block>
 
 <%block name="custom_content">
-<div id="grid"></div>
+<div>
+    <form id="search_ajax_form" data-endpoint="${reverse('biz:contract_operation:students_search_students_ajax')}" data-init="1">
+        <input type="hidden" name="csrfmiddlewaretoken" value="${csrf_token}" />
+        <input type="hidden" name="contract_id" value="${request.current_contract.id}" />
+        <input type="hidden" name="offset" value="0" />
+        <input type="hidden" name="limit" value="0" />
 
-<input type="button" id="unregister-btn" class="grid-operation" data-confirm-message="${_('Do the bulk students unregister. Are you sure?')}" data-endpoint="${reverse('biz:contract_operation:unregister_students_ajax')}" value="&#xf014 ${_('Unregister Student')}" />
-<input type="button" id="personalinfo-mask-btn" class="grid-operation" data-confirm-message="${_('After execution of the personal information mask processing, it can not be undone. Are you sure?')}" data-endpoint="${reverse('biz:contract_operation:personalinfo_mask')}" value="&#xf235 ${_('Personal Information Mask')}" />
+        <div class="gc_column">
+            <div class="gc_column_col gc_column_col_full">
+                <div class="gc_field">
+                    <label class="gc_field_label" for="search_status">${_("Register Status")}</label>
+                    <select id="search_status" rel="search" class="gc_field_ipt gc_w15em" name="status" title="">
+                        <option value=""></option>
+                        % for status in status_list :
+                            <option value="${status}">${status_list[status]}</option>
+                        % endfor;
+                    </select>
+                </div>
+                <div class="gc_field">
+                    <label class="gc_field_label" for="search_group_name">${_("Organization Name")}</label>
+                    <input class="gc_field_ipt gc_w30em" id="search_group_name" name="group_name" value="" type="text" title=""  maxlength="255"/>
+                </div>
+                <div class="gc_field">
+                    <label class="gc_field_label" for="search_group_name">${_("Search all columns by word")}</label>
+                    <input rel="search"  class="gc_field_ipt gc_w30em" name="free_word" value="" title="" type="text" maxlength="255">
+                </div>
+                <div class="gc_field">
+                    <fieldset class="gc_fieldset">
+                        <div class="gc_fieldset_wrap">
+                            <legend class="gc_fieldset_label">${_("Unregister Student")}</legend>
+                            <div class="gc_fieldset_ipt">
+                                <label class="gc_fieldset_label_radio">
+                                    <input rel="search" class="gc_fieldset_ipt_radio"
+                                           name="is_unregister" value="exclude" type="radio">${_("Exclude")}
+                                </label>
+                                <label class="gc_fieldset_label_radio">
+                                    <input rel="search" class="gc_fieldset_ipt_radio"
+                                           name="is_unregister" value="contains" type="radio" checked>${_("Contains")}
+                                </label>
+                                <label class="gc_fieldset_label_radio">
+                                    <input rel="search" class="gc_fieldset_ipt_radio"
+                                           name="is_unregister" value="only" type="radio">${_("Only")}
+                                </label>
+                            </div>
+                        </div>
+                    </fieldset>
+                </div>
+                <div class="gc_field">
+                    <fieldset class="gc_fieldset">
+                        <div class="gc_fieldset_wrap">
+                            <legend class="gc_fieldset_label">${_("Personal Information Mask")}</legend>
+                            <div class="gc_fieldset_ipt">
+                                <label class="gc_fieldset_label_radio">
+                                    <input rel="search" class="gc_fieldset_ipt_radio"
+                                           name="is_masked" value="exclude" type="radio">${_("Exclude")}
+                                </label>
+                                <label class="gc_fieldset_label_radio">
+                                    <input rel="search" class="gc_fieldset_ipt_radio"
+                                           name="is_masked" value="contains" type="radio" checked>${_("Contains")}
+                                </label>
+                                <label class="gc_fieldset_label_radio">
+                                    <input rel="search" class="gc_fieldset_ipt_radio"
+                                           name="is_masked" value="only" type="radio">${_("Only")}
+                                </label>
+                            </div>
+                        </div>
+                    </fieldset>
+                </div>
+                <div class="gc_field">
+                    <fieldset class="gc_fieldset">
+                        <div class="gc_fieldset_wrap">
+                            <legend class="gc_fieldset_label">${_("Target user of delete member master")}</legend>
+                            <div class="gc_fieldset_ipt">
+                                <label class="gc_fieldset_label_radio">
+                                    <input rel="search" class="gc_fieldset_ipt_radio"
+                                           name="member_is_delete" value="exclude" type="radio">${_("Exclude")}
+                                </label>
+                                <label class="gc_fieldset_label_radio">
+                                    <input rel="search" class="gc_fieldset_ipt_radio"
+                                           name="member_is_delete" value="contains" type="radio" checked>${_("Contains")}
+                                </label>
+                                <label class="gc_fieldset_label_radio">
+                                    <input rel="search" class="gc_fieldset_ipt_radio"
+                                           name="member_is_delete" value="only" type="radio">${_("Only")}
+                                </label>
+                            </div>
+                        </div>
+                    </fieldset>
+                </div>
+            </div>
+        </div>
+        <div class="gc_collapse">
+            <button id="search_detail_toggle_btn" class="gc_collapse_btn" aria-controls="collapse_panel01" aria-expanded="false" type="button"><i class="fa fa-plus-square gc_ico_plus" aria-hidden="true"></i><i class="fa fa-minus-square gc_ico_minus" aria-hidden="true"></i>${_('Search Condition')}</button>
+            <div id="search_detail_toggle_target" class="gc_collapse_panel" aria-hidden="true" id="collapse_panel01">
+                <div class="gc_column">
+                    <div class="gc_column_col gc_column_col_full">
+                        % for i in range(1, 11) :
+                        <div class="gc_field">
+                            <label class="gc_field_label" for="org_item_field_select_${i}">${_("Condition")}${i}</label>
+                            <div class="gc_field_group">
+                                <select id="org_item_field_select_${i}" class="gc_field_ipt gc_w15em" name="org_item_field_select_${i}">
+                                    <option value=""></option>
+                                    % for key in member_org_item_list :
+                                        <option value="${key}">${member_org_item_list[key]}</option>
+                                    % endfor;
+                                </select>
+                                <input class="gc_field_ipt gc_w20em" type="text" name="org_item_field_text_${i}" value="" title="" maxlength="255" />
+                            </div>
+                        </div>
+                        % endfor;
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="gc_btn_cta gc_btn_cta_center">
+            <button class="btn btn-blue gc_btn_search" type="submit">${_('Search')}</button>
+        </div>
+    </form>
+</div>
 
+<div class="gc_data_section">
+    <h2>${_("Search Result")}</h2>
+    <div id="grid" class="w2ui-reset w2ui-grid"></div>
+    <div id="pagenation" class="gc_pagination"></div>
+</div>
+
+% if request.current_manager and  request.current_manager.is_director() :
+<div class="gc_btn_group">
+    <p>${_("Please check the target student. If you want to select all, you check next to [Register Status] button.")}</p>
+    <input type="button" id="unregister-btn" class="grid-operation" data-confirm-message="${_('Do the bulk students unregister. Are you sure?')}" data-endpoint="${reverse('biz:contract_operation:unregister_students_ajax')}" value="&#xf014 ${_('Unregister Student')}" />
+    <input type="button" id="personalinfo-mask-btn" class="grid-operation" data-confirm-message="${_('After execution of the personal information mask processing, it can not be undone. Are you sure?')}" data-endpoint="${reverse('biz:contract_operation:personalinfo_mask')}" value="&#xf235 ${_('Personal Information Mask')}" />
+</div>
+% endif
+
+<form id="student-download-csv-form" action="${reverse('biz:contract_operation:students_students_download')}" method="post">
+    <div id="download_csv_form" class="gc_download">
+        <div class="gc_download_btn">
+            <button class="btn btn-grn" type="button"
+            data-endpoint="${reverse('biz:contract_operation:students_students_download')}">${_('Download Searched Students')}</button>
+        </div>
+    </div>
+    <div id="student-download-csv-form-hidden" style="display:none"></div>
+</form>
+
+<div id="failed_add_search_conditions_popup" style="display: none; width: 300px; height: 150px; overflow: auto">
+    <div rel="title">
+        ${_("Failed add search conditions.")}
+    </div>
+    <div rel="body">
+        <p>${_("You can add up to 10 search conditions.")}</p>
+    </div>
+    <div rel="buttons">
+        <button class="btn" onclick="w2popup.close()">${_("Close")}</button>
+    </div>
+</div>
+
+
+% if request.current_manager and  request.current_manager.is_director() :
 <%include file="_task_history.html" />
+% endif
 </%block>

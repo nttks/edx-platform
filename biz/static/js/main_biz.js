@@ -12,6 +12,10 @@ $(function () {
 
 function renderTime(record, index, column_index) {
     var value = record[this.columns[column_index].field] || 0;
+    // Note: If the record does not have a column('None'), empty set to column.
+    if (value === 'None') {
+        return '';
+    }
     var m = Math.floor(value / 60) + Math.ceil(value % 60 / 60);
     return (Math.floor(m / 60)) + ":" + (("0" + m % 60).slice(-2));
 }
@@ -21,7 +25,12 @@ function renderPercent(record, index, column_index) {
     // Note: '―'(U+2015) means 'Not Attempted' (#1816)
     if (value === '―') {
         return value;
+
+    // Note: If the record does not have a column('None'), empty set to column.
+    } else if (value === 'None') {
+        return '';
     }
     var pow = Math.pow(10 , 1) ;
     return (Math.round(parseFloat(value) * 100 * pow) / pow).toFixed(1) + '%';
 }
+

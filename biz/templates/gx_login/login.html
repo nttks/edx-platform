@@ -1,0 +1,109 @@
+<%inherit file="../main.html" />
+<%namespace name="static" file="../static_content.html" />
+<%!
+from django.utils.translation import ugettext as _
+from django.core.urlresolvers import reverse
+%>
+
+<%block name="pagetitle">${_('Log in')}</%block>
+
+<link rel="stylesheet" type="text/css" href="${static.url('css/vendor/w2ui/w2ui.min.css')}" />
+<script type="text/javascript" src="${static.url('js/vendor/w2ui/w2ui.min.js')}"></script>
+
+<%block name="js_extra">
+<script type="text/javascript">
+    $(function () {
+        $("#login-btn").click(function () {
+            $("#mail_address_error").hide();
+            $("#password_error").hide();
+            $("#submission_error").hide();
+            $("#submission_error2").hide();
+
+            if($("#login-email").val().length == 0){
+                $("#mail_address_error").show();
+                scrollTo( 0, 100 ) ;
+                return false
+            }
+            if($("#login-password").val().length == 0){
+                $("#password_error").show();
+                scrollTo( 0, 100 ) ;
+                return false
+            }
+            $("#login-btn").attr("disabled", "disabled");
+            $("#form-login").submit();
+        });
+        $("#login-email, #login-password"). keydown(function(e) {
+            if ((e.which && e.which === 13) || (e.keyCode && e.keyCode === 13)) {
+                $("#login-btn").click();
+            }
+        });
+    });
+</script>
+</%block>
+
+
+<%block name="custom_content">
+
+<div class="section-bkg-wrapper">
+    <div id="login-and-registration-container" class="login-register">
+        <section id="login-anchor" class="form-type">
+            <div id="login-form" class="form-wrapper ">
+                <div class="status already-authenticated-msg hidden"></div>
+                <div id="mail_address_error" class="status submission-error" aria-live="polite" style="display: none;">
+                    <h4 class="message-title">${_("We couldn't log you in.")}</h4>
+                    <ul class="message-copy"><li>${_("A properly formatted e-mail is required")}</li></ul>
+                </div>
+                <div id="password_error" class="status submission-error" aria-live="polite" style="display: none;">
+                    <h4 class="message-title">${_("We couldn't log you in.")}</h4>
+                    <ul class="message-copy"><li>${_("A valid password is required")}</li></ul>
+                </div>
+                % if account_check == -1:
+                <div id="submission_error" class="status submission-error" aria-live="polite">
+                    <h4 class="message-title">${_("We couldn't log you in.")}</h4>
+                    <ul class="message-copy"><li>${_("Your email or password is incorrect")}</li></ul>
+                </div>
+                % endif
+                % if account_check == -2:
+                <div id="submission_error2" class="status submission-error" aria-live="polite">
+                    <h4 class="message-title">${_("We couldn't log you in.")}</h4>
+                    <ul class="message-copy"><li>${_("You do not have permission to view this page.")}</li></ul>
+                </div>
+                % endif
+
+                <form id="form-login" name="login" action="." method="POST" tabindex="-1">
+                    <input type="hidden" name="csrfmiddlewaretoken" value="${csrf_token}" />
+                    <div class="section-title lines">
+                        <h2>
+                            <span class="text">${_('Administrator')}${_('Log in')}</span>
+                        </h2>
+                    </div>
+                    <div class="form-field email-email">
+                        <label for="login-email">
+                            ${_('E-mail')}
+                        </label>
+                        <input id="login-email" type="email" name="email" class="input-block " aria-describedby="login-email-desc" maxlength="254" aria-required="true" placeholder="${_('example: username@domain.com')}" value="${email}">
+                        <span class="tip tip-input" id="login-email-desc">${_("This is the e-mail address you used to register with {platform}").format(platform='gacco')}</span>
+                    </div>
+                    <div class="form-field password-password">
+                        <label for="login-password">
+                            ${_('Password')}
+                        </label>
+                        <input id="login-password" type="password" name="password" class="input-block" aria-required="true" maxlength="254" value="">
+                        <a href="../../login#forgot-password-modal" target="_blank" class="forgot-password field-link">${_('Forgot password?')}</a>
+                    </div>
+                    <div class="form-field checkbox-remember">
+                        <input id="login-remember" type="checkbox" name="remember" class="input-block checkbox" aria-describedby="login-remember-desc">
+                        <label for="login-remember">
+                            ${_('Remember me')}
+                        </label>
+                    </div>
+                    <button type="button" id="login-btn" class="action action-primary action-update js-login login-button">${_("Log in")}</button>
+                    <input name="next" type="hidden" value="${next_url}"/>
+                </form>
+            </div>
+        </section>
+
+    </div>
+</div>
+</%block>
+

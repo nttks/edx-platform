@@ -1,0 +1,258 @@
+<%inherit file="../main_biz.html" />
+<%namespace name="static" file="../static_content.html" />
+<%!
+from django.utils.translation import ugettext as _
+from django.core.urlresolvers import reverse
+%>
+
+<%block name="pagetitle">${_("Access Right Settings")}</%block>
+
+<%block name="js_extra">
+<script type="text/javascript">
+    var grid = grid || [];
+    var group_modify_permission;
+    $(function () {
+        var grid_parent = $('#grid_parent').w2grid({
+            name: 'parent',
+            fixedBody: true,
+            selectType: 'row',
+            show: {
+                footer: false,
+            },
+            searches: [],
+            columns: [
+                {field: 'username', caption: '${_("Username")}', size: 2, sortable: true, hidden: false},
+                {field: 'user_email', caption: '${_("Email Address")}', size: 5, sortable: true, hidden: false},
+            ],
+            records:[]
+        });
+        grid_parent.refresh();
+        grid.push(grid_parent);
+
+        var grid_manager = $('#grid_manager').w2grid({
+            name: 'manager',
+            fixedBody: true,
+            selectType: 'row',
+            show: {
+                footer: false,
+            },
+            searches: [],
+            columns: [
+                {field: 'username', caption: '${_("Username")}', size: 2, sortable: true, hidden: false},
+                {field: 'user_email', caption: '${_("Email Address")}', size: 5, sortable: true, hidden: false},
+                {
+                    field: 'delete', caption: '', size: 1, sortable: false, hidden: false,
+                    render: function(record){
+                        return '<a href="javascript:void(0)"' +
+                            'onclick="group_modify_permission(\'' + record.username + '\', \'revoke\', ' + record.recid + ')">${_("Delete")}</a>';
+                    }
+                },
+            ],
+            records:[]
+        });
+        grid_manager.refresh();
+        grid.push(grid_manager);
+
+        $("#edit-btn").on('click', function () {
+            if ($("#add-user").val() == "") {
+                return;
+            }
+            modify_permission($("#add-user").val(), 'allow', '');
+        });
+
+        get_parent_list();
+        get_manager_list();
+
+        function get_parent_list(){
+            lock();
+            grid_parent.records = [];
+            $.ajax({
+                url: $("#grid_parent").data('endpoint'),
+                type: 'POST',
+                dataType: 'json',
+                data: {
+                    group_id: "${group_id}",
+                }
+            }).done(function (data) {
+                if (data.success) {
+                    $.each(data.show_list, function (index, user) {
+                        add_parent(index, user);
+                    });
+                    grid_parent.refresh();
+                } else {
+                    show_message("error", data.message);
+                }
+            }).fail(function (data) {
+                if (data.status == 400) {
+                    show_message("error", gettext("Unauthorized access."));
+                } else {
+                    show_message("error", gettext("An error occurred. Please reload the page."));
+                }
+            }).always(function () {
+                unlock();
+            });
+        }
+
+        function get_manager_list() {
+            lock();
+            $("#error_area").hide().empty();
+            grid_manager.records = [];
+            $.ajax({
+                url: $("#grid_manager").data('endpoint'),
+                type: 'POST',
+                dataType: 'json',
+                data: {
+                    group_id: "${group_id}",
+                }
+            }).done(function (data) {
+                if (data.success) {
+                    $.each(data.show_list, function (index, user) {
+                        add_manager(index, user);
+                    });
+                    grid_manager.refresh();
+                } else {
+                    show_message("error", data.message);
+                }
+            }).fail(function (data) {
+                if (data.status == 400) {
+                    show_message("error", gettext("Unauthorized access."));
+                } else {
+                    show_message("error", gettext("An error occurred. Please reload the page."));
+                }
+            }).always(function () {
+                unlock();
+            });
+        }
+
+        function add_manager(recid, user) {
+            grid_manager.add({
+                'recid' : recid,
+                'username' : user.name,
+                'user_email' : user.email
+            });
+        }
+
+        function add_parent(recid, user) {
+            grid_parent.add({
+                'recid' : recid,
+                'username' : user.parent_name,
+                'user_email' : user.parent_email
+            });
+        }
+
+        function modify_permission(identifier, action, recid) {
+            lock();
+            $("#error_area").hide().empty();
+
+            $.ajax({
+                url: $("#edit-btn").data('endpoint'),
+                type: 'POST',
+                dataType: 'json',
+                data: {
+                    group_id: "${group_id}",
+                    grant_user_str: identifier,
+                    action: action
+                }
+            }).done(function (data) {
+                if (data.success) {
+                    if ( action == 'allow' ){
+                        add_manager(grid_manager.records.length, data);
+                    } else {
+                        grid_manager.remove(recid);
+                    }
+                } else {
+                    show_message("error", data.message);
+                }
+            }).fail(function (data) {
+                if (data.status == 400) {
+                    show_message("error", gettext("Unauthorized access."));
+                } else {
+                    show_message("error", gettext("An error occurred. Please reload the page."));
+                }
+            }).always(function () {
+                unlock();
+            });
+        }
+        // global namespace
+        group_modify_permission = modify_permission;
+
+        function lock() {
+            w2utils.lock($(".biz-wrap"), '', true);
+        }
+
+        function unlock() {
+            w2utils.unlock($(".biz-wrap"));
+        }
+
+        function show_message(level, message) {
+            var $ul = $('<ul class="messages" />');
+            $ul.append('<li class="' + level + '">' + message + '</li>');
+            $("#error_area").append($ul).show();
+            scrollTo(0, 0);
+            fit_wrapper_height();
+        }
+
+        function fit_wrapper_height() {
+            var sHeight = $('.side').height();
+            var mHeight = $('.main').height();
+            var height = mHeight > sHeight ? mHeight - 200 : sHeight;
+            $('.content-wrapper').height(height);
+        }
+
+        $('#close_btn').on('click', function() {
+            location.href = $(this).data('endpoint');
+        });
+    });
+</script>
+<style>
+    .content-wrapper {
+        min-height: 700px;
+    }
+</style>
+</%block>
+<%block name="custom_content">
+<div id="error_area" class="gc_error_area"></div>
+<div class="gc_content">
+    <div class="gc_desctbl">
+        <div  class="gc_desctbl_row">
+            <div class="gc_desctbl_label">${_("Organization Group Name")}</div>
+            <div class="gc_desctbl_data">${group_name}</div>
+        </div>
+        <div  class="gc_desctbl_row">
+            <div class="gc_desctbl_label">${_("Organization Group Code")}</div>
+            <div class="gc_desctbl_data">${group_code}</div>
+        </div>
+        <div  class="gc_desctbl_row">
+            <div class="gc_desctbl_label">${_("notes")}</div>
+            <div class="gc_desctbl_data">${notes}</div>
+        </div>
+    </div>
+    <div class="gc_desctbl">
+        <div  class="gc_desctbl_row">
+            <div class="gc_desctbl_label">${_("Parent Organization Manager")}</div>
+            <div class="gc_desctbl_data">
+                <div id="grid_parent" data-endpoint="${reverse('biz:group:accessible_parent_list')}"
+                     style="height: 200px; max-width: 966px;"></div>
+            </div>
+        </div>
+        <div  class="gc_desctbl_row">
+            <div class="gc_desctbl_label">${_("Current Organization Manager")}</div>
+            <div class="gc_desctbl_data">
+                <div id="grid_manager" data-endpoint="${reverse('biz:group:accessible_user_list')}"
+                     style="height: 200px; max-width: 966px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="gc_adduser">
+        <input type="text" id="add-user" placeholder="${_('Enter username or email')}"/>
+        <button id="edit-btn" class="btn btn-grn gc_adduser_btn" type="button" data-endpoint="${reverse('biz:group:grant_right')}"
+        ><i class="fa fa-pencil-square" aria-hidden="true"></i>${_('Add')}</button>
+    </div>
+</div>
+
+<div class="gc_btn_cta gc_btn_cta_center">
+    <button id="close_btn" class="btn btn-blue" type="button"
+             data-endpoint="${reverse('biz:group:group_list')}">${_('Close')}</button>
+</div>
+</%block>

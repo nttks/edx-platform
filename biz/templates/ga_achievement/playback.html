@@ -6,12 +6,51 @@ from django.utils.translation import ugettext as _
 %>
 
 <%block name="pagetitle">${_('Playback Status')}</%block>
-<%block name="pagesubtitle"><span id="playback-title-description">${_('(HH:MM)')}</span></%block>
 
 <%block name="js_extra">
 <script type="text/javascript">
-    var grid;
+    var grid = grid || [];
+
     $(function () {
+        function lock() {
+            w2utils.lock($('.biz-wrap'), '', true);
+        }
+        function unlock() {
+            w2utils.unlock($('.biz-wrap'));
+        }
+        function validate_number_text() {
+            var success = true;
+            var $ul = $('<ul class="messages" />');
+            var $error_area = $('#error_area').empty().hide();
+            var el = $("#total_playback_from");
+            if(el.val() != "" && !w2utils.isInt(el.val())){
+                success = false;
+                $ul.append('<li class="error">${_("Total Playback Time(From) value must be an integer.")}</li>');
+                $error_area.append($ul).show();
+            }
+            el = $("#total_playback_to");
+            if(el.val() != "" && !w2utils.isInt(el.val())){
+                success = false;
+                $ul.append('<li class="error">${_("Total Playback Time(To) value must be an integer.")}</li>');
+                $error_area.append($ul).show();
+            }
+            for (var i=1; i <= 5; i++) {
+                el = $("#detail_condition_playback_from_" + i);
+                if (el.val() != "" && !w2utils.isInt(el.val())) {
+                    success = false;
+                    $ul.append('<li class="error">${_("Section Playback Time(From) value must be an integer.")}</li>');
+                    $error_area.append($ul).show();
+                }
+                el = $("#detail_condition_playback_to_" + i);
+                if (el.val() != "" && !w2utils.isInt(el.val())) {
+                    success = false;
+                    $ul.append('<li class="error">${_("Section Playback Time(To) value must be an integer.")}</li>');
+                    $error_area.append($ul).show();
+                }
+            }
+            return success;
+        }
+
         function createColumn(field, caption, type) {
             var column = {
                 field: field,
@@ -28,8 +67,32 @@ from django.utils.translation import ugettext as _
                     column['render'] = renderTime;
                     column['style'] = 'text-align: right';
                     break;
+                case 'hidden':
+                    column['searchable'] = true;
+                    column['hidden'] = true;
+                    break;
             }
             return column;
+        }
+        // collapse
+        $(".gc_collapse button").on("click", function() {
+            var $keBtn = $(this);
+            var $tgtPnl = $(this).next(".gc_collapse_panel");
+            $keBtn
+                .attr('aria-expanded', function (i, attr) { return attr === 'true' ? 'false' : 'true'})
+                .toggleClass('is_open');
+            $tgtPnl
+                .attr('aria-hidden', function (i, attr) { return attr === 'true' ? 'false' : 'true'})
+                .toggleClass('is_show');
+
+            fit_wrapper_height();
+        });
+
+        function fit_wrapper_height() {
+            var sHeight = $('.side').height();
+            var mHeight = $('.main').height();
+            var height = mHeight > sHeight ? mHeight - 200 : sHeight;
+            $('.content-wrapper').height(height);
         }
 
         var responseColumns = ${playback_columns},
@@ -54,101 +117,222 @@ from django.utils.translation import ugettext as _
             }
         }
 
-        grid = $('#grid').w2grid({
+        var playback_grid = $('#grid').w2grid({
             name: 'playback_status',
             fixedBody: true,
-            selectType : 'cell',
             show: {
                 toolbar: true,
                 footer: true,
-                toolbarReload: false
+                toolbarReload: false,
+                toolbarColumns: true
             },
             columnGroups: columnGroups,
             columns: columns,
             records: responseRecords
         });
+        grid.push(playback_grid);
 
-        grid.total = ${total_records};
-
-        // Recursive download the playback records
-        if (grid.records.length < grid.total) {
-
-            // Override scroll method
-            grid.orginal_scroll = grid.scroll;
-            grid.scroll = function (event) {
-                grid.orginal_scroll(event);
-                var el = $('#grid_' + this.name + '_footer .w2ui-footer-right');
-                var buffered = ' (' + w2utils.lang('buffered') + ' ' + w2utils.formatNumber(this.records.length) + (this.offset > 0 ? ', skip ' + w2utils.formatNumber(this.offset) : '') + ')';
-                el.text(el.text() + buffered);
-            };
-
-            // Lock the grid while downloading the records
-            grid.lock(grid.msgRefresh + '(' + Math.floor(grid.records.length / grid.total * 100) + '%)', true);
-
-            (function get_playback() {
-                $.ajax({
-                    type: 'POST',
-                    async: true,
-                    url: 'playback_ajax',
-                    dataType: 'json',
-                    data: {offset: grid.records.length}
-                }).done(function (responseRecords) {
-                    grid.add(responseRecords['playback_records']);
-                    grid.total = responseRecords['total_records'];
-
-                    // Update the progress message
-                    $(grid.box).find('.w2ui-lock-msg').html(
-                        '<div class="w2ui-spinner"></div>'
-                        + grid.msgRefresh
-                        + '(' + Math.floor(grid.records.length / grid.total * 100) + '%)'
-                    );
-
-                    if (grid.records.length < grid.total) {
-                        get_playback();
-                    } else {
-                        grid.unlock();
-                    }
-                }).fail(function (msg) {
-                    grid.unlock();
-                    grid.error(msg.responseText);
+        // Prevent double click
+        $('#download-btn').on('click', function () {
+            var $btn = $(this);
+            $btn.attr('disabled', true);
+            // Using jquery.fileDownload.js
+            $.fileDownload("${reverse('biz:achievement:playback_download_csv')}", {
+                    httpMethod: "POST",
+                    data: {"csrfmiddlewaretoken": $.cookie("csrftoken")}
+                })
+                .always(function () {
+                    $btn.attr('disabled', false);
                 });
-            })();
-        }
+            return false;
+        });
+
+        $('#search').on('click', function () {
+            if (!validate_number_text()) { return false }
+            lock();
+            var clickButton = $(this);
+            var form_data = new FormData($('#form').get(0));
+            $.ajax({
+                url: clickButton.data('endpoint'),
+                type: 'POST',
+                cache: false,
+                data: form_data,
+                processData: false,
+                contentType: false,
+                traditional: true
+            }).done(function (data) {
+                //console.log(JSON.stringify(data));
+                w2ui['playback_status'].records = data.playback_records_json ? JSON.parse(data.playback_records_json) : [];
+                w2ui['playback_status'].total = w2ui['playback_status'].records.length;
+                w2ui['playback_status'].refresh();
+                //pagination_create(data.total_records);
+            }).fail(function(jqXHR) {
+                console.log(jqXHR);
+            }).always(function () {
+                unlock();
+            });
+            return false;
+        });
+        w2utils.unlock($('#grid'), '', true);
     });
 
-    // Prevent double click
-    $('form#download-form').submit(function () {
-        $('#download-btn').attr('disabled', true);
-        // Using jquery.fileDownload.js
-        $.fileDownload("${reverse('biz:achievement:playback_download_csv')}", {
-                httpMethod: "POST",
-                data: {"csrfmiddlewaretoken": $.cookie("csrftoken")}
-            })
-            .always(function () {
-                $('#download-btn').attr('disabled', false);
-            });
-        return false;
-    });
+
+
+
 </script>
 <style>
     .w2ui-grid .w2ui-grid-body table .w2ui-head > div,
     .w2ui-grid .w2ui-grid-body table td.w2ui-grid-data > div {
         font-size: 0.6rem;
     }
-    #tb_playback_status_toolbar_item_w2ui-column-on-off {
-        display: none;
+    .content-wrapper {
+        min-height: 900px;
     }
 </style>
 </%block>
 
 <%block name="custom_content">
-<div id="update-datetime">
-    <label>${_('Record Update Datetime')}：</label><span class="datetime">${update_datetime}</span><span class="status">${update_status if update_status else _('No records')}</span>
+<div id="error_area" class="gc_error_area"></div>
+<div class="gc_content">
+    <div class="gc_column_col gc_column_col_full gc_mb30">
+        <p>${_("Maximum display number is 10,000.<br/>Please refine it to 10,000 or less by condition search, or use 'Download all' function.")}</p>
+    </div>
+    <form id="form">
+        <div class="gc_column">
+            <div class="gc_column_col gc_column_col_full">
+                <div class="gc_field">
+                    <label class="gc_field_label" for="student_status">${_('Student Status')}</label>
+                    <select id="student_status" class="gc_field_ipt gc_w10em" name="student_status">
+                        <option value=""></option>
+                        % for status in student_status:
+                        <option value="${_(status)}">${_(status)}</option>
+                        % endfor
+                    </select>
+                </div>
+                <div class="gc_field">
+                    <label class="gc_field_label" for="group_code">${_('Select Organization')}</label>
+                    <select id="group_code"  class="gc_field_ipt gc_w30em" name="group_code">
+                        <option value=""></option>
+                        % for option in group_list:
+                        <option value="${option[1]}">${option[2] | h}</option>
+                        % endfor
+                    </select>
+                </div>
+                <div class="gc_field">
+                    <fieldset class="gc_fieldset">
+                        <div class="gc_fieldset_wrap">
+                            <legend class="gc_fieldset_label" for="total_playback_from">${_("Total Playback Time")}</legend>
+                            <div class="gc_field_group">
+                                <input id="total_playback_from" class="gc_field_ipt gc_w5em js_search_validate_int_from"
+                                       name="total_playback_time_from" type="text" />
+                                <span class="gc_field_connect">〜</span>
+                                <input id="total_playback_to" class="gc_field_ipt gc_w5em js_search_validate_int_to"
+                                       name="total_playback_time_to" type="text" />
+                                (${_("Minutes")})
+                                <label class="gc_field_ipt_opt" for="total_playback_no">
+                                    <input id="total_playback_no" class="gc_field_ipt_chk" type="checkbox" name="total_playback_no" />
+                                    ${_("No playback")}
+                                </label>
+                            </div>
+                        </div>
+                    </fieldset>
+                </div>
+            </div>
+        <!-- / .gc_column --></div>
+        <div class="gc_collapse">
+            <button class="gc_collapse_btn" aria-controls="collapse_panel01" aria-expanded="false"
+                    type="button"><i class="fa fa-plus-square gc_ico_plus" aria-hidden="true"></i><i
+                    class="fa fa-minus-square gc_ico_minus" aria-hidden="true"></i>${_("Search Detail(Playback)")}</button>
+            <div class="gc_collapse_panel" aria-hidden="true" id="collapse_panel01">
+                <div class="gc_column">
+                    <div class="gc_column_col gc_column_col_full">
+                    % for i in range(1, 6) :
+                        <div class="gc_field">
+                            <fieldset class="gc_fieldset">
+                                <div class="gc_fieldset_wrap">
+                                    <legend class="gc_fieldset_label gc_w10em" for="sdc_score_name_${i}">${_("Search Condition")}${i}</legend>
+                                    <div class="gc_field_group">
+                                        <select id="sdc_playback_name_${i}" class="gc_field_ipt gc_w20em" name="detail_condition_playback_name_${i}">
+                                            <option value=""></option>
+                                            % for name in playback_section_names :
+                                            <option value="${name}">${name}</option>
+                                            % endfor;
+                                        </select>
+                                        <input class="gc_field_ipt gc_w5em js_search_validate_int_sec_from" rel="search" type="text"
+                                               name="detail_condition_playback_from_${i}" id="detail_condition_playback_from_${i}" title="" value="" maxlength="10" />
+                                        <span class="gc_field_connect">〜</span>
+                                        <input class="gc_field_ipt gc_w5em js_search_validate_int_sec_to" rel="search" type="text"
+                                               name="detail_condition_playback_to_${i}" id="detail_condition_playback_to_${i}" title="" value="" maxlength="10" />
+                                        (${_("Minutes")})
+                                        <label class="gc_field_ipt_opt" for="sdc_playback_no_${i}">
+                                            <input id="sdc_playback_no_${i}" class="gc_field_ipt_chk" rel="search"
+                                                type="checkbox" name="detail_condition_playback_no_${i}" title="" value="" />
+                                            ${_("No playback")}
+                                        </label>
+                                    </div>
+                                </div>
+                            </fieldset>
+                        </div>
+                    % endfor;
+                    </div>
+                </div>
+            </div>
+        <!-- / .gc_collapse" --></div>
+        <div class="gc_collapse">
+            <button class="gc_collapse_btn" aria-controls="collapse_panel03" aria-expanded="false"
+                    type="button"><i class="fa fa-plus-square gc_ico_plus" aria-hidden="true"></i><i
+                    class="fa fa-minus-square gc_ico_minus" aria-hidden="true"></i>${_("Search Detail(Other)")}</button>
+            <div class="gc_collapse_panel" aria-hidden="true" id="collapse_panel03">
+                <div class="gc_column">
+                    <div class="gc_column_col gc_column_col_full">
+                    % for i in range(1, 6) :
+                        <div class="gc_field">
+                            <fieldset class="gc_fieldset">
+                                <div class="gc_fieldset_wrap">
+                                    <legend class="gc_fieldset_label gc_w10em" for="sdc_member_name_${i}">${_("Search Condition")}${i}</legend>
+                                    <div class="gc_field_group">
+                                        <select id="sdc_member_name_${i}" class="gc_field_ipt gc_w15em" name="detail_condition_member_name_${i}">
+                                            <option value=""></option>
+                                            % for key in member_org_item_list :
+                                                <option value="${key}">${member_org_item_list[key]}</option>
+                                            % endfor;
+                                        </select>
+                                        <input class="gc_field_ipt gc_w30em" rel="search" type="text"
+                                               name="detail_condition_member_${i}" title="" value="" maxlength="255" />
+                                    </div>
+                                </div>
+                            </fieldset>
+                        </div>
+                    % endfor;
+                    </div>
+                </div>
+            </div>
+        <!-- / .gc_collapse" --></div>
+        <div class="gc_btn_cta gc_btn_cta_center">
+            <button id="search" class="btn btn-blue gc_btn_search" name="search"
+                    data-endpoint="${reverse('biz:achievement:playback_search_ajax')}" type="search">${_("Search")}</button>
+        <!-- /.gc_btn_cta --></div>
+        <input type="hidden" id="offset" name="offset" value="0">
+        <input type="hidden" id="limit" name="limit" value="100">
+    </form>
+    <div class="gc_data_section">
+        <p class="gc_record_update" style="position: relative;">
+            ${_("It is {0} up to the day before the record update.").format(_("Playback Status"))}<br>
+            ${_('Record Update Datetime')}：${update_datetime} ${update_status if update_status else _('No records')}
+            <span style="position: absolute; right: 0; color: red;">${_('(HH:MM)')}</span>
+        </p>
+        <div id="grid" style="height: 610px; min-width: 918px; max-width: 1168px;"></div>
+    </div>
+    <form method="get">
+        <div class="gc_download">
+            <div class="gc_download_btn">
+                <button id="download-btn" class="btn btn-grn" type="button">${_('Download All Students')}</button>
+            </div>
+        </div>
+    </form>
 </div>
 
-<div id="grid"></div>
-
-<form id="download-form" method="get">
-    <input type="submit" id="download-btn" value="&#xf1c3 ${_('All CSV Download')}" />
-</form>
+<script type="text/javascript">
+    w2utils.lock($('#grid'), '', true);
+</script>
 </%block>

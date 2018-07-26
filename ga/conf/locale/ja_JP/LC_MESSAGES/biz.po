@@ -93,8 +93,9 @@ msgid "Started"
 msgstr "更新中"
 
 #: biz/templates/ga_achievement/score.html
-msgid "All CSV Download"
-msgstr "全件CSVダウンロード"
+#: biz/templates/ga_achievement/playback.html
+msgid "Download All Students"
+msgstr "全件ダウンロード"
 
 #: biz/templates/ga_achievement/playback.html
 msgid "(HH:MM)"
@@ -333,6 +334,14 @@ msgid ""
 msgstr ""
 "アンケート結果がCSVファイルでダウンロードできます。<br/>"
 "CSVファイルをそのままExcelで開こうとすると、日本語が含まれている場合に文字化けしてしまいますので、一旦ファイルを保存した後、「UTF-8」に対応したテキストエディタで開き直してください。"
+
+#: biz/templates/ga_course_operation/survey.html
+msgid "You can download the file of survey results."
+msgstr "アンケート結果がダウンロードできます。"
+
+#: biz/templates/ga_course_operation/survey.html
+msgid "Get file of survey result"
+msgstr "アンケート結果をダウンロード"
 
 ##### Course Selection
 #: biz/djangoapps/util/decorators.py
@@ -591,6 +600,14 @@ msgid "Enrolling Learners"
 msgstr "受講者登録"
 
 #: biz/templates/ga_contract_operation/register_students.html
+msgid "Required only when using member data."
+msgstr "社員マスタを利用する場合のみ必須"
+
+#: biz/templates/ga_contract_operation/register_students.html:741
+msgid "Required only when using organization data."
+msgstr "組織マスタを利用する場合のみ必須"
+
+#: biz/templates/ga_contract_operation/register_students.html
 msgid "Enroll each Learner by a single command-line using comma(,), in the order of [E-mail address], [User name], [Name]. These Items cannot be changed."
 msgstr "1受講者につき1行で【メールアドレス】,【ユーザー名】,【氏名】の順に区切り文字カンマ（,）で区切って記入ください。"
 
@@ -619,8 +636,8 @@ msgid "Please be aware that once you press the \"Register Signup\" button, a wel
 msgstr "<span style=\"color:red;\">「登録」を押下すると、受講者へ即時メールが自動送信されますのでご注意ください。自動送信メールは再発行できません。</span>"
 
 #: biz/templates/ga_contract_operation/register_students.html
-msgid "· Should not include headers, footers or blank lines."
-msgstr "・ヘッダーやフッター、空行を含めないでください"
+msgid "Should not include headers, footers or blank lines."
+msgstr "ヘッダーやフッター、空行を含めないでください"
 
 #: biz/templates/ga_contract_operation/register_students.html
 msgid "· E-mail address: Half-width alphanumeric characters, hyphen (-), underscore (_), period (.)."
@@ -672,12 +689,12 @@ msgid "Enrolling Learners to Additional Item"
 msgstr "追加情報登録"
 
 #: biz/templates/ga_contract_operation/register_students.html
-msgid "· Up to {max_students_number} Learners can be enrolled at a time."
-msgstr "<span style=\"color:red;\">・一度に登録できる受講者数は、{max_students_number}人です</span>"
+msgid "Up to {max_students_number} Learners can be enrolled at a time."
+msgstr "<span style=\"color:red;\">一度に登録できる受講者数は、{max_students_number}人です</span>"
 
 #: biz/templates/ga_contract_operation/register_students.html
-msgid "· {additional_item_name}: {max_length} characters or less."
-msgstr "・{additional_item_name}：{max_length}文字以下"
+msgid "{additional_item_name}: {max_length} characters or less."
+msgstr "{additional_item_name}：{max_length}文字以下"
 
 #: biz/templates/ga_contract_operation/register_students.html
 msgid "If the course instructor wishes to Enroll more information to the existing list, add/delete item as follows:"
@@ -696,8 +713,8 @@ msgid "To enroll additional item of the Learners separately from the first regis
 msgstr "受講者の追加情報を個別に登録できます。<br/>1受講者につき1行で【メールアドレス】,【追加情報】の順に区切り文字カンマ（,）で区切って記入ください。"
 
 #: biz/templates/ga_contract_operation/register_students.html
-msgid "· E-mail address: The same e-mail address as the Learners already registered."
-msgstr "・メールアドレス：受講者一覧に記載されているメールアドレス"
+msgid "E-mail address: The same e-mail address as the Learners already registered."
+msgstr "メールアドレス：受講者一覧に記載されているメールアドレス"
 
 #: biz/templates/ga_contract_operation/register_students.html
 msgid "ex. username1@domain.com,system department,manager"
@@ -725,7 +742,7 @@ msgstr "username1@domain.com,gaccotarou,学校 太郎,gaccoCode,Gacco12345"
 
 #: biz/templates/ga_contract_operation/register_students.html
 msgid "Register with the invitation code. (Unnecessary invitation code by user)"
-msgstr "受講コードも同時に登録する（受講者による受講コードの登録が不要です）"
+msgstr "受講コード自動登録（受講者が、受講コードを入力して受講登録する場合は、チェックを外してください）"
 
 #: biz/templates/ga_contract_operation/register_students.html
 msgid "The user will be taking courses, immediately.<br/>"
@@ -738,8 +755,8 @@ msgid "No messages."
 msgstr "メッセージはありません。"
 
 #: biz/templates/ga_contract_operation/register_students.html
-msgid "· Additional item use comma(,) after the E-mail address, then enter the additional item."
-msgstr "・追加情報は、メールアドレスの後に区切り文字カンマ(,)を入れて、記入ください"
+msgid "Additional item use comma(,) after the E-mail address, then enter the additional item."
+msgstr "追加情報は、メールアドレスの後に区切り文字カンマ(,)を入れて、記入ください"
 
 #: biz/djangoapps/ga_contract_operation/student_register.py
 msgid "Invalid email {email}."
@@ -833,8 +850,20 @@ msgid "Failed to send the test e-mail."
 msgstr "テストメール送信に失敗しました。"
 
 #: biz/djangoapps/ga_contract_operation/views.py
+msgid "Failed to send the e-mail."
+msgstr "メールの送信に失敗しました。"
+
+#: biz/djangoapps/ga_contract_operation/views.py
 msgid "Please use the pull-down menu to choose the reminder e-mail days."
 msgstr "督促日の設定はプルダウンから選択してしてください。"
+
+#: biz/djangoapps/ga_contract_operation/views.py
+msgid "Please select user that you want send reminder mail."
+msgstr "メールを送信したいユーザーを選択してください。"
+
+#: biz/djangoapps/ga_contract_operation/views.py
+msgid "Complete of send the e-mail."
+msgstr "メールを送信しました。"
 
 #: biz/djangoapps/ga_contract_operation/models.py
 msgid "For New User"
@@ -857,10 +886,6 @@ msgid "Replaced with the user name"
 msgstr "ユーザー名に置き換わります"
 
 #: biz/djangoapps/ga_contract_operation/models.py
-msgid "Replaced with the full name"
-msgstr "氏名に置き換わります"
-
-#: biz/djangoapps/ga_contract_operation/models.py
 msgid "Replaced with the user password"
 msgstr "パスワードに置き換わります"
 
@@ -877,16 +902,24 @@ msgid "Replaced with the URL code for login"
 msgstr "URLに置き換わります"
 
 #: biz/djangoapps/ga_contract_operation/models.py
+msgid "Replaced with the course name"
+msgstr "講座名に置き換わります"
+
+#: biz/djangoapps/ga_contract_operation/models.py
+msgid "Replaced with the full name"
+msgstr "氏名に置き換わります"
+
+#: biz/djangoapps/ga_contract_operation/models.py
+msgid "Replaced with the expire date"
+msgstr "期限日に置き換わります"
+
+#: biz/djangoapps/ga_contract_operation/models.py
 msgid "Submission Reminder Mail"
 msgstr "未提出課題督促メール"
 
 #: biz/templates/ga_contract_operation/register_students.html
 msgid "Enrolling New Learners"
 msgstr "受講者を新規登録"
-
-#: biz/templates/ga_contract_operation/register_students.html
-msgid "Register Signup"
-msgstr "新規登録を実施する"
 
 #: biz/djangoapps/ga_contract_operation/student_register.py
 msgid ""
@@ -928,6 +961,14 @@ msgstr "受講者一覧"
 #: biz/templates/ga_contract_operation/students.html
 msgid "Register Status"
 msgstr "登録状況"
+
+#: biz/templates/ga_contract_operation/students.html
+msgid "Please check the target student. If you want to select all, you check next to [Register Status] button."
+msgstr "対象者にチェックをしてください。「登録状況」左のチェックボックスで、全員選択できます。"
+
+#: biz/templates/ga_contract_operation/students.html
+msgid "prev"
+msgstr "前"
 
 #: biz/templates/ga_contract_operation/bulk_students.html
 msgid "Unregister, Mask"
@@ -976,7 +1017,7 @@ msgstr "{task_type}処理を開始しました。"
 
 #: biz/djangoapps/ga_contract_operation/views.py
 msgid "Execution status, please check from the task history."
-msgstr "実行状況はタスク履歴から確認してください。"
+msgstr "実行状況は登録結果から確認してください。"
 
 #: biz/djangoapps/ga_contract_operation/views.py
 msgid "Total: {total}, Success: {succeeded}, Skipped: {skipped}, Failed: {failed}"
@@ -1107,8 +1148,16 @@ msgid "Subject:"
 msgstr "件名："
 
 #: biz/templates/ga_contract_operation/mail.html
+msgid "Subject"
+msgstr "件名"
+
+#: biz/templates/ga_contract_operation/mail.html
 msgid "Send a Message:"
 msgstr "メール本文："
+
+#: biz/templates/ga_contract_operation/mail.html
+msgid "Send a Message"
+msgstr "メール本文"
 
 #: biz/templates/ga_contract_operation/mail.html
 msgid "Save the template e-mail"
@@ -1132,6 +1181,10 @@ msgid ""
 msgstr ""
 "テストメールを送信してよろしいですか？"
 
+#: biz/templates/ga_contract_operation/mail.html
+msgid "Are you sure you want to send the e-mail?"
+msgstr "メールを送信してよろしいですか？"
+
 #: biz/templates/ga_contract_operation/reminder_mail.html
 msgid "Reminder E-mail Days:"
 msgstr "督促日："
@@ -1141,12 +1194,62 @@ msgid "days before"
 msgstr "日前"
 
 #: biz/templates/ga_contract_operation/reminder_mail.html
+msgid "Reminder mail for not yet subbmitted user"
+msgstr "課題未提出者向け"
+
+#: biz/templates/ga_contract_operation/reminder_mail.html
+msgid "If you want to fix, press registration button after fix contents."
+msgstr "修正したい場合は、内容を修正後、再度登録ボタンを押してください。"
+
+#: biz/templates/ga_contract_operation/reminder_mail.html
+msgid "Reminder mail other"
+msgstr "その他"
+
+#: biz/templates/ga_contract_operation/reminder_mail.html
+msgid "You can send reminder mail automatically to not yet submitted user"
+msgstr "課題未提出者へ自動でメールを配信することができます"
+
+#: biz/templates/ga_contract_operation/reminder_mail.html
 msgid "(The target courses and the section are listed. This part can not be edited.)"
 msgstr "（対象の講座名および節が列挙されます。この部分は編集できません。）"
+
+#: biz/templates/ga_contract_operation/reminder_mail.html
+msgid "Mail settings"
+msgstr "メール設定"
+
+#: biz/templates/ga_contract_operation/reminder_mail.html
+msgid ""
+"You can send mail to searched students,<br />"
+"And you can use replacement character If you want enter full name, course name etc to mail body.<br />"
+"[Replacement Character]"
+msgstr ""
+"検索結果に表示されている受講者にメールを送信することができます。<br />"
+"メール本文に、氏名や講座名を利用したい場合は、以下の置換文字を利用してください。<br />"
+"【置換文字】"
+
+#: biz/templates/ga_contract_operation/reminder_mail.html
+msgid "Please attension, E-mail will be sent as soon as you press the button of \"send the e-mail\"."
+msgstr "「メール送信」押下と同時にメールが送信されますので、ご注意ください。"
+
+#: biz/templates/ga_contract_operation/reminder_mail.html
+msgid "Please be sure to confirm mail body before send the e-mail."
+msgstr "必ず、事前に「テストメール送信」を実施し、送信内容を確認してください。"
+
+#: biz/templates/ga_contract_operation/reminder_mail.html
+msgid "{0}:Not found selected user."
+msgstr "{0}:選択されたユーザーが見つかりませんでした。"
 
 #: biz/templates/ga_contract_operation/_task_history.html
 msgid "Task Type"
 msgstr "タスク種別"
+
+#: biz/templates/ga_contract_operation/_task_history.html
+msgid "Register Result"
+msgstr "登録結果"
+
+#: biz/templates/ga_contract_operation/_task_history.html
+msgid "To check the result, please push the update button."
+msgstr "「更新」ボタンを押して登録結果を確認してください。"
 
 ##### Login
 #: biz/djangoapps/ga_login/views.py
@@ -1164,13 +1267,19 @@ msgstr "例：loginCode123"
 ##### util
 #: biz/djangoapps/util/task_util.py
 msgid "{task_type_name} is being executed. Please check task history, leave time and try again."
-msgstr "{task_type_name}が実行されています。タスク履歴を確認し時間を空けて再度、操作してください。"
+msgstr "{task_type_name}が実行されています。登録結果を確認し時間を空けて再度、操作してください。"
 
 ##### Common
+#: *.html
+msgid "Registration"
+msgstr "登録"
+
 #: */forms.py
 msgid "max {0} character"
 msgstr "{0}文字以下"
 
+#: biz/djangoapps/ga_organization/forms.py:23
+#, python-brace-format
 msgid "max {0} character harf-width alphanumeric or _-"
 msgstr "{0}文字以下の半角英数、記号（_-）"
 
@@ -1179,3 +1288,615 @@ msgstr "{0}～{1}文字半角英数"
 
 msgid "The field is required."
 msgstr "入力必須項目です。"
+
+##### Member
+#: biz/templates/djangoapps/gx_member/index.html
+msgid "Member Master"
+msgstr "社員マスタ"
+
+#: biz/templates/djangoapps/gx_member/index.html
+msgid "Organization Groups"
+msgstr "所属組織"
+
+#: biz/templates/djangoapps/gx_member/index.html
+msgid "Member Code"
+msgstr "社員コード"
+
+#: biz/templates/djangoapps/gx_member/index.html
+msgid "First Name"
+msgstr "氏名（名）"
+
+#: biz/templates/djangoapps/gx_member/index.html
+msgid "Last Name"
+msgstr "氏名（姓）"
+
+#: biz/templates/djangoapps/gx_member/index.html
+msgid "Organization"
+msgstr "組織"
+
+#: biz/templates/djangoapps/gx_member/index.html
+msgid "Item"
+msgstr "グループ"
+
+#: biz/templates/gx_member/index.html
+msgid "Please check the task if you need know status of registration data in form."
+msgstr "フォームによるデータ登録の実行状況は、登録結果を確認してください。"
+
+#: biz/templates/gx_member/index.html
+msgid "Please check the task if you need know status of registration data in file."
+msgstr "ファイルによるデータ登録の実行状況は、登録結果を確認してください。"
+
+#: biz/templates/djangoapps/gx_member/index.html
+msgid "Complete file upload."
+msgstr "ファイルのアップロードが完了"
+
+#: biz/templates/djangoapps/gx_member/index.html
+msgid "Complete Datetime"
+msgstr "実行終了日時"
+
+#: biz/templates/djangoapps/gx_member/_task_history.html
+msgid "Total Result"
+msgstr "総合結果"
+
+#: biz/djangoapps/gx_member/views.py
+msgid "Organization Groups is not found by organization."
+msgstr "所属組織情報が見つかりませんでした。"
+
+#: biz/djangoapps/gx_member/views.py
+msgid "Email is already used in file."
+msgstr "ファイル内で同じメールアドレスが使用されています。"
+
+#: biz/djangoapps/gx_member/views.py
+msgid "Username is already used in file."
+msgstr "ファイル内で同じユーザー名が使用されています。"
+
+#: biz/djangoapps/gx_member/views.py
+msgid "Member code is already used in file."
+msgstr "ファイル内で同じ社員コードが使用されています。"
+
+#: biz/djangoapps/gx_member/views.py
+msgid "Task is being executed. Please wait a moment."
+msgstr "実行中のタスクです。しばらくしてから再度確認してください。"
+
+#: biz/djangoapps/gx_member/views.py
+msgid "The file is empty."
+msgstr "空のファイルが選択されています。"
+
+#: biz/djangoapps/gx_member/forms.py
+msgid "The {0} is required."
+msgstr "{0}は必須項目です。"
+
+#: biz/djangoapps/gx_member/forms.py
+msgid "Please enter of {0} within {1} characters."
+msgstr "{0}は{1}文字以内で入力してください。"
+
+#: biz/djangoapps/gx_member/forms.py
+msgid "Please enter of {0} at least {1} characters."
+msgstr "{0}は最低{1}文字以上で入力してください。"
+
+#: biz/djangoapps/gx_member/forms.py
+msgid "Illegal format on {0}."
+msgstr "{0}のフォーマットが不正です。"
+
+#: biz/djangoapps/gx_member/member_editer.py
+msgid "An error happened during the member registration process."
+msgstr "登録処理中にエラーが発生しました。"
+
+#: biz/djangoapps/gx_member/member_editer.py
+msgid "Task {task_id} is failed."
+msgstr "タスク {task_id} の実行に失敗しました。"
+
+#: biz/djangoapps/gx_member/member_editer.py
+msgid "Member code:{code} was deleted."
+msgstr "社員コード {code} の社員情報を削除しました。"
+
+#: biz/djangoapps/gx_member/member_editer.py
+msgid "User creation failed because the password was empty."
+msgstr "入力されたパスワードが空だった為、ユーザー作成に失敗しました。"
+
+#: biz/djangoapps/gx_member/member_editer.py
+msgid "Failed to create user."
+msgstr "ユーザー作成に失敗しました。"
+
+#: biz/djangoapps/gx_member/member_editer.py
+msgid "Failed to delete {code} member of delete target."
+msgstr "社員コード {code} の、削除対象データの社員情報の削除に失敗しました。"
+
+#: biz/djangoapps/gx_member/member_editer.py
+msgid "Success to create member."
+msgstr "社員情報の作成に成功しました。"
+
+#: biz/djangoapps/gx_member/member_editer.py
+msgid "Failed to create member."
+msgstr "社員情報の作成に失敗しました。"
+
+#: biz/djangoapps/gx_member/member_editer.py
+msgid "Group is not found by group code."
+msgstr "組織コードと一致する組織グループ情報が見つかりませんでした。"
+
+#: biz/djangoapps/ga_contract_operation/students.html
+msgid "Search all columns by word"
+msgstr "すべての項目で検索"
+
+#: biz/djangoapps/ga_contract_operation/students.html
+msgid "Target user of delete member master"
+msgstr "社員マスタ削除対象者"
+
+#: biz/djangoapps/ga_contract_operation/students.html
+msgid "Exclude"
+msgstr "除外"
+
+#: biz/djangoapps/ga_contract_operation/students.html
+msgid "Contains"
+msgstr "含む"
+
+#: biz/djangoapps/ga_contract_operation/students.html
+msgid "Only"
+msgstr "のみ"
+
+#: biz/templates/gx_org_group/group_list.html:8
+msgid "Organization Master"
+msgstr "組織マスタ"
+
+#: biz/templates/gx_org_group/group_list.html:35
+msgid "Please select the file."
+msgstr "ファイルを選択してください。"
+
+#: biz/templates/gx_org_group/group_list.html:41
+msgid "File read error occurred. Please select the file, again"
+msgstr "ファイル読み取りエラーです。ファイルをもう一度選択してください"
+
+#: biz/templates/gx_org_group/group_list.html:61
+msgid " records had completed"
+msgstr "件の読み取りが完了しました"
+
+#: biz/templates/gx_org_group/group_list.html:69
+msgid "File upload is failed"
+msgstr "ファイルのアップロードに失敗しました"
+
+#: biz/templates/gx_org_group/group_list.html:135
+msgid "When registering master data, be sure to use the specified format"
+msgstr "ファイルから登録する場合は、必ず指定のフォーマットを利用してください。"
+
+#: biz/templates/gx_org_group/detail.html:186
+#: biz/templates/gx_org_group/group_list.html:89
+#: biz/templates/gx_org_group/group_list.html:101
+msgid "Organization Group Code"
+msgstr "組織コード"
+
+#: biz/templates/gx_org_group/detail.html:187
+#: biz/templates/gx_org_group/group_list.html:90
+#: biz/templates/gx_org_group/group_list.html:94
+msgid "Organization Group Name"
+msgstr "組織名"
+
+#: biz/templates/gx_org_group/detail.html:188
+#: biz/templates/gx_org_group/group_list.html:91
+#: biz/templates/gx_org_group/group_list.html:102
+msgid "notes"
+msgstr "メモ"
+
+#: biz/templates/gx_org_group/group_list.html:103
+msgid "Parent Organization Code"
+msgstr "親組織コード"
+
+#: biz/templates/gx_org_group/group_list.html:104
+msgid "Parent Organization Name"
+msgstr "親組織名"
+
+
+#: biz/templates/gx_org_group/group_list.html:105
+msgid "created date"
+msgstr "作成日付"
+
+#: biz/templates/gx_org_group/group_list.html:107
+msgid "modified date"
+msgstr "修正日"
+
+#: biz/templates/gx_org_group/group_list.html:96
+msgid "access right"
+msgstr "閲覧権限"
+
+#: biz/templates/gx_org_group/group_list.html:106
+msgid "created time"
+msgstr "作成時刻"
+
+#: biz/templates/gx_org_group/group_list.html:108
+msgid "modified time"
+msgstr "修正時刻"
+
+#: biz/templates/gx_member/index.html:303
+#: biz/templates/gx_org_group/group_list.html:124
+msgid "Download format file"
+msgstr "フォーマット出力"
+
+#: biz/templates/gx_org_group/group_list.html:124
+msgid "Please press the left button and download the format"
+msgstr "※左のボタンを押してフォーマットをダウンロードしてください。"
+
+#: biz/templates/gx_org_group/group_list.html:130
+msgid "Select File"
+msgstr "ファイル選択"
+
+#: biz/templates/gx_org_group/detail.html:8
+msgid "Access Right Settings"
+msgstr "閲覧権限設定"
+
+#: biz/templates/gx_org_group/detail.html:192
+msgid "Parent Organization Manager"
+msgstr "上位組織の管理者"
+
+#: biz/templates/gx_org_group/detail.html:212
+msgid "Current Organization Manager"
+msgstr "組織の管理者"
+
+#: biz/djangoapps/gx_org_group/views.py:31
+msgid "specified email could not found: "
+msgstr "指定されたメールアドレスは見つかりませんでした: "
+
+#: biz/djangoapps/gx_org_group/views.py:32
+msgid "specified username could not found: "
+msgstr "指定されたユーザー名は見つかりませんでした: "
+
+#: biz/djangoapps/gx_org_group/views.py:33
+msgid "specified user is not in a manager group: "
+msgstr "指定されたユーザーは管理者設定されていません: "
+
+#: biz/djangoapps/gx_org_group/views.py:34
+msgid "specified user doesn't have manager right: "
+msgstr "指定されたユーザーは管理者権限を持っていません。"
+
+#: biz/djangoapps/gx_org_group/views.py:35
+msgid "specified user is already existed: "
+msgstr "指定されたユーザーはこの組織に権限があります: "
+
+#: biz/djangoapps/gx_org_group/views.py:36
+msgid "specified user has right in parent group: "
+msgstr "指定されたユーザーは親組織の権限があります: "
+
+
+#: biz/djangoapps/gx_org_group/views.py:37
+msgid "specified user has right in child group: "
+msgstr "指定されたユーザーは子組織の権限があります: "
+
+#: biz/djangoapps/gx_org_group/builders.py:15
+#: biz/djangoapps/gx_org_group/views.py:39
+msgid "invalid header or file type"
+msgstr "ヘッダまたはファイル形式が誤っています"
+
+#: biz/djangoapps/gx_org_group/views.py:38
+msgid "specified user does not exist"
+msgstr "指定されたユーザーは存在しません"
+
+#: biz/djangoapps/gx_org_group/views.py:40
+msgid "specified user does not exist in this group"
+msgstr "指定されたユーザーはこのグループに存在しません"
+
+#: biz/djangoapps/gx_org_group/views.py:41
+msgid "unknown error"
+msgstr "不明なエラー"
+
+#: biz/djangoapps/gx_org_group/views.py:42
+msgid "detail settings"
+msgstr "設定"
+
+#: biz/djangoapps/gx_org_group/builders.py:16
+msgid ": incorrect the number of columns"
+msgstr ": 項目(タブ)の数が違います"
+
+#: biz/djangoapps/gx_org_group/builders.py:17
+msgid ": unknown parent_code="
+msgstr ": 不明な親組織コード="
+
+#: biz/djangoapps/gx_org_group/builders.py:18
+msgid ": duplicated code: group_code="
+msgstr ": 重複コード: 組織コード="
+
+#: biz/djangoapps/gx_org_group/builders.py:19
+msgid ": circular referenced parent_code="
+msgstr ": 循環参照しています。親組織コード="
+
+#: biz/djangoapps/gx_org_group/builders.py:21
+#, python-format
+msgid ""
+"{line:6} : maximum length over : column name = {col_name} , maximum length ="
+" {max_len} , input length = {input_len}"
+msgstr "{line:6} : 最大桁数を超えています : 項目名 = {col_name}, 最大桁数 = {max_len} , 入力データの桁数 = {input_len}"
+
+#: biz/templates/gx_member/index.html:250
+msgid "Please confirm the <a href='#task-history-grid'>registration result</a> after registration"
+msgstr "登録後、必ず<a href='#task-history-grid'>登録結果</a>を確認してください。"
+
+#: biz/templates/gx_member/index.html:323
+msgid "Complete form submit."
+msgstr "ファイルのアップロードが完了"
+
+#: biz/djangoapps/gx_member/tasks.py:14
+msgid "Member Register"
+msgstr "社員登録"
+
+#: biz/djangoapps/gx_member/views.py:125
+msgid "The number of columns did not match."
+msgstr "項目数が一致しませんでした。"
+
+#: biz/djangoapps/gx_member/views.py:248
+msgid "Task is not found."
+msgstr "タスクが見つかりませんでした。"
+
+#: biz/templates/gx_login/login.html:65
+msgid "A properly formatted e-mail is required"
+msgstr "正しい形式のメールアドレスが必須です"
+
+#: biz/templates/gx_login/login.html:73
+msgid "A valid password is required"
+msgstr "規則に従ったパスワードが必須です"
+
+#: biz/templates/gx_login/login.html:84
+msgid "You do not have permission to view this page."
+msgstr "このページを表示する権限がありません。"
+
+#: biz/templates/gx_login/login.html:92
+msgid "Administrator"
+msgstr "管理者"
+
+#: biz/templates/ga_achievement/playback.html:198
+msgid "No playback"
+msgstr "動画試聴なし"
+
+#: biz/templates/ga_achievement/playback.html:204
+#: biz/templates/ga_achievement/playback.html:221
+#: biz/templates/ga_achievement/score.html:217
+#: biz/templates/ga_achievement/score.html:237
+msgid "Search Detail"
+msgstr "条件詳細"
+
+#: biz/templates/ga_achievement/playback.html:204
+msgid "Playback"
+msgstr "動画試聴"
+
+#: biz/templates/ga_achievement/score.html
+#: biz/templates/ga_achievement/playback.html:340
+msgid "It is {0} up to the day before the record update."
+msgstr "レコード更新前日までの{0}です"
+
+#: biz/templates/ga_achievement/playback.html:209
+#: biz/templates/ga_achievement/playback.html:226
+#: biz/templates/ga_achievement/score.html:222
+#: biz/templates/ga_achievement/score.html:242
+msgid "Condition"
+msgstr "条件"
+
+#: biz/templates/ga_achievement/score.html:217
+msgid "Score"
+msgstr "スコア"
+
+#: biz/templates/ga_achievement/score.html
+#: biz/templates/ga_contract_operation/reminder_mail.html
+msgid "Total Score(From) value must be an integer."
+msgstr "合計スコア（From）は半角数字を入力してください。"
+
+#: biz/templates/ga_achievement/score.html
+#: biz/templates/ga_contract_operation/reminder_mail.html
+msgid "Total Score(To) value must be an integer."
+msgstr "合計スコア（To）は半角数字を入力してください。"
+
+#: biz/templates/ga_achievement/playback.html
+#: biz/templates/ga_contract_operation/reminder_mail.html
+msgid "Total Playback Time(From) value must be an integer."
+msgstr "総視聴時間（From）は半角数字を入力してください。"
+
+#: biz/templates/ga_achievement/playback.html
+#: biz/templates/ga_contract_operation/reminder_mail.html
+msgid "Total Playback Time(To) value must be an integer."
+msgstr "総視聴時間（To）は半角数字を入力してください。"
+
+#: biz/templates/ga_achievement/score.html
+#: biz/templates/ga_contract_operation/reminder_mail.html
+msgid "Section Score(From) value must be an integer."
+msgstr "スコア単元（From）は半角数字を入力してください。"
+
+#: biz/templates/ga_achievement/score.html
+#: biz/templates/ga_contract_operation/reminder_mail.html
+msgid "Section Score(To) value must be an integer."
+msgstr "スコア単元（To）は半角数字を入力してください。"
+
+#: biz/templates/ga_achievement/playback.html
+#: biz/templates/ga_contract_operation/reminder_mail.html
+msgid "Section Playback Time(From) value must be an integer."
+msgstr "単元視聴時間（From）は半角数字を入力してください。"
+
+#: biz/templates/ga_achievement/playback.html
+#: biz/templates/ga_contract_operation/reminder_mail.html
+msgid "Section Playback Time(To) value must be an integer."
+msgstr "単元視聴時間（To）は半角数字を入力してください。"
+
+#: biz/templates/ga_achievement/playback.html
+msgid "Maximum display number is 10,000.<br/>Please refine it to 10,000 or less by condition search, or use 'Download all' function."
+msgstr "最大表示件数は、10,000件です。<br/>条件検索により10,000件以内に絞り込むか、「全件ダウンロード」機能をご利用ください。"
+
+#: biz/djangoapps/ga_contract_operation/tasks.py:27
+msgid "Student Member Register"
+msgstr "受講者新規登録"
+
+#: biz/templates/ga_contract_operation/students.html:346
+msgid "Download Searched Students"
+msgstr "検索結果をダウンロード"
+
+#: biz/templates/ga_contract_operation/reminder_mail.html:521
+msgid "Send the e-mail"
+msgstr "メール送信"
+
+#: biz/templates/ga_contract_operation/reminder_mail.html:431
+#: biz/templates/ga_contract_operation/reminder_mail.html:452
+#: biz/templates/ga_contract_operation/reminder_mail.html:473
+msgid "Search Condition"
+msgstr "検索項目"
+
+#: biz/templates/ga_contract_operation/reminder_mail.html:426
+msgid "Search Detail(Score)"
+msgstr "詳細条件（スコア）"
+
+#: biz/templates/ga_contract_operation/reminder_mail.html:447
+msgid "Search Detail(Playback)"
+msgstr "詳細条件（視聴時間）"
+
+#: biz/templates/ga_contract_operation/reminder_mail.html:468
+msgid "Search Detail(Other)"
+msgstr "詳細条件（その他）"
+
+#: biz/templates/ga_achievement/score.html:257
+#: biz/templates/ga_contract_operation/reminder_mail.html:416
+#: biz/templates/ga_contract_operation/reminder_mail.html:440
+#: biz/templates/ga_contract_operation/reminder_mail.html:461
+msgid "No score"
+msgstr "スコアなし"
+
+#: biz/djangoapps/ga_contract_operation/student_member_register.py:241
+#: biz/djangoapps/ga_contract_operation/student_member_register.py:337
+msgid ""
+"This code member deleted. Please student re-register after the "
+"unregistration"
+msgstr "この社員コードは削除予定です。受講解除後に再登録してください。"
+
+#: biz/djangoapps/ga_contract_operation/student_member_register.py:243
+#: biz/djangoapps/ga_contract_operation/student_member_register.py:370
+msgid "Member registration failed. Specified Organization code does not exist"
+msgstr "社員マスタ登録に失敗しました。指定された組織コードは存在しません。"
+
+#: biz/templates/ga_contract_operation/register_students.html:679
+msgid "Detail settings(When using member data)"
+msgstr "詳細設定（社員マスタ利用時に限る）"
+
+#: biz/templates/ga_contract_operation/register_students.html:800
+msgid "Search Result"
+msgstr "検索結果"
+
+#: biz/templates/ga_contract_operation/register_students.html:804
+msgid "This course required login code register"
+msgstr "ログインコードが必要です"
+
+#: biz/templates/ga_contract_operation/register_students.html:811
+msgid "Registration Targets"
+msgstr "登録対象"
+
+#: biz/templates/ga_contract_operation/register_students.html:828
+#: biz/templates/ga_contract_operation/register_students.html:855
+msgid "Attention point on make with file"
+msgstr "ファイル作成時の注意事項"
+
+#: biz/djangoapps/ga_contract_operation/views.py:1532
+msgid "username1@domain.com,gaccotarou,gacco,taro,,,,,,,,,,,,,,,,,,,,,,,,"
+msgstr "username1@domain.com,gaccotarou,学校,太郎,,,,,,,,,,,,,,,,,,,,,,,,"
+
+#: biz/djangoapps/ga_contract_operation/views.py:1544
+msgid "username1@domain.com,gaccotarou,gacco,taro,,,,,,,,,,,,,,,,,,,,,,"
+msgstr "username1@domain.com,gaccotarou,学校,太郎,,,,,,,,,,,,,,,,,,,,,,"
+
+#: biz/templates/ga_contract_operation/register_students.html:620
+msgid "One Registration"
+msgstr "1件ずつ登録"
+
+#: biz/templates/ga_contract_operation/register_students.html:621
+msgid "Search Registration"
+msgstr "条件検索での登録"
+
+#: biz/templates/ga_contract_operation/register_students.html:622
+msgid "File Registration"
+msgstr "ファイルから一括登録"
+
+#: biz/djangoapps/ga_contract_operation/student_member_register.py:212
+msgid ""
+"Data must have exactly 28 columns: email, username, firstname, lastname, "
+"login code and password."
+msgstr "登録データには、メールアドレス、ユーザー名、姓、名、ログインコード、パスワードなど、28の列が必要です。"
+
+#: biz/djangoapps/ga_contract_operation/student_member_register.py:215
+msgid ""
+"Data must have exactly 26 columns: email, username, firstname and lastname."
+msgstr "登録データには、メールアドレス、ユーザー名、姓、名など、26の列が必要です。"
+
+#: biz/djangoapps/ga_contract_operation/views.py:1525
+#: biz/djangoapps/ga_contract_operation/views.py:1537
+#: biz/djangoapps/gx_member/builders.py:41
+msgid "Group Code"
+msgstr "グループコード"
+
+#: biz/templates/gx_member/index.html:245
+#: biz/templates/gx_member/index.html:334
+msgid "Are you sure you want to registration this?"
+msgstr "登録してもよろしいですか？"
+
+#: biz/templates/ga_contract_operation/register_students.html:674
+msgid ""
+"<li>Be sure to use the specified format and <span class='red'>do not erase "
+"the column of the first line.</span></li><li>The entry information is as "
+"follows. For items not to be used, please set with blank.</li><br "
+"/>&#60;Information to fill in&#62;<li>E-mail address: Half-width "
+"alphanumeric character, hyphen (-), underscore (_), period (.)</li><li>User "
+"name: Half size alphabet 2 or more characters, 30 characters or less<br "
+"/>(This is the user name displayed when discussing, once you register it can"
+" not be changed)</li><li>Name (last name): Name printed on the certificate "
+"(last name)</li><li>Name (first name): Name printed on the certificate "
+"(first name)</li><li>Login code: 2 letters or more, 30 letters or "
+"less</li><li>Password: 8 single-byte alphabetic characters or more (Please "
+"include at least one upper case alphabet, lower case letter, number of "
+"letters)</li><li>Group code: Set organization code of organization master "
+"(required only when member master is used)</li><li>Member code: Member code "
+"of member master set (Required only when member master is "
+"used)</li><li>Organizations 1 to 10, Items 1 to 10: items freely "
+"available</li>&#42; For details, please check the manual."
+msgstr ""
+"<li>必ず指定のフォーマットを利用してください。<span class='red'>1行目は、消さないようにしてください。</span></li>"
+"<li>記入情報は、以下のとおりです。利用しない項目は、空白で設定してください。</li>"
+"<br />＜記入情報＞"
+"<li>メールアドレス：半角英数字、ハイフン(-)、アンダーバー(_)、ピリオド(.)</li>"
+"<li>ユーザー名：半角英数2文字以上、30文字以下"
+"<br />（ディスカッションの際に表示されるユーザー名です、一度登録すると変更できません）</li>"
+"<li>氏名（姓）：修了証に印字される氏名（姓）</li>"
+"<li>氏名（名）：修了証に印字される氏名（名）</li>"
+"<li>ログインコード：半角英数2文字以上、30文字以下</li>"
+"<li>パスワード：半角英数8文字以上（半角アルファベットの大文字、小文字、数字を1文字以上含めてください）</li>"
+"<li>組織コード：組織マスタの組織コードを設定(社員マスタを利用する場合のみ必須）</li>"
+"<li>社員コード：社員マスタの社員コードを設定（社員マスタを利用する場合のみ必須）</li>"
+"<li>組織１~10、グループ1~10：自由にご利用いただける項目</li>"
+"　※詳細は、マニュアルを確認してください。</li>"
+
+#. Translators: This is a menu option for showing only unanswered forum
+#. question threads
+#: biz/templates/ga_achievement/score.html:256
+#: biz/templates/ga_achievement/score.html:291
+#: lms/templates/discussion/_thread_list_template.html:49
+msgid "Unanswered"
+msgstr "未回答"
+
+#: biz/templates/ga_achievement/score.html:343
+msgid "It is {0} up to the day the record update."
+msgstr "レコード更新日時までの{0}です"
+
+#: biz/templates/ga_contract_operation/register_students.html:690
+msgid ""
+"Please be aware that once you press the Registration button, a welcome "
+"e-mail of the course will be sent automatically."
+msgstr "※「登録」ボタンを押すと同時に、受講者へ登録メールが自動送信されますのでご注意ください。"
+
+
+#: biz/djangoapps/ga_contract_operation/student_member_register.py:354
+#: biz/djangoapps/ga_contract_operation/student_member_register.py:393
+msgid "Failed member master update. Mail address, member code must unique"
+msgstr "社員マスタ更新に失敗しました。メールアドレス、社員コードは一意でなければなりません。"
+
+#: biz/templates/gx_org_group/group_list.html:169
+msgid "Registration action will over write existing data"
+msgstr "※登録すると上書き保存されます。"
+
+#: biz/templates/gx_org_group/group_list.html:174
+msgid "Organization Master List"
+msgstr "組織マスタ一覧"
+
+#: biz/templates/gx_org_group/group_list.html:176
+msgid "Click [detail settings] to set up the organization group access right "
+msgstr "対象組織に閲覧権限を設定したい場合は、「設定」ボタンを押してください。"
+
+#: biz/templates/ga_contract_operation/register_students.html:899
+msgid "Tick each box on the list. All checked with left checkbox of full name"
+msgstr "登録対象者にチェックをしてください。「氏名」左のチェックボックスで、全員選択できます。"

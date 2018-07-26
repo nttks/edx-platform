@@ -87,6 +87,16 @@ class Contract(models.Model):
             CONTRACT_TYPE_OWNER_SERVICE[0],
         ]
 
+    def is_available_for_director(self):
+        """
+        Returns Director can use this contract.
+        """
+        return self.contract_type in[
+            CONTRACT_TYPE_PF[0],
+            CONTRACT_TYPE_GACCO_SERVICE[0],
+            CONTRACT_TYPE_OWNER_SERVICE[0],
+        ]
+
     @property
     def is_spoc_available(self):
         """
@@ -197,6 +207,21 @@ class Contract(models.Model):
         managers = Manager.get_managers(user)
         contract_types = cls.get_contract_types_by_managers(managers)
         return cls.objects.enabled().filter(
+            contractor_organization__managers__user=user,
+            contract_type__in=contract_types,
+        ).order_by('-created')
+
+    @classmethod
+    def find_all_by_user(cls, user):
+        """
+        Filter by contract types related to managers' permissions of user
+
+        :param user: User object
+        :return: Contract objects
+        """
+        managers = Manager.get_managers(user)
+        contract_types = cls.get_contract_types_by_managers(managers)
+        return cls.objects.filter(
             contractor_organization__managers__user=user,
             contract_type__in=contract_types,
         ).order_by('-created')

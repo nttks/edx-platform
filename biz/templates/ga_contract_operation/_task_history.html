@@ -2,38 +2,26 @@
 from django.utils.translation import ugettext as _
 from django.core.urlresolvers import reverse
 %>
-<style>
-  #task-history-wrapper {
-    margin-top: 30px;
-  }
-  #task-history-wrapper h2 {
-    margin-bottom: 0;
-  }
-  #task-history-wrapper .description {
-    margin-top: 10px;
-  }
-  #task-history-grid {
-    min-width: 920px;
-    width: 98%;
-    height: 200px;
-    margin: 15px 0 0 0;
-    display: none;
-  }
-</style>
-
-<div id="task-history-wrapper">
-    <h2>${_("Task History")}</h2>
-    <p class="description">${_("To see the status of tasks running in the background, click the button below.")}</p>
-    <input type="button" id="task-history-btn" value="&#xf1da ${_("Show Task History")}">
-    <div id="task-history-grid"></div>
+<div id="task-history-wrapper"  class="gc_data_section">
+    <div class="gc_task_history_text">
+        <div class="gc_task_history_text_left">
+            <h2>${_("Register Result")}</h2>
+        </div>
+        <div class="gc_task_history_text_right">
+            <span>${_("To check the result, please push the update button.")}</span>
+            <button id="task-reload-btn" class="btn" disabled>&#xf1da ${_("Update")}</button>
+        </div>
+    </div>
+    <div id="task-history-grid" class="gc_task_history_grid"></div>
 </div>
-
 <script type="text/javascript">
+    var grid = grid || [];
+    var task_grid;
     $(function () {
-        var taskHistoryGrid = $('#task-history-grid').w2grid({
+        task_grid = $('#task-history-grid').w2grid({
             name: 'task_history_grid',
             fixedBody: true,
-            selectType : 'cell',
+            selectType : 'row',
             show: {
                 footer: true,
             },
@@ -45,7 +33,7 @@ from django.core.urlresolvers import reverse
                 {field: 'created', caption: '${_("Execution Datetime")}', size: '20%', hidden: false},
             ],
             onExpand: function(e) {
-                var target = taskHistoryGrid.get(e.recid), messages = target.messages;
+                var target = task_grid.get(e.recid), messages = target.messages;
                 if (messages.length === 0) {
                     messages = [{ recid: -1, message: '${_("No messages.")}' }];
                 }
@@ -54,7 +42,7 @@ from django.core.urlresolvers import reverse
                 }
                 $('#'+ e.box_id).css({ margin: '0px', padding: '0px', width: '100%' }).animate({ height: '105px' }, 100);
                 setTimeout(function () {
-                    var messageGrid = $('#'+ e.box_id).w2grid({
+                    var message_grid = $('#'+ e.box_id).w2grid({
                         name: 'subgrid-' + e.recid,
                         show: { columnHeaders: false },
                         fixedBody: true,
@@ -66,7 +54,7 @@ from django.core.urlresolvers import reverse
                             if (e.recid != -1) {
                                 w2popup.open({
                                     title: w2utils.lang('Notification'),
-                                    body: '<div class="red" style="font-size: 1rem;">' + messageGrid.get(e.recid).message + '</div>',
+                                    body: '<div class="red" style="font-size: 1rem;">' + message_grid.get(e.recid).message + '</div>',
                                     width: 600,
                                     height: 240,
                                 });
@@ -77,15 +65,19 @@ from django.core.urlresolvers import reverse
                 }, 300);
             }
         });
-        $('#task-history-btn').click(function() {
-            var $grid = $('#task-history-grid');
-            w2ui['task_history_grid'].load('${reverse("biz:contract_operation:task_history")}', function() {
-                var $wrapper = $('.content-wrapper');
-                if ($grid.is(':hidden')) {
-                    $wrapper.height($wrapper.height() + $grid.height());
-                    $grid.show();
-                }
+
+        var reload_btn = $('#task-reload-btn');
+        task_grid.load('${reverse("biz:contract_operation:task_history")}', function () {
+            reload_btn.prop('disabled', false);
+        });
+
+        reload_btn.on('click', function() {
+            reload_btn.prop('disabled', true);
+            task_grid.load('${reverse("biz:contract_operation:task_history")}', function() {
+                reload_btn.prop('disabled', false);
             });
         });
+
+        if ($.isArray(grid)) { grid.push(task_grid); } else { grid = task_grid; }
     });
 </script>

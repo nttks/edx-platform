@@ -1,53 +1,66 @@
 """
 Views for contract_operation feature
 """
-from collections import defaultdict
-from functools import wraps
 import json
 import logging
+import math
+from collections import OrderedDict
+from datetime import datetime
+from functools import wraps
 
 from celery.states import READY_STATES
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 from django.db import transaction
+from django.db.models import Q, Prefetch
 from django.http import Http404
 from django.utils.translation import ugettext as _
 from django.views.decorators.http import require_GET, require_POST
 
+from biz.djangoapps.ga_achievement.achievement_store import PlaybackStore, ScoreStore
 from biz.djangoapps.ga_achievement.management.commands.update_biz_score_status import get_grouped_target_sections
-from biz.djangoapps.ga_contract.models import AdditionalInfo
+from biz.djangoapps.ga_achievement.models import PlaybackBatchStatus, ScoreBatchStatus
+from biz.djangoapps.ga_contract.models import AdditionalInfo, Contract, ContractDetail
 from biz.djangoapps.ga_contract_operation.models import (
     ContractMail, ContractReminderMail,
     ContractTaskHistory, ContractTaskTarget, StudentRegisterTaskTarget,
-    StudentUnregisterTaskTarget, AdditionalInfoUpdateTaskTarget,
+    StudentUnregisterTaskTarget, AdditionalInfoUpdateTaskTarget, StudentMemberRegisterTaskTarget
 )
 from biz.djangoapps.ga_contract_operation.tasks import (
-    personalinfo_mask, student_register, student_unregister, additional_info_update,
-    TASKS, STUDENT_REGISTER, STUDENT_UNREGISTER, PERSONALINFO_MASK, ADDITIONALINFO_UPDATE,
+    personalinfo_mask, student_register, student_unregister, additional_info_update, student_member_register,
+    TASKS, STUDENT_REGISTER, STUDENT_UNREGISTER, PERSONALINFO_MASK, ADDITIONALINFO_UPDATE, STUDENT_MEMBER_REGISTER
 )
+from biz.djangoapps.ga_contract_operation.student_tsv_builders import ContractRegisterTsv
+from biz.djangoapps.ga_contract_operation.utils import get_additional_info_by_contract
 from biz.djangoapps.ga_invitation.models import (
-    AdditionalInfoSetting,
-    ContractRegister,
-    STATUS as CONTRACT_REGISTER_STATUS,
-    INPUT_INVITATION_CODE,
-    REGISTER_INVITATION_CODE,
-    UNREGISTER_INVITATION_CODE
+    AdditionalInfoSetting, ContractRegister,
+    STATUS as CONTRACT_REGISTER_STATUS, INPUT_INVITATION_CODE, REGISTER_INVITATION_CODE, UNREGISTER_INVITATION_CODE
 )
+from biz.djangoapps.gx_member.models import Member
+from biz.djangoapps.gx_org_group.models import Group
 from biz.djangoapps.util.access_utils import has_staff_access
-from biz.djangoapps.util.decorators import check_course_selection
+from biz.djangoapps.util.decorators import check_course_selection, check_organization_group
 from biz.djangoapps.util.json_utils import EscapedEdxJSONEncoder
 from biz.djangoapps.util.task_utils import submit_task, validate_task, get_task_key
-from edxmako.shortcuts import render_to_response
+from biz.djangoapps.util.unicodetsv_utils import create_tsv_response, create_csv_response, get_sjis_csv
 
+from edxmako.shortcuts import render_to_response
+from openedx.core.djangoapps.ga_self_paced import api as self_paced_api
 from openedx.core.djangoapps.ga_task.api import AlreadyRunningError
 from openedx.core.djangoapps.ga_task.task import STATES as TASK_STATES
 from openedx.core.lib.ga_datetime_utils import to_timezone
 from openedx.core.lib.ga_mail_utils import send_mail
-from student.models import CourseEnrollment
+from student.models import CourseEnrollment, UserStanding, UserProfile
 from util.json_request import JsonResponse, JsonResponseBadRequest
 from xmodule.modulestore.django import modulestore
 
+
 log = logging.getLogger(__name__)
+
+CONTRACT_REGISTER_MAX_DISPLAY_NUM = 1000
+BIZ_MAX_CHAR_LENGTH_REGISTER_LINE = 7000
+BIZ_MAX_REGISTER_NUMBER = 50000
 
 
 def _error_response(message):
@@ -80,85 +93,304 @@ def check_contract_register_selection(func):
                 return _error_response(_('Unauthorized access.'))
         kwargs['registers'] = registers
         return func(request, *args, **kwargs)
+
     return wrapper
 
 
 @require_GET
 @login_required
 @check_course_selection
+@check_organization_group
 def students(request):
-    show_list, status, additional_searches, additional_columns = _contract_register_list(request.current_contract)
+    total_count, show_list, status, additional_columns = _students_initial_search(
+        org=request.current_organization, contract=request.current_contract, manager=request.current_manager,
+        visible_group_ids=request.current_organization_visible_group_ids)
+
+    member_org_item_list = OrderedDict()
+    for i in range(1, 11):
+        member_org_item_list['org' + str(i)] = _("Organization") + str(i)
+    for i in range(1, 11):
+        member_org_item_list['item' + str(i)] = _("Item") + str(i)
 
     return render_to_response(
         'ga_contract_operation/students.html',
         {
+            'total_count': total_count,
             'show_list': json.dumps(show_list, cls=EscapedEdxJSONEncoder),
-            'status_list': json.dumps(status.values(), cls=EscapedEdxJSONEncoder),
-            'additional_searches': json.dumps(additional_searches, cls=EscapedEdxJSONEncoder),
+            'status_list': status,
             'additional_columns': json.dumps(additional_columns, cls=EscapedEdxJSONEncoder),
+            'max_show_num_on_page': CONTRACT_REGISTER_MAX_DISPLAY_NUM,
+            'member_org_item_list': member_org_item_list,
         }
     )
-
-
-def _contract_register_list(contract):
-    status = {k: unicode(v) for k, v in dict(CONTRACT_REGISTER_STATUS).items()}
-    additional_searches = []
-    additional_columns = []
-
-    additional_infos = contract.additional_info.all()
-    has_additional_infos = bool(additional_infos)
-    # Additional settings value of user.
-    # key:user_id, value:dict{key:display_name, value:additional_settings_value}
-    user_additional_settings = defaultdict(dict)
-    if has_additional_infos:
-        display_names = []
-        for additional_info in additional_infos:
-            additional_searches.append({
-                'field': additional_info.display_name,
-                'caption': additional_info.display_name,
-                'type': 'text',
-            })
-            additional_columns.append({
-                'field': additional_info.display_name,
-                'caption': additional_info.display_name,
-                'sortable': True,
-                'hidden': False,
-                'size': 1,
-            })
-            display_names.append(additional_info.display_name)
-
-        for additional_settings in AdditionalInfoSetting.find_by_contract(contract):
-            if additional_settings.display_name in display_names:
-                user_additional_settings[additional_settings.user_id][additional_settings.display_name] = additional_settings.value
-
-    def _create_row(i, contract_register):
-        row = {
-            'recid': i + 1,
-            'contract_register_id': contract_register.id,
-            'contract_register_status': status[contract_register.status],
-            'full_name': contract_register.user.profile.name,
-            'user_name': contract_register.user.username,
-            'user_email': contract_register.user.email,
-        }
-        # Set additional settings value of user.
-        if has_additional_infos and contract_register.user_id in user_additional_settings:
-            row.update(user_additional_settings[contract_register.user_id])
-        return row
-
-    contract_register_list = [
-        _create_row(i, contract_register)
-        for i, contract_register in enumerate(ContractRegister.find_by_contract(contract))
-    ]
-
-    return (contract_register_list, status, additional_searches, additional_columns)
 
 
 @require_POST
 @login_required
 @check_course_selection
+@check_organization_group
+def students_search_students_ajax(request):
+    if 'contract_id' not in request.POST:
+        return _error_response(_("Unauthorized access."))
+
+    org = request.current_organization
+    contract = request.current_contract
+    manager = request.current_manager
+    visible_group_ids = request.current_organization_visible_group_ids
+
+    offset = request.POST['offset']
+    limit = request.POST['limit']
+
+    query, prefetch = _students_create_search_query(request, org, contract, manager, visible_group_ids)
+
+    if query is None:
+        return JsonResponse({
+            'info': _('Success'),
+            'total_count': 0,
+            'show_list': json.dumps([], cls=EscapedEdxJSONEncoder),
+        })
+    else:
+        total_count, show_list, __, __ = _contract_register_list_on_page(contract, query, prefetch, int(offset),
+                                                                         int(limit))
+        return JsonResponse({
+            'info': _('Success'),
+            'total_count': total_count,
+            'show_list': json.dumps(show_list, cls=EscapedEdxJSONEncoder),
+        })
+
+
+def _students_create_search_query(request, org, contract, manager, visible_group_ids):
+    """
+    :param request:
+    :param org: request.current_organization
+    :param contract: request.current_contract
+    :param manager: request.current_manager
+    :param visible_group_ids: request.current_organization_visible_group_ids
+    :return: Q(), Prefetch()
+    """
+    radio_operator_exclude = 'exclude'
+    radio_operator_contains = 'contains'
+    radio_operator_only = 'only'
+    radio_operator = (radio_operator_exclude, radio_operator_contains, radio_operator_only)
+
+    query = Q()
+    # Contract
+    query.add(Q(('contract', contract)), Q.AND)
+    # Organization group
+    if not manager.is_director() and manager.is_manager() and Group.objects.filter(org=org).exists():
+        query.add(Q(('user__member__group__in', visible_group_ids)), Q.AND)
+
+    # Group name
+    group_name = request.POST['group_name']
+    if group_name and group_name.strip():
+        query.add(Q(('user__member__group__group_name__contains', group_name)), Q.AND)
+
+    # Status and Unregister
+    status = request.POST['status']
+    is_unregister = request.POST['is_unregister']
+    if is_unregister in radio_operator:
+        if is_unregister == radio_operator_contains:
+            if status:
+                query.add(Q(('status__exact', status)) | Q(('status__exact', UNREGISTER_INVITATION_CODE)), Q.AND)
+        elif is_unregister == radio_operator_only:
+            if status:
+                if status == UNREGISTER_INVITATION_CODE:
+                    query.add(Q(('status__exact', status)), Q.AND)
+                else:
+                    # Return empty list because conflict status conditions
+                    return None, None
+            else:
+                query.add(Q(('status__exact', UNREGISTER_INVITATION_CODE)), Q.AND)
+        elif is_unregister == radio_operator_exclude:
+            if status:
+                if status == UNREGISTER_INVITATION_CODE:
+                    # Return empty list because conflict status conditions
+                    return None, None
+                else:
+                    query.add(Q(('status__exact', status)), Q.AND)
+            else:
+                query.add(Q(('status__exact', INPUT_INVITATION_CODE)) | Q(
+                    ('status__exact', REGISTER_INVITATION_CODE)), Q.AND)
+
+    # Free word
+    free_word = request.POST['free_word']
+    if free_word and free_word.strip():
+        free_word_conditions = Q((
+            'user__username__contains', free_word)) | Q((
+            'user__email__contains', free_word)) | Q((
+            'user__profile__name__contains', free_word)) | Q((
+            'user__member__group__group_name__contains', free_word)) | Q((
+            'user__member__org1__contains', free_word)) | Q((
+            'user__member__org2__contains', free_word)) | Q((
+            'user__member__org3__contains', free_word)) | Q((
+            'user__member__org4__contains', free_word)) | Q((
+            'user__member__org5__contains', free_word)) | Q((
+            'user__member__org6__contains', free_word)) | Q((
+            'user__member__org7__contains', free_word)) | Q((
+            'user__member__org8__contains', free_word)) | Q((
+            'user__member__org9__contains', free_word)) | Q((
+            'user__member__org10__contains', free_word)) | Q((
+            'user__member__item1__contains', free_word)) | Q((
+            'user__member__item2__contains', free_word)) | Q((
+            'user__member__item3__contains', free_word)) | Q((
+            'user__member__item4__contains', free_word)) | Q((
+            'user__member__item5__contains', free_word)) | Q((
+            'user__member__item6__contains', free_word)) | Q((
+            'user__member__item7__contains', free_word)) | Q((
+            'user__member__item8__contains', free_word)) | Q((
+            'user__member__item9__contains', free_word)) | Q((
+            'user__member__item10__contains', free_word)) | Q((
+            'user__bizuser__login_code__contains', free_word)) | Q((
+            'user__in', AdditionalInfoSetting.objects.filter(
+                contract=contract, value__contains=free_word).values_list('user')))
+
+        query.add(free_word_conditions, Q.AND)
+
+    # Detail search
+    detail_search_counter = 1
+    while 'org_item_field_select_' + str(detail_search_counter) in request.POST:
+        count = str(detail_search_counter)
+        detail_search_counter += 1
+        key = request.POST['org_item_field_select_' + count]
+        value = request.POST['org_item_field_text_' + count]
+        if key and key.strip() and value and value.strip():
+            query.add(Q(('user__member__' + key + '__contains', value)), Q.AND)
+
+    # Target user of delete member
+    member_is_delete = request.POST['member_is_delete']
+    if member_is_delete == radio_operator_contains:
+        query.add(Q(('user__member__is_active', True), ('user__member__is_delete', False))
+                  | Q(('user__member__is_active', False), ('user__member__is_delete', True))
+                  | Q(('user__member', None)), Q.AND)
+        prefetch = Prefetch('user__member', to_attr='members',
+                            queryset=Member.objects.filter(org=org).select_related('group').exclude(is_active=False,
+                                                                                                    is_delete=False))
+
+    elif member_is_delete == radio_operator_only:
+        query.add(Q(('user__member__is_delete', True)), Q.AND)
+        prefetch = Prefetch('user__member', to_attr='members',
+                            queryset=Member.objects.filter(org=org, is_delete=True).select_related('group'))
+
+    elif member_is_delete == radio_operator_exclude:
+        query.add(Q(('user__member__is_active', True)) | Q(('user__member', None)), Q.AND)
+        prefetch = Prefetch('user__member', to_attr='members',
+                            queryset=Member.find_active_by_org(org=org).select_related('group'))
+
+    # Mask
+    is_masked = request.POST['is_masked']
+    if is_masked == radio_operator_exclude:
+        query.add(Q(('user__email__contains', '@')), Q.AND)
+    elif is_masked == radio_operator_only:
+        query.add(~Q(('user__email__contains', '@')), Q.AND)
+
+    return query, prefetch
+
+
+def _students_initial_search(org, contract, manager, visible_group_ids):
+    """
+    :param org: request.current_organization
+    :param contract: request.current_contract
+    :param manager: request.current_manager
+    :param visible_group_ids: request.current_organization_visible_group_ids
+    :return:
+    """
+    query = Q()
+    query.add(Q(('contract', contract)), Q.AND)
+    prefetch = Prefetch('user__member', to_attr='members', queryset=Member.objects.filter(org=org).select_related(
+        'group').exclude(is_active=False, is_delete=False))
+
+    if not manager.is_director() and manager.is_manager() and Group.objects.filter(org=org).exists():
+        query.add(Q(('user__member__group__in', visible_group_ids)), Q.AND)
+
+    return _contract_register_list_on_page(contract, query, prefetch)
+
+
+def _contract_register_list_on_page(contract, query, prefetch, offset=0, limit=CONTRACT_REGISTER_MAX_DISPLAY_NUM):
+    """
+    :param contract: from biz.djangoapps.ga_contract.models import Contract
+    :param query: from django.db.models import Q
+    :param prefetch: from django.db.models import Prefetch
+    :param offset: int
+    :param limit: int
+    :return:
+    """
+    status = {k: unicode(v) for k, v in dict(CONTRACT_REGISTER_STATUS).items()}
+    user_additional_settings, display_names, __, additional_columns = get_additional_info_by_contract(contract=contract)
+    select_columns = dict({
+        'id': 'id',
+        'user_id': 'user__id',
+        'status': 'status',
+        'full_name': 'user__profile__name',
+        'email': 'user__email',
+        'username': 'user__username',
+        'login_code': 'user__bizuser__login_code',
+        'code': 'user__member__code',
+        'group_name': 'user__member__group__group_name'
+    })
+    select_columns.update({'org' + str(i): 'user__member__org' + str(i) for i in range(1, 11)})
+    select_columns.update({'item' + str(i): 'user__member__item' + str(i) for i in range(1, 11)})
+
+    total_count = ContractRegister.objects.filter(query).select_related(
+        'user__profile', 'user__bizuser').prefetch_related(prefetch).distinct().order_by(
+        'id').values(*select_columns.values()).count()
+
+    show_list = []
+    for i, register in enumerate(
+            ContractRegister.objects.filter(query)
+                    .select_related('user__profile', 'user__bizuser').prefetch_related(prefetch)
+                    .distinct().order_by('id').values(*select_columns.values())[offset:limit], start=1):
+        row = {
+            'recid': i,
+            'contract_register_id': register[select_columns.get('id')],
+            'contract_register_status': status[register[select_columns.get('status')]],
+            'user_name': register[select_columns.get('username')],
+            'user_email': register[select_columns.get('email')],
+            'full_name': register[select_columns.get('full_name')] or '',
+            'login_code': register[select_columns.get('login_code')] or '',
+            'code': register[select_columns.get('code')] or '',
+            'group_name': register[select_columns.get('group_name')] or ''
+        }
+        for p in range(1, 11):
+            row['org' + str(p)] = register[select_columns.get('org' + str(p))] or ''
+            row['item' + str(p)] = register[select_columns.get('item' + str(p))] or ''
+
+        # Set additional settings value of user.
+        if register[select_columns.get('user_id')] in user_additional_settings:
+            row.update(user_additional_settings[register[select_columns.get('user_id')]])
+
+        show_list.append(row)
+
+    return total_count, show_list, status, additional_columns
+
+
+@require_POST
+@login_required
+@check_course_selection
+@check_organization_group
+def students_students_download(request):
+    org = request.current_organization
+    contract = request.current_contract
+    manager = request.current_manager
+    visible_group_ids = request.current_organization_visible_group_ids
+
+    tsv = ContractRegisterTsv(contract)
+    query, prefetch = _students_create_search_query(request, org, contract, manager, visible_group_ids)
+    headers, records = tsv.get_header_and_record_for_export(query, prefetch)
+
+    org_name = request.current_organization.org_name
+    current_datetime = datetime.now()
+    date_str = current_datetime.strftime("%Y-%m-%d-%H%M")
+
+    return create_tsv_response(org_name + '_students_list_' + date_str + '.csv', headers, records)
+
+
+@require_POST
+@login_required
+@check_course_selection
+@check_organization_group
 @check_contract_register_selection
 def unregister_students_ajax(request, registers):
-
+    manager = request.current_manager
     valid_register_list = []
     warning_register_list = []
 
@@ -186,16 +418,21 @@ def unregister_students_ajax(request, registers):
                 # CourseEnrollment only spoc TODO should do by celery
                 if request.current_contract.is_spoc_available:
                     for course_key in course_keys:
-                        if CourseEnrollment.is_enrolled(register.user, course_key) and not has_staff_access(register.user, course_key):
+                        if CourseEnrollment.is_enrolled(register.user, course_key) and not has_staff_access(
+                                register.user, course_key):
                             CourseEnrollment.unenroll(register.user, course_key)
     except Exception:
         unregister_list = [register.id for register in registers]
-        log.exception('Can not unregister. contract_id({}), unregister_list({})'.format(request.current_contract.id, unregister_list))
+        log.exception('Can not unregister. contract_id({}), unregister_list({})'.format(request.current_contract.id,
+                                                                                        unregister_list))
         return _error_response(_('Failed to batch unregister. Please operation again after a time delay.'))
 
-    show_list, __, __, __ = _contract_register_list(request.current_contract)
+    total_count, show_list, __, __ = _students_initial_search(
+        org=request.current_organization, contract=request.current_contract, manager=manager,
+        visible_group_ids=request.current_organization_visible_group_ids)
 
-    warning = _('Already unregisterd {user_count} users.').format(user_count=len(warning_register_list)) if warning_register_list else ''
+    warning = _('Already unregisterd {user_count} users.').format(
+        user_count=len(warning_register_list)) if warning_register_list else ''
 
     return JsonResponse({
         'info': _('Succeed to unregister {user_count} users.').format(user_count=len(valid_register_list)) + warning,
@@ -206,13 +443,58 @@ def unregister_students_ajax(request, registers):
 @require_GET
 @login_required
 @check_course_selection
+@check_organization_group
 def register_students(request):
+    org = request.current_organization
+    manager = request.current_manager
+
+    org_items = {
+        'org1': Member.find_active_by_org(org=org).exclude(org1='').values('org1').order_by('org1').distinct(),
+        'org2': Member.find_active_by_org(org=org).exclude(org2='').values('org2').order_by('org2').distinct(),
+        'org3': Member.find_active_by_org(org=org).exclude(org3='').values('org3').order_by('org3').distinct(),
+        'org4': Member.find_active_by_org(org=org).exclude(org4='').values('org4').order_by('org4').distinct(),
+        'org5': Member.find_active_by_org(org=org).exclude(org5='').values('org5').order_by('org5').distinct(),
+        'org6': Member.find_active_by_org(org=org).exclude(org6='').values('org6').order_by('org6').distinct(),
+        'org7': Member.find_active_by_org(org=org).exclude(org7='').values('org7').order_by('org7').distinct(),
+        'org8': Member.find_active_by_org(org=org).exclude(org8='').values('org8').order_by('org8').distinct(),
+        'org9': Member.find_active_by_org(org=org).exclude(org9='').values('org9').order_by('org9').distinct(),
+        'org10': Member.find_active_by_org(org=org).exclude(org10='').values('org10').order_by('org10').distinct(),
+        'item1': Member.find_active_by_org(org=org).exclude(item1='').values('item1').order_by('item1').distinct(),
+        'item2': Member.find_active_by_org(org=org).exclude(item2='').values('item2').order_by('item2').distinct(),
+        'item3': Member.find_active_by_org(org=org).exclude(item3='').values('item3').order_by('item3').distinct(),
+        'item4': Member.find_active_by_org(org=org).exclude(item4='').values('item4').order_by('item4').distinct(),
+        'item5': Member.find_active_by_org(org=org).exclude(item5='').values('item5').order_by('item5').distinct(),
+        'item6': Member.find_active_by_org(org=org).exclude(item6='').values('item6').order_by('item6').distinct(),
+        'item7': Member.find_active_by_org(org=org).exclude(item7='').values('item7').order_by('item7').distinct(),
+        'item8': Member.find_active_by_org(org=org).exclude(item8='').values('item8').order_by('item8').distinct(),
+        'item9': Member.find_active_by_org(org=org).exclude(item9='').values('item9').order_by('item9').distinct(),
+        'item10': Member.find_active_by_org(org=org).exclude(item10='').values('item10').order_by('item10').distinct()
+    }
+
+    if not manager.is_director() and manager.is_manager() and Group.objects.filter(org=org).exists():
+        group_list = [
+            (grp.group_code, grp.id, grp.group_name) for grp in Group.objects.filter(
+                org=org.id, id__in=request.current_organization_visible_group_ids).order_by('group_code')
+        ]
+    else:
+        group_list = [
+            (grp.group_code, grp.id, grp.group_name) for grp in Group.objects.filter(
+                org=request.current_organization.id).order_by('group_code')
+        ]
+
+    listbox_contracts = Contract.find_all_by_user(request.user)
+
     return render_to_response(
         'ga_contract_operation/register_students.html',
         {
             'max_register_number': "{:,d}".format(int(settings.BIZ_MAX_REGISTER_NUMBER)),
             'additional_info_list': AdditionalInfo.objects.filter(contract=request.current_contract),
             'max_length_additional_info_display_name': AdditionalInfo._meta.get_field('display_name').max_length,
+            'max_bulk_students_number': settings.BIZ_MAX_BULK_STUDENTS_NUMBER,
+            'organization': request.current_organization,
+            'org_items': org_items,
+            'group_list': group_list,
+            'listbox_contracts': listbox_contracts,
         }
     )
 
@@ -233,7 +515,7 @@ def register_students_ajax(request):
     -If the username already exists (but not the email), assume it is a different user and fail to create the new account.
      The failure will be messaged in a response in the browser.
     """
-
+    log.info('register_students_start')
     if 'students_list' not in request.POST or 'contract_id' not in request.POST:
         return _error_response(_("Unauthorized access."))
 
@@ -242,20 +524,24 @@ def register_students_ajax(request):
 
     students = request.POST['students_list'].splitlines()
     if not students:
+        log.info('Could not find student list.')
         return _error_response(_("Could not find student list."))
 
     if len(students) > settings.BIZ_MAX_REGISTER_NUMBER:
+        log.info('max_register_number length over')
         return _error_response(_(
             "It has exceeded the number({max_register_number}) of cases that can be a time of registration."
         ).format(max_register_number=settings.BIZ_MAX_REGISTER_NUMBER))
 
     if any([len(s) > settings.BIZ_MAX_CHAR_LENGTH_REGISTER_LINE for s in students]):
+        log.info('biz_max_char length over')
         return _error_response(_(
             "The number of lines per line has exceeded the {biz_max_char_length_register_line} characters."
         ).format(biz_max_char_length_register_line=settings.BIZ_MAX_CHAR_LENGTH_REGISTER_LINE))
 
     register_status = request.POST.get('register_status')
     if register_status and register_status != REGISTER_INVITATION_CODE:
+        log.info('Invalid access.')
         return _error_response(_("Invalid access."))
 
     register_status = register_status or INPUT_INVITATION_CODE
@@ -263,9 +549,11 @@ def register_students_ajax(request):
     # To register status. Register or Input
     students = [u'{},{}'.format(register_status, s) for s in students]
 
+    log.info('register_students_create')
     history = ContractTaskHistory.create(request.current_contract, request.user)
+    log.info('register_students_bulk_create:task_id' + str(history.id))
     StudentRegisterTaskTarget.bulk_create(history, students)
-
+    log.info('register_students_submit_task:task_id' + str(history.id))
     return _submit_task(request, STUDENT_REGISTER, student_register, history)
 
 
@@ -282,7 +570,6 @@ def bulk_students(request):
 
 
 def _submit_task(request, task_type, task_class, history, additional_info_list=None):
-
     try:
         task_input = {
             'contract_id': request.current_contract.id,
@@ -293,6 +580,9 @@ def _submit_task(request, task_type, task_class, history, additional_info_list=N
 
         # Check the task running within the same contract.
         validate_task_message = validate_task(request.current_contract)
+        if validate_task_message:
+            return _error_response(validate_task_message)
+        validate_task_message = validate_task(request.current_organization)
         if validate_task_message:
             return _error_response(validate_task_message)
 
@@ -306,7 +596,8 @@ def _submit_task(request, task_type, task_class, history, additional_info_list=N
         )
 
     return JsonResponse({
-        'info': _("Began the processing of {task_type}.").format(task_type=TASKS[task_type]) + _("Execution status, please check from the task history."),
+        'info': _("Began the processing of {task_type}.").format(task_type=TASKS[task_type]) + _(
+            "Execution status, please check from the task history."),
     })
 
 
@@ -347,6 +638,8 @@ def task_history_ajax(request):
                 _task_targets = ContractTaskTarget.find_by_history_id_and_message(history.id)
             elif task.task_type == ADDITIONALINFO_UPDATE:
                 _task_targets = AdditionalInfoUpdateTaskTarget.find_by_history_id_and_message(history.id)
+            elif task.task_type == STUDENT_MEMBER_REGISTER:
+                _task_targets = StudentMemberRegisterTaskTarget.find_by_history_id_and_message(history.id)
         return [
             {
                 'recid': task_target.id,
@@ -379,6 +672,7 @@ def task_history_ajax(request):
 @require_POST
 @login_required
 @check_course_selection
+@check_organization_group
 @check_contract_register_selection
 def submit_personalinfo_mask(request, registers):
     """
@@ -395,7 +689,6 @@ def submit_personalinfo_mask(request, registers):
 @login_required
 @check_course_selection
 def register_mail(request):
-
     if not request.current_contract.can_customize_mail:
         raise Http404()
 
@@ -421,8 +714,8 @@ def register_mail(request):
 @login_required
 @check_course_selection
 def register_mail_ajax(request):
-
-    if not request.current_contract.can_customize_mail or any(k not in request.POST for k in ['mail_type', 'mail_subject', 'mail_body', 'contract_id']):
+    if not request.current_contract.can_customize_mail or any(
+            k not in request.POST for k in ['mail_type', 'mail_subject', 'mail_body', 'contract_id']):
         return _error_response(_("Unauthorized access."))
 
     mail_type = request.POST['mail_type']
@@ -463,8 +756,8 @@ def register_mail_ajax(request):
 @login_required
 @check_course_selection
 def send_mail_ajax(request):
-
-    if not request.current_contract.can_customize_mail or any(k not in request.POST for k in ['mail_type', 'mail_subject', 'mail_body', 'contract_id']):
+    if not request.current_contract.can_customize_mail or any(
+            k not in request.POST for k in ['mail_type', 'mail_subject', 'mail_body', 'contract_id']):
         return _error_response(_("Unauthorized access."))
 
     mail_type = request.POST['mail_type']
@@ -476,7 +769,8 @@ def send_mail_ajax(request):
         return _error_response(_("Current contract is changed. Please reload this page."))
 
     contract_mail = ContractMail.get_or_default(request.current_contract, mail_type)
-    if contract_mail.mail_subject != request.POST['mail_subject'] or contract_mail.mail_body != request.POST['mail_body']:
+    if contract_mail.mail_subject != request.POST['mail_subject'] or contract_mail.mail_body != request.POST[
+        'mail_body']:
         return _error_response(_("Please save the template e-mail before sending."))
 
     # Send mail
@@ -504,20 +798,78 @@ def send_mail_ajax(request):
 @require_GET
 @login_required
 @check_course_selection
+@check_organization_group
 def reminder_mail(request):
     if not request.current_contract.can_send_submission_reminder:
         raise Http404()
 
+    contract = request.current_contract
+    course = request.current_course
+    is_manager = not request.current_manager.is_director() and request.current_manager.is_manager()
+
+    # Reminder mail
     if request.current_contract.can_send_submission_reminder:
-        submission_reminder_mail = ContractReminderMail.get_or_default(request.current_contract,
-                                                                       ContractReminderMail.MAIL_TYPE_SUBMISSION_REMINDER)
+        reminder_mail = ContractReminderMail.get_or_default(
+            request.current_contract, ContractReminderMail.MAIL_TYPE_SUBMISSION_REMINDER)
+
+    # Search Reminder mail
+    search_reminder_mail = {
+        'student_status_list': [
+            _(ScoreStore.FIELD_STUDENT_STATUS__ENROLLED),
+            _(ScoreStore.FIELD_STUDENT_STATUS__UNENROLLED),
+            _(ScoreStore.FIELD_STUDENT_STATUS__DISABLED),
+            _(ScoreStore.FIELD_STUDENT_STATUS__EXPIRED),
+        ],
+        'search_mail_params': [
+            ContractReminderMail.MAIL_PARAM_USERNAME,
+            ContractReminderMail.MAIL_PARAM_EMAIL_ADDRESS,
+            ContractReminderMail.MAIL_PARAM_COURSE_NAME,
+            ContractReminderMail.MAIL_PARAM_FULLNAME,
+            ContractReminderMail.MAIL_PARAM_EXPIRE_DATE,
+        ],
+    }
+
+    # Check score batch
+    score_batch_status = ScoreBatchStatus.get_last_status(contract.id, course.id)
+    if score_batch_status:
+        score_store = ScoreStore(contract.id, unicode(course.id))
+        hidden_columns = score_store.get_section_names()
+        search_reminder_mail['score_section_names'] = [column[0] for column in hidden_columns]
+        search_reminder_mail['hidden_score_columns'] = json.dumps(hidden_columns, cls=EscapedEdxJSONEncoder)
+    else:
+        search_reminder_mail['hidden_score_columns'] = {}
+        search_reminder_mail['score_section_names'] = []
+
+    # Check playback batch
+    playback_batch_status = PlaybackBatchStatus.get_last_status(contract.id, course.id)
+    if playback_batch_status:
+        playback_store = PlaybackStore(contract.id, unicode(course.id))
+        hidden_columns = playback_store.get_section_names()
+        search_reminder_mail['playback_section_names'] = [column[0] for column in hidden_columns]
+        search_reminder_mail['hidden_playback_columns'] = json.dumps(hidden_columns, cls=EscapedEdxJSONEncoder)
+    else:
+        search_reminder_mail['hidden_playback_columns'] = {}
+        search_reminder_mail['playback_section_names'] = []
+
+    # Pulldown of 'Search Detail(Other)'
+    search_detail_other_list = OrderedDict()
+    search_detail_other_list['login_code'] = _("Login Code")
+    search_detail_other_list['full_name'] = _("Full Name")
+    search_detail_other_list['username'] = _("Username")
+    search_detail_other_list['email'] = _("Email Address")
+    for i in range(1, 11):
+        search_detail_other_list['org' + str(i)] = _("Organization") + str(i)
+    for i in range(1, 11):
+        search_detail_other_list['item' + str(i)] = _("Item") + str(i)
+
+    search_reminder_mail['search_detail_other_list'] = search_detail_other_list
 
     return render_to_response(
         'ga_contract_operation/reminder_mail.html',
         {
-            'mail_info_list': [
-                submission_reminder_mail,
-            ],
+            'is_manager': is_manager,
+            'mail_info': reminder_mail,
+            'search_mail_info': search_reminder_mail,
         }
     )
 
@@ -562,8 +914,8 @@ def reminder_mail_save_ajax(request):
 
     # Save template
     try:
-        contract_mail, __ = ContractReminderMail.objects.get_or_create(contract=request.current_contract,
-                                                                       mail_type=mail_type)
+        contract_mail, __ = ContractReminderMail.objects.get_or_create(
+            contract=request.current_contract, mail_type=mail_type)
         contract_mail.reminder_email_days = reminder_email_days
         contract_mail.mail_subject = mail_subject
         contract_mail.mail_body = mail_body
@@ -595,9 +947,9 @@ def reminder_mail_send_ajax(request):
 
     contract_mail = ContractReminderMail.get_or_default(request.current_contract, mail_type)
     if (str(contract_mail.reminder_email_days) != request.POST.get('reminder_email_days') or
-                contract_mail.mail_subject != request.POST.get('mail_subject') or
-                contract_mail.mail_body != request.POST.get('mail_body') or
-                contract_mail.mail_body2 != request.POST.get('mail_body2')):
+            contract_mail.mail_subject != request.POST.get('mail_subject') or
+            contract_mail.mail_body != request.POST.get('mail_body') or
+            contract_mail.mail_body2 != request.POST.get('mail_body2')):
         return _error_response(_("Please save the template e-mail before sending."))
 
     if mail_type == ContractReminderMail.MAIL_TYPE_SUBMISSION_REMINDER:
@@ -627,11 +979,340 @@ def reminder_mail_send_ajax(request):
             })
 
 
+@require_POST
+@login_required
+@check_course_selection
+@check_organization_group
+def reminder_search_ajax(request):
+    org = request.current_organization
+    contract = request.current_contract
+    course = request.current_course
+    manager = request.current_manager
+    visible_group_ids = request.current_organization_visible_group_ids
+
+    if 'contract_id' not in request.POST:
+        return _error_response(_("Unauthorized access."))
+
+    if str(request.current_contract.id) != request.POST['contract_id']:
+        return _error_response(_("Current contract is changed. Please reload this page."))
+
+    def _get_mongo_conditions(key):
+        has_condition = False
+        # Get total condition
+        total_key = 'total_' + key
+        total_no_val = request.POST[total_key + '_no'] if total_key + '_no' in request.POST else None
+        total_from_val = request.POST[total_key + '_from']
+        total_to_val = request.POST[total_key + '_to']
+        total_condition = {
+            'no': total_no_val,
+            'from': total_from_val if len(total_from_val) else None,
+            'to': total_to_val if len(total_to_val) else None,
+        }
+
+        if key is 'playback':
+            if total_condition['from']:
+                total_condition['from'] = (int(total_condition['from']) * 60) - 60
+            if total_condition['to']:
+                total_condition['to'] = int(total_condition['to']) * 60
+
+        for condition in total_condition:
+            if total_condition[condition]:
+                has_condition = True
+
+        # Get section conditions
+        section_conditions = []
+        counter = 1
+        detail_key = 'detail_condition_' + key
+        while detail_key + '_name_' + str(counter) in request.POST:
+            count = str(counter)
+            counter += 1
+            name = request.POST[detail_key + '_name_' + count]
+            from_val = request.POST[detail_key + '_from_' + count]
+            to_val = request.POST[detail_key + '_to_' + count]
+            no_val = detail_key + '_no_' + count in request.POST
+
+            if name:
+                has_condition = True
+                condition = {
+                    'name': name,
+                    'from': from_val if len(from_val) else None,
+                    'to': to_val if len(to_val) else None,
+                    'no': no_val,
+                }
+
+                if key is 'playback':
+                    if condition['from']:
+                        condition['from'] = (int(condition['from']) * 60) - 60
+                    if condition['to']:
+                        condition['to'] = int(condition['to']) * 60
+
+                section_conditions.append(condition)
+
+        return has_condition, total_condition, section_conditions
+
+    def _get_students_conditions():
+        query = Q()
+        query.add(Q(('member__is_active', True)) | Q(('member', None)), Q.AND)
+        if not manager.is_director() and manager.is_manager() and Group.objects.filter(org=org).exists():
+            query.add(Q(('member__group__in', visible_group_ids)), Q.AND)
+
+        org_item_key_list = []
+        org_item_key_list.extend(['org' + str(i) for i in range(1, 11)])
+        org_item_key_list.extend(['item' + str(i) for i in range(1, 11)])
+
+        counter = 1
+        while 'detail_condition_other_name_' + str(counter) in request.POST:
+            count = str(counter)
+            counter += 1
+            key = request.POST['detail_condition_other_name_' + count]
+            value = request.POST['detail_condition_other_' + count]
+            if key and key.strip() and value and value.strip():
+                if key in ('email', 'username'):
+                    query.add(Q((key + '__contains', value)), Q.AND)
+                elif key == 'full_name':
+                    query.add(Q(('profile__name__contains', value)), Q.AND)
+                elif key == 'login_code':
+                    query.add(Q(('bizuser__login_code__contains', value)), Q.AND)
+                elif key in org_item_key_list:
+                    query.add(Q(('member__' + key + '__contains', value)), Q.AND)
+
+        prefetch = Prefetch('member', to_attr='members',
+                            queryset=Member.objects.filter(is_active=True).select_related('group'))
+
+        return query, prefetch
+
+    def _create_row(recid, student_status, user, score_section_names, score, playback_section_names, playback):
+        row = {
+            'recid': recid,
+            'user_id': user[select_columns.get('user_id')] or '',
+            'user_name': user[select_columns.get('user_name')] or '',
+            'user_email': user[select_columns.get('user_email')] or '',
+            'full_name': user[select_columns.get('full_name')] or '',
+            'login_code': user[select_columns.get('login_code')] or '',
+        }
+
+        # Set member
+        if user[select_columns.get('code')] is not None:
+            for p in range(1, 11):
+                row['org' + str(p)] = user[select_columns.get('org' + str(p))]
+                row['item' + str(p)] = user[select_columns.get('item' + str(p))]
+
+        # Set student status
+        row['student_status'] = student_status
+
+        # Set score
+        row['total_score'] = score[_(ScoreStore.FIELD_TOTAL_SCORE)] if score else 'None'
+        # Set score of section
+        if len(score_section_names) > 0:
+            for section_name in score_section_names:
+                row[section_name] = score[section_name] if score else 'None'
+
+        # Set playback
+        row['total_playback'] = playback[_(PlaybackStore.FIELD_TOTAL_PLAYBACK_TIME)] if playback else 'None'
+        # Set playback of section
+        if len(playback_section_names) > 0:
+            for section_name in playback_section_names:
+                row[section_name] = playback[section_name] if playback else 'None'
+
+        return row
+
+    select_columns = dict({
+        'user_id': 'id',
+        'user_email': 'email',
+        'full_name': 'profile__name',
+        'user_name': 'username',
+        'login_code': 'bizuser__login_code',
+        'account_status': 'standing__account_status',
+        'code': 'member__code',
+    })
+    select_columns.update({'org' + str(i): 'member__org' + str(i) for i in range(1, 11)})
+    select_columns.update({'item' + str(i): 'member__item' + str(i) for i in range(1, 11)})
+
+    # Search course's user
+    query, prefetch = _get_students_conditions()
+    enroll_users = CourseEnrollment.objects.enrolled_and_dropped_out_users(
+        course_id=course.id).filter(query).select_related('profile', 'standing', 'bizuser').prefetch_related(
+        prefetch).order_by('id').values(*select_columns.values())
+    enroll_usernames = [enroll_user[select_columns.get('user_name')] for enroll_user in enroll_users]
+
+    # Score
+    has_score_condition, total_score_condition, section_score_conditions = _get_mongo_conditions('score')
+    score_batch_status = ScoreBatchStatus.get_last_status(contract.id, course.id)
+    if score_batch_status:
+        score_store = ScoreStore(contract.id, unicode(course.id))
+        # Score section name
+        score_section_names = [columns[0] for columns in score_store.get_section_names()]
+        # Score records list
+        __, score_list = score_store.get_data_for_w2ui(
+            total_condition=total_score_condition,
+            section_conditions=section_score_conditions,
+            usernames=enroll_usernames,
+        )
+        username_scores = {score[_(ScoreStore.FIELD_USERNAME)]: score for score in score_list}
+    else:
+        score_section_names = []
+        username_scores = {}
+
+    # Playback
+    has_playback_condition, total_playback_condition, section_playback_conditions = _get_mongo_conditions('playback')
+    playback_batch_status = PlaybackBatchStatus.get_last_status(contract.id, course.id)
+    if playback_batch_status:
+        playback_store = PlaybackStore(contract.id, unicode(course.id))
+
+        # Playback section name
+        playback_section_names = [column[0] for column in playback_store.get_section_names()]
+        # Playback records list
+        __, playback_list = playback_store.get_data_for_w2ui(
+            total_condition=total_playback_condition,
+            section_conditions=section_playback_conditions,
+            usernames=enroll_usernames,
+        )
+        username_playback = {playback[_(PlaybackStore.FIELD_USERNAME)]: playback for playback in playback_list}
+    else:
+        playback_section_names = []
+        username_playback = {}
+
+    # Create row by usernames
+    show_list = []
+    for i, user in enumerate(enroll_users, start=1):
+        score = None
+        playback = None
+
+        # Check scores
+        if user[select_columns.get('user_name')] in username_scores:
+            score = username_scores[user[select_columns.get('user_name')]]
+        elif has_score_condition:
+            # Note: Not need loop for check playback if not found user by search conditions of score
+            continue
+
+        # Check playback
+        if user[select_columns.get('user_name')] in username_playback:
+            playback = username_playback[user[select_columns.get('user_name')]]
+        elif has_playback_condition:
+            # Note: Not need append row if not found user by search conditions of score and playback
+            continue
+
+        # Check status
+        if score:
+            student_status = score[_(ScoreStore.FIELD_STUDENT_STATUS)]
+        elif playback:
+            student_status = playback[_(PlaybackStore.FIELD_STUDENT_STATUS)]
+        else:
+            course_enrollment = CourseEnrollment.objects.get(
+                course_id=course.id, user=user[select_columns.get('user_id')])
+            if user[select_columns.get('account_status')] is not None \
+                    and user[select_columns.get('account_status')] == UserStanding.ACCOUNT_DISABLED:
+                student_status = _(ScoreStore.FIELD_STUDENT_STATUS__DISABLED)
+            elif self_paced_api.is_course_closed(course_enrollment):
+                student_status = _(ScoreStore.FIELD_STUDENT_STATUS__EXPIRED)
+            elif course_enrollment.is_active:
+                student_status = _(ScoreStore.FIELD_STUDENT_STATUS__ENROLLED)
+            else:
+                student_status = _(ScoreStore.FIELD_STUDENT_STATUS__UNENROLLED)
+
+        if request.POST['student_status'] and student_status != request.POST['student_status']:
+            continue
+
+        show_list.append(
+            _create_row(i, student_status, user, score_section_names, score, playback_section_names, playback)
+        )
+    return JsonResponse({
+        'info': _("Successfully to search."),
+        'show_list': json.dumps(show_list, cls=EscapedEdxJSONEncoder),
+    })
+
+
+@require_POST
+@login_required
+@check_course_selection
+def reminder_search_mail_send_ajax(request):
+    if not request.current_contract.can_send_submission_reminder or 'contract_id' not in request.POST:
+        return _error_response(_("Unauthorized access."))
+
+    if str(request.current_contract.id) != request.POST['contract_id']:
+        return _error_response(_("Current contract is changed. Please reload this page."))
+
+    error_messages = []
+
+    # Check test mail
+    is_test = 'is_test' in request.POST and request.POST['is_test'] == "1"
+
+    # Check user ids
+    if is_test:
+        users = [request.user]
+    else:
+        mail_user_emails = []
+        if request.POST['search_user_emails']:
+            mail_user_emails = request.POST['search_user_emails'].split(',')
+        if len(mail_user_emails) == 0:
+            return _error_response(_("Please select user that you want send reminder mail."))
+
+        users = User.objects.filter(email__in=mail_user_emails).select_related('profile')
+        for mail_user_email in mail_user_emails:
+            if mail_user_email not in users.values_list('email', flat=True):
+                error_messages.append(_("{0}:Not found selected user.").format(mail_user_email))
+
+    # Check mail subject
+    mail_subject = request.POST['mail_subject']
+    mail_subject_max_length = ContractReminderMail._meta.get_field('mail_subject').max_length
+    if not mail_subject or not mail_subject.strip():
+        return _error_response(_("Please enter the subject of an e-mail."))
+    elif len(mail_subject) > mail_subject_max_length:
+        return _error_response(_("Subject within {0} characters.").format(mail_subject_max_length))
+
+    # Check mail body
+    mail_body = request.POST['mail_body']
+    if not mail_body or not mail_body.strip():
+        return _error_response(_("Please enter the body of an e-mail."))
+
+    # Check course info
+    contract = request.current_contract
+    course = request.current_course
+    detail = ContractDetail.find_enabled_by_manager_and_contract_and_course(
+        manager=request.current_manager, contract=contract, course=course).first()
+
+    # Send mail
+    for user in users:
+        expire_datetime = None
+        if is_test:
+            expire_datetime = datetime.now()
+            try:
+                profile = UserProfile.objects.get(user=request.user)
+                full_name = profile.name
+            except UserProfile.DoesNotExist:
+                full_name = ''
+        else:
+            if course.self_paced:
+                expire_datetime = self_paced_api.get_course_end_date(
+                    CourseEnrollment.get_enrollment(user, detail.course_id)
+                )
+            full_name = user.profile.name
+
+        try:
+            send_mail(user, mail_subject.encode('utf-8'), mail_body.encode('utf-8'), {
+                'username': user.username,
+                'email_address': user.email,
+                'fullname': full_name.encode('utf-8'),
+                'course_name': course.display_name.encode('utf-8'),
+                'expire_date': unicode(expire_datetime.strftime("%Y-%m-%d")) if expire_datetime else '',
+            })
+
+        except Exception as ex:
+            log.exception('Failed to send the e-mail.' + ex.message)
+            error_messages.append(user.email + ":" + _("Failed to send the e-mail."))
+
+    return JsonResponse({
+        'info': _("Complete of send the e-mail."),
+        'error_messages': json.dumps(error_messages, cls=EscapedEdxJSONEncoder),
+    })
+
+
 def check_contract_bulk_operation(func):
     """
     This checks for bulk operation.
     unregistered students, personalinfo mask.
     """
+
     @wraps(func)
     def wrapper(request, *args, **kwargs):
         if 'students_list' not in request.POST or 'contract_id' not in request.POST:
@@ -656,6 +1337,7 @@ def check_contract_bulk_operation(func):
 
         kwargs['students'] = students_line
         return func(request, *args, **kwargs)
+
     return wrapper
 
 
@@ -697,7 +1379,6 @@ def bulk_personalinfo_mask_ajax(request, students):
 @login_required
 @check_course_selection
 def register_additional_info_ajax(request):
-
     if any(k not in request.POST for k in ['display_name', 'contract_id']):
         return _error_response(_("Unauthorized access."))
 
@@ -714,14 +1395,16 @@ def register_additional_info_ajax(request):
 
     max_length_display_name = AdditionalInfo._meta.get_field('display_name').max_length
     if len(display_name) > max_length_display_name:
-        return _error_response(_("Please enter the name of item within {max_number} characters.").format(max_number=max_length_display_name))
+        return _error_response(_("Please enter the name of item within {max_number} characters.").format(
+            max_number=max_length_display_name))
 
     if AdditionalInfo.objects.filter(contract=request.current_contract, display_name=display_name).exists():
         return _error_response(_("The same item has already been registered."))
 
     max_additional_info = settings.BIZ_MAX_REGISTER_ADDITIONAL_INFO
     if AdditionalInfo.objects.filter(contract=request.current_contract).count() >= max_additional_info:
-        return _error_response(_("Up to {max_number} number of additional item is created.").format(max_number=max_additional_info))
+        return _error_response(
+            _("Up to {max_number} number of additional item is created.").format(max_number=max_additional_info))
 
     try:
         additional_info = AdditionalInfo.objects.create(
@@ -742,7 +1425,6 @@ def register_additional_info_ajax(request):
 @login_required
 @check_course_selection
 def edit_additional_info_ajax(request):
-
     if any(k not in request.POST for k in ['additional_info_id', 'display_name', 'contract_id']):
         return _error_response(_("Unauthorized access."))
 
@@ -759,10 +1441,12 @@ def edit_additional_info_ajax(request):
 
     max_length_display_name = AdditionalInfo._meta.get_field('display_name').max_length
     if len(display_name) > max_length_display_name:
-        return _error_response(_("Please enter the name of item within {max_number} characters.").format(max_number=max_length_display_name))
+        return _error_response(_("Please enter the name of item within {max_number} characters.").format(
+            max_number=max_length_display_name))
 
     additional_info_id = request.POST['additional_info_id']
-    if AdditionalInfo.objects.filter(contract=request.current_contract, display_name=display_name).exclude(id=additional_info_id).exists():
+    if AdditionalInfo.objects.filter(contract=request.current_contract, display_name=display_name).exclude(
+            id=additional_info_id).exists():
         return _error_response(_("The same item has already been registered."))
 
     try:
@@ -773,7 +1457,8 @@ def edit_additional_info_ajax(request):
             display_name=display_name,
         )
     except:
-        log.exception('Failed to edit the display-name of an additional-info id:{}.'.format(request.POST['additional_info_id']))
+        log.exception(
+            'Failed to edit the display-name of an additional-info id:{}.'.format(request.POST['additional_info_id']))
         return _error_response(_("Failed to edit item."))
 
     return JsonResponse({
@@ -785,7 +1470,6 @@ def edit_additional_info_ajax(request):
 @login_required
 @check_course_selection
 def delete_additional_info_ajax(request):
-
     if any(k not in request.POST for k in ['additional_info_id', 'contract_id']):
         return _error_response(_("Unauthorized access."))
 
@@ -797,14 +1481,17 @@ def delete_additional_info_ajax(request):
         return _error_response(validate_task_message)
 
     try:
-        additional_info = AdditionalInfo.objects.get(id=request.POST['additional_info_id'], contract=request.current_contract)
-        AdditionalInfoSetting.objects.filter(contract=request.current_contract, display_name=additional_info.display_name).delete()
+        additional_info = AdditionalInfo.objects.get(id=request.POST['additional_info_id'],
+                                                     contract=request.current_contract)
+        AdditionalInfoSetting.objects.filter(contract=request.current_contract,
+                                             display_name=additional_info.display_name).delete()
         additional_info.delete()
     except AdditionalInfo.DoesNotExist:
         log.info('Already deleted additional-info id:{}.'.format(request.POST['additional_info_id']))
         return _error_response(_("Already deleted."))
     except:
-        log.exception('Failed to delete the display-name of an additional-info id:{}.'.format(request.POST['additional_info_id']))
+        log.exception(
+            'Failed to delete the display-name of an additional-info id:{}.'.format(request.POST['additional_info_id']))
         return _error_response(_("Failed to deleted item."))
 
     return JsonResponse({
@@ -817,7 +1504,6 @@ def delete_additional_info_ajax(request):
 @login_required
 @check_course_selection
 def update_additional_info_ajax(request):
-
     if any(k not in request.POST for k in ['update_students_list', 'contract_id']):
         return _error_response(_("Unauthorized access."))
 
@@ -852,3 +1538,314 @@ def update_additional_info_ajax(request):
     AdditionalInfoUpdateTaskTarget.bulk_create(history, students)
 
     return _submit_task(request, ADDITIONALINFO_UPDATE, additional_info_update, history, additional_info_list)
+
+
+@require_POST
+@login_required
+@check_course_selection
+def register_students_template_download(request):
+    date = "{0:%Y%m%d}".format(datetime.now())
+    org = request.current_organization.org_name
+    contract = request.current_contract.contract_name
+    if request.current_contract.has_auth:
+        arr_header = [_("Email"), _("Username"), _("Last Name"), _("First Name"), _("Login Code"), _("Password"),
+                      _("Organization Code"), _("Member Code"), _("Organization") + '1',
+                      _("Organization") + '2', _("Organization") + '3', _("Organization") + '4',
+                      _("Organization") + '5', _("Organization") + '6', _("Organization") + '7',
+                      _("Organization") + '8', _("Organization") + '9', _("Organization") + '10',
+                      _("Item") + '1', _("Item") + '2', _("Item") + '3', _("Item") + '4', _("Item") + '5',
+                      _("Item") + '6', _("Item") + '7', _("Item") + '8', _("Item") + '9', _("Item") + '10',
+                      ]
+        arr = _("username1@domain.com,gaccotarou,gacco,taro,,,,,,,,,,,,,,,,,,,,,,,,")
+        arr = [arr.split(',')]
+    else:
+        arr_header = [_("Email"), _("Username"), _("Last Name"), _("First Name"),
+                      _("Organization Code"), _("Member Code"), _("Organization") + '1',
+                      _("Organization") + '2', _("Organization") + '3', _("Organization") + '4',
+                      _("Organization") + '5', _("Organization") + '6', _("Organization") + '7',
+                      _("Organization") + '8', _("Organization") + '9', _("Organization") + '10',
+                      _("Item") + '1', _("Item") + '2', _("Item") + '3', _("Item") + '4', _("Item") + '5',
+                      _("Item") + '6', _("Item") + '7', _("Item") + '8', _("Item") + '9', _("Item") + '10',
+                      ]
+        arr = _("username1@domain.com,gaccotarou,gacco,taro,,,,,,,,,,,,,,,,,,,,,,")
+        arr = [arr.split(',')]
+
+    filename = org + "-" + contract + "-studentsample-" + date + ".csv"
+    return create_csv_response(filename, arr_header, arr)
+
+
+@transaction.non_atomic_requests
+@require_POST
+@login_required
+@check_course_selection
+def register_students_csv_ajax(request):
+    log.info('register_students_csv_ajax')
+    if 'csv_data' not in request.FILES or 'contract_id' not in request.POST:
+        return _error_response(_("Unauthorized access."))
+
+    if str(request.current_contract.id) != request.POST['contract_id']:
+        return _error_response(_("Current contract is changed. Please reload this page."))
+
+    try:
+        csv_data = get_sjis_csv(request, 'csv_data')
+        if csv_data[0][0] != _("Email"):
+            return _error_response(_("invalid header or file type"))
+    except:
+        return _error_response(_("invalid header or file type"))
+    csv_all_str = ''
+    for csv_rows in csv_data:
+        if csv_rows[0] == _("Email") or csv_rows[0] == "username1@domain.com":
+            continue
+        csv_all_str += ','.join(csv_rows) + '\n'
+
+    students = csv_all_str.splitlines()
+    if not students:
+        log.info('Could not find student list.')
+        return _error_response(_("Could not find student list."))
+
+    if len(students) > BIZ_MAX_REGISTER_NUMBER:
+        log.info('max_register_number')
+        return _error_response(_(
+            "It has exceeded the number({max_register_number}) of cases that can be a time of registration."
+        ).format(max_register_number=BIZ_MAX_REGISTER_NUMBER))
+
+    if any([len(s) > BIZ_MAX_CHAR_LENGTH_REGISTER_LINE for s in students]):
+        log.info('biz_max_char_length_register_line')
+        return _error_response(_(
+            "The number of lines per line has exceeded the {biz_max_char_length_register_line} characters."
+        ).format(biz_max_char_length_register_line=BIZ_MAX_CHAR_LENGTH_REGISTER_LINE))
+
+    register_status = request.POST.get('register_status')
+    if register_status and register_status != REGISTER_INVITATION_CODE:
+        log.info('Invalid access.')
+        return _error_response(_("Invalid access."))
+
+    register_status = register_status or INPUT_INVITATION_CODE
+
+    # To register status. Register or Input
+    students = [u'{},{}'.format(register_status, s) for s in students]
+
+    log.info('register_students_csv_ajax_create')
+    history = ContractTaskHistory.create(request.current_contract, request.user)
+    log.info('register_students_csv_ajax_bulk_create:task_id' + str(history.id))
+    # Repeat register 1000, because timeout of mysql connection.
+    task_target_max_num = 1000
+    for i in range(1, int(math.ceil(float(len(students)) / task_target_max_num)) + 1):
+        StudentMemberRegisterTaskTarget.bulk_create(
+            history, students[(i - 1) * task_target_max_num:i * task_target_max_num])
+    log.info('register_students_csv_ajax_submit_task:task_id' + str(history.id))
+    return _submit_task(request, STUDENT_MEMBER_REGISTER, student_member_register, history)
+
+
+@transaction.non_atomic_requests
+@require_POST
+@login_required
+@check_course_selection
+def register_students_new_ajax(request):
+    log.info('register_students_new_ajax')
+    if 'contract_id' not in request.POST or 'employee_email' not in request.POST or 'user_name' not in request.POST \
+            or 'employee_last_name' not in request.POST or 'employee_first_name' not in request.POST:
+        log.info('Unauthorized access.')
+        return _error_response(_("Unauthorized access."))
+
+    if request.current_contract.has_auth and ('login_code' not in request.POST or 'password' not in request.POST):
+        log.info('Unauthorized access.')
+        return _error_response(_("Unauthorized access."))
+
+    if str(request.current_contract.id) != request.POST['contract_id']:
+        log.info('Current contract is changed. Please reload this page.')
+        return _error_response(_("Current contract is changed. Please reload this page."))
+
+    student = request.POST['employee_email'] + ',' + request.POST['user_name'] + ',' + request.POST[
+        'employee_last_name'] + ',' + request.POST['employee_first_name'] + ','
+    if request.current_contract.has_auth:
+        student += request.POST['login_code'] + ',' + request.POST['password'] + ','
+
+    student += request.POST['employee_group_code'] + ',' + request.POST['employee_code'] + ','
+    student += request.POST['org_attr1'] + ',' + request.POST['org_attr2'] + ','
+    student += request.POST['org_attr3'] + ',' + request.POST['org_attr4'] + ','
+    student += request.POST['org_attr5'] + ',' + request.POST['org_attr6'] + ','
+    student += request.POST['org_attr7'] + ',' + request.POST['org_attr8'] + ','
+    student += request.POST['org_attr9'] + ',' + request.POST['org_attr10'] + ','
+    student += request.POST['grp_attr1'] + ',' + request.POST['grp_attr2'] + ','
+    student += request.POST['grp_attr3'] + ',' + request.POST['grp_attr4'] + ','
+    student += request.POST['grp_attr5'] + ',' + request.POST['grp_attr6'] + ','
+    student += request.POST['grp_attr7'] + ',' + request.POST['grp_attr8'] + ','
+    student += request.POST['grp_attr9'] + ',' + request.POST['grp_attr10']
+
+    students = []
+    students.append(student)
+
+    if any([len(s) > BIZ_MAX_CHAR_LENGTH_REGISTER_LINE for s in students]):
+        log.info('biz_max_char_length_register_line')
+        return _error_response(_(
+            "The number of lines per line has exceeded the {biz_max_char_length_register_line} characters."
+        ).format(biz_max_char_length_register_line=BIZ_MAX_CHAR_LENGTH_REGISTER_LINE))
+
+    register_status = request.POST.get('register_status')
+    if register_status and register_status != REGISTER_INVITATION_CODE:
+        log.info('Invalid access.')
+        return _error_response(_("Invalid access."))
+
+    register_status = register_status or INPUT_INVITATION_CODE
+
+    # To register status. Register or Input
+    students = [u'{},{}'.format(register_status, s) for s in students]
+
+    log.info('register_students_new_ajax_create')
+    history = ContractTaskHistory.create(request.current_contract, request.user)
+    log.info('register_students_new_ajax_bulk_create:task_id' + str(history.id))
+    StudentMemberRegisterTaskTarget.bulk_create(history, students)
+    log.info('register_students_new_ajax_submit_task:task_id' + str(history.id))
+    return _submit_task(request, STUDENT_MEMBER_REGISTER, student_member_register, history)
+
+
+@require_POST
+@login_required
+@check_course_selection
+def register_students_search_students_ajax(request):
+    if not all([k in request.POST for k in ['contract_id', 'search_group_code', 'search_contract_id',
+                                            'search_login_code', 'search_name', 'search_email']]):
+        log.info('Unauthorized access.')
+        return _error_response(_("Unauthorized access."))
+
+    registers = _create_filter_register_students_search_students_ajax(request)
+
+    select_columns = dict({
+        'user_id': 'user__id',
+        'username': 'user__username',
+        'email': 'user__email',
+        'login_code': 'user__bizuser__login_code',
+        'full_name': 'user__profile__name'
+    })
+
+    search_list = []
+    search_unique_ids = []
+    for i, register in enumerate(registers.values(*select_columns.values()), start=1):
+        register_dict = dict(register)
+        if register_dict.get(select_columns.get('user_id')) not in search_unique_ids:
+            search_unique_ids.append(register_dict.get(select_columns.get('user_id')))
+            search_list.append({
+                'recid': i,
+                'user_id': register_dict.get(select_columns.get('user_id'), ''),
+                'full_name': register_dict.get(select_columns.get('full_name'), ''),
+                'user_name': register_dict.get(select_columns.get('username'), ''),
+                'user_email': register_dict.get(select_columns.get('email'), ''),
+                'login_code': register_dict.get(select_columns.get('login_code'), '')
+            })
+
+    return JsonResponse({
+        'status': 'success',
+        'total': len(search_list),
+        'records': search_list,
+    })
+
+
+def _create_filter_register_students_search_students_ajax(request):
+    """
+    Create filter for model of 'Member' or 'ContractRegister'
+    :param request: HttpRequest
+    :return: search_model
+    """
+    if request.POST['search_contract_id']:
+        search_model = ContractRegister.objects.filter(
+            contract_id=request.POST['search_contract_id'],
+            status__in=[REGISTER_INVITATION_CODE, INPUT_INVITATION_CODE],
+            user__is_active=True).select_related('user').order_by('id')
+        member_filter_key = 'user__member__'
+    else:
+        search_model = Member.find_active_by_org(
+            org=request.current_organization).select_related('user', 'group', 'org', 'user__bizuser', 'user__profile')
+        member_filter_key = ''
+
+    filters = {}
+    # Full name
+    if request.POST['search_name'] != '':
+        filters['user__profile__name__icontains'] = request.POST['search_name']
+    # Login code
+    if request.POST['search_login_code'] != '':
+        filters['user__bizuser__login_code__icontains'] = request.POST['search_login_code']
+    # Email
+    if request.POST['search_email'] != '':
+        filters['user__email__icontains'] = request.POST['search_email']
+    # Group code
+    if request.POST['search_group_code'] != '':
+        filters[member_filter_key + 'group__group_code'] = request.POST['search_group_code']
+    # Org1-10, Item1-10
+    for i in range(1, 11):
+        if request.POST['search_org' + str(i)] != '':
+            filters[member_filter_key + 'org' + str(i)] = request.POST['search_org' + str(i)]
+        if request.POST['search_grp' + str(i)] != '':
+            filters[member_filter_key + 'item' + str(i)] = request.POST['search_grp' + str(i)]
+
+    return search_model.filter(**filters)
+
+
+@transaction.non_atomic_requests
+@require_POST
+@login_required
+@check_course_selection
+def register_students_list_ajax(request):
+    log.info('register_students_list_ajax_start')
+    if 'contract_id' not in request.POST or 'add_list' not in request.POST:
+        log.info('Unauthorized access.')
+        return _error_response(_("Unauthorized access."))
+    if str(request.current_contract.id) != request.POST['contract_id']:
+        log.info('Current contract is changed. Please reload this page.')
+        return _error_response(_("Current contract is changed. Please reload this page."))
+    add_list = json.loads(request.POST['add_list'])
+    insert_recodes = ''
+
+    for list_item in add_list:
+        full_name = list_item['full_name'] or ''
+        user_name = list_item['user_name'] or ''
+        user_email = list_item['user_email'] or ''
+        login_code = list_item['login_code'] or ''
+        if request.current_contract.has_auth:
+            if login_code != '':
+                # Set dummy password to use task of 'student_register'. This password 'AbcDef123' don't registration.
+                insert_recodes += user_email + ',' + user_name + ',' + full_name + ',' + login_code + ',AbcDef123' + '\n'
+            else:
+                log.info('This course required login code register')
+                return _error_response(_("This course required login code register"))
+        else:
+            insert_recodes += user_email + ',' + user_name + ',' + full_name + '\n'
+
+    # common
+    students = insert_recodes.splitlines()
+    if not students:
+        log.info('Could not find student list.')
+        return _error_response(_("Could not find student list."))
+
+    if len(students) > BIZ_MAX_REGISTER_NUMBER:
+        log.info('max_register_number')
+        return _error_response(_(
+            "It has exceeded the number({max_register_number}) of cases that can be a time of registration."
+        ).format(max_register_number=BIZ_MAX_REGISTER_NUMBER))
+
+    if any([len(s) > BIZ_MAX_CHAR_LENGTH_REGISTER_LINE for s in students]):
+        log.info('biz_max_char_length_register_line')
+        return _error_response(_(
+            "The number of lines per line has exceeded the {biz_max_char_length_register_line} characters."
+        ).format(biz_max_char_length_register_line=BIZ_MAX_CHAR_LENGTH_REGISTER_LINE))
+
+    register_status = request.POST.get('register_status')
+    if register_status and register_status != REGISTER_INVITATION_CODE:
+        log.info('Invalid access.')
+        return _error_response(_("Invalid access."))
+
+    register_status = register_status or INPUT_INVITATION_CODE
+
+    # To register status. Register or Input
+    students = [u'{},{}'.format(register_status, s) for s in students]
+
+    log.info('register_students_list_ajax_create')
+    history = ContractTaskHistory.create(request.current_contract, request.user)
+    log.info('register_students_list_ajax_bulk_create:task_id' + str(history.id))
+    # Repeat register 1000, because timeout of mysql connection.
+    task_target_max_num = 1000
+    for i in range(1, int(math.ceil(float(len(students)) / task_target_max_num)) + 1):
+        StudentRegisterTaskTarget.bulk_create(
+            history, students[(i - 1) * task_target_max_num:i * task_target_max_num])
+    log.info('register_students_list_ajax_submit_task:task_id' + str(history.id))
+    return _submit_task(request, STUDENT_REGISTER, student_register, history)

@@ -40,11 +40,11 @@ from django.core.urlresolvers import reverse
 <div id="form" class="field-area">
     <div class="w2ui-page page-0">
         <div class="field">
-            <span class="operation">${_("You can download the survey results.")}</span>
+            <span class="operation">${_("You can download the file of survey results.")}</span>
         </div>
     </div>
     <div class="w2ui-buttons">
-        <input type="button" id="download-btn" data-endpoint="${reverse('biz:course_operation:survey_download')}" data-endpoint-utf8="${reverse('biz:course_operation:survey_download_utf8')}" value="&#xf1c3 ${_("Get Survey CSV")}"/><br/>
+        <input type="button" id="download-btn" data-endpoint="${reverse('biz:course_operation:survey_download')}" data-endpoint-utf8="${reverse('biz:course_operation:survey_download_utf8')}" value="&#xf1c3 ${_("Get file of survey result")}"/><br/>
         <input type="checkbox" id="encoding-utf8" /><label for="encoding-utf8" class="encoding-utf8">${_("If you want to download the file in UTF-8, please place a check mark and then push the button.")}</label>
     </div>
 </div>

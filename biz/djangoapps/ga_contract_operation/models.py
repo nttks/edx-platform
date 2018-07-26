@@ -326,6 +326,9 @@ class ContractReminderMail(ContractMailBase):
 
     MAIL_PARAM_USERNAME = ('username', _("Replaced with the user name"))
     MAIL_PARAM_FULLNAME = ('fullname', _("Replaced with the full name"))
+    MAIL_PARAM_EMAIL_ADDRESS = ('email_address', _("Replaced with the user e-mail address"))
+    MAIL_PARAM_COURSE_NAME = ('course_name', _("Replaced with the course name"))
+    MAIL_PARAM_EXPIRE_DATE = ('expire_date', _("Replaced with the expire date"))
     MAIL_PARAMS = {
         MAIL_TYPE_SUBMISSION_REMINDER: [
             MAIL_PARAM_USERNAME,
@@ -361,3 +364,24 @@ class ContractReminderMail(ContractMailBase):
                 'target_courses': target_courses,
             }
         )
+
+
+class StudentMemberRegisterTaskTarget(ContractTaskTargetBase):
+
+    student = models.CharField(max_length=6000)
+
+    @classmethod
+    def bulk_create(cls, history, students):
+        targets = [cls(
+            history=history,
+            student=student,
+        ) for student in students]
+        cls.objects.bulk_create(targets)
+
+    @classmethod
+    def find_by_history_id(cls, history_id):
+        return cls.objects.filter(
+            history_id=history_id,
+        )
+
+

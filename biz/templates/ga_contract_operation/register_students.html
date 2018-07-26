@@ -9,21 +9,82 @@ from biz.djangoapps.ga_invitation.models import REGISTER_INVITATION_CODE
 <%namespace name='static' file='/static_content.html'/>
 <%block name="pagetitle">${_("Enrolling New Learners")}</%block>
 
-<%block name="js_extra">
-<script type="text/javascript">
-    $(function () {
-        var additional_info_tpl = _.template($('#additional-info-tpl').text()), messages = $('.messages');
-        $('#form').w2form({
-            name: 'form',
-            tabs: [
-                { id: 'tab0', caption: '${_(u"Enrolling Learners")}' },
-                { id: 'tab1', caption: '${_(u"Editing Additional Item")}' },
-                { id: 'tab2', caption: '${_(u"Enrolling Learners to Additional Item")}' },
-            ]
-        });
-        resize_form();
 
-        $('#register-status>input[type="checkbox"]').on('click', function() {
+<%block name="js_extra">
+
+<style>
+    .w2ui-reset select { margin: 10px 10px 0px 0; min-width: 220px; }
+</style>
+<script type="text/javascript">
+    var grid = grid || [];
+    $(function () {
+        var additional_info_tpl = _.template($('#additional-info-tpl').text());
+        var messages = $('.messages');
+        var error_area = $('#error_area');
+        // Common
+        var common_form = {
+            contract_id : $('#form').find('[name=contract_id]').val(),
+        }
+        function task_reload() {
+            w2ui['task_history_grid'].load('${reverse("biz:contract_operation:task_history")}');
+        }
+        function lock() {
+            w2utils.lock($('.biz-wrap'), '', true);
+        }
+        function unlock() {
+            w2utils.unlock($('.biz-wrap'));
+        }
+        function reset_messages() {
+            messages.empty();
+            error_area.hide().find('ul').empty();
+        }
+        function set_error_messages(str) {
+            error_area.find('ul').append('<li class="error">' + str + '</li>');
+            error_area.show();
+            scrollTo(0, 100);
+        }
+        function fit_wrapper_height() {
+            var sHeight = $('.side').height();
+            var mHeight = $('.main').height();
+            var height = mHeight > sHeight ? mHeight - 200 : sHeight;
+            $('.content-wrapper').height(height);
+        }
+        // Tab
+        $('[role="tab"]').on('click',function(e){
+            var $eTarget = $(e.currentTarget);
+            var $targetPanel = $('[aria-labelledby="' + $eTarget.attr('id') + '"]');
+            $eTarget
+                .attr('aria-selected', true)
+                .addClass('is_active')
+                .siblings('[role="tab"]')
+                .attr('aria-selected', false)
+                .removeClass('is_active');
+            $targetPanel
+                .attr('aria-hidden', false)
+                .addClass('is_active')
+                .siblings('[role="tabpanel"]')
+                .attr('aria-hidden', true)
+                .removeClass('is_active');
+
+            fit_wrapper_height();
+        });
+
+
+        // collapse
+        $(".gc_collapse button").on("click", function() {
+            var $keBtn = $(this);
+            var $tgtPnl = $(this).next(".gc_collapse_panel");
+            $keBtn
+                .attr('aria-expanded', function (i, attr) { return attr === 'true' ? 'false' : 'true'})
+                .toggleClass('is_open');
+            $tgtPnl
+                .attr('aria-hidden', function (i, attr) { return attr === 'true' ? 'false' : 'true'})
+                .toggleClass('is_show');
+
+            fit_wrapper_height();
+        });
+        // register status popup
+        $('input.js_register_status_popup[type=checkbox]').on('click', function() {
             if ($(this).prop('checked')) {
                 w2popup.open({
                     title: w2utils.lang('Confirmation'),
@@ -34,54 +95,365 @@ from biz.djangoapps.ga_invitation.models import REGISTER_INVITATION_CODE
                 });
             }
         });
-        $('.register-students-buttons').on('click', '#register-btn', function () {
-            var clickButton = $(this), messages = $('.messages'), registerForm = $('#form'), registerStatus = $('#register-status>input[type="checkbox"]');
-            messages.empty();
-            if ($('#list-students').val() == '') {
-                messages.append('<li class="error">${_("Could not find student list.")}</li>');
-                return;
+        // File
+        $(".gc_iptfile input[type='file']").on("change",function(){
+            var file = $(this).prop("files")[0];
+            if(typeof file === "undefined"){
+                $(this).siblings(".gc_iptfile_filename").html('${_("Please select the file.")}');
+            }else {
+                $(this).siblings(".gc_iptfile_filename").html(file.name);
             }
+        });
+        $(".gc_iptfile").find('input[type="file"]:disabled').siblings(".gc_iptfile_label,.gc_iptfile_filename").addClass("disabled");
+
+
+        /*------------------------------------------------------------------------
+         * pnl01
+         ------------------------------------------------------------------------*/
+        var $pnl01 = $('#pnl01');
+        $pnl01.on('click', '#download-template-btn', function() {
+            downloadFileUsingPost($(this).data('endpoint'));
+        });
+        $pnl01.on('click', '#upload-btn-csv', function() {
+            var clickButton = $(this),
+                messages = $('.messages'),
+                registerStatus = $pnl01.find('#register-status'),
+                csvFile = $pnl01.find('#csv-file');
+
+            reset_messages();
+            clickButton.prop("disabled", true);
+
+            var csv_file = csvFile[0].files[0];
+            if (csv_file == null) {
+                set_error_messages('${_("Please select the file.")}');
+                clickButton.prop("disabled", false);
+                return false
+            }
+
             w2confirm({
                 msg: clickButton.data('confirm-message'),
                 yes_class: 'btn-right',
                 no_class: 'btn-left'
             }).yes(function () {
-                w2utils.lock(registerForm, '', true);
+                lock();
+                var formData = new FormData();
+                formData.append('contract_id', common_form.contract_id);
+                formData.append('register_status', (registerStatus.prop('checked') ? registerStatus.val() : ''));
+                formData.append('csv_data', csv_file);
                 $.ajax({
                     url: clickButton.data('endpoint'),
                     type: 'POST',
-                    data: {
-                        students_list: $('#list-students').val(),
-                        contract_id: registerForm.data('contract-id'),
-                        register_status: (registerStatus.prop('checked') ? registerStatus.val() : ''),
-                    }
+                    processData: false,
+                    contentType: false,
+                    data: formData
                 }).done(function (data) {
+                    task_reload();
                     messages.append('<li class="info">' + data.info + '</li>');
+                    scrollTo(0, 100);
                 }).fail(function(jqXHR) {
                     var data = JSON.parse(jqXHR.responseText);
-                    messages.append('<li class="error">' + data.error + '</li>');
+                    set_error_messages(data.error);
                 }).always(function () {
-                    w2utils.unlock(registerForm);
+                    csvFile.val('');
+                    $('#gc_iptfile_filename').html('${_("Please select the file.")}');
+                    unlock();
                 });
             });
+            clickButton.prop("disabled", false);
         });
 
+        /*------------------------------------------------------------------------
+         * pnl02
+         ------------------------------------------------------------------------*/
+        var $pnl02 = $('#pnl02');
+        $pnl02.on('click', '#register-btn-new', function () {
+            var clickButton = $(this),
+                messages = $('.messages'),
+                registerStatus = $pnl02.find('#register-status-new');
+
+            reset_messages();
+            clickButton.prop("disabled", true);
+
+            if (validate_register_new()) {
+                w2confirm({
+                    msg: clickButton.data('confirm-message'),
+                    yes_class: 'btn-right',
+                    no_class: 'btn-left'
+                }).yes(function () {
+                    lock();
+                    var form_data = {
+                        contract_id: common_form.contract_id,
+                        register_status: (registerStatus.prop('checked') ? registerStatus.val() : ''),
+                        employee_email: $("#employee_email").val(),
+                        user_name: $("#user_name").val(),
+                        employee_last_name: $("#employee_last_name").val(),
+                        employee_first_name: $("#employee_first_name").val(),
+                        login_code: $("#login_code").val(),
+                        password: $("#password").val(),
+                        employee_group_code: $("#employee_group_code").val(),
+                        employee_code: $("#employee_code").val(),
+                    };
+                    for (var i=1; i < 11; i++) {
+                        form_data['org_attr' + i] = $("#org_attr" + i).val();
+                        form_data['grp_attr' + i] = $("#grp_attr" + i).val();
+                    }
+                    $.ajax({
+                        url: clickButton.data('endpoint'),
+                        type: 'POST',
+                        data: form_data
+                    }).done(function (data) {
+                        task_reload();
+                        messages.append('<li class="info">' + data.info + '</li>');
+                        $pnl02.find('input[tye=text]').val('');
+                        scrollTo(0, 100);
+                        $("#employee_last_name").val('');
+                        $("#employee_first_name").val('');
+                        $("#employee_email").val('');
+                        $("#user_name").val('');
+                        $("#employee_code").val('');
+                        $("#employee_group_code").val('');
+                        $("#login_code").val('');
+                        $("#password").val('');
+                        for (var i=1; i < 11; i++) {
+                            $("#org_attr" + i).val('');
+                            $("#grp_attr" + i).val('');
+                        }
+                    }).fail(function(jqXHR) {
+                        var data = JSON.parse(jqXHR.responseText);
+                        set_error_messages(data.error);
+                    }).always(function () {
+                        unlock();
+                    });
+                });
+                clickButton.prop("disabled", false);
+            } else {
+                clickButton.prop("disabled", false);
+                return false;
+            }
+        });
+
+        function validate_register_new() {
+            var success = true;
+            if($("#employee_last_name").val().length == 0){
+                set_error_messages('${_("The {0} is required.").format(_("Last Name"))}');
+                if(success) $("#employee_last_name").focus();
+                success = false;
+            }else if($("#employee_last_name").val().length > 30){
+                set_error_messages('${_("Please enter of {0} within {1} characters.").format(_("Last Name"), 30)}');
+                if(success) $("#employee_last_name").focus();
+                success = false;
+            }
+            if($("#employee_first_name").val().length > 30){
+                set_error_messages('${_("Please enter of {0} within {1} characters.").format(_("First Name"), 30)}');
+                if(success) $("#employee_first_name").focus();
+                success = false;
+            }
+            if($("#employee_email").val().length == 0){
+                set_error_messages('${_("The {0} is required.").format(_("Email Address"))}');
+                if(success) $("#employee_email").focus();
+                success = false;
+            }else if($("#employee_email").val().length > 255){
+                set_error_messages('${_("Please enter of {0} within {1} characters.").format(_("Email Address"), 255)}');
+                if(success) $("#employee_first_name").focus();
+                success = false;
+            }
+            if($("#user_name").val().length == 0){
+                set_error_messages('${_("The {0} is required.").format(_("Username"))}');
+                if(success) $("#user_name").focus();
+                success = false;
+            }else if($("#user_name").val().length > 30){
+                set_error_messages('${_("Please enter of {0} within {1} characters.").format(_("Username"), 30)}');
+                if(success) $("#user_name").focus();
+                success = false;
+            }
+            if($("#login_code")[0] && $("#login_code").val().length == 0){
+                set_error_messages('${_("The {0} is required.").format(_("Login Code"))}');
+                if(success) $("#login_code").focus();
+                success = false;
+            }else if($("#login_code")[0] && $("#login_code").val().length > 30){
+                set_error_messages('${_("Please enter of {0} within {1} characters.").format(_("Login Code"), 30)}');
+                if(success) $("#login_code").focus();
+                success = false;
+            }
+            if($("#password")[0] && $("#password").val().length == 0){
+                set_error_messages('${_("The {0} is required.").format(_("Password"))}');
+                if(success) $("#password").focus();
+                success = false;
+            }else if($("#password")[0] && $("#password").val().length > 128){
+                set_error_messages('${_("Please enter of {0} within {1} characters.").format(_("Password"), 128)}');
+                if(success) $("#password").focus();
+                success = false;
+            }
+            if($("#employee_group_code").val().length != 0 && $("#employee_code").val().length == 0){
+                set_error_messages('${_("The {0} is required.").format(_("Member Code"))}');
+                if(success) $("#employee_code").focus();
+                success = false;
+            }
+            if($("#employee_group_code").val().length != 0 && $("#employee_code").val().length >= 255){
+                set_error_messages('${_("Please enter of {0} within {1} characters.").format(_("Member Code"), 255)}');
+                if(success) $("#employee_code").focus();
+                success = false;
+            }
+            return success;
+        }
+
+        /*------------------------------------------------------------------------
+         * pnl03
+         ------------------------------------------------------------------------*/
+        var $pnl03 = $('#pnl03');
+        $pnl03.on('click', '#register-btn-list', function() {
+            var clickButton = $(this),
+                messages = $('.messages'),
+                registerStatus = $pnl03.find('#register-status-list');
+
+            reset_messages();
+
+            if (w2ui['grid2'].total == 0){ return false; }
+            clickButton.prop("disabled", true);
+
+            var add_list = [];
+            for(var i = 1; i <= w2ui['grid2'].total; i++){
+                add_list.push(w2ui['grid2'].get(i));
+            }
+
+            w2confirm({
+                msg: clickButton.data('confirm-message'),
+                yes_class: 'btn-right',
+                no_class: 'btn-left'
+            }).yes(function () {
+                lock();
+                $.ajax({
+                    url: clickButton.data('endpoint'),
+                    type: 'POST',
+                    dataType:'json',
+                    data: {
+                        contract_id: common_form.contract_id,
+                        register_status: (registerStatus.prop('checked') ? registerStatus.val() : ''),
+                        add_list: JSON.stringify(add_list)
+                    }
+                }).done(function (data) {
+                    task_reload();
+                    messages.append('<li class="info">' + data.info + '</li>');
+                    w2ui['grid2'].clear();
+                    w2ui['grid2'].reset();
+                    scrollTo(0, 100);
+                }).fail(function(jqXHR) {
+                    var data = JSON.parse(jqXHR.responseText);
+                    set_error_messages(data.error);
+                }).always(function () {
+                    unlock();
+                });
+            });
+            clickButton.prop("disabled", false);
+        });
+        $pnl03.on('click', '#clear-btn', function() {
+            w2ui['grid2'].clear();
+            w2ui['grid2'].reset();
+        });
+        $pnl03.on('click', '#search_btn', function() {
+            w2ui['grid1'].clear();
+            w2ui['grid1'].reset();
+            var clickButton = $(this);
+            lock();
+            var formData = {
+                contract_id: common_form.contract_id,
+                search_group_code: $pnl03.find("#list_group_code option:selected").val(),
+                search_contract_id: $pnl03.find("#contract-id-list option:selected").val(),
+                search_course_id: $pnl03.find("#course-id-list option:selected").val(),
+                search_login_code: $pnl03.find("#login_code_list").val(),
+                search_name: $pnl03.find("#full_name_list").val(),
+                search_email: $pnl03.find("#employee_email_list").val(),
+            };
+            for (var i=1; i < 11; i++) {
+                formData['search_org' + i] = $pnl03.find("#search_org_attr" + i + " option:selected").val();
+                formData['search_grp' + i] = $pnl03.find("#search_grp_attr" + i + " option:selected").val();
+            }
+
+            $.ajax({
+                url: clickButton.data('endpoint'),
+                type: 'POST',
+                data: formData
+            }).done(function (data) {
+                w2ui['grid1'].add(data['records'])
+            }).always(function () {
+                unlock();
+                scrollTo(0, 100);
+            });
+        });
+        $pnl03.on('click', '#search-add', function() {
+            lock();
+            w2ui['grid2'].clear();
+            var records = w2ui['grid2'].records;
+            $.each(w2ui['grid1'].getSelection(), function(i, num) {
+                var record = w2ui['grid1'].get(num);
+                var add_record = $.extend(true, {}, record);
+                add_record['recid'] = records.length + 1;
+                records.push(add_record);
+            });
+            w2ui['grid2'].records = records;
+            w2ui['grid2'].total = records.length;
+            w2ui['grid2'].refresh();
+            unlock();
+        });
+        var grid1 = $('#grid1').w2grid({
+            name: 'grid1',
+            fixedBody: true,
+            selectType : 'row',
+            show: {
+                toolbar: false,
+                footer: true,
+                selectColumn: true,
+                toolbarReload: false
+            },
+            columns: [
+                {field: 'user_id', hidden: true},
+                {field: 'full_name', caption: '${_("Full Name")}', size: 1, sortable: true, hidden: false, frozen: true},
+                {field: 'user_name', caption: '${_("Username")}', size: 1, sortable: true, hidden: false, frozen: true},
+                {field: 'user_email', caption: '${_("Email Address")}', size: 1, sortable: true, hidden: false},
+                {field: 'login_code', caption: '${_("Login Code")}', size: 1, sortable: true, hidden: false},
+            ],
+        });
+        grid.push(grid1);
+        var grid2 = $('#grid2').w2grid({
+            name: 'grid2',
+            fixedBody: true,
+            selectType : 'row',
+            show: {
+                toolbar: false,
+                footer: true,
+                selectColumn: false,
+                toolbarReload: false
+            },
+            columns: [
+                {field: 'user_id', hidden: true},
+                {field: 'full_name', caption: '${_("Full Name")}', size: 1, sortable: true, hidden: false},
+                {field: 'user_name', caption: '${_("Username")}', size: 1, sortable: true, hidden: false},
+                {field: 'user_email', caption: '${_("Email Address")}', size: 1, sortable: true, hidden: false},
+                {field: 'login_code', caption: '${_("Login Code")}', size: 1, sortable: true, hidden: false},
+            ],
+        });
+        grid.push(grid2);
+
+        /*------------------------------------------------------------------------
+         * pnl04
+         ------------------------------------------------------------------------*/
         $('.w2ui-field').on('click', '.biz-btn.register-btn.add-additional-info-btn', function() {
             var registerDisplayName = $('[name="register_display_name"]'), newVar = registerDisplayName.val();
-            messages.empty();
+            reset_messages();
             if (newVar === '') {
-                messages.append($('<li class="error"></li>').text('${_(u"Please enter the name of item you wish to add.")}'));
+                set_error_messages('${_(u"Please enter the name of item you wish to add.")}')
                 return;
             }
+            lock();
             $.ajax({
                 url: "${reverse('biz:contract_operation:register_additional_info_ajax')}",
                 type: 'POST',
                 data: {
                     display_name: newVar,
-                    contract_id: $('#form').data('contract-id'),
+                    contract_id: common_form.contract_id,
                 },
             }).done(function (data) {
-                var newRegisterHtml = gettext("· {additional_item_name}: {max_length} characters or less.");
+                var newRegisterHtml = gettext("{additional_item_name}: {max_length} characters or less.");
                 newRegisterHtml = newRegisterHtml.replace(/{additional_item_name}/, newVar).replace(/{max_length}/, ${max_length_additional_info_display_name});
                 $('.list-additional-info').append($(additional_info_tpl({
                     display_name: newVar,
@@ -91,84 +463,93 @@ from biz.djangoapps.ga_invitation.models import REGISTER_INVITATION_CODE
                 })));
                 registerDisplayName.val('');
                 messages.append('<li class="info">' + data.info + '</li>');
-                $('.setting-list:last').after('<p class="operation setting-list additional-info additional-info-'+data.id+'" data-id="'+data.id+'">'+newRegisterHtml+'</p>');
-                resize_form();
+                $('.setting-list:last').after('<li class="operation setting-list additional-info additional-info-'+data.id+'" data-id="'+data.id+'">'+newRegisterHtml+'</li>');
             }).fail(function(jqXHR) {
                 var data = JSON.parse(jqXHR.responseText);
-                messages.append('<li class="error">' + data.error + '</li>');
+                set_error_messages(data.error);
             }).always(function () {
-                w2ui.form.refresh();
+                unlock();
             });
         });
 
-        $('.w2ui-field.list-additional-info').on('focus', '[name="display_name"]', function() {
-            $(this).data('pre-value', $(this).val());
-        }).on('change', '[name="display_name"]', function() {
-            var registerDisplayName = $(this), newVar = registerDisplayName.val(), targetId = registerDisplayName.parent().data('target-id');
-            messages.empty();
-            if (newVar === '') {
-                messages.append($('<li class="error"></li>').text('${_(u"Please enter the name of item you wish to add.")}'));
-                return;
-            }
-            $.ajax({
-                url: "${reverse('biz:contract_operation:edit_additional_info_ajax')}",
-                type: 'POST',
-                data: {
-                    additional_info_id: targetId,
-                    display_name: newVar,
-                    contract_id: $('#form').data('contract-id'),
-                },
-            }).done(function (data) {
-                var newRegisterHtml = gettext("· {additional_item_name}: {max_length} characters or less.");
-                newRegisterHtml = newRegisterHtml.replace(/{additional_item_name}/, newVar).replace(/{max_length}/, ${max_length_additional_info_display_name});
-                registerDisplayName.data('pre-value', newVar);
-                messages.append('<li class="info">' + data.info + '</li>');
-                $('.setting-list.additional-info.additional-info-'+targetId).html(newRegisterHtml);
-            }).fail(function(jqXHR) {
-                var data = JSON.parse(jqXHR.responseText);
-                messages.append('<li class="error">' + data.error + '</li>');
-                registerDisplayName.val(registerDisplayName.data('pre-value'));
-            }).always(function () {
-                w2ui.form.refresh();
+        $('.w2ui-field.list-additional-info')
+            .on('focus', '[name="display_name"]', function() {
+                $(this).data('pre-value', $(this).val());
+            })
+            .on('change', '[name="display_name"]', function() {
+                var registerDisplayName = $(this),
+                    newVar = registerDisplayName.val(),
+                    targetId = registerDisplayName.parent().data('target-id');
+
+                reset_messages();
+                if (newVar === '') {
+                    set_error_messages('${_(u"Please enter the name of item you wish to add.")}');
+                    return;
+                }
+                lock();
+                $.ajax({
+                    url: "${reverse('biz:contract_operation:edit_additional_info_ajax')}",
+                    type: 'POST',
+                    data: {
+                        additional_info_id: targetId,
+                        display_name: newVar,
+                        contract_id: common_form.contract_id,
+                    },
+                }).done(function (data) {
+                    var newRegisterHtml = gettext("{additional_item_name}: {max_length} characters or less.");
+                    newRegisterHtml = newRegisterHtml.replace(/{additional_item_name}/, newVar).replace(/{max_length}/, ${max_length_additional_info_display_name});
+                    registerDisplayName.data('pre-value', newVar);
+                    messages.append('<li class="info">' + data.info + '</li>');
+                    $('.setting-list.additional-info.additional-info-'+targetId).html(newRegisterHtml);
+                }).fail(function(jqXHR) {
+                    var data = JSON.parse(jqXHR.responseText);
+                    set_error_messages(data.error);
+                    registerDisplayName.val(registerDisplayName.data('pre-value'));
+                }).always(function () {
+                    unlock();
+                });
             });
-        });
 
         $('.w2ui-field.list-additional-info').on('click', '.biz-btn.remove-btn', function() {
             var clickButton = $(this), targetId = clickButton.parent().data('target-id');
-            messages.empty();
+
+            reset_messages();
             w2confirm({
                 msg: '${_(u"Each user enter the additional item will be delete. Is it OK?")}',
                 yes_class: 'btn-right',
                 no_class: 'btn-left'
             }).yes(function () {
+                lock();
                 $.ajax({
                     url: "${reverse('biz:contract_operation:delete_additional_info_ajax')}",
                     type: 'POST',
                     data: {
                         additional_info_id: targetId,
-                        contract_id: $('#form').data('contract-id'),
+                        contract_id: common_form.contract_id,
                     },
                 }).done(function (data) {
                     clickButton.parent().remove();
                     messages.append('<li class="info">' + data.info + '</li>');
                     $('.setting-list.additional-info.additional-info-'+targetId).remove();
-                    resize_form();
                 }).fail(function(jqXHR) {
                     var data = JSON.parse(jqXHR.responseText);
-                    messages.append('<li class="error">' + data.error + '</li>');
+                    set_error_messages(data.error);
                 }).always(function () {
-                    w2ui.form.refresh();
+                    unlock();
                 });
             });
         });
 
+        /*------------------------------------------------------------------------
+         * pnl05
+         ------------------------------------------------------------------------*/
         $('.register-students-buttons').on('click', '#update-btn', function() {
             var messages = $('.messages'),
                 additional_infos = $('.setting-list.additional-info'),
                 registerStudentsForm = $('#form'),
                 postData = {
                     update_students_list: $('#additional-info-list').val(),
-                    contract_id: registerStudentsForm.data('contract-id'),
+                    contract_id: common_form.contract_id,
                     additional_info: []
                 };
 
@@ -176,9 +557,10 @@ from biz.djangoapps.ga_invitation.models import REGISTER_INVITATION_CODE
                 postData.additional_info.push($(this).data('id'));
             });
 
-            messages.empty();
+            reset_messages();
             if ($('#additional-info-list').val() == '') {
-                messages.append('<li class="error">${_("Could not find student list.")}</li>');
+                error_area.find('ul').append('<li class="error">${_("Could not find student list.")}</li>');
+                error_area.show();
                 return;
             }
 
@@ -187,7 +569,7 @@ from biz.djangoapps.ga_invitation.models import REGISTER_INVITATION_CODE
                 yes_class: 'btn-right',
                 no_class: 'btn-left'
             }).yes(function () {
-                w2utils.lock(registerStudentsForm, '', true);
+                lock();
                 $.ajax({
                     url: "${reverse('biz:contract_operation:update_additional_info_ajax')}",
                     type: 'POST',
@@ -195,24 +577,15 @@ from biz.djangoapps.ga_invitation.models import REGISTER_INVITATION_CODE
                     traditional: true
                 }).done(function (data) {
                     messages.append('<li class="info">' + data.info + '</li>');
-                    resize_form();
                 }).fail(function(jqXHR) {
                     var data = JSON.parse(jqXHR.responseText);
-                    messages.append('<li class="error">' + data.error + '</li>');
+                    error_area.find('ul').append('<li class="error">' + data.error + '</li>');
+                    error_area.show();
                 }).always(function () {
-                    w2utils.unlock(registerStudentsForm);
+                    unlock();
                 });
             });
         });
-
-        $('.w2ui-tabs').on('click', function() {
-            messages.empty();
-            resize_form();
-        });
-
-        function resize_form() {
-            $('#content').height($('#form').height() + $('#task-history-wrapper').height());
-        }
     });
 </script>
 
@@ -222,124 +595,369 @@ from biz.djangoapps.ga_invitation.models import REGISTER_INVITATION_CODE
 
 <style>
   .content-wrapper {
-    min-height: 650px;
+    min-height: 1100px;
   }
-  #register-status {
-    font-style: normal;
-  }
-  .w2ui-field {
-    clear: both;
-    position: relative;
-    display: block;
-    width: auto;
-  }
-  #additional-info-list {
-    margin: 1rem;
-    width: 90%;
-  }
-  .register-students-buttons {
-    text-align: center;
-    border-top: 1px solid #d5d8d8;
-    padding-bottom: 20px;
+  .gc_data_section_file_attention {
+    background: #f5f5f5;
+    padding: 20px;
   }
 </style>
 </%block>
 
 <%block name="custom_content">
-<div id="form" class="field-area" data-contract-id="${request.current_contract.id}" >
-    <div class="w2ui-page page-0">
-        <div class="field">
-          %if request.current_contract.has_auth:
-            <p class="operation">${_(u"Enroll each Learner by a single command-line using comma(,), in the order of [E-mail address], [User name], [Name], [Login code], [Password].<br/>These Items cannot be changed.")}</p>
-            <p class="operation">${_(u"ex. username1@domain.com,gaccotarou,gaccoutarou,gacco,Gacco12345")}</p>
-          %else:
-            <p class="operation">${_(u"Enroll each Learner by a single command-line using comma(,), in the order of [E-mail address], [User name], [Name]. These Items cannot be changed.")}</p>
-            <p class="operation">${_(u"ex. username1@domain.com,gaccotarou,gaccoutarou")}</p>
-          %endif
-        </div>
-        <br/>
-        <div class="field">
-            <p class="operation">${_(u"< Note >")}</p>
-            <p class="operation">${_(u"Please be aware that once you press the \"Register Signup\" button, a welcome e-mail of the course will be sent automatically. This welcome e-mail cannot be reissued.")}</p>
-            <br/>
-            <p class="operation">${_(u"· Should not include headers, footers or blank lines.")}</p>
-            <p class="operation">${_(u"· Up to {max_students_number} Learners can be enrolled at a time.").format(max_students_number=max_register_number)}</p>
-        </div>
-        <br/>
-        <br/>
-        <div class="field">
-            <p class="operation">${_(u"< Entry item >")}</p>
-            <p class="operation setting-list">${_(u"· E-mail address: Half-width alphanumeric characters, hyphen (-), underscore (_), period (.).")}</p>
-            <p class="operation setting-list">${_(u"· User name: Two or more half-width alphabets, up to 30 characters. (It will be the User name displayed during the discussion. Once registered, it can not be changed.)")}</p>
-            <p class="operation setting-list">${_(u"· Name: \"Name\" will be included in the certificate for the course if the Learner successfully gets one.")}</p>
-          %if request.current_contract.has_auth:
-            <p class="operation setting-list">${_(u"· Login code: 2 or more half-width alphabets and 30 or less.")}</p>
-            <p class="operation setting-list">${_(u"· Password: 8 characters or more. (Must include at least one upper case letter, one lower case letter, and one number, all in one byte characters.)")}</p>
-          % endif
-        </div>
-        <div class="field">
-            <textarea id="list-students" name="students_list" rows="12" placeholder="${_("username1@domain.com,gaccotarou,gacco taro,gacco,Gacco12345") if hasattr(request.current_contract, 'contractauth') else _("username1@domain.com,gaccotarou,gacco taro")}"></textarea>
-        </div>
-        <div class="field">
-            <label id="register-status"><input type="checkbox" name="register_status" value="${REGISTER_INVITATION_CODE}"/>${_("Register with the invitation code. (Unnecessary invitation code by user)")}</label>
-        </div>
-        <div class="register-students-buttons">
-            <input type="button" id="register-btn" data-endpoint="${reverse('biz:contract_operation:register_students_ajax')}" data-confirm-message="${_('Do the bulk students register. Are you sure?')}" value="&#xf044 ${_('Register Signup')}" />
-        </div>
-    </div>
-
-    <div id="additional_form" class="w2ui-page page-1">
-        <div class="w2ui-field">
-            <p class="operation">${_(u"If the course instructor wishes to Enroll more information to the existing list, add/delete item as follows:")}</p>
-        </div>
-        <br/>
-        <div class="w2ui-field">
-            <p class="operation">${_(u"Add new item here:")}</p><br>
-            <div>
-                <input name="register_display_name" type="text" maxlength="${max_length_additional_info_display_name}" />
-                <button class="biz-btn register-btn add-additional-info-btn" name="register">&#xf067 ${_('Create Additional Item')}</button>
-            </div>
-        </div>
-        <br/>
-        <div class="w2ui-field list-additional-info">
-            <span class="operation">${_(u"Delete item here:<br/>*If deleted item, each user input the additional item will be delete.")}</span><br>
-            % for a in additional_info_list:
-              <div data-target-id="${a.id}">
-                  <input name="display_name" type="text" maxlength="${max_length_additional_info_display_name}" value="${a.display_name}" />
-                  <button class="biz-btn remove-btn small-btn" name="remove">&#xf00d ${_(u"Delete")}</button>
-              </div>
-            % endfor
-        </div>
-    </div>
-
-    <div class="w2ui-page page-2">
-        <div class="field">
-            <p class="operation">${_(u"To enroll additional item of the Learners separately from the first registration, enroll each Learner by a single command-line using comma(,), in the order.")}</p>
-            <p class="operation">${_(u"ex. username1@domain.com,system department,manager")}</p>
-        </div>
-        <br/>
-        <div class="field">
-            <p class="operation">${_(u"< Note >")}</p>
-            <p class="operation">${_(u"· Should not include headers, footers or blank lines.")}</p>
-            <p class="operation">${_(u"· Additional item use comma(,) after the E-mail address, then enter the additional item.")}</p>
-            <p class="operation">${_(u"· Up to {max_students_number} Learners can be enrolled at a time.").format(max_students_number=max_register_number)}</p>
-        </div>
-        <br/>
-        <br/>
-        <div class="field">
-            <p class="operation">${_(u"< Entry item >")}</p>
-            <p class="operation setting-list">${_(u"· E-mail address: The same e-mail address as the Learners already registered.")}</p>
-          % for a in additional_info_list:
-            <p class="operation setting-list additional-info additional-info-${a.id}" data-id="${a.id}">${_(u"· {additional_item_name}: {max_length} characters or less.").format(additional_item_name=a.display_name, max_length=max_length_additional_info_display_name)}</p>
-          % endfor
-        </div>
-        <div class="field">
-            <textarea id="additional-info-list" class="additional-info-list" name="additional_info_list" rows="12" placeholder="${_(u"username1@domain.com, [additional item]*")}"></textarea>
-        </div>
-        <div class="register-students-buttons">
-            <input type="button" id="update-btn" class="biz-btn register-btn update-btn" value="&#xf044 ${_(u"Register additional item")}"/>
-        </div>
-    </div>
+<%
+    current_organization = getattr(request, 'current_organization', None)
+    current_contract = getattr(request, 'current_contract', None)
+    current_course = getattr(request, 'current_course', None)
+    selection_organizations = getattr(request, 'selection_organizations', [])
+    selection_contracts = getattr(request, 'selection_contracts', [])
+    selection_contract_details = getattr(request, 'selection_contract_details', [])
+%>
+<div id="error_area" class="gc_error_area">
+    <ul class="messages"></ul>
 </div>
+<div id="form">
+    <input type="hidden" id="organization_code" name="organization_code" value="${current_organization.id}">
+    <input type="hidden" id="contract_id" name="contract_id" value="${current_contract.id}" />
+</div>
+<div class="gc_content">
+    <div class="gc_tab">
+        <ul class="gc_tab_list" role="tablist">
+            <li class="gc_tab_item is_active" id="tab01" role="tab" aria-controls="pnl01" aria-selected="false" tabindex="0">${_(u"File Registration")}</li>
+            <li class="gc_tab_item" id="tab02" role="tab" aria-controls="pnl02" aria-selected="true" tabindex="0">${_(u"One Registration")}</li>
+            <li class="gc_tab_item" id="tab03" role="tab" aria-controls="pnl03" aria-selected="false" tabindex="0">${_(u"Search Registration")}</li>
+            <li class="gc_tab_item gc_tab_item_gray" id="tab04" role="tab" aria-controls="pnl04" aria-selected="false" tabindex="0">${_(u"Editing Additional Item")}</li>
+            <li class="gc_tab_item gc_tab_item_gray" id="tab05" role="tab" aria-controls="pnl05" aria-selected="false" tabindex="0">${_(u"Enrolling Learners to Additional Item")}</li>
+        </ul>
+
+
+        <div class="gc_tab_content">
+            <div class="gc_tab_panel is_active" id="pnl01" role="tabpanel" aria-labelledby="tab01" aria-hidden="true">
+                <div class="gc_anchor"><a href="#notes"><i class="fa fa-caret-square-o-down" aria-hidden="true"></i>${_("Attention point on make with file")}</a></div>
+                <div class="gc_column gc_mb20">
+                    <div class="gc_column_col gc_column_col_full">
+                        <p>${_("When registering master data, be sure to use the specified format")}</p>
+                    </div>
+                </div>
+                <div class="gc_step">
+                    <div class="gc_step_item">
+                        <button id="download-template-btn" class="btn btn-grn" type="button"
+                                data-endpoint="${reverse('biz:contract_operation:register_students_template_download')}">${_("Download format file")}</button>
+                        <span class="gc_step_item_note">${_("Please press the left button and download the format")}</span>
+                    </div>
+                    <div class="gc_step_item">
+                        <div class="gc_iptfile">
+                            <label class="gc_iptfile_label" for="csv-file" >${_("Select File")}</label>
+                            <input type="file" id="csv-file" name="csv-file" accept=".csv" />
+                            <span class="gc_iptfile_filename" id="gc_iptfile_filename">${_("Please select the file.")}</span>
+                        </div>
+                    </div>
+                    <div class="gc_step_item">
+                        <button id="upload-btn-csv" class="btn btn-blue" type="button"
+                            data-endpoint='${reverse("biz:contract_operation:register_students_csv_ajax")}'
+                            data-confirm-message='${_("Do the bulk students register. Are you sure?")}'>
+                            ${_('Registration')}</button>
+                        <span class="gc_step_item_note red">${_("Please be aware that once you press the Registration button, a welcome e-mail of the course will be sent automatically.")}</span>
+                    </div>
+                </div>
+                <div class="gc_optional">
+                    <label class="gc_optional_label" for="register-status"><input id="register-status"
+                            class="gc_optional_chk js_register_status_popup" name="register_status" value="${REGISTER_INVITATION_CODE}" checked="checked"
+                            type="checkbox">${_("Register with the invitation code. (Unnecessary invitation code by user)")}</label>
+                </div>
+
+                <div class="gc_data_section gc_mt30 gc_data_section_file_attention" id="notes">
+                    <h2>${_("Attention point on make with file")}</h2>
+                    <ul style="line-height: 1.5;">
+                        ${_("" +
+                        "<li>Be sure to use the specified format and <span class='red'>do not erase the column of the first line.</span></li>" +
+                        "<li>The entry information is as follows. For items not to be used, please set with blank.</li>" +
+                        "<br />" +
+                        "&#60;Information to fill in&#62;" +
+                        "<li>E-mail address: Half-width alphanumeric character, hyphen (-), underscore (_), period (.)</li>" +
+                        "<li>User name: Half size alphabet 2 or more characters, 30 characters or less<br />" +
+                        "(This is the user name displayed when discussing, once you register it can not be changed)</li>" +
+                        "<li>Name (last name): Name printed on the certificate (last name)</li>" +
+                        "<li>Name (first name): Name printed on the certificate (first name)</li>" +
+                        "<li>Login code: 2 letters or more, 30 letters or less</li>" +
+                        "<li>Password: 8 single-byte alphabetic characters or more (Please include at least one upper case alphabet, lower case letter, number of letters)</li>" +
+                        "<li>Group code: Set organization code of organization master (required only when member master is used)</li>" +
+                        "<li>Member code: Member code of member master set (Required only when member master is used)</li>" +
+                        "<li>Organizations 1 to 10, Items 1 to 10: items freely available</li>" +
+                        "&#42; For details, please check the manual.")}
+                    </ul>
+                </div>
+            </div>
+
+            <div class="gc_tab_panel" id="pnl02" role="tabpanel" aria-labelledby="tab02" aria-hidden="false">
+                <div class="gc_column">
+                    <div class="gc_column_col gc_column_col_full">
+                        <div class="gc_field">
+                            <label for="employee_last_name" class="gc_field_label">${_("Last Name")}</label>
+                            <input id="employee_last_name" class="gc_field_ipt gc_w15em" type="text" maxlength="30" />
+                            <span class="gc_require">※ ${_("Required")}</span>
+                        </div>
+                        <div class="gc_field">
+                            <label for="employee_first_name" class="gc_field_label">${_("First Name")}</label>
+                            <input id="employee_first_name" class="gc_field_ipt gc_w15em" type="text" maxlength="30" />
+                        </div>
+                        <div class="gc_field">
+                            <label for="employee_email" class="gc_field_label">${_('Email')}</label>
+                            <input id="employee_email" class="gc_field_ipt gc_w15em" type="email" maxlength="254" />
+                            <span class="gc_require">※ ${_("Required")}</span>
+                        </div>
+                        <div class="gc_field">
+                            <label for="user_name" class="gc_field_label">${_("Username")}</label>
+                            <input id="user_name" class="gc_field_ipt gc_w15em" type="text" maxlength="30" />
+                            <span class="gc_require">※ ${_("Required")}</span>
+                        </div>
+                        %if request.current_contract.has_auth:
+                        <div class="gc_field">
+                           <label for="login_code" class="gc_field_label">${_("Login Code")}</label>
+                           <input id="login_code" class="gc_field_ipt gc_w15em" type="text" maxlength="30" />
+                            <span class="gc_require">※ ${_("Required")}</span>
+                        </div>
+                        <div class="gc_field">
+                            <label for="password" class="gc_field_label">${_("Password")}</label>
+                            <input id="password" class="gc_field_ipt gc_w15em" type="password" maxlength="128" />
+                            <span class="gc_require">※ ${_("Required")}</span>
+                        </div>
+                        %endif
+                        <div class="gc_field">
+                            <label for="employee_group_code" class="gc_field_label">${_('Select Organization')}</label>
+                            <select id="employee_group_code" class="gc_field_ipt gc_w15em">
+                                <option value=""></option>
+                                % for option in group_list:
+                                <option value="${option[0]}">${option[2] | h}</option>
+                                % endfor
+                            </select>
+                            <span class="gc_require" style="color: black;">※ ${_("Required only when using organization data.")}</span>
+                        </div>
+                        <div class="gc_field">
+                            <label for="employee_code" class="gc_field_label">${_("Member Code")}</label>
+                            <input id="employee_code" class="gc_field_ipt gc_w15em" type="text" maxlength="255" />
+                            <span class="gc_require" style="color: black;">※ ${_("Required only when using member data.")}</span>
+                        </div>
+                    </div>
+                <!-- /.gc_column --></div>
+                <div class="gc_collapse">
+                    <button class="gc_collapse_btn" data-toggle="collapse_btn" aria-expanded="false"
+                            aria-controls="collapse_panel01" type="button"><i
+                            class="fa fa-plus-square gc_ico_plus" aria-hidden="true"></i><i
+                            class="fa fa-minus-square gc_ico_minus" aria-hidden="true"></i>${_("Detail settings(When using member data)")}</button>
+                    <div class="gc_collapse_panel" data-toggle="collapse_panel" aria-hidden="true" id="collapse_panel01">
+                        <div class="gc_column">
+                            <div class="gc_column_col gc_column_col_full">
+                                % for i in range(1, 11):
+                                <div class="gc_field">
+                                    <label class="gc_field_label" for="org_attr${i}">${_("Organization")}${i}</label>
+                                    <input id="org_attr${i}" class="gc_field_ipt gc_w15em" type="text" maxlength="255" />
+                                </div>
+                                % endfor;
+                            </div>
+                        </div>
+                        <div class="gc_column">
+                            <div class="gc_column_col gc_column_col_full">
+                                % for i in range(1, 11):
+                                <div class="gc_field">
+                                    <label class="gc_field_label" for="grp_attr${i}">${_("Item")}${i}</label>
+                                    <input id="grp_attr${i}" class="gc_field_ipt gc_w15em" type="text" maxlength="255" />
+                                </div>
+                                % endfor;
+                            </div>
+                        </div>
+                    <!-- / .gc_collapse" --></div>
+                    <div class="gc_optional gc_mt10">
+                        <label class="gc_optional_label" for="register-status-new"><input id="register-status-new"
+                                class="gc_optional_chk js_register_status_popup" name="register-status-new" value="${REGISTER_INVITATION_CODE}" checked="checked"
+                                type="checkbox">${_("Register with the invitation code. (Unnecessary invitation code by user)")}</label>
+                        <span class="gc_step_item_note red">${_("Please be aware that once you press the Registration button, a welcome e-mail of the course will be sent automatically.")}</span>
+                    </div>
+                    <div class="gc_btn_cta gc_btn_cta_center gc_mt20">
+                        <button id="register-btn-new" class="btn btn-grn"
+                                data-endpoint="${reverse('biz:contract_operation:register_students_new_ajax')}"
+                                data-confirm-message="${_('Do the bulk students register. Are you sure?')}">${_('Registration')}</button>
+                    </div>
+                </div>
+            <!-- / #pnl01 --></div>
+
+            <div class="gc_tab_panel" id="pnl03" role="tabpanel" aria-labelledby="tab03" aria-hidden="true">
+                <div class="gc_column">
+                    <div class="gc_column_col">
+                        <div class="gc_field">
+                            <label class="gc_field_label">${_("Contract Name")}</label>
+                            <select id="contract-id-list" name="contract-id-list" class="gc_field_ipt gc_w15em">
+                                <option value=""></option>
+                                % for selection_contract in listbox_contracts:
+                                % if selection_contract.contractor_organization.id == current_organization.id:
+                                <option value="${selection_contract.id}" class="${selection_contract.contractor_organization.id}">${selection_contract.contract_name | h}</option>
+                                % endif
+                                % endfor
+                            </select>
+                        </div>
+                    </div>
+                <!-- /.gc_column --></div>
+                <div class="gc_collapse">
+                    <button class="gc_collapse_btn" aria-controls="collapse_panel02" aria-expanded="false"
+                            type="button"><i class="fa fa-plus-square gc_ico_plus" aria-hidden="true"></i><i
+                            class="fa fa-minus-square gc_ico_minus" aria-hidden="true"></i>${_("Search Detail")}</button>
+                    <div class="gc_collapse_panel" aria-hidden="true" id="collapse_panel02">
+                        <div class="gc_column">
+                            <div class="gc_column_col">
+                                <div class="gc_field">
+                                    <label class="gc_field_label" for="full_name_list">${_('Name')}</label>
+                                    <input id="full_name_list" class="gc_field_ipt" maxlength="254" type="text">
+                                </div>
+                            </div>
+                            <div class="gc_column_col">
+                                <div class="gc_field">
+                                    <label class="gc_field_label" for="employee_email_list">${_('Email')}</label>
+                                    <input id="employee_email_list" class="gc_field_ipt" maxlength="254" type="text">
+                                </div>
+                            </div>
+                            <div class="gc_column_col">
+                                <div class="gc_field">
+                                    <label class="gc_field_label" for="login_code_list">${_('Login Code')}</label>
+                                    <input id="login_code_list" class="gc_field_ipt" maxlength="254" type="text">
+                                </div>
+                            </div>
+                            <div class="gc_column_col">
+                                <div class="gc_field">
+                                    <label for="list_group_code" class="gc_field_label">${_('Select Organization')}</label>
+                                    <select id="list_group_code" class="gc_field_ipt gc_w15em">
+                                        <option value=""></option>
+                                        % for option in group_list:
+                                        <option value="${option[0]}">${option[2] | h}</option>
+                                        % endfor
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="gc_column_col">
+                                % for i in range(1, 11):
+                                <div class="gc_field">
+                                    <label class="gc_field_label" for="search_org_attr${i}">${_("Organization")}${i}</label>
+                                    <select id="search_org_attr${i}" class="gc_field_ipt gc_w15em">
+                                        <option value=""></option>
+                                        % for item in org_items['org' + str(i)]:
+                                        <option value="${item['org' + str(i)]}">${item['org' + str(i)] | h}</option>
+                                        % endfor
+                                    </select>
+                                </div>
+                                % endfor;
+                            </div>
+                            <div class="gc_column_col">
+                                % for i in range(1, 11):
+                                <div class="gc_field">
+                                    <label for="search_grp_attr${i}" class="gc_field_label">${_("Item")}${i}</label>
+                                    <select id="search_grp_attr${i}" class="gc_field_ipt gc_w15em">
+                                        <option value=""></option>
+                                        % for item in org_items['item' + str(i)]:
+                                        <option value="${item['item' + str(i)]}">${item['item' + str(i)] | h}</option>
+                                        % endfor
+                                    </select>
+                                </div>
+                                % endfor;
+                            </div>
+                        </div>
+                    </div>
+                <!-- / .gc_collapse" --></div>
+                <div class="gc_btn_cta gc_btn_cta_center">
+                    <button id="search_btn" name="search" class="btn btn-blue gc_btn_search"
+                            data-endpoint="${reverse('biz:contract_operation:register_students_search_students_ajax')}" type="search">${_("Search")}</button>
+                </div>
+                <div class="gc_data_section">
+                    <h2>${_("Search Result")}</h2>
+                    <p class="gc_step_item_note gc_mb10">${_("Tick each box on the list. All checked with left checkbox of full name")}</p>
+                    <div id="grid1" style="height: 450px; min-width: 890px;"></div>
+                    <div class="gc_btn_cta gc_btn_cta_right gc_mt10">
+                        <button id="search-add" class="btn btn-grn" type="button" name="search-add"
+                                data-warning-message="${_('This course required login code register')}">${_('Add')}</button>
+                    </div>
+                </div>
+                <div class="gc_result_arrow">
+                    <i class="fa fa-arrow-down"></i>
+                </div>
+                <div class="gc_data_section">
+                    <h2>${_("Registration Targets")}</h2>
+                    <div id="grid2" style="height: 450px; min-width: 890px;"></div>
+                    <div class="gc_optional gc_mt10">
+                        <label class="gc_optional_label"><input
+                                class="gc_optional_chk js_register_status_popup" type="checkbox" name="register-status-list" id="register-status-list" value="${REGISTER_INVITATION_CODE}"
+                                checked />${_("Register with the invitation code. (Unnecessary invitation code by user)")}</label>
+                        <span class="gc_step_item_note red">${_("Please be aware that once you press the Registration button, a welcome e-mail of the course will be sent automatically.")}</span>
+                    </div>
+                    <div class="gc_btn_cta gc_btn_cta_right gc_mt10">
+                        <button id="register-btn-list" class="btn btn-grn" type="button"
+                                data-endpoint="${reverse('biz:contract_operation:register_students_list_ajax')}"
+                                data-confirm-message="${_('Do the bulk students register. Are you sure?')}">${_('Registration')}</button>
+                        <button id="clear-btn" class="btn btn-blue" name="clear-btn" type="reset">${_('Clear')}</button>
+                    </div>
+                </div>
+            <!-- / #pnl02 --></div>
+
+            <div class="gc_tab_panel" id="pnl04" role="tabpanel" aria-labelledby="tab04" aria-hidden="true">
+                <div class="w2ui-field">
+                    <p class="operation">${_(u"If the course instructor wishes to Enroll more information to the existing list, add/delete item as follows:")}</p>
+                </div>
+                <br>
+                <div class="w2ui-field">
+                    <p class="operation">${_(u"Add new item here:")}</p><br>
+                    <div>
+                        <input name="register_display_name" type="text" maxlength="${max_length_additional_info_display_name}" />
+                        <button class="biz-btn register-btn add-additional-info-btn" name="register">&#xf067 ${_('Create Additional Item')}</button>
+                    </div>
+                </div>
+                <br/>
+                <div class="w2ui-field list-additional-info">
+                    <span class="operation">${_(u"Delete item here:<br/>*If deleted item, each user input the additional item will be delete.")}</span><br>
+                    % for a in additional_info_list:
+                      <div data-target-id="${a.id}">
+                          <input name="display_name" type="text" maxlength="${max_length_additional_info_display_name}" value="${a.display_name}" />
+                          <button class="biz-btn remove-btn small-btn" name="remove">&#xf00d ${_(u"Delete")}</button>
+                      </div>
+                    % endfor
+                </div>
+            <!-- / #pnl04 --></div>
+            <div class="gc_tab_panel" id="pnl05" role="tabpanel" aria-labelledby="tab05" aria-hidden="true">
+                <div class="field">
+                    <p class="operation">${_(u"To enroll additional item of the Learners separately from the first registration, enroll each Learner by a single command-line using comma(,), in the order.")}</p>
+                    <p class="operation">${_(u"ex. username1@domain.com,system department,manager")}</p>
+                </div>
+                <br/>
+                <div class="field">
+                    <p>${_(u"< Note >")}</p>
+                    <ul>
+                        <li class="operation">${_(u"Should not include headers, footers or blank lines.")}</li>
+                        <li class="operation">${_(u"Additional item use comma(,) after the E-mail address, then enter the additional item.")}</li>
+                        <li class="operation">${_(u"Up to {max_students_number} Learners can be enrolled at a time.").format(max_students_number=max_register_number)}</li>
+                    </ul>
+                </div>
+                <br/>
+                <div class="field">
+                    <p>${_(u"< Entry item >")}</p>
+                    <ul>
+                    <li class="operation setting-list">${_(u"E-mail address: The same e-mail address as the Learners already registered.")}</li>
+                    % for a in additional_info_list:
+                    <li class="operation setting-list additional-info additional-info-${a.id}" data-id="${a.id}">${_(u"{additional_item_name}: {max_length} characters or less.").format(additional_item_name=a.display_name, max_length=max_length_additional_info_display_name)}</li>
+                    % endfor
+                    </ul>
+                </div>
+                <div class="field">
+                    <textarea id="additional-info-list" class="additional-info-list" name="additional_info_list" style="width: 90%; height: 10em;"
+                              rows="12" placeholder="${_(u"username1@domain.com, [additional item]*")}"></textarea>
+                </div>
+                <div class="register-students-buttons">
+                    <input type="button" id="update-btn" class="biz-btn register-btn update-btn" value="&#xf044 ${_(u"Register additional item")}"/>
+                </div>
+            <!-- / #pnl05 --></div>
+        </div>
+    </div>
+
+</div>
+
+<div id="history_sub_area"></div>
+
 <%include file="_task_history.html" />
+
 </%block>
+

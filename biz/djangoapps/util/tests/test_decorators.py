@@ -15,9 +15,11 @@ from biz.djangoapps.ga_contract.models import (
 from biz.djangoapps.ga_contract.tests.factories import ContractFactory, ContractDetailFactory
 from biz.djangoapps.ga_manager.tests.factories import ManagerFactory
 from biz.djangoapps.ga_organization.tests.factories import OrganizationFactory
+from biz.djangoapps.gx_org_group.models import Group
+from biz.djangoapps.gx_org_group.tests.factories import GroupUtil, RightFactory
 from biz.djangoapps.util import cache_utils
 from biz.djangoapps.util.decorators import (
-    check_course_selection, require_survey, handle_command_exception, ExitWithWarning
+    check_course_selection, check_organization_group, require_survey, handle_command_exception, ExitWithWarning
 )
 from biz.djangoapps.util.tests.testcase import BizTestBase
 from student.tests.factories import UserFactory
@@ -77,6 +79,9 @@ class CheckCourseSelectionTestBase(BizTestBase, ModuleStoreTestCase):
     def _save_manager_for_manager(self, org):
         return self._save_manager(org, [self.manager_permission])
 
+    def _save_manager_for_platformer_director(self, org):
+        return self._save_manager(org, [self.platformer_permission, self.director_permission])
+
     def _save_manager(self, org, permissions):
         return ManagerFactory.create(
             org=org,
@@ -131,7 +136,19 @@ class CheckCourseSelectionTestBase(BizTestBase, ModuleStoreTestCase):
         return reverse('biz:achievement:score')
 
     def _contract_operation_view(self):
+        return reverse('biz:contract_operation:register_students')
+
+    def _contract_operation_students_view(self):
         return reverse('biz:contract_operation:students')
+
+    def _contract_operation_reminder_mail_view(self):
+        return reverse('biz:contract_operation:reminder_mail')
+
+    def _member_view(self):
+        return reverse('biz:member:index')
+
+    def _group_view(self):
+        return reverse('biz:group:group_list')
 
 
 class CheckCourseSelectionForPlatformerTest(CheckCourseSelectionTestBase):
@@ -238,6 +255,26 @@ class CheckCourseSelectionForPlatformerTest(CheckCourseSelectionTestBase):
             "Manager(id={}) has no permission to handle '{}' feature.".format(self.manager.id, 'contract_operation'))
         self.assertEqual(403, response.status_code)
 
+    def test_contract_operation_students_feature(self):
+        self.request.path = self._contract_operation_students_view()
+        self._setup_default()
+        # Call test target
+        response = check_course_selection_target(self.request)
+        self.mock_log.warning.assert_called_with(
+            "Manager(id={}) has no permission to handle '{}' feature.".format(
+                self.manager.id, 'contract_operation/students'))
+        self.assertEqual(403, response.status_code)
+
+    def test_contract_operation_reminder_mail_feature(self):
+        self.request.path = self._contract_operation_reminder_mail_view()
+        self._setup_default()
+        # Call test target
+        response = check_course_selection_target(self.request)
+        self.mock_log.warning.assert_called_with(
+            "Manager(id={}) has no permission to handle '{}' feature.".format(
+                self.manager.id, 'contract_operation/reminder_mail'))
+        self.assertEqual(403, response.status_code)
+
     def test_course_operation_feature(self):
         self.request.path = self._course_operation_view()
         self._setup_default()
@@ -255,6 +292,57 @@ class CheckCourseSelectionForPlatformerTest(CheckCourseSelectionTestBase):
         self.mock_log.warning.assert_called_with(
             "Manager(id={}) has no permission to handle '{}' feature.".format(self.manager.id, 'achievement'))
         self.assertEqual(403, response.status_code)
+
+    def test_member_feature(self):
+        self.request.path = self._member_view()
+        self._setup_default()
+        # Call test target
+        response = check_course_selection_target(self.request)
+        self.mock_log.warning.assert_called_with(
+            "Manager(id={}) has no permission to handle '{}' feature.".format(self.manager.id, 'member'))
+        self.assertEqual(403, response.status_code)
+
+    def test_group_feature(self):
+        self.request.path = self._group_view()
+        self._setup_default()
+        # Call test target
+        response = check_course_selection_target(self.request)
+        self.mock_log.warning.assert_called_with(
+            "Manager(id={}) has no permission to handle '{}' feature.".format(self.manager.id, 'group'))
+        self.assertEqual(403, response.status_code)
+
+    def test_contract_operation_students_feature_no_contract_id(self):
+        self.request.path = self._contract_operation_students_view()
+        self.org = self._save_organization()
+        self.manager = self._save_manager_for_platformer_director(self.org)
+        # Call test target
+        check_course_selection_target(self.request)
+        self.mock_log.info.assert_called_with(
+            "Redirect to contract_not_specified page because contract_id is not specified.")
+        self.mock_messages.error.assert_called_with(self.request, "Contract is not specified.")
+        self.mock_render_to_response.assert_called_with('ga_course_selection/contract_not_specified.html')
+
+    def test_contract_operation_reminder_mail_feature_no_contract_id(self):
+        self.request.path = self._contract_operation_reminder_mail_view()
+        self.org = self._save_organization()
+        self.manager = self._save_manager_for_platformer_director(self.org)
+        # Call test target
+        check_course_selection_target(self.request)
+        self.mock_log.info.assert_called_with(
+            "Redirect to contract_not_specified page because contract_id is not specified.")
+        self.mock_messages.error.assert_called_with(self.request, "Contract is not specified.")
+        self.mock_render_to_response.assert_called_with('ga_course_selection/contract_not_specified.html')
+
+    def test_contract_operation_feature_no_contract_id(self):
+        self.request.path = self._contract_operation_view()
+        self.org = self._save_organization()
+        self.manager = self._save_manager_for_platformer_director(self.org)
+        # Call test target
+        check_course_selection_target(self.request)
+        self.mock_log.info.assert_called_with(
+            "Redirect to contract_not_specified page because contract_id is not specified.")
+        self.mock_messages.error.assert_called_with(self.request, "Contract is not specified.")
+        self.mock_render_to_response.assert_called_with('ga_course_selection/contract_not_specified.html')
 
 
 class CheckCourseSelectionForAggregatorTest(CheckCourseSelectionTestBase):
@@ -430,6 +518,26 @@ class CheckCourseSelectionForAggregatorTest(CheckCourseSelectionTestBase):
             "Manager(id={}) has no permission to handle '{}' feature.".format(self.manager.id, 'contract_operation'))
         self.assertEqual(403, response.status_code)
 
+    def test_contract_operation_students_feature(self):
+        self.request.path = self._contract_operation_students_view()
+        self._setup_default()
+        # Call test target
+        response = check_course_selection_target(self.request)
+        self.mock_log.warning.assert_called_with(
+            "Manager(id={}) has no permission to handle '{}' feature.".format(
+                self.manager.id, 'contract_operation/students'))
+        self.assertEqual(403, response.status_code)
+
+    def test_contract_operation_reminder_mail_feature(self):
+        self.request.path = self._contract_operation_reminder_mail_view()
+        self._setup_default()
+        # Call test target
+        response = check_course_selection_target(self.request)
+        self.mock_log.warning.assert_called_with(
+            "Manager(id={}) has no permission to handle '{}' feature.".format(
+                self.manager.id, 'contract_operation/reminder_mail'))
+        self.assertEqual(403, response.status_code)
+
     def test_course_operation_feature(self):
         self.request.path = self._course_operation_view()
         self._setup_default()
@@ -446,6 +554,24 @@ class CheckCourseSelectionForAggregatorTest(CheckCourseSelectionTestBase):
         response = check_course_selection_target(self.request)
         self.mock_log.warning.assert_called_with(
             "Manager(id={}) has no permission to handle '{}' feature.".format(self.manager.id, 'achievement'))
+        self.assertEqual(403, response.status_code)
+
+    def test_member_feature(self):
+        self.request.path = self._member_view()
+        self._setup_default()
+        # Call test target
+        response = check_course_selection_target(self.request)
+        self.mock_log.warning.assert_called_with(
+            "Manager(id={}) has no permission to handle '{}' feature.".format(self.manager.id, 'member'))
+        self.assertEqual(403, response.status_code)
+
+    def test_group_feature(self):
+        self.request.path = self._group_view()
+        self._setup_default()
+        # Call test target
+        response = check_course_selection_target(self.request)
+        self.mock_log.warning.assert_called_with(
+            "Manager(id={}) has no permission to handle '{}' feature.".format(self.manager.id, 'group'))
         self.assertEqual(403, response.status_code)
 
 
@@ -619,6 +745,18 @@ class CheckCourseSelectionForDirectorTest(CheckCourseSelectionTestBase):
         # Call test target
         self.assertEqual('success', check_course_selection_target(self.request))
 
+    def test_contract_operation_students_feature(self):
+        self.request.path = self._contract_operation_students_view()
+        self._setup_default()
+        # Call test target
+        self.assertEqual('success', check_course_selection_target(self.request))
+
+    def test_contract_operation_reminder_mail_feature(self):
+        self.request.path = self._contract_operation_reminder_mail_view()
+        self._setup_default()
+        # Call test target
+        self.assertEqual('success', check_course_selection_target(self.request))
+
     def test_course_operation_feature(self):
         self.request.path = self._course_operation_view()
         self._setup_default()
@@ -657,6 +795,18 @@ class CheckCourseSelectionForDirectorTest(CheckCourseSelectionTestBase):
         self.mock_messages.error.assert_called_with(self.request, "Course is not specified.")
         self.mock_render_to_response.assert_called_with('ga_course_selection/course_not_specified.html')
 
+    def test_member_feature(self):
+        self.request.path = self._member_view()
+        self._setup_default()
+        # Call test target
+        self.assertEqual('success', check_course_selection_target(self.request))
+
+    def test_group_feature(self):
+        self.request.path = self._group_view()
+        self._setup_default()
+        # Call test target
+        self.assertEqual('success', check_course_selection_target(self.request))
+
 
 class CheckCourseSelectionForManagerTest(CheckCourseSelectionForDirectorTest):
     """check_course_selection test for Manager"""
@@ -682,6 +832,18 @@ class CheckCourseSelectionForManagerTest(CheckCourseSelectionForDirectorTest):
             "Manager(id={}) has no permission to handle '{}' feature.".format(self.manager.id, 'contract_operation'))
         self.assertEqual(403, response.status_code)
 
+    def test_contract_operation_students_feature(self):
+        self.request.path = self._contract_operation_students_view()
+        self._setup_default()
+        # Call test target
+        self.assertEqual('success', check_course_selection_target(self.request))
+
+    def test_contract_operation_reminder_mail_feature(self):
+        self.request.path = self._contract_operation_reminder_mail_view()
+        self._setup_default()
+        # Call test target
+        self.assertEqual('success', check_course_selection_target(self.request))
+
     def test_course_operation_feature(self):
         self.request.path = self._course_operation_view()
         self._setup_default()
@@ -700,11 +862,28 @@ class CheckCourseSelectionForManagerTest(CheckCourseSelectionForDirectorTest):
             "Manager(id={}) has no permission to handle '{}' feature.".format(self.manager.id, 'course_operation'))
         self.assertEqual(403, response.status_code)
 
+    def test_member_feature(self):
+        self.request.path = self._member_view()
+        self._setup_default()
+        # Call test target
+        response = check_course_selection_target(self.request)
+        self.mock_log.warning.assert_called_with(
+            "Manager(id={}) has no permission to handle '{}' feature.".format(self.manager.id, 'member'))
+        self.assertEqual(403, response.status_code)
+
+    def test_group_feature(self):
+        self.request.path = self._group_view()
+        self._setup_default()
+        # Call test target
+        response = check_course_selection_target(self.request)
+        self.mock_log.warning.assert_called_with(
+            "Manager(id={}) has no permission to handle '{}' feature.".format(self.manager.id, 'group'))
+        self.assertEqual(403, response.status_code)
+
 
 @require_survey
 def require_survey_target(request):
     return "success"
-
 
 @ddt.ddt
 class RequireSurveyTest(BizTestBase, ModuleStoreTestCase):
@@ -837,3 +1016,100 @@ class HandleCommandExceptionTest(TestCase):
     def test_handle_command_exception_if_invalid_contract_id(self):
         handle_command_exception_target_contract_id_does_not_exists()
         self.mock_log.warning.assert_called_once_with('specific contract does not exist', exc_info=True)
+
+
+@check_organization_group
+def check_organization_group_target(request):
+    return "success"
+
+
+@ddt.ddt
+class CheckOrganizationGroupTest(BizTestBase):
+    def setUp(self):
+        super(CheckOrganizationGroupTest, self).setUp()
+        self.request = RequestFactory().request()
+        self.request.user = UserFactory.create()
+        self.request.current_organization = self._create_organization()
+
+        patcher_render_to_string = patch('biz.djangoapps.util.decorators.render_to_string')
+        self.mock_render_to_string = patcher_render_to_string.start()
+        self.addCleanup(patcher_render_to_string.stop)
+
+        patcher_render_to_response = patch('biz.djangoapps.util.decorators.render_to_response')
+        self.mock_render_to_response = patcher_render_to_response.start()
+        self.addCleanup(patcher_render_to_response.stop)
+
+        patcher_log = patch('biz.djangoapps.util.decorators.log')
+        self.mock_log = patcher_log.start()
+        self.addCleanup(patcher_log.stop)
+
+    def _director_manager(self):
+        return self._create_manager(
+            org=self.request.current_organization,
+            user=self.request.user,
+            created=self.request.current_organization,
+            permissions=[self.director_permission]
+        )
+
+    def _manager_manager(self):
+        return self._create_manager(
+            org=self.request.current_organization,
+            user=self.request.user,
+            created=self.request.current_organization,
+            permissions=[self.manager_permission]
+        )
+
+    @ddt.unpack
+    @ddt.data(
+        ('G01', [9, 3, 7, 8, 4]),
+        ('G01-01', [3, 7, 8]),
+        ('G01-01-01', [8])
+    )
+    def test_with_manager(self, group_code, visible_group_ids):
+        self._manager_manager()
+        GroupUtil(org=self.request.current_organization, user=self.request.user).import_data()
+        current_group = Group.objects.get(org=self.request.current_organization, group_code=group_code)
+        RightFactory.create(
+            org=self.request.current_organization,
+            user=self.request.user,
+            group=current_group,
+            created_by=self.request.user,
+            creator_org=self.request.current_organization
+        )
+        # Call test target
+        self.assertEqual('success', check_organization_group_target(self.request))
+        self.assertEqual(current_group, self.request.current_organization_group)
+        self.assertEqual(visible_group_ids, self.request.current_organization_visible_group_ids)
+
+    def test_with_manager_no_right(self):
+        self._manager_manager()
+        GroupUtil(org=self.request.current_organization, user=self.request.user).import_data()
+        # Call test target
+        self.assertEqual('success', check_organization_group_target(self.request))
+        self.assertEqual(None, self.request.current_organization_group)
+        self.assertEqual([], self.request.current_organization_visible_group_ids)
+        self.assertEqual((None, []), cache_utils.get_organization_group(self.request.user))
+
+    def test_with_director(self):
+        self._director_manager()
+        GroupUtil(org=self.request.current_organization, user=self.request.user).import_data()
+        current_group = Group.objects.get(org=self.request.current_organization, group_code='G01-01')
+        RightFactory.create(
+            org=self.request.current_organization,
+            user=self.request.user,
+            group=current_group,
+            created_by=self.request.user,
+            creator_org=self.request.current_organization
+        )
+        # Call test target
+        self.assertEqual('success', check_organization_group_target(self.request))
+        self.assertEqual(None, self.request.current_organization_group)
+        self.assertEqual([], self.request.current_organization_visible_group_ids)
+        self.assertEqual((None, []), cache_utils.get_organization_group(self.request.user))
+
+    def test_with_no_manager(self):
+        # Call test target
+        response = check_organization_group_target(self.request)
+        self.mock_log.warning.assert_called_with("User(id={}) has no manager model.".format(self.request.user.id))
+        self.assertEqual(403, response.status_code)
+        self.assertEqual((None, None), cache_utils.get_organization_group(self.request.user))

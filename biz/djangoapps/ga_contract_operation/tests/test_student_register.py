@@ -1,9 +1,11 @@
 """Tests for student register task"""
 
 import ddt
+import json
 from mock import patch
 
 from django.contrib.auth.models import User
+from django.core.exceptions import ObjectDoesNotExist
 from django.test.utils import override_settings
 
 from bulk_email.models import Optout
@@ -12,7 +14,8 @@ from xmodule.modulestore.tests.factories import CourseFactory
 
 from biz.djangoapps.ga_contract_operation.models import StudentRegisterTaskTarget
 from biz.djangoapps.ga_contract_operation.tasks import student_register
-from biz.djangoapps.ga_contract_operation.tests.factories import StudentRegisterTaskTargetFactory
+from biz.djangoapps.ga_contract_operation.tests.factories import ContractTaskHistoryFactory,\
+    StudentRegisterTaskTargetFactory
 from biz.djangoapps.ga_invitation.models import ContractRegister, INPUT_INVITATION_CODE, REGISTER_INVITATION_CODE
 from biz.djangoapps.ga_invitation.tests.factories import ContractRegisterFactory
 from biz.djangoapps.ga_login.models import BizUser
@@ -47,6 +50,50 @@ class StudentRegisterTaskTest(BizViewTestBase, ModuleStoreTestCase, TaskTestMixi
         self.login_code = login_code
         if login_code:
             BizUserFactory.create(user=self.user, login_code=login_code)
+
+    def test_missing_required_input_history(self):
+        entry = self._create_input_entry(contract=self._create_contract())
+
+        with self.assertRaises(ValueError) as cm:
+            self._run_task_with_mock_celery(student_register, entry.id, entry.task_id)
+
+        self.assertEqual("Task {}: Missing required value {}".format(
+            entry.task_id, json.loads(entry.task_input)), cm.exception.message)
+        self._assert_task_failure(entry.id)
+
+    def test_missing_required_input_contract(self):
+        entry = self._create_input_entry(history=self._create_task_history(self._create_contract()))
+
+        with self.assertRaises(ValueError) as cm:
+            self._run_task_with_mock_celery(student_register, entry.id, entry.task_id)
+
+        self.assertEqual("Task {}: Missing required value {}".format(
+            entry.task_id, json.loads(entry.task_input)), cm.exception.message)
+        self._assert_task_failure(entry.id)
+
+    def test_history_does_not_exists(self):
+        contract = self._create_contract()
+        history = self._create_task_history(contract)
+        entry = self._create_input_entry(contract=contract, history=history)
+        history.delete()
+
+        with self.assertRaises(ObjectDoesNotExist):
+            self._run_task_with_mock_celery(student_register, entry.id, entry.task_id)
+
+        self._assert_task_failure(entry.id)
+
+    def test_conflict_contract(self):
+        contract = self._create_contract()
+        # Create history with other contract
+        history = self._create_task_history(self._create_contract())
+        entry = self._create_input_entry(contract=contract, history=history)
+
+        with self.assertRaises(ValueError) as cm:
+            self._run_task_with_mock_celery(student_register, entry.id, entry.task_id)
+
+        self.assertEqual("Contract id conflict: submitted value {} does not match {}".format(
+            history.contract_id, contract.id), cm.exception.message)
+        self._assert_task_failure(entry.id)
 
     @ddt.data(
         (None, ["Input,test_student1@example.com,t,t"]),

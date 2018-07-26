@@ -10,171 +10,666 @@ from biz.djangoapps.ga_contract_operation.models import ContractReminderMail
 
 <%block name="js_extra">
 <script type="text/javascript">
+    var grid = grid || [];
     $(function () {
-        $('#form').w2form({
-            name: 'form',
-            tabs: [
-                % for i, mail_info in enumerate(mail_info_list):
-                    { id: 'page-${i}', caption: '${mail_info.mail_type_name}' },
-                % endfor
-            ],
-            actions: {
-                save: function (event) {
-                    this.action('submit', event);
-                },
-                send: function (event) {
-                    this.action('submit', event);
-                },
-                submit: function (event) {
-                    var obj = this;
-                    w2confirm({
-                        msg: $(event.target).data('confirm-message'),
-                        yes_class: 'btn-right',
-                        no_class: 'btn-left'
-                    }).yes(function () {
-                        var messages = $('.messages');
-                        messages.empty();
-                        w2utils.lock(obj.box, '', true);
-                        $.ajax({
-                            url: $(event.target).data('endpoint'),
-                            type: 'POST',
-                            data: $('.w2ui-page.page-' + obj.page).find('textarea,input,select').serializeArray()
-                        }).done(function (data) {
-                            messages.append('<li class="info">' + data.info + '</li>');
-                            if (event.target.name === 'save') {
-                                $('.w2ui-buttons.page-' + obj.page).find('.send-btn').prop('disabled', false);
-                            }
-                        }).fail(function (jqXHR) {
-                            var data = JSON.parse(jqXHR.responseText);
-                            messages.append('<li class="error">' + data.error + '</li>');
-                        }).always(function () {
-                            w2utils.unlock(obj.box);
-                        });
-                    });
-                }
-            },
-            onRender: function (event) {
-                var obj = this;
-                $(this.box).show();  // Note: Prevent w2ui form from being collapsed when rendering
-                $(this.box).on('change keydown', function () {
-                    $('.w2ui-buttons.page-' + obj.page).find('.send-btn').prop('disabled', true);
-                });
-                event.onComplete = function () {
-                    $('.w2ui-buttons').hide();
-                    $('.w2ui-buttons.page-0').show();
-                    obj.tabs.on('click', function (event) {
-                        $('.w2ui-buttons').hide();
-                        $('.w2ui-buttons.' + event.target).show();
-                    });
-                };
-            }
+        /*------------------------------------------------------------------------
+         * Common
+         ------------------------------------------------------------------------*/
+        $(document).on("keypress", "input:not(.allow_submit)", function (event) {
+            return event.which !== 13;
         });
+
+        function fit_wrapper_height() {
+            var sHeight = $('.side').height();
+            var mHeight = $('.main').height();
+            var height = mHeight > sHeight ? mHeight - 200 : sHeight;
+            $('.content-wrapper').height(height);
+        }
+
+        // Tab
+        $('[role="tab"]').on('click',function(e){
+            var $eTarget = $(e.currentTarget);
+            var $targetPanel = $('[aria-labelledby="' + $eTarget.attr('id') + '"]');
+            $eTarget
+                .attr('aria-selected', true)
+                .addClass('is_active')
+                .siblings('[role="tab"]')
+                .attr('aria-selected', false)
+                .removeClass('is_active');
+            $targetPanel
+                .attr('aria-hidden', false)
+                .addClass('is_active')
+                .siblings('[role="tabpanel"]')
+                .attr('aria-hidden', true)
+                .removeClass('is_active');
+
+            fit_wrapper_height();
+        });
+        // Collapse
+        $(".gc_collapse button").on("click", function() {
+            var $keBtn = $(this);
+            var $tgtPnl = $(this).next(".gc_collapse_panel");
+            $keBtn
+                .attr('aria-expanded', function (i, attr) { return attr === 'true' ? 'false' : 'true'})
+                .toggleClass('is_open');
+            $tgtPnl
+                .attr('aria-hidden', function (i, attr) { return attr === 'true' ? 'false' : 'true'})
+                .toggleClass('is_show');
+
+            fit_wrapper_height();
+        });
+
+        /*------------------------------------------------------------------------
+         * Save Tab
+         ------------------------------------------------------------------------*/
+        $('#reminder_save_ajax').find('button[type=send]').prop('disabled', true);
+        $('#reminder_save_ajax').find('button').on('click', function(event) {
+            var form = $('#reminder_save_ajax');
+            w2confirm({
+                msg: $(event.target).data('confirm-message'),
+                yes_class: 'btn-right',
+                no_class: 'btn-left'
+            }).yes(function () {
+                var messages = $('.messages');
+                messages.empty();
+                lock();
+                $.ajax({
+                    url: $(event.target).data('endpoint'),
+                    type: 'POST',
+                    data: form.find('textarea,input,select').serializeArray()
+                }).done(function (data) {
+                    messages.append('<li class="info">' + data.info + '</li>');
+                    if (event.target.name === 'save') {
+                        form.find('button[type=send]').prop('disabled', false);
+                    }
+                }).fail(function (jqXHR) {
+                    var data = JSON.parse(jqXHR.responseText);
+                    messages.append('<li class="error">' + data.error + '</li>');
+                }).always(function () {
+                    unlock();
+                });
+            });
+        });
+
+        /*------------------------------------------------------------------------
+         * Detail tab
+         ------------------------------------------------------------------------*/
+        $('#reminder_search_ajax button[type=search]').on('click', function(event) {
+            lock();
+
+            $('.messages').empty();
+            $('#error_area').empty().hide();
+
+            var errorMessages = search_validation($('#reminder_search_ajax'));
+            if (errorMessages.length === 0) {
+                var formData = new FormData($('#reminder_search_ajax').get(0));
+                $.ajax({
+                    url: $(event.target).data('endpoint'),
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    traditional: true
+                }).done(function (data) {
+                    w2ui['student_grid'].records = data.show_list ? JSON.parse(data.show_list) : [];
+                    w2ui['student_grid'].refresh();
+                }).fail(function(jqXHR) {
+                    console.log(jqXHR);
+                }).always(function () {
+                    unlock();
+                });
+            } else {
+                var $ul = $('<ul class="messages" />');
+                for (var i =0, len=errorMessages.length; i < len; i++) {
+                    $ul.append('<li class="error">' + errorMessages[i] + '</li>');
+                }
+                $('#error_area').append($ul).show();
+                unlock();
+                $('html,body').animate({scrollTop: 0}, 500, 'swing');
+            }
+            return false;
+        });
+
+        $('#send_mail_to_searched_targets button').on('click', function(event) {
+            var form = $('#send_mail_to_searched_targets');
+            $('.messages').empty();
+            $('#error_area').empty().hide();
+
+            w2confirm({
+                msg: $(event.target).data('confirm-message'),
+                yes_class: 'btn-right',
+                no_class: 'btn-left'
+            }).yes(function () {
+                lock();
+                if ($(event.target).data('test') == '1') {
+                    form.find('[name=is_test]').val(1);
+                    form.find('[name=search_user_emails]').val('');
+                } else {
+                    form.find('[name=search_user_emails]').val(get_selected_user_emails().join());
+                }
+                var formData = form.find('textarea,input,select').serializeArray();
+                $.ajax({
+                    url: $(event.target).data('endpoint'),
+                    type: 'POST',
+                    data: formData,
+                }).done(function (response) {
+                    var errorMessages = response.error_messages ? JSON.parse(response.error_messages) : [];
+                    if (errorMessages.length > 0) {
+                        var $ul = $('<ul class="messages" />')
+                        for (var i =0, len=errorMessages.length; i < len; i++) {
+                            $ul.append('<li class="error">' + errorMessages[i] + '</li>');
+                        }
+                        $('#error_area').append($ul).show();
+                    } else {
+                        $('.messages').append('<li>' + response.info + '</li>');
+                    }
+                }).fail(function(jqXHR) {
+                    var data = JSON.parse(jqXHR.responseText);
+                    var $ul = $('<ul class="messages" />');
+                    $ul.append('<li class="error">' + data.error + '</li>');
+                    $('#error_area').append($ul).show();
+
+                }).always(function () {
+                    $('html,body').animate({scrollTop: 0}, 500, 'swing');
+                    form.find('[name=is_test]').val(0);
+                    form.find('[name=search_user_emails]').val('');
+                    unlock();
+                });
+            }).no(function(event){
+                form.find('[name=is_test]').val(0);
+            });
+        });
+
+        var studentGrid = $('#grid').w2grid({
+                name: 'student_grid',
+                fixedBody: true,
+                selectType : 'row',
+                show: {
+                    selectColumn: true,
+                    toolbar: true,
+                    footer: false,
+                    toolbarReload: false
+                },
+                columns: [
+                    {field: 'login_code', caption: '${_("Login Code")}', size: 2, min: 80, sortable: true, hidden: false},
+                    {field: 'full_name', caption: '${_("Full Name")}', size: 2, min: 80, sortable: true, hidden: false},
+                    {field: 'user_name', caption: '${_("Username")}', size: 2, min: 120, sortable: true, hidden: false},
+                    {field: 'user_email', caption: '${_("Email Address")}', size: 3, min: 150, sortable: true, hidden: false},
+                    {field: 'student_status', caption: '${_("Student Status")}', size: 2, min: 120, sortable: true, hidden: false},
+                    {field: 'total_score', caption: '${_("Total Score")}', size: 2, min: 100, sortable: true, hidden: false,
+                        render:renderPercent, style:'text-align: right'},
+                    {field: 'total_playback', caption: '${_("Total Playback Time")}', size: 2, min: 100, sortable: true, hidden: false,
+                        render:renderTime, style:'text-align: right'},
+                    {field: 'org1', caption: '${_("Organization")} 1', size:2, min: 80, sortable: true, hidden: true},
+                    {field: 'org2', caption: '${_("Organization")} 2', size:2, min: 80, sortable: true, hidden: true},
+                    {field: 'org3', caption: '${_("Organization")} 3', size:2, min: 80, sortable: true, hidden: true},
+                    {field: 'org4', caption: '${_("Organization")} 4', size:2, min: 80, sortable: true, hidden: true},
+                    {field: 'org5', caption: '${_("Organization")} 5', size:2, min: 80, sortable: true, hidden: true},
+                    {field: 'org6', caption: '${_("Organization")} 6', size:2, min: 80, sortable: true, hidden: true},
+                    {field: 'org7', caption: '${_("Organization")} 7', size:2, min: 80,sortable: true, hidden: true},
+                    {field: 'org8', caption: '${_("Organization")} 8', size:2, min: 80, sortable: true, hidden: true},
+                    {field: 'org9', caption: '${_("Organization")} 9', size:2, min: 80, sortable: true, hidden: true},
+                    {field: 'org10', caption: '${_("Organization")} 10',size:2, min: 80, sortable: true, hidden: true},
+                    {field: 'item1', caption: '${_("Item")} 1', size:2, min: 80, sortable: true, hidden: true},
+                    {field: 'item2', caption: '${_("Item")} 2', size:2, min: 80, sortable: true, hidden: true},
+                    {field: 'item3', caption: '${_("Item")} 3', size:2, min: 80, sortable: true, hidden: true},
+                    {field: 'item4', caption: '${_("Item")} 4', size:2, min: 80, sortable: true, hidden: true},
+                    {field: 'item5', caption: '${_("Item")} 5', size:2, min: 80, sortable: true, hidden: true},
+                    {field: 'item6', caption: '${_("Item")} 6', size:2, min: 80, sortable: true, hidden: true},
+                    {field: 'item7', caption: '${_("Item")} 7', size:2, min: 80, sortable: true, hidden: true},
+                    {field: 'item8', caption: '${_("Item")} 8', size:2, min: 80, sortable: true, hidden: true},
+                    {field: 'item9', caption: '${_("Item")} 9', size:2, min: 80, sortable: true, hidden: true},
+                    {field: 'item10', caption: '${_("Item")} 10',size:2,min: 80, sortable: true, hidden: true}
+                ],
+                total: 0,
+                records: [],
+                getSelectionRecords: function() {
+                    var gridSelection = this.getSelection(), returnRows = [];
+                    $.each(this.records, function(index, value) {
+                        if (gridSelection.indexOf(value.recid) != -1) {
+                            returnRows.push(value);
+                        }
+                    });
+                    return returnRows;
+                }
+            });
+
+        for (var i = 0, scoreResponseColumns = ${search_mail_info['hidden_score_columns']}; i < scoreResponseColumns.length; i++) {
+            var responseColumn = scoreResponseColumns[i];
+            studentGrid.columns.push(createColumn(responseColumn[0], responseColumn[0], responseColumn[1]));
+        }
+        for (var i = 0, playbackResponseColumns = ${search_mail_info['hidden_playback_columns']}; i < playbackResponseColumns.length; i++) {
+            var responseColumn = playbackResponseColumns[i];
+            studentGrid.columns.push(createColumn(responseColumn[0], responseColumn[0], responseColumn[1]));
+        }
+        grid.push(studentGrid);
+
+        function search_validation($form) {
+            var errorMessages = [];
+            var totalScoreFromVal = $form.find('[name=total_score_from]').val();
+            if (totalScoreFromVal && !w2utils.isInt(totalScoreFromVal)) {
+                errorMessages.push('${_("Total Score(From) value must be an integer.")}');
+            }
+            var totalScoreToVal = $form.find('[name=total_score_to]').val();
+            if (totalScoreToVal && !w2utils.isInt(totalScoreToVal)) {
+                errorMessages.push('${_("Total Score(To) value must be an integer.")}');
+            }
+            var totalPlaybackFromVal = $form.find('[name=total_playback_from]').val();
+            if (totalPlaybackFromVal && !w2utils.isInt(totalPlaybackFromVal)) {
+                errorMessages.push('${_("Total Playback Time(From) value must be an integer.")}');
+            }
+            var totalPlaybackToVal = $form.find('[name=total_playback_to]').val();
+            if (totalPlaybackToVal && !w2utils.isInt(totalPlaybackToVal)) {
+                errorMessages.push('${_("Total Playback Time(To) value must be an integer.")}');
+            }
+            for (var i=1; i <= 5; i++) {
+                var detailFromVal = $form.find('[name="detail_condition_score_from_' + i + '"]').val();
+                if (detailFromVal && !w2utils.isInt(detailFromVal)) {
+                    errorMessages.push('${_("Section Score(From) value must be an integer.")}');
+                }
+                var detailToVal = $form.find('[name="detail_condition_score_to_' + i + '"]').val();
+                if (detailToVal && !w2utils.isInt(detailToVal)) {
+                    errorMessages.push('${_("Section Score(To) value must be an integer.")}')
+                }
+            }
+            for (var i=1; i <= 5; i++) {
+                var detailFromVal = $form.find('[name="detail_condition_playback_from_' + i + '"]').val();
+                if (detailFromVal && !w2utils.isInt(detailFromVal)) {
+                    errorMessages.push('${_("Section Playback Time(From) value must be an integer.")}')
+                }
+                var detailToVal = $form.find('[name="detail_condition_playback_to_' + i + '"]').val();
+                if (detailToVal && !w2utils.isInt(detailToVal)) {
+                    errorMessages.push('${_("Section Playback Time(To) value must be an integer.")}');
+                }
+            }
+
+            return errorMessages;
+        }
+        function createColumn(field, caption, type) {
+            var column = {
+                field: field,
+                caption: caption,
+                sortable: true,
+                hidden: true,
+                size: '10%',
+                min: 80
+            };
+            switch (type) {
+                case 'text':
+                    column['searchable'] = true;
+                    break;
+                case 'date':
+                    column['type'] = 'date';
+                    column['render'] = 'date: yyyy/mm/dd';
+                    column['searchable'] = true;
+                    break;
+                case 'percent':
+                    column['render'] = renderPercent;
+                    column['style'] = 'text-align: right';
+                    break;
+                case 'time':
+                    column['render'] = renderTime;
+                    column['style'] = 'text-align: right';
+                    break;
+            }
+            return column;
+        }
+        function get_selected_user_emails() {
+            var userEmails = [];
+            var selectionRecords = w2ui['student_grid'].getSelectionRecords();
+            for (var i =0, len=selectionRecords.length; i < len; i++) {
+                userEmails.push(selectionRecords[i].user_email);
+            }
+            return userEmails;
+        }
+        function lock() {
+            w2utils.lock($('.biz-wrap'), '', true);
+        }
+        function unlock() {
+            w2utils.unlock($('.biz-wrap'));
+        }
+
     });
 </script>
 <style>
-  .content-wrapper {
-    min-height: 1000px;
-  }
-  .operation {
-    font-size: 1rem;
-    margin: 0.5rem 0 0.5rem 0;
-  }
-  .w2ui-page {
-    min-height: 800px;
-  }
-  .w2ui-page .operation > .operation {
-    padding-left: 1rem;
-  }
-  .w2ui-tabs .w2ui-tab {
-    margin: 1px 1px -2px 0;
-  }
-  .field > label {
-    display: block;
-    font-style: normal;
-    margin: 1rem 0rem 0.5rem;
-  }
-  .field > div > * {
-    font-size: 1rem;
-    width: 100%;
-  }
-  .field select {
-    width: 100px;
-  }
-  .w2ui-form .w2ui-buttons {
-    padding-left: 20px !important;
-    padding-right: 20px !important;
-  }
-  .w2ui-buttons > .save-btn {
-    background-color: #43ac6a;
-    transition: background-color 0.15s ease-in-out 0s;
-    float: left;
-  }
-  .w2ui-buttons > .send-btn {
-    float: right;
-  }
-  .operation-right {
-    clear: both;
-    float: right;
-    text-align: right;
-  }
+    #w2ui-overlay-searches-student_grid,
+    #tb_student_grid_toolbar_item_w2ui-search,
+    #tb_student_grid_toolbar_item_w2ui-search-advanced{
+        display: none !important;
+    }
+    .content-wrapper {
+        % if is_manager :
+        min-height: 1400px;
+        % else :
+        min-height: 850px;
+        % endif
+    }
+    .biz-wrap #grid{
+        min-width: auto !important;
+    }
+    .gc_reminder_mail_absolute {
+        position: relative;
+        display: block;
+        height: 20px;
+    }
+    .gc_reminder_mail_absolute_other {
+        height: 70px;
+        line-height: 1.5;
+    }
+    .gc_reminder_mail_absolute_left {
+        position: absolute;
+        left: 0;
+        top: 0;
+    }
+    .gc_reminder_mail_absolute_right {
+        position: absolute;
+        right: 0;
+        top: 0;
+        text-align: right;
+    }
 </style>
 </%block>
 
 <%block name="custom_content">
-<div id="form" class="field-area" style="display: none;">
-    % for i, mail_info in enumerate(mail_info_list):
-    <div class="w2ui-page page-${i}">
-        <div class="field">
-            <label for="reminder_email_days-${i}">${_("Reminder E-mail Days:")}</label>
-            <div class="w2ui-field">
-                <select id="reminder_email_days-${i}" name="reminder_email_days">
-                    % for j in range(ContractReminderMail.REMINDER_EMAIL_DAYS_MIN_VALUE, ContractReminderMail.REMINDER_EMAIL_DAYS_MAX_VALUE + 1):
-                    <option value="${j}" ${'selected' if mail_info.reminder_email_days == j else ''}>${j}</option>
-                    % endfor
-                </select>&nbsp;<span class="operation">${_("days before")}</span>
+<div id="error_area" class="gc_error_area"></div>
+<div class="gc_content">
+    <div class="gc_tab">
+        <ul class="gc_tab_list" role="tablist">
+            % if is_manager :
+            <li class="gc_tab_item is_active" id="tab02" role="tab" aria-controls="pnl02" aria-selected="true" tabindex="0">
+                ${_("Reminder mail other")}</li>
+            % else :
+            <li class="gc_tab_item is_active" id="tab01" role="tab" aria-controls="pnl01" aria-selected="true" tabindex="0">
+                ${_("Reminder mail for not yet subbmitted user")}</li>
+            <li class="gc_tab_item" id="tab02" role="tab" aria-controls="pnl02" aria-selected="false" tabindex="0">
+                ${_("Reminder mail other")}</li>
+            % endif
+        </ul>
+    </div>
+    <div class="gc_tab_content">
+        % if not is_manager :
+        <div class="gc_tab_panel is_active" id="pnl01" role="tabpanel" aria-labelledby="tab01" aria-hidden="false">
+            <div class="gc_data_section">
+                <div class="gc_mail_conf">
+                    <p>${_("You can send reminder mail automatically to not yet submitted user")}</p>
+                    <br />
+                    <form id="reminder_save_ajax">
+                        <input type="hidden" name="csrfmiddlewaretoken" value="${csrf_token}" />
+                        <input type="hidden" name="mail_type" value="${mail_info.mail_type}" />
+                        <input type="hidden" name="contract_id" value="${request.current_contract.id}" />
+                        <div class="gc_mail_conf_field">
+                            <div class="gc_field">
+                                <label for="reminder_email_days-0">${_("Reminder E-mail Days:")}</label>
+                                <select id="reminder_email_days-0" name="reminder_email_days">
+                                    % for j in range(ContractReminderMail.REMINDER_EMAIL_DAYS_MIN_VALUE, ContractReminderMail.REMINDER_EMAIL_DAYS_MAX_VALUE + 1):
+                                    <option value="${j}" ${'selected' if mail_info.reminder_email_days == j else ''}>${j}</option>
+                                    % endfor
+                                </select>&nbsp;<span class="operation">${_("days before")}</span>
+                            </div>
+                        </div>
+                        <div class="gc_mail_conf_field">
+                            <span class="red">${_("The following logograph will replace each user's information when sending the e-mail. Do not change the logograph.")}</span>
+                        </div>
+                        <div class="gc_mail_conf_field">
+                            <ul class="gc_mail_conf_ex">
+                                % for k, v in mail_info.mail_params.items():
+                                <li class="gc_mail_conf_ex_item">{${k}}:${v}</li>
+                                % endfor
+                            </ul>
+                        </div>
+                        <div class="gc_mail_conf_field">
+                            <label class="gc_mail_conf_label" for="subject-0">${_("Subject")}</label>
+                            <input id="subject-0" class="gc_mail_conf_ctl" name="mail_subject" maxlength="128" value="${mail_info.mail_subject}" />
+                        </div>
+                        <div class="gc_mail_conf_field">
+                            <label class="gc_mail_conf_label" for="body-0">${_("Send a Message")}</label>
+                            <textarea id="body-0" class="gc_mail_conf_ctl" name="mail_body" rows="10">${mail_info.mail_body}</textarea>
+                        </div>
+                        <div class="gc_mail_conf_field">
+                            <div class="operation">${_("(The target courses and the section are listed. This part can not be edited.)")}</div>
+                        </div>
+                        <div class="gc_mail_conf_field">
+                            <textarea id="body2-0" class="gc_mail_conf_ctl" name="mail_body2" rows="15">${mail_info.mail_body2}</textarea>
+                        </div>
+                        <div class="gc_btn_cta gc_btn_cta_right gc_mt10">
+                            <button class="btn btn-grn" type="button" data-test="0" name="save" style="float:left;"
+                                    data-confirm-message='${_("The template e-mail will be saved, overwriting the original e-mail. Is it OK?")}'
+                                    data-endpoint="${reverse('biz:contract_operation:reminder_mail_save_ajax')}">${_("Registration")}</button>
+                            <button class="btn btn-blue" type="button" data-test="1" name="send"
+                                    data-confirm-message='${_("Are you sure you want to send the test e-mail?")}'
+                                    data-endpoint="${reverse('biz:contract_operation:reminder_mail_send_ajax')}">&#xf003 ${_("Send the test e-mail")}</button>
+                        </div>
+                        <div class="gc_reminder_mail_absolute">
+                            <div class="gc_reminder_mail_absolute_right">
+                                <p>${_("The test e-mail was send to yourself")}</p>
+                            </div>
+                            <div class="gc_reminder_mail_absolute_left">
+                                <p class="red">${_("If you want to fix, press registration button after fix contents.")}</p>
+                            </div>
+                        </div>
+                    </form>
+                </div>
             </div>
-        </div>
-        <div class="operation">
-            <span class="red">${_("The following logograph will replace each user's information when sending the e-mail. Do not change the logograph.")}</span>
-            % for k, v in mail_info.mail_params.items():
-            <div class="operation">{${k}}:${v}</div>
-            % endfor
-        </div>
-        <div class="field">
-            <label for="subject-${i}">${_("Subject:")}</label>
-            <div>
-                <input id="subject-${i}" name="mail_subject" maxlength="128" value="${mail_info.mail_subject}" />
+        <!-- .gc_tab_panel --></div>
+        % endif
+        % if is_manager :
+        <div class="gc_tab_panel is_active" id="pnl02" role="tabpanel" aria-labelledby="tab02" aria-hidden="false">
+        % else :
+        <div class="gc_tab_panel" id="pnl02" role="tabpanel" aria-labelledby="tab02" aria-hidden="true">
+        % endif
+            <div class="gc_anchor"><a href="#search_mail_settings_title"><i
+                    class="fa fa-caret-square-o-down" aria-hidden="true"></i>${_("Mail settings")}</a></div>
+            <form id="reminder_search_ajax">
+                <input type="hidden" name="csrfmiddlewaretoken" value="${csrf_token}" />
+                <input type="hidden" name="contract_id" value="${request.current_contract.id}" />
+                <div class="gc_column">
+                    <div class="gc_column_col gc_column_tight">
+                        <div class="gc_field">
+                            <label class="gc_field_label gc_w10em" for="search_student_status">${_('Student Status')}</label>
+                            <select id="search_student_status" class="gc_field_ipt gc_w15em" rel="search" name="student_status" title="">
+                                <option value=""></option>
+                                % for student_status in search_mail_info['student_status_list']:
+                                <option value="${student_status}">${student_status}</option>
+                                % endfor;
+                            </select>
+                        </div>
+                    </div>
+                    <div class="gc_column_col gc_column_tight">
+                        <div class="gc_field">
+                            <fieldset class="gc_fieldset">
+                                <div class="gc_fieldset_wrap">
+                                    <legend class="gc_fieldset_label gc_w7em" for="search_total_score_from">${_("Total Score")}</legend>
+                                    <div class="gc_field_group">
+                                        <input id="search_total_score_from" class="gc_field_ipt gc_w5em"
+                                               rel="search" type="text" name="total_score_from" maxlength="3" title="" value="" />
+                                        <span class="gc_field_connect">〜</span>
+                                        <input id="search_total_score_to" class="gc_field_ipt gc_w5em"
+                                               rel="search" type="text" name="total_score_to" maxlength="3" title="" value="" />
+                                        <span class="gc_field_connect">(&#37;)</span>
+                                    </div>
+                                </div>
+                            </fieldset>
+                        </div>
+                        <div class="gc_field">
+                            <fieldset class="gc_fieldset">
+                                <div class="gc_fieldset_wrap">
+                                    <legend class="gc_fieldset_label gc_w7em" for="search_total_playback_time_from">${_("Total Playback Time")}</legend>
+                                    <div class="gc_field_group">
+                                        <input id="search_total_playback_time_from" class="gc_field_ipt gc_w5em"
+                                               rel="search" type="text" name="total_playback_from" title="" value="" />
+                                        <span class="gc_field_connect">〜</span>
+                                        <input id="search_total_playback_time_to" class="gc_field_ipt gc_w5em"
+                                               rel="search" type="text" name="total_playback_to" title="" value="" >
+                                        <span class="gc_field_connect">(${_("Minutes")})</span>
+                                        <label class="gc_field_ipt_opt" for="search_total_playback_time_no" style="font-size: 0.9em;"><input
+                                                id="search_total_playback_time_no" class="gc_field_ipt_chk" rel="search"
+                                                type="checkbox" name="total_playback_no" title="" value="1" />${_("No playback")}</label>
+                                    </div>
+                                </div>
+                            </fieldset>
+                        </div>
+                    </div>
+                <!-- /.gc_column --></div>
+                <div class="gc_collapse">
+                    <button class="gc_collapse_btn" aria-controls="collapse_panel01" aria-expanded="false"
+                            type="button"><i class="fa fa-plus-square gc_ico_plus" aria-hidden="true"></i><i
+                            class="fa fa-minus-square gc_ico_minus" aria-hidden="true"></i>${_("Search Detail(Score)")}</button>
+                    <div class="gc_collapse_panel" aria-hidden="true" id="collapse_panel01">
+                        <div class="gc_column">
+                            <div class="gc_column_col gc_column_col_full">
+                            % for i in range(1, 6) :
+                                <div class="gc_field">
+                                    <fieldset class="gc_fieldset">
+                                        <div class="gc_fieldset_wrap">
+                                            <legend class="gc_fieldset_label gc_w10em" for="sdc_score_name_${i}">${_("Search Condition")}${i}</legend>
+                                            <div class="gc_field_group">
+                                                <select id="sdc_score_name_${i}" class="gc_field_ipt gc_w20em" name="detail_condition_score_name_${i}">
+                                                    <option value=""></option>
+                                                    % for name in search_mail_info['score_section_names'] :
+                                                    <option value="${name}">${name}</option>
+                                                    % endfor;
+                                                </select>
+                                                <input class="gc_field_ipt gc_w5em" rel="search" type="text"
+                                                       name="detail_condition_score_from_${i}" title="" value="" maxlength="3" />
+                                                <span class="gc_field_connect">〜</span>
+                                                <input class="gc_field_ipt gc_w5em" rel="search" type="text"
+                                                       name="detail_condition_score_to_${i}" title="" value="" maxlength="3" />
+                                                <span class="gc_field_connect">(&#37;)</span>
+                                                <label class="gc_field_ipt_opt" for="sdc_score_no_${i}"><input
+                                                        id="sdc_score_no_${i}" class="gc_field_ipt_chk" rel="search"
+                                                        type="checkbox" name="detail_condition_score_no_${i}" title="" value="1" />
+                                                    ${_("Unanswered")}
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </fieldset>
+                                </div>
+                            % endfor;
+                            </div>
+                        </div>
+                    </div>
+                <!-- / .gc_collapse" --></div>
+                <div class="gc_collapse">
+                    <button class="gc_collapse_btn" aria-controls="collapse_panel02" aria-expanded="false"
+                            type="button"><i class="fa fa-plus-square gc_ico_plus" aria-hidden="true"></i><i
+                            class="fa fa-minus-square gc_ico_minus" aria-hidden="true"></i>${_("Search Detail(Playback)")}</button>
+                    <div class="gc_collapse_panel" aria-hidden="true" id="collapse_panel02">
+                        <div class="gc_column">
+                            <div class="gc_column_col gc_column_col_full">
+                            % for i in range(1, 6) :
+                                <div class="gc_field">
+                                    <fieldset class="gc_fieldset">
+                                        <div class="gc_fieldset_wrap">
+                                            <legend class="gc_fieldset_label gc_w10em" for="sdc_playback_name_${i}">${_("Search Condition")}${i}</legend>
+                                            <div class="gc_field_group">
+                                                <select id="sdc_playback_name_${i}" class="gc_field_ipt gc_w20em" name="detail_condition_playback_name_${i}">
+                                                    <option value=""></option>
+                                                    % for name in search_mail_info['playback_section_names'] :
+                                                    <option value="${name}">${name}</option>
+                                                    % endfor;
+                                                </select>
+                                                <input class="gc_field_ipt gc_w5em" rel="search" type="text"
+                                                       name="detail_condition_playback_from_${i}" title="" value="" />
+                                                <span class="gc_field_connect">〜</span>
+                                                <input class="gc_field_ipt gc_w5em" rel="search" type="text"
+                                                       name="detail_condition_playback_to_${i}" title="" value="" />
+                                                <span class="gc_field_connect">(${_("Minutes")})</span>
+                                                <label class="gc_field_ipt_opt" for="sdc_playback_no_${i}"><input
+                                                        id="sdc_playback_no_${i}" class="gc_field_ipt_chk" rel="search"
+                                                        type="checkbox" name="detail_condition_playback_no_${i}" title="" value="1" />${_("No playback")}</label>
+                                            </div>
+                                        </div>
+                                    </fieldset>
+                                </div>
+                            % endfor;
+                            </div>
+                        </div>
+                    </div>
+                <!-- / .gc_collapse" --></div>
+                <div class="gc_collapse">
+                    <button class="gc_collapse_btn" aria-controls="collapse_panel03" aria-expanded="false"
+                            type="button"><i class="fa fa-plus-square gc_ico_plus" aria-hidden="true"></i><i
+                            class="fa fa-minus-square gc_ico_minus" aria-hidden="true"></i>${_("Search Detail(Other)")}</button>
+                    <div class="gc_collapse_panel" aria-hidden="true" id="collapse_panel03">
+                        <div class="gc_column">
+                            <div class="gc_column_col gc_column_col_full">
+                            % for i in range(1, 6) :
+                                <div class="gc_field">
+                                    <fieldset class="gc_fieldset">
+                                        <div class="gc_fieldset_wrap">
+                                            <legend class="gc_fieldset_label gc_w10em" for="sdc_other_name_${i}">${_("Search Condition")}${i}</legend>
+                                            <div class="gc_field_group">
+                                                <select id="sdc_other_name_${i}" class="gc_field_ipt gc_w15em" name="detail_condition_other_name_${i}">
+                                                    <option value=""></option>
+                                                    % for key in search_mail_info['search_detail_other_list'] :
+                                                        <option value="${key}">${search_mail_info['search_detail_other_list'][key]}</option>
+                                                    % endfor;
+                                                </select>
+                                                <input class="gc_field_ipt gc_w20em" rel="search" type="text" name="detail_condition_other_${i}" title="" value="" />
+                                            </div>
+                                        </div>
+                                    </fieldset>
+                                </div>
+                            % endfor;
+                            </div>
+                        </div>
+                    </div>
+                <!-- / .gc_collapse" --></div>
+                <div class="gc_btn_cta gc_btn_cta_center">
+                    <button class="btn btn-blue gc_btn_search" type="search"
+                            data-endpoint="${reverse('biz:contract_operation:reminder_search_ajax')}">${_("Search")}</button>
+                </div>
+            </form>
+            <h2>${_("Search Result")}</h2>
+            <div class="gc_data_section">
+                <div id="grid" style="height: 350px;"></div>
             </div>
-        </div>
-        <div class="field">
-            <label for="body-${i}">${_("Send a Message:")}</label>
-            <div>
-                <textarea id="body-${i}" name="mail_body" rows="10">${mail_info.mail_body}</textarea>
+            <div class="gc_data_section">
+                <h2 id="search_mail_settings_title">${_("Mail settings")}</h2>
+                <div class="gc_mail_conf">
+                    <ul class="gc_mail_conf_ex">
+                    <li class="gc_mail_conf_ex_item">${_("" +
+                        "You can send mail to searched students,<br />" +
+                        "And you can use replacement character If you want enter full name, course name etc to mail body.<br />" +
+                        "[Replacement Character]")}</li>
+                    </ul>
+                    <ul class="gc_mail_conf_ex">
+                        % for param in search_mail_info['search_mail_params']:
+                        <li class="gc_mail_conf_ex_item">{${param[0]}}:${param[1]}</li>
+                        % endfor;
+                    </ul>
+                    <form id="send_mail_to_searched_targets">
+                        <input type="hidden" name="csrfmiddlewaretoken" value="${csrf_token}" />
+                        <input type="hidden" name="contract_id" value="${request.current_contract.id}" />
+                        <input type="hidden" name="search_user_emails" value="" />
+                        <input type="hidden" name="is_test" value="0" />
+                        <div class="gc_mail_conf_field">
+                            <label class="gc_mail_conf_label" for="search_subject">${_("Subject")}</label>
+                            <input id="search_subject" class="gc_mail_conf_ctl" name="mail_subject" maxlength="128" value="" title="" />
+                        </div>
+                        <div class="gc_mail_conf_field">
+                            <label class="gc_mail_conf_label" for="search_body">${_("Send a Message")}</label>
+                            <textarea id="search_body" class="gc_mail_conf_ctl" name="mail_body" rows="20"></textarea>
+                        </div>
+                        <div class="gc_btn_cta gc_btn_cta_right gc_mt10">
+                            <button class="btn btn-grn" type="button" data-test="0" data-confirm-message='${_("Are you sure you want to send the e-mail?")}'
+                                    data-endpoint="${reverse('biz:contract_operation:reminder_search_mail_send_ajax')}">&#xf003 ${_("Send the e-mail")}</button>
+                            <button class="btn btn-blue" type="button" data-test="1" data-confirm-message='${_("Are you sure you want to send the test e-mail?")}'
+                                    data-endpoint="${reverse('biz:contract_operation:reminder_search_mail_send_ajax')}">&#xf003 ${_("Send the test e-mail")}</button>
+                        </div>
+                        <div class="gc_reminder_mail_absolute gc_reminder_mail_absolute_other">
+                            <div class="gc_reminder_mail_absolute_right">
+                                <p>
+                                    <span class="red">${_("Please attension, E-mail will be sent as soon as you press the button of \"send the e-mail\".")}</span><br />
+                                    ${_("Please be sure to confirm mail body before send the e-mail.")}<br/>
+                                    ${_("The test e-mail was send to yourself")}
+                                </p>
+                            </div>
+                        </div>
+                    </form>
+                </div>
             </div>
-        </div>
-        <div class="operation">${_("(The target courses and the section are listed. This part can not be edited.)")}</div>
-        <div class="field">
-            <div>
-                <textarea id="body2-${i}" name="mail_body2" rows="15">${mail_info.mail_body2}</textarea>
-            </div>
-        </div>
-        <div class="field">
-            <input type="hidden" name="mail_type" value="${mail_info.mail_type}" />
-            <input type="hidden" name="contract_id" value="${request.current_contract.id}" />
         </div>
     </div>
-    ## Note: Add page-i class in order to switch buttons according to the tab click
-    <div class="w2ui-buttons page-${i}">
-        <input type="button" name="save" class="save-btn"
-               data-confirm-message="${_("The template e-mail will be saved, overwriting the original e-mail. Is it OK?")}"
-               data-endpoint="${reverse('biz:contract_operation:reminder_mail_save_ajax')}"
-               value="&#xf044 ${_("Save the template e-mail")}" />
-        <input type="button" name="send" class="send-btn"
-               data-confirm-message="${_("Are you sure you want to send the test e-mail?")}"
-               data-endpoint="${reverse('biz:contract_operation:reminder_mail_send_ajax')}"
-               value="&#xf003 ${_("Send the test e-mail")}" />
-        <div class="operation operation-right" style="">${_("The test e-mail was send to yourself")}</div>
-    </div>
-    % endfor
 </div>
 </%block>

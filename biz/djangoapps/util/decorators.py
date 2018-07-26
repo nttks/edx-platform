@@ -16,6 +16,7 @@ from django.utils.translation import ugettext as _
 from biz.djangoapps.ga_contract.models import Contract, ContractDetail
 from biz.djangoapps.ga_manager.models import Manager
 from biz.djangoapps.ga_organization.models import Organization
+from biz.djangoapps.gx_org_group.models import Group, Right, Child
 from biz.djangoapps.util import cache_utils, course_utils, datetime_utils, validators
 from edxmako.shortcuts import render_to_response, render_to_string
 
@@ -160,8 +161,33 @@ def check_course_selection(func):
                 log.info("Redirect to course_not_specified page because course_id is not specified.")
                 return _render_course_not_specified(request)
 
-        elif re.match('^/biz/contract_operation/', request.path):
+        elif re.match('^/biz/contract_operation/reminder', request.path):
             if not manager.can_handle_contract_operation():
+                log.warning(
+                    "Manager(id={}) has no permission to handle '{}' feature.".format(
+                        manager.id, 'contract_operation/reminder_mail')
+                )
+                return _render_403(request)
+
+            elif not contract_id:
+                # if user has role(platformer and director:can_handle_contract_operation).
+                log.info("Redirect to contract_not_specified page because contract_id is not specified.")
+                return _render_contract_not_specified(request)
+
+        elif re.match('^/biz/contract_operation/students', request.path):
+            if not manager.can_handle_contract_operation():
+                log.warning(
+                    "Manager(id={}) has no permission to handle '{}' feature.".format(
+                        manager.id, 'contract_operation/students')
+                )
+                return _render_403(request)
+            elif not contract_id:
+                # if user has role(platformer and director:can_handle_contract_operation).
+                log.info("Redirect to contract_not_specified page because contract_id is not specified.")
+                return _render_contract_not_specified(request)
+
+        elif re.match('^/biz/contract_operation/', request.path):
+            if not manager.can_handle_contract_operation() or not manager.is_director():
                 log.warning(
                     "Manager(id={}) has no permission to handle '{}' feature.".format(
                         manager.id, 'contract_operation')
@@ -172,6 +198,21 @@ def check_course_selection(func):
                 log.info("Redirect to contract_not_specified page because contract_id is not specified.")
                 return _render_contract_not_specified(request)
 
+        elif re.match('^/biz/member/', request.path):
+            if not manager.can_handle_course_operation():
+                log.warning(
+                    "Manager(id={}) has no permission to handle '{}' feature.".format(
+                        manager.id, 'member')
+                )
+                return _render_403(request)
+
+        elif re.match('^/biz/group/', request.path):
+            if not manager.can_handle_course_operation():
+                log.warning(
+                    "Manager(id={}) has no permission to handle '{}' feature.".format(
+                        manager.id, 'group')
+                )
+                return _render_403(request)
 
         log.debug("request.current_organization={}".format(getattr(request, 'current_organization', None)))
         log.debug("request.current_manager={}".format(getattr(request, 'current_manager', None)))
@@ -300,6 +341,7 @@ def _set_course_name_to_contract_details(contract_details):
 def _render_403(request):
     """Renders 403 page"""
     cache_utils.delete_course_selection(request.user)
+    cache_utils.delete_organization_group(request.user)
     return HttpResponseForbidden(render_to_string('static_templates/403.html', {}))
 
 
@@ -319,3 +361,59 @@ def _render_course_not_specified(request):
     """Renders course_not_specified page"""
     messages.error(request, _("Course is not specified."))
     return render_to_response('ga_course_selection/course_not_specified.html')
+
+def check_organization_group(func):
+    """
+    This checks user's organization group on cache,
+    and redirects user to 403 page if user's organization group is not found.
+
+    :param func: function to be wrapped
+    :returns: the wrapped function
+    """
+    @wraps(func)
+    def wrapper(request, *args, **kwargs):
+        log.debug("request.path={}".format(request.path))
+        user = request.user
+        org = request.current_organization
+
+        manager = Manager.get_manager(user=user, org=org)
+        if not manager:
+            log.warning("User(id={}) has no manager model.".format(user.id))
+            return _render_403(request)
+
+        if org and manager and manager.is_manager() and not manager.is_director():
+            group, visible_group_ids = cache_utils.get_organization_group(user)
+
+            if not group or org is not group.org:
+                rights = Right.objects.filter(user=user, org=org).select_related('group')
+                if rights.exists():
+                    group = rights.first().group
+                    visible_group_ids = []
+                    for right in rights:
+                        if right.group.child.exists():
+                            child_group_ids = [right.group.id]
+                            for child in right.group.child.all():
+                                if child.list.strip():
+                                    child_group_ids.extend(int(id) for id in child.list.split(','))
+                            visible_group_ids.extend(child_group_ids)
+                else:
+                    group = None
+                    visible_group_ids = []
+
+        else:
+            # If not selected organization, empty set.
+            group = None
+            visible_group_ids = []
+
+        # Set request
+        request.current_organization_group = group
+        log.info('set request.current_organization_group:' + str(group.id if group else ''))
+        request.current_organization_visible_group_ids = visible_group_ids
+        log.info('set request.current_organization_visible_group_ids:' + ','.join(map(str, visible_group_ids)))
+        # Set cache
+        cache_utils.set_organization_group(user, group, visible_group_ids)
+
+        out = func(request, *args, **kwargs)
+        return out
+
+    return wrapper

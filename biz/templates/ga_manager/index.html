@@ -60,6 +60,7 @@ from django.core.urlresolvers import reverse
                     show_message("error", gettext("An error occurred. Please reload the page."));
                 }
             }).always(function () {
+                fit_wrapper_height();
                 unlock();
             });
         }
@@ -140,7 +141,13 @@ from django.core.urlresolvers import reverse
         function show_message(level, message) {
             $(".messages").append('<li class="' + level + '">' + message + '</li>');
         }
-
+        function fit_wrapper_height() {
+            var sHeight = $('.side').height();
+            var mHeight = $('.main').height();
+            var height = mHeight > sHeight ? mHeight - 200 : sHeight;
+            $('.content-wrapper').height(height);
+        }
+        fit_wrapper_height();
     });
 </script>
 </%block>
@@ -190,7 +197,7 @@ from django.core.urlresolvers import reverse
     </div>
     <div class="w2ui-buttons">
         <input type="text" id="add-user" placeholder="${_('Enter username or email')}"/>
-        <input type="submit" id="edit-btn" data-endpoint="${reverse('biz:manager:modify_ajax')}" value="&#xf044 ${_('Add User')}"/>
+        <input type="submit" id="edit-btn" data-endpoint="${reverse('biz:manager:modify_ajax')}" value="${_('Registration')}"/>
     </div>
 </div>
 </%block>

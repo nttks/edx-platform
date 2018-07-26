@@ -46,7 +46,9 @@ INSTALLED_APPS += (
     'biz.djangoapps.ga_manager',
     'biz.djangoapps.ga_organization',
     'biz.djangoapps.ga_student',
-)
+    'biz.djangoapps.gx_member',
+    'biz.djangoapps.gx_org_group',
+    'biz.djangoapps.gx_login',)
 
 """
 Batch Settings

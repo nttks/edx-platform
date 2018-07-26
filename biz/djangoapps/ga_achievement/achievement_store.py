@@ -5,7 +5,7 @@ Processed into w2ui data and csv data.
 """
 from collections import OrderedDict
 from datetime import datetime
-import numbers
+import re
 
 from django.conf import settings
 from django.utils.translation import ugettext as _
@@ -25,6 +25,7 @@ class AchievementStoreBase(BizStore):
     FIELD_DOCUMENT_TYPE = 'document_type'
     FIELD_DOCUMENT_TYPE__COLUMN = 'column'
     FIELD_DOCUMENT_TYPE__RECORD = 'record'
+    FIELD_DELIMITER = '___'
     FIELD_LOGIN_CODE = 'Login Code'
     FIELD_FULL_NAME = 'Full Name'
     FIELD_USERNAME = 'Username'
@@ -109,155 +110,6 @@ class AchievementStoreBase(BizStore):
         ]
         return self.get_document(conditions=conditions, excludes=excludes)
 
-    def get_record_documents(self, offset=0, limit=0):
-        """
-        Get stored documents which type is marked as 'record'
-
-        :param offset: Offset to documents
-        :param limit: Limit to documents (A limit() value of 0 (i.e. .limit(0)) is equivalent to setting no limit.)
-        :return: documents for record
-            e.g.)
-            [
-                OrderedDict([
-                    (u'\u6c0f\u540d', u'\u30c6\u30b9\u30c8\u30e6\u30fc\u30b6\u30fc1'),
-                    (u'\u30e6\u30fc\u30b6\u30fc\u540d', u'testuser1'),
-                    (u'\u30e1\u30fc\u30eb\u30a2\u30c9\u30ec\u30b9', u'testuser1@example.com'),
-                    :
-                ]),
-                OrderedDict([...]),
-                OrderedDict([...]),
-                :
-            ]
-        """
-        conditions = {
-            self.FIELD_DOCUMENT_TYPE: self.FIELD_DOCUMENT_TYPE__RECORD,
-        }
-        excludes = [
-            self.FIELD_ID,
-            self.FIELD_CONTRACT_ID,
-            self.FIELD_COURSE_ID,
-            self.FIELD_DOCUMENT_TYPE,
-        ]
-        return self.get_documents(conditions=conditions, excludes=excludes, offset=offset, limit=limit)
-
-    def get_data_for_w2ui(self, offset=0, limit=0):
-        """
-        Get data for w2ui grid
-
-        :param offset: Offset to documents
-        :param limit: Limit to documents (A limit() value of 0 (i.e. .limit(0)) is equivalent to setting no limit.)
-        :return: data for w2ui grid
-            e.g.)
-            [
-                (u'\u6c0f\u540d', u'text'),
-                (u'\u30e6\u30fc\u30b6\u30fc\u540d', u'text'),
-                (u'\u30e1\u30fc\u30eb\u30a2\u30c9\u30ec\u30b9', u'text'),
-                :
-            ],
-            [
-                OrderedDict([
-                    (u'\u6c0f\u540d', u'\u30c6\u30b9\u30c8\u30e6\u30fc\u30b6\u30fc1'),
-                    (u'\u30e6\u30fc\u30b6\u30fc\u540d', u'testuser1'),
-                    (u'\u30e1\u30fc\u30eb\u30a2\u30c9\u30ec\u30b9', u'testuser1@example.com'),
-                    :
-                    ('recid', 1)
-                ]),
-                OrderedDict([...]),
-                OrderedDict([...]),
-                :
-            ]
-        """
-        column_document = self.get_column_document()
-        record_documents = self.get_record_documents(offset=offset, limit=limit)
-
-        # Note: json.dumps() of views.py converts OrderedDict into dict (it's orderless!), so items() here.
-        columns = column_document.items() if column_document is not None else []
-
-        for i, record_document in enumerate(record_documents):
-            # Note: w2ui needs 'recid' for each record
-            record_document['recid'] = i + 1
-            for k, v in record_document.iteritems():
-                column_type = column_document.get(k)
-                if column_type == self.COLUMN_TYPE__DATE and isinstance(v, datetime):
-                    if v == DEFAULT_DATETIME:
-                        # Note: This value is used to define the type for 'date' (used only in score status)
-                        record_document[k] = None
-                    else:
-                        # Note: Format to date string with timezone which can be parsed in w2ui
-                        record_document[k] = datetime_utils.format_for_w2ui(v)
-        return columns, record_documents
-
-    def get_data_for_csv(self):
-        """
-        Get data for csv download
-
-        :return: data for csv download
-            e.g.)
-            [
-                u'\u6c0f\u540d',
-                u'\u30e6\u30fc\u30b6\u30fc\u540d',
-                u'\u30e1\u30fc\u30eb\u30a2\u30c9\u30ec\u30b9',
-                    :
-            ],
-            [
-                [u'\u30c6\u30b9\u30c8\u30e6\u30fc\u30b6\u30fc1', u'testuser1', u'testuser1@example.com', ...],
-                [u'\u30c6\u30b9\u30c8\u30e6\u30fc\u30b6\u30fc2', u'testuser2', u'testuser2@example.com', ...],
-                [u'\u30c6\u30b9\u30c8\u30e6\u30fc\u30b6\u30fc3', u'testuser3', u'testuser3@example.com', ...],
-                    :
-            ]
-        """
-        column_document = self.get_column_document()
-        record_documents = self.get_record_documents()
-
-        columns = column_document.keys() if column_document is not None else []
-        records = []
-        for record_document in record_documents:
-            record = []
-            for k, v in record_document.iteritems():
-                column_type = column_document.get(k)
-                if column_type == self.COLUMN_TYPE__TEXT:
-                    if isinstance(v, basestring):
-                        record.append(v)
-                    else:
-                        record.append('')
-                elif column_type == self.COLUMN_TYPE__DATE:
-                    if isinstance(v, datetime):
-                        if v == DEFAULT_DATETIME:
-                            # Note: This value is used to define the type for 'date' (used only in score status)
-                            record.append('')
-                        else:
-                            # Change timezone to JST
-                            record.append(datetime_utils.to_jst(v).strftime('%Y/%m/%d'))
-                    else:
-                        record.append('')
-                elif column_type == self.COLUMN_TYPE__TIME:
-                    if isinstance(v, numbers.Number):
-                        # Convert seconds to 'h:mm' format
-                        record.append(datetime_utils.seconds_to_time_format(v))
-                    else:
-                        record.append('0:00')
-                elif column_type == self.COLUMN_TYPE__PERCENT:
-                    if v == self.VALUE__NOT_ATTEMPTED:
-                        # Note: '―'(U+2015) means 'Not Attempted' (#1816)
-                        record.append(v)
-                    elif isinstance(v, float):
-                        record.append('{:.01%}'.format(v))
-                    else:
-                        record.append('')
-            records.append(record)
-        return columns, records
-
-    def get_record_count(self):
-        """
-        Get stored documents count
-
-        :return: documents count
-        """
-        conditions = {
-            self.FIELD_DOCUMENT_TYPE: self.FIELD_DOCUMENT_TYPE__RECORD,
-        }
-        return self.get_count(conditions=conditions)
-
 
 class ScoreStore(AchievementStoreBase):
     """
@@ -279,7 +131,7 @@ class ScoreStore(AchievementStoreBase):
         super(ScoreStore, self).__init__(
             settings.BIZ_MONGO['score'],
             contract_id,
-            course_id
+            course_id,
         )
 
     def get_column_document(self):
@@ -313,38 +165,141 @@ class ScoreStore(AchievementStoreBase):
                 ordered[k] = self.COLUMN_TYPE__TEXT
         return ordered
 
-    def get_record_documents(self, offset=0, limit=0):
+    def get_section_names(self):
         """
-        Get stored documents which type is marked as 'record'
+        Get section name list of stored documents
 
+        :return: list of section name on documents
+            e.g.)
+            [
+                (u'\u6c0f\u540d', u'text'),
+                (u'\u30e6\u30fc\u30b6\u30fc\u540d', u'text'),
+                (u'\u30e1\u30fc\u30eb\u30a2\u30c9\u30ec\u30b9', u'text'),
+                :
+            ]
+        """
+        column_document = self.get_column_document() or {}
+
+        excludes = [
+            self.FIELD_ID,
+            self.FIELD_CONTRACT_ID,
+            self.FIELD_COURSE_ID,
+            self.FIELD_DOCUMENT_TYPE,
+            _(self.FIELD_LOGIN_CODE),
+            _(self.FIELD_FULL_NAME),
+            _(self.FIELD_USERNAME),
+            _(self.FIELD_EMAIL),
+            _(self.FIELD_STUDENT_STATUS),
+            _(self.FIELD_ENROLL_DATE),
+            _(self.FIELD_CERTIFICATE_STATUS),
+            _(self.FIELD_CERTIFICATE_ISSUE_DATE),
+            _(self.FIELD_TOTAL_SCORE),
+            _(self.FIELD_EXPIRE_DATE),
+        ]
+
+        for column in column_document:
+            if column in excludes:
+                column_document.pop(column)
+            elif re.match(_(self.FIELD_ADDITIONAL_INFO), column):
+                column_document.pop(column)
+
+        return column_document.items()
+
+    def get_data_for_w2ui(self, total_condition=None, section_conditions=[], usernames=[],
+                          student_status=None, certificate_status=None, offset=0, limit=0):
+        """
+        :param total_condition: {'from':int, 'to':int, 'no': bool}
+        :param section_conditions: [{'name':str, 'from':int, 'to':int, 'no': bool},...]
+        :param usernames: [username...]
+        :param student_status: str
+        :param certificate_status: str
         :param offset: Offset to documents
         :param limit: Limit to documents (A limit() value of 0 (i.e. .limit(0)) is equivalent to setting no limit.)
-        :return: documents for record
+        :return: data for w2ui grid
+            e.g.)
+            [
+                (u'\u6c0f\u540d', u'text'),
+                (u'\u30e6\u30fc\u30b6\u30fc\u540d', u'text'),
+                (u'\u30e1\u30fc\u30eb\u30a2\u30c9\u30ec\u30b9', u'text'),
+                :
+            ],
+            [
+                OrderedDict([
+                    (u'\u6c0f\u540d', u'\u30c6\u30b9\u30c8\u30e6\u30fc\u30b6\u30fc1'),
+                    (u'\u30e6\u30fc\u30b6\u30fc\u540d', u'testuser1'),
+                    (u'\u30e1\u30fc\u30eb\u30a2\u30c9\u30ec\u30b9', u'testuser1@example.com'),
+                    :
+                    ('recid', 1)
+                ]),
+                OrderedDict([...]),
+                OrderedDict([...]),
+                :
+            ]
+
         """
-        # For backward compatibility
-        record_documents = super(ScoreStore, self).get_record_documents(offset=offset, limit=limit)
-        if record_documents:
-            return record_documents
+        column_document = self.get_column_document() or {}
+        # Note: json.dumps() of views.py converts OrderedDict into dict (it's orderless!), so items() here.
+        columns = column_document.items()
+
+        conditions = {
+            self.FIELD_DOCUMENT_TYPE: self.FIELD_DOCUMENT_TYPE__RECORD,
+        }
+
+        # Total score condition
+        if total_condition:
+            if total_condition['no']:
+                conditions[_(self.FIELD_TOTAL_SCORE)] = self.VALUE__NOT_ATTEMPTED
+            elif any([v is not None for v in [total_condition['from'], total_condition['to']]]):
+                conditions[_(self.FIELD_TOTAL_SCORE)] = {}
+                if total_condition['from']:
+                    conditions[_(self.FIELD_TOTAL_SCORE)]['$gte'] = int(total_condition['from']) / 100.0
+                if total_condition['to']:
+                    conditions[_(self.FIELD_TOTAL_SCORE)]['$lte'] = int(total_condition['to']) / 100.0
+
+        # Section score conditions
+        for condition in section_conditions:
+            if condition['no']:
+                conditions[condition['name']] = self.VALUE__NOT_ATTEMPTED
+            elif any([v is not None for v in [condition['from'], condition['to']]]):
+                conditions[condition['name']] = {}
+                if condition['from']:
+                    conditions[condition['name']]['$gte'] = int(condition['from']) / 100.0
+                if condition['to']:
+                    conditions[condition['name']]['$lte'] = int(condition['to']) / 100.0
+
+        # Username condition
+        if len(usernames) != 0:
+            conditions[_(self.FIELD_USERNAME)] = {'$in': usernames}
+
+        # Student status
+        if student_status:
+            conditions[_(self.FIELD_STUDENT_STATUS)] = student_status
+
+        # Certificate status
+        if certificate_status:
+            conditions[_(self.FIELD_CERTIFICATE_STATUS)] = certificate_status
 
         excludes = [
             self.FIELD_ID,
             self.FIELD_CONTRACT_ID,
             self.FIELD_COURSE_ID,
         ]
-        return self.get_documents(excludes=excludes, offset=offset, limit=limit)
+        record_documents = self.get_documents(conditions=conditions, excludes=excludes, offset=offset, limit=limit)
 
-    def get_record_count(self):
-        """
-        Get stored documents count
+        for i, record_document in enumerate(record_documents, start=1):
+            # Note: w2ui needs 'recid' for each record
+            record_document['recid'] = i
+            for k, v in record_document.iteritems():
+                column_type = column_document.get(k)
+                if column_type == self.COLUMN_TYPE__DATE and isinstance(v, datetime):
+                    if v == DEFAULT_DATETIME:
+                        # Note: This value is used to define the type for 'date' (used only in score status)
+                        record_document[k] = None
+                    else:
+                        # Note: Format to date string with timezone which can be parsed in w2ui
+                        record_document[k] = datetime_utils.format_for_w2ui(v)
 
-        :return: documents count
-        """
-        # For backward compatibility
-        record_count = super(ScoreStore, self).get_record_count()
-        if record_count:
-            return record_count
-
-        return self.get_count()
+        return columns, record_documents
 
 
 class PlaybackStore(AchievementStoreBase):
@@ -361,3 +316,130 @@ class PlaybackStore(AchievementStoreBase):
             contract_id,
             course_id
         )
+
+    def get_section_names(self):
+        """
+        Get section name list of stored documents
+
+        :return: list of section name on documents
+            e.g.)
+            [
+                (u'\u6c0f\u540d', u'text'),
+                (u'\u30e6\u30fc\u30b6\u30fc\u540d', u'text'),
+                (u'\u30e1\u30fc\u30eb\u30a2\u30c9\u30ec\u30b9', u'text'),
+                :
+            ]
+        """
+        column_document = self.get_column_document() or {}
+
+        excludes = [
+            self.FIELD_ID,
+            self.FIELD_CONTRACT_ID,
+            self.FIELD_COURSE_ID,
+            self.FIELD_DOCUMENT_TYPE,
+            _(self.FIELD_LOGIN_CODE),
+            _(self.FIELD_FULL_NAME),
+            _(self.FIELD_USERNAME),
+            _(self.FIELD_EMAIL),
+            _(self.FIELD_STUDENT_STATUS),
+            _(self.FIELD_TOTAL_PLAYBACK_TIME),
+        ]
+
+        for column in column_document:
+            if column in excludes:
+                column_document.pop(column)
+            elif re.match(_(self.FIELD_ADDITIONAL_INFO), column):
+                column_document.pop(column)
+
+        return column_document.items()
+
+    def get_data_for_w2ui(self, total_condition=None, section_conditions=[], usernames=[],
+                          student_status=None, offset=0, limit=0):
+        """
+        :param total_condition: {'from':int, 'to':int, 'no': bool}
+        :param section_conditions: [{'name':str, 'from':int, 'to':int, 'no': bool},...]
+        :param usernames: [username...]
+        :param student_status: str
+        :param offset: Offset to documents
+        :param limit: Limit to documents (A limit() value of 0 (i.e. .limit(0)) is equivalent to setting no limit.)
+        :return: data for w2ui grid
+            e.g.)
+            [
+                (u'\u6c0f\u540d', u'text'),
+                (u'\u30e6\u30fc\u30b6\u30fc\u540d', u'text'),
+                (u'\u30e1\u30fc\u30eb\u30a2\u30c9\u30ec\u30b9', u'text'),
+                :
+            ],
+            [
+                OrderedDict([
+                    (u'\u6c0f\u540d', u'\u30c6\u30b9\u30c8\u30e6\u30fc\u30b6\u30fc1'),
+                    (u'\u30e6\u30fc\u30b6\u30fc\u540d', u'testuser1'),
+                    (u'\u30e1\u30fc\u30eb\u30a2\u30c9\u30ec\u30b9', u'testuser1@example.com'),
+                    :
+                    ('recid', 1)
+                ]),
+                OrderedDict([...]),
+                OrderedDict([...]),
+                :
+            ]
+
+        """
+        column_document = self.get_column_document() or {}
+        # Note: json.dumps() of views.py converts OrderedDict into dict (it's orderless!), so items() here.
+        columns = column_document.items()
+
+        conditions = {
+            self.FIELD_DOCUMENT_TYPE: self.FIELD_DOCUMENT_TYPE__RECORD,
+        }
+
+        # Total score condition
+        if total_condition:
+            if total_condition['no']:
+                conditions[_(self.FIELD_TOTAL_PLAYBACK_TIME)] = 0
+            elif any([v is not None for v in [total_condition['from'], total_condition['to']]]):
+                conditions[_(self.FIELD_TOTAL_PLAYBACK_TIME)] = {}
+                if total_condition['from'] is not None:
+                    conditions[_(self.FIELD_TOTAL_PLAYBACK_TIME)]['$gt'] = total_condition['from']
+                if total_condition['to'] is not None:
+                    conditions[_(self.FIELD_TOTAL_PLAYBACK_TIME)]['$lte'] = total_condition['to']
+
+        # Section score conditions
+        for condition in section_conditions:
+            if condition['no']:
+                conditions[condition['name']] = 0
+            elif any([v is not None for v in [condition['from'], condition['to']]]):
+                conditions[condition['name']] = {}
+                if condition['from'] is not None:
+                    conditions[condition['name']]['$gt'] = condition['from']
+                if condition['to'] is not None:
+                    conditions[condition['name']]['$lte'] = condition['to']
+
+        # Username condition
+        if len(usernames) != 0:
+            conditions[_(self.FIELD_USERNAME)] = {'$in': usernames}
+
+        # Student status
+        if student_status:
+            conditions[_(self.FIELD_STUDENT_STATUS)] = student_status
+
+        excludes = [
+            self.FIELD_ID,
+            self.FIELD_CONTRACT_ID,
+            self.FIELD_COURSE_ID,
+        ]
+        record_documents = self.get_documents(conditions=conditions, excludes=excludes, offset=offset, limit=limit)
+
+        for i, record_document in enumerate(record_documents, start=1):
+            # Note: w2ui needs 'recid' for each record
+            record_document['recid'] = i
+            for k, v in record_document.iteritems():
+                column_type = column_document.get(k)
+                if column_type == self.COLUMN_TYPE__DATE and isinstance(v, datetime):
+                    if v == DEFAULT_DATETIME:
+                        # Note: This value is used to define the type for 'date' (used only in score status)
+                        record_document[k] = None
+                    else:
+                        # Note: Format to date string with timezone which can be parsed in w2ui
+                        record_document[k] = datetime_utils.format_for_w2ui(v)
+
+        return columns, record_documents
