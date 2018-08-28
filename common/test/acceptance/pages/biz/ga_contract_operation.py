@@ -22,6 +22,11 @@ class BizTaskHistoryMixin(object):
         self.wait_for_element_visibility('#task-history-grid.w2ui-grid', 'Task history grid visible')
         return self
 
+    def click_task_reload_button(self):
+        self.q(css='button#task-reload-btn').click()
+        self.wait_for_ajax()
+        return self
+
     @property
     def task_history_grid_row(self):
         return self.get_task_history_grid_row(0)
@@ -41,7 +46,7 @@ class BizTaskHistoryMixin(object):
 
     def wait_for_task_complete(self):
         def _wait_for():
-            self.click_show_history()
+            self.click_task_reload_button()
             return self.task_history_grid_row['State'] == 'Complete'
         self.wait_for(_wait_for, 'Latest task state is not Complete')
 
@@ -107,11 +112,46 @@ class BizRegisterStudentsPage(BizNavPage, BizTaskHistoryMixin, W2uiMixin):
         self.q(css='.w2ui-page.page-0 textarea#list-students').fill(value)
         return self
 
+    def input_one_user_info(self, user_info):
+        """
+        Input student info
+
+        Arguments:
+            user_info : target student info
+        """
+        self.q(css='input#employee_last_name').fill(user_info['last_name'] if 'last_name' in user_info else user_info['username'])
+        self.q(css='input#employee_email').fill(user_info['email'])
+        self.q(css='input#user_name').fill(user_info['username'])
+        self.wait_for_ajax()
+        return self
+
+    def input_one_user_info_auth(self, user_info):
+        """
+        Input student info with contract auth
+
+        Arguments:
+            user_info : target student info
+        """
+        self.q(css='input#employee_last_name').fill(user_info['last_name'] if 'last_name' in user_info else user_info['username'])
+        self.q(css='input#employee_email').fill(user_info['email'])
+        self.q(css='input#user_name').fill(user_info['username'])
+        self.q(css='input#login_code').fill(user_info['login_code'] if 'login_code' in user_info else user_info['username'])
+        self.q(css='input#password').fill(user_info['password'])
+        self.wait_for_ajax()
+        return self
+
     def click_register_status(self):
         """
         Click the register status checkbox
         """
         self.q(css='.w2ui-page.page-0 #register-status').click()
+        return self
+
+    def click_one_register_status(self):
+        """
+        Click the register status checkbox in One Registration Page
+        """
+        self.q(css='input#register-status-new.gc_optional_chk.js_register_status_popup').click()
         return self
 
     def click_register_button(self):
@@ -122,54 +162,79 @@ class BizRegisterStudentsPage(BizNavPage, BizTaskHistoryMixin, W2uiMixin):
         self.wait_for_ajax()
         return self
 
+    def click_one_register_button(self):
+        """
+        Click the register button in One Registration Page
+        """
+        self.q(css='button#register-btn-new.btn.btn-grn').click()
+        self.wait_for_ajax()
+        return self
+
     @property
     def messages(self):
         """Return a list of errors displayed to the list view. """
-        return self.q(css="div.main ul.messages li").text
+        return self.q(css="div.main ul.messages li.info").text
 
-    def click_tab_register_student(self):
-        self.click_tab('Enrolling Learners')
+    @property
+    def error_messages(self):
+        """
+        Return error messages
+        """
+        return self.q(css="div#error_area.gc_error_area ul.messages li.error").text
+
+    def click_tab_file_register_student(self):
+        self.q(css='li#tab01').click()
+        self.wait_for_ajax()
+        return self
+
+    def click_tab_one_register_student(self):
+        self.q(css='li#tab02').click()
+        self.wait_for_ajax()
+        return self
+
+    def click_tab_search_registration(self):
+        self.q(css='li#tab03').click()
         self.wait_for_ajax()
         return self
 
     def click_tab_additional_info(self):
-        self.click_tab('Editing Additional Item')
+        self.q(css='li#tab04').click()
         self.wait_for_ajax()
         return self
 
     def click_tab_update_additional_info(self):
-        self.click_tab('Enrolling Learners to Additional Item')
+        self.q(css='li#tab05').click()
         self.wait_for_ajax()
         return self
 
     def click_additional_info_register_button(self):
-        self.q(css='.w2ui-page.page-1 .add-additional-info-btn').click()
+        self.q(css='button.biz-btn.register-btn.add-additional-info-btn').click()
         self.wait_for_ajax()
         return self
 
     def click_additional_info_delete_button(self, index=0):
-        self.q(css='.w2ui-page.page-1 .remove-btn').nth(index).click()
+        self.q(css='button.biz-btn.remove-btn.small-btn').click()
         self.wait_for_ajax()
         return self
 
     def click_additional_info_update_button(self):
-        self.q(css='.w2ui-page.page-2 .biz-btn.register-btn.update-btn').click()
+        self.q(css='input#update-btn.biz-btn.register-btn.update-btn').click()
         self.wait_for_ajax()
         return self
 
     def edit_additional_info_value(self, value, index=0):
-        self.q(css='.w2ui-page.page-1 [name="display_name"]').nth(index).fill(value)
+        self.q(css='.w2ui-field [name="display_name"]').nth(index).fill(value)
         # focus out.
-        self.q(css='.w2ui-page.page-1 [name="register_display_name"]').click()
+        self.q(css='.w2ui-field [name="register_display_name"]').click()
         self.wait_for_ajax()
         return self
 
     def input_additional_info_register(self, value):
-        self.q(css='.w2ui-page.page-1 [name="register_display_name"]').fill(value)
+        self.q(css='.w2ui-field [name="register_display_name"]').fill(value)
         return self
 
     def input_additional_info_list(self, value):
-        self.q(css='.w2ui-page.page-2 textarea#additional-info-list').fill(value)
+        self.q(css='textarea#additional-info-list.additional-info-list').fill(value)
         return self
 
     def get_display_name_values(self, index=0):

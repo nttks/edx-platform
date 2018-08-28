@@ -99,11 +99,11 @@ class BizNavPage(PageObject):
 
     @property
     def contract_name(self):
-        return self.q(css='div.course-selection>div.current-role>div:nth-of-type(1)>div').text[0].strip()
+        return self.q(css='label.biz-icon.contract+div.biz-manager').text[0].strip()
 
     @property
     def course_name(self):
-        return self.q(css='div.course-selection>div.current-role>div:nth-of-type(2)>div').text[0].strip()
+        return self.q(css='label.biz-icon.course+div.biz-manager').text[0].strip()
 
     @property
     def left_menu_items(self):

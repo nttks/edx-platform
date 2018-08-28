@@ -289,6 +289,32 @@ CREATE TABLE `assessment_rubric` (
   KEY `assessment_rubric_873e9e2d` (`structure_hash`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `assessment_staffworkflow`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `assessment_staffworkflow` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `scorer_id` varchar(40) NOT NULL,
+  `course_id` varchar(40) NOT NULL,
+  `item_id` varchar(128) NOT NULL,
+  `submission_uuid` varchar(128) NOT NULL,
+  `created_at` datetime(6) NOT NULL,
+  `grading_completed_at` datetime(6) DEFAULT NULL,
+  `grading_started_at` datetime(6) DEFAULT NULL,
+  `cancelled_at` datetime(6) DEFAULT NULL,
+  `assessment` varchar(128) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `submission_uuid` (`submission_uuid`),
+  KEY `assessment_staffworkflow_7b0042c0` (`scorer_id`),
+  KEY `assessment_staffworkflow_ea134da7` (`course_id`),
+  KEY `assessment_staffworkflow_82bfda79` (`item_id`),
+  KEY `assessment_staffworkflow_fde81f11` (`created_at`),
+  KEY `assessment_staffworkflow_85d183d8` (`grading_completed_at`),
+  KEY `assessment_staffworkflow_0af9deae` (`grading_started_at`),
+  KEY `assessment_staffworkflow_740da1db` (`cancelled_at`),
+  KEY `assessment_staffworkflow_5096c410` (`assessment`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `assessment_studenttrainingworkflow`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
@@ -386,7 +412,7 @@ CREATE TABLE `auth_permission` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `content_type_id` (`content_type_id`,`codename`),
   CONSTRAINT `auth__content_type_id_508cf46651277a81_fk_django_content_type_id` FOREIGN KEY (`content_type_id`) REFERENCES `django_content_type` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=767 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=854 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `auth_registration`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -395,6 +421,8 @@ CREATE TABLE `auth_registration` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `activation_key` varchar(32) NOT NULL,
   `user_id` int(11) NOT NULL,
+  `masked` tinyint(1) NOT NULL,
+  `modified` datetime(6),
   PRIMARY KEY (`id`),
   UNIQUE KEY `activation_key` (`activation_key`),
   UNIQUE KEY `user_id` (`user_id`),
@@ -682,6 +710,21 @@ CREATE TABLE `certificates_certificatehtmlviewconfiguration` (
   KEY `certificates_cert_changed_by_id_1de6cf549bca749b_fk_auth_user_id` (`changed_by_id`),
   CONSTRAINT `certificates_cert_changed_by_id_1de6cf549bca749b_fk_auth_user_id` FOREIGN KEY (`changed_by_id`) REFERENCES `auth_user` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `certificates_certificatesonuserprofile`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `certificates_certificatesonuserprofile` (
+  `id` char(32) NOT NULL,
+  `course_id` varchar(255) NOT NULL,
+  `is_visible_to_public` tinyint(1) NOT NULL,
+  `created` datetime(6) DEFAULT NULL,
+  `user_id` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `certificates_certificatesonuserpro_user_id_7ab95f654d23a810_uniq` (`user_id`,`course_id`),
+  KEY `certificates_certificatesonuserprofile_e2fa5388` (`created`),
+  CONSTRAINT `certificates_certificat_user_id_4c9ebdc875007223_fk_auth_user_id` FOREIGN KEY (`user_id`) REFERENCES `auth_user` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `certificates_certificatetemplate`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -985,12 +1028,12 @@ CREATE TABLE `course_modes_coursemode` (
   `mode_display_name` varchar(255) NOT NULL,
   `min_price` int(11) NOT NULL,
   `currency` varchar(8) NOT NULL,
-  `expiration_datetime` datetime(6) DEFAULT NULL,
   `expiration_date` date DEFAULT NULL,
   `suggested_prices` varchar(255) NOT NULL,
   `description` longtext,
   `sku` varchar(255) DEFAULT NULL,
   `expiration_datetime_is_explicit` tinyint(1) NOT NULL,
+  `expiration_datetime` datetime(6) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `course_modes_coursemode_course_id_6fbb1796ace558b4_uniq` (`course_id`,`mode_slug`,`currency`),
   KEY `course_modes_coursemode_ea134da7` (`course_id`)
@@ -1497,7 +1540,7 @@ CREATE TABLE `django_content_type` (
   `model` varchar(100) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `django_content_type_app_label_45f3b1d93ec8c61c_uniq` (`app_label`,`model`)
-) ENGINE=InnoDB AUTO_INCREMENT=255 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=284 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `django_migrations`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -1508,7 +1551,7 @@ CREATE TABLE `django_migrations` (
   `name` varchar(255) NOT NULL,
   `applied` datetime(6) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=105 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=143 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `django_openid_auth_association`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -1862,6 +1905,24 @@ CREATE TABLE `external_auth_externalauthmap` (
   CONSTRAINT `external_auth_externala_user_id_644e7779f2d52b9a_fk_auth_user_id` FOREIGN KEY (`user_id`) REFERENCES `auth_user` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `ga_achievement_playbackbatchstatus`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ga_achievement_playbackbatchstatus` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `course_id` varchar(255) NOT NULL,
+  `status` varchar(255) NOT NULL,
+  `student_count` int(11) DEFAULT NULL,
+  `created` datetime(6) NOT NULL,
+  `contract_id` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `ga_achie_contract_id_7c3315c21090e9d8_fk_ga_contract_contract_id` (`contract_id`),
+  KEY `ga_achievement_playbackbatchstatus_ea134da7` (`course_id`),
+  KEY `ga_achievement_playbackbatchstatus_9acb4454` (`status`),
+  KEY `ga_achievement_playbackbatchstatus_e2fa5388` (`created`),
+  CONSTRAINT `ga_achie_contract_id_7c3315c21090e9d8_fk_ga_contract_contract_id` FOREIGN KEY (`contract_id`) REFERENCES `ga_contract_contract` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `ga_achievement_scorebatchstatus`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
@@ -1878,6 +1939,23 @@ CREATE TABLE `ga_achievement_scorebatchstatus` (
   KEY `ga_achievement_scorebatchstatus_9acb4454` (`status`),
   KEY `ga_achievement_scorebatchstatus_e2fa5388` (`created`),
   CONSTRAINT `ga_achie_contract_id_61921b644d1a0cc8_fk_ga_contract_contract_id` FOREIGN KEY (`contract_id`) REFERENCES `ga_contract_contract` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `ga_achievement_submissionreminderbatchstatus`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ga_achievement_submissionreminderbatchstatus` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `status` varchar(255) NOT NULL,
+  `success_count` int(11) DEFAULT NULL,
+  `failure_count` int(11) DEFAULT NULL,
+  `created` datetime(6) NOT NULL,
+  `contract_id` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `ga_achie_contract_id_2664b1e949822a55_fk_ga_contract_contract_id` (`contract_id`),
+  KEY `ga_achievement_submissionreminderbatchstatus_9acb4454` (`status`),
+  KEY `ga_achievement_submissionreminderbatchstatus_e2fa5388` (`created`),
+  CONSTRAINT `ga_achie_contract_id_2664b1e949822a55_fk_ga_contract_contract_id` FOREIGN KEY (`contract_id`) REFERENCES `ga_contract_contract` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `ga_advanced_course_advancedcourse`;
@@ -1954,6 +2032,7 @@ CREATE TABLE `ga_contract_contract` (
   `contractor_organization_id` int(11) NOT NULL,
   `created_by_id` int(11) NOT NULL,
   `owner_organization_id` int(11) NOT NULL,
+  `register_type` varchar(255) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `invitation_code` (`invitation_code`),
   KEY `D988b647fd4e85093922de25a658c066` (`contractor_organization_id`),
@@ -1963,6 +2042,22 @@ CREATE TABLE `ga_contract_contract` (
   CONSTRAINT `D6e48e28f41791f6bf727709bdcbb898` FOREIGN KEY (`owner_organization_id`) REFERENCES `ga_organization_organization` (`id`),
   CONSTRAINT `D988b647fd4e85093922de25a658c066` FOREIGN KEY (`contractor_organization_id`) REFERENCES `ga_organization_organization` (`id`),
   CONSTRAINT `ga_contract_contr_created_by_id_3e861934b3691d92_fk_auth_user_id` FOREIGN KEY (`created_by_id`) REFERENCES `auth_user` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `ga_contract_contractauth`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ga_contract_contractauth` (
+  `contract_id` int(11) NOT NULL,
+  `url_code` varchar(255) NOT NULL,
+  `modified` datetime(6) NOT NULL,
+  `modified_by_id` int(11) NOT NULL,
+  `send_mail` tinyint(1) NOT NULL,
+  PRIMARY KEY (`contract_id`),
+  UNIQUE KEY `url_code` (`url_code`),
+  KEY `ga_contract_contr_modified_by_id_537687d81d209ca_fk_auth_user_id` (`modified_by_id`),
+  CONSTRAINT `ga_contr_contract_id_2ad0284ef7602f2c_fk_ga_contract_contract_id` FOREIGN KEY (`contract_id`) REFERENCES `ga_contract_contract` (`id`),
+  CONSTRAINT `ga_contract_contr_modified_by_id_537687d81d209ca_fk_auth_user_id` FOREIGN KEY (`modified_by_id`) REFERENCES `auth_user` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `ga_contract_contractdetail`;
@@ -1976,6 +2071,71 @@ CREATE TABLE `ga_contract_contractdetail` (
   KEY `ga_contr_contract_id_72758ec0d4cf57a1_fk_ga_contract_contract_id` (`contract_id`),
   KEY `ga_contract_contractdetail_ea134da7` (`course_id`),
   CONSTRAINT `ga_contr_contract_id_72758ec0d4cf57a1_fk_ga_contract_contract_id` FOREIGN KEY (`contract_id`) REFERENCES `ga_contract_contract` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `ga_contract_contractoption`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ga_contract_contractoption` (
+  `contract_id` int(11) NOT NULL,
+  `customize_mail` tinyint(1) NOT NULL,
+  `modified` datetime(6) NOT NULL,
+  `modified_by_id` int(11) NOT NULL,
+  `send_submission_reminder` tinyint(1) NOT NULL,
+  PRIMARY KEY (`contract_id`),
+  KEY `ga_contract_cont_modified_by_id_11e006565444cba5_fk_auth_user_id` (`modified_by_id`),
+  CONSTRAINT `ga_contr_contract_id_3e65110c6b64d49b_fk_ga_contract_contract_id` FOREIGN KEY (`contract_id`) REFERENCES `ga_contract_contract` (`id`),
+  CONSTRAINT `ga_contract_cont_modified_by_id_11e006565444cba5_fk_auth_user_id` FOREIGN KEY (`modified_by_id`) REFERENCES `auth_user` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `ga_contract_operation_additionalinfoupdatetasktarget`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ga_contract_operation_additionalinfoupdatetasktarget` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `message` varchar(1024) DEFAULT NULL,
+  `completed` tinyint(1) NOT NULL,
+  `created` datetime(6) NOT NULL,
+  `modified` datetime(6) NOT NULL,
+  `inputline` longtext NOT NULL,
+  `history_id` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `ddc61d480d06a6ee8866b4759835d3d9` (`history_id`),
+  CONSTRAINT `ddc61d480d06a6ee8866b4759835d3d9` FOREIGN KEY (`history_id`) REFERENCES `ga_contract_operation_contracttaskhistory` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `ga_contract_operation_contractmail`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ga_contract_operation_contractmail` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `mail_type` varchar(255) NOT NULL,
+  `mail_subject` varchar(128) NOT NULL,
+  `mail_body` longtext NOT NULL,
+  `created` datetime(6) NOT NULL,
+  `modified` datetime(6) NOT NULL,
+  `contract_id` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `ga_contract_operation_contract_contract_id_3511e03258981f59_uniq` (`contract_id`,`mail_type`),
+  CONSTRAINT `ga_contr_contract_id_6c4ca571ed51a563_fk_ga_contract_contract_id` FOREIGN KEY (`contract_id`) REFERENCES `ga_contract_contract` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `ga_contract_operation_contractremindermail`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ga_contract_operation_contractremindermail` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `mail_type` varchar(255) NOT NULL,
+  `mail_subject` varchar(128) NOT NULL,
+  `mail_body` longtext NOT NULL,
+  `created` datetime(6) NOT NULL,
+  `modified` datetime(6) NOT NULL,
+  `reminder_email_days` int(11) DEFAULT NULL,
+  `mail_body2` longtext NOT NULL,
+  `contract_id` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `ga_contract_operation_contract_contract_id_4712f8e4251a9ad7_uniq` (`contract_id`,`mail_type`),
+  CONSTRAINT `ga_contr_contract_id_7b9464fc248dd61b_fk_ga_contract_contract_id` FOREIGN KEY (`contract_id`) REFERENCES `ga_contract_contract` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `ga_contract_operation_contracttaskhistory`;
@@ -2005,12 +2165,30 @@ CREATE TABLE `ga_contract_operation_contracttasktarget` (
   `created` datetime(6) NOT NULL,
   `modified` datetime(6) NOT NULL,
   `history_id` int(11) NOT NULL,
-  `register_id` int(11) NOT NULL,
+  `register_id` int(11) DEFAULT NULL,
+  `inputdata` varchar(1024),
+  `message` varchar(1024),
   PRIMARY KEY (`id`),
-  UNIQUE KEY `ga_contract_operation_contractt_history_id_72603072c6f538e2_uniq` (`history_id`,`register_id`),
   KEY `D407c01d1c65d2b8c5d7243c1262dda4` (`register_id`),
+  KEY `ga_contract_operation_contracttasktarget_5f4b4502` (`history_id`),
   CONSTRAINT `D407c01d1c65d2b8c5d7243c1262dda4` FOREIGN KEY (`register_id`) REFERENCES `ga_invitation_contractregister` (`id`),
   CONSTRAINT `D99a34d288d0fc406b42bf48e7397a6a` FOREIGN KEY (`history_id`) REFERENCES `ga_contract_operation_contracttaskhistory` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `ga_contract_operation_studentmemberregistertasktarget`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ga_contract_operation_studentmemberregistertasktarget` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `message` varchar(1024) DEFAULT NULL,
+  `completed` tinyint(1) NOT NULL,
+  `created` datetime(6) NOT NULL,
+  `modified` datetime(6) NOT NULL,
+  `student` varchar(6000) NOT NULL,
+  `history_id` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `D9be56ef7dfae8f37ee64f8c15e8d415` (`history_id`),
+  CONSTRAINT `D9be56ef7dfae8f37ee64f8c15e8d415` FOREIGN KEY (`history_id`) REFERENCES `ga_contract_operation_contracttaskhistory` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `ga_contract_operation_studentregistertasktarget`;
@@ -2029,18 +2207,162 @@ CREATE TABLE `ga_contract_operation_studentregistertasktarget` (
   CONSTRAINT `f25e4501be6658c7ccb3d040d9ab273c` FOREIGN KEY (`history_id`) REFERENCES `ga_contract_operation_contracttaskhistory` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `ga_contract_operation_studentunregistertasktarget`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ga_contract_operation_studentunregistertasktarget` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `message` varchar(1024) DEFAULT NULL,
+  `completed` tinyint(1) NOT NULL,
+  `created` datetime(6) NOT NULL,
+  `modified` datetime(6) NOT NULL,
+  `inputdata` varchar(1024) NOT NULL,
+  `history_id` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `D49309844cb99aef542f6f0f40cf996d` (`history_id`),
+  CONSTRAINT `D49309844cb99aef542f6f0f40cf996d` FOREIGN KEY (`history_id`) REFERENCES `ga_contract_operation_contracttaskhistory` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `ga_course_overviews_courseoverviewextra`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `ga_course_overviews_courseoverviewextra` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `has_terminated` tinyint(1) NOT NULL,
   `is_f2f_course` tinyint(1) NOT NULL,
   `is_f2f_course_sell` tinyint(1) NOT NULL,
   `course_overview_id` varchar(255) NOT NULL,
+  `is_course_hidden` tinyint(1) NOT NULL,
+  `terminate_start` datetime(6),
+  `individual_end_days` int(11),
+  `individual_end_hours` int(11),
+  `individual_end_minutes` int(11),
+  `self_paced` tinyint(1) NOT NULL,
+  `custom_logo` longtext NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `course_overview_id` (`course_overview_id`),
   CONSTRAINT `D02057b0326af56ba755daf07f41ff4e` FOREIGN KEY (`course_overview_id`) REFERENCES `course_overviews_courseoverview` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `ga_diagnosis_average`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ga_diagnosis_average` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `code` varchar(4) NOT NULL,
+  `average01` varchar(255) NOT NULL,
+  `average02` varchar(255) NOT NULL,
+  `average03` varchar(255) NOT NULL,
+  `average04` varchar(255) NOT NULL,
+  `average05` varchar(255) NOT NULL,
+  `average06` varchar(255) NOT NULL,
+  `average07` varchar(255) NOT NULL,
+  `average08` varchar(255) NOT NULL,
+  `average09` varchar(255) NOT NULL,
+  `average10` varchar(255) NOT NULL,
+  `average11` varchar(255) NOT NULL,
+  `average12` varchar(255) NOT NULL,
+  `average13` varchar(255) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `code` (`code`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `ga_diagnosis_diagnosisinfo`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ga_diagnosis_diagnosisinfo` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `course_id` varchar(255) NOT NULL,
+  `finished` tinyint(1) NOT NULL,
+  `finished_date` datetime(6) DEFAULT NULL,
+  `regulation_state` int(11) DEFAULT NULL,
+  `timestamp1` datetime(6) DEFAULT NULL,
+  `timestamp2_1` datetime(6) DEFAULT NULL,
+  `timestamp2_2` datetime(6) DEFAULT NULL,
+  `timestamp3` datetime(6) DEFAULT NULL,
+  `timestamp4` datetime(6) DEFAULT NULL,
+  `block1_01_1` varchar(255) NOT NULL,
+  `block1_01_2` varchar(255) NOT NULL,
+  `block1_02_1` varchar(255) NOT NULL,
+  `block1_02_2` varchar(255) NOT NULL,
+  `block1_03` varchar(2) NOT NULL,
+  `block1_04_1` varchar(4) NOT NULL,
+  `block1_04_2` varchar(2) NOT NULL,
+  `block1_04_3` varchar(2) NOT NULL,
+  `block1_05` varchar(75) NOT NULL,
+  `block2_01` varchar(16) NOT NULL,
+  `block2_02` varchar(1) NOT NULL,
+  `block2_03` varchar(1) NOT NULL,
+  `block2_04` varchar(1) NOT NULL,
+  `block2_05` varchar(1) NOT NULL,
+  `block2_06` varchar(1) NOT NULL,
+  `block2_07` varchar(1) NOT NULL,
+  `block2_08` varchar(1) NOT NULL,
+  `block2_09` varchar(1) NOT NULL,
+  `block2_10` varchar(1) NOT NULL,
+  `block2_11` varchar(1) NOT NULL,
+  `block2_12` varchar(1) NOT NULL,
+  `block2_13` varchar(1) NOT NULL,
+  `block2_14` varchar(1) NOT NULL,
+  `block2_15` varchar(1) NOT NULL,
+  `block2_16` varchar(1) NOT NULL,
+  `block2_17` varchar(1) NOT NULL,
+  `block2_18` varchar(1) NOT NULL,
+  `block2_19` varchar(1) NOT NULL,
+  `block2_20` varchar(1) NOT NULL,
+  `block2_21` varchar(1) NOT NULL,
+  `block2_22` varchar(1) NOT NULL,
+  `block2_23` varchar(1) NOT NULL,
+  `block2_24` varchar(1) NOT NULL,
+  `block2_25` varchar(1) NOT NULL,
+  `block2_26` varchar(1) NOT NULL,
+  `block2_27` varchar(1) NOT NULL,
+  `block2b_3` varchar(3) NOT NULL,
+  `block3_01` varchar(255) NOT NULL,
+  `block3_02` varchar(255) NOT NULL,
+  `block3_03_1` varchar(5) NOT NULL,
+  `block3_03_2` varchar(5) NOT NULL,
+  `block3_03_3` varchar(5) NOT NULL,
+  `block3_04` varchar(255) NOT NULL,
+  `block3_05` varchar(255) NOT NULL,
+  `block3_06` varchar(255) NOT NULL,
+  `block3_07` varchar(3) NOT NULL,
+  `block3_08` varchar(255) NOT NULL,
+  `block3_09_1` varchar(4) NOT NULL,
+  `block3_09_2` varchar(2) NOT NULL,
+  `block3_09_3` varchar(4) NOT NULL,
+  `block3_09_4` varchar(2) NOT NULL,
+  `block3_10` varchar(20) NOT NULL,
+  `block3_11` varchar(20) NOT NULL,
+  `block3_12` varchar(4) NOT NULL,
+  `block3_13` varchar(4) NOT NULL,
+  `block3_14` varchar(20) NOT NULL,
+  `block3_15` varchar(255) NOT NULL,
+  `block3_16` varchar(1024) NOT NULL,
+  `block3_17` varchar(255) NOT NULL,
+  `block3_18` varchar(4) NOT NULL,
+  `block3_19` varchar(4) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `ga_diagnosis_diagnosisinfo_user_id_3c85034be29d0354_uniq` (`user_id`,`course_id`),
+  KEY `ga_diagnosis_diagnosisinfo_ea134da7` (`course_id`),
+  CONSTRAINT `ga_diagnosis_diagnosisi_user_id_3650a844d5930761_fk_auth_user_id` FOREIGN KEY (`user_id`) REFERENCES `auth_user` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `ga_diagnosis_generatepdfstate`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ga_diagnosis_generatepdfstate` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `download_url` varchar(255) NOT NULL,
+  `status` varchar(32) NOT NULL,
+  `created_date` datetime(6) NOT NULL,
+  `modified_date` datetime(6) NOT NULL,
+  `error_reason` varchar(512) NOT NULL,
+  `key` varchar(32) NOT NULL,
+  `diagnosis_info_id` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `diagnosis_info_id` (`diagnosis_info_id`),
+  CONSTRAINT `D5251187191c7aeadf885d5a314c98b1` FOREIGN KEY (`diagnosis_info_id`) REFERENCES `ga_diagnosis_diagnosisinfo` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `ga_invitation_additionalinfosetting`;
@@ -2092,6 +2414,17 @@ CREATE TABLE `ga_invitation_contractregisterhistory` (
   KEY `ga_invitation_contractr_user_id_43edb83331e20902_fk_auth_user_id` (`user_id`),
   CONSTRAINT `ga_invit_contract_id_57d9ca60d36ee69f_fk_ga_contract_contract_id` FOREIGN KEY (`contract_id`) REFERENCES `ga_contract_contract` (`id`),
   CONSTRAINT `ga_invitation_contractr_user_id_43edb83331e20902_fk_auth_user_id` FOREIGN KEY (`user_id`) REFERENCES `auth_user` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `ga_login_bizuser`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ga_login_bizuser` (
+  `user_id` int(11) NOT NULL,
+  `login_code` varchar(30) NOT NULL,
+  `created` datetime(6) NOT NULL,
+  PRIMARY KEY (`user_id`),
+  CONSTRAINT `ga_login_bizuser_user_id_14eaeed4df89c70e_fk_auth_user_id` FOREIGN KEY (`user_id`) REFERENCES `auth_user` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `ga_maintenance_cms_maintenancemessage`;
@@ -2150,6 +2483,60 @@ CREATE TABLE `ga_manager_managerpermission` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `ga_optional_courseoptionalconfiguration`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ga_optional_courseoptionalconfiguration` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `change_date` datetime(6) NOT NULL,
+  `enabled` tinyint(1) NOT NULL,
+  `key` varchar(100) NOT NULL,
+  `course_key` varchar(255) NOT NULL,
+  `changed_by_id` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `ga_optional_cours_changed_by_id_6b4fff581c02ac6a_fk_auth_user_id` (`changed_by_id`),
+  KEY `ga_optional_courseoptionalconfiguration_3c6e0b8a` (`key`),
+  KEY `ga_optional_courseoptionalconfiguration_c8235886` (`course_key`),
+  CONSTRAINT `ga_optional_cours_changed_by_id_6b4fff581c02ac6a_fk_auth_user_id` FOREIGN KEY (`changed_by_id`) REFERENCES `auth_user` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `ga_optional_dashboardoptionalconfiguration`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ga_optional_dashboardoptionalconfiguration` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `change_date` datetime(6) NOT NULL,
+  `enabled` tinyint(1) NOT NULL,
+  `key` varchar(255) NOT NULL,
+  `course_key` varchar(255) NOT NULL,
+  `parts_title_en` varchar(255) NOT NULL,
+  `parts_title_ja` varchar(255) NOT NULL,
+  `href` varchar(255) DEFAULT NULL,
+  `changed_by_id` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `ga_optional_dashb_changed_by_id_42f96bb5033ce84e_fk_auth_user_id` (`changed_by_id`),
+  KEY `ga_optional_dashboardoptionalconfiguration_c8235886` (`course_key`),
+  CONSTRAINT `ga_optional_dashb_changed_by_id_42f96bb5033ce84e_fk_auth_user_id` FOREIGN KEY (`changed_by_id`) REFERENCES `auth_user` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `ga_optional_useroptionalconfiguration`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ga_optional_useroptionalconfiguration` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `change_date` datetime(6) NOT NULL,
+  `enabled` tinyint(1) NOT NULL,
+  `key` varchar(100) NOT NULL,
+  `changed_by_id` int(11) DEFAULT NULL,
+  `user_id` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `ga_optional_userop_changed_by_id_ecb83911b0e304a_fk_auth_user_id` (`changed_by_id`),
+  KEY `ga_optional_useroptional_user_id_51cb08ecf5fe5a9_fk_auth_user_id` (`user_id`),
+  KEY `ga_optional_useroptionalconfiguration_3c6e0b8a` (`key`),
+  CONSTRAINT `ga_optional_userop_changed_by_id_ecb83911b0e304a_fk_auth_user_id` FOREIGN KEY (`changed_by_id`) REFERENCES `auth_user` (`id`),
+  CONSTRAINT `ga_optional_useroptional_user_id_51cb08ecf5fe5a9_fk_auth_user_id` FOREIGN KEY (`user_id`) REFERENCES `auth_user` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `ga_organization_organization`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
@@ -2194,6 +2581,73 @@ CREATE TABLE `ga_shoppingcart_advancedcourseitem` (
   CONSTRAINT `g_orderitem_ptr_id_64b706dbe4e431bf_fk_shoppingcart_orderitem_id` FOREIGN KEY (`orderitem_ptr_id`) REFERENCES `shoppingcart_orderitem` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `ga_shoppingcart_certificateitemadditionalinfo`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ga_shoppingcart_certificateitemadditionalinfo` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `tax` decimal(30,2) NOT NULL,
+  `certificate_item_id` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `certificate_item_id` (`certificate_item_id`),
+  CONSTRAINT `D7bccfe5bc949b8f30998650c6c2902c` FOREIGN KEY (`certificate_item_id`) REFERENCES `shoppingcart_certificateitem` (`orderitem_ptr_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `ga_shoppingcart_personalinfo`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ga_shoppingcart_personalinfo` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `full_name` varchar(255) DEFAULT NULL,
+  `kana` varchar(255) DEFAULT NULL,
+  `postal_code` varchar(7) DEFAULT NULL,
+  `address_line_1` varchar(255) DEFAULT NULL,
+  `address_line_2` varchar(255) DEFAULT NULL,
+  `phone_number` varchar(32) DEFAULT NULL,
+  `free_entry_field_1` varchar(1024) DEFAULT NULL,
+  `free_entry_field_2` varchar(1024) DEFAULT NULL,
+  `free_entry_field_3` varchar(1024) DEFAULT NULL,
+  `free_entry_field_4` varchar(1024) DEFAULT NULL,
+  `free_entry_field_5` varchar(1024) DEFAULT NULL,
+  `choice_id` int(11) NOT NULL,
+  `order_id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `ga_shoppingcart_personalinfo_user_id_2dd16a06a3ae2988_uniq` (`user_id`,`order_id`),
+  KEY `ga_shoppingcart_personalinfo_428bb064` (`choice_id`),
+  KEY `ga_shoppingcart_personalinfo_69dfcb07` (`order_id`),
+  KEY `ga_shoppingcart_personalinfo_e8701ad4` (`user_id`),
+  CONSTRAINT `D3111d49ec13618fb973f23b5736ca69` FOREIGN KEY (`choice_id`) REFERENCES `ga_shoppingcart_personalinfosetting` (`id`),
+  CONSTRAINT `ga_shoppingca_order_id_36dc01f7bc1181cf_fk_shoppingcart_order_id` FOREIGN KEY (`order_id`) REFERENCES `shoppingcart_order` (`id`),
+  CONSTRAINT `ga_shoppingcart_persona_user_id_614b93112c26c01d_fk_auth_user_id` FOREIGN KEY (`user_id`) REFERENCES `auth_user` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `ga_shoppingcart_personalinfosetting`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ga_shoppingcart_personalinfosetting` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `full_name` tinyint(1) NOT NULL,
+  `kana` tinyint(1) NOT NULL,
+  `postal_code` tinyint(1) NOT NULL,
+  `address_line_1` tinyint(1) NOT NULL,
+  `address_line_2` tinyint(1) NOT NULL,
+  `phone_number` tinyint(1) NOT NULL,
+  `gaccatz_check` tinyint(1) NOT NULL,
+  `free_entry_field_1_title` longtext NOT NULL,
+  `free_entry_field_2_title` longtext NOT NULL,
+  `free_entry_field_3_title` longtext NOT NULL,
+  `free_entry_field_4_title` longtext NOT NULL,
+  `free_entry_field_5_title` longtext NOT NULL,
+  `advanced_course_id` int(11) DEFAULT NULL,
+  `course_mode_id` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `advanced_course_id` (`advanced_course_id`),
+  UNIQUE KEY `course_mode_id` (`course_mode_id`),
+  CONSTRAINT `d97de292b0f8dd667b93ec0f68f4d745` FOREIGN KEY (`advanced_course_id`) REFERENCES `ga_advanced_course_advancedcourse` (`id`),
+  CONSTRAINT `ga_course_mode_id_3e69df26a2ba0f75_fk_course_modes_coursemode_id` FOREIGN KEY (`course_mode_id`) REFERENCES `course_modes_coursemode` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `ga_survey_surveysubmission`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
@@ -2235,6 +2689,188 @@ CREATE TABLE `ga_task_task` (
   KEY `ga_task_task_57746cc8` (`task_id`),
   KEY `ga_task_task_76980a94` (`task_state`),
   CONSTRAINT `ga_task_task_requester_id_510548336253f5a3_fk_auth_user_id` FOREIGN KEY (`requester_id`) REFERENCES `auth_user` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `gx_login_login`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `gx_login_login` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `gx_member_member`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `gx_member_member` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `code` varchar(255) DEFAULT NULL,
+  `org1` varchar(100) DEFAULT NULL,
+  `org2` varchar(100) DEFAULT NULL,
+  `org3` varchar(100) DEFAULT NULL,
+  `org4` varchar(100) DEFAULT NULL,
+  `org5` varchar(100) DEFAULT NULL,
+  `org6` varchar(100) DEFAULT NULL,
+  `org7` varchar(100) DEFAULT NULL,
+  `org8` varchar(100) DEFAULT NULL,
+  `org9` varchar(100) DEFAULT NULL,
+  `org10` varchar(100) DEFAULT NULL,
+  `item1` varchar(100) DEFAULT NULL,
+  `item2` varchar(100) DEFAULT NULL,
+  `item3` varchar(100) DEFAULT NULL,
+  `item4` varchar(100) DEFAULT NULL,
+  `item5` varchar(100) DEFAULT NULL,
+  `item6` varchar(100) DEFAULT NULL,
+  `item7` varchar(100) DEFAULT NULL,
+  `item8` varchar(100) DEFAULT NULL,
+  `item9` varchar(100) DEFAULT NULL,
+  `item10` varchar(100) DEFAULT NULL,
+  `is_active` tinyint(1) NOT NULL,
+  `is_delete` tinyint(1) NOT NULL,
+  `updated` datetime(6) DEFAULT NULL,
+  `created` datetime(6) NOT NULL,
+  `created_by_id` int(11) NOT NULL,
+  `creator_org_id` int(11) NOT NULL,
+  `group_id` int(11) DEFAULT NULL,
+  `org_id` int(11) NOT NULL,
+  `updated_by_id` int(11) DEFAULT NULL,
+  `updated_org_id` int(11) DEFAULT NULL,
+  `user_id` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `gx_member_member_org_id_33b433dd00ad2d88_uniq` (`org_id`,`user_id`,`is_active`,`is_delete`),
+  KEY `gx_member_member_created_by_id_280d2be9a89f5ba9_fk_auth_user_id` (`created_by_id`),
+  KEY `b7c071bad6d31d342295efe4e2d09d1b` (`creator_org_id`),
+  KEY `gx_member_mem_group_id_6f2235867bb1ac11_fk_gx_org_group_group_id` (`group_id`),
+  KEY `gx_member_member_updated_by_id_6952be5c72a91ff8_fk_auth_user_id` (`updated_by_id`),
+  KEY `D322ff1665bcd5be691c448e7d6fdf9e` (`updated_org_id`),
+  KEY `gx_member_member_user_id_50886b7488b47828_fk_auth_user_id` (`user_id`),
+  KEY `gx_member_member_0f81d52e` (`updated`),
+  KEY `gx_member_member_e2fa5388` (`created`),
+  CONSTRAINT `D322ff1665bcd5be691c448e7d6fdf9e` FOREIGN KEY (`updated_org_id`) REFERENCES `ga_organization_organization` (`id`),
+  CONSTRAINT `b7c071bad6d31d342295efe4e2d09d1b` FOREIGN KEY (`creator_org_id`) REFERENCES `ga_organization_organization` (`id`),
+  CONSTRAINT `gx_me_org_id_1c739b61c12a7eb0_fk_ga_organization_organization_id` FOREIGN KEY (`org_id`) REFERENCES `ga_organization_organization` (`id`),
+  CONSTRAINT `gx_member_mem_group_id_6f2235867bb1ac11_fk_gx_org_group_group_id` FOREIGN KEY (`group_id`) REFERENCES `gx_org_group_group` (`id`),
+  CONSTRAINT `gx_member_member_created_by_id_280d2be9a89f5ba9_fk_auth_user_id` FOREIGN KEY (`created_by_id`) REFERENCES `auth_user` (`id`),
+  CONSTRAINT `gx_member_member_updated_by_id_6952be5c72a91ff8_fk_auth_user_id` FOREIGN KEY (`updated_by_id`) REFERENCES `auth_user` (`id`),
+  CONSTRAINT `gx_member_member_user_id_50886b7488b47828_fk_auth_user_id` FOREIGN KEY (`user_id`) REFERENCES `auth_user` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `gx_member_memberregistertasktarget`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `gx_member_memberregistertasktarget` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `created` datetime(6) NOT NULL,
+  `member` varchar(6000) NOT NULL,
+  `history_id` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `gx_member_memberregistertasktarget_5f4b4502` (`history_id`),
+  CONSTRAINT `gx_history_id_1112a4d629cb8211_fk_gx_member_membertaskhistory_id` FOREIGN KEY (`history_id`) REFERENCES `gx_member_membertaskhistory` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `gx_member_membertaskhistory`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `gx_member_membertaskhistory` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `task_id` varchar(255) DEFAULT NULL,
+  `result` tinyint(1) NOT NULL,
+  `messages` longtext,
+  `updated` datetime(6) DEFAULT NULL,
+  `created` datetime(6) NOT NULL,
+  `organization_id` int(11) NOT NULL,
+  `requester_id` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `D1cc652a3daa2c9d9298c29f38254e58` (`organization_id`),
+  KEY `gx_member_memberta_requester_id_25047b5fd94a38ba_fk_auth_user_id` (`requester_id`),
+  KEY `gx_member_membertaskhistory_57746cc8` (`task_id`),
+  CONSTRAINT `D1cc652a3daa2c9d9298c29f38254e58` FOREIGN KEY (`organization_id`) REFERENCES `ga_organization_organization` (`id`),
+  CONSTRAINT `gx_member_memberta_requester_id_25047b5fd94a38ba_fk_auth_user_id` FOREIGN KEY (`requester_id`) REFERENCES `auth_user` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `gx_org_group_child`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `gx_org_group_child` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `list` mediumtext,
+  `created` datetime(6) NOT NULL,
+  `group_id` int(11) NOT NULL,
+  `org_id` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `gx_org_group_child_e2fa5388` (`created`),
+  KEY `gx_org_group_child_0e939a4f` (`group_id`),
+  KEY `gx_org_group_child_9cf869aa` (`org_id`),
+  CONSTRAINT `gx_or_org_id_2a17c290abe66b20_fk_ga_organization_organization_id` FOREIGN KEY (`org_id`) REFERENCES `ga_organization_organization` (`id`),
+  CONSTRAINT `gx_org_group__group_id_53cc695e4d9e167f_fk_gx_org_group_group_id` FOREIGN KEY (`group_id`) REFERENCES `gx_org_group_group` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `gx_org_group_group`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `gx_org_group_group` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `parent_id` int(11) NOT NULL,
+  `level_no` int(11) NOT NULL,
+  `group_code` varchar(20) NOT NULL,
+  `group_name` varchar(255) NOT NULL,
+  `notes` varchar(255) DEFAULT NULL,
+  `created` datetime(6) NOT NULL,
+  `modified` datetime(6) DEFAULT NULL,
+  `created_by_id` int(11) NOT NULL,
+  `modified_by_id` int(11) DEFAULT NULL,
+  `org_id` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `gx_org_group_group_created_by_id_17faf192ff43d00_fk_auth_user_id` (`created_by_id`),
+  KEY `gx_org_group_gro_modified_by_id_594115a14d6d5686_fk_auth_user_id` (`modified_by_id`),
+  KEY `gx_or_org_id_2f3db3bab1692a59_fk_ga_organization_organization_id` (`org_id`),
+  KEY `gx_org_group_group_e2fa5388` (`created`),
+  KEY `gx_org_group_group_9ae73c65` (`modified`),
+  CONSTRAINT `gx_or_org_id_2f3db3bab1692a59_fk_ga_organization_organization_id` FOREIGN KEY (`org_id`) REFERENCES `ga_organization_organization` (`id`),
+  CONSTRAINT `gx_org_group_gro_modified_by_id_594115a14d6d5686_fk_auth_user_id` FOREIGN KEY (`modified_by_id`) REFERENCES `auth_user` (`id`),
+  CONSTRAINT `gx_org_group_group_created_by_id_17faf192ff43d00_fk_auth_user_id` FOREIGN KEY (`created_by_id`) REFERENCES `auth_user` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `gx_org_group_parent`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `gx_org_group_parent` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `path` mediumtext,
+  `created` datetime(6) NOT NULL,
+  `group_id` int(11) NOT NULL,
+  `org_id` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `gx_org_group__group_id_7f2b455cc5ab4f90_fk_gx_org_group_group_id` (`group_id`),
+  KEY `gx_or_org_id_6843688ceb17c7cf_fk_ga_organization_organization_id` (`org_id`),
+  KEY `gx_org_group_parent_e2fa5388` (`created`),
+  CONSTRAINT `gx_or_org_id_6843688ceb17c7cf_fk_ga_organization_organization_id` FOREIGN KEY (`org_id`) REFERENCES `ga_organization_organization` (`id`),
+  CONSTRAINT `gx_org_group__group_id_7f2b455cc5ab4f90_fk_gx_org_group_group_id` FOREIGN KEY (`group_id`) REFERENCES `gx_org_group_group` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `gx_org_group_right`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `gx_org_group_right` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `created` datetime(6) NOT NULL,
+  `created_by_id` int(11) NOT NULL,
+  `creator_org_id` int(11) NOT NULL,
+  `group_id` int(11) NOT NULL,
+  `org_id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `gx_org_group_righ_created_by_id_676d3fb07980795d_fk_auth_user_id` (`created_by_id`),
+  KEY `D34678560fe7a34559d0859474883cb6` (`creator_org_id`),
+  KEY `gx_org_group__group_id_17f48af03944f15d_fk_gx_org_group_group_id` (`group_id`),
+  KEY `gx_or_org_id_7a891799be6c4e84_fk_ga_organization_organization_id` (`org_id`),
+  KEY `gx_org_group_right_user_id_11c00aeb50109a24_fk_auth_user_id` (`user_id`),
+  KEY `gx_org_group_right_e2fa5388` (`created`),
+  CONSTRAINT `D34678560fe7a34559d0859474883cb6` FOREIGN KEY (`creator_org_id`) REFERENCES `ga_organization_organization` (`id`),
+  CONSTRAINT `gx_or_org_id_7a891799be6c4e84_fk_ga_organization_organization_id` FOREIGN KEY (`org_id`) REFERENCES `ga_organization_organization` (`id`),
+  CONSTRAINT `gx_org_group__group_id_17f48af03944f15d_fk_gx_org_group_group_id` FOREIGN KEY (`group_id`) REFERENCES `gx_org_group_group` (`id`),
+  CONSTRAINT `gx_org_group_righ_created_by_id_676d3fb07980795d_fk_auth_user_id` FOREIGN KEY (`created_by_id`) REFERENCES `auth_user` (`id`),
+  CONSTRAINT `gx_org_group_right_user_id_11c00aeb50109a24_fk_auth_user_id` FOREIGN KEY (`user_id`) REFERENCES `auth_user` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `instructor_task_instructortask`;

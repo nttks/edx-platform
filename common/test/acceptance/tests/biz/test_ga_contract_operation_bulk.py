@@ -4,6 +4,7 @@
 """
 
 from nose.plugins.attrib import attr
+from unittest import skip
 
 from .test_ga_contract_operation import BizPersonalinfoMaskTestBase, BizStudentUnregisterTestBase
 
@@ -16,6 +17,7 @@ class BizStudentBulkManagementMixin(object):
 @attr('shard_ga_biz_3')
 class BizBulkPersonalinfoMaskTest(BizPersonalinfoMaskTestBase, BizStudentBulkManagementMixin):
 
+    @skip("Modified by JAST later")
     def test_success(self):
         # Check that can login
         for user in self.users:
@@ -67,6 +69,7 @@ class BizBulkPersonalinfoMaskTest(BizPersonalinfoMaskTestBase, BizStudentBulkMan
 @attr('shard_ga_biz_3')
 class BizStudentUnregisterTest(BizStudentUnregisterTestBase, BizStudentBulkManagementMixin):
 
+    @skip("Modified by JAST later")
     def test_success(self):
         # Check registered user can access to course about
         self._assert_access_course_about(self.users[0])

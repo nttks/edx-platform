@@ -46,8 +46,8 @@ class BizAdditionalInfoTest(WebAppTest, GaccoBizTestMixin):
         # Check error message
         self.additional_info_page.click_additional_info_register_button()
         self.assertEqual(
-            [u"Please enter the name of item you wish to add."],
-            self.additional_info_page.messages,
+            u"Please enter the name of item you wish to add.",
+            self.additional_info_page.error_messages[0],
         )
 
         # Register additional info
@@ -55,16 +55,16 @@ class BizAdditionalInfoTest(WebAppTest, GaccoBizTestMixin):
         self.additional_info_page.input_additional_info_register(additional_input_value1)
         self.additional_info_page.click_additional_info_register_button()
         self.assertEqual(
-            [u"New item has been registered."],
-            self.additional_info_page.messages,
+            u"New item has been registered.",
+            self.additional_info_page.messages[0],
         )
 
         additional_input_value2 = get_random_string(10)
         self.additional_info_page.input_additional_info_register(additional_input_value2)
         self.additional_info_page.click_additional_info_register_button()
         self.assertEqual(
-            [u"New item has been registered."],
-            self.additional_info_page.messages,
+            u"New item has been registered.",
+            self.additional_info_page.messages[0],
         )
 
         # Check additional info value
@@ -81,15 +81,15 @@ class BizAdditionalInfoTest(WebAppTest, GaccoBizTestMixin):
         # Check error message
         self.additional_info_page.edit_additional_info_value('')
         self.assertEqual(
-            [u"Please enter the name of item you wish to add."],
-            self.additional_info_page.messages,
+            u"Please enter the name of item you wish to add.",
+            self.additional_info_page.error_messages[0],
         )
 
         additional_input_value3 = get_random_string(10)
         self.additional_info_page.edit_additional_info_value(additional_input_value3)
         self.assertEqual(
-            [u"New item has been updated."],
-            self.additional_info_page.messages,
+            u"New item has been updated.",
+            self.additional_info_page.messages[0],
         )
 
         # Check additional info value
@@ -105,8 +105,8 @@ class BizAdditionalInfoTest(WebAppTest, GaccoBizTestMixin):
         # Delete additional info
         self.additional_info_page.click_additional_info_delete_button().click_popup_yes()
         self.assertEqual(
-            [u"New item has been deleted."],
-            self.additional_info_page.messages,
+            u"New item has been deleted.",
+            self.additional_info_page.messages[0],
         )
 
         # Check additional info value
@@ -158,10 +158,10 @@ class BizBulkAdditionalInfoRegisterTest(WebAppTest, GaccoBizTestMixin, BizStuden
         nav.change_manage_target(self.org_info['Organization Name'], self.contract['Contract Name'], self.course_key)
 
         # Register students
-        register_students_page = nav.click_register_students()
-        input_lines = self._make_students([self.new_users[0], self.new_users[1], self.new_users[2]])
-        register_students_page.input_students(input_lines)
-        register_students_page.click_register_button().click_popup_yes()
+        register_students_page = nav.click_register_students().click_tab_one_register_student()
+        register_students_page.input_one_user_info(self.new_users[0]).click_one_register_button().click_popup_yes()
+        register_students_page.input_one_user_info(self.new_users[1]).click_one_register_button().click_popup_yes()
+        register_students_page.input_one_user_info(self.new_users[2]).click_one_register_button().click_popup_yes()
 
         # Add additional info
         additional_info_page = nav.click_register_students().click_tab_additional_info()
@@ -175,19 +175,19 @@ class BizBulkAdditionalInfoRegisterTest(WebAppTest, GaccoBizTestMixin, BizStuden
         # Go to update additional info page
         update_additional_info_page = register_students_page.click_tab_update_additional_info()
         self.assertIn(
-            u"· {}: 255 characters or less.".format(additional_input_x),
+            u"{}: 255 characters or less.".format(additional_input_x),
             update_additional_info_page.get_additional_infos(),
         )
         self.assertIn(
-            u"· {}: 255 characters or less.".format(additional_input_y),
+            u"{}: 255 characters or less.".format(additional_input_y),
             update_additional_info_page.get_additional_infos(),
         )
 
         # Check error message
         update_additional_info_page.click_additional_info_update_button()
         self.assertEqual(
-            [u"Could not find student list."],
-            update_additional_info_page.messages,
+            u"Could not find student list.",
+            update_additional_info_page.error_messages[0],
         )
 
         # Update additional info
@@ -211,12 +211,12 @@ class BizBulkAdditionalInfoRegisterTest(WebAppTest, GaccoBizTestMixin, BizStuden
 
         # Check message
         self.assertEqual(
-            [u"Began the processing of Additional Item Update.Execution status, please check from the task history."],
-            update_additional_info_page.messages,
+            u"Began the processing of Additional Item Update.Execution status, please check from the task history.",
+            update_additional_info_page.messages[0],
         )
 
         # Check task history
-        update_additional_info_page.click_show_history()
+        update_additional_info_page.click_task_reload_button()
         self._assert_additional_info_update_task_history(
             update_additional_info_page.task_history_grid_row,
             3, 3, 0, 0,
@@ -233,10 +233,8 @@ class BizBulkAdditionalInfoRegisterTest(WebAppTest, GaccoBizTestMixin, BizStuden
         nav.change_manage_target(self.org_info['Organization Name'], self.contract['Contract Name'], self.course_key)
 
         # Register students
-        register_students_page = nav.click_register_students()
-        input_lines = self._make_students([self.new_users[0]])
-        register_students_page.input_students(input_lines)
-        register_students_page.click_register_button().click_popup_yes()
+        register_students_page = nav.click_register_students().click_tab_one_register_student()
+        register_students_page.input_one_user_info(self.new_users[0]).click_one_register_button().click_popup_yes()
 
         # Update additional info
         update_additional_info_page = nav.click_register_students().click_tab_update_additional_info()
@@ -249,10 +247,10 @@ class BizBulkAdditionalInfoRegisterTest(WebAppTest, GaccoBizTestMixin, BizStuden
         update_additional_info_page.input_additional_info_list(csv_list)
         update_additional_info_page.click_additional_info_update_button().click_popup_yes()
 
-        # Confirm message
+        # Confirm error message
         self.assertEqual(
-            [u"No additional item registered."],
-            update_additional_info_page.messages
+            u"No additional item registered.",
+            update_additional_info_page.error_messages[0]
         )
 
     def test_errors_user(self):
@@ -261,10 +259,8 @@ class BizBulkAdditionalInfoRegisterTest(WebAppTest, GaccoBizTestMixin, BizStuden
         nav.change_manage_target(self.org_info['Organization Name'], self.contract['Contract Name'], self.course_key)
 
         # Register students
-        register_students_page = nav.click_register_students()
-        input_lines = self._make_students([self.new_users[0]])
-        register_students_page.input_students(input_lines)
-        register_students_page.click_register_button().click_popup_yes()
+        register_students_page = nav.click_register_students().click_tab_one_register_student()
+        register_students_page.input_one_user_info(self.new_users[0]).click_one_register_button().click_popup_yes()
 
         # Add additional info
         additional_info_page = nav.click_register_students().click_tab_additional_info()
@@ -300,12 +296,12 @@ class BizBulkAdditionalInfoRegisterTest(WebAppTest, GaccoBizTestMixin, BizStuden
 
         # Confirm message
         self.assertEqual(
-            [u"Began the processing of Additional Item Update.Execution status, please check from the task history."],
-            update_additional_info_page.messages
+            u"Began the processing of Additional Item Update.Execution status, please check from the task history.",
+            update_additional_info_page.messages[0]
         )
 
         # Check task history
-        update_additional_info_page.click_show_history()
+        update_additional_info_page.click_task_reload_button()
         self._assert_additional_info_update_task_history(
             update_additional_info_page.task_history_grid_row,
             3, 1, 0, 2,
@@ -325,10 +321,10 @@ class BizBulkAdditionalInfoRegisterTest(WebAppTest, GaccoBizTestMixin, BizStuden
         nav.change_manage_target(self.org_info['Organization Name'], self.contract['Contract Name'], self.course_key)
 
         # Register students
-        register_students_page = nav.click_register_students()
-        input_lines = self._make_students([self.new_users[0], self.new_users[1], self.new_users[2]])
-        register_students_page.input_students(input_lines)
-        register_students_page.click_register_button().click_popup_yes()
+        register_students_page = nav.click_register_students().click_tab_one_register_student()
+        register_students_page.input_one_user_info(self.new_users[0]).click_one_register_button().click_popup_yes()
+        register_students_page.input_one_user_info(self.new_users[1]).click_one_register_button().click_popup_yes()
+        register_students_page.input_one_user_info(self.new_users[2]).click_one_register_button().click_popup_yes()
 
         # Add additional info
         additional_info_page = nav.click_register_students().click_tab_additional_info()
@@ -365,12 +361,12 @@ class BizBulkAdditionalInfoRegisterTest(WebAppTest, GaccoBizTestMixin, BizStuden
 
         # Confirm message
         self.assertEqual(
-            [u"Began the processing of Additional Item Update.Execution status, please check from the task history."],
-            update_additional_info_page.messages
+            u"Began the processing of Additional Item Update.Execution status, please check from the task history.",
+            update_additional_info_page.messages[0]
         )
 
         # Check task history
-        update_additional_info_page.click_show_history()
+        update_additional_info_page.click_task_reload_button()
         self._assert_additional_info_update_task_history(
             update_additional_info_page.task_history_grid_row,
             4, 1, 1, 2,

@@ -2,10 +2,6 @@
 """
 End-to-end tests for contract of biz feature
 """
-from itertools import izip
-from unittest import skip
-
-import bok_choy
 from bok_choy.web_app_test import WebAppTest
 from nose.plugins.attrib import attr
 
@@ -71,7 +67,6 @@ class BizContractTest(WebAppTest, GaccoBizTestMixin):
         contract_page = BizNavPage(self.browser).visit().click_contract()
         # Try to show register view
         contract_page = contract_page.click_register_button().wait_for_page()
-        bok_choy.browser.save_screenshot(self.browser, 'test_show_register_have_no_org_1')
         # Verify that an error is displayed
         self.assertIn("You need to create an organization first.", contract_page.messages)
 
@@ -98,7 +93,6 @@ class BizContractTest(WebAppTest, GaccoBizTestMixin):
             .add_detail_info(self.course_id, 1) \
             .click_register_button()
         contract_page = BizContractPage(self.browser).wait_for_page()
-        bok_choy.browser.save_screenshot(self.browser, 'test_register_all_as_owner_1')
 
         # Verify that success message is displayed
         self.assertIn("The new contract has been added.", contract_page.messages)
@@ -140,7 +134,6 @@ class BizContractTest(WebAppTest, GaccoBizTestMixin):
             .add_detail_info(self.course_id, 1)\
             .click_register_button()
         contract_page = BizContractPage(self.browser).wait_for_page()
-        bok_choy.browser.save_screenshot(self.browser, 'test_register_contract_and_detail_as_owner_1')
 
         # Verify that success message is displayed
         self.assertIn("The new contract has been added.", contract_page.messages)
@@ -181,7 +174,6 @@ class BizContractTest(WebAppTest, GaccoBizTestMixin):
                           contractor_organization=self.CONTRACTOR_ORGANIZATION) \
             .click_register_button()
         contract_page = BizContractPage(self.browser).wait_for_page()
-        bok_choy.browser.save_screenshot(self.browser, 'test_register_contract_and_additinaol_by_owner_1')
 
         # Verify that success message is displayed
         self.assertIn("The new contract has been added.", contract_page.messages)
@@ -211,7 +203,6 @@ class BizContractTest(WebAppTest, GaccoBizTestMixin):
 
         # Register a contract
         detail_page.click_register_button().wait_for_page()
-        bok_choy.browser.save_screenshot(self.browser, 'test_register_required_error_1')
 
         # Verify that required errors are displayed
         required_error = 'The field is required.'
@@ -237,7 +228,7 @@ class BizContractTest(WebAppTest, GaccoBizTestMixin):
                           start_date=start_date, end_date=end_date,
                           contractor_organization=self.CONTRACTOR_ORGANIZATION) \
             .click_register_button().wait_for_page()
-        bok_choy.browser.save_screenshot(self.browser, 'test_register_invitation_code_invalid_error_1')
+
         # Verify that error is displayed
         self.assertEqual(detail_page.contract_field_errors, ['', '', '', 'Enter a valid value.', '', '', ''])
 
@@ -250,7 +241,7 @@ class BizContractTest(WebAppTest, GaccoBizTestMixin):
                           start_date=start_date, end_date=end_date,
                           contractor_organization=self.CONTRACTOR_ORGANIZATION) \
             .click_register_button().wait_for_page()
-        bok_choy.browser.save_screenshot(self.browser, 'test_register_invitation_code_length_error_1')
+
         # Verify that error is displayed
         self.assertEqual(detail_page.contract_field_errors,
                          ['', '', '', 'Ensure this value has at least 8 characters (it has 6).', '', '', ''])
@@ -276,7 +267,6 @@ class BizContractTest(WebAppTest, GaccoBizTestMixin):
                           invitation_code=invitation_code,
                           start_date=start_date, end_date=end_date,
                           contractor_organization=self.CONTRACTOR_ORGANIZATION).click_register_button().wait_for_page()
-        bok_choy.browser.save_screenshot(self.browser, 'test_register_invitation_code_used_error_1')
         # Verify that error is displayed
         self.assertEqual(detail_page.contract_field_errors, ['', '', '', 'The invitation code has been used.', '', '', ''])
 
@@ -298,7 +288,7 @@ class BizContractTest(WebAppTest, GaccoBizTestMixin):
                           invitation_code=invitation_code,
                           start_date='2016/01/01/01',
                           end_date='2100/01/01').click_register_button().wait_for_page()
-        bok_choy.browser.save_screenshot(self.browser, 'test_register_date_field_error_1')
+
         # Verify that error is displayed
         self.assertEqual(detail_page.contract_field_errors, ['', '', '', '', '', 'Enter a valid value.', ''])
 
@@ -310,7 +300,7 @@ class BizContractTest(WebAppTest, GaccoBizTestMixin):
                           invitation_code=invitation_code,
                           start_date='2016/01/01',
                           end_date='2100/01/01/01').click_register_button().wait_for_page()
-        bok_choy.browser.save_screenshot(self.browser, 'test_register_date_field_error_2')
+
         # Verify that error is displayed
         self.assertEqual(detail_page.contract_field_errors, ['', '', '', '', '','',  'Enter a valid value.'])
 
@@ -322,7 +312,7 @@ class BizContractTest(WebAppTest, GaccoBizTestMixin):
                           invitation_code=invitation_code,
                           start_date='2016/01/02',
                           end_date='2016/01/01').click_register_button().wait_for_page()
-        bok_choy.browser.save_screenshot(self.browser, 'test_register_date_field_error_3')
+
         # Verify that error is displayed
         self.assertEqual(detail_page.main_info_error, 'Contract end date is before contract start date.')
 
@@ -347,7 +337,6 @@ class BizContractTest(WebAppTest, GaccoBizTestMixin):
             .add_detail_info(self.course_id, 1) \
             .add_detail_info(self.course_id, 2) \
             .click_register_button().wait_for_page()
-        bok_choy.browser.save_screenshot(self.browser, 'test_register_detail_info_error_1')
 
         # Verify that error is displayed
         self.assertEqual(detail_page.detail_info_error, 'You can not enter duplicate values in Contract Detail Info.')
@@ -377,11 +366,9 @@ class BizContractTest(WebAppTest, GaccoBizTestMixin):
             .add_detail_info(self.course_id, 1) \
             .click_register_button()
         contract_page = BizContractPage(self.browser).wait_for_page()
-        bok_choy.browser.save_screenshot(self.browser, 'test_edit_success_1')
 
         # Visit detail view
         detail_page = contract_page.click_grid_row({'Contract Name': contract_name}, BizContractDetailPage)
-        bok_choy.browser.save_screenshot(self.browser, 'test_edit_success_2')
 
         # Edit all fields except contract_type
         contract_name += '2'
@@ -396,7 +383,6 @@ class BizContractTest(WebAppTest, GaccoBizTestMixin):
             .input_detail_info(course2._course_key, 1) \
             .click_register_button()
         contract_page = contract_page.wait_for_page()
-        bok_choy.browser.save_screenshot(self.browser, 'test_edit_success_3')
 
         # Verify that an error is displayed
         self.assertIn("The contract changes have been saved.", contract_page.messages)
@@ -415,7 +401,6 @@ class BizContractTest(WebAppTest, GaccoBizTestMixin):
                 }
         )
 
-    @skip("Fix test fail, why?")
     def test_delete_success(self):
         """
         Tests delete contract.
@@ -438,15 +423,12 @@ class BizContractTest(WebAppTest, GaccoBizTestMixin):
             .add_detail_info(self.course_id, 1) \
             .click_register_button()
         contract_page = BizContractPage(self.browser).wait_for_page()
-        bok_choy.browser.save_screenshot(self.browser, 'test_delete_success_1')
 
         # Visit detail view
         detail_page = contract_page.click_grid_row({'Contract Name': contract_name}, BizContractDetailPage)
-        bok_choy.browser.save_screenshot(self.browser, 'test_delete_success_2')
 
         # Delete the contract
         contract_page = detail_page.click_delete_button().click_popup_yes(BizContractPage)
-        bok_choy.browser.save_screenshot(self.browser, 'test_delete_success_3')
 
         # Verify that an error is displayed
         self.assertIn("The contract has been deleted.", contract_page.messages)

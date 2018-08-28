@@ -180,22 +180,11 @@ class BizSurveyTest(WebAppTest, GaccoBizTestMixin):
         self.assertEqual(csv_data, expect_data)
 
 
+@attr('shard_ga_biz_3')
 class LoginCodeEnabledBizSurveyTest(WebAppTest, GaccoBizTestMixin):
     """
     Tests that the login code enabled survey functionality of biz works
     """
-
-    def _make_students_auth(self, user_info_list):
-        return '\r\n'.join([
-            '{},{},{},{},{}'.format(
-                user_info['email'],
-                user_info['username'],
-                user_info['fullname'] if 'fullname' in user_info else 'Full Name',
-                user_info['login_code'] if 'login_code' in user_info else user_info['username'],
-                user_info['password']
-            )
-            for user_info in user_info_list
-        ])
 
     def setUp(self):
         super(LoginCodeEnabledBizSurveyTest, self).setUp()
@@ -238,11 +227,12 @@ class LoginCodeEnabledBizSurveyTest(WebAppTest, GaccoBizTestMixin):
             acom_employee['login_code'] = 'logincode_' + get_random_string(8)
         self.switch_to_user(self.new_director)
         biz_register_students_page = BizNavPage(self.browser).visit().change_role(A_COMPANY, self.contract['Contract Name'],
-                                                     self.course._course_key).click_register_students()
-        biz_register_students_page.input_students(
-            self._make_students_auth(acom_employees)).click_register_button().click_popup_yes()
+                                                                                  self.course._course_key).click_register_students().click_tab_one_register_student()
+
+        biz_register_students_page.input_one_user_info_auth(acom_employees[0]).click_one_register_button().click_popup_yes()
+        biz_register_students_page.input_one_user_info_auth(acom_employees[1]).click_one_register_button().click_popup_yes()
         biz_register_students_page.wait_for_message(
-            u'Began the processing of Student Register.Execution status, please check from the task history.'
+            u'Began the processing of Student Member Register.Execution status, please check from the task history.'
         )
 
         # Change login user and answer survey
