@@ -100,14 +100,14 @@
                             @include padding(($baseline/4) ($baseline/2));
                             border-radius: ($baseline/4);
                             font-family: $sans-serif;
-                            color: $base-font-color;
+                            text-decoration: none;
 
                             p {
 
                                 &.subtitle {
                                     @extend %t-action4;
                                     @extend %t-regular;
-                                    display: block;
+                                    display: inline-block;
                                     margin: 0;
                                     color: $gray-d1;
 
@@ -131,14 +131,16 @@
                                 }
 
                                 .subtitle-name {
+                                    display: inline-block;
                                     margin-right: 5px;
                                 }
                             }
 
                             &:hover,
                             &:focus {
-                                color: $base-font-color;
+                                color: $link-color;
                                 background: $gray-l5;
+                                text-decoration: underline !important;
 
                                 .subtitle {
                                     color: $gray-d1;
@@ -160,7 +162,9 @@
 
                             a {
                                 @extend %t-ultrastrong;
+                                color: $base-font-color;
                                 background: $gray-l4;
+                                text-decoration: none !important;
                             }
                         }
 
