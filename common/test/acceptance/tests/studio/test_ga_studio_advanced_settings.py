@@ -29,3 +29,14 @@ class DefaultValueTest(StudioCourseTest):
             '"early_with_info"',
             self.advanced_settings.get('Certificates Display Behavior')
         )
+
+    def test_new_icon_display_days(self):
+        """
+        Test value of new_icon_display_days on advanced settings when create course.
+        """
+        self.advanced_settings.visit()
+
+        self.assertEqual(
+            '7',
+            self.advanced_settings.get('New Icon Display Days')
+        )

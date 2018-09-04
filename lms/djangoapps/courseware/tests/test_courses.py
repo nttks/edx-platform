@@ -34,6 +34,7 @@ from xmodule.modulestore.tests.factories import CourseFactory, ItemFactory, chec
 from xmodule.tests.xml import factories as xml
 from xmodule.tests.xml import XModuleXmlImportTest
 
+from freezegun import freeze_time
 
 CMS_BASE_TEST = 'testcms'
 TEST_DATA_DIR = settings.COMMON_TEST_DATA_ROOT
@@ -204,6 +205,45 @@ class CoursesRenderTest(ModuleStoreTestCase):
         course_info = get_course_info_section(self.request, self.course, 'handouts')
         self.assertEqual(course_info, u"<a href='/c4x/edX/toy/asset/handouts_sample_handout.txt'>Sample</a>")
 
+        self.assertEqual(7, self.course.new_icon_display_days)
+        # Test render works okay
+        with freeze_time('2018-07-10'):
+            course_info = get_course_info_section(self.request, self.course, 'updates')
+            self.assertEqual(course_info, u"<section><article><h2>Welcome</h2>8</article></section>\n"
+                                          u"<section><article><h2>2018/07/18</h2>7</article></section>\n"
+                                          u"<section><article><h2>July 11, 2018</h2>6</article></section>\n"
+                                          u"<section><article><h2>July 10, 2018<span class=\"new-icon\"></span></h2>5</article></section>\n"
+                                          u"<section><article><h2>July 9, 2018<span class=\"new-icon\"></span></h2>4</article></section>\n"
+                                          u"<section><article><h2>July 4, 2018<span class=\"new-icon\"></span></h2>3</article></section>\n"
+                                          u"<section><article><h2>July 3, 2018</h2>2</article></section>\n"
+                                          u"<section><article><h2>July 2, 2018</h2>1</article></section>\n")
+
+        self.course.new_icon_display_days = 6
+        # Test render works okay
+        with freeze_time('2018-07-10'):
+            course_info = get_course_info_section(self.request, self.course, 'updates')
+            self.assertEqual(course_info, u"<section><article><h2>Welcome</h2>8</article></section>\n"
+                                          u"<section><article><h2>2018/07/18</h2>7</article></section>\n"
+                                          u"<section><article><h2>July 11, 2018</h2>6</article></section>\n"
+                                          u"<section><article><h2>July 10, 2018<span class=\"new-icon\"></span></h2>5</article></section>\n"
+                                          u"<section><article><h2>July 9, 2018<span class=\"new-icon\"></span></h2>4</article></section>\n"
+                                          u"<section><article><h2>July 4, 2018</h2>3</article></section>\n"
+                                          u"<section><article><h2>July 3, 2018</h2>2</article></section>\n"
+                                          u"<section><article><h2>July 2, 2018</h2>1</article></section>\n")
+
+        self.course.new_icon_display_days = None
+        # Test render works okay
+        with freeze_time('2018-07-10'):
+            course_info = get_course_info_section(self.request, self.course, 'updates')
+            self.assertEqual(course_info, u"<section><article><h2>Welcome</h2>8</article></section>\n"
+                                          u"<section><article><h2>2018/07/18</h2>7</article></section>\n"
+                                          u"<section><article><h2>July 11, 2018</h2>6</article></section>\n"
+                                          u"<section><article><h2>July 10, 2018</h2>5</article></section>\n"
+                                          u"<section><article><h2>July 9, 2018</h2>4</article></section>\n"
+                                          u"<section><article><h2>July 4, 2018</h2>3</article></section>\n"
+                                          u"<section><article><h2>July 3, 2018</h2>2</article></section>\n"
+                                          u"<section><article><h2>July 2, 2018</h2>1</article></section>\n")
+
         # Test when render raises an exception
         with mock.patch('courseware.courses.get_module') as mock_module_render:
             mock_module_render.return_value = mock.MagicMock(
@@ -241,6 +281,18 @@ class XmlCoursesRenderTest(ModuleStoreTestCase):
         # Test render works okay. Note the href is different in XML courses.
         course_info = get_course_info_section(request, course, 'handouts')
         self.assertEqual(course_info, "<a href='/static/toy/handouts/sample_handout.txt'>Sample</a>")
+
+        # Test render works okay
+        with freeze_time('2018-07-10'):
+            course_info = get_course_info_section(request, course, 'updates')
+            self.assertEqual(course_info, u"<section><article><h2>Welcome</h2>8</article></section>\n"
+                                          u"<section><article><h2>2018/07/18</h2>7</article></section>\n"
+                                          u"<section><article><h2>July 11, 2018</h2>6</article></section>\n"
+                                          u"<section><article><h2>July 10, 2018<span class=\"new-icon\"></span></h2>5</article></section>\n"
+                                          u"<section><article><h2>July 9, 2018<span class=\"new-icon\"></span></h2>4</article></section>\n"
+                                          u"<section><article><h2>July 4, 2018<span class=\"new-icon\"></span></h2>3</article></section>\n"
+                                          u"<section><article><h2>July 3, 2018</h2>2</article></section>\n"
+                                          u"<section><article><h2>July 2, 2018</h2>1</article></section>\n")
 
         # Test when render raises an exception
         with mock.patch('courseware.courses.get_module') as mock_module_render:

@@ -3,6 +3,7 @@
 End-to-end tests for the LMS.
 """
 
+from datetime import datetime
 from textwrap import dedent
 from nose.plugins.attrib import attr
 
@@ -128,9 +129,9 @@ class HighLevelTabTestWithGaGlobalCourseCreator(UniqueCourseTest, GaccoTestRoleM
             self.course_info['run'], self.course_info['display_name']
         )
 
-        course_fix.add_update(
-            CourseUpdateDesc(date='January 29, 2014', content='Test course update1')
-        )
+        course_fix.add_update(CourseUpdateDesc(date='January 29, 2014', content='Test course update1'))
+        course_fix.add_update(CourseUpdateDesc(date=datetime.now().strftime('%B %d, %Y'), content='Test course update2'))
+        course_fix.add_update(CourseUpdateDesc(date='Welcome', content='Test course update3'))
 
         course_fix.add_handout('demoPDF.pdf')
 
@@ -160,8 +161,11 @@ class HighLevelTabTestWithGaGlobalCourseCreator(UniqueCourseTest, GaccoTestRoleM
         self.progress_page.visit()
         self.tab_nav.go_to_tab('Course Info')
 
-        # Expect just one update
-        self.assertEqual(self.course_info_page.num_updates, 1)
+        # Expect just three updates
+        self.assertEqual(self.course_info_page.num_updates, 3)
+
+        # Expect just one new icon
+        self.assertEqual(self.course_info_page.count_new_icon_updates, 1)
 
         # Expect a link to the demo handout pdf
         handout_links = self.course_info_page.handout_links

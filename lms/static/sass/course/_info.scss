@@ -37,6 +37,11 @@ div.info-wrapper {
           padding-left: $baseline;
         }
 
+        .new-icon:after {
+          content: url('#{$static-path}/images/new-icon.png');
+          padding-left: 5px;
+        }
+
         section.update-description {
           section {
             &.primary {

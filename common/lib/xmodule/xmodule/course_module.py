@@ -834,6 +834,15 @@ class CourseFields(object):
         scope=Scope.settings,
     )
 
+    new_icon_display_days = Integer(
+        display_name=_("New Icon Display Days"),
+        help=_(
+            "The number of days to display new icon for date section in the info page."
+        ),
+        default=7,
+        scope=Scope.settings,
+    )
+
 
 class CourseModule(CourseFields, SequenceModule):  # pylint: disable=abstract-method
     """

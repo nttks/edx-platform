@@ -1156,6 +1156,10 @@ class TestHtmlModifiers(ModuleStoreTestCase):
         # NOTE: check handouts output...right now test course seems to have no such content
         # at least this makes sure get_course_info_section returns without exception
 
+        get_course_info_section(self.request, self.course, "updates")
+        # NOTE: check updates output...right now test course seems to have no such content
+        # at least this makes sure get_course_info_section returns without exception
+
     def test_course_link_rewrite(self):
         module = render.get_module(
             self.user,

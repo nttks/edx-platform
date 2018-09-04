@@ -23,6 +23,13 @@ class CourseInfoPage(CoursePage):
         return len(self.q(css='section.updates section article').results)
 
     @property
+    def count_new_icon_updates(self):
+        """
+        Return the number of new icons of updates on the page.
+        """
+        return len(self.q(css='section.updates section article h2 span.new-icon').results)
+
+    @property
     def handout_links(self):
         """
         Return a list of handout assets links.

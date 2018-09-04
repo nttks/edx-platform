@@ -173,6 +173,7 @@ class AdvancedSettingsPage(CoursePage):
             'certificates_display_behavior',
             'course_image',
             'cosmetic_display_price',
+            'new_icon_display_days',
             'advertised_start',
             'announcement',
             'display_name',

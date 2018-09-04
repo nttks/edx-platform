@@ -1,8 +1,9 @@
+# coding=utf-8
 """
 Functions for accessing and displaying courses within the
 courseware.
 """
-from datetime import datetime
+from datetime import datetime, timedelta
 from collections import defaultdict
 from fs.errors import ResourceNotFoundError
 import logging
@@ -286,6 +287,35 @@ def get_course_info_section(request, course, section_key):
     if info_module is not None:
         try:
             html = info_module.render(STUDENT_VIEW).content
+            # Show new icon by the date on 'updates' section.
+            if section_key == 'updates' and course.new_icon_display_days is not None and course.new_icon_display_days >= 0:
+                now = datetime.now()
+                day_of_the_month = '\\u65e5'.decode('unicode-escape')
+                for item in info_module.items:
+                    if day_of_the_month in item['date']:
+                        fmt = '%Y\\u5e74%m\\u6708%d\\u65e5'.decode('unicode-escape')
+                        index = item['date'].find(day_of_the_month)
+                        date_str = item['date'][0:index + 1]
+                    else:
+                        fmt = '%B %d, %Y'.decode('unicode-escape')
+                        date_str = item['date']
+                    try:
+                        # using datetime.strptime for format check
+                        new_start = datetime.strptime(date_str.encode('utf-8'), fmt.encode('utf-8'))
+                        # Get number of days to show new icons for this course. (default is 7 days)
+                        new_end = new_start + timedelta(days=course.new_icon_display_days)
+                        # Show new icon from new_start date to new_end date.
+                        if new_start <= now < new_end:
+                            # Make replacement text to show new icon.
+                            target = '<h2>' + item['date'] + '</h2>'
+                            replace_text = '<h2>' + item['date'] + '<span class="new-icon"></span></h2>'
+                            # Place a new icon next to the dates in the 'updates' section.
+                            html = html.replace(target, replace_text)
+                        else:
+                            pass
+                    except ValueError:
+                        # Do nothing if datetime.strptime fails.
+                        pass
         except Exception:  # pylint: disable=broad-except
             html = render_to_string('courseware/error-message.html', None)
             log.exception(
