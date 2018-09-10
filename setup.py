@@ -32,6 +32,7 @@ setup(
             "notes = lms.djangoapps.notes.views:NotesTab",
             "pdf_textbooks = lms.djangoapps.courseware.tabs:PDFTextbookTabs",
             "progress = lms.djangoapps.courseware.tabs:ProgressTab",
+            "playback = lms.djangoapps.courseware.tabs:PlaybackTab",
             "static_tab = xmodule.tabs:StaticTab",
             "syllabus = lms.djangoapps.courseware.tabs:SyllabusTab",
             "teams = lms.djangoapps.teams.plugins:TeamsTab",

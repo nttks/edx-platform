@@ -2,6 +2,7 @@
 Test cases for tabs.
 """
 
+import ddt
 from datetime import timedelta
 
 from django.conf import settings
@@ -13,9 +14,11 @@ from mock import MagicMock, Mock, patch
 from nose.plugins.attrib import attr
 from opaque_keys.edx.locations import SlashSeparatedCourseKey
 
+from biz.djangoapps.ga_contract.tests.factories import ContractFactory, ContractDetailFactory
+from biz.djangoapps.ga_organization.tests.factories import OrganizationFactory
 from courseware.courses import get_course_by_id
 from courseware.tabs import (
-    get_course_tab_list, CoursewareTab, CourseInfoTab, ProgressTab,
+    get_course_tab_list, CoursewareTab, CourseInfoTab, ProgressTab, PlaybackTab,
     ExternalDiscussionCourseTab, ExternalLinkCourseTab, EnrolledTab
 )
 from courseware.tests.helpers import get_request_for_user, LoginEnrollmentTestCase
@@ -533,6 +536,7 @@ class TabListTestCase(TabTestCase):
                 {'type': ProgressTab.type, 'name': 'fake_name'},
                 {'type': xmodule_tabs.StaticTab.type, 'name': 'fake_name', 'url_slug': 'schlug'},
                 {'type': 'syllabus'},
+                {'type': PlaybackTab.type, 'name': 'fake_name'},
             ],
             # with external discussion
             [
@@ -698,6 +702,78 @@ class ProgressTestCase(TabTestCase):
         self.check_can_display_results(
             tab, for_staff_only=True, for_enrolled_users_only=True, expected_value=False
         )
+
+
+@attr('shard_1')
+@ddt.ddt
+class PlaybackTestCase(TabTestCase):
+    """Test cases for Playback Tab."""
+
+    def setUp(self):
+        super(PlaybackTestCase, self).setUp()
+
+        self.gacco_org = OrganizationFactory.create(
+            org_name='docomo gacco',
+            org_code='gacco',
+            creator_org_id=1,
+            created_by=UserFactory.create(),
+        )
+
+    def check_playback_tab(self):
+        """Helper function for verifying the playback tab."""
+        return self.check_tab(
+            tab_class=PlaybackTab,
+            dict_tab={'type': PlaybackTab.type, 'name': 'same'},
+            expected_link=self.reverse('playback', args=[self.course.id.to_deprecated_string()]),
+            expected_tab_id=PlaybackTab.type,
+            invalid_dict_tab=None,
+        )
+
+    @patch('student.models.CourseEnrollment.is_enrolled')
+    def test_playback(self, is_enrolled):
+        is_enrolled.return_value = True
+        tab = self.check_playback_tab()
+        self.check_can_display_results(
+            tab, for_staff_only=False, for_enrolled_users_only=True, expected_value=False
+        )
+
+    @ddt.data(
+        (True, True, True),
+        (False, True, True),
+        (True, False, True),
+        (True, True, False),
+        (True, False, False),
+        (False, False, True),
+        (False, True, False),
+        (False, False, False),
+    )
+    @ddt.unpack
+    def test_is_enabled(self, use_jwplayer, show_playback_tab, spoc_course):
+        self.assertFalse(PlaybackTab.is_enabled(self.course))
+
+        # Use 'jwplayer'
+        if use_jwplayer:
+            self.course.advanced_modules.append('jwplayerxblock')
+        # Show Playback tab
+        if show_playback_tab:
+            self.course.show_playback_tab = True
+        # SPOC
+        if spoc_course:
+            self._create_contract()
+            self._create_contract_detail()
+
+        if use_jwplayer and show_playback_tab and spoc_course:
+            self.assertTrue(PlaybackTab.is_enabled(self.course))
+        else:
+            self.assertFalse(PlaybackTab.is_enabled(self.course))
+
+    def _create_contract(self):
+        self.contract = ContractFactory.create(contractor_organization=self.gacco_org,
+                                               owner_organization=self.gacco_org,
+                                               created_by=UserFactory.create())
+
+    def _create_contract_detail(self):
+        ContractDetailFactory.create(course_id=self.course.id, contract=self.contract)
 
 
 @attr('shard_1')

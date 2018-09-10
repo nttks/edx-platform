@@ -441,6 +441,14 @@ msgstr "一度にアップロードできるファイルは%d個までです"
 msgid "Submission aborted! Your file \"%(file_name)s\" is too large (max size: %(max_size)d MB)"
 msgstr "%(file_name)s のファイルサイズが制限を超過しています(最大%(max_size)dMB)"
 
+#: lms/djangoapps/courseware/view.py
+msgid "No data is available. Please contact us through the Help."
+msgstr "データがありません。画面下部にあるヘルプからお問い合わせください。"
+
+#: lms/djangoapps/courseware/view.py
+msgid "The data will be reflected after the next day of student registration."
+msgstr "受講者登録の翌日以降にデータが反映されます。"
+
 #: openedx/core/djangoapps/user_api/views.py
 msgid "{length} numeric characters"
 msgstr "半角数字{length}文字"
@@ -592,6 +600,10 @@ msgstr "JW Playerオプション設定"
 msgid "Hide Playback Rate"
 msgstr "再生スピードを非表示にする"
 
+#: lms/djangoapps/courseware/tabs.py
+msgid "Playback"
+msgstr "動画視聴状況"
+
 #: cms/djangoapps/contentstore/views/entrance_exam.py
 #: lms/djangoapps/courseware/tabs.py
 msgid "Entrance Exam"
@@ -718,6 +730,22 @@ msgstr "{course_name}を受講登録する（無料）"
 #: templates/courseware/course_about.html
 msgid "[Free of charge] Enroll"
 msgstr "受講登録する（無料）"
+
+#: templates/courseware/playback.html
+msgid "Playback Status"
+msgstr "動画視聴状況"
+
+#: templates/courseware/playback.html
+msgid ""
+"This is the video viewing time per unit until the previous day.<br/>"
+"Please note that today's video viewing time will be reflected tomorrow."
+msgstr ""
+"表示されている動画視聴時間は、前日までの単元毎の動画視聴時間です。<br/>"
+"本日の動画視聴時間は、明日の反映となりますのでご了承ください。"
+
+#: templates/courseware/playback.html
+msgid "{course_number} Playback"
+msgstr "{course_number}の動画視聴状況"
 
 #: templates/register-sidebar.html
 msgid "Please check the 'FAQs' if you experience any problems."
@@ -1386,6 +1414,14 @@ msgstr "成績タブを隠す"
 #: common/lib/xmodule/xmodule/course_module.py
 msgid "Allows hiding of the progress tab."
 msgstr "成績タブを隠すことを許可する。"
+
+#: common/lib/xmodule/xmodule/course_module.py
+msgid "Show Playback Tab"
+msgstr "動画視聴状況タブを表示"
+
+#: common/lib/xmodule/xmodule/course_module.py
+msgid "Allows showing of the playback tab."
+msgstr "動画視聴状況タブを表示することを許可する。"
 
 #: cms/templates/index.html
 msgid ""

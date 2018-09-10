@@ -819,6 +819,13 @@ class CourseFields(object):
         scope=Scope.settings
     )
 
+    show_playback_tab = Boolean(
+        display_name=_("Show Playback Tab"),
+        help=_("Allows showing of the playback tab."),
+        default=False,
+        scope=Scope.settings,
+    )
+
     target_library = List(
         help=_(
             "Target library list for the course."

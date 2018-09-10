@@ -7,7 +7,10 @@ from urllib import urlencode
 import ddt
 import json
 import itertools
+import pytz
+import random
 import unittest
+from collections import OrderedDict
 from datetime import datetime, timedelta
 from HTMLParser import HTMLParser
 from nose.plugins.attrib import attr
@@ -21,6 +24,7 @@ from django.test import TestCase
 from django.test.client import RequestFactory
 from django.test.client import Client
 from django.test.utils import override_settings
+from django.utils.crypto import get_random_string
 from mock import MagicMock, patch, create_autospec, Mock
 from opaque_keys.edx.locations import Location, SlashSeparatedCourseKey
 from pytz import UTC
@@ -30,6 +34,12 @@ from xblock.fragment import Fragment
 
 import courseware.views as views
 import shoppingcart
+from biz.djangoapps.ga_achievement.achievement_store import PlaybackStore
+from biz.djangoapps.ga_achievement.models import BATCH_STATUS_STARTED, BATCH_STATUS_FINISHED, BATCH_STATUS_ERROR
+from biz.djangoapps.ga_achievement.tests.factories import PlaybackBatchStatusFactory
+from biz.djangoapps.ga_contract.tests.factories import ContractFactory, ContractDetailFactory
+from biz.djangoapps.ga_organization.tests.factories import OrganizationFactory
+from biz.djangoapps.util import datetime_utils
 from certificates import api as certs_api
 from certificates.models import CertificateStatuses, CertificateGenerationConfiguration
 from certificates.tests.factories import GeneratedCertificateFactory
@@ -1048,6 +1058,218 @@ class ProgressPageTests(ModuleStoreTestCase):
         with self.assertNumQueries(sql_calls), check_mongo_calls(mongo_calls):
             resp = views.progress(self.request, course_id=unicode(self.course.id))
         self.assertEqual(resp.status_code, 200)
+
+
+@attr('shard_1')
+class PlaybackPageTests(ModuleStoreTestCase):
+    """
+    Tests that verify that the playback page works correctly.
+    """
+
+    def setUp(self):
+        super(PlaybackPageTests, self).setUp()
+        self.request_factory = RequestFactory()
+        self.user = UserFactory.create()
+        self.request = self.request_factory.get('foo')
+        self.request.user = self.user
+        mako_middleware_process_request(self.request)
+
+        self.gacco_org = OrganizationFactory.create(
+            org_name='docomo gacco',
+            org_code='gacco',
+            creator_org_id=1,
+            created_by=UserFactory.create(),
+        )
+        self._create_course()
+        self._create_org()
+        self._create_contract()
+        self._create_contract_detail()
+        self.playback_store = PlaybackStore(self.contract.id, unicode(self.course.id))
+
+        self.utc_datetime = datetime(2018, 7, 1, 9, 58, 30, 0, tzinfo=pytz.utc)
+        self.utc_datetime_update = datetime(2018, 7, 17, 10, 58, 30, 0, tzinfo=pytz.utc)
+
+    def tearDown(self):
+        self.playback_store.remove_documents()
+
+    def _create_course(self):
+        self.course = CourseFactory.create(org='gacco', number='course', run='run1')
+        CourseEnrollmentFactory(user=self.user, course_id=self.course.id)
+
+        self.chapter_x_name = get_random_string(20)
+        self.chapter_y_name = get_random_string(20)
+        self.section_x_name = get_random_string(20)
+        self.section_y_name = get_random_string(20)
+        self.vertical_x1_name = get_random_string(20)
+        self.vertical_x2_name = get_random_string(20)
+        self.vertical_y1_name = get_random_string(20)
+
+        self.chapter_x = ItemFactory.create(category='chapter',
+                                            parent=self.course,
+                                            display_name=self.chapter_x_name)
+        self.chapter_y = ItemFactory.create(category='chapter',
+                                            parent=self.course,
+                                            display_name=self.chapter_y_name)
+        self.section_x = ItemFactory.create(category='sequential',
+                                            parent=self.chapter_x,
+                                            display_name=self.section_x_name)
+        self.section_y = ItemFactory.create(category='sequential',
+                                            parent=self.chapter_y,
+                                            display_name=self.section_y_name)
+        self.vertical_x1 = ItemFactory.create(category='vertical',
+                                              parent=self.section_x,
+                                              display_name=self.vertical_x1_name)
+        self.vertical_x2 = ItemFactory.create(category='vertical',
+                                              parent=self.section_x,
+                                              display_name=self.vertical_x2_name)
+        self.vertical_y1 = ItemFactory.create(category='vertical',
+                                              parent=self.section_y,
+                                              display_name=self.vertical_y1_name)
+
+    def _create_org(self):
+        self.org_a = OrganizationFactory.create(
+            org_name='org_a',
+            org_code='org_a',
+            creator_org=self.gacco_org,
+            created_by=UserFactory.create(),
+        )
+
+    def _create_contract(self):
+        self.contract = ContractFactory.create(contract_name='contract_a',
+                                               contractor_organization=self.org_a,
+                                               owner_organization=self.gacco_org,
+                                               created_by=self.user,
+                                               invitation_code='invitation_code_a')
+
+    def _create_contract_detail(self):
+        return ContractDetailFactory.create(course_id=self.course.id, contract=self.contract)
+
+    def _create_playback_data_cloumn(self):
+
+        column = OrderedDict()
+        column[PlaybackStore.FIELD_CONTRACT_ID] = self.contract.id
+        column[PlaybackStore.FIELD_COURSE_ID] = unicode(self.course.id)
+        column[PlaybackStore.FIELD_DOCUMENT_TYPE] = PlaybackStore.FIELD_DOCUMENT_TYPE__COLUMN
+        column[PlaybackStore.FIELD_FULL_NAME] = PlaybackStore.COLUMN_TYPE__TEXT
+        column[PlaybackStore.FIELD_USERNAME] = PlaybackStore.COLUMN_TYPE__TEXT
+        column[PlaybackStore.FIELD_EMAIL] = PlaybackStore.COLUMN_TYPE__TEXT
+        column[PlaybackStore.FIELD_STUDENT_STATUS] = PlaybackStore.COLUMN_TYPE__TEXT
+        column[PlaybackStore.FIELD_TOTAL_PLAYBACK_TIME] = PlaybackStore.COLUMN_TYPE__TIME
+        column['{}{}{}'.format(self.chapter_x.display_name,
+                               PlaybackStore.FIELD_DELIMITER,
+                               self.vertical_x1.display_name)] = PlaybackStore.COLUMN_TYPE__TIME
+        column['{}{}{}'.format(self.chapter_x.display_name,
+                               PlaybackStore.FIELD_DELIMITER,
+                               self.vertical_x2.display_name)] = PlaybackStore.COLUMN_TYPE__TIME
+        column['{}{}{}'.format(self.chapter_x.display_name,
+                               PlaybackStore.FIELD_DELIMITER,
+                               PlaybackStore.FIELD_SECTION_PLAYBACK_TIME)] = PlaybackStore.COLUMN_TYPE__TIME
+        column['{}{}{}'.format(self.chapter_y.display_name,
+                               PlaybackStore.FIELD_DELIMITER,
+                               self.vertical_y1.display_name)] = PlaybackStore.COLUMN_TYPE__TIME
+        column['{}{}{}'.format(self.chapter_y.display_name,
+                               PlaybackStore.FIELD_DELIMITER,
+                               PlaybackStore.FIELD_SECTION_PLAYBACK_TIME)] = PlaybackStore.COLUMN_TYPE__TIME
+
+        self.total_time = random.randint(500, 10000)
+        self.vertical_x1_time = random.randint(500, 10000)
+        self.vertical_x2_time = random.randint(500, 10000)
+        self.chapter_x_total_time = random.randint(500, 10000)
+        self.vertical_y1_time = random.randint(500, 10000)
+        self.chapter_y_total_time = random.randint(500, 10000)
+
+        record = OrderedDict()
+        record[PlaybackStore.FIELD_CONTRACT_ID] = self.contract.id
+        record[PlaybackStore.FIELD_COURSE_ID] = unicode(self.course.id)
+        record[PlaybackStore.FIELD_DOCUMENT_TYPE] = PlaybackStore.FIELD_DOCUMENT_TYPE__RECORD
+        record[PlaybackStore.FIELD_FULL_NAME] = self.user.profile.name
+        record[PlaybackStore.FIELD_USERNAME] = self.user.username
+        record[PlaybackStore.FIELD_EMAIL] = self.user.email
+        record[PlaybackStore.FIELD_STUDENT_STATUS] = PlaybackStore.FIELD_STUDENT_STATUS__ENROLLED
+        record[PlaybackStore.FIELD_TOTAL_PLAYBACK_TIME] = self.total_time
+        record['{}{}{}'.format(self.chapter_x.display_name,
+                               PlaybackStore.FIELD_DELIMITER,
+                               self.vertical_x1.display_name)] = self.vertical_x1_time
+        record['{}{}{}'.format(self.chapter_x.display_name,
+                               PlaybackStore.FIELD_DELIMITER,
+                               self.vertical_x2.display_name)] = self.vertical_x2_time
+        record['{}{}{}'.format(self.chapter_x.display_name,
+                               PlaybackStore.FIELD_DELIMITER,
+                               PlaybackStore.FIELD_SECTION_PLAYBACK_TIME)] = self.chapter_x_total_time
+        record['{}{}{}'.format(self.chapter_y.display_name,
+                               PlaybackStore.FIELD_DELIMITER,
+                               self.vertical_y1.display_name)] = self.vertical_y1_time
+        record['{}{}{}'.format(self.chapter_y.display_name,
+                               PlaybackStore.FIELD_DELIMITER,
+                               PlaybackStore.FIELD_SECTION_PLAYBACK_TIME)] = self.chapter_y_total_time
+
+        self.playback_store.set_documents([column])
+        self.playback_store.set_documents(record)
+
+    def _create_batch_status(self, status, update_time):
+        self.batch_status = PlaybackBatchStatusFactory.create(contract=self.contract,
+                                                              course_id=unicode(self.course.id),
+                                                              status=status,
+                                                              student_count=1)
+        self.batch_status.created = update_time
+        self.batch_status.save()
+
+    def test_success(self):
+        self._create_batch_status(BATCH_STATUS_STARTED, self.utc_datetime)
+        self._create_batch_status(BATCH_STATUS_FINISHED, self.utc_datetime_update)
+        self._create_playback_data_cloumn()
+
+        resp = views.playback(self.request, course_id=unicode(self.course.id))
+
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, datetime_utils.to_jst(self.utc_datetime_update).strftime('%Y/%m/%d %H:%M'))
+        self.assertContains(resp, BATCH_STATUS_FINISHED)
+        self.assertContains(resp, self.chapter_x.display_name)
+        self.assertContains(resp, '{} : {}'.format(self.vertical_x1.display_name, datetime_utils.seconds_to_time_format(self.vertical_x1_time)))
+        self.assertContains(resp, '{} : {}'.format(self.vertical_x2.display_name, datetime_utils.seconds_to_time_format(self.vertical_x2_time)))
+        self.assertContains(resp, '{} : {}'.format(PlaybackStore.FIELD_SECTION_PLAYBACK_TIME, datetime_utils.seconds_to_time_format(self.chapter_x_total_time)))
+        self.assertContains(resp, self.chapter_y.display_name)
+        self.assertContains(resp, '{} : {}'.format(self.vertical_y1.display_name, datetime_utils.seconds_to_time_format(self.vertical_y1_time)))
+        self.assertContains(resp, '{} : {}'.format(PlaybackStore.FIELD_SECTION_PLAYBACK_TIME, datetime_utils.seconds_to_time_format(self.chapter_y_total_time)))
+        self.assertNotContains(resp, PlaybackStore.FIELD_TOTAL_PLAYBACK_TIME)
+
+    def test_batch_status_error(self):
+        self._create_batch_status(BATCH_STATUS_STARTED, self.utc_datetime)
+        self._create_batch_status(BATCH_STATUS_ERROR, self.utc_datetime_update)
+        self._create_playback_data_cloumn()
+
+        resp = views.playback(self.request, course_id=unicode(self.course.id))
+
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "No data is available. Please contact us through the Help.")
+
+    def test_no_record_in_batch_status(self):
+        self._create_playback_data_cloumn()
+
+        resp = views.playback(self.request, course_id=unicode(self.course.id))
+
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "No records")
+
+    def test_no_record_in_playback(self):
+        self._create_batch_status(BATCH_STATUS_STARTED, self.utc_datetime)
+        self._create_batch_status(BATCH_STATUS_FINISHED, self.utc_datetime_update)
+
+        resp = views.playback(self.request, course_id=unicode(self.course.id))
+
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "The data will be reflected after the next day of student registration.")
+
+    @patch.object(views, 'get_course_with_access')
+    def test_student_id_invalid(self, mock_get_course_with_access):
+        self._create_batch_status(BATCH_STATUS_STARTED, self.utc_datetime)
+        self._create_batch_status(BATCH_STATUS_FINISHED, self.utc_datetime_update)
+        self.batch_status.created = self.utc_datetime_update
+        self.batch_status.save()
+        self.request.user.id = 0
+
+        with self.assertRaises(Http404):
+            views.playback(self.request, course_id=unicode(self.course.id))
 
 
 @attr('shard_1')

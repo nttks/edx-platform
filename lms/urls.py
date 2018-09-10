@@ -506,6 +506,14 @@ urlpatterns += (
     ),
 
     url(
+        r'^courses/{}/playback'.format(
+            settings.COURSE_ID_PATTERN,
+        ),
+        'courseware.views.playback',
+        name='playback',
+    ),
+
+    url(
         r'^courses/{}/progress$'.format(
             settings.COURSE_ID_PATTERN,
         ),

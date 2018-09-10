@@ -219,4 +219,5 @@ class AdvancedSettingsPage(CoursePage):
             'enable_proctored_exams',
             'enable_timed_exams',
             'custom_logo',
+            'show_playback_tab',
         ]

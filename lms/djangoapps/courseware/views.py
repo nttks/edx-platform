@@ -4,11 +4,13 @@ Courseware views functions
 
 import logging
 import json
+import numbers
 import textwrap
 import urllib
 
 from collections import OrderedDict
 from datetime import datetime
+from django.utils import translation
 from django.utils.translation import ugettext as _
 
 from django.conf import settings
@@ -70,6 +72,10 @@ from .entrance_exams import (
 from courseware.user_state_client import DjangoXBlockUserStateClient
 from course_modes.models import CourseMode
 
+from biz.djangoapps.ga_achievement.achievement_store import PlaybackStore
+from biz.djangoapps.ga_achievement.models import PlaybackBatchStatus, BATCH_STATUS_ERROR
+from biz.djangoapps.ga_contract.models import ContractDetail
+from biz.djangoapps.util import datetime_utils
 from pdfgen import api as pdfgen_api
 from student.models import UserTestGroup, CourseEnrollment
 from student.roles import GaCourseScorerRole, GaGlobalCourseCreatorRole
@@ -1103,6 +1109,94 @@ def _credit_course_requirements(course_key, student):
         'eligibility_status': eligibility_status,
         'requirements': requirement_statuses,
     }
+
+
+@transaction.non_atomic_requests
+@login_required
+@ensure_valid_course_key
+def playback(request, course_id):
+    """
+    Display the playback page.
+    """
+    course_key = CourseKey.from_string(course_id)
+
+    with modulestore().bulk_operations(course_key):
+        return _playback(request, course_key)
+
+
+def _playback(request, course_key):
+    """
+    Unwrapped version of "playback".
+    """
+    course = get_course_with_access(request.user, 'load', course_key, depth=None, check_if_enrolled=True)
+
+    try:
+        student = User.objects.get(id=request.user.id)
+    except User.DoesNotExist:
+        raise Http404
+
+    contract_detail = ContractDetail.find_spoc_by_course_key(course_key)
+
+    update_datetime = ''
+    update_status = ''
+    error_message = None
+    playback_batch_status = PlaybackBatchStatus.get_last_status(contract_detail[0].contract_id, course.id)
+    if playback_batch_status:
+        update_datetime = datetime_utils.to_jst(playback_batch_status.created).strftime('%Y/%m/%d %H:%M')
+        update_status = _(playback_batch_status.status)
+
+        if playback_batch_status.status == BATCH_STATUS_ERROR:
+            error_message = _("No data is available. Please contact us through the Help.")
+
+    # Get error message at current language code.
+    no_record_error_message = _("The data will be reflected after the next day of student registration.")
+
+    # Keep current language code.
+    lang_code = translation.get_language()
+    # MongoDB translations are deactivated by default, so activate here.
+    translation.activate(settings.LANGUAGE_CODE)
+
+    chapters = []
+    verticals = []
+    playback_store = PlaybackStore(contract_detail[0].contract_id, unicode(course.id))
+    records = playback_store.get_record_document_by_username(student.username)
+    if not records:
+        # Case not batch error
+        if error_message is None:
+            error_message = no_record_error_message
+
+    else:
+        for key, val in records.iteritems():
+            if playback_store.FIELD_DELIMITER in key:
+                chapter = key.split(playback_store.FIELD_DELIMITER)[0]
+                vertical = key.split(playback_store.FIELD_DELIMITER)[1]
+                playback_time = datetime_utils.seconds_to_time_format(val) if isinstance(val, numbers.Number) else '0:00'
+
+                verticals.append({
+                    'vertical': vertical,
+                    'playback_time': playback_time,
+                })
+
+                if vertical == _(playback_store.FIELD_SECTION_PLAYBACK_TIME):
+                    chapters.append({
+                        'chapter_name': chapter,
+                        'verticals': verticals,
+                    })
+                    verticals = []
+
+    context = {
+        'course': course,
+        'student': student,
+        'chapters': chapters,
+        'update_datetime': update_datetime,
+        'update_status': update_status,
+        'error_message': error_message,
+    }
+
+    # Set current language code.
+    translation.activate(lang_code)
+
+    return render_to_response('courseware/playback.html', context)
 
 
 @login_required

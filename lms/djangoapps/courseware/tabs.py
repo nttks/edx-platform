@@ -5,10 +5,12 @@ perform some LMS-specific tab display gymnastics for the Entrance Exams feature
 from django.conf import settings
 from django.utils.translation import ugettext as _, ugettext_noop
 
+from biz.djangoapps.ga_contract.models import ContractDetail
 from courseware.access import has_access, GA_ACCESS_CHECK_TYPE_OLD_COURSE_VIEW
 from courseware.entrance_exams import user_must_complete_entrance_exam
 from courseware.ga_access import is_terminated_tab
 from openedx.core.lib.course_tabs import CourseTabPluginManager
+from openedx.core.lib.ga_course_utils import is_using_jwplayer_course
 from student.models import CourseEnrollment
 from xmodule.tabs import CourseTab, CourseTabList, key_checker
 
@@ -97,6 +99,27 @@ class ProgressTab(EnrolledTab):
         if not super(ProgressTab, cls).is_enabled(course, user=user):
             return False
         return not course.hide_progress_tab
+
+
+class PlaybackTab(EnrolledTab):
+    """
+    The course playback view.
+    """
+    type = 'playback'
+    icon = 'fa fa-bar-chart'
+    title = ugettext_noop('Playback')
+    priority = 50
+    view_name = 'playback'
+    is_dynamic = True
+    is_default = False
+
+    @classmethod
+    def is_enabled(cls, course, user=None):
+        return is_using_jwplayer_course(course) and course.show_playback_tab and cls._is_biz_course(course)
+
+    @staticmethod
+    def _is_biz_course(course):
+        return ContractDetail.objects.filter(course_id=course.id).exists()
 
 
 class TextbookTabsBase(CourseTab):
