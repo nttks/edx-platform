@@ -1204,3 +1204,26 @@ nav.wrapper-course-material ol.course-tabs {
 p{
   word-wrap:break-word !important;
 }
+
+/* timed exam */
+@media screen and (max-width: 480px) {
+  .proctored_exam_status .exam-timer {
+    padding: 14px 14px;
+  }
+  .proctored_exam_status .exam-timer .exam-text {
+    display: inline-block;
+    width: calc(100% - 140px)
+  }
+
+  .proctored_exam_status .exam-timer .exam-button-turn-in-exam {
+    display: block;
+    margin-right: 0px;
+  }
+
+  .proctored_exam_status .exam-timer .turn_in_exam #time_remaining_id {
+    display: inline-block;
+    width: 100%;
+    text-align: center;
+    margin-top: 10px;
+  }
+}

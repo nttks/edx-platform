@@ -40,3 +40,14 @@ class DefaultValueTest(StudioCourseTest):
             '7',
             self.advanced_settings.get('New Icon Display Days')
         )
+
+    def test_enable_timed_exams(self):
+        """
+        Test value of Enable Timed Exams on advanced settings when create course.
+        """
+        self.advanced_settings.visit()
+
+        self.assertEqual(
+            'false',
+            self.advanced_settings.get('Enable Timed Exams')
+        )

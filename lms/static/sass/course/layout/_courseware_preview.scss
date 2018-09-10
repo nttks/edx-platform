@@ -59,7 +59,7 @@
   .exam-timer {
     background-color: rgb(229, 234, 236);
     padding: $baseline ($baseline*2);
-    border-left: 4px solid $m-blue-l1;
+    border-left: 4px solid rgb(229, 234, 236);
     margin: 0 auto;
     color: $gray-d2;
     @include font-size(14);
@@ -93,9 +93,9 @@
         }
 
         .exam-button-turn-in-exam {
-          background-color: transparent;
+          background-color: $white;
           border: 1px solid $white;
-          color: $white;
+          color: $action-primary-bg;
 
           &:hover {
             border: 1px solid $white;
@@ -106,10 +106,13 @@
       }
     }
     &.warning {
-      border-left-color: $warning-color;
+      border-left-color: #FF8C00;
+      background-color: #FF8C00;
+      color: $white;
     }
     &.critical {
-      border-left-color: $alert-color;
+      border-left-color: #CC0033;
+      background-color: #CC0033;
       color: $white;
     }
     .exam-button-turn-in-exam {

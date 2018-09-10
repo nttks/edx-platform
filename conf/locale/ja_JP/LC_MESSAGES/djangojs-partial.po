@@ -3101,7 +3101,7 @@ msgstr "リクエストする人"
 #. appears after this
 #: lms/static/coffee/src/instructor_dashboard/util.js
 msgid "Submitted"
-msgstr "投稿日時"
+msgstr "提出済"
 
 #. Translators: The length of a task (eg, sending email) in seconds appears
 #. this
