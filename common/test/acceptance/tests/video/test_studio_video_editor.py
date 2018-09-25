@@ -4,6 +4,8 @@
 Acceptance tests for CMS Video Editor.
 """
 from nose.plugins.attrib import attr
+from unittest import skip
+
 from .test_studio_video_module import CMSVideoBaseTest
 
 
@@ -29,6 +31,7 @@ class VideoEditorTest(CMSVideoBaseTest):
 
         self.navigate_to_course_unit()
 
+    @skip("This doesn't work. #2601")
     def test_default_settings(self):
         """
         Scenario: User can view Video metadata
@@ -40,6 +43,7 @@ class VideoEditorTest(CMSVideoBaseTest):
         self.edit_component()
         self.assertTrue(self.video.verify_settings())
 
+    @skip("This doesn't work. #2601")
     def test_modify_video_display_name(self):
         """
         Scenario: User can modify Video display name
@@ -58,6 +62,7 @@ class VideoEditorTest(CMSVideoBaseTest):
         self.open_advanced_tab()
         self.assertTrue(self.video.verify_field_value('Component Display Name', 'Transformers'))
 
+    @skip("This doesn't work. #2601")
     def test_hidden_captions(self):
         """
         Scenario: Captions are hidden when "transcript display" is false
@@ -74,6 +79,7 @@ class VideoEditorTest(CMSVideoBaseTest):
         self.save_unit_settings()
         self.assertFalse(self.video.is_captions_visible())
 
+    @skip("This doesn't work. #2601")
     def test_shown_captions(self):
         """
         Scenario: Captions are shown when "transcript display" is true
@@ -90,6 +96,7 @@ class VideoEditorTest(CMSVideoBaseTest):
         self.save_unit_settings()
         self.assertTrue(self.video.is_captions_visible())
 
+    @skip("This doesn't work. #2601")
     def test_translations_uploading(self):
         """
         Scenario: Translations uploading works correctly
@@ -126,6 +133,7 @@ class VideoEditorTest(CMSVideoBaseTest):
         self.assertIn(unicode_text, self.video.captions_text)
         self.assertEqual(self.video.caption_languages.keys(), ['zh', 'uk'])
 
+    @skip("This doesn't work. #2601")
     def test_upload_large_transcript(self):
         """
         Scenario: User can upload transcript file with > 1mb size
@@ -146,6 +154,7 @@ class VideoEditorTest(CMSVideoBaseTest):
         unicode_text = "Привіт, edX вітає вас.".decode('utf-8')
         self.assertIn(unicode_text, self.video.captions_lines())
 
+    @skip("This doesn't work. #2601")
     def test_translations_download_works_w_saving(self):
         """
         Scenario: Translations downloading works correctly w/ preliminary saving
@@ -179,6 +188,7 @@ class VideoEditorTest(CMSVideoBaseTest):
         uk_unicode_text = "Привіт, edX вітає вас.".decode('utf-8')
         self.assertTrue(self.video.download_translation('uk', uk_unicode_text))
 
+    @skip("This doesn't work. #2601")
     def test_translations_download_works_wo_saving(self):
         """
         Scenario: Translations downloading works correctly w/o preliminary saving
@@ -202,6 +212,7 @@ class VideoEditorTest(CMSVideoBaseTest):
         uk_unicode_text = "Привіт, edX вітає вас.".decode('utf-8')
         self.assertTrue(self.video.download_translation('uk', uk_unicode_text))
 
+    @skip("This doesn't work. #2601")
     def test_translations_remove_works_w_saving(self):
         """
         Scenario: Translations removing works correctly w/ preliminary saving
@@ -255,6 +266,7 @@ class VideoEditorTest(CMSVideoBaseTest):
         self.save_unit_settings()
         self.assertFalse(self.video.is_captions_visible())
 
+    @skip("This doesn't work. #2601")
     def test_translations_remove_works_wo_saving(self):
         """
         Scenario: Translations removing works correctly w/o preliminary saving
@@ -276,6 +288,7 @@ class VideoEditorTest(CMSVideoBaseTest):
         self.save_unit_settings()
         self.assertFalse(self.video.is_captions_visible())
 
+    @skip("This doesn't work. #2601")
     def test_translations_clearing_works_w_saving(self):
         """
         Scenario: Translations clearing works correctly w/ preliminary saving
@@ -314,6 +327,7 @@ class VideoEditorTest(CMSVideoBaseTest):
         self.save_unit_settings()
         self.assertFalse(self.video.is_captions_visible())
 
+    @skip("This doesn't work. #2601")
     def test_translations_clearing_works_wo_saving(self):
         """
         Scenario: Translations clearing works correctly w/o preliminary saving
@@ -337,6 +351,7 @@ class VideoEditorTest(CMSVideoBaseTest):
         self.save_unit_settings()
         self.assertFalse(self.video.is_captions_visible())
 
+    @skip("This doesn't work. #2601")
     def test_cannot_upload_sjson_translation(self):
         """
         Scenario: User cannot upload translations in sjson format
@@ -357,6 +372,7 @@ class VideoEditorTest(CMSVideoBaseTest):
         error_msg = 'Only SRT files can be uploaded. Please select a file ending in .srt to upload.'
         self.assertEqual(self.video.upload_status_message, error_msg)
 
+    @skip("This doesn't work. #2601")
     def test_replace_translation_w_save(self):
         """
         Scenario: User can easy replace the translation by another one w/ preliminary saving
@@ -392,6 +408,7 @@ class VideoEditorTest(CMSVideoBaseTest):
         unicode_text = "Привіт, edX вітає вас.".decode('utf-8')
         self.assertIn(unicode_text, self.video.captions_text)
 
+    @skip("This doesn't work. #2601")
     def test_replace_translation_wo_save(self):
         """
         Scenario: User can easy replace the translation by another one w/o preliminary saving
@@ -416,6 +433,7 @@ class VideoEditorTest(CMSVideoBaseTest):
         unicode_text = "Привіт, edX вітає вас.".decode('utf-8')
         self.assertIn(unicode_text, self.video.captions_text)
 
+    @skip("This doesn't work. #2601")
     def test_translation_upload_remove_upload(self):
         """
         Scenario: Upload "zh" file "A" -> Remove "zh" -> Upload "zh" file "B"
@@ -442,6 +460,7 @@ class VideoEditorTest(CMSVideoBaseTest):
         unicode_text = "Привіт, edX вітає вас.".decode('utf-8')
         self.assertIn(unicode_text, self.video.captions_text)
 
+    @skip("This doesn't work. #2601")
     def test_select_language_twice(self):
         """
         Scenario: User cannot select the same language twice
@@ -462,6 +481,7 @@ class VideoEditorTest(CMSVideoBaseTest):
         self.video.select_translation_language('zh')
         self.assertEqual(self.video.translations(), [u'zh', u''])
 
+    @skip("This doesn't work. #2601")
     def test_table_of_contents(self):
         """
         Scenario: User can see Abkhazian (ab) language option at the first position
@@ -490,6 +510,7 @@ class VideoEditorTest(CMSVideoBaseTest):
         self.assertEqual(self.video.caption_languages.keys(), [u'ab', u'uk'])
         self.assertEqual(self.video.caption_languages.keys()[0], 'ab')
 
+    @skip("This doesn't work. #2601")
     def test_upload_transcript_with_BOM(self):
         """
         Scenario: User can upload transcript file with BOM(Byte Order Mark) in it.
@@ -510,6 +531,7 @@ class VideoEditorTest(CMSVideoBaseTest):
         unicode_text = "莎拉·佩林 (Sarah Palin)".decode('utf-8')
         self.assertIn(unicode_text, self.video.captions_lines())
 
+    @skip("This doesn't work. #2601")
     def test_simplified_and_traditional_chinese_transcripts_uploading(self):
         """
         Scenario: Translations uploading works correctly

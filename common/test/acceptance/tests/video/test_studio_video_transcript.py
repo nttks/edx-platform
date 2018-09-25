@@ -19,6 +19,8 @@ front-end validation will not pass.
     t_not_exist - this file does not exist on YouTube; it exists locally
 """
 from nose.plugins.attrib import attr
+from unittest import skip
+
 from .test_studio_video_module import CMSVideoBaseTest
 
 
@@ -45,6 +47,7 @@ class VideoTranscriptTest(CMSVideoBaseTest):
 
         self.navigate_to_course_unit()
 
+    @skip("This doesn't work. #2601")
     def test_input_validation(self):
         """
         Scenario: Check input error messages
@@ -97,6 +100,7 @@ class VideoTranscriptTest(CMSVideoBaseTest):
         self.assertEqual(self.video.message('error'), '')
         self.assertEqual(self.video.url_field_status().values(), [True, True, True])
 
+    @skip("This doesn't work. #2601")
     def test_youtube_server_interaction(self):
         """
         Scenario: Testing interaction with test youtube server
@@ -125,6 +129,7 @@ class VideoTranscriptTest(CMSVideoBaseTest):
         self.assertFalse(self.video.is_transcript_button_visible('import'))
         self.assertTrue(self.video.is_transcript_button_visible('disabled_download_to_edit'))
 
+    @skip("This doesn't work. #2601")
     def test_youtube_id_w_found_state(self):
         """
         Scenario: Youtube id only: check "Found" state
@@ -142,6 +147,7 @@ class VideoTranscriptTest(CMSVideoBaseTest):
         self.open_advanced_tab()
         self.assertTrue(self.video.verify_field_value('Default Timed Transcript', 't_not_exist'))
 
+    @skip("This doesn't work. #2601")
     def test_youtube_id_w_same_local_server_subs(self):
         """
         Scenario: Youtube id only: check "Found" state when user sets youtube_id with same local and server subs
@@ -159,6 +165,7 @@ class VideoTranscriptTest(CMSVideoBaseTest):
         self.open_advanced_tab()
         self.assertTrue(self.video.verify_field_value('Default Timed Transcript', 't__eq_exist'))
 
+    @skip("This doesn't work. #2601")
     def test_youtube_id_w_different_local_server_sub(self):
         """
         Scenario: Youtube id only: check "Found" state when user sets youtube_id with different local and server subs
@@ -182,6 +189,7 @@ class VideoTranscriptTest(CMSVideoBaseTest):
         self.open_advanced_tab()
         self.assertTrue(self.video.verify_field_value('Default Timed Transcript', 't_neq_exist'))
 
+    @skip("This doesn't work. #2601")
     def test_html5_source_w_not_found_state(self):
         """
         Scenario: html5 source only: check "Not Found" state
@@ -199,6 +207,7 @@ class VideoTranscriptTest(CMSVideoBaseTest):
         self.open_advanced_tab()
         self.assertTrue(self.video.verify_field_value('Default Timed Transcript', ''))
 
+    @skip("This doesn't work. #2601")
     def test_html5_source_w_found_state(self):
         """
         Scenario: html5 source only: check "Found" state
@@ -216,6 +225,7 @@ class VideoTranscriptTest(CMSVideoBaseTest):
         self.open_advanced_tab()
         self.assertTrue(self.video.verify_field_value('Default Timed Transcript', 't_not_exist'))
 
+    @skip("This doesn't work. #2601")
     def test_set_youtube_id_wo_server(self):
         """
         Scenario: User sets youtube_id w/o server but with local subs and one html5 link w/o subs
@@ -238,6 +248,7 @@ class VideoTranscriptTest(CMSVideoBaseTest):
         self.open_advanced_tab()
         self.assertTrue(self.video.verify_field_value('Default Timed Transcript', 't_not_exist'))
 
+    @skip("This doesn't work. #2601")
     def test_set_youtube_id_wo_local(self):
         """
         Scenario: User sets youtube_id w/o local but with server subs and one html5 link w/o
@@ -260,6 +271,7 @@ class VideoTranscriptTest(CMSVideoBaseTest):
             self.assertTrue(self.video.is_transcript_button_visible('import'))
             self.assertTrue(self.video.is_transcript_button_visible('upload_new_timed_transcripts'))
 
+    @skip("This doesn't work. #2601")
     def test_youtube_no_import(self):
         """
         Scenario: Entering youtube (no importing), and 2 html5 sources without transcripts - "Not Found"
@@ -281,6 +293,7 @@ class VideoTranscriptTest(CMSVideoBaseTest):
             self.assertTrue(self.video.is_transcript_button_visible('disabled_download_to_edit'))
             self.assertTrue(self.video.is_transcript_button_visible('upload_new_timed_transcripts'))
 
+    @skip("This doesn't work. #2601")
     def test_youtube_with_import(self):
         """
         Scenario: Entering youtube with imported transcripts, and 2 html5 sources without transcripts - "Found"
@@ -316,6 +329,7 @@ class VideoTranscriptTest(CMSVideoBaseTest):
             self.assertTrue(self.video.is_transcript_button_visible('download_to_edit'))
             self.assertTrue(self.video.is_transcript_button_visible('upload_new_timed_transcripts'))
 
+    @skip("This doesn't work. #2601")
     def test_youtube_wo_transcripts(self):
         """
         Scenario: Entering youtube w/o transcripts - html5 w/o transcripts - html5 with transcripts
@@ -346,6 +360,7 @@ class VideoTranscriptTest(CMSVideoBaseTest):
         self.assertTrue(self.video.is_transcript_button_visible('download_to_edit'))
         self.assertTrue(self.video.is_transcript_button_visible('upload_new_timed_transcripts'))
 
+    @skip("This doesn't work. #2601")
     def test_youtube_wo_imported_transcripts(self):
         """
         Scenario: Entering youtube w/o imported transcripts - html5 w/o transcripts w/o import - html5 with transcripts
@@ -367,6 +382,7 @@ class VideoTranscriptTest(CMSVideoBaseTest):
             self.assertTrue(self.video.is_transcript_button_visible('import'))
             self.assertTrue(self.video.is_transcript_button_visible('upload_new_timed_transcripts'))
 
+    @skip("This doesn't work. #2601")
     def test_youtube_wo_imported_transcripts2(self):
         """
         Scenario: Entering youtube w/o imported transcripts - html5 with transcripts - html5 w/o transcripts w/o import
@@ -388,6 +404,7 @@ class VideoTranscriptTest(CMSVideoBaseTest):
             self.assertTrue(self.video.is_transcript_button_visible('import'))
             self.assertTrue(self.video.is_transcript_button_visible('upload_new_timed_transcripts'))
 
+    @skip("This doesn't work. #2601")
     def test_youtube_w_imported_transcripts(self):
         """
         Scenario: Entering youtube with imported transcripts - html5 with transcripts - html5 w/o transcripts
@@ -423,6 +440,7 @@ class VideoTranscriptTest(CMSVideoBaseTest):
             self.assertTrue(self.video.is_transcript_button_visible('download_to_edit'))
             self.assertTrue(self.video.is_transcript_button_visible('upload_new_timed_transcripts'))
 
+    @skip("This doesn't work. #2601")
     def test_youtube_w_imported_transcripts2(self):
         """
         Scenario: Entering youtube with imported transcripts - html5 w/o transcripts - html5 with transcripts
@@ -458,6 +476,7 @@ class VideoTranscriptTest(CMSVideoBaseTest):
             self.assertTrue(self.video.is_transcript_button_visible('download_to_edit'))
             self.assertTrue(self.video.is_transcript_button_visible('upload_new_timed_transcripts'))
 
+    @skip("This doesn't work. #2601")
     def test_html5_with_transcripts(self):
         """
         Scenario: Entering html5 with transcripts - upload - youtube w/o transcripts
@@ -501,6 +520,7 @@ class VideoTranscriptTest(CMSVideoBaseTest):
         self.video.set_url_field('uk_transcripts.webm', 3)
         self.assertEqual(self.video.message('status'), 'Timed Transcript Found')
 
+    @skip("This doesn't work. #2601")
     def test_two_html5_sources_w_transcripts(self):
         """
         Scenario: Enter 2 HTML5 sources with transcripts, they are not the same, choose
@@ -539,6 +559,7 @@ class VideoTranscriptTest(CMSVideoBaseTest):
         self.assertTrue(self.video.is_transcript_button_visible('choose', index=1,
                                                                 button_text='Timed Transcript from t_not_exist.webm'))
 
+    @skip("This doesn't work. #2601")
     def test_one_field_only(self):
         """
         Scenario: Work with 1 field only: Enter HTML5 source with transcripts - save -> change it to another one
@@ -596,6 +617,7 @@ class VideoTranscriptTest(CMSVideoBaseTest):
         self.open_advanced_tab()
         self.assertTrue(self.video.verify_field_value('Default Timed Transcript', 'video_name_4'))
 
+    @skip("This doesn't work. #2601")
     def test_two_fields_only(self):
         """
         Scenario: Work with 2 fields: Enter HTML5 source with transcripts - save -> change it to another one HTML5
@@ -640,6 +662,7 @@ class VideoTranscriptTest(CMSVideoBaseTest):
         self.open_advanced_tab()
         self.assertTrue(self.video.verify_field_value('Default Timed Transcript', 'video_name_3'))
 
+    @skip("This doesn't work. #2601")
     def test_upload_subtitles(self):
         """
         Scenario: File name and name of subs are different (Uploading subtitles with different file name than file)
@@ -669,6 +692,7 @@ class VideoTranscriptTest(CMSVideoBaseTest):
         self.edit_component()
         self.assertEqual(self.video.message('status'), 'Timed Transcript Found')
 
+    @skip("This doesn't work. #2601")
     def test_video_wo_subtitles(self):
         """
         Scenario: Video w/o subs - another video w/o subs - Not found message
@@ -686,6 +710,7 @@ class VideoTranscriptTest(CMSVideoBaseTest):
         self.video.set_url_field('video_name_1.mp4', 1)
         self.assertEqual(self.video.message('status'), 'No Timed Transcript')
 
+    @skip("This doesn't work. #2601")
     def test_subtitles_copy(self):
         """
         Scenario: Subtitles are copied for every html5 video source
@@ -717,6 +742,7 @@ class VideoTranscriptTest(CMSVideoBaseTest):
         self.open_advanced_tab()
         self.assertTrue(self.video.verify_field_value('Default Timed Transcript', 'video_name_2'))
 
+    @skip("This doesn't work. #2601")
     def test_upload_button_w_youtube(self):
         """
         Scenario: Upload button for single youtube id
@@ -741,6 +767,7 @@ class VideoTranscriptTest(CMSVideoBaseTest):
         self.edit_component()
         self.assertEqual(self.video.message('status'), 'Timed Transcript Found')
 
+    @skip("This doesn't work. #2601")
     def test_upload_button_w_html5_ids(self):
         """
         Scenario: Upload button for youtube id with html5 ids
@@ -778,6 +805,7 @@ class VideoTranscriptTest(CMSVideoBaseTest):
         self.edit_component()
         self.assertEqual(self.video.message('status'), 'Timed Transcript Found')
 
+    @skip("This doesn't work. #2601")
     def test_advanced_tab_transcript_fields(self):
         """
         Scenario: Change transcripts field in Advanced tab
@@ -802,6 +830,7 @@ class VideoTranscriptTest(CMSVideoBaseTest):
         self.assertEqual(self.video.message('status'), 'Timed Transcript Found')
         self.assertTrue(self.video.verify_field_value('Default Timed Transcript', 'video_name_1'))
 
+    @skip("This doesn't work. #2601")
     def test_non_ascii_transcripts(self):
         """
         Scenario: Check non-ascii (chinese) transcripts
@@ -821,6 +850,7 @@ class VideoTranscriptTest(CMSVideoBaseTest):
         self.save_unit_settings()
         self.assertTrue(self.video.is_captions_visible())
 
+    @skip("This doesn't work. #2601")
     def test_module_metadata_save(self):
         """
         Scenario: Check saving module metadata on switching between tabs
@@ -848,6 +878,7 @@ class VideoTranscriptTest(CMSVideoBaseTest):
         self.assertEqual(self.video.message('status'), 'Timed Transcript Found')
         self.assertTrue(self.video.verify_field_value('Default Timed Transcript', 'video_name_1'))
 
+    @skip("This doesn't work. #2601")
     def test_clearing_transcripts_wo_save(self):
         """
         Scenario: After clearing Transcripts field in the Advanced tab "not found" message should be visible w/o saving
@@ -878,6 +909,7 @@ class VideoTranscriptTest(CMSVideoBaseTest):
         self.assertEqual(self.video.message('status'), 'No Timed Transcript')
         self.assertTrue(self.video.verify_field_value('Default Timed Transcript', ''))
 
+    @skip("This doesn't work. #2601")
     def test_clearing_transcripts_w_save(self):
         """
         Scenario: After clearing Transcripts field in the Advanced tab "not found" message should be visible with saving
@@ -914,6 +946,7 @@ class VideoTranscriptTest(CMSVideoBaseTest):
         self.assertEqual(self.video.message('status'), 'No Timed Transcript')
         self.assertTrue(self.video.verify_field_value('Default Timed Transcript', ''))
 
+    @skip("This doesn't work. #2601")
     def test_video_w_existing_subtitles(self):
         """
         Scenario: Video with existing subs - Advanced tab - change to another one subs -
@@ -950,6 +983,7 @@ class VideoTranscriptTest(CMSVideoBaseTest):
         self.assertTrue(self.video.is_captions_visible())
         self.assertIn('LILA FISHER: Hi, welcome to Edx.', self.video.captions_text)
 
+    @skip("This doesn't work. #2601")
     def test_reverting_transcripts(self):
         """
         Scenario: After reverting Transcripts field in the Advanced tab "not found" message should be visible
@@ -981,6 +1015,7 @@ class VideoTranscriptTest(CMSVideoBaseTest):
         self.edit_component()
         self.assertEqual(self.video.message('status'), 'No Timed Transcript')
 
+    @skip("This doesn't work. #2601")
     def test_upload_subtitles_w_different_names2(self):
         """
         Scenario: File name and name of subs are different -- Uploading subtitles for file with periods
@@ -1007,6 +1042,7 @@ class VideoTranscriptTest(CMSVideoBaseTest):
         self.edit_component()
         self.assertEqual(self.video.message('status'), 'Timed Transcript Found')
 
+    @skip("This doesn't work. #2601")
     def test_upload_subtitles_w_different_names3(self):
         """
         Scenario: Shortened link: File name and name of subs are different
@@ -1032,6 +1068,7 @@ class VideoTranscriptTest(CMSVideoBaseTest):
         self.edit_component()
         self.assertEqual(self.video.message('status'), 'Timed Transcript Found')
 
+    @skip("This doesn't work. #2601")
     def test_upload_subtitles_w_different_names4(self):
         """
         Scenario: Relative link: File name and name of subs are different

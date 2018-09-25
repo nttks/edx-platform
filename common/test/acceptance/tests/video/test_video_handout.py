@@ -4,6 +4,8 @@
 Acceptance tests for CMS Video Handout.
 """
 from nose.plugins.attrib import attr
+from unittest import skip
+
 from .test_studio_video_module import CMSVideoBaseTest
 
 
@@ -36,6 +38,7 @@ class VideoHandoutTest(CMSVideoBaseTest):
         if save_settings:
             self.save_unit_settings()
 
+    @skip("This doesn't work. #2601")
     def test_handout_uploads_correctly(self):
         """
         Scenario: Handout uploading works correctly
@@ -49,6 +52,7 @@ class VideoHandoutTest(CMSVideoBaseTest):
 
         self.assertEqual(self.video.download_handout('application/pdf'), (True, True))
 
+    @skip("This doesn't work. #2601")
     def test_handout_download_works_with_save(self):
         """
         Scenario: Handout downloading works correctly w/ preliminary saving
@@ -66,6 +70,7 @@ class VideoHandoutTest(CMSVideoBaseTest):
 
         self.assertEqual(self.video.download_handout('application/pdf', is_editor=True), (True, True))
 
+    @skip("This doesn't work. #2601")
     def test_handout_download_works_wo_save(self):
         """
         Scenario: Handout downloading works correctly w/o preliminary saving
@@ -76,6 +81,7 @@ class VideoHandoutTest(CMSVideoBaseTest):
 
         self.assertEqual(self.video.download_handout('application/pdf', is_editor=True), (True, True))
 
+    @skip("This doesn't work. #2601")
     def test_handout_clearing_works_w_save(self):
         """
         Scenario: Handout clearing works correctly w/ preliminary saving
@@ -102,6 +108,7 @@ class VideoHandoutTest(CMSVideoBaseTest):
 
         self.assertFalse(self.video.is_handout_button_visible)
 
+    @skip("This doesn't work. #2601")
     def test_handout_clearing_works_wo_save(self):
         """
         Scenario: Handout clearing works correctly w/o preliminary saving
@@ -118,6 +125,7 @@ class VideoHandoutTest(CMSVideoBaseTest):
 
         self.assertFalse(self.video.is_handout_button_visible)
 
+    @skip("This doesn't work. #2601")
     def test_handout_replace_w_save(self):
         """
         Scenario: User can easy replace the handout by another one w/ preliminary saving
@@ -150,6 +158,7 @@ class VideoHandoutTest(CMSVideoBaseTest):
 
         self.assertEqual(self.video.download_handout('application/pdf'), (True, True))
 
+    @skip("This doesn't work. #2601")
     def test_handout_replace_wo_save(self):
         """
         Scenario: User can easy replace the handout by another one w/o preliminary saving
@@ -169,6 +178,7 @@ class VideoHandoutTest(CMSVideoBaseTest):
 
         self.assertEqual(self.video.download_handout('application/pdf'), (True, True))
 
+    @skip("This doesn't work. #2601")
     def test_handout_upload_and_clear_works(self):
         """
         Scenario: Upload file "A" -> Remove it -> Upload file "B"

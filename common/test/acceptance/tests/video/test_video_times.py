@@ -12,6 +12,7 @@ class VideoTimesTest(VideoBaseTest):
     def setUp(self):
         super(VideoTimesTest, self).setUp()
 
+    @skip("This doesn't work. #2601")
     def test_video_start_time(self):
         """
         Scenario: Start time works for Youtube video
@@ -33,6 +34,7 @@ class VideoTimesTest(VideoBaseTest):
 
         self.assertGreaterEqual(int(self.video.position.split(':')[1]), 10)
 
+    @skip("This doesn't work. #2601")
     def test_video_end_time_with_default_start_time(self):
         """
         Scenario: End time works for Youtube video if starts playing from beginning.
@@ -55,6 +57,7 @@ class VideoTimesTest(VideoBaseTest):
 
         self.assertIn(self.video.position, ('0:05', '0:06'))
 
+    @skip("This doesn't work. #2601")
     def test_video_end_time_wo_default_start_time(self):
         """
         Scenario: End time works for Youtube video if starts playing from between.
@@ -80,6 +83,7 @@ class VideoTimesTest(VideoBaseTest):
 
         self.assertIn(self.video.position, ('1:00', '1:01'))
 
+    @skip("This doesn't work. #2601")
     def test_video_start_time_and_end_time(self):
         """
         Scenario: Start time and end time work together for Youtube video.

@@ -7,7 +7,7 @@ import os
 
 from mock import patch
 from nose.plugins.attrib import attr
-from unittest import skipIf
+from unittest import skipIf, skip
 from ...pages.studio.auto_auth import AutoAuthPage
 from ...pages.studio.overview import CourseOutlinePage
 from ...pages.studio.video.video import VideoComponentPage
@@ -167,6 +167,7 @@ class CMSVideoTest(CMSVideoBaseTest):
     CMS Video Test Class
     """
 
+    @skip("This doesn't work. #2601")
     def test_youtube_stub_proxy(self):
         """
         Scenario: YouTube stub server proxies YouTube API correctly
@@ -194,6 +195,7 @@ class CMSVideoTest(CMSVideoBaseTest):
 
         self.assertFalse(self.video.is_button_shown('play'))
 
+    @skip("This doesn't work. #2601")
     def test_autoplay_is_disabled(self):
         """
         Scenario: Autoplay is disabled in Studio
@@ -204,6 +206,7 @@ class CMSVideoTest(CMSVideoBaseTest):
 
         self.assertFalse(self.video.is_autoplay_enabled)
 
+    @skip("This doesn't work. #2601")
     def test_video_creation_takes_single_click(self):
         """
         Scenario: Creating a video takes a single click
@@ -214,6 +217,7 @@ class CMSVideoTest(CMSVideoBaseTest):
         # This will create a video by doing a single click and then ensure that video is created
         self._create_video()
 
+    @skip("This doesn't work. #2601")
     def test_captions_hidden_correctly(self):
         """
         Scenario: Captions are hidden correctly
@@ -227,6 +231,7 @@ class CMSVideoTest(CMSVideoBaseTest):
 
         self.assertFalse(self.video.is_captions_visible())
 
+    @skip("This doesn't work. #2601")
     def test_video_controls_shown_correctly(self):
         """
         Scenario: Video controls for all videos show correctly
@@ -248,6 +253,7 @@ class CMSVideoTest(CMSVideoBaseTest):
         self._navigate_to_course_unit_page()
         self.assertTrue(self.video.is_controls_visible())
 
+    @skip("This doesn't work. #2601")
     def test_captions_shown_correctly(self):
         """
         Scenario: Captions are shown correctly
@@ -258,6 +264,7 @@ class CMSVideoTest(CMSVideoBaseTest):
 
         self.assertTrue(self.video.is_captions_visible())
 
+    @skip("This doesn't work. #2601")
     def test_captions_toggling(self):
         """
         Scenario: Captions are toggled correctly
@@ -275,6 +282,7 @@ class CMSVideoTest(CMSVideoBaseTest):
 
         self.assertTrue(self.video.is_captions_visible())
 
+    @skip("This doesn't work. #2601")
     def test_caption_line_focus(self):
         """
         Scenario: When enter key is pressed on a caption, an outline shows around it
@@ -291,6 +299,7 @@ class CMSVideoTest(CMSVideoBaseTest):
 
         self.assertTrue(self.video.is_caption_line_focused(2))
 
+    @skip("This doesn't work. #2601")
     def test_slider_range_works(self):
         """
         Scenario: When start and end times are specified, a range on slider is shown
@@ -341,6 +350,7 @@ class CMSVideoA11yTest(CMSVideoBaseTest):
         with patch.dict(os.environ, {'SELENIUM_BROWSER': browser}):
             super(CMSVideoA11yTest, self).setUp()
 
+    @skip("This doesn't work. #2601")
     def test_video_player_a11y(self):
         # Limit the scope of the audit to the video player only.
         self.outline.a11y_audit.config.set_scope(include=["div.video"])

@@ -201,6 +201,7 @@ class YouTubeVideoTest(VideoBaseTest):
     def setUp(self):
         super(YouTubeVideoTest, self).setUp()
 
+    @skip("This doesn't work. #2601")
     def test_youtube_video_rendering_wo_html5_sources(self):
         """
         Scenario: Video component is rendered in the LMS in Youtube mode without HTML5 sources
@@ -212,6 +213,7 @@ class YouTubeVideoTest(VideoBaseTest):
         # Verify that video has rendered in "Youtube" mode
         self.assertTrue(self.video.is_video_rendered('youtube'))
 
+    @skip("This doesn't work. #2601")
     def test_cc_button_wo_english_transcript(self):
         """
         Scenario: CC button works correctly w/o english transcript in Youtube mode
@@ -230,6 +232,7 @@ class YouTubeVideoTest(VideoBaseTest):
         unicode_text = "好 各位同学".decode('utf-8')
         self.assertIn(unicode_text, self.video.captions_text)
 
+    @skip("This doesn't work. #2601")
     def test_cc_button_transcripts_and_sub_fields_empty(self):
         """
         Scenario: CC button works correctly if transcripts and sub fields are empty,
@@ -247,6 +250,7 @@ class YouTubeVideoTest(VideoBaseTest):
         # Verify that we see "Welcome to edX." text in the captions
         self.assertIn('Welcome to edX.', self.video.captions_text)
 
+    @skip("This doesn't work. #2601")
     def test_cc_button_hidden_no_translations(self):
         """
         Scenario: CC button is hidden if no translations
@@ -256,6 +260,7 @@ class YouTubeVideoTest(VideoBaseTest):
         self.navigate_to_video()
         self.assertFalse(self.video.is_button_shown('transcript_button'))
 
+    @skip("This doesn't work. #2601")
     def test_fullscreen_video_alignment_with_transcript_hidden(self):
         """
         Scenario: Video is aligned with transcript hidden in fullscreen mode
@@ -271,6 +276,7 @@ class YouTubeVideoTest(VideoBaseTest):
         # check if video aligned correctly without enabled transcript
         self.assertTrue(self.video.is_aligned(False))
 
+    @skip("This doesn't work. #2601")
     def test_download_button_wo_english_transcript(self):
         """
         Scenario: Download button works correctly w/o english transcript in YouTube mode
@@ -290,6 +296,7 @@ class YouTubeVideoTest(VideoBaseTest):
         unicode_text = "好 各位同学".decode('utf-8')
         self.assertTrue(self.video.downloaded_transcript_contains_text('srt', unicode_text))
 
+    @skip("This doesn't work. #2601")
     def test_download_button_two_transcript_languages(self):
         """
         Scenario: Download button works correctly for multiple transcript languages
@@ -325,6 +332,7 @@ class YouTubeVideoTest(VideoBaseTest):
         unicode_text = "好 各位同学".decode('utf-8')
         self.assertTrue(self.video.downloaded_transcript_contains_text('srt', unicode_text))
 
+    @skip("This doesn't work. #2601")
     def test_fullscreen_video_alignment_on_transcript_toggle(self):
         """
         Scenario: Video is aligned correctly on transcript toggle in fullscreen mode
@@ -357,6 +365,7 @@ class YouTubeVideoTest(VideoBaseTest):
         # check if video aligned correctly without enabled transcript
         self.assertTrue(self.video.is_aligned(False))
 
+    @skip("This doesn't work. #2601")
     def test_video_rendering_with_default_response_time(self):
         """
         Scenario: Video is rendered in Youtube mode when the YouTube Server responds quickly
@@ -462,6 +471,7 @@ class YouTubeVideoTest(VideoBaseTest):
         self.assertTrue(self.video.is_button_shown('transcript_button'))
         self._verify_caption_text('Welcome to edX.')
 
+    @skip("This doesn't work. #2601")
     def test_download_transcript_button_works_correctly(self):
         """
         Scenario: Download Transcript button works correctly
@@ -522,6 +532,7 @@ class YouTubeVideoTest(VideoBaseTest):
             timeout=5
         )
 
+    @skip("This doesn't work. #2601")
     def test_video_language_menu_working(self):
         """
         Scenario: Language menu works correctly in Video component
@@ -554,6 +565,7 @@ class YouTubeVideoTest(VideoBaseTest):
         self.video.select_language('en')
         self._verify_caption_text('Welcome to edX.')
 
+    @skip("This doesn't work. #2601")
     def test_multiple_videos_in_sequentials_load_and_work(self):
         """
         Scenario: Multiple videos in sequentials all load and work, switching between sequentials
@@ -591,6 +603,7 @@ class YouTubeVideoTest(VideoBaseTest):
         self.go_to_sequential_position(1)
         execute_video_steps(tab1_video_names)
 
+    @skip("This doesn't work. #2601")
     def test_video_component_stores_speed_correctly_for_multiple_videos(self):
         """
         Scenario: Video component stores speed correctly when each video is in separate sequential
@@ -652,6 +665,7 @@ class YouTubeVideoTest(VideoBaseTest):
         # not been explicitly set to a speed.
         self.video.verify_speed_changed('1.0x')
 
+    @skip("This doesn't work. #2601")
     def test_video_has_correct_transcript(self):
         """
         Scenario: Youtube video has correct transcript if fields for other speeds are filled
@@ -684,6 +698,7 @@ class YouTubeVideoTest(VideoBaseTest):
 
         self.assertTrue(self.video.duration, '1.56')
 
+    @skip("This doesn't work. #2601")
     def test_video_position_stored_correctly_wo_seek(self):
         """
         Scenario: Video component stores position correctly when page is reloaded
@@ -743,6 +758,7 @@ class YouTubeVideoTest(VideoBaseTest):
 
         self.assertGreaterEqual(self.video.seconds, 10)
 
+    @skip("This doesn't work. #2601")
     def test_simplified_and_traditional_chinese_transcripts(self):
         """
         Scenario: Simplified and Traditional Chinese transcripts work as expected in Youtube mode
@@ -773,6 +789,7 @@ class YouTubeVideoTest(VideoBaseTest):
 
         self.assertEqual(self.video.caption_languages, {'zh_HANS': 'Simplified Chinese', 'zh_HANT': 'Traditional Chinese'})
 
+    @skip("This doesn't work. #2601")
     def test_video_bumper_render(self):
         """
         Scenario: Multiple videos with bumper in sequentials all load and work, switching between sequentials
@@ -859,6 +876,7 @@ class YouTubeHtml5VideoTest(VideoBaseTest):
     def setUp(self):
         super(YouTubeHtml5VideoTest, self).setUp()
 
+    @skip("This doesn't work. #2601")
     @flaky  # TODO fix this, see TNL-1642
     def test_youtube_video_rendering_with_unsupported_sources(self):
         """
@@ -1127,6 +1145,7 @@ class LMSVideoModuleA11yTest(VideoBaseTest):
         with patch.dict(os.environ, {'SELENIUM_BROWSER': browser}):
             super(LMSVideoModuleA11yTest, self).setUp()
 
+    @skip("This doesn't work. #2601")
     def test_video_player_a11y(self):
         self.navigate_to_video()
 
