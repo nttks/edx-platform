@@ -57,18 +57,23 @@
     width: 100%;
   }
   .exam-timer {
-    background-color: rgb(229, 234, 236);
+    background-color: #00BFFF;
     padding: $baseline ($baseline*2);
-    border-left: 4px solid rgb(229, 234, 236);
+    border-left-color: #00BFFF;
     margin: 0 auto;
-    color: $gray-d2;
-    @include font-size(14);
+    color: $white;
+    @include font-size(15);
     .exam-text {
       display: inline-block;
       width: calc(100% - 250px);
     }
     a {
-      color: rgb(9, 121, 186);
+      color: $white;
+      text-decoration: underline;
+    }
+    #time_remaining_id > b {
+      color: $white;
+      font-size: large;
     }
     .pull-right {
       color: $gray-d1;
@@ -91,18 +96,6 @@
         b {
           color: $white;
         }
-
-        .exam-button-turn-in-exam {
-          background-color: $white;
-          border: 1px solid $white;
-          color: $action-primary-bg;
-
-          &:hover {
-            border: 1px solid $white;
-            background-color: $white;
-            color: $action-primary-bg;
-          }
-        }
       }
     }
     &.warning {
@@ -120,7 +113,9 @@
       @extend %t-action3;
       @extend %t-weight4;
       margin-right: $baseline;
-      border: 0;
+      border: 1px solid $white;
+      background-color: $white;
+      color: $action-primary-bg;
       background-image: none;
       padding: ($baseline/5) ($baseline*.75);
       box-shadow: none;
@@ -128,7 +123,9 @@
 
       &:hover,
       &:focus {
-        border: 0;
+        border: 1px solid $white;
+        background-color: $white;
+        color: $action-primary-bg
       }
     }
   }

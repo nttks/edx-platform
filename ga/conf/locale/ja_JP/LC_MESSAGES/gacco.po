@@ -1932,7 +1932,7 @@ msgstr "時間制限試験を開始します。"
 
 #: edx_proctoring/templates/timed_exam/footer.html
 msgid "Can I request additional time to complete my exam?"
-msgstr "試験時間の追加を要求できますか？"
+msgstr " "
 
 #: edx_proctoring/templates/timed_exam/footer.html
 msgid ""
@@ -1941,7 +1941,7 @@ msgid ""
 "      you might be eligible for an additional time allowance on timed exams.\n"
 "      Ask your course team for information about additional time allowances.\n"
 "    "
-msgstr "あなたが障害を持っているか、困難な状況で試験を受けている場合は、試験時間を追加できる可能性があります。 試験時間の追加については、講座チームにご相談ください。"
+msgstr " "
 
 #: edx_proctoring/templates/timed_exam/ready_to_submit.html
 msgid ""
