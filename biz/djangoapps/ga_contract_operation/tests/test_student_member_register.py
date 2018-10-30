@@ -1699,8 +1699,8 @@ class StudentMemberRegisterTaskTest(BizViewTestBase, ModuleStoreTestCase, TaskTe
         # Setup test data
         main_org = self._create_organization(org_name='main_org_rule_name',
                                                 org_code='main_org_rule_code')
-        username_rule = OrgUsernameRuleFactory.create(prefix='abc__', created_by=self.user, modified_by=self.user,
-                                                      org=main_org)
+        username_rule = OrgUsernameRuleFactory.create(prefix='abc__', org=main_org)
+
         group = GroupFactory.create(
             parent_id=0, level_no=0, group_code='00001', group_name='group_name', org=main_org,
             created_by=self.user, modified_by=self.user
@@ -1741,8 +1741,8 @@ class StudentMemberRegisterTaskTest(BizViewTestBase, ModuleStoreTestCase, TaskTe
         # Setup test data
         main_org = self._create_organization(org_name='main_org_rule_name',
                                                 org_code='main_org_rule_code')
-        username_rule = OrgUsernameRuleFactory.create(prefix='abc__', created_by=self.user, modified_by=self.user,
-                                                      org=main_org)
+        username_rule = OrgUsernameRuleFactory.create(prefix='abc__', org=main_org)
+
         group = GroupFactory.create(
             parent_id=0, level_no=0, group_code='00001', group_name='group_name', org=main_org,
             created_by=self.user, modified_by=self.user
@@ -1788,10 +1788,9 @@ class StudentMemberRegisterTaskTest(BizViewTestBase, ModuleStoreTestCase, TaskTe
         main_org = self._create_organization(org_name='main_org_rule_name',
                                                 org_code='main_org_rule_code')
         another_org1 = self._create_organization(org_name='another_org_rule_name', org_code='another_org_rule_code')
-        username_rule = OrgUsernameRuleFactory.create(prefix='abc__', created_by=self.user, modified_by=self.user,
-                                                      org=main_org)
-        username_rule2 = OrgUsernameRuleFactory.create(prefix='cde__', created_by=self.user, modified_by=self.user,
-                                                       org=another_org1)
+        username_rule = OrgUsernameRuleFactory.create(prefix='abc__', org=main_org)
+        username_rule2 = OrgUsernameRuleFactory.create(prefix='cde__', org=another_org1)
+
         group = GroupFactory.create(
             parent_id=0, level_no=0, group_code='00001', group_name='group_name', org=another_org1,
             created_by=self.user, modified_by=self.user
@@ -1852,10 +1851,9 @@ class StudentMemberRegisterTaskTest(BizViewTestBase, ModuleStoreTestCase, TaskTe
         main_org = self._create_organization(org_name='main_org_rule_name', org_code='main_org_rule_code')
         another_org1 = self._create_organization(org_name='another_org_rule_name', org_code='another_org_rule_code')
         another_org2 = self._create_organization(org_name='not_rule_org_name', org_code='not_rule_org_code')
-        username_rule = OrgUsernameRuleFactory.create(prefix='abc__', created_by=self.user, modified_by=self.user,
-                                                      org=main_org)
-        username_rule2 = OrgUsernameRuleFactory.create(prefix='cde__', created_by=self.user, modified_by=self.user,
-                                                       org=another_org1)
+        username_rule = OrgUsernameRuleFactory.create(prefix='abc__', org=main_org)
+        username_rule2 = OrgUsernameRuleFactory.create(prefix='cde__', org=another_org1)
+
         group = GroupFactory.create(
             parent_id=0, level_no=0, group_code='00001', group_name='group_name', org=another_org2,
             created_by=self.user, modified_by=self.user
@@ -1888,8 +1886,8 @@ class StudentMemberRegisterTaskTest(BizViewTestBase, ModuleStoreTestCase, TaskTe
     def test_username_rule_error_task_message(self):
         # Setup test data
         main_org = self._create_organization(org_name='main_org_rule_name', org_code='main_org_rule_code')
-        username_rule = OrgUsernameRuleFactory.create(prefix='abc__', created_by=self.user, modified_by=self.user,
-                                                      org=main_org)
+        username_rule = OrgUsernameRuleFactory.create(prefix='abc__', org=main_org)
+
 
         student = ["Input,test_student1@example.com,bc__student_1,tester1,test1,,,,,,,,,,,,,,,,,,,,,,"]
         contract = self._create_contract(url_code=None, contractor_organization=main_org)

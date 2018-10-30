@@ -232,8 +232,7 @@ class StudentAccountUpdateTest(UrlResetMixin, TestCase):
             is_active=True,
             is_delete=False,
         )
-        SsoConfigFactory.create(idp_slug='abcde', created_by=self.user, modified_by=self.user,
-                                org=self.gacco_organization)
+        SsoConfigFactory.create(idp_slug='abcde', org=self.gacco_organization)
         # Record Check
         self.assertEqual(1, len(Member.objects.filter(org=self.gacco_organization, is_active=True)))
         self.assertEqual(1, len(SsoConfig.objects.filter(org=self.gacco_organization)))
@@ -489,8 +488,7 @@ class StudentAccountLoginAndRegistrationTest(ThirdPartyAuthTestMixin, UrlResetMi
     def test_is_hide_third_party_auth(self, url_name, current_backend):
         self.configure_azure_ad_provider(enabled=True)
         self.configure_azure_ad_2_provider(enabled=True)
-        SsoConfigFactory.create(idp_slug='abc', created_by=self.user, modified_by=self.user,
-                                org=self.gacco_organization)
+        SsoConfigFactory.create(idp_slug='abc', org=self.gacco_organization)
         params = [
             ('course_id', 'course-v1:Org+Course+Run'),
             ('enrollment_action', 'enroll'),
@@ -593,7 +591,7 @@ class AccountSettingsViewTest(ThirdPartyAuthTestMixin, BizViewTestBase):
 
         # Register NG words in the sso_config
         main_org = self._create_organization(org_name='org_name', org_code='org_code')
-        SsoConfigFactory.create(idp_slug='abc', org=main_org, created_by=self.user, modified_by=self.user)
+        SsoConfigFactory.create(idp_slug='abc', org=main_org)
 
         user_optional_configuration = UserOptionalConfiguration(
             change_date="2015-06-18 11:02:13",

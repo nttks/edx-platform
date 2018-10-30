@@ -387,8 +387,8 @@ class TestOrgUserDisplayControl(TestCase):
             is_active=True,
             is_delete=False,
         )
-        SsoConfigFactory.create(idp_slug='abcde', created_by=self.user, modified_by=self.user,
-                                org=self.gacco_organization)
+        SsoConfigFactory.create(idp_slug='abcde', org=self.gacco_organization)
+
         # Record Check
         self.assertEqual(1, len(Member.objects.filter(org=self.gacco_organization, is_active=True)))
         self.assertEqual(1, len(SsoConfig.objects.filter(org=self.gacco_organization)))

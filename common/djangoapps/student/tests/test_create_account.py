@@ -396,7 +396,7 @@ class TestCreateAccountValidation(BizViewTestBase, TestCase):
             self.assert_error(params, "username", expected_error)
 
         main_org = self._create_organization(org_name='main_org_rule_name', org_code='main_org_rule_code')
-        OrgUsernameRuleFactory.create(prefix='ABC__', created_by=self.user, modified_by=self.user, org=main_org)
+        OrgUsernameRuleFactory.create(prefix='ABC__', org=main_org)
 
         params["username"] = "ABC__username"
         assert_username_error("Username {user} already exists.".format(user=params['username']))

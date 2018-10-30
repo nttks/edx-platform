@@ -33,8 +33,6 @@ class SsoCofigTest(BizTestBase):
         )
         SsoConfigFactory.create(
             idp_slug='abc',
-            created_by=self.user,
-            modified_by=self.user,
             org=self.gacco_organization
         )
         self.assertEqual(True, SsoConfig.user_control_process(user_id=self.user.id))
@@ -43,8 +41,6 @@ class SsoCofigTest(BizTestBase):
     def test_is_hide_icon(self):
         SsoConfigFactory.create(
             idp_slug='abc',
-            created_by=self.user,
-            modified_by=self.user,
             org=self.gacco_organization
         )
         self.assertEqual(True, SsoConfig.is_hide_icon(provider_id='saml-abc'))

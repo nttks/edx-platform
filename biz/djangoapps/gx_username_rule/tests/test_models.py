@@ -10,8 +10,6 @@ class OrgUsernameRuleTest(BizTestBase):
         user = UserFactory.create()
         username_rule = OrgUsernameRuleFactory.create(
             prefix='abc__',
-            created_by=user,
-            modified_by=user,
             org=self.gacco_organization
         )
         self.assertTrue(username_rule.exists_org_prefix)
@@ -22,15 +20,11 @@ class OrgUsernameRuleTest(BizTestBase):
         user = UserFactory.create()
         username_rule = OrgUsernameRuleFactory.create(
             prefix='abc__',
-            created_by=user,
-            modified_by=user,
             org=self.gacco_organization
         )
 
         username_rule1 = OrgUsernameRuleFactory.create(
             prefix='cde__',
-            created_by=user,
-            modified_by=user,
             org=another_org
         )
         self.assertTrue(username_rule1.exists_org_prefix)

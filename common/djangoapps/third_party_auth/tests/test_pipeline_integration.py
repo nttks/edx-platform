@@ -213,52 +213,52 @@ class UrlFormationTestCase(TestCase):
         with self.assertRaises(ValueError):
             pipeline.get_complete_url(provider_id)
 
-
-@unittest.skipUnless(
-    testutil.AUTH_FEATURES_KEY in settings.FEATURES, testutil.AUTH_FEATURES_KEY + ' not in settings.FEATURES')
-class SamlAccountCreatLockTestCase(TestCase):
-
-    def setUp(self):
-        super(SamlAccountCreatLockTestCase, self).setUp()
-        # setup data
-        self.user = UserFactory.create()
-        self.gacco_organization = Organization(
-            org_name='docomo gacco',
-            org_code='gacco',
-            creator_org_id=1,
-            created_by=UserFactory.create(),
-        )
-        self.gacco_organization.save()
-
-        self.saml_provider = self.configure_azure_ad_provider(enabled=True)
-        self.saml_provider_other = self.configure_azure_ad_2_provider(enabled=True)
-        self.social_user = social_models.DjangoStorage.user.create_user(username='false_user', password='password')
-
-    def test_saml_login_not_create_user(self):
-        # is data raise 404
-        SsoConfigFactory.create(idp_slug='sso-abc', created_by=self.user, modified_by=self.user,
-                                org=self.gacco_organization)
-        # is data pass
-        social_user = social_models.DjangoStorage.user.create_social_auth(
-            self.social_user, 'uid', self.saml_provider_other.backend_name)
-
-        # raise Http404
-
-        # with self.assertRaises(Http404):
-        #     pipeline.ensure_user_information(strategy={'POST': u'/auth/complete/tpa-saml/'},
-        #                                      auth_entry=u'/auth/complete/tpa-saml/',
-        #                                      pipeline_index=1,
-        #                                      response={'idp_name': 'sso-abc'})
-        # saml_user = pipeline.ensure_user_information(strategy={'POST': u'/auth/complete/tpa-saml/'},
-        #                                              auth_entry=u'/auth/complete/tpa-saml/',
-        #                                              pipeline_index=1,
-        #                                              response={'idp_name': 'sso-abc'})
-
-        # return redirect nri_error page
-
-        # saml_user_pass = pipeline.ensure_user_information(strategy={'POST': u'/auth/complete/tpa-saml/'},
-        #                                                   auth_entry=u'/auth/complete/tpa-saml/',
-        #                                                   pipeline_index=1,
-        #                                                   response={'idp_name': 'sso-cde'},
-        #                                                   user=self.social_user)
-        # self.assertEqual(0, len(saml_user_pass))
+# TODO Perform the test with specifications
+# @unittest.skipUnless(
+#     testutil.AUTH_FEATURES_KEY in settings.FEATURES, testutil.AUTH_FEATURES_KEY + ' not in settings.FEATURES')
+# class SamlAccountCreatLockTestCase(TestCase):
+#
+#     def setUp(self):
+#         super(SamlAccountCreatLockTestCase, self).setUp()
+#         # setup data
+#         self.user = UserFactory.create()
+#         self.gacco_organization = Organization(
+#             org_name='docomo gacco',
+#             org_code='gacco',
+#             creator_org_id=1,
+#             created_by=UserFactory.create(),
+#         )
+#         self.gacco_organization.save()
+#
+#         self.saml_provider = self.configure_azure_ad_provider(enabled=True)
+#         self.saml_provider_other = self.configure_azure_ad_2_provider(enabled=True)
+#         self.social_user = social_models.DjangoStorage.user.create_user(username='false_user', password='password')
+#
+#     def test_saml_login_not_create_user(self):
+#         # is data raise 404
+#         SsoConfigFactory.create(idp_slug='sso-abc', org=self.gacco_organization)
+#         # is data pass
+#         social_user = social_models.DjangoStorage.user.create_social_auth(
+#             self.social_user, 'uid', self.saml_provider_other.backend_name)
+#
+#
+#         raise Http404
+#
+#         with self.assertRaises(Http404):
+#             pipeline.ensure_user_information(strategy={'POST': u'/auth/complete/tpa-saml/'},
+#                                              auth_entry=u'/auth/complete/tpa-saml/',
+#                                              pipeline_index=1,
+#                                              response={'idp_name': 'sso-abc'})
+#         saml_user = pipeline.ensure_user_information(strategy={'POST': u'/auth/complete/tpa-saml/'},
+#                                                      auth_entry=u'/auth/complete/tpa-saml/',
+#                                                      pipeline_index=1,
+#                                                      response={'idp_name': 'sso-abc'})
+#
+#         return redirect nri_error page
+#
+#         saml_user_pass = pipeline.ensure_user_information(strategy={'POST': u'/auth/complete/tpa-saml/'},
+#                                                           auth_entry=u'/auth/complete/tpa-saml/',
+#                                                           pipeline_index=1,
+#                                                           response={'idp_name': 'sso-cde'},
+#                                                           user=self.social_user)
+#         self.assertEqual(0, len(saml_user_pass))

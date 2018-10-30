@@ -750,8 +750,8 @@ class MemberEditTaskTest(BizViewTestBase, TaskTestMixin):
 
     def test_current_org_username_rule_true(self):
 
-        username_rule = OrgUsernameRuleFactory.create(prefix='abc__', created_by=self.user, modified_by=self.user,
-                                              org=self.organization)
+        username_rule = OrgUsernameRuleFactory.create(prefix='abc__', org=self.organization)
+
         members = [
             self._create_base_form_param(
                 email='rule1@example.com',
@@ -779,8 +779,8 @@ class MemberEditTaskTest(BizViewTestBase, TaskTestMixin):
 
     def test_current_org_username_rule_false(self):
 
-        username_rule = OrgUsernameRuleFactory.create(prefix='abc__', created_by=self.user, modified_by=self.user,
-                                              org=self.organization)
+        username_rule = OrgUsernameRuleFactory.create(prefix='abc__', org=self.organization)
+
         members = [
             self._create_base_form_param(
                 email='rule1@example.com',
@@ -829,10 +829,10 @@ class MemberEditTaskTest(BizViewTestBase, TaskTestMixin):
 
     def test_another_org_username_rule_true(self):
         another_org1 = self._create_organization(org_name='another_rule_org_name', org_code='another_rule_org_code')
-        username_rule = OrgUsernameRuleFactory.create(prefix='abc__', created_by=self.user, modified_by=self.user,
-                                              org=self.organization)
-        username_rule2 = OrgUsernameRuleFactory.create(prefix='xabc__', created_by=self.user, modified_by=self.user,
-                                              org=another_org1)
+        username_rule = OrgUsernameRuleFactory.create(prefix='abc__', org=self.organization)
+
+        username_rule2 = OrgUsernameRuleFactory.create(prefix='xabc__', org=another_org1)
+
 
         members1 = [
             self._create_base_form_param(
@@ -883,10 +883,10 @@ class MemberEditTaskTest(BizViewTestBase, TaskTestMixin):
 
     def test_another_org_username_rule_false(self):
         another_org1 = self._create_organization(org_name='other_rule_org_name', org_code='other_rule_org_code')
-        username_rule = OrgUsernameRuleFactory.create(prefix='abc__', created_by=self.user, modified_by=self.user,
-                                              org=self.organization)
-        username_rule2 = OrgUsernameRuleFactory.create(prefix='cde__', created_by=self.user, modified_by=self.user,
-                                              org=another_org1)
+        username_rule = OrgUsernameRuleFactory.create(prefix='abc__', org=self.organization)
+
+        username_rule2 = OrgUsernameRuleFactory.create(prefix='cde__', org=another_org1)
+
 
         members = [
             self._create_base_form_param(
@@ -931,10 +931,10 @@ class MemberEditTaskTest(BizViewTestBase, TaskTestMixin):
     def test_another_org_not_username_rule_true(self):
         another_org1 = self._create_organization(org_name='another_rule_org_name', org_code='another_rule_org_code')
         another_org2 = self._create_organization(org_name='not_rule_org_name', org_code='not_rule_org_code')
-        username_rule = OrgUsernameRuleFactory.create(prefix='abc__', created_by=self.user, modified_by=self.user,
-                                              org=self.organization)
-        username_rule2 = OrgUsernameRuleFactory.create(prefix='cde__', created_by=self.user, modified_by=self.user,
-                                              org=another_org1)
+        username_rule = OrgUsernameRuleFactory.create(prefix='abc__', org=self.organization)
+
+        username_rule2 = OrgUsernameRuleFactory.create(prefix='cde__', org=another_org1)
+
 
         members = [
             self._create_base_form_param(
@@ -983,10 +983,10 @@ class MemberEditTaskTest(BizViewTestBase, TaskTestMixin):
     def test_another_org_not_username_rule_false(self):
         another_org1 = self._create_organization(org_name='another_rule_org_name', org_code='another_rule_org_code')
         another_org2 = self._create_organization(org_name='not_rule_org_name', org_code='not_rule_org_code')
-        username_rule = OrgUsernameRuleFactory.create(prefix='abc__', created_by=self.user, modified_by=self.user,
-                                              org=self.organization)
-        username_rule2 = OrgUsernameRuleFactory.create(prefix='cde__', created_by=self.user, modified_by=self.user,
-                                              org=another_org1)
+        username_rule = OrgUsernameRuleFactory.create(prefix='abc__', org=self.organization)
+
+        username_rule2 = OrgUsernameRuleFactory.create(prefix='cde__', org=another_org1)
+
 
         members = [
             self._create_base_form_param(

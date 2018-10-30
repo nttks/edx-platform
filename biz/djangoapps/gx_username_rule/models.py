@@ -20,12 +20,12 @@ class OrgUsernameRule(models.Model):
     def exists_org_prefix(cls, str, org=0):
         str = str.lower()
         if cls.objects.filter(org=org).exists():
-            if str.startswith(tuple([r.prefix for r in cls.objects.filter(org=org)])):
+            if str.startswith(tuple([r.prefix.lower() for r in cls.objects.filter(org=org)])):
                 return True
             else:
                 return False
         if cls.objects.exclude(org=org).exists():
-            if str.startswith(tuple([r.prefix for r in cls.objects.exclude(org=org)])):
+            if str.startswith(tuple([r.prefix.lower() for r in cls.objects.exclude(org=org)])):
                 return False
             else:
                 return True
