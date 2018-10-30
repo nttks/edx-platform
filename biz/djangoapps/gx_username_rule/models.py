@@ -18,6 +18,7 @@ class OrgUsernameRule(models.Model):
 
     @classmethod
     def exists_org_prefix(cls, str, org=0):
+        str = str.lower()
         if cls.objects.filter(org=org).exists():
             if str.startswith(tuple([r.prefix for r in cls.objects.filter(org=org)])):
                 return True

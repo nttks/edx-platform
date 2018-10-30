@@ -232,7 +232,6 @@ def _create_member(data, request_user, org):
                 validate_password_strength(data['password'])
             except ValidationError:
                 return _fail(_("Invalid password {password}.").format(password=data['password']))
-
             if not OrgUsernameRule.exists_org_prefix(org=org, str=data['username']):
                 return _fail(_("Username {user} already exists.").format(user=data['username']))
             try:

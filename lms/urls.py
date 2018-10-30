@@ -179,6 +179,11 @@ urlpatterns += (
         {'template': '404.html'}, name="404"),
 )
 
+urlpatterns += (
+    url(r'^nri_error$', 'static_template_view.views.render',
+        {'template': 'nri_error.html'}, name="nri_error"),
+)
+
 # Favicon
 favicon_path = microsite.get_value('favicon_path', settings.FAVICON_PATH)
 urlpatterns += (url(

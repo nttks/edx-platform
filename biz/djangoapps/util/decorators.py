@@ -433,10 +433,8 @@ def control_specific_organization(func):
     """
     @wraps(func)
     def wrapper(request, *args, **kwargs):
-        if Member.objects.filter(user_id=request.user.id, is_active=True).exists():
-            if SsoConfig.objects.filter(org=Member.objects.filter(user_id=request.user.id,
-                                                                  is_active=True).first().org_id).exists():
-                return redirect(reverse('dashboard'))
+        if not SsoConfig.user_control_process(request.user.id):
+            return redirect(reverse('dashboard'))
         out = func(request, *args, **kwargs)
         return out
     return wrapper
