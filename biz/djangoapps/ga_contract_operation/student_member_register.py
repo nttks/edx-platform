@@ -15,6 +15,7 @@ from biz.djangoapps.ga_invitation.models import ContractRegister, INPUT_INVITATI
 from biz.djangoapps.ga_login.models import BizUser, LOGIN_CODE_MIN_LENGTH, LOGIN_CODE_MAX_LENGTH
 from biz.djangoapps.gx_member.models import Member
 from biz.djangoapps.gx_org_group.models import Group
+from biz.djangoapps.gx_username_rule.models import OrgUsernameRule
 from bulk_email.models import Optout
 
 from lms.djangoapps.instructor.views.api import generate_unique_password
@@ -156,7 +157,8 @@ def perform_delegate_student_member_register(entry_id, task_input, action_name):
             # validate duplicate login_code in contract
             if login_code and contract_register_same_login_code:
                 return _fail(_("Login code {login_code} already exists.").format(login_code=login_code))
-
+            if not OrgUsernameRule.exists_org_prefix(org=contract.contractor_organization.id, str=username):
+                return _fail(_("Username {user} already exists.").format(user=username))
             password = password or generate_unique_password(generated_passwords)
             try:
                 form = AccountCreationForm(

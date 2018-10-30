@@ -15,6 +15,7 @@ from biz.djangoapps.gx_member.models import Member, MemberTaskHistory
 from biz.djangoapps.gx_member.tasks import member_register, member_register_one
 from biz.djangoapps.gx_member.tests.factories import MemberTaskHistoryFactory, MemberRegisterTaskTargetFactory
 from biz.djangoapps.gx_org_group.tests.factories import GroupFactory
+from biz.djangoapps.gx_username_rule.tests.factories import OrgUsernameRuleFactory
 from biz.djangoapps.util.json_utils import EscapedEdxJSONEncoder
 from biz.djangoapps.util.tests.testcase import BizViewTestBase
 
@@ -745,5 +746,303 @@ class MemberEditTaskTest(BizViewTestBase, TaskTestMixin):
         self.assertEqual(0, Member.objects.filter(org=self.organization).count())
         self.assertEqual(0, User.objects.filter(username='create_member_error').count())
         self.mock_log.error.assert_any_call('sample_error_message')
+        self._assert_failed_log()
+
+    def test_current_org_username_rule_true(self):
+
+        username_rule = OrgUsernameRuleFactory.create(prefix='abc__', created_by=self.user, modified_by=self.user,
+                                              org=self.organization)
+        members = [
+            self._create_base_form_param(
+                email='rule1@example.com',
+                code='code1',
+                username='abc__123'
+            ),
+            self._create_base_form_param(
+                email='rule4@example.com',
+                code='code4',
+                username='abc__456'
+            )
+        ]
+
+        # ----------------------------------------------------------
+        # Execute task
+        # ----------------------------------------------------------
+        history = self._execute_member_register_task(member_register, members, 2)
+
+        # ----------------------------------------------------------
+        # Assertion
+        # ----------------------------------------------------------
+        # Check data has not created
+        self.assertEqual(2, Member.objects.filter(org=self.organization).count())
+        self.assertEqual(1, User.objects.filter(email='rule1@example.com').count())
+
+    def test_current_org_username_rule_false(self):
+
+        username_rule = OrgUsernameRuleFactory.create(prefix='abc__', created_by=self.user, modified_by=self.user,
+                                              org=self.organization)
+        members = [
+            self._create_base_form_param(
+                email='rule1@example.com',
+                code='code1',
+                username='abc__123'
+            ),
+            self._create_base_form_param(
+                email='rule2@example.com',
+                code='code2',
+                username='xabc__123'
+            ),
+            self._create_base_form_param(
+                email='rule3@example.com',
+                code='code3',
+                username='abc123'
+            ),
+            self._create_base_form_param(
+                email='rule4@example.com',
+                code='code4',
+                username='abc__456'
+            )
+        ]
+
+        # ----------------------------------------------------------
+        # Execute task
+        # ----------------------------------------------------------
+        history = self._execute_member_register_task(member_register, members, 2)
+
+        # ----------------------------------------------------------
+        # Assertion
+        # ----------------------------------------------------------
+        # Check history column
+        history_message = []
+        history_message.append("Line {line_number}:{message}".format(
+            line_number=2,
+            message="Username {username} already exists.".format(username='xabc__123')))
+        history_message.append("Line {line_number}:{message}".format(
+            line_number=3,
+            message="Username {username} already exists.".format(username='abc123')))
+        self._assert_history_after_execute_task(history.id, 0, ','.join(history_message))
+
+        # Check data has not created
+        self.assertEqual(0, Member.objects.filter(org=self.organization).count())
+        self.assertEqual(0, User.objects.filter(email='rule1@example.com').count())
+        self._assert_failed_log()
+
+    def test_another_org_username_rule_true(self):
+        another_org1 = self._create_organization(org_name='another_rule_org_name', org_code='another_rule_org_code')
+        username_rule = OrgUsernameRuleFactory.create(prefix='abc__', created_by=self.user, modified_by=self.user,
+                                              org=self.organization)
+        username_rule2 = OrgUsernameRuleFactory.create(prefix='xabc__', created_by=self.user, modified_by=self.user,
+                                              org=another_org1)
+
+        members1 = [
+            self._create_base_form_param(
+                email='rule1@example.com',
+                code='code1',
+                username='abc__123'
+            ),
+            self._create_base_form_param(
+                email='rule2@example.com',
+                code='code2',
+                username='abc__456'
+            )
+        ]
+        members2 = [
+            self._create_base_form_param(
+                email='rule3@example.com',
+                code='code3',
+                username='xabc__123'
+            ),
+            self._create_base_form_param(
+                email='rule4@example.com',
+                code='code4',
+                username='xabc__456'
+            )
+        ]
+
+        # ----------------------------------------------------------
+        # Execute task
+        # ----------------------------------------------------------
+        history = self._execute_member_register_task(member_register, members1, 2)
+        history = MemberTaskHistoryFactory.create(organization=another_org1, requester=self.user)
+        self._create_targets(history=history, members=members2)
+        self._test_run_with_task(
+            member_register,
+            'member_register',
+            task_entry=self._create_input_entry(organization=another_org1, history=history),
+            expected_attempted=len(members2),
+            expected_num_succeeded=2,
+            expected_num_failed=len(members2) - 2,
+            expected_total=len(members2),
+        )
+        # ----------------------------------------------------------
+        # Assertion
+        # ----------------------------------------------------------
+        # Check data has not created
+        self.assertEqual(2, Member.objects.filter(org=another_org1).count())
+        self.assertEqual(1, User.objects.filter(email='rule1@example.com').count())
+
+    def test_another_org_username_rule_false(self):
+        another_org1 = self._create_organization(org_name='other_rule_org_name', org_code='other_rule_org_code')
+        username_rule = OrgUsernameRuleFactory.create(prefix='abc__', created_by=self.user, modified_by=self.user,
+                                              org=self.organization)
+        username_rule2 = OrgUsernameRuleFactory.create(prefix='cde__', created_by=self.user, modified_by=self.user,
+                                              org=another_org1)
+
+        members = [
+            self._create_base_form_param(
+                email='rule1@example.com',
+                code='code1',
+                username='cde__123'
+            ),
+            self._create_base_form_param(
+                email='rule2@example.com',
+                code='code2',
+                username='abc__123'
+            ),
+        ]
+        # ----------------------------------------------------------
+        # Execute task
+        # ----------------------------------------------------------
+        history = MemberTaskHistoryFactory.create(organization=another_org1, requester=self.user)
+        self._create_targets(history=history, members=members)
+        self._test_run_with_task(
+            member_register,
+            'member_register',
+            task_entry=self._create_input_entry(organization=another_org1, history=history),
+            expected_attempted=len(members),
+            expected_num_succeeded=1,
+            expected_num_failed=len(members) - 1,
+            expected_total=len(members),
+        )
+        # ----------------------------------------------------------
+        # Assertion
+        # ----------------------------------------------------------
+        # Check history column
+        history_message = "Line {line_number}:{message}".format(
+            line_number=2,
+            message="Username {username} already exists.".format(username='abc__123'))
+        self._assert_history_after_execute_task(history.id, 0, history_message)
+
+        # Check data has not created
+        self.assertEqual(0, Member.objects.filter(org=another_org1).count())
+        self.assertEqual(0, User.objects.filter(email='rule1@example.com').count())
+        self._assert_failed_log()
+
+    def test_another_org_not_username_rule_true(self):
+        another_org1 = self._create_organization(org_name='another_rule_org_name', org_code='another_rule_org_code')
+        another_org2 = self._create_organization(org_name='not_rule_org_name', org_code='not_rule_org_code')
+        username_rule = OrgUsernameRuleFactory.create(prefix='abc__', created_by=self.user, modified_by=self.user,
+                                              org=self.organization)
+        username_rule2 = OrgUsernameRuleFactory.create(prefix='cde__', created_by=self.user, modified_by=self.user,
+                                              org=another_org1)
+
+        members = [
+            self._create_base_form_param(
+                email='rule1@example.com',
+                code='code1',
+                username='abc_123'
+            ),
+            self._create_base_form_param(
+                email='rule2@example.com',
+                code='code2',
+                username='cde_123'
+            ),
+            self._create_base_form_param(
+                email='rule3@example.com',
+                code='code3',
+                username='xabc__123'
+            ),
+            self._create_base_form_param(
+                email='rule4@example.com',
+                code='code4',
+                username='cde123'
+            )
+        ]
+
+        # ----------------------------------------------------------
+        # Execute task
+        # ----------------------------------------------------------
+        history = MemberTaskHistoryFactory.create(organization=another_org2, requester=self.user)
+        self._create_targets(history=history, members=members)
+        self._test_run_with_task(
+            member_register,
+            'member_register',
+            task_entry=self._create_input_entry(organization=another_org2, history=history),
+            expected_attempted=len(members),
+            expected_num_succeeded=4,
+            expected_num_failed=len(members) - 4,
+            expected_total=len(members),
+        )
+        # ----------------------------------------------------------
+        # Assertion
+        # ----------------------------------------------------------
+        # Check data has not created
+        self.assertEqual(4, Member.objects.filter(org=another_org2).count())
+        self.assertEqual(1, User.objects.filter(email='rule1@example.com').count())
+
+    def test_another_org_not_username_rule_false(self):
+        another_org1 = self._create_organization(org_name='another_rule_org_name', org_code='another_rule_org_code')
+        another_org2 = self._create_organization(org_name='not_rule_org_name', org_code='not_rule_org_code')
+        username_rule = OrgUsernameRuleFactory.create(prefix='abc__', created_by=self.user, modified_by=self.user,
+                                              org=self.organization)
+        username_rule2 = OrgUsernameRuleFactory.create(prefix='cde__', created_by=self.user, modified_by=self.user,
+                                              org=another_org1)
+
+        members = [
+            self._create_base_form_param(
+                email='rule1@example.com',
+                code='code1',
+                username='abc__123'
+            ),
+            self._create_base_form_param(
+                email='rule2@example.com',
+                code='code2',
+                username='cde__123'
+            ),
+            self._create_base_form_param(
+                email='rule3@example.com',
+                code='code3',
+                username='abc_123'
+            ),
+            self._create_base_form_param(
+                email='rule4@example.com',
+                code='code4',
+                username='cde___123'
+            )
+        ]
+
+        # ----------------------------------------------------------
+        # Execute task
+        # ----------------------------------------------------------
+        history = MemberTaskHistoryFactory.create(organization=another_org2, requester=self.user)
+        self._create_targets(history=history, members=members)
+        self._test_run_with_task(
+            member_register,
+            'member_register',
+            task_entry=self._create_input_entry(organization=another_org2, history=history),
+            expected_attempted=len(members),
+            expected_num_succeeded=1,
+            expected_num_failed=len(members) - 1,
+            expected_total=len(members),
+        )
+        # ----------------------------------------------------------
+        # Assertion
+        # ----------------------------------------------------------
+        # Check history column
+        history_message = []
+        history_message.append("Line {line_number}:{message}".format(
+            line_number=1,
+            message="Username {username} already exists.".format(username='abc__123')))
+        history_message.append("Line {line_number}:{message}".format(
+            line_number=2,
+            message="Username {username} already exists.".format(username='cde__123')))
+        history_message.append("Line {line_number}:{message}".format(
+            line_number=4,
+            message="Username {username} already exists.".format(username='cde___123')))
+        self._assert_history_after_execute_task(history.id, 0, ','.join(history_message))
+
+        # Check data has not created
+        self.assertEqual(0, Member.objects.filter(org=another_org2).count())
+        self.assertEqual(0, User.objects.filter(email='rule1@example.com').count())
         self._assert_failed_log()
 

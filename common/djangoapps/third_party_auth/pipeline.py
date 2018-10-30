@@ -72,7 +72,7 @@ from eventtracking import tracker
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
-from django.http import HttpResponseBadRequest
+from django.http import HttpResponseBadRequest, Http404
 from django.shortcuts import redirect
 from django.utils.translation import ugettext as _
 from social.apps.django_app.default import models
@@ -82,7 +82,7 @@ from social.pipeline.social_auth import associate_by_email
 
 import student
 from third_party_auth.models import OAuth2ProviderConfig
-
+from biz.djangoapps.gx_sso_config.models import SsoConfig
 from logging import getLogger
 
 from . import provider
@@ -534,6 +534,10 @@ def ensure_user_information(strategy, auth_entry, backend=None, user=None, socia
         return current_provider and current_provider.skip_email_verification
 
     if not user:
+        if SsoConfig.is_hide_icon(kwargs['response']['idp_name']):
+            logger.warning("Ssoconfig new account create stoped.")
+            raise Http404
+            # return redirect(reverse('nri_error'))
         if auth_entry in [AUTH_ENTRY_LOGIN_API, AUTH_ENTRY_REGISTER_API]:
             return HttpResponseBadRequest()
         elif auth_entry == AUTH_ENTRY_LOGIN:

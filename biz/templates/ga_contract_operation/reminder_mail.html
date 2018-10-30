@@ -94,7 +94,7 @@ from biz.djangoapps.ga_contract_operation.models import ContractReminderMail
         /*------------------------------------------------------------------------
          * Detail tab
          ------------------------------------------------------------------------*/
-        $('#reminder_search_ajax button[type=search]').on('click', function(event) {
+        $('#reminder_search_ajax').find('button[name=search]').on('click', function(event) {
             lock();
 
             $('.messages').empty();
@@ -127,6 +127,7 @@ from biz.djangoapps.ga_contract_operation.models import ContractReminderMail
                 unlock();
                 $('html,body').animate({scrollTop: 0}, 500, 'swing');
             }
+            fit_wrapper_height();
             return false;
         });
 
@@ -616,7 +617,7 @@ from biz.djangoapps.ga_contract_operation.models import ContractReminderMail
                     </div>
                 <!-- / .gc_collapse" --></div>
                 <div class="gc_btn_cta gc_btn_cta_center">
-                    <button class="btn btn-blue gc_btn_search" type="search"
+                    <button class="btn btn-blue gc_btn_search" type="button" name="search"
                             data-endpoint="${reverse('biz:contract_operation:reminder_search_ajax')}">${_("Search")}</button>
                 </div>
             </form>

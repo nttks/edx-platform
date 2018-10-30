@@ -68,6 +68,7 @@ from certificates.api import (  # pylint: disable=import-error
     get_certificate_url,
     has_html_certificates_enabled,
 )
+from biz.djangoapps.gx_username_rule.models import OrgUsernameRule
 
 from xmodule.modulestore.django import modulestore
 from opaque_keys import InvalidKeyError
@@ -1749,6 +1750,13 @@ def create_account_with_params(request, params):
 
     # Perform operations within a transaction that are critical to account creation
     with transaction.atomic():
+
+        # Conflict check of the prefix
+        if params.has_key('username'):
+            if not OrgUsernameRule.exists_org_prefix(str=params['username']):
+                error_message = _("Username {user} already exists.").format(user=params['username'])
+                raise ValidationError({'username': [error_message]})
+
         # first, create the account
         (user, profile, registration) = _do_create_account(form)
 

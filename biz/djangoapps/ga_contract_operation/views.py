@@ -13,7 +13,6 @@ from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.db import transaction
-from django.db.models import Q, Prefetch
 from django.http import Http404
 from django.utils.translation import ugettext as _
 from django.views.decorators.http import require_GET, require_POST
@@ -31,7 +30,6 @@ from biz.djangoapps.ga_contract_operation.tasks import (
     personalinfo_mask, student_register, student_unregister, additional_info_update, student_member_register,
     TASKS, STUDENT_REGISTER, STUDENT_UNREGISTER, PERSONALINFO_MASK, ADDITIONALINFO_UPDATE, STUDENT_MEMBER_REGISTER
 )
-from biz.djangoapps.ga_contract_operation.student_tsv_builders import ContractRegisterTsv
 from biz.djangoapps.ga_contract_operation.utils import get_additional_info_by_contract
 from biz.djangoapps.ga_invitation.models import (
     AdditionalInfoSetting, ContractRegister,
@@ -102,9 +100,7 @@ def check_contract_register_selection(func):
 @check_course_selection
 @check_organization_group
 def students(request):
-    total_count, show_list, status, additional_columns = _students_initial_search(
-        org=request.current_organization, contract=request.current_contract, manager=request.current_manager,
-        visible_group_ids=request.current_organization_visible_group_ids)
+    total_count, show_list, status, additional_columns = _students_initial_search(request)
 
     member_org_item_list = OrderedDict()
     for i in range(1, 11):
@@ -133,25 +129,20 @@ def students_search_students_ajax(request):
     if 'contract_id' not in request.POST:
         return _error_response(_("Unauthorized access."))
 
-    org = request.current_organization
-    contract = request.current_contract
-    manager = request.current_manager
-    visible_group_ids = request.current_organization_visible_group_ids
-
     offset = request.POST['offset']
     limit = request.POST['limit']
 
-    query, prefetch = _students_create_search_query(request, org, contract, manager, visible_group_ids)
+    # query = _students_create_search_query(request, org, contract, manager, visible_group_ids)
 
-    if query is None:
+    total_count, show_list, __, __ = _contract_register_list_on_page(request, int(offset), int(limit))
+
+    if total_count == 0:
         return JsonResponse({
             'info': _('Success'),
             'total_count': 0,
             'show_list': json.dumps([], cls=EscapedEdxJSONEncoder),
         })
     else:
-        total_count, show_list, __, __ = _contract_register_list_on_page(contract, query, prefetch, int(offset),
-                                                                         int(limit))
         return JsonResponse({
             'info': _('Success'),
             'total_count': total_count,
@@ -159,204 +150,167 @@ def students_search_students_ajax(request):
         })
 
 
-def _students_create_search_query(request, org, contract, manager, visible_group_ids):
-    """
-    :param request:
-    :param org: request.current_organization
-    :param contract: request.current_contract
-    :param manager: request.current_manager
-    :param visible_group_ids: request.current_organization_visible_group_ids
-    :return: Q(), Prefetch()
-    """
+def _students_initial_search(request):
+    return _contract_register_list_on_page(request)
+
+
+def _contract_register_list_on_page(request, offset=0, limit=CONTRACT_REGISTER_MAX_DISPLAY_NUM):
+    option_sql = [request.current_organization.id, request.current_contract.id]
+    where_sql = ""
+
     radio_operator_exclude = 'exclude'
     radio_operator_contains = 'contains'
     radio_operator_only = 'only'
     radio_operator = (radio_operator_exclude, radio_operator_contains, radio_operator_only)
 
-    query = Q()
-    # Contract
-    query.add(Q(('contract', contract)), Q.AND)
     # Organization group
-    if not manager.is_director() and manager.is_manager() and Group.objects.filter(org=org).exists():
-        query.add(Q(('user__member__group__in', visible_group_ids)), Q.AND)
+    if not request.current_manager.is_director() and request.current_manager.is_manager() and Group.objects.filter(org=request.current_organization).exists():
+        where_sql += "AND group_id IN ("
+        group_stock = []
+        for group_id in map(str, request.current_organization_visible_group_ids):
+            group_stock.append("%s")
+            option_sql.append(group_id)
+        where_sql += ','.join(group_stock)
+        where_sql += ")"
 
     # Group name
-    group_name = request.POST['group_name']
+    group_name = request.POST.get('group_name')
     if group_name and group_name.strip():
-        query.add(Q(('user__member__group__group_name__contains', group_name)), Q.AND)
+        where_sql += "AND group_name LIKE %s "
+        option_sql.append('%' + group_name + '%')
 
     # Status and Unregister
-    status = request.POST['status']
-    is_unregister = request.POST['is_unregister']
+    status = request.POST.get('status')
+    is_unregister = request.POST.get('is_unregister')
     if is_unregister in radio_operator:
         if is_unregister == radio_operator_contains:
             if status:
-                query.add(Q(('status__exact', status)) | Q(('status__exact', UNREGISTER_INVITATION_CODE)), Q.AND)
+                where_sql += "AND (status = %s OR status = %s) "
+                option_sql.append(status)
+                option_sql.append(UNREGISTER_INVITATION_CODE)
         elif is_unregister == radio_operator_only:
             if status:
                 if status == UNREGISTER_INVITATION_CODE:
-                    query.add(Q(('status__exact', status)), Q.AND)
+                    where_sql += "AND status = %s "
+                    option_sql.append(status)
                 else:
                     # Return empty list because conflict status conditions
-                    return None, None
+                    return 0, [], [], []
             else:
-                query.add(Q(('status__exact', UNREGISTER_INVITATION_CODE)), Q.AND)
+                where_sql += "AND status = %s "
+                option_sql.append(UNREGISTER_INVITATION_CODE)
         elif is_unregister == radio_operator_exclude:
             if status:
                 if status == UNREGISTER_INVITATION_CODE:
                     # Return empty list because conflict status conditions
-                    return None, None
+                    return 0, [], [], []
                 else:
-                    query.add(Q(('status__exact', status)), Q.AND)
+                    where_sql += "AND status = %s "
+                    option_sql.append(status)
             else:
-                query.add(Q(('status__exact', INPUT_INVITATION_CODE)) | Q(
-                    ('status__exact', REGISTER_INVITATION_CODE)), Q.AND)
+                where_sql += "AND (status = %s OR status = %s) "
+                option_sql.append(INPUT_INVITATION_CODE)
+                option_sql.append(REGISTER_INVITATION_CODE)
 
     # Free word
-    free_word = request.POST['free_word']
+    free_word = request.POST.get('free_word')
     if free_word and free_word.strip():
-        free_word_conditions = Q((
-            'user__username__contains', free_word)) | Q((
-            'user__email__contains', free_word)) | Q((
-            'user__profile__name__contains', free_word)) | Q((
-            'user__member__group__group_name__contains', free_word)) | Q((
-            'user__member__org1__contains', free_word)) | Q((
-            'user__member__org2__contains', free_word)) | Q((
-            'user__member__org3__contains', free_word)) | Q((
-            'user__member__org4__contains', free_word)) | Q((
-            'user__member__org5__contains', free_word)) | Q((
-            'user__member__org6__contains', free_word)) | Q((
-            'user__member__org7__contains', free_word)) | Q((
-            'user__member__org8__contains', free_word)) | Q((
-            'user__member__org9__contains', free_word)) | Q((
-            'user__member__org10__contains', free_word)) | Q((
-            'user__member__item1__contains', free_word)) | Q((
-            'user__member__item2__contains', free_word)) | Q((
-            'user__member__item3__contains', free_word)) | Q((
-            'user__member__item4__contains', free_word)) | Q((
-            'user__member__item5__contains', free_word)) | Q((
-            'user__member__item6__contains', free_word)) | Q((
-            'user__member__item7__contains', free_word)) | Q((
-            'user__member__item8__contains', free_word)) | Q((
-            'user__member__item9__contains', free_word)) | Q((
-            'user__member__item10__contains', free_word)) | Q((
-            'user__bizuser__login_code__contains', free_word)) | Q((
-            'user__in', AdditionalInfoSetting.objects.filter(
-                contract=contract, value__contains=free_word).values_list('user')))
+        where_sql += 'AND (username LIKE %s OR email LIKE %s OR name LIKE %s OR group_name LIKE %s OR org1 LIKE %s ' \
+                     'OR org2 LIKE %s OR org3 LIKE %s OR org4 LIKE %s OR org5 LIKE %s OR org6 LIKE %s OR org7 LIKE %s ' \
+                     'OR org8 LIKE %s OR org9 LIKE %s OR org10 LIKE %s OR item1 LIKE %s OR item2 LIKE %s ' \
+                     'OR item3 LIKE %s OR item4 LIKE %s OR item5 LIKE %s OR item6 LIKE %s OR item7 LIKE %s ' \
+                     'OR item8 LIKE %s OR item9 LIKE %s OR item10 LIKE %s OR login_code LIKE %s '
+        for p in range(0, 25):
+            option_sql.append('%' + free_word + '%')
 
-        query.add(free_word_conditions, Q.AND)
+        user_ids = AdditionalInfoSetting.objects.filter(contract=request.current_contract,
+                                                        value__contains=free_word).values_list('user')
+        if user_ids:
+            where_sql += "OR IC.user_id IN ("
+            user_stock = []
+            for user_id in user_ids:
+                user_stock.append("%s")
+                option_sql.append(user_id[0])
+            where_sql += ','.join(user_stock)
+            where_sql += ") "
+        where_sql += ") "
 
     # Detail search
     detail_search_counter = 1
     while 'org_item_field_select_' + str(detail_search_counter) in request.POST:
         count = str(detail_search_counter)
         detail_search_counter += 1
-        key = request.POST['org_item_field_select_' + count]
-        value = request.POST['org_item_field_text_' + count]
+        key = request.POST.get('org_item_field_select_' + count)
+        value = request.POST.get('org_item_field_text_' + count)
         if key and key.strip() and value and value.strip():
-            query.add(Q(('user__member__' + key + '__contains', value)), Q.AND)
+            if key in ['org' + str(i) for i in range(1, 11)] + ['item' + str(i) for i in range(1, 11)]:
+                where_sql += "AND " + key + " LIKE %s "
+                option_sql.append("%" + value + "%")
 
     # Target user of delete member
-    member_is_delete = request.POST['member_is_delete']
+    member_is_delete = request.POST.get('member_is_delete')
     if member_is_delete == radio_operator_contains:
-        query.add(Q(('user__member__is_active', True), ('user__member__is_delete', False))
-                  | Q(('user__member__is_active', False), ('user__member__is_delete', True))
-                  | Q(('user__member', None)), Q.AND)
-        prefetch = Prefetch('user__member', to_attr='members',
-                            queryset=Member.objects.filter(org=org).select_related('group').exclude(is_active=False,
-                                                                                                    is_delete=False))
-
+        where_sql += "AND (MG.is_active=1 OR MG.is_delete=0 OR MG.is_active=0 OR MG.is_delete=1 OR MG.is_active IS NULL) "
     elif member_is_delete == radio_operator_only:
-        query.add(Q(('user__member__is_delete', True)), Q.AND)
-        prefetch = Prefetch('user__member', to_attr='members',
-                            queryset=Member.objects.filter(org=org, is_delete=True).select_related('group'))
-
+        where_sql += "AND MG.is_delete=1 "
     elif member_is_delete == radio_operator_exclude:
-        query.add(Q(('user__member__is_active', True)) | Q(('user__member', None)), Q.AND)
-        prefetch = Prefetch('user__member', to_attr='members',
-                            queryset=Member.find_active_by_org(org=org).select_related('group'))
+        where_sql += "AND (MG.is_active=1 OR MG.is_active IS NULL) "
 
     # Mask
-    is_masked = request.POST['is_masked']
+    is_masked = request.POST.get('is_masked')
     if is_masked == radio_operator_exclude:
-        query.add(Q(('user__email__contains', '@')), Q.AND)
+        where_sql += "AND email LIKE %s "
+        option_sql.append('%@%')
     elif is_masked == radio_operator_only:
-        query.add(~Q(('user__email__contains', '@')), Q.AND)
+        where_sql += "AND NOT email LIKE %s "
+        option_sql.append('%@%')
 
-    return query, prefetch
+    sql = '''SELECT DISTINCT IC.id, IC.status, IC.user_id, user.username, user.email, profile.name as full_name, 
+bizuser.login_code, MG.group_name, MG.code, MG.is_active, MG.is_delete, 
+MG.org1, MG.org2, MG.org3, MG.org4, MG.org5, MG.org6, MG.org7, MG.org8, MG.org9, MG.org10, 
+MG.item1, MG.item2, MG.item3, MG.item4, MG.item5, MG.item6, MG.item7, MG.item8, MG.item9, MG.item10, MG.org_id
+FROM ga_invitation_contractregister as IC
+INNER JOIN auth_user as user ON IC.user_id = user.id 
+LEFT OUTER JOIN auth_userprofile as profile ON user.id = profile.user_id
+LEFT OUTER JOIN ga_login_bizuser as bizuser ON user.id = bizuser.user_id 
+LEFT OUTER JOIN (
+  SELECT M.id, M.code, M.is_active, M.is_delete, M.group_id, M.org_id, M.user_id, G.group_code, G.group_name, 
+         M.org1, M.org2, M.org3, M.org4, M.org5, M.org6, M.org7, M.org8, M.org9, M.org10, 
+         M.item1, M.item2, M.item3, M.item4, M.item5, M.item6, M.item7, M.item8, M.item9, M.item10
+  FROM gx_member_member as M LEFT OUTER JOIN gx_org_group_group as G 
+  ON M.group_id = G.id  AND M.org_id = %s) MG ON IC.user_id = MG.user_id 
+WHERE IC.contract_id = %s ''' + where_sql + '''
+ORDER BY IC.id'''
+    count_sql = '''SELECT 1 as id, COUNT(*) as cnt FROM (''' + sql + ''') CNT'''
 
-
-def _students_initial_search(org, contract, manager, visible_group_ids):
-    """
-    :param org: request.current_organization
-    :param contract: request.current_contract
-    :param manager: request.current_manager
-    :param visible_group_ids: request.current_organization_visible_group_ids
-    :return:
-    """
-    query = Q()
-    query.add(Q(('contract', contract)), Q.AND)
-    prefetch = Prefetch('user__member', to_attr='members', queryset=Member.objects.filter(org=org).select_related(
-        'group').exclude(is_active=False, is_delete=False))
-
-    if not manager.is_director() and manager.is_manager() and Group.objects.filter(org=org).exists():
-        query.add(Q(('user__member__group__in', visible_group_ids)), Q.AND)
-
-    return _contract_register_list_on_page(contract, query, prefetch)
-
-
-def _contract_register_list_on_page(contract, query, prefetch, offset=0, limit=CONTRACT_REGISTER_MAX_DISPLAY_NUM):
-    """
-    :param contract: from biz.djangoapps.ga_contract.models import Contract
-    :param query: from django.db.models import Q
-    :param prefetch: from django.db.models import Prefetch
-    :param offset: int
-    :param limit: int
-    :return:
-    """
     status = {k: unicode(v) for k, v in dict(CONTRACT_REGISTER_STATUS).items()}
-    user_additional_settings, display_names, __, additional_columns = get_additional_info_by_contract(contract=contract)
-    select_columns = dict({
-        'id': 'id',
-        'user_id': 'user__id',
-        'status': 'status',
-        'full_name': 'user__profile__name',
-        'email': 'user__email',
-        'username': 'user__username',
-        'login_code': 'user__bizuser__login_code',
-        'code': 'user__member__code',
-        'group_name': 'user__member__group__group_name'
-    })
-    select_columns.update({'org' + str(i): 'user__member__org' + str(i) for i in range(1, 11)})
-    select_columns.update({'item' + str(i): 'user__member__item' + str(i) for i in range(1, 11)})
+    user_additional_settings, display_names, __, additional_columns = get_additional_info_by_contract(contract=request.current_contract)
 
-    total_count = ContractRegister.objects.filter(query).select_related(
-        'user__profile', 'user__bizuser').prefetch_related(prefetch).distinct().order_by(
-        'id').values(*select_columns.values()).count()
+    total_count = ContractRegister.objects.raw(count_sql, option_sql)[0].cnt
 
     show_list = []
-    for i, register in enumerate(
-            ContractRegister.objects.filter(query)
-                    .select_related('user__profile', 'user__bizuser').prefetch_related(prefetch)
-                    .distinct().order_by('id').values(*select_columns.values())[offset:limit], start=1):
+    for i, register in enumerate(ContractRegister.objects.raw(sql, option_sql)[offset:limit], start=1):
+
         row = {
             'recid': i,
-            'contract_register_id': register[select_columns.get('id')],
-            'contract_register_status': status[register[select_columns.get('status')]],
-            'user_name': register[select_columns.get('username')],
-            'user_email': register[select_columns.get('email')],
-            'full_name': register[select_columns.get('full_name')] or '',
-            'login_code': register[select_columns.get('login_code')] or '',
-            'code': register[select_columns.get('code')] or '',
-            'group_name': register[select_columns.get('group_name')] or ''
+            'contract_register_id': register.id,
+            'contract_register_status': status[register.status],
+            'user_name': register.username,
+            'user_email': register.email,
+            'full_name': register.full_name or '',
+            'login_code': register.login_code or '',
+            'is_delete': register.is_delete or '',
+            'code': register.code or '',
+            'group_name': register.group_name or '',
         }
-        for p in range(1, 11):
-            row['org' + str(p)] = register[select_columns.get('org' + str(p))] or ''
-            row['item' + str(p)] = register[select_columns.get('item' + str(p))] or ''
+        if not register.org_id or register.org_id == request.current_organization.id:
+            for p in range(1, 11):
+                row['org' + str(p)] = getattr(register, 'org' + str(p), '') or ''
+                row['item' + str(p)] = getattr(register, 'item' + str(p), '') or ''
 
         # Set additional settings value of user.
-        if register[select_columns.get('user_id')] in user_additional_settings:
-            row.update(user_additional_settings[register[select_columns.get('user_id')]])
+        if register.user_id in user_additional_settings:
+            row.update(user_additional_settings[register.user_id])
 
         show_list.append(row)
 
@@ -368,20 +322,37 @@ def _contract_register_list_on_page(contract, query, prefetch, offset=0, limit=C
 @check_course_selection
 @check_organization_group
 def students_students_download(request):
-    org = request.current_organization
-    contract = request.current_contract
-    manager = request.current_manager
-    visible_group_ids = request.current_organization_visible_group_ids
+    total_count, show_list, __, additional_columns = _contract_register_list_on_page(request, 0, None)
 
-    tsv = ContractRegisterTsv(contract)
-    query, prefetch = _students_create_search_query(request, org, contract, manager, visible_group_ids)
-    headers, records = tsv.get_header_and_record_for_export(query, prefetch)
+    headers = [_("Student Status"), _("Full Name"), _("Organization Groups"), _("Member Code"), _("Email Address"),
+               _("Login Code"), _("Username"), _("Target user of delete member master")]
+    for i in range(1, 11):
+        headers.append(_("Organization") + str(i))
+    for i in range(1, 11):
+        headers.append(_("Item") + str(i))
+    for additional_column in additional_columns:
+        headers.append(additional_column['caption'])
+
+    rows = []
+    for show_row in show_list:
+        row = [show_row.get('contract_register_status', ''), show_row.get('full_name', ''),
+               show_row.get('group_name', ''), show_row.get('code', ''), show_row.get('user_email', ''),
+               show_row.get('login_code', ''), show_row.get('user_name', ''), show_row.get('is_delete', ''),
+               show_row.get('org1', ''), show_row.get('org2', ''), show_row.get('org3', ''), show_row.get('org4', ''),
+               show_row.get('org5', ''), show_row.get('org6', ''), show_row.get('org7', ''), show_row.get('org8', ''),
+               show_row.get('org9', ''), show_row.get('org10', ''), show_row.get('item1', ''),
+               show_row.get('item2', ''), show_row.get('item3', ''), show_row.get('item4', ''),
+               show_row.get('item5', ''), show_row.get('item6', ''), show_row.get('item7', ''),
+               show_row.get('item8', ''), show_row.get('item9', ''), show_row.get('item10', '')]
+        for additional_column in additional_columns:
+            row.append(show_row.get(additional_column['caption'], ''))
+        rows.append(row)
 
     org_name = request.current_organization.org_name
     current_datetime = datetime.now()
     date_str = current_datetime.strftime("%Y-%m-%d-%H%M")
 
-    return create_tsv_response(org_name + '_students_list_' + date_str + '.csv', headers, records)
+    return create_tsv_response(org_name + '_students_list_' + date_str + '.csv', headers, rows)
 
 
 @require_POST
@@ -427,9 +398,7 @@ def unregister_students_ajax(request, registers):
                                                                                         unregister_list))
         return _error_response(_('Failed to batch unregister. Please operation again after a time delay.'))
 
-    total_count, show_list, __, __ = _students_initial_search(
-        org=request.current_organization, contract=request.current_contract, manager=manager,
-        visible_group_ids=request.current_organization_visible_group_ids)
+    total_count, show_list, __, __ = _students_initial_search(request)
 
     warning = _('Already unregisterd {user_count} users.').format(
         user_count=len(warning_register_list)) if warning_register_list else ''
@@ -988,7 +957,6 @@ def reminder_search_ajax(request):
     contract = request.current_contract
     course = request.current_course
     manager = request.current_manager
-    visible_group_ids = request.current_organization_visible_group_ids
 
     if 'contract_id' not in request.POST:
         return _error_response(_("Unauthorized access."))
@@ -1050,52 +1018,26 @@ def reminder_search_ajax(request):
 
         return has_condition, total_condition, section_conditions
 
-    def _get_students_conditions():
-        query = Q()
-        query.add(Q(('member__is_active', True)) | Q(('member', None)), Q.AND)
-        if not manager.is_director() and manager.is_manager() and Group.objects.filter(org=org).exists():
-            query.add(Q(('member__group__in', visible_group_ids)), Q.AND)
-
-        org_item_key_list = []
-        org_item_key_list.extend(['org' + str(i) for i in range(1, 11)])
-        org_item_key_list.extend(['item' + str(i) for i in range(1, 11)])
-
-        counter = 1
-        while 'detail_condition_other_name_' + str(counter) in request.POST:
-            count = str(counter)
-            counter += 1
-            key = request.POST['detail_condition_other_name_' + count]
-            value = request.POST['detail_condition_other_' + count]
-            if key and key.strip() and value and value.strip():
-                if key in ('email', 'username'):
-                    query.add(Q((key + '__contains', value)), Q.AND)
-                elif key == 'full_name':
-                    query.add(Q(('profile__name__contains', value)), Q.AND)
-                elif key == 'login_code':
-                    query.add(Q(('bizuser__login_code__contains', value)), Q.AND)
-                elif key in org_item_key_list:
-                    query.add(Q(('member__' + key + '__contains', value)), Q.AND)
-
-        prefetch = Prefetch('member', to_attr='members',
-                            queryset=Member.objects.filter(is_active=True).select_related('group'))
-
-        return query, prefetch
-
     def _create_row(recid, student_status, user, score_section_names, score, playback_section_names, playback):
         row = {
             'recid': recid,
-            'user_id': user[select_columns.get('user_id')] or '',
-            'user_name': user[select_columns.get('user_name')] or '',
-            'user_email': user[select_columns.get('user_email')] or '',
-            'full_name': user[select_columns.get('full_name')] or '',
-            'login_code': user[select_columns.get('login_code')] or '',
+            'user_id': user.id or '',
+            'user_name': user.username or '',
+            'user_email': user.email or '',
+            'full_name': user.fullname or '',
+            'login_code': user.login_code or '',
         }
 
         # Set member
-        if user[select_columns.get('code')] is not None:
+        # if not user[select_columns.get('member_org')] or user[select_columns.get('member_org')] == org.id:
+        if user.code is not None:
             for p in range(1, 11):
-                row['org' + str(p)] = user[select_columns.get('org' + str(p))]
-                row['item' + str(p)] = user[select_columns.get('item' + str(p))]
+                row['org' + str(p)] = getattr(user, 'org' + str(p), '')
+                row['item' + str(p)] = getattr(user, 'item' + str(p), '')
+        else:
+            for p in range(1, 11):
+                row['org' + str(p)] = ''
+                row['item' + str(p)] = ''
 
         # Set student status
         row['student_status'] = student_status
@@ -1116,24 +1058,61 @@ def reminder_search_ajax(request):
 
         return row
 
-    select_columns = dict({
-        'user_id': 'id',
-        'user_email': 'email',
-        'full_name': 'profile__name',
-        'user_name': 'username',
-        'login_code': 'bizuser__login_code',
-        'account_status': 'standing__account_status',
-        'code': 'member__code',
-    })
-    select_columns.update({'org' + str(i): 'member__org' + str(i) for i in range(1, 11)})
-    select_columns.update({'item' + str(i): 'member__item' + str(i) for i in range(1, 11)})
+    where_sql = ""
+    option_sql = [org.id, str(course.id)]
+    if not manager.is_director() and manager.is_manager() and Group.objects.filter(org=org).exists():
+        where_sql += "AND group_id IN ("
+        group_stock = []
+        for group_id in map(str, request.current_organization_visible_group_ids):
+            group_stock.append("%s")
+            option_sql.append(group_id)
+        where_sql += ','.join(group_stock)
+        where_sql += ")"
 
-    # Search course's user
-    query, prefetch = _get_students_conditions()
-    enroll_users = CourseEnrollment.objects.enrolled_and_dropped_out_users(
-        course_id=course.id).filter(query).select_related('profile', 'standing', 'bizuser').prefetch_related(
-        prefetch).order_by('id').values(*select_columns.values())
-    enroll_usernames = [enroll_user[select_columns.get('user_name')] for enroll_user in enroll_users]
+    org_item_key_list = []
+    org_item_key_list.extend(['org' + str(i) for i in range(1, 11)])
+    org_item_key_list.extend(['item' + str(i) for i in range(1, 11)])
+
+    counter = 1
+    while 'detail_condition_other_name_' + str(counter) in request.POST:
+        count = str(counter)
+        counter += 1
+        key = request.POST['detail_condition_other_name_' + count]
+        value = request.POST['detail_condition_other_' + count]
+        if key and key.strip() and value and value.strip():
+            if key in ('email', 'username'):
+                where_sql += "AND " + key + " LIKE %s "
+                option_sql.append("%" + value + "%")
+            elif key == 'full_name':
+                where_sql += "AND UP.name LIKE %s "
+                option_sql.append("%" + value + "%")
+            elif key == 'login_code':
+                where_sql += "AND LB.login_code LIKE %s "
+                option_sql.append("%" + value + "%")
+            elif key in org_item_key_list:
+                where_sql += "AND " + key + " LIKE %s "
+                option_sql.append("%" + value + "%")
+
+        sql = '''SELECT DISTINCT AU.id, AU.email, UP.name as fullname, AU.username, LB.login_code, SU.account_status, MG.org_id, MG.code, 
+    MG.org1, MG.org2, MG.org3, MG.org4, MG.org5, MG.org6, MG.org7, MG.org8, MG.org9, MG.org10, 
+    MG.item1, MG.item2, MG.item3, MG.item4, MG.item5, MG.item6, MG.item7, MG.item8, MG.item9, MG.item10 
+    FROM auth_user as AU
+    INNER JOIN student_courseenrollment as SC ON AU.id = SC.user_id 
+    LEFT OUTER JOIN student_userstanding as SU ON AU.id = SU.user_id 
+    LEFT OUTER JOIN auth_userprofile as UP ON AU.id = UP.user_id 
+    LEFT OUTER JOIN ga_login_bizuser as LB ON AU.id = LB.user_id 
+    LEFT OUTER JOIN (
+      SELECT M.id, M.code, M.is_active, M.is_delete, M.group_id, M.org_id, M.user_id, G.group_code, G.group_name, 
+             M.org1, M.org2, M.org3, M.org4, M.org5, M.org6, M.org7, M.org8, M.org9, M.org10, 
+             M.item1, M.item2, M.item3, M.item4, M.item5, M.item6, M.item7, M.item8, M.item9, M.item10
+      FROM gx_member_member as M LEFT OUTER JOIN gx_org_group_group as G 
+      ON M.group_id = G.id  AND M.org_id = %s 
+    ) MG ON AU.id = MG.user_id 
+    WHERE SC.course_id = %s ''' + where_sql + '''
+    ORDER BY AU.id ASC'''
+
+    enroll_users = ContractRegister.objects.raw(sql, option_sql)
+    enroll_usernames = [enroll_user.username for enroll_user in enroll_users]
 
     # Score
     has_score_condition, total_score_condition, section_score_conditions = _get_mongo_conditions('score')
@@ -1179,15 +1158,15 @@ def reminder_search_ajax(request):
         playback = None
 
         # Check scores
-        if user[select_columns.get('user_name')] in username_scores:
-            score = username_scores[user[select_columns.get('user_name')]]
+        if user.username in username_scores:
+            score = username_scores[user.username]
         elif has_score_condition:
             # Note: Not need loop for check playback if not found user by search conditions of score
             continue
 
         # Check playback
-        if user[select_columns.get('user_name')] in username_playback:
-            playback = username_playback[user[select_columns.get('user_name')]]
+        if user.username in username_playback:
+            playback = username_playback[user.username]
         elif has_playback_condition:
             # Note: Not need append row if not found user by search conditions of score and playback
             continue
@@ -1198,10 +1177,10 @@ def reminder_search_ajax(request):
         elif playback:
             student_status = playback[_(PlaybackStore.FIELD_STUDENT_STATUS)]
         else:
-            course_enrollment = CourseEnrollment.objects.get(
-                course_id=course.id, user=user[select_columns.get('user_id')])
-            if user[select_columns.get('account_status')] is not None \
-                    and user[select_columns.get('account_status')] == UserStanding.ACCOUNT_DISABLED:
+            course_enrollment = CourseEnrollment.objects.get(course_id=course.id,
+                                                             user=user.id)
+            if user.account_status is not None \
+                    and user.account_status == UserStanding.ACCOUNT_DISABLED:
                 student_status = _(ScoreStore.FIELD_STUDENT_STATUS__DISABLED)
             elif self_paced_api.is_course_closed(course_enrollment):
                 student_status = _(ScoreStore.FIELD_STUDENT_STATUS__EXPIRED)

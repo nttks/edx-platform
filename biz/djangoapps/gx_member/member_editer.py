@@ -15,6 +15,7 @@ from django.utils.translation import ugettext as _
 from biz.djangoapps.ga_login.models import BizUser, LOGIN_CODE_MIN_LENGTH, LOGIN_CODE_MAX_LENGTH
 from biz.djangoapps.gx_member.models import Member, MemberTaskHistory, MemberRegisterTaskTarget
 from biz.djangoapps.gx_org_group.models import Group
+from biz.djangoapps.gx_username_rule.models import OrgUsernameRule
 
 from openedx.core.djangoapps.ga_task.models import Task
 from openedx.core.djangoapps.ga_task.task import TaskProgress
@@ -232,6 +233,8 @@ def _create_member(data, request_user, org):
             except ValidationError:
                 return _fail(_("Invalid password {password}.").format(password=data['password']))
 
+            if not OrgUsernameRule.exists_org_prefix(org=org, str=data['username']):
+                return _fail(_("Username {user} already exists.").format(user=data['username']))
             try:
                 user, __, __ = _simple_create_user(
                     data['email'], data['username'], data['password'], data['first_name'], data['last_name'])

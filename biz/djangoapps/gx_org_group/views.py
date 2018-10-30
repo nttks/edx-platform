@@ -22,6 +22,7 @@ from edxmako.shortcuts import render_to_response
 from biz.djangoapps.ga_manager.models import Manager
 from biz.djangoapps.gx_org_group.builders import OrgTsv
 from biz.djangoapps.gx_org_group.models import Group, Right, Parent, Child
+from biz.djangoapps.gx_member.models import Member
 from biz.djangoapps.util.decorators import check_course_selection
 from biz.djangoapps.util.json_utils import EscapedEdxJSONEncoder, LazyEncoder
 from biz.djangoapps.util.unicodetsv_utils import get_utf8_csv, create_tsv_response
@@ -38,10 +39,11 @@ _exception_012 = _('specified user does not exist in this group')     # revoke e
 _exception_021 = _('invalid header or file type')                     # file upload error case 'a'
 _exception_999 = _('unknown error')                                   # revoke error case 'c'
 _button_01 = _('detail settings')
+_button_02 = _('Delete')
 
 log = logging.getLogger(__name__)
 
-
+from django.db import connection
 class UploadEncoder(LazyEncoder, EscapedEdxJSONEncoder):
     pass
 
@@ -68,9 +70,77 @@ def _get_group_list_view(org_id):
                            + " a where a.id = " + group_db_table + ".parent_id",
         },
     ).values(
-        'group_code', 'group_name', 'parent_code', 'parent_name', 'notes', 'created', 'modified', 'id',
-    ).order_by('group_code')
+        'group_code', 'group_name', 'parent_code', 'parent_name', 'notes', 'created', 'modified', 'id'
+    ).order_by('level_no', 'group_code')
     return groups
+
+
+def _get_group_tree_list(org_id, parent_id, level_no):
+    current_group = Group.objects.filter(org_id=org_id, parent_id=parent_id, level_no=level_no).order_by('level_no', 'group_code')
+    records = []
+    for grp in current_group:
+        records_value = {}
+        records_value['recid'] = grp.id
+        records_value['group_code'] = grp.group_code
+        records_value['group_name'] = grp.group_name
+        records_value['edit'] = _(_button_01)
+        records_value['delete'] = _(_button_02)
+        records_value['notes'] = grp.notes
+        records_value['created'] = grp.created
+        records_value['modified'] = grp.modified
+        records_value['id'] = grp.id
+        records_value['detail_url'] = reverse('biz:group:detail', kwargs={'selected_group_id': records_value['id']})
+        records_value['belong'] = 0
+        right = _get_child(grp.id)
+        right.append(grp.id)
+        if Right.objects.only('group_id').filter(group_id__in=right):
+            records_value['belong'] = 1
+        if Member.objects.only('group_id').filter(group_id__in=right):
+            records_value['belong'] = 1
+        records_value['grouping'] = right
+        childrens = {}
+        childrens['children'] = _get_group_tree_list(org_id=org_id, parent_id=grp.id, level_no=level_no + 1)
+        records_value['w2ui'] = childrens
+        records.append(records_value)
+    return records
+
+
+def _error_response(message):
+    return JsonResponseBadRequest({
+        'error': message,
+    })
+
+
+@require_POST
+@login_required
+@check_course_selection
+def delete_group(request):
+    """
+    Do Delete choice Organization tree
+    :param request:
+    :return:
+    """
+    log.info('delete_group function - start')
+    org = request.current_organization
+    org_tsv = OrgTsv(org, request.user)
+    try:
+        group = request.POST.dict()
+        grouping = str(group['grouping']).split(',')
+        grouping = [int(x) for x in grouping]
+
+        member = Member.objects.filter(group_id__in=grouping).update(group_id=None)
+        log.info('update member model to null - record count: ' + str(member) + ' - done')
+
+        Group.objects.filter(id__in=grouping).delete()
+        log.info('delete model related to group - id' + str(grouping) + ':' + group['group_name'] + ' - done')
+
+        org_tsv.make_child_data()
+        log.info('refresh child model - done')
+        log.info('delete_group function - end')
+        return JsonResponse({'info': _('Success! Current group and children deleted ')})
+    except Exception:
+        log.error('Critical error! Failed to delete group tree')
+        return _error_response(_exception_999)
 
 
 @require_GET
@@ -83,21 +153,8 @@ def group_list(request):
     :return:
     """
     org_id = request.current_organization.pk
-    groups = _get_group_list_view(org_id)
     return render_to_response('gx_org_group/group_list.html', {
-        'groups': json.dumps([{
-            'recid': i,
-            'group_code': group['group_code'],
-            'group_name': group['group_name'],
-            'edit': _(_button_01),
-            'parent_code': group['parent_code'],
-            'parent_name': group['parent_name'],
-            'notes': group['notes'],
-            'created': group['created'],
-            'modified': group['modified'],
-            'id': group['id'],
-            'detail_url': reverse('biz:group:detail', kwargs={'selected_group_id': group['id']}),
-        }for i, group in enumerate(groups, start=1)], cls=GroupEncoder)
+        'groups': json.dumps(_get_group_tree_list(org_id, 0, 0), cls=GroupEncoder)
     })
 
 

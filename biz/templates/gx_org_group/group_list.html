@@ -1,4 +1,4 @@
-<%inherit file="../main_biz.html" />
+<%inherit file="main_biz_group.html" />
 <%namespace name="static" file="../static_content.html" />
 <%!
 from django.utils.translation import ugettext as _
@@ -9,6 +9,44 @@ from django.core.urlresolvers import reverse
 
 <%block name="js_extra">
 <script type="text/javascript">
+    function myConfirm (num, belong, grouping ,group_name) {
+        function lock() {
+            w2utils.lock($('.biz-wrap'), '', true);
+        }
+
+        if (belong === 1){
+            var  message = '${_("There are managers or belonging members in this group tree. Are you sure to delete this group tree?")}'
+        }else{
+            var  message = '${_("Are you sure to delete this group tree?")}'
+        }
+    w2confirm({
+            title: w2utils.lang('Confirmation'),
+            msg: message,
+            width: 450,
+            height: 220,
+            yes_text: 'Yes',
+            no_text: 'No',
+            yes_class: 'btn-right btn',
+            no_class: 'btn-left btn',
+            callBack: function (btn) {
+                console.log('Common call back '+ btn);
+            }
+        })
+        .yes(function () {
+            lock();
+            $.ajax({
+                url: "${reverse('biz:group:delete_group')}",
+                type: 'POST',
+                data: {group_id: num, grouping: grouping, group_name: group_name},
+            }).done(function(){
+                lock();
+                location.reload();
+            })
+        })
+        .no(function () {
+            console.log('No clicked');
+        });
+}
     var grid = grid || [];
     $(function () {
         var group_grid,
@@ -103,21 +141,27 @@ from django.core.urlresolvers import reverse
                         return "<a href='" + record.detail_url + "'>" + _.escape(record.edit)  +"</a>";
                     }
                 },
+                {
+                    field: 'delete', caption: '${_("delete group")}', size: '10%', sortable: true, hidden: false,
+                    render: function(record){
+                        return '<a class="w2ui-btn" name="delete_flg" onclick="myConfirm(' + record.recid + ',' + record.belong + ',\'' + record.grouping + '\',\'' + record.group_name + '\')">' + _.escape(record.delete)  +'</a>';
+                    }
+                },
                 {field: 'group_code', caption: '${_("Organization Group Code")}', size: '15%', sortable: true, hidden: false},
                 {field: 'notes', caption: '${_("notes")}', size: '30%', sortable: true, hidden: false},
-                {field: 'parent_code', caption: '${_("Parent Organization Code")}', size: '20%', sortable: true, hidden: true},
-                {field: 'parent_name', caption: '${_("Parent Organization Name")}', size: '20%', sortable: true, hidden: true},
                 {field: 'created', caption: '${_("created date")}', size: '20%', sortable: true, hidden: true, render: 'date:yyyy/mm/dd'},
                 {field: 'created', caption: '${_("created time")}', size: '20%', sortable: true, hidden: true, render: 'time:h12'},
                 {field: 'modified', caption: '${_("modified date")}', size: '20%', sortable: true, hidden: true, render: 'date:yyyy/mm/dd'},
-                {field: 'modified', caption: '${_("modified time")}', size: '20%', sortable: true, hidden: true, render: 'time:h12'},
-
+                {field: 'modified', caption: '${_("modified time")}', size: '20%', sortable: true, hidden: true, render: 'time:h12'}
             ],
             records: ${groups},
         });
 
         grid.push(group_grid);
-
+        function unlock() {
+            w2utils.unlock($('.biz-wrap'));
+        }
+        unlock();
         function  display_ajax_error_message(jqXHR) {
             var data = null;
             try {
@@ -138,11 +182,6 @@ from django.core.urlresolvers import reverse
     });
 
 </script>
-<style>
-    .content-wrapper {
-        min-height: 800px;
-    }
-</style>
 </%block>
 <%block name="custom_content">
 <div id="error_area" class="gc_error_area"></div>
@@ -183,6 +222,7 @@ from django.core.urlresolvers import reverse
     <h2>${_('Organization Master List' )}</h2>
     <div class="gc_column_col gc_column_col_full">
         <p class="gc_mb10">${_('Click [detail settings] to set up the organization group access right ')}</p>
+        <p class="gc_mb10">${_('Click [delete] to delete group tree with the belongings ')}</p>
     </div>
     <div id="grid" class="w2ui-reset w2ui-grid"></div>
 </div>

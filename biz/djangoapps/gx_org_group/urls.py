@@ -9,4 +9,5 @@ urlpatterns = patterns(
     url(r'^grant_right$', 'grant_right', name='grant_right'),
     url(r'^accessible_user_list$', 'accessible_user_list', name='accessible_user_list'),
     url(r'^accessible_parent_list$', 'accessible_parent_list', name='accessible_parent_list'),
+    url(r'^delete_group', 'delete_group', name='delete_group'),
 )

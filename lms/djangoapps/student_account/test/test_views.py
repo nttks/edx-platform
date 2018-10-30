@@ -28,6 +28,13 @@ from third_party_auth.tests.testutil import simulate_running_pipeline, ThirdPart
 from util.testing import UrlResetMixin
 from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
 
+from biz.djangoapps.ga_organization.models import Organization
+from biz.djangoapps.gx_member.models import Member
+from biz.djangoapps.gx_sso_config.models import SsoConfig
+from biz.djangoapps.gx_member.tests.factories import MemberFactory
+from biz.djangoapps.gx_sso_config.tests.factories import SsoConfigFactory
+from biz.djangoapps.util.tests.testcase import BizViewTestBase
+
 
 @ddt.ddt
 class StudentAccountUpdateTest(UrlResetMixin, TestCase):
@@ -39,6 +46,14 @@ class StudentAccountUpdateTest(UrlResetMixin, TestCase):
     NEW_PASSWORD = u"🄱🄸🄶🄱🄻🅄🄴"
     OLD_EMAIL = u"walter@graymattertech.com"
     NEW_EMAIL = u"walt@savewalterwhite.com"
+    
+    LOCK_USERNAME = u'lockuser'
+    LOCK_PASSWORD = u'Abc1234#$%'
+    LOCK_EMAIL = u'locked@test.com'
+    
+    UNLOCK_USERNAME = u'unlockuser'
+    UNLOCK_PASSWORD = u'Abc1234#$%'
+    UNLOCK_EMAIL = u'unlocked@test.com'
 
     INVALID_ATTEMPTS = 100
 
@@ -71,6 +86,16 @@ class StudentAccountUpdateTest(UrlResetMixin, TestCase):
         # Login
         result = self.client.login(username=self.USERNAME, password=self.OLD_PASSWORD)
         self.assertTrue(result)
+        
+        # Create initial data
+        self.gacco_organization = Organization(
+            org_name='docomo gacco',
+            org_code='gacco',
+            creator_org_id=1,  # It means the first of Organization
+            created_by=UserFactory.create(),
+        )
+        self.gacco_organization.save()
+        self.user = UserFactory.create()
 
     @skipUnless(settings.ROOT_URLCONF == 'lms.urls', 'Test only valid in LMS')
     def test_password_change(self):
@@ -192,6 +217,34 @@ class StudentAccountUpdateTest(UrlResetMixin, TestCase):
         for method in wrong_methods:
             response = getattr(self.client, method)(url)
             self.assertEqual(response.status_code, 405)
+            
+    def test_password_change_block(self):
+        """ try check password change lock. SsoConfig table register records."""
+        lock_user = UserFactory.create(email=self.LOCK_EMAIL)
+        MemberFactory.create(
+            org=self.gacco_organization,
+            group=None,
+            user=lock_user,
+            created_by=self.user,
+            creator_org=self.gacco_organization,
+            updated_by=self.user,
+            updated_org=self.gacco_organization,
+            is_active=True,
+            is_delete=False,
+        )
+        SsoConfigFactory.create(idp_slug='abcde', created_by=self.user, modified_by=self.user,
+                                org=self.gacco_organization)
+        # Record Check
+        self.assertEqual(1, len(Member.objects.filter(org=self.gacco_organization, is_active=True)))
+        self.assertEqual(1, len(SsoConfig.objects.filter(org=self.gacco_organization)))
+        self.client.logout()
+        # Locked Password URL form create and assert
+        response = self._change_password(email=self.LOCK_EMAIL)
+        self.assertEqual(response.status_code, 400)
+        # Unlocked Password URL form create and assert
+        create_account(self.UNLOCK_USERNAME, self.UNLOCK_PASSWORD, self.UNLOCK_EMAIL)
+        response = self._change_password(email=self.UNLOCK_EMAIL)
+        self.assertEqual(response.status_code, 200)
 
     def _change_password(self, email=None):
         """Request to change the user's password. """
@@ -217,6 +270,16 @@ class StudentAccountLoginAndRegistrationTest(ThirdPartyAuthTestMixin, UrlResetMi
         # For these tests, two third party auth providers are enabled by default:
         self.configure_google_provider(enabled=True)
         self.configure_facebook_provider(enabled=True)
+        # SAML Test append test data
+        self.configure_azure_ad_provider(enabled=False)
+        self.gacco_organization = Organization(
+            org_name='docomo gacco',
+            org_code='gacco',
+            creator_org_id=1,
+            created_by=UserFactory.create(),
+        )
+        self.gacco_organization.save()
+        self.user = UserFactory.create()
 
     @ddt.data(
         ("signin_user", "login"),
@@ -414,8 +477,49 @@ class StudentAccountLoginAndRegistrationTest(ThirdPartyAuthTestMixin, UrlResetMi
             'next': '/account/finish_auth?{}'.format(urlencode(params))
         })
 
+    @ddt.data(
+        ("signin_user", None),
+        ("register_user", None),
+        ("signin_user", "saml-abc"),
+        ("register_user", "saml-abc"),
+        ("signin_user", "saml-cde"),
+        ("register_user", "saml-cde"),
+    )
+    @ddt.unpack
+    def test_is_hide_third_party_auth(self, url_name, current_backend):
+        self.configure_azure_ad_provider(enabled=True)
+        self.configure_azure_ad_2_provider(enabled=True)
+        SsoConfigFactory.create(idp_slug='abc', created_by=self.user, modified_by=self.user,
+                                org=self.gacco_organization)
+        params = [
+            ('course_id', 'course-v1:Org+Course+Run'),
+            ('enrollment_action', 'enroll'),
+            ('course_mode', CourseMode.DEFAULT_MODE_SLUG),
+            ('email_opt_in', 'true'),
+            ('next', '/custom/final/destination'),
+        ]
+        # Simulate a running pipeline
+        if current_backend is not None:
+            pipeline_target = "student_account.views.third_party_auth.pipeline"
+            with simulate_running_pipeline(pipeline_target, current_backend):
+                response = self.client.get(reverse(url_name), params)
 
-class AccountSettingsViewTest(ThirdPartyAuthTestMixin, TestCase):
+        # Do NOT simulate a running pipeline
+        else:
+            response = self.client.get(reverse(url_name), params)
+        res_facebook = response.content.find('oa2-facebook')
+        res_google = response.content.find('oa2-google')
+        res_saml_abc = response.content.find('saml-abc')
+        res_saml_cde = response.content.find('saml-cde')
+        # True
+        self.assertNotEqual(-1, res_facebook)
+        self.assertNotEqual(-1, res_google)
+        self.assertNotEqual(-1, res_saml_cde)
+        # False
+        self.assertEqual(-1, res_saml_abc)
+
+
+class AccountSettingsViewTest(ThirdPartyAuthTestMixin, BizViewTestBase):
     """ Tests for the account settings view. """
 
     USERNAME = 'student'
@@ -443,6 +547,7 @@ class AccountSettingsViewTest(ThirdPartyAuthTestMixin, TestCase):
         # For these tests, two third party auth providers are enabled by default:
         self.configure_google_provider(enabled=True)
         self.configure_facebook_provider(enabled=True)
+        self.configure_azure_ad_provider(enabled=True)
 
         # Python-social saves auth failure notifcations in Django messages.
         # See pipeline.get_duplicate_provider() for details.
@@ -482,6 +587,48 @@ class AccountSettingsViewTest(ThirdPartyAuthTestMixin, TestCase):
         self.assertEqual(context['duplicate_provider'], 'Facebook')
         self.assertEqual(context['auth']['providers'][0]['name'], 'Facebook')
         self.assertEqual(context['auth']['providers'][1]['name'], 'Google')
+        self.assertEqual(context['email_hidden_available'], True)
+
+    def test_excluding_saml(self):
+
+        # Register NG words in the sso_config
+        main_org = self._create_organization(org_name='org_name', org_code='org_code')
+        SsoConfigFactory.create(idp_slug='abc', org=main_org, created_by=self.user, modified_by=self.user)
+
+        user_optional_configuration = UserOptionalConfiguration(
+            change_date="2015-06-18 11:02:13",
+            enabled=True,
+            key=USERPOFILE_OPTION_KEY,
+            changed_by=self.request.user,
+            user=self.request.user
+        )
+        user_optional_configuration.save()
+
+        context = account_settings_context(self.request)
+
+        user_accounts_api_url = reverse("accounts_api", kwargs={'username': self.user.username})
+        self.assertEqual(context['user_accounts_api_url'], user_accounts_api_url)
+
+        user_preferences_api_url = reverse('preferences_api', kwargs={'username': self.user.username})
+        self.assertEqual(context['user_preferences_api_url'], user_preferences_api_url)
+
+        for attribute in self.FIELDS:
+            self.assertIn(attribute, context['fields'])
+
+        self.assertEqual(
+            context['user_accounts_api_url'], reverse("accounts_api", kwargs={'username': self.user.username})
+        )
+        self.assertEqual(
+            context['user_preferences_api_url'], reverse('preferences_api', kwargs={'username': self.user.username})
+        )
+
+        self.assertEqual(context['duplicate_provider'], 'Facebook')
+        self.assertEqual(context['auth']['providers'][0]['name'], 'Facebook')
+        self.assertEqual(context['auth']['providers'][1]['name'], 'Google')
+
+        context_len = len(context['auth']['providers'])
+
+        self.assertEqual(2, context_len)
         self.assertEqual(context['email_hidden_available'], True)
 
     def test_view(self):

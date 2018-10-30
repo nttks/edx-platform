@@ -19,6 +19,10 @@ from notification_prefs import NOTIFICATION_PREF_KEY
 from edxmako.tests import mako_middleware_process_request
 from external_auth.models import ExternalAuthMap
 
+from biz.djangoapps.gx_username_rule.tests.factories import OrgUsernameRuleFactory
+from biz.djangoapps.util.tests.testcase import BizViewTestBase
+from student.tests.factories import UserFactory
+
 from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
 from xmodule.modulestore.tests.factories import CourseFactory
 from openedx.core.djangoapps.course_global.tests.factories import CourseGlobalSettingFactory
@@ -312,7 +316,7 @@ class TestCreateAccount(ModuleStoreTestCase):
 
 
 @ddt.ddt
-class TestCreateAccountValidation(TestCase):
+class TestCreateAccountValidation(BizViewTestBase, TestCase):
     """
     Test validation of various parameters in the create_account view
     """
@@ -327,6 +331,7 @@ class TestCreateAccountValidation(TestCase):
             "honor_code": "true",
             "terms_of_service": "true",
         }
+        self.user = UserFactory.create()
 
     def assert_success(self, params):
         """
@@ -379,6 +384,22 @@ class TestCreateAccountValidation(TestCase):
         # Invalid
         params["username"] = "invalid username"
         assert_username_error("Usernames must contain only letters, numbers, underscores (_), and hyphens (-).")
+
+    def test_prefix_username(self):
+        params = dict(self.minimal_params)
+
+        def assert_username_error(expected_error):
+            """
+            Assert that requesting account creation results in the expected
+            error
+            """
+            self.assert_error(params, "username", expected_error)
+
+        main_org = self._create_organization(org_name='main_org_rule_name', org_code='main_org_rule_code')
+        OrgUsernameRuleFactory.create(prefix='ABC__', created_by=self.user, modified_by=self.user, org=main_org)
+
+        params["username"] = "ABC__username"
+        assert_username_error("Username {user} already exists.".format(user=params['username']))
 
     def test_email(self):
         params = dict(self.minimal_params)

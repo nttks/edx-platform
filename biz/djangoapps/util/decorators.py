@@ -7,9 +7,11 @@ import os
 import re
 import traceback
 
+from django.shortcuts import redirect
 from django.contrib import messages
 from django.core.exceptions import ValidationError
 from django.core.management.base import CommandError
+from django.core.urlresolvers import reverse
 from django.http import HttpResponseForbidden
 from django.utils.translation import ugettext as _
 
@@ -17,8 +19,12 @@ from biz.djangoapps.ga_contract.models import Contract, ContractDetail
 from biz.djangoapps.ga_manager.models import Manager
 from biz.djangoapps.ga_organization.models import Organization
 from biz.djangoapps.gx_org_group.models import Group, Right, Child
+from biz.djangoapps.gx_member.models import Member
+from biz.djangoapps.gx_sso_config.models import SsoConfig
 from biz.djangoapps.util import cache_utils, course_utils, datetime_utils, validators
 from edxmako.shortcuts import render_to_response, render_to_string
+
+
 
 log = logging.getLogger(__name__)
 
@@ -362,6 +368,7 @@ def _render_course_not_specified(request):
     messages.error(request, _("Course is not specified."))
     return render_to_response('ga_course_selection/course_not_specified.html')
 
+
 def check_organization_group(func):
     """
     This checks user's organization group on cache,
@@ -416,4 +423,20 @@ def check_organization_group(func):
         out = func(request, *args, **kwargs)
         return out
 
+    return wrapper
+
+
+def control_specific_organization(func):
+    """
+    account setting not display control reverse dashboard
+    :returns: the wrapped function
+    """
+    @wraps(func)
+    def wrapper(request, *args, **kwargs):
+        if Member.objects.filter(user_id=request.user.id, is_active=True).exists():
+            if SsoConfig.objects.filter(org=Member.objects.filter(user_id=request.user.id,
+                                                                  is_active=True).first().org_id).exists():
+                return redirect(reverse('dashboard'))
+        out = func(request, *args, **kwargs)
+        return out
     return wrapper

@@ -48,6 +48,8 @@ INSTALLED_APPS += (
     'biz.djangoapps.ga_student',
     'biz.djangoapps.gx_member',
     'biz.djangoapps.gx_org_group',
+    'biz.djangoapps.gx_username_rule',
+    'biz.djangoapps.gx_sso_config',
     'biz.djangoapps.gx_login',)
 
 """
