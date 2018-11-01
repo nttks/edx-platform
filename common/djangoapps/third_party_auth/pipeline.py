@@ -534,11 +534,12 @@ def ensure_user_information(strategy, auth_entry, backend=None, user=None, socia
         return current_provider and current_provider.skip_email_verification
 
     if not user:
-        if SsoConfig.is_hide_icon(kwargs['response']['idp_name']):
-            logger.warning("Ssoconfig new account create stoped.")
-            # TODO display To make a final confirmation
-            # raise Http404
-            return redirect(reverse(str(kwargs['response']['idp_name']) + '_error'))
+        if kwargs['response'].has_key('idp_name'):
+            if SsoConfig.is_hide_icon(kwargs['response']['idp_name']):
+                logger.warning("Ssoconfig new account create stoped.")
+                # TODO display To make a final confirmation
+                # raise Http404
+                return redirect(reverse(str(kwargs['response']['idp_name']) + '_error'))
         if auth_entry in [AUTH_ENTRY_LOGIN_API, AUTH_ENTRY_REGISTER_API]:
             return HttpResponseBadRequest()
         elif auth_entry == AUTH_ENTRY_LOGIN:
