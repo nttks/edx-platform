@@ -95,6 +95,7 @@ class TestCreateAccount(ModuleStoreTestCase):
         user = User.objects.get(username=self.username)
         return user.profile
 
+    @unittest.skipUnless(settings.ROOT_URLCONF == 'lms.urls', 'Test only valid in lms')
     def test_marketing_cookie(self):
         response = self.client.post(self.url, self.params)
         self.assertEqual(response.status_code, 200)
@@ -220,6 +221,7 @@ class TestCreateAccount(ModuleStoreTestCase):
         )
         self.assertEqual(profile.year_of_birth, None)
 
+    @unittest.skipUnless(settings.ROOT_URLCONF == 'lms.urls', 'Test only valid in lms')
     def test_profile_year_of_birth_non_integer(self):
         self.params["year_of_birth"] = "not_an_integer"
         profile = self.create_account_and_fetch_profile()
@@ -355,9 +357,11 @@ class TestCreateAccountValidation(BizViewTestBase, TestCase):
         self.assertEqual(response_data["field"], expected_field)
         self.assertEqual(response_data["value"], expected_value)
 
+    @unittest.skipUnless(settings.ROOT_URLCONF == 'lms.urls', 'Test only valid in lms')
     def test_minimal_success(self):
         self.assert_success(self.minimal_params)
 
+    @unittest.skipUnless(settings.ROOT_URLCONF == 'lms.urls', 'Test only valid in lms')
     def test_username(self):
         params = dict(self.minimal_params)
 
@@ -385,6 +389,7 @@ class TestCreateAccountValidation(BizViewTestBase, TestCase):
         params["username"] = "invalid username"
         assert_username_error("Usernames must contain only letters, numbers, underscores (_), and hyphens (-).")
 
+    @unittest.skipUnless(settings.ROOT_URLCONF == 'lms.urls', 'Test only valid in lms')
     def test_prefix_username(self):
         params = dict(self.minimal_params)
 
@@ -401,6 +406,7 @@ class TestCreateAccountValidation(BizViewTestBase, TestCase):
         params["username"] = "ABC__username"
         assert_username_error("Username {user} already exists.".format(user=params['username']))
 
+    @unittest.skipUnless(settings.ROOT_URLCONF == 'lms.urls', 'Test only valid in lms')
     def test_email(self):
         params = dict(self.minimal_params)
 
@@ -428,6 +434,7 @@ class TestCreateAccountValidation(BizViewTestBase, TestCase):
         params["email"] = "not_an_email_address"
         assert_email_error("A properly formatted e-mail is required")
 
+    @unittest.skipUnless(settings.ROOT_URLCONF == 'lms.urls', 'Test only valid in lms')
     def test_password(self):
         params = dict(self.minimal_params)
 
@@ -453,6 +460,7 @@ class TestCreateAccountValidation(BizViewTestBase, TestCase):
         params["username"] = params["password"] = "test_username_and_password"
         assert_password_error("Username and password fields cannot match")
 
+    @unittest.skipUnless(settings.ROOT_URLCONF == 'lms.urls', 'Test only valid in lms')
     def test_name(self):
         params = dict(self.minimal_params)
 
@@ -472,6 +480,7 @@ class TestCreateAccountValidation(BizViewTestBase, TestCase):
             params["name"] = name
             assert_name_error("Your legal name must be a minimum of two characters long")
 
+    @unittest.skipUnless(settings.ROOT_URLCONF == 'lms.urls', 'Test only valid in lms')
     def test_honor_code(self):
         params = dict(self.minimal_params)
 
@@ -504,6 +513,7 @@ class TestCreateAccountValidation(BizViewTestBase, TestCase):
             params["email"] = "another_test_email@example.com"
             self.assert_success(params)
 
+    @unittest.skipUnless(settings.ROOT_URLCONF == 'lms.urls', 'Test only valid in lms')
     def test_employee_number(self):
         params = dict(self.minimal_params)
 
@@ -529,6 +539,7 @@ class TestCreateAccountValidation(BizViewTestBase, TestCase):
             params["employee_number"] = "1234567"
             self.assert_success(params)
 
+    @unittest.skipUnless(settings.ROOT_URLCONF == 'lms.urls', 'Test only valid in lms')
     def test_terms_of_service(self):
         params = dict(self.minimal_params)
 
@@ -563,6 +574,7 @@ class TestCreateAccountValidation(BizViewTestBase, TestCase):
         ("custom_field", 2, "You are missing one or more required fields")
     )
     @ddt.unpack
+    @unittest.skipUnless(settings.ROOT_URLCONF == 'lms.urls', 'Test only valid in lms')
     def test_extra_fields(self, field, min_length, expected_error):
         params = dict(self.minimal_params)
 
@@ -605,6 +617,7 @@ class TestCreateCommentsServiceUser(TransactionTestCase):
             "terms_of_service": "true",
         }
 
+    @unittest.skipUnless(settings.ROOT_URLCONF == 'lms.urls', 'Test only valid in lms')
     def test_cs_user_created(self, request):
         "If user account creation succeeds, we should create a comments service user"
         response = self.client.post(self.url, self.params)
@@ -615,6 +628,7 @@ class TestCreateCommentsServiceUser(TransactionTestCase):
         self.assertTrue(args[1].startswith(TEST_CS_URL))
         self.assertEqual(kwargs['data']['username'], self.params['username'])
 
+    @unittest.skipUnless(settings.ROOT_URLCONF == 'lms.urls', 'Test only valid in lms')
     @mock.patch("student.models.Registration.register", side_effect=Exception)
     def test_cs_user_not_created(self, register, request):
         "If user account creation fails, we should not create a comments service user"

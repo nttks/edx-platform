@@ -428,12 +428,13 @@ class BizContractTest(WebAppTest, GaccoBizTestMixin):
         detail_page = contract_page.click_grid_row({'Contract Name': contract_name}, BizContractDetailPage)
 
         # Delete the contract
-        # contract_page = detail_page.click_delete_button().click_popup_yes(BizContractPage)
+        contract_page = detail_page.click_delete_button()
+        contract = detail_page.click_popup_yes(BizContractPage)
 
         # Verify that an error is displayed
-        # self.assertIn("The contract has been deleted.", contract_page.messages)
+        self.assertIn("The contract has been deleted.", contract.messages)
         # Verify that delete contract removed from grid
-        self.assertIsNotNone(contract_page.get_row({'Contract Name': contract_name}))
+        self.assertIsNone(contract_page.get_row({'Contract Name': contract_name}))
 
     def test_w2ui_grid(self):
         """
