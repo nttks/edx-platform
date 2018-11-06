@@ -4,6 +4,9 @@ from biz.djangoapps.gx_member.models import Member
 
 
 class SsoConfig(models.Model):
+    """
+    This is a table for restricting execution to users logged in with the SAML provider.
+    """
     idp_slug = models.SlugField(max_length=30, db_index=True)
     org = models.ForeignKey(Organization)
     created = models.DateTimeField(auto_now_add=True, db_index=True)
@@ -17,6 +20,12 @@ class SsoConfig(models.Model):
 
     @classmethod
     def user_control_process(cls, user_id):
+        """
+        Restrict items that can be executed by users of the organization registered in SsoConfig.
+        :param user_id:
+        :return:
+        FALSE :
+        """
         if Member.objects.filter(user_id=user_id).exists():
             if cls.objects.filter(org=Member.objects.filter(user_id=user_id).first().org_id).exists():
                 return False
@@ -24,6 +33,11 @@ class SsoConfig(models.Model):
 
     @classmethod
     def is_hide_icon(cls, provider_id=''):
+        """
+        Restrict display of pages and icon to users of organizations registered in SsoConfig.
+        :param provider_id:
+        :return:
+        """
         if cls.objects.filter(idp_slug=str(provider_id).replace('SAML-', '').replace('saml-','')).exists():
                 return True
         return False
