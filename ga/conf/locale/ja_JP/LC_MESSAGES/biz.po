@@ -1900,3 +1900,22 @@ msgstr "対象組織に閲覧権限を設定したい場合は、「設定」ボ
 #: biz/templates/ga_contract_operation/register_students.html:899
 msgid "Tick each box on the list. All checked with left checkbox of full name"
 msgstr "登録対象者にチェックをしてください。「氏名」左のチェックボックスで、全員選択できます。"
+
+#: biz/templates/gx_org_group/group_list.html:18
+msgid ""
+"There are managers or belonging members in this group tree. Are you sure to "
+"delete this group tree?"
+msgstr
+"閲覧管理者または社員が存在します。削除してもよろしいですか？"
+
+#: biz/templates/gx_org_group/group_list.html:20
+msgid "Are you sure to delete this group tree?"
+msgstr "削除します。よろしいですか？"
+
+#: biz/templates/gx_org_group/group_list.html:226
+msgid "Click [delete] to delete group tree with the belongings "
+msgstr "組織対象を削除したい場合は、「削除」ボタンを押してください。"
+
+#: biz/templates/gx_org_group/group_list.html:150
+msgid "delete group"
+msgstr "組織削除"

@@ -568,23 +568,3 @@ msgid ""
 msgstr ""
 "会員登録時に入力されたメールアドレス宛に会員登録のご案内メールを送信しました。メール内のURLをクリックし、会員登録を完了してください。"
 "<br/>※URLの有効期限は、配信された日の翌日24時までです。"
-
-#: lms/templates/courseware/proctored-exam-status.underscore
-msgid "You are taking \"{exam_link}\" as a {exam_type} exam. The timer on the right shows the time remaining in the exam."
-msgstr "あなたは{exam_type}試験の\"{exam_link}\"を受けています。右側に試験の残り時間が表示されています。"
-
-#: lms/templates/courseware/proctored-exam-status.underscore
-msgid "End My Exam"
-msgstr "試験を終了する"
-
-#: edx_proctoring/templates/timed_exam/entrance.html
-msgid ""
-"There has been a problem starting your exam.\n\n"
-"Possible reasons are that your account has not been fully activated,\n"
-"you are experiencing a network connection problem, or there has been\n"
-"a service disruption. Please check these potential problems and try again."
-msgstr ""
-"試験の開始に問題がありました。\n\n"
-"考えられる理由は、あなたのアカウントが完全に有効化されていないこと、\n"
-"またはネットワーク接続の問題が発生している、またはサービスが停止しています。\n"
-"これらの潜在的な問題を確認して、もう一度お試しください。"
