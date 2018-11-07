@@ -27,6 +27,8 @@ from opaque_keys.edx.locations import SlashSeparatedCourseKey
 
 import student
 
+from biz.djangoapps.util.tests.testcase import BizViewTestBase
+
 TEST_CS_URL = 'https://comments.service.test:123/'
 
 
