@@ -26,8 +26,9 @@ class SsoConfig(models.Model):
         :return:
         FALSE :
         """
-        if Member.objects.filter(user_id=user_id).exists():
-            if cls.objects.filter(org=Member.objects.filter(user_id=user_id).first().org_id).exists():
+        member = Member.objects.filter(user_id=user_id).first()
+        if member:
+            if cls.objects.filter(org=member.org_id).exists():
                 return False
         return True
 

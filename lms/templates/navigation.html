@@ -93,7 +93,8 @@ site_status_msg = get_site_status_msg(course_id)
             %if hasattr(request, 'biz_accessible') and request.biz_accessible:
             <li><a href="${reverse('biz:index')}">${_("Biz")}</a></li>
             % endif
-            % if SsoConfig.user_control_process(long(user.id)):
+            <% member = SsoConfig.user_control_process(long(user.id)) %>
+            % if member:
             <li><a href="${reverse('account_settings')}">${_("Account Settings")}</a></li>
             % endif
             <li><a href="${reverse('learner_profile', kwargs={'username': user.username})}">${_("My Profile")}</a></li>
@@ -101,10 +102,10 @@ site_status_msg = get_site_status_msg(course_id)
             <li><a href="${marketing_link('FAQ')}">${_("FAQ")}</a></li>
             % endif
             <li class="help-tab"><a href="#help-modal" rel="leanModal" role="button">${_("Help")}</a></li>
+            % if member:
+            <li><a href="${reverse('logout')}" role="menuitem">${_("Log Out")}</a></li>
+            % endif
           </%block>
-          % if SsoConfig.user_control_process(long(user.id)):
-          <li><a href="${reverse('logout')}" role="menuitem">${_("Log Out")}</a></li>
-          % endif
         </ul>
       </li>
     </ol>
