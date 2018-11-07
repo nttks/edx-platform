@@ -34,17 +34,17 @@
                 this.autoSubmit = data.thirdPartyAuth.autoSubmitRegForm;
 
                 this.listenTo( this.model, 'sync', this.saveSuccess );
+
                 this.getUsernameRules();
             },
 
             getUsernameRules: function() {
-                var list = this.orgUsernameRule;
+                var _this = this;
                 $.ajax({
                     url: "/org_username_rules/",
-                }).done(function(data){
+                }).done(function(data) {
                     if (data['list']) {
-                        list = JSON.parse(data['list']);
-                        this.orgUsernameRule = list;
+                        _this.orgUsernameRule = JSON.parse(data['list']);
                     }
                 }).fail(function() {
                     console.log('error');
@@ -119,7 +119,7 @@
                 var errors = [];
                 // Confirm whether it applies to ng rules.
                 _.every(this.orgUsernameRule, function(rule) {
-                    if ((data.username).match(new RegExp(rule, 'gi')) != null) {
+                    if ((data.username).match(new RegExp('^' + rule, 'gi')) != null) {
                         errors.push(gettext('The user name you entered is already in use.'));
                         return false;
                     }
