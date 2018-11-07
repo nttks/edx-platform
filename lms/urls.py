@@ -180,8 +180,8 @@ urlpatterns += (
 )
 
 urlpatterns += (
-    url(r'^nri_error$', 'static_template_view.views.render',
-        {'template': 'nri_error.html'}, name="nri_error"),
+    url(r'^user_not_found$', 'static_template_view.views.render',
+        {'template': 'user_not_found.html'}, name="user_not_found"),
 )
 
 # Favicon
@@ -1064,3 +1064,8 @@ if settings.FEATURES.get('ENABLE_FINANCIAL_ASSISTANCE_FORM'):
             name='submit_financial_assistance_request'
         )
     )
+
+# for get org username pattern 
+urlpatterns += (
+    url(r'^org_username_rules/$', 'org_username_rules.views.get_rules'),
+)

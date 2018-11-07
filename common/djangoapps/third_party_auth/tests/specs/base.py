@@ -100,6 +100,7 @@ class IntegrationTestMixin(object):
         self.verify_user_email('email-edited@tpa-test.none')
         self._test_return_login(user_is_activated=True)
 
+    @unittest.skip("In this release, we will skip the test. 2018/11")
     def test_login(self):
         user = UserFactory.create()
         # The user goes to the login page, and sees a button to login with this provider:

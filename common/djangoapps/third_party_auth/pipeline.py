@@ -539,7 +539,7 @@ def ensure_user_information(strategy, auth_entry, backend=None, user=None, socia
                 logger.warning("Ssoconfig new account create stoped.")
                 # TODO display To make a final confirmation
                 # raise Http404
-                return redirect(reverse(str(kwargs['response']['idp_name']) + '_error'))
+                return redirect(reverse('user_not_found'))
         if auth_entry in [AUTH_ENTRY_LOGIN_API, AUTH_ENTRY_REGISTER_API]:
             return HttpResponseBadRequest()
         elif auth_entry == AUTH_ENTRY_LOGIN:

@@ -164,6 +164,10 @@ msgstr "{new_email_address}宛に手続き用のメールを送信しました�
 msgid "We've sent a message to {email_address}. Click the link in the message to reset your password."
 msgstr "{email_address}宛に手続き用のメールを送信しました。メールに記載のURLをクリックし、お手続きください。"
 
+#: lms/static/js/student_account/views/logistration_factory.js
+msgid "The user name you entered is already in use."
+msgstr "<li>入力されたユーザー名は、既に使用されています。</li>"
+
 #-#-#-#-#  Original messages in gacco  #-#-#-#-#
 
 #: lms/static/js/courseware/certificates_api.js

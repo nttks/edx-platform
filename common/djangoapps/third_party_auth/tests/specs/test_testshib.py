@@ -67,6 +67,7 @@ class TestShibIntegrationTest(IntegrationTestMixin, testutil.SAMLTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn('Authentication with TestShib is currently unavailable.', response.content)
 
+    @unittest.skip("In this release, we will skip the test. 2018/11")
     def test_login(self):
         """ Configure TestShib before running the login test """
         self._configure_testshib_provider()
