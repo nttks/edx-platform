@@ -15,7 +15,7 @@ TESTSHIB_ENTITY_ID = 'https://idp.testshib.org/idp/shibboleth'
 TESTSHIB_METADATA_URL = 'https://mock.testshib.org/metadata/testshib-providers.xml'
 TESTSHIB_SSO_URL = 'https://idp.testshib.org/idp/profile/SAML2/Redirect/SSO'
 
-
+@unittest.skip("In this release, we will skip the test. 2018/11")
 @unittest.skipUnless(testutil.AUTH_FEATURE_ENABLED, 'third_party_auth not enabled')
 class TestShibIntegrationTest(IntegrationTestMixin, testutil.SAMLTestCase):
     """
@@ -67,7 +67,6 @@ class TestShibIntegrationTest(IntegrationTestMixin, testutil.SAMLTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn('Authentication with TestShib is currently unavailable.', response.content)
 
-    @unittest.skip("In this release, we will skip the test. 2018/11")
     def test_login(self):
         """ Configure TestShib before running the login test """
         self._configure_testshib_provider()

@@ -12,7 +12,7 @@ from .testutil import AUTH_FEATURE_ENABLED, SAMLTestCase
 from third_party_auth.tasks import SAML_XML_NS
 XMLDSIG_XML_NS = 'http://www.w3.org/2000/09/xmldsig#'
 
-
+@unittest.skip("In this release, we will skip the test. 2018/11")
 @unittest.skipUnless(AUTH_FEATURE_ENABLED, 'third_party_auth not enabled')
 @ddt.ddt
 class SAMLMetadataTest(SAMLTestCase):
