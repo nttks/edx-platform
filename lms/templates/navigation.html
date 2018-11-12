@@ -9,6 +9,7 @@ from microsite_configuration import microsite
 from microsite_configuration.templatetags.microsite import platform_name
 from lms.djangoapps.ccx.overrides import get_current_ccx
 from openedx.core.djangoapps.user_api.accounts.image_helpers import get_profile_image_urls_for_user
+from biz.djangoapps.gx_sso_config.models import SsoConfig
 
 # App that handles subdomain specific branding
 import branding
@@ -92,14 +93,19 @@ site_status_msg = get_site_status_msg(course_id)
             %if hasattr(request, 'biz_accessible') and request.biz_accessible:
             <li><a href="${reverse('biz:index')}">${_("Biz")}</a></li>
             % endif
+            <% member = SsoConfig.user_control_process(long(user.id)) %>
+            % if member:
             <li><a href="${reverse('account_settings')}">${_("Account Settings")}</a></li>
+            % endif
             <li><a href="${reverse('learner_profile', kwargs={'username': user.username})}">${_("My Profile")}</a></li>
             % if microsite.get_value('MKTG_URL_LINK_MAP', settings.MKTG_URL_LINK_MAP).get('FAQ'):
             <li><a href="${marketing_link('FAQ')}">${_("FAQ")}</a></li>
             % endif
             <li class="help-tab"><a href="#help-modal" rel="leanModal" role="button">${_("Help")}</a></li>
+            % if member:
+            <li><a href="${reverse('logout')}" role="menuitem">${_("Log Out")}</a></li>
+            % endif
           </%block>
-          <li><a href="${reverse('logout')}" role="menuitem">${_("Log Out")}</a></li>
         </ul>
       </li>
     </ol>

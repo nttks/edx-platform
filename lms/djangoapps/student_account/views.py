@@ -42,6 +42,8 @@ from util.bad_request_rate_limiter import BadRequestRateLimiter
 from openedx.core.djangoapps.user_api.accounts.api import request_password_change
 from openedx.core.djangoapps.user_api.errors import UserNotFound
 
+from biz.djangoapps.util.decorators import control_specific_organization
+from biz.djangoapps.gx_sso_config.models import SsoConfig
 
 AUDIT_LOG = logging.getLogger("audit")
 
@@ -193,9 +195,12 @@ def _third_party_auth_context(request, redirect_to):
         "finishAuthUrl": None,
         "errorMessage": None,
     }
-
     if third_party_auth.is_enabled():
-        for enabled in third_party_auth.provider.Registry.accepting_logins():
+        enableds = []
+        for third_party in third_party_auth.provider.Registry.accepting_logins():
+            if not SsoConfig.is_hide_icon(third_party.provider_id):
+                enableds.append(third_party)
+        for enabled in enableds:
             info = {
                 "id": enabled.provider_id,
                 "name": enabled.name,
@@ -302,6 +307,7 @@ def _external_auth_intercept(request, mode):
 
 @login_required
 @require_http_methods(['GET'])
+@control_specific_organization
 def account_settings(request):
     """Render the current user's account settings page.
 
@@ -409,6 +415,11 @@ def account_settings_context(request):
         context['duplicate_provider'] = pipeline.get_duplicate_provider(messages.get_messages(request))
 
         auth_states = pipeline.get_provider_user_states(user)
+        auth_states_excluding_saml = []
+
+        for a in auth_states:
+            if not SsoConfig.is_hide_icon(a.provider.provider_id):
+                auth_states_excluding_saml.append(a)
 
         context['auth']['providers'] = [{
             'id': state.provider.provider_id,
@@ -426,6 +437,6 @@ def account_settings_context(request):
             # If the user is connected, sending a POST request to this url removes the connection
             # information for this provider from their edX account.
             'disconnect_url': pipeline.get_disconnect_url(state.provider.provider_id, state.association_id),
-        } for state in auth_states]
+        } for state in auth_states_excluding_saml]
 
     return context

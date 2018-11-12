@@ -15,7 +15,7 @@ TESTSHIB_ENTITY_ID = 'https://idp.testshib.org/idp/shibboleth'
 TESTSHIB_METADATA_URL = 'https://mock.testshib.org/metadata/testshib-providers.xml'
 TESTSHIB_SSO_URL = 'https://idp.testshib.org/idp/profile/SAML2/Redirect/SSO'
 
-
+@unittest.skip("In this release, we will skip the test. 2018/11")
 @unittest.skipUnless(testutil.AUTH_FEATURE_ENABLED, 'third_party_auth not enabled')
 class TestShibIntegrationTest(IntegrationTestMixin, testutil.SAMLTestCase):
     """

@@ -59,7 +59,25 @@ class ThirdPartyAuthTestMixin(object):
     def enable_saml(self, **kwargs):
         """ Enable SAML support (via SAMLConfiguration, not for any particular provider) """
         kwargs.setdefault('enabled', True)
-        SAMLConfiguration(**kwargs).save()
+        # obj = SAMLConfiguration.objects.create()
+        obj = SAMLConfiguration(
+            enabled=1,
+            entity_id='https://idp.testshib.org/idp/shibboleth',
+            private_key='MIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQDnDtun9bP9/630hIRfin6nYAbjds8ZmNWIzcJwZbh73IxrH0OE0zImni2itPhi69OSsd5y82KA2ypcu5MnrgNdhHeMphd7CLQetUCERMfnq2fOdjAqGzKYW901seRJv9c2ZEFOlyhCXaeZqF0nTagZro7rOuTX6RQTWxSYEPQqO5GN5bIKgc1twzsi1dYwhmJaxmbsRhSpph9d7o7JSc+iIahUL+y4uB70vBCJKj9VMhxEsSdr4DIUeOmVZCzbboHO027vqWw9JmbKt117dYtVP1wkH+J8bi+X5LrexlBmuitaqNyeYpa7r8mjH848axi5rPhpz4u9YEdAKim8kNM9AgMBAAECggEAPx9gAtKtCYcADvzk7PT5BODHAP1ENsn6DBWqOOqRK8Vk1x8DYxYPbV1pOjoWYW/rrPfKvbyf/HPjbtIPsZdoc/PsdRAq+gG2s2zw4zGnKzM4eL7xCY/EkrsGA9VFeKBgOwvIi5/f78GGOAQ27rXYZqu5f6nnOtUCFwea6LA5BBAc+TRcxXNoiv8VsGoij1bKg//0aoVOQbOk+XACLFdxlEIkse7AijOCdn3FDZahHy5CPZvpkIbugMfcuNepk5rtAj4IcPa716zXQ4LKeEbqxXptFoPXSZSZNUurghthBFk1nCQdbYy4lsW0b0uskc7157uWif9JSpD99pwhzH2cAQKBgQD/NXNF+bGs6Wu97VoszOs8vgIp3CDfTGkolyWC7sqdXZ92btZuWd9MDF6KXYQnDwBj86j9wUiF3nj/Zpvf3FExV2rRNFU6spDk4dP8k0RUvppbbsUAL2j10s6JEk5gbCicGCicO6T3ixldjy/WYEhx+tK7KMZGWIgd+QmuppdOMQKBgQDnxj19T/PYPyR2WlGGQD2qYHLnH1WVWYzwpCtA+02U7m+JOtzGiRzRZFvB8oRBJFgiTHuXh5Urh1pRHym5gP6mTD2urO2E1qRknxQi+rQHgx/RkTH27XN0pwwd7VBQhqlwTG2Vd2oH60r+ps9P+XuI6LJ0/tY1Ao11WfiNuN8WzQKBgDsyyNR4gRBc7NMXlY1C02Y5pQLUvwNNFC+IL/lZLsKmDvFH8JGUY0merOdnndn5jtugj5idFxeGbYbA5HNfBa5uWqbAfuyosxeEksnJ11XZCLEg1q2eUbiD98iv6GJRdHIQ4IqtAy0wpOeg6TXPC770saEcajGzI4/gTrCmj/5hAoGAHj6YN4n/X/CdaXRPvx0S7vC3DcHhASQ2aBCENG6WqSCUHWw48w9hW1GlR6HF8Fo1xgQE/LkMlimLd5qBb1uN31WDlw+pzvPTb+3ySr48T96kgExaIMbLkiVaR214VYm9ApJ2mlKC25Wwq5pI4z7DCBKVdv7qJPC4VN/wt02wjuECgYAybcZ9uN9z5wZw1K7Yq5+waH3iGUmHVn6G4Yr6RNMpHWfGa/M45ObJBfT2EysFj7a28ilfB2G4wTxuYvTOW/dmL6JAo4XdFb5CgvZzrGcmFZONwfY7nI3FWc1ha+PBlrmzXcVEuYhmofLoyoGZbA50xEe0I0HQz+Rw7mpr/O9/NA==',
+            public_key='MIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQDnDtun9bP9/630hIRfin6nYAbjds8ZmNWIzcJwZbh73IxrH0OE0zImni2itPhi69OSsd5y82KA2ypcu5MnrgNdhHeMphd7CLQetUCERMfnq2fOdjAqGzKYW901seRJv9c2ZEFOlyhCXaeZqF0nTagZro7rOuTX6RQTWxSYEPQqO5GN5bIKgc1twzsi1dYwhmJaxmbsRhSpph9d7o7JSc+iIahUL+y4uB70vBCJKj9VMhxEsSdr4DIUeOmVZCzbboHO027vqWw9JmbKt117dYtVP1wkH+J8bi+X5LrexlBmuitaqNyeYpa7r8mjH848axi5rPhpz4u9YEdAKim8kNM9AgMBAAECggEAPx9gAtKtCYcADvzk7PT5BODHAP1ENsn6DBWqOOqRK8Vk1x8DYxYPbV1pOjoWYW/rrPfKvbyf/HPjbtIPsZdoc/PsdRAq+gG2s2zw4zGnKzM4eL7xCY/EkrsGA9VFeKBgOwvIi5/f78GGOAQ27rXYZqu5f6nnOtUCFwea6LA5BBAc+TRcxXNoiv8VsGoij1bKg//0aoVOQbOk+XACLFdxlEIkse7AijOCdn3FDZahHy5CPZvpkIbugMfcuNepk5rtAj4IcPa716zXQ4LKeEbqxXptFoPXSZSZNUurghthBFk1nCQdbYy4lsW0b0uskc7157uWif9JSpD99pwhzH2cAQKBgQD/NXNF+bGs6Wu97VoszOs8vgIp3CDfTGkolyWC7sqdXZ92btZuWd9MDF6KXYQnDwBj86j9wUiF3nj/Zpvf3FExV2rRNFU6spDk4dP8k0RUvppbbsUAL2j10s6JEk5gbCicGCicO6T3ixldjy/WYEhx+tK7KMZGWIgd+QmuppdOMQKBgQDnxj19T/PYPyR2WlGGQD2qYHLnH1WVWYzwpCtA+02U7m+JOtzGiRzRZFvB8oRBJFgiTHuXh5Urh1pRHym5gP6mTD2urO2E1qRknxQi+rQHgx/RkTH27XN0pwwd7VBQhqlwTG2Vd2oH60r+ps9P+XuI6LJ0/tY1Ao11WfiNuN8WzQKBgDsyyNR4gRBc7NMXlY1C02Y5pQLUvwNNFC+IL/lZLsKmDvFH8JGUY0merOdnndn5jtugj5idFxeGbYbA5HNfBa5uWqbAfuyosxeEksnJ11XZCLEg1q2eUbiD98iv6GJRdHIQ4IqtAy0wpOeg6TXPC770saEcajGzI4/gTrCmj/5hAoGAHj6YN4n/X/CdaXRPvx0S7vC3DcHhASQ2aBCENG6WqSCUHWw48w9hW1GlR6HF8Fo1xgQE/LkMlimLd5qBb1uN31WDlw+pzvPTb+3ySr48T96kgExaIMbLkiVaR214VYm9ApJ2mlKC25Wwq5pI4z7DCBKVdv7qJPC4VN/wt02wjuECgYAybcZ9uN9z5wZw1K7Yq5+waH3iGUmHVn6G4Yr6RNMpHWfGa/M45ObJBfT2EysFj7a28ilfB2G4wTxuYvTOW/dmL6JAo4XdFb5CgvZzrGcmFZONwfY7nI3FWc1ha+PBlrmzXcVEuYhmofLoyoGZbA50xEe0I0HQz+Rw7mpr/O9/NA==',
+            org_info_str={"en-US": {
+        "url": "http://www.example.com",
+        "displayname": "Example Inc.",
+        "name": "example"
+            }
+        },
+        other_config_str=({"SECURITY_CONFIG": {
+        "signMetadata": 'false',
+        "metadataCacheDuration": 604800
+            }
+        }))
+        obj.save()
+        return obj
 
     @staticmethod
     def configure_oauth_provider(**kwargs):
@@ -71,6 +89,13 @@ class ThirdPartyAuthTestMixin(object):
     def configure_saml_provider(self, **kwargs):
         """ Update the settings for a SAML-based third party auth provider """
         self.assertTrue(SAMLConfiguration.is_enabled(), "SAML Provider Configuration only works if SAML is enabled.")
+        obj = SAMLProviderConfig(**kwargs)
+        obj.save()
+        return obj
+
+    def is_configure_saml_provider(self, **kwargs):
+        """ Update the settings for an SAML-based third party auth provider """
+        self.enable_saml(**kwargs)
         obj = SAMLProviderConfig(**kwargs)
         obj.save()
         return obj
@@ -101,6 +126,27 @@ class ThirdPartyAuthTestMixin(object):
         kwargs.setdefault("key", "FB_TEST_APP")
         kwargs.setdefault("secret", "opensesame")
         return cls.configure_oauth_provider(**kwargs)
+
+
+    def configure_azure_ad_provider(self, **kwargs):
+        """ Update the settings for the SAML third party auth provider/backend """
+        kwargs.setdefault("name", "SAML")
+        kwargs.setdefault("backend_name", "tpa-saml")
+        kwargs.setdefault("icon_class", "fa-sign-in")
+        kwargs.setdefault("idp_slug", "abc")
+        kwargs.setdefault("entity_id","https://idp.testshib.org/idp/shibboleth")
+        kwargs.setdefault("metadata_source", "https://www.testshib.org/metadata/testshib-providers.xml")
+        return self.is_configure_saml_provider(**kwargs)
+
+    def configure_azure_ad_2_provider(self, **kwargs):
+        """ Update the settings for the SAML third party auth provider/backend """
+        kwargs.setdefault("name", "SAML")
+        kwargs.setdefault("backend_name", "tpa-saml")
+        kwargs.setdefault("icon_class", "fa-sign-in")
+        kwargs.setdefault("idp_slug", "cde")
+        kwargs.setdefault("entity_id","https://idp.testshib.org/idp/shibboleth")
+        kwargs.setdefault("metadata_source", "https://www.testshib.org/metadata/testshib-providers.xml")
+        return self.is_configure_saml_provider(**kwargs)
 
     @classmethod
     def configure_linkedin_provider(cls, **kwargs):

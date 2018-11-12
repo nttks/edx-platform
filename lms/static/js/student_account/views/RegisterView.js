@@ -21,6 +21,8 @@
 
             submitButton: '.js-register',
 
+            orgUsernameRule: [],
+
             preRender: function( data ) {
                 this.providers = data.thirdPartyAuth.providers || [];
                 this.hasSecondaryProviders = (
@@ -32,6 +34,21 @@
                 this.autoSubmit = data.thirdPartyAuth.autoSubmitRegForm;
 
                 this.listenTo( this.model, 'sync', this.saveSuccess );
+
+                this.getUsernameRules();
+            },
+
+            getUsernameRules: function() {
+                var _this = this;
+                $.ajax({
+                    url: "/org_username_rules/",
+                }).done(function(data) {
+                    if (data['list']) {
+                        _this.orgUsernameRule = JSON.parse(data['list']);
+                    }
+                }).fail(function() {
+                    console.log('error');
+                });
             },
 
             render: function( html ) {
@@ -96,6 +113,18 @@
                     // The form did not get submitted due to validation errors.
                     $(this.el).show(); // Show in case the form was hidden for auto-submission
                 }
+            },
+
+            customValidate: function( data ) {
+                var errors = [];
+                // Confirm whether it applies to ng rules.
+                _.every(this.orgUsernameRule, function(rule) {
+                    if ((data.username).match(new RegExp('^' + rule, 'gi')) != null) {
+                        errors.push(gettext('The user name you entered is already in use.'));
+                        return false;
+                    }
+                });
+                this.errors = _.union(this.errors, errors);
             }
         });
     });

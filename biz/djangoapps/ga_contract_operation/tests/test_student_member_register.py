@@ -22,6 +22,7 @@ from biz.djangoapps.ga_login.tests.factories import BizUserFactory
 from biz.djangoapps.gx_member.models import Member
 from biz.djangoapps.gx_member.tests.factories import MemberFactory
 from biz.djangoapps.gx_org_group.tests.factories import GroupFactory
+from biz.djangoapps.gx_username_rule.tests.factories import OrgUsernameRuleFactory
 from biz.djangoapps.util.tests.testcase import BizViewTestBase
 from openedx.core.djangoapps.course_global.tests.factories import CourseGlobalSettingFactory
 from openedx.core.djangoapps.ga_task.tests.test_task import TaskTestMixin
@@ -1645,7 +1646,7 @@ class StudentMemberRegisterTaskTest(BizViewTestBase, ModuleStoreTestCase, TaskTe
         (None, [
             "Input,test+courses@edx.org,test_student_1,tester1,test1,00001,00002,org1a,,,,,,,,,,,,,,,,,,,",
         ]),
-        ('contract-url-code', [
+        ('contract-url-code2', [
             "Input,test+courses@edx.org,test_student_1,tester1,test1,TestStudent1,TestStudent1,00001,00002,org1a,,,,,,,,,,,,,,,,,,,",
         ]),
     )
@@ -1686,4 +1687,229 @@ class StudentMemberRegisterTaskTest(BizViewTestBase, ModuleStoreTestCase, TaskTe
         # Backup data
         backup_members = Member.objects.filter(org=self.gacco_organization, is_active=False, is_delete=False)
         self.assertEqual(1, backup_members.count())
+
+    @ddt.data(
+        (None, [
+            "Input,test_student1@example.com,abc__student1,tester1,test1,00001,10001,,,,,,,,,,,,,,,,,,,,"], 1),
+        (None, [
+            "Input,test_student2@example.com,abc__student2,tester1,test1,,,,,,,,,,,,,,,,,,,,,,"], 2),
+    )
+    @ddt.unpack
+    def test_main_org_username_rule_true(self, url_code, students, num):
+        # Setup test data
+        main_org = self._create_organization(org_name='main_org_rule_name',
+                                                org_code='main_org_rule_code')
+        username_rule = OrgUsernameRuleFactory.create(prefix='abc__', org=main_org)
+
+        group = GroupFactory.create(
+            parent_id=0, level_no=0, group_code='00001', group_name='group_name', org=main_org,
+            created_by=self.user, modified_by=self.user
+        )
+        contract = self._create_contract(url_code=url_code, contractor_organization=main_org)
+        history = self._create_task_history(contract=contract)
+        self._create_targets(history, students)
+
+        # Execute task
+        self._test_run_with_task(
+            student_member_register,
+            'student_member_register',
+            task_entry=self._create_input_entry(contract=contract, history=history),
+            expected_num_succeeded=1,
+            expected_num_skipped=0,
+            expected_num_failed=0,
+            expected_attempted=1,
+            expected_total=1
+        )
+        self._assert_history_after_execute_task(history.id, 1, None)
+        if num == 1:
+            members = Member.objects.filter(
+                org=main_org, code='10001', is_active=True)
+            self.assertEqual(1, members.count())
+
+    @ddt.data(
+        (None, [
+            "Input,test_student1@example.com,bc__student,tester1,test1,00001,20001,,,,,,,,,,,,,,,,,,,,"]),
+        (None, [
+            "Input,test_student2@example.com,abc_student,tester1,test1,00001,20002,,,,,,,,,,,,,,,,,,,,"]),
+        (None, [
+            "Input,test_student3@example.com,xabc__student,tester1,test1,00001,20003,,,,,,,,,,,,,,,,,,,,"]),
+
+    )
+    
+    @ddt.unpack
+    def test_main_org_username_rule_false(self, url_code, students):
+        # Setup test data
+        main_org = self._create_organization(org_name='main_org_rule_name',
+                                                org_code='main_org_rule_code')
+        username_rule = OrgUsernameRuleFactory.create(prefix='abc__', org=main_org)
+
+        group = GroupFactory.create(
+            parent_id=0, level_no=0, group_code='00001', group_name='group_name', org=main_org,
+            created_by=self.user, modified_by=self.user
+        )
+        contract = self._create_contract(url_code=url_code, contractor_organization=main_org)
+        history = self._create_task_history(contract=contract)
+        self._create_targets(history, students)
+    
+        # Execute task
+        self._test_run_with_task(
+            student_member_register,
+            'student_member_register',
+            task_entry=self._create_input_entry(contract=contract, history=history),
+            expected_num_succeeded=0,
+            expected_num_skipped=0,
+            expected_num_failed=1,
+            expected_attempted=1,
+            expected_total=1
+        )
+        self._assert_history_after_execute_task(history.id, 1, history)
+
+        members = Member.objects.filter(
+            org=main_org, code='20003', is_active=True)
+        self.assertEqual(0, members.count())
+    
+    @ddt.data(
+        (None, [
+            "Input,test_student1@example.com,abc__student_1,tester1,test1,00001,30001,,,,,,,,,,,,,,,,,,,,"], 1),
+        (None, [
+            "Input,test_student1@example.com,abc__student_2,tester1,test1,00001,30002,,,,,,,,,,,,,,,,,,,,"], 2),
+        (None, [
+            "Input,test_student1@example.com,bc__student,tester1,test1,00001,30003,,,,,,,,,,,,,,,,,,,,"], 3),
+        (None, [
+            "Input,test_student1@example.com,abc_student,tester1,test1,00001,30004,,,,,,,,,,,,,,,,,,,,"], 4),
+        (None, [
+            "Input,test_student1@example.com,xabc__student,tester1,test1,00001,30005,,,,,,,,,,,,,,,,,,,,"], 5),
+        (None, [
+            "Input,test_student1@example.com,cde__student,tester1,test1,00001,30006,,,,,,,,,,,,,,,,,,,,"], 6),
+    )
+    @ddt.unpack
+    def test_another_org_username_rule(self, url_code, students, num):
+        # Setup test data
+        main_org = self._create_organization(org_name='main_org_rule_name',
+                                                org_code='main_org_rule_code')
+        another_org1 = self._create_organization(org_name='another_org_rule_name', org_code='another_org_rule_code')
+        username_rule = OrgUsernameRuleFactory.create(prefix='abc__', org=main_org)
+        username_rule2 = OrgUsernameRuleFactory.create(prefix='cde__', org=another_org1)
+
+        group = GroupFactory.create(
+            parent_id=0, level_no=0, group_code='00001', group_name='group_name', org=another_org1,
+            created_by=self.user, modified_by=self.user
+        )
+
+        contract = self._create_contract(url_code=url_code, contractor_organization=another_org1)
+        history = self._create_task_history(contract=contract)
+        self._create_targets(history, students)
+        if num == 6:
+            success = 1
+            fail = 0
+        else:
+            success = 0
+            fail = 1
+        # Execute task
+        self._test_run_with_task(
+            student_member_register,
+            'student_member_register',
+            task_entry=self._create_input_entry(contract=contract, history=history),
+            expected_attempted=1,
+            expected_num_succeeded=success,
+            expected_num_failed=fail,
+            expected_total=1,
+            expected_num_skipped=0
+        )
+        if num == 6:
+            self._assert_history_after_execute_task(history.id, 1, None)
+
+            members = Member.objects.filter(
+                org=another_org1, code='30006', is_active=True)
+            self.assertEqual(1, members.count())
+        else:
+            self._assert_history_after_execute_task(history.id, 1, history)
+
+        members = Member.objects.filter(
+            org=another_org1, code='30005', is_active=True)
+        self.assertEqual(0, members.count())
+
+
+
+    @ddt.data(
+        (None, [
+            "Input,test_student1@example.com,abc__student_1,tester1,test1,00001,40001,,,,,,,,,,,,,,,,,,,,"], 1),
+        (None, [
+            "Input,test_student1@example.com,abc__student_2,tester1,test1,00001,40002,,,,,,,,,,,,,,,,,,,,"], 2),
+        (None, [
+            "Input,test_student1@example.com,bc__student,tester1,test1,00001,40003,,,,,,,,,,,,,,,,,,,,"], 3),
+        (None, [
+            "Input,test_student1@example.com,abc_student,tester1,test1,00001,40004,,,,,,,,,,,,,,,,,,,,"], 4),
+        (None, [
+            "Input,test_student1@example.com,xabc__student,tester1,test1,00001,40005,,,,,,,,,,,,,,,,,,,,"], 5),
+        (None, [
+            "Input,test_student1@example.com,cde__student,tester1,test1,00001,40006,,,,,,,,,,,,,,,,,,,,"], 6),
+    )
+    @ddt.unpack
+    def test_another_org_not_username_rule(self, url_code, students, num):
+        # Setup test data
+        main_org = self._create_organization(org_name='main_org_rule_name', org_code='main_org_rule_code')
+        another_org1 = self._create_organization(org_name='another_org_rule_name', org_code='another_org_rule_code')
+        another_org2 = self._create_organization(org_name='not_rule_org_name', org_code='not_rule_org_code')
+        username_rule = OrgUsernameRuleFactory.create(prefix='abc__', org=main_org)
+        username_rule2 = OrgUsernameRuleFactory.create(prefix='cde__', org=another_org1)
+
+        group = GroupFactory.create(
+            parent_id=0, level_no=0, group_code='00001', group_name='group_name', org=another_org2,
+            created_by=self.user, modified_by=self.user
+        )
+        contract = self._create_contract(url_code=url_code, contractor_organization=another_org2)
+        history = self._create_task_history(contract=contract)
+        self._create_targets(history, students)
+        if num in [3,4,5]:
+            success = 1
+            fail = 0
+        else:
+            success = 0
+            fail = 1
+        # Execute task
+        self._test_run_with_task(
+            student_member_register,
+            'student_member_register',
+            task_entry=self._create_input_entry(contract=contract, history=history),
+            expected_attempted=1,
+            expected_num_succeeded=success,
+            expected_num_failed=fail,
+            expected_total=1,
+            expected_num_skipped=0
+        )
+        if num in [3,4,5]:
+            self._assert_history_after_execute_task(history.id, 1, None)
+        else:
+            self._assert_history_after_execute_task(history.id, 1, history)
+
+    def test_username_rule_error_task_message(self):
+        # Setup test data
+        main_org = self._create_organization(org_name='main_org_rule_name', org_code='main_org_rule_code')
+        username_rule = OrgUsernameRuleFactory.create(prefix='abc__', org=main_org)
+
+
+        student = ["Input,test_student1@example.com,bc__student_1,tester1,test1,,,,,,,,,,,,,,,,,,,,,,"]
+        contract = self._create_contract(url_code=None, contractor_organization=main_org)
+        history = self._create_task_history(contract=contract)
+        self._create_targets(history, student)
+
+        self._test_run_with_task(
+            student_member_register,
+            'student_member_register',
+            task_entry=self._create_input_entry(contract=contract, history=history),
+            expected_attempted=1,
+            expected_num_succeeded=0,
+            expected_num_failed=1,
+            expected_total=1,
+            expected_num_skipped=0
+        )
+        task_message = ("Line {line_number}:{message}".format(
+            line_number=1,
+            message="Username {username} already exists.".format(username='bc__student_1')))
+        self.assertEqual(
+            task_message,
+            StudentMemberRegisterTaskTarget.objects.get(id=1).message
+        )
+
 

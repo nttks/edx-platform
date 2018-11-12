@@ -4,8 +4,9 @@ from student.tests.factories import UserFactory
 from biz.djangoapps.ga_invitation.tests.test_views import BizContractTestBase
 from biz.djangoapps.ga_manager.tests.factories import ManagerFactory
 from biz.djangoapps.gx_org_group.models import Group, Right, Parent, Child
-from biz.djangoapps.gx_org_group.tests.factories import GroupUtil
-
+from biz.djangoapps.gx_org_group.tests.factories import GroupUtil, GroupFactory
+from biz.djangoapps.gx_member.tests.factories import MemberFactory
+from biz.djangoapps.gx_member.models import Member
 
 class OrgGroupListViewTest(BizContractTestBase):
     """
@@ -34,6 +35,13 @@ class OrgGroupListViewTest(BizContractTestBase):
         :return:
         """
         return reverse('biz:group:group_list')
+
+    def _delete_group(self):
+        """
+        Returns URL of delete group
+        :return:
+        """
+        return reverse('biz:group:delete_group')
 
     def _upload_csv(self):
         """
@@ -237,6 +245,165 @@ class OrgGroupListViewTest(BizContractTestBase):
         with self.skip_check_course_selection(current_organization=self.gacco_organization):
             response = self.client.get(self._index_view())
         self.assertEqual(200, response.status_code)
+
+    def test_index_exist_data(self):
+        """
+        Tests group list tree data
+        :return:
+        """
+        self.setup_user()
+        self._test_upload_first()
+        parent_group_id = Group.objects.get(group_code="G01").id
+        child_group_id = Group.objects.get(group_code="G01-01").id
+
+        # test index
+        with self.skip_check_course_selection(current_organization=self.gacco_organization):
+            path = self._index_view()
+            response = self.client.get(path)
+
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(parent_group_id, 9)
+        self.assertEqual(child_group_id, 3)
+
+        self._test_grant_right(parent_group_id, self.manager_manager1.user.username)
+        parent_group = Group.objects.get(group_code="G01")
+        right = Right.objects.filter(group_id=parent_group_id)
+        active_user = UserFactory.create()
+        self._create_member(
+            org=self.org_a, group=parent_group, user=active_user,
+            code="code_1", is_active=True, is_delete=False
+        )
+        member = Member.objects.filter(group_id=parent_group_id)
+        group = Group.objects.all()
+        with self.skip_check_course_selection(current_organization=self.gacco_organization):
+            path = self._index_view()
+            response = self.client.get(path)
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(group.count(), 10)
+        self.assertEqual(right.count(), 1)
+        self.assertEqual(member.count(), 1)
+
+    def _create_member(
+            self, org, group, user, code, is_active, is_delete,
+            org1='', org2='', org3='', org4='', org5='', org6='', org7='', org8='', org9='', org10='',
+            item1='', item2='', item3='', item4='', item5='', item6='', item7='', item8='', item9='', item10=''):
+        return MemberFactory.create(
+            org=org,
+            group=group,
+            user=user,
+            code=code,
+            created_by=user,
+            creator_org=org,
+            updated_by=user,
+            updated_org=org,
+            is_active=is_active,
+            is_delete=is_delete,
+            org1=org1, org2=org2, org3=org3, org4=org4, org5=org5, org6=org6, org7=org7, org8=org8, org9=org9,
+            org10=org10,
+            item1=item1, item2=item2, item3=item3, item4=item4, item5=item5, item6=item6, item7=item7, item8=item8,
+            item9=item9, item10=item10
+        )
+
+    def test_group_delete(self):
+        self.setup_user()
+        self._test_upload_first()
+
+        # exist manager
+        group = Group.objects.all()
+        group_id = Group.objects.filter(group_code="G01-01-01").first().id
+        self._test_grant_right(group_id, self.manager_manager1.user.username)
+        right = Right.objects.filter(group_id=group_id)
+
+        self.assertEqual(group.count(), 10)
+        self.assertEqual(right.count(), 1)
+
+        with self.skip_check_course_selection(current_organization=self.gacco_organization):
+            self._index_view()
+            response = self.client.post(self._delete_group(),
+                                        {'num': group_id, 'belong': 1, 'grouping': [str(group_id)], 'group_name': 'G1-1-1'})
+        group = Group.objects.all()
+        right = Right.objects.filter(group_id=group_id)
+
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(group.count(), 9)
+        self.assertEqual(right.count(), 0)
+
+        # exist member
+        group_id_child1 = Group.objects.filter(group_code="G02-01-01").first().id
+        group_id_child2 = Group.objects.filter(group_code="G02-01-02").first().id
+        group_id = Group.objects.filter(group_code="G02-01").first().id
+        current_group = Group.objects.get(group_code="G02-01-01")
+
+        active_user = UserFactory.create()
+        self._create_member(
+            org=self.org_a, group=current_group, user=active_user,
+            code="code_1", is_active=True, is_delete=False
+        )
+        member = Member.objects.all()
+        self.assertEqual(member.count(), 1)
+
+        with self.skip_check_course_selection(current_organization=self.gacco_organization):
+            self._index_view()
+            response = self.client.post(self._delete_group(),
+                                        {'num': group_id, 'belong': 1, 'grouping': [str(group_id) + ',' + str(group_id_child1) + ',' + str(group_id_child2)], 'group_name': 'G2-1'})
+        member = Member.objects.filter(group_id=group_id)
+        group = Group.objects.all()
+
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(member.count(), 0)
+        self.assertEqual(group.count(), 6)
+
+        # exist member and manager
+        group_id = Group.objects.filter(group_code="G02").first().id
+        self._test_grant_right(group_id, self.manager_manager1.user.username)
+        right = Right.objects.filter(group_id=group_id)
+        active_user = UserFactory.create()
+        current_group = Group.objects.get(group_code="G02")
+        self._create_member(
+            org=self.org_a, group=current_group, user=active_user,
+            code="code_2", is_active=True, is_delete=False
+        )
+        member = Member.objects.filter(group_id=group_id)
+
+        self.assertEqual(right.count(), 1)
+        self.assertEqual(member.count(), 1)
+
+        with self.skip_check_course_selection(current_organization=self.gacco_organization):
+            self._index_view()
+            response = self.client.post(self._delete_group(),
+                                        {'num': group_id, 'belong': 1, 'grouping': [str(group_id)], 'group_name': 'G2'})
+        group = Group.objects.all()
+        member = Member.objects.filter(group_id=group_id)
+        right = Right.objects.filter(group_id=group_id)
+
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(group.count(), 5)
+        self.assertEqual(member.count(), 0)
+        self.assertEqual(right.count(), 0)
+
+        # Not exist member and manager
+        group_id = Group.objects.filter(group_code="G01-01-02").first().id
+        with self.skip_check_course_selection(current_organization=self.gacco_organization):
+            self._index_view()
+            response = self.client.post(self._delete_group(),
+                                        {'num': group_id, 'belong': 0, 'grouping': [str(group_id)], 'group_name': 'G1-1-2'})
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(group.count(), 4)
+
+    def test_fail_group_delete(self):
+        # Not id
+        self.setup_user()
+        self._test_upload_first()
+        group = Group.objects.all()
+        self.assertEqual(group.count(), 10)
+
+        with self.skip_check_course_selection(current_organization=self.gacco_organization):
+            self._index_view()
+            response = self.client.post(self._delete_group(),
+                                        {'num': 10, 'belong': 1, 'grouping': ['abc'], 'group_name': 'G1'})
+        self.assertEqual(400, response.status_code)
+        group = Group.objects.all()
+        self.assertEqual(group.count(), 10)
 
     def test_upload_fail(self):
         """

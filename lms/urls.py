@@ -179,6 +179,11 @@ urlpatterns += (
         {'template': '404.html'}, name="404"),
 )
 
+urlpatterns += (
+    url(r'^user_not_found$', 'static_template_view.views.render',
+        {'template': 'user_not_found.html'}, name="user_not_found"),
+)
+
 # Favicon
 favicon_path = microsite.get_value('favicon_path', settings.FAVICON_PATH)
 urlpatterns += (url(
@@ -1059,3 +1064,8 @@ if settings.FEATURES.get('ENABLE_FINANCIAL_ASSISTANCE_FORM'):
             name='submit_financial_assistance_request'
         )
     )
+
+# for get org username pattern 
+urlpatterns += (
+    url(r'^org_username_rules/$', 'org_username_rules.views.get_rules'),
+)

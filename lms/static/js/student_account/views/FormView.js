@@ -223,6 +223,8 @@
             submitForm: function( event ) {
                 var data = this.getFormData();
 
+                this.customValidate( data );
+
                 if (!_.isUndefined(event)) {
                     event.preventDefault();
                 }
@@ -246,6 +248,13 @@
              */
             postFormSubmission: function() {
                 return true;
+            },
+
+            /* Allows extended views to add custom
+             * validate before form submission
+             */
+            customValidate: function( data ) {
+                // Need set 'this.errors'
             },
 
             toggleErrorMsg: function( show ) {

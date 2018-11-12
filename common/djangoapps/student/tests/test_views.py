@@ -26,7 +26,11 @@ from openedx.core.djangoapps.content.course_overviews.models import CourseOvervi
 from openedx.core.djangoapps.course_global.tests.factories import CourseGlobalSettingFactory
 
 from biz.djangoapps.ga_invitation.tests.test_views import BizContractTestBase
-
+from biz.djangoapps.ga_organization.models import Organization
+from biz.djangoapps.gx_member.models import Member
+from biz.djangoapps.gx_sso_config.models import SsoConfig
+from biz.djangoapps.gx_member.tests.factories import MemberFactory
+from biz.djangoapps.gx_sso_config.tests.factories import SsoConfigFactory
 
 @ddt.ddt
 @unittest.skipUnless(settings.ROOT_URLCONF == 'lms.urls', 'Test only valid in lms')
@@ -342,3 +346,87 @@ class TestOrderGlobalCourse(ModuleStoreTestCase):
         self.assertIn(self.global_course_id, response.content)
 
         self.assertTrue(response.content.find(self.course_id) < response.content.find(self.global_course_id))
+
+
+@unittest.skipUnless(settings.ROOT_URLCONF == 'lms.urls', 'Test only valid in lms')
+class TestOrgUserDisplayControl(TestCase):
+    """
+    Test to notice_unactivated.
+    """
+    USERNAME = 'foo'
+    PASSWORD = 'bar'
+
+    def setUp(self):
+        super(TestOrgUserDisplayControl, self).setUp()
+
+        # Create initial data
+        self.gacco_organization = Organization(
+            org_name='docomo gacco',
+            org_code='gacco',
+            creator_org_id=1,  # It means the first of Organization
+            created_by=UserFactory.create(),
+        )
+        self.gacco_organization.save()
+        self.user = UserFactory.create()
+
+    def test_user_dispay_lock_true(self):
+        # Create a user account
+        lock_user = UserFactory.create(
+            username=self.USERNAME,
+            password=self.PASSWORD,
+            is_active=True,
+        )
+        MemberFactory.create(
+            org=self.gacco_organization,
+            group=None,
+            user=lock_user,
+            created_by=self.user,
+            creator_org=self.gacco_organization,
+            updated_by=self.user,
+            updated_org=self.gacco_organization,
+            is_active=True,
+            is_delete=False,
+        )
+        SsoConfigFactory.create(idp_slug='abcde', org=self.gacco_organization)
+
+        # Record Check
+        self.assertEqual(1, len(Member.objects.filter(org=self.gacco_organization, is_active=True)))
+        self.assertEqual(1, len(SsoConfig.objects.filter(org=self.gacco_organization)))
+        self.client.login(username=self.USERNAME, password=self.PASSWORD)
+        response = self.client.get(reverse('account_settings'))
+        self.assertRedirects(response, '/dashboard', status_code=302, target_status_code=200)
+
+    def test_user_display_lock_false(self):
+        # Create a user account
+        unlock_user = UserFactory.create(
+            username=self.USERNAME,
+            password=self.PASSWORD,
+            is_active=True,
+        )
+        MemberFactory.create(
+            org=self.gacco_organization,
+            group=None,
+            user=unlock_user,
+            created_by=self.user,
+            creator_org=self.gacco_organization,
+            updated_by=self.user,
+            updated_org=self.gacco_organization,
+            is_active=True,
+            is_delete=False,
+        )
+        # Record Check
+        self.assertEqual(1, len(Member.objects.filter(org=self.gacco_organization, is_active=True)))
+        self.client.login(username=self.USERNAME, password=self.PASSWORD)
+        response = self.client.get(reverse('account_settings'))
+        self.assertEqual(response.status_code, 200)
+
+    def test_user_display_lock_none(self):
+        # Create a user account
+        non_lock_user = UserFactory.create(
+            username=self.USERNAME,
+            password=self.PASSWORD,
+            is_active=True,
+        )
+        self.client.login(username=self.USERNAME, password=self.PASSWORD)
+        response = self.client.get(reverse('account_settings'))
+        self.assertEqual(response.status_code, 200)

@@ -583,6 +583,35 @@ class ContractOperationViewTestStudents(BizContractTestBase):
             response = self.client.post(self._url_students_download, param)
         self.assertEqual(200, response.status_code)
 
+    def test_another_organization_member(self):
+        self.setup_user()
+        orgs = [self._create_organization(org_name='org' + str(i)) for i in range(2)]
+        user = UserFactory.create()
+        contracts = [self._create_contract(contractor_organization=orgs[i]) for i in range(2)]
+        registers = [self.create_contract_register(user=user, contract=contracts[i]) for i in range(2)]
+        managers = [self._create_manager(org=orgs[i], user=self.user, created=self.contract_org,
+                                        permissions=[self.director_permission]) for i in range(2)]
+        member = self._create_member(org=orgs[0], user=user, group=None, code='code')
+
+        param = self._create_param_search_students_ajax(contract_id=contracts[0].id)
+        with self.skip_check_course_selection(current_organization=orgs[0],
+                                              current_contract=contracts[0], current_manager=managers[0]):
+            response = self.client.post(self._url_search_students_ajax, param)
+        self.assertEqual(200, response.status_code)
+        data = json.loads(response.content)
+        show_list = json.loads(data['show_list'])
+        self._assert_search_ajax_successful(data, 1, 1)
+        self.assertEqual(member.code, show_list[0]['code'])
+
+        with self.skip_check_course_selection(current_organization=orgs[1],
+                                              current_contract=contracts[1], current_manager=managers[1]):
+            response = self.client.post(self._url_search_students_ajax, param)
+        self.assertEqual(200, response.status_code)
+        data = json.loads(response.content)
+        show_list = json.loads(data['show_list'])
+        self._assert_search_ajax_successful(data, 1, 1)
+        self.assertFalse(hasattr(show_list[0], 'code'))
+
 
 class ContractOperationViewTestUnregisterStudents(BizContractTestBase):
     @property

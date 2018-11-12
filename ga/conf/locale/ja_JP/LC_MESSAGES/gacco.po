@@ -2029,4 +2029,3 @@ msgstr "{num_of_minutes}分"
 #: edx_proctoring/utils.py
 msgid " and {num_of_minutes} minutes"
 msgstr "{num_of_minutes}分"
-

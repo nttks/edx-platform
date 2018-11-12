@@ -25,6 +25,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from biz.djangoapps.util import mask_utils
 from student.models import Registration, UserStanding
+from biz.djangoapps.gx_sso_config.models import SsoConfig
 
 from openedx.core.djangoapps.user_api.accounts import EMPLOYEE_NUMBER_LENGTH, EMPLOYEE_NUMBER_REGEX
 
@@ -48,6 +49,9 @@ class PasswordResetFormNoActive(PasswordResetForm):
         self.users_cache = User.objects.filter(email__iexact=email)
         if not len(self.users_cache):
             raise forms.ValidationError(self.error_messages['unknown'])
+        else:
+            if not SsoConfig.user_control_process(self.users_cache.first().id):
+                raise forms.ValidationError(self.error_messages['unknown'])
         if any((user.password.startswith(UNUSABLE_PASSWORD_PREFIX))
                for user in self.users_cache):
             raise forms.ValidationError(self.error_messages['unusable'])
