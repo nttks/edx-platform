@@ -340,6 +340,8 @@ def score_download_csv(request):
                         data.append('')
                 else:
                     data.append(value)
+            else:
+                data.append('')
 
         datarows.append(data)
 
@@ -457,6 +459,8 @@ def playback_download_csv(request):
                         data.append('')
                 else:
                     data.append(value)
+            else:
+                data.append('')
         datarows.append(data)
 
     filename = u'{course_prefix}_{csv_name}_{timestamp_str}.csv'.format(
