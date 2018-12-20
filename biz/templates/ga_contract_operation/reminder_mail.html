@@ -2,7 +2,7 @@
 <%!
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext as _
-
+from dateutil.relativedelta import relativedelta
 from biz.djangoapps.ga_contract_operation.models import ContractReminderMail
 %>
 
@@ -65,6 +65,8 @@ from biz.djangoapps.ga_contract_operation.models import ContractReminderMail
         $('#reminder_save_ajax').find('button[type=send]').prop('disabled', true);
         $('#reminder_save_ajax').find('button').on('click', function(event) {
             var form = $('#reminder_save_ajax');
+            console.log(event.target);
+            event.target.hidden = true;
             w2confirm({
                 msg: $(event.target).data('confirm-message'),
                 yes_class: 'btn-right',
@@ -81,6 +83,14 @@ from biz.djangoapps.ga_contract_operation.models import ContractReminderMail
                     messages.append('<li class="info">' + data.info + '</li>');
                     if (event.target.name === 'save') {
                         form.find('button[type=send]').prop('disabled', false);
+                        $('#reminder_save_ajax').find('button[name=delete]').show();
+                        $('#pnl01').find('span[id=register_msg]').html('<div style="background:#43ac6a;color:#fff;padding:5px;width:150px;text-align:center">${_("Register Invitation")}</div>');
+                        fit_wrapper_height();
+                    }
+                    if (event.target.name === 'delete') {
+                        $('#reminder_save_ajax').find('button[name=delete]').hide();
+                        $('#pnl01').find('span[id=register_msg]').html('<div style="background:#cf0f31;color:#fff;padding:5px;width:150px;text-align:center">${_("Input Invitation")}</div>');
+                        fit_wrapper_height();
                     }
                 }).fail(function (jqXHR) {
                     var data = JSON.parse(jqXHR.responseText);
@@ -90,7 +100,6 @@ from biz.djangoapps.ga_contract_operation.models import ContractReminderMail
                 });
             });
         });
-
         /*------------------------------------------------------------------------
          * Detail tab
          ------------------------------------------------------------------------*/
@@ -390,6 +399,18 @@ from biz.djangoapps.ga_contract_operation.models import ContractReminderMail
     <div class="gc_tab_content">
         % if not is_manager :
         <div class="gc_tab_panel is_active" id="pnl01" role="tabpanel" aria-labelledby="tab01" aria-hidden="false">
+            <span class="" id="register_msg">
+            % if deadline is None:
+                <div>
+                <div style="background:#777a;color:#fff;padding:5px;width:150px;text-align:center;display:inline-block">${_("Can not register")}</div>
+                <span class="red">&nbsp;&nbsp;${_("Not settings deadline start day")}</span>
+                </div>
+            % elif reminder_mail_contract_id is not None:
+                <div style="background:#43ac6a;color:#fff;padding:5px;width:150px;text-align:center">${_("Register Invitation")}</div>
+            % elif reminder_mail_contract_id is None:
+                <div style="background:#cf0f31;color:#fff;padding:5px;width:150px;text-align:center">${_("Input Invitation")}</div>
+            % endif
+            </span>
             <div class="gc_data_section">
                 <div class="gc_mail_conf">
                     <p>${_("You can send reminder mail automatically to not yet submitted user")}</p>
@@ -432,13 +453,37 @@ from biz.djangoapps.ga_contract_operation.models import ContractReminderMail
                         <div class="gc_mail_conf_field">
                             <textarea id="body2-0" class="gc_mail_conf_ctl" name="mail_body2" rows="15">${mail_info.mail_body2}</textarea>
                         </div>
-                        <div class="gc_btn_cta gc_btn_cta_right gc_mt10">
-                            <button class="btn btn-grn" type="button" data-test="0" name="save" style="float:left;"
-                                    data-confirm-message='${_("The template e-mail will be saved, overwriting the original e-mail. Is it OK?")}'
-                                    data-endpoint="${reverse('biz:contract_operation:reminder_mail_save_ajax')}">${_("Registration")}</button>
+                        <div class="gc_btn_cta gc_btn_cta_center gc_btn_cta_right gc_mt10">
+                            % if deadline is not None:
+                                <button class="btn btn-grn" type="button" data-test="0" name="save" style="float:left;"
+                                        data-confirm-message='${_("The template e-mail will be saved, overwriting the original e-mail. Is it OK?")}'
+                                        data-endpoint="${reverse('biz:contract_operation:reminder_mail_save_ajax')}">${_("Registration")}</button>
+                                % if reminder_mail_contract_id is not None:
+                                    <button class="btn" type="button" data-test="2" name="delete" style="float:left;"
+                                            data-confirm-message='${_("Are you sure to delete this group tree?")}'
+                                            data-endpoint="${reverse('biz:contract_operation:reminder_mail_delete_ajax')}">${_("Revoke")}</button>
+                                % else:
+                                    <button class="btn" type="button" data-test="2" name="delete" style="float:left; display: None;"
+                                            data-confirm-message='${_("Are you sure to delete this group tree?")}'
+                                            data-endpoint="${reverse('biz:contract_operation:reminder_mail_delete_ajax')}">${_("Revoke")}</button>
+                                % endif
+                            % else:
+                                <button class="btn btn-grn" type="button" data-test="0" name="save" style="float:left;"
+                                        data-confirm-message='${_("The template e-mail will be saved, overwriting the original e-mail. Is it OK?")}'
+                                        data-endpoint="${reverse('biz:contract_operation:reminder_mail_save_ajax')}" disabled>${_("Registration")}</button>
+                                % if reminder_mail_contract_id is not None:
+                                    <button class="btn" type="button" data-test="2" name="delete" style="float:left;"
+                                            data-confirm-message='${_("Are you sure to delete this group tree?")}'
+                                            data-endpoint="${reverse('biz:contract_operation:reminder_mail_delete_ajax')}" disabled>${_("Revoke")}</button>
+                                % else:
+                                    <button class="btn" type="button" data-test="2" name="delete" style="float:left; display: None;"
+                                            data-confirm-message='${_("Are you sure to delete this group tree?")}'
+                                            data-endpoint="${reverse('biz:contract_operation:reminder_mail_delete_ajax')}">${_("Revoke")}</button>
+                                % endif
+                            % endif
                             <button class="btn btn-blue" type="button" data-test="1" name="send"
-                                    data-confirm-message='${_("Are you sure you want to send the test e-mail?")}'
-                                    data-endpoint="${reverse('biz:contract_operation:reminder_mail_send_ajax')}">&#xf003 ${_("Send the test e-mail")}</button>
+                                        data-confirm-message='${_("Are you sure you want to send the test e-mail?")}'
+                                        data-endpoint="${reverse('biz:contract_operation:reminder_mail_send_ajax')}">&#xf003 ${_("Send the test e-mail")}</button>
                         </div>
                         <div class="gc_reminder_mail_absolute">
                             <div class="gc_reminder_mail_absolute_right">

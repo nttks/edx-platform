@@ -1142,7 +1142,7 @@ class StudentMemberRegisterTaskTest(BizViewTestBase, ModuleStoreTestCase, TaskTe
         ], 0),
     )
     @ddt.unpack
-    @patch('biz.djangoapps.ga_contract_operation.student_member_register.send_mail')
+    @patch('biz.djangoapps.ga_contract_operation.student_member_register.django_send_mail')
     def test_register_send_mail(self, url_code, send_mail, students, send_mail_call_count, send_mail_to_student):
         # ----------------------------------------------------------
         # Setup test data

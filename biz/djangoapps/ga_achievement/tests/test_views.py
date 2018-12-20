@@ -343,6 +343,26 @@ class ScoreViewTest(BizStoreTestBase, BizViewTestBase, ModuleStoreTestCase):
     def _assert_record_count(self, records_count, expect_records_count):
         self.assertEqual(records_count, expect_records_count)
 
+    def _create_param_search_ajax(self):
+        param = {
+            'student_status': '',
+            'group_code': '',
+            'offset': 0,
+            'limit': 100,
+            'certificate_status': '',
+            'total_score_from': '',
+            'total_score_to': '',
+            'detail_condition_member_name_1': '',
+            'detail_condition_member_1': '',
+        }
+        for i in range(1, 6):
+            param['detail_condition_member_' + str(i)] = ''
+            param['detail_condition_member_name_' + str(i)] = ''
+            param['detail_condition_score_from_' + str(i)] = ''
+            param['detail_condition_score_name_' + str(i)] = ''
+            param['detail_condition_score_to_' + str(i)] = ''
+        return param
+
     def test_index_views(self):
         status = 'Finished'
 
@@ -1082,6 +1102,24 @@ class ScoreViewTest(BizStoreTestBase, BizViewTestBase, ModuleStoreTestCase):
             self._get_csv_file_name(datetime_utils.to_jst(self.utc_datetime_update).strftime('%Y-%m-%d-%H%M'))
         ))
 
+    def test_download_searched_csv(self):
+        status = 'Finished'
+
+        self._setup()
+        manager = self._create_manager(org=self.org_a, user=self.user, created=self.gacco_organization,
+                                       permissions=[self.director_permission])
+        self._create_batch_status(status)
+        self.batch_status.created = self.utc_datetime_update
+        self.batch_status.save()
+
+        with self.skip_check_course_selection(current_manager=manager, current_organization=self.org_a,
+                                              current_contract=self.contract, current_course=self.course):
+
+            param = self._create_param_search_ajax()
+            param["search-download"] = "search-download"
+            response = self.client.post(self._download_csv_view(), param)
+
+        self.assertEqual(200, response.status_code)
 
 @ddt
 class PlaybackViewTest(BizStoreTestBase, BizViewTestBase, ModuleStoreTestCase):
@@ -1268,6 +1306,23 @@ class PlaybackViewTest(BizStoreTestBase, BizViewTestBase, ModuleStoreTestCase):
                                                               course_id=unicode(self.course.id),
                                                               status=status,
                                                               student_count=4)
+
+    def _create_param_search_ajax(self):
+        param = {
+            'student_status': '',
+            'group_code': '',
+            'offset': 0,
+            'limit': 100,
+            'total_playback_time_from': '',
+            'total_playback_time_to': '',
+        }
+        for i in range(1, 6):
+            param['detail_condition_member_' + str(i)] = ''
+            param['detail_condition_member_name_' + str(i)] = ''
+            param['detail_condition_playback_from_' + str(i)] = ''
+            param['detail_condition_playback_name_' + str(i)] = ''
+            param['detail_condition_playback_to_' + str(i)] = ''
+        return param
 
     def _assert_student_status(self, student_status):
         self.assertEqual(student_status, [
@@ -2091,3 +2146,22 @@ class PlaybackViewTest(BizStoreTestBase, BizViewTestBase, ModuleStoreTestCase):
         self.assertEqual(response['content-disposition'], 'attachment; filename*=UTF-8\'\'{}'.format(
             self._get_csv_file_name(datetime_utils.to_jst(self.utc_datetime_update).strftime('%Y-%m-%d-%H%M'))
         ))
+
+    def test_download_searched_csv(self):
+        status = 'Finished'
+
+        self._setup()
+        manager = self._create_manager(org=self.org_a, user=self.user, created=self.gacco_organization,
+                                       permissions=[self.director_permission])
+        self._create_batch_status(status)
+        self.batch_status.created = self.utc_datetime_update
+        self.batch_status.save()
+
+        with self.skip_check_course_selection(current_manager=manager, current_organization=self.org_a,
+                                              current_contract=self.contract, current_course=self.course):
+
+            param = self._create_param_search_ajax()
+            param["search-download"] = "search-download"
+            response = self.client.post(self._download_csv_view(), param)
+
+        self.assertEqual(200, response.status_code)

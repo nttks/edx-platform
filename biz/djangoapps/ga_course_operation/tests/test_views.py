@@ -1,15 +1,35 @@
 from django.core.urlresolvers import reverse
-
 from instructor.tests.test_api import InstructorAPISurveyDownloadTestMixin, LoginCodeEnabledInstructorAPISurveyDownloadTestMixin
-
+from xmodule.modulestore.tests.factories import CourseFactory
 from biz.djangoapps.ga_invitation.tests.test_views import BizContractTestBase
 
 
 class CourseOperationViewsTest(BizContractTestBase):
 
-    def test_survey(self):
+    def setUp(self):
+        super(CourseOperationViewsTest, self).setUp()
         self.setup_user()
-        with self.skip_check_course_selection(current_contract=self.contract, current_course=self.course_spoc1):
+        self.org100 = self._create_organization(org_name='gacco100', org_code='gacco-100',
+                                                creator_org=self.gacco_organization)
+
+        self.course10 = CourseFactory.create(org=self.org100.org_code, number='course10', run='run10')
+        self.course20 = CourseFactory.create(org=self.org100.org_code, number='course20', run='run20')
+
+        self.contract10 = self._create_contract(
+            contractor_organization=self.org100,
+            detail_courses=[self.course10.id, self.course20.id],
+            additional_display_names=['country', 'dept']
+        )
+        self._director = self._create_manager(
+            org=self.org100,
+            user=self.user,
+            created=self.org100,
+            permissions=[self.director_permission]
+        )
+
+    def test_survey(self):
+        with self.skip_check_course_selection(current_contract=self.contract10, current_organization=self.org100,
+                                              current_course=self.course10, current_manager=self._director):
             self.assert_request_status_code(200, reverse('biz:course_operation:survey'))
 
 
@@ -17,6 +37,9 @@ class CourseOperationSurveyDownloadTest(InstructorAPISurveyDownloadTestMixin, Bi
     """
     Test instructor survey utf16 for biz endpoint.
     """
+    def setUp(self):
+        super(CourseOperationSurveyDownloadTest, self).setUp()
+        self.setup_user()
 
     def get_url(self):
         return reverse('biz:course_operation:survey_download')
@@ -64,6 +87,9 @@ class LoginCodeEnabledCourseOperationSurveyDownloadTest(LoginCodeEnabledInstruct
     """
     Test instructor survey utf16 for biz endpoint.
     """
+    def setUp(self):
+        super(LoginCodeEnabledCourseOperationSurveyDownloadTest, self).setUp()
+        self.setup_user()
 
     def get_url(self):
         return reverse('biz:course_operation:survey_download')

@@ -1,4 +1,4 @@
-
+# -*- coding: utf-8 -*-
 import logging
 import re
 import time
@@ -6,6 +6,7 @@ import time
 from django.conf import settings
 from django.contrib.auth import authenticate
 from django.core.exceptions import ValidationError
+from django.core.mail import send_mail as django_send_mail, get_connection as get_mail_connection
 from django.core.validators import validate_email
 from django.contrib.auth.models import User
 from django.db import IntegrityError, transaction
@@ -14,13 +15,13 @@ from django.utils.translation import ugettext as _
 from biz.djangoapps.ga_contract_operation.models import ContractMail, ContractTaskHistory, StudentRegisterTaskTarget
 from biz.djangoapps.ga_invitation.models import ContractRegister, INPUT_INVITATION_CODE, REGISTER_INVITATION_CODE
 from biz.djangoapps.ga_login.models import BizUser, LOGIN_CODE_MIN_LENGTH, LOGIN_CODE_MAX_LENGTH
-from biz.djangoapps.ga_contract.models import ContractAuth
 from bulk_email.models import Optout
 from lms.djangoapps.instructor.views.api import generate_unique_password
 from openedx.core.djangoapps.course_global.models import CourseGlobalSetting
 from openedx.core.djangoapps.ga_task.models import Task
 from openedx.core.djangoapps.ga_task.task import TaskProgress
-from openedx.core.lib.ga_mail_utils import send_mail
+from openedx.core.lib.ga_mail_utils import replace_braces
+from enrollment.api import _default_course_mode
 from student.forms import AccountCreationForm
 from student.models import CourseEnrollment, UserProfile
 from student.views import _do_create_account, AccountValidationError
@@ -69,8 +70,16 @@ def perform_delegate_student_register(entry_id, task_input, action_name):
     task_id = entry.task_id
 
     contract, targets = _validate_and_get_arguments(task_id, task_input)
-    contract_details = contract.details.all()
+    contract_details = [{
+        'key': detail.course_id,
+        'mode': _default_course_mode(unicode(detail.course_id))
+    } for detail in contract.details.all()]
     has_contractauth = contract.has_auth
+
+    mail_connection = None
+    if contract.can_send_mail:
+        mail_connection = get_mail_connection(username=None, password=None)
+        mail_connection.open()
 
     task_progress = TaskProgress(action_name, len(targets), time.time())
     task_progress.update_task_state()
@@ -233,12 +242,22 @@ def perform_delegate_student_register(entry_id, task_input, action_name):
                     if status == REGISTER_INVITATION_CODE:
                         register.status = REGISTER_INVITATION_CODE
                         register.save()
-                        # CourseEnrollment
-                        for detail in contract_details:
-                            CourseEnrollment.enroll(user, detail.course_id)
 
-                    if contract.can_send_mail:
-                        send_mail(user, contract_mail.mail_subject, contract_mail.mail_body, replace_dict)
+                        # Note: Perform equivalent processing to CourseEnrollment.enroll()
+                        for detail in contract_details:
+                            enrollment = CourseEnrollment.get_or_create_enrollment(user, detail['key'])
+                            enrollment.update_enrollment(is_active=True, mode=detail['mode'])
+
+                    if contract.can_send_mail and mail_connection:
+                        mail_subject = replace_braces(contract_mail.mail_subject, replace_dict)
+                        mail_body = replace_braces(contract_mail.mail_body, replace_dict)
+                        django_send_mail(
+                            subject=mail_subject,
+                            message=mail_body,
+                            from_email=settings.DEFAULT_FROM_EMAIL,
+                            recipient_list=[user.email],
+                            connection=mail_connection
+                        )
 
                     log.info("Task {task_id}: Success to process of register to User {user_id}".format(task_id=task_id, user_id=user.id))
                     task_progress.success()
@@ -252,5 +271,9 @@ def perform_delegate_student_register(entry_id, task_input, action_name):
                 line_number=line_number,
                 message=_("Failed to register. Please operation again after a time delay."),
             ))
+
+    # Close mail connection
+    if contract.can_send_mail and mail_connection is not None:
+        mail_connection.close()
 
     return task_progress.update_task_state()

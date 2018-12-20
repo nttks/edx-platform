@@ -165,13 +165,16 @@ def _contract_register_list_on_page(request, offset=0, limit=CONTRACT_REGISTER_M
 
     # Organization group
     if not request.current_manager.is_director() and request.current_manager.is_manager() and Group.objects.filter(org=request.current_organization).exists():
-        where_sql += "AND group_id IN ("
-        group_stock = []
-        for group_id in map(str, request.current_organization_visible_group_ids):
-            group_stock.append("%s")
-            option_sql.append(group_id)
-        where_sql += ','.join(group_stock)
-        where_sql += ")"
+        if request.current_organization_visible_group_ids:
+            where_sql += "AND group_id IN ("
+            group_stock = []
+            for group_id in map(str, request.current_organization_visible_group_ids):
+                group_stock.append("%s")
+                option_sql.append(group_id)
+            where_sql += ','.join(group_stock)
+            where_sql += ") "
+        else:
+            where_sql += "AND 0 "
 
     # Group name
     group_name = request.POST.get('group_name')
@@ -794,7 +797,7 @@ def reminder_mail(request):
             ContractReminderMail.MAIL_PARAM_EMAIL_ADDRESS,
             ContractReminderMail.MAIL_PARAM_COURSE_NAME,
             ContractReminderMail.MAIL_PARAM_FULLNAME,
-            ContractReminderMail.MAIL_PARAM_EXPIRE_DATE,
+            # ContractReminderMail.MAIL_PARAM_EXPIRE_DATE,
         ],
     }
 
@@ -839,6 +842,8 @@ def reminder_mail(request):
             'is_manager': is_manager,
             'mail_info': reminder_mail,
             'search_mail_info': search_reminder_mail,
+            'deadline': course.deadline_start,
+            'reminder_mail_contract_id': reminder_mail.contract_id,
         }
     )
 
@@ -898,6 +903,43 @@ def reminder_mail_save_ajax(request):
             'info': _("Successfully to save the template e-mail."),
         })
 
+@require_POST
+@login_required
+@check_course_selection
+def reminder_mail_delete_ajax(request):
+    """
+    This Ajax function uses the record registered in the ContractReminderMail table as a delete button.
+    Deletes the record registered with the current contract.
+    :param request:
+    :return:
+    """
+    if not request.current_contract.can_send_submission_reminder:
+        return _error_response(_("Unauthorized access."))
+
+    if str(request.current_contract.id) != request.POST.get('contract_id'):
+        return _error_response(_("Current contract is changed. Please reload this page."))
+
+    mail_type = request.POST.get('mail_type')
+    if not ContractReminderMail.is_mail_type(mail_type):
+        log.warning('Illegal mail-type: {}'.format(mail_type))
+        return _error_response(_("Unauthorized access."))
+
+    # Delete template
+    try:
+        if ContractReminderMail.objects.filter(
+            contract=request.current_contract, mail_type=mail_type).first():
+            ContractReminderMail.objects.filter(
+            contract=request.current_contract, mail_type=mail_type).delete()
+        else:
+            return _error_response(_("Input Invitation"))
+    except:
+        log.exception('Failed to delete the template e-mail.contract: {}'.format(request.current_contract.id))
+        return _error_response(_("Failed to deleted item."))
+    else:
+        log.info('Delete success contract_id: {}'.format(request.current_contract.id))
+        return JsonResponse({
+            'info': _("Reminder mail deleted."),
+        })
 
 @require_POST
 @login_required
@@ -1061,13 +1103,16 @@ def reminder_search_ajax(request):
     where_sql = ""
     option_sql = [org.id, str(course.id)]
     if not manager.is_director() and manager.is_manager() and Group.objects.filter(org=org).exists():
-        where_sql += "AND group_id IN ("
-        group_stock = []
-        for group_id in map(str, request.current_organization_visible_group_ids):
-            group_stock.append("%s")
-            option_sql.append(group_id)
-        where_sql += ','.join(group_stock)
-        where_sql += ")"
+        if request.current_organization_visible_group_ids:
+            where_sql += "AND group_id IN ("
+            group_stock = []
+            for group_id in map(str, request.current_organization_visible_group_ids):
+                group_stock.append("%s")
+                option_sql.append(group_id)
+            where_sql += ','.join(group_stock)
+            where_sql += ") "
+        else:
+            where_sql += "AND 0 "
 
     org_item_key_list = []
     org_item_key_list.extend(['org' + str(i) for i in range(1, 11)])

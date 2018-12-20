@@ -714,40 +714,6 @@ class MemberEditTaskTest(BizViewTestBase, TaskTestMixin):
         self.mock_log.error.assert_any_call('sample_error_message')
         self._assert_failed_log()
 
-    def test_member_register_exception_error_create_member(self):
-        # ----------------------------------------------------------
-        # Setup test data
-        # ----------------------------------------------------------
-        members = [self._create_base_form_param(username='create_member_error')]
-
-        # ----------------------------------------------------------
-        # Execute task
-        # ----------------------------------------------------------
-        history = MemberTaskHistoryFactory.create(organization=self.organization, requester=self.user)
-        self._create_targets(history=history, members=members)
-        with patch('biz.djangoapps.gx_member.member_editer.Member.objects.create',
-                   side_effect=Exception('sample_error_message')):
-            self._test_run_with_task(
-                member_register,
-                'member_register',
-                task_entry=self._create_input_entry(organization=self.organization, history=history),
-                expected_attempted=len(members),
-                expected_num_failed=1,
-                expected_total=len(members),
-            )
-
-        # ----------------------------------------------------------
-        # Assertion
-        # ----------------------------------------------------------
-        # Check history column
-        self._assert_history_after_execute_task(
-            history.id, 0, "Line {line_number}:{message}".format(line_number=1, message="Failed to create member."))
-        # Check data has not created
-        self.assertEqual(0, Member.objects.filter(org=self.organization).count())
-        self.assertEqual(0, User.objects.filter(username='create_member_error').count())
-        self.mock_log.error.assert_any_call('sample_error_message')
-        self._assert_failed_log()
-
     def test_current_org_username_rule_true(self):
 
         username_rule = OrgUsernameRuleFactory.create(prefix='abc__', org=self.organization)
@@ -1045,4 +1011,3 @@ class MemberEditTaskTest(BizViewTestBase, TaskTestMixin):
         self.assertEqual(0, Member.objects.filter(org=another_org2).count())
         self.assertEqual(0, User.objects.filter(email='rule1@example.com').count())
         self._assert_failed_log()
-

@@ -3,6 +3,7 @@
 Test for contract_operation reminder_mail feature
 """
 from collections import OrderedDict
+from copy import copy
 from datetime import datetime
 from dateutil.tz import tzutc
 import ddt
@@ -84,6 +85,169 @@ class ContractOperationReminderMailViewTest(BizContractTestBase, BizStoreTestBas
             org=self.contract_org, user=self.user, created=self.contract_org, permissions=[self.manager_permission])
 
     # ------------------------------------------------------------
+    # Delete Reminder Mail
+    # ------------------------------------------------------------
+    def _url_delete_mail_ajax(self):
+        return reverse('biz:contract_operation:reminder_mail_delete_ajax')
+
+    def _create_other_contract(self):
+        contract_org = self._create_organization(org_code='contractor')
+
+    def _delete_only_use_create_contract(self, deadline):
+        course_delete_use = CourseFactory.create(
+            org=self.contract_org.org_code, number='delete_mail', run='run',
+            start=datetime(2016, 1, 1, 0, 0, 0, tzinfo=tzutc()),  # must be the past date
+            self_paced=True,
+            deadline_start=deadline,
+            individual_end_days=10,
+        )
+        contract_submission_reminder = self._create_contract(
+            contract_name='test reminder mail',
+            contractor_organization=self.contract_org,
+            detail_courses=[course_delete_use],
+            additional_display_names=['country', 'dept'],
+            send_submission_reminder=True,
+        )
+        return contract_submission_reminder
+
+    def _delete_only_use_create_another_contract(self, deadline):
+        course_delete_use = CourseFactory.create(
+            org=self.contract_org.org_code, number='another_delete_mail', run='run',
+            start=datetime(2017, 1, 1, 0, 0, 0, tzinfo=tzutc()),  # must be the past date
+            self_paced=True,
+            deadline_start=deadline,
+            individual_end_days=10,
+        )
+        another_contract_submission_reminder = self._create_contract(
+            contract_name='test another reminder mail',
+            contractor_organization=self.contract_org,
+            detail_courses=[course_delete_use],
+            additional_display_names=['country', 'dept'],
+            send_submission_reminder=False,
+        )
+        return another_contract_submission_reminder
+
+    @ddt.data(
+        ContractReminderMail.MAIL_TYPE_SUBMISSION_REMINDER,
+    )
+    def test_delete_mail_success(self, mail_type):
+        self.setup_user()
+        deadline = datetime(2019, 1, 1, 0, 0, 0, tzinfo=tzutc())
+        contract = self._delete_only_use_create_contract(deadline)
+        # Create contract_remainder_mail
+        with self.skip_check_course_selection(current_contract=contract):
+            response = self.client.post(self._url_save_mail_ajax(), {
+                'contract_id': contract.id,
+                'mail_type': mail_type,
+                'reminder_email_days': 5,
+                'mail_subject': 'Test Subject',
+                'mail_body': 'Test Body',
+                'mail_body2': 'Test Body2',
+            })
+
+        self.assertEqual(200, response.status_code)
+        data = json.loads(response.content)
+        self.assertEqual(data['info'], "Successfully to save the template e-mail.")
+
+        contract_mail = ContractReminderMail.objects.get(contract=contract, mail_type=mail_type)
+        self.assertEquals(contract_mail.reminder_email_days, 5)
+        self.assertEquals(contract_mail.mail_subject, 'Test Subject')
+        self.assertEquals(contract_mail.mail_body, 'Test Body')
+        self.assertEquals(contract_mail.mail_body2, 'Test Body2')
+
+        # Delete contract_reminder_mail
+        with self.skip_check_course_selection(current_contract=contract):
+            response = self.client.post(self._url_delete_mail_ajax(), {
+                'contract_id': contract.id,
+                'mail_type': mail_type,
+            })
+        self.assertEqual(200, response.status_code)
+        data = json.loads(response.content)
+        self.assertEqual(data['info'], "Reminder mail deleted.")
+        self.assertEqual(0,len(ContractReminderMail.objects.filter(contract=contract, mail_type=mail_type)))
+
+    @ddt.data(
+        ContractReminderMail.MAIL_TYPE_SUBMISSION_REMINDER,
+    )
+    def test_delete_mail_same_error(self, mail_type):
+        self.setup_user()
+        deadline = datetime(2019, 1, 1, 0, 0, 0, tzinfo=tzutc())
+        contract = self._delete_only_use_create_contract(deadline)
+        another_contract_reminder_false = self._delete_only_use_create_another_contract(deadline)
+        # Create contract_remainder_mail
+        with self.skip_check_course_selection(current_contract=contract):
+            response = self.client.post(self._url_save_mail_ajax(), {
+                'contract_id': contract.id,
+                'mail_type': mail_type,
+                'reminder_email_days': 5,
+                'mail_subject': 'Test Subject',
+                'mail_body': 'Test Body',
+                'mail_body2': 'Test Body2',
+            })
+
+        self.assertEqual(200, response.status_code)
+        data = json.loads(response.content)
+        self.assertEqual(data['info'], "Successfully to save the template e-mail.")
+
+        # Can not create and delete reminder mail
+        with self.skip_check_course_selection(current_contract=another_contract_reminder_false):
+            response = self.client.post(self._url_delete_mail_ajax(), {
+                'contract_id': another_contract_reminder_false.id,
+                'mail_type': mail_type,
+            })
+        self.assertEqual(400, response.status_code)
+        data = json.loads(response.content)
+        self.assertEquals(data['error'], "Unauthorized access.")
+
+        # Delete reminder mail request another contract
+        with self.skip_check_course_selection(current_contract=contract):
+            response = self.client.post(self._url_delete_mail_ajax(), {
+                'contract_id': self.contract.id,
+                'mail_type': mail_type,
+            })
+        self.assertEqual(400, response.status_code)
+        data = json.loads(response.content)
+        self.assertEquals(data['error'], "Current contract is changed. Please reload this page.")
+
+        # mail_type is None type
+        with self.skip_check_course_selection(current_contract=contract):
+            response = self.client.post(self._url_delete_mail_ajax(), {
+                'contract_id': contract.id,
+                'mail_type': 'Nonetype',
+            })
+        self.assertEqual(400, response.status_code)
+        data = json.loads(response.content)
+        self.assertEquals(data['error'], "Unauthorized access.")
+
+        # No record
+        with self.skip_check_course_selection(current_contract=self.contract_submission_reminder):
+            response = self.client.post(self._url_delete_mail_ajax(), {
+                'contract_id': self.contract_submission_reminder.id,
+                'mail_type': mail_type,
+            })
+        self.assertEqual(400, response.status_code)
+        data = json.loads(response.content)
+        self.assertEqual(data['error'], "Input Invitation")
+        self.assertEqual(0,len(ContractReminderMail.objects.filter(contract=self.contract_submission_reminder, mail_type=mail_type)))
+
+        #
+        with self.skip_check_course_selection(current_contract=contract), patch(
+                'biz.djangoapps.ga_contract_operation.views.ContractReminderMail.objects.filter',
+                side_effect=Exception('test')):
+            response = self.client.post(self._url_delete_mail_ajax(), {
+                'contract_id': contract.id,
+                'mail_type': mail_type,
+                'reminder_email_days': 3,
+                'mail_subject': 'Test Subject',
+                'mail_body': 'Test Body',
+                'mail_body2': 'Test Body2',
+            })
+
+        self.assertEqual(400, response.status_code)
+        data = json.loads(response.content)
+        self.assertEquals(data['error'], "Failed to deleted item.")
+
+    # ------------------------------------------------------------
     # Show Reminder Mail
     # ------------------------------------------------------------
     def _url_mail(self):
@@ -132,7 +296,7 @@ class ContractOperationReminderMailViewTest(BizContractTestBase, BizStoreTestBas
             ContractReminderMail.MAIL_PARAM_EMAIL_ADDRESS,
             ContractReminderMail.MAIL_PARAM_COURSE_NAME,
             ContractReminderMail.MAIL_PARAM_FULLNAME,
-            ContractReminderMail.MAIL_PARAM_EXPIRE_DATE,
+            # ContractReminderMail.MAIL_PARAM_EXPIRE_DATE,
         ], search_mail_info['search_mail_params'])
         expect_search_detail_other_list = OrderedDict()
         expect_search_detail_other_list['login_code'] = "Login Code"
@@ -821,7 +985,7 @@ class ContractOperationReminderMailViewTest(BizContractTestBase, BizStoreTestBas
             member_kwargs['org' + str(i)] = 'org' + str(i)
             member_kwargs['item' + str(i)] = 'item' + str(i)
         member = self._create_member(org=self.contract_org, group=None, user=user, code='code', **dict(member_kwargs))
-        
+
         self._create_score_batch_status()
         self._create_achievement_score_column()
         self._create_achievement_score_data(username=user.username, email=user.email)
@@ -932,7 +1096,7 @@ class ContractOperationReminderMailViewTest(BizContractTestBase, BizStoreTestBas
     def test_reminder_search_ajax_detail_score_other(self, param_from, param_to, param_no, expect):
         self.setup_user()
         director_manager = self._director_manager
-        
+
         self._create_achievement_score_column()
         self._create_score_batch_status()
 

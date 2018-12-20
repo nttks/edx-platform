@@ -261,12 +261,12 @@ button.btn.btn-blue:hover:not(:disabled) {
     background-color: #777;
 }
 
-input#download-btn {
+input#download-btn, input#search-results-download-btn {
     margin: 1rem 0;
     padding: 0.3rem 1rem;
 }
 
-input#register-btn, input#delete-btn, input#edit-btn, input#download-btn, input#bulk-unregister-btn, input#bulk-personalinfo-mask-btn {
+input#register-btn, input#delete-btn, input#edit-btn, input#download-btn, input#search-results-download-btn, input#bulk-unregister-btn, input#bulk-personalinfo-mask-btn {
     border-bottom: 2px solid #333;
 }
 
@@ -274,7 +274,7 @@ button.biz-modal-close.w2ui-popup-btn.btn.cancel:hover, button#No:hover {
     background-color: #444 !important;
 }
 
-#role-selection-modal .btn.success, button#Yes, input#register-btn, input#edit-btn, input#download-btn {
+#role-selection-modal .btn.success, button#Yes, input#register-btn, input#edit-btn, input#download-btn, input#search-results-download-btn {
     background-color: #43ac6a;
     border-color: #067913;
 }
@@ -355,13 +355,13 @@ input[type="button"] {
 }
 
 /* .biz-wrap */
-input[type="button"]#register-btn, #download-btn, input[type="button"]#bulk-unregister-btn, input[type="button"]#bulk-personalinfo-mask-btn {
+input[type="button"]#register-btn, #download-btn, #search-results-download-btn, input[type="button"]#bulk-unregister-btn, input[type="button"]#bulk-personalinfo-mask-btn {
     background-color: #43ac6a;
     /* 	border-bottom: 3px solid #2f8a7d; */
     transition: background-color 0.15s ease-in-out;
 }
 
-.biz-wrap input[type="button"]#register-btn:hover, #download-btn:hover, input[type="button"]#bulk-unregister-btn:hover, input[type="button"]#bulk-personalinfo-mask-btn:hover {
+.biz-wrap input[type="button"]#register-btn:hover, #download-btn:hover, #search-results-download-btn:hover, input[type="button"]#bulk-unregister-btn:hover, input[type="button"]#bulk-personalinfo-mask-btn:hover {
     background: #15986c;
 }
 

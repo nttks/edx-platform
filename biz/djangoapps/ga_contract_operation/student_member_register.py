@@ -3,8 +3,10 @@ import logging
 import re
 import time
 
+from django.conf import settings
 from django.contrib.auth import authenticate
 from django.core.exceptions import ValidationError
+from django.core.mail import send_mail as django_send_mail, get_connection as get_mail_connection
 from django.core.validators import validate_email
 from django.contrib.auth.models import User
 from django.db import IntegrityError, transaction
@@ -23,8 +25,9 @@ from lms.djangoapps.instructor.views.api import generate_unique_password
 from openedx.core.djangoapps.course_global.models import CourseGlobalSetting
 from openedx.core.djangoapps.ga_task.models import Task
 from openedx.core.djangoapps.ga_task.task import TaskProgress
-from openedx.core.lib.ga_mail_utils import send_mail
+from openedx.core.lib.ga_mail_utils import replace_braces
 
+from enrollment.api import _default_course_mode
 from student.forms import AccountCreationForm
 from student.models import CourseEnrollment, UserProfile
 from student.views import _do_create_account, AccountValidationError
@@ -70,13 +73,22 @@ def perform_delegate_student_member_register(entry_id, task_input, action_name):
     """
     Executes to register students. This function is called by run_main_task.
     """
-    log.info('stundent member register tast start')
+    log.info('student member register task start')
     entry = Task.objects.get(pk=entry_id)
     task_id = entry.task_id
 
     contract, targets = _validate_and_get_arguments(task_id, task_input)
-    contract_details = contract.details.all()
+    contract_details = [{
+        'key': detail.course_id,
+        'mode': _default_course_mode(unicode(detail.course_id))
+    } for detail in contract.details.all()]
     has_contractauth = contract.has_auth
+
+    # Open mail connection
+    mail_connection = None
+    if contract.can_send_mail:
+        mail_connection = get_mail_connection(username=None, password=None)
+        mail_connection.open()
 
     task_progress = TaskProgress(action_name, len(targets), time.time())
     task_progress.update_task_state()
@@ -253,13 +265,13 @@ def perform_delegate_student_member_register(entry_id, task_input, action_name):
                     return _fail(_("Please enter of {0} within {1} characters.").format(_("Item"), 100))
         if member_code != '':
             email = input_columns[1]
-            member = Member.find_active_by_email(org=contract.contractor_organization.id,
-                                                 email=email).first()
-            code_exist = Member.find_active_by_code(org=contract.contractor_organization.id,
-                                                    code=member_code).first()
-            if member:
+            members = Member.find_active_by_email(org=contract.contractor_organization.id, email=email).values('code')
+            code_exist = True if len(Member.find_active_by_code(
+                org=contract.contractor_organization.id, code=member_code).values('id')) >= 1 else False
+            if len(members) > 0:
+                member = members[0]
                 # Email Exist
-                if member.code != member_code and code_exist:
+                if member['code'] != member_code and code_exist:
                     return _fail(_("Failed member master update. Mail address, member code must unique"))
             else:
                 if Member.find_delete_by_email(org=contract.contractor_organization, email=email):
@@ -270,6 +282,35 @@ def perform_delegate_student_member_register(entry_id, task_input, action_name):
                 return _fail(_("Member registration failed. Specified Organization code does not exist"))
 
         return _validate_student_and_get_or_create_user(*student_columns)
+
+    def _check_update_member(member, group_code, org_item):
+        return (not member.group and group_code != '') or (
+                member.group and member.group.group_code != group_code) or (
+                member.org1 != org_item[0] or member.org2 != org_item[1] or
+                member.org3 != org_item[2] or member.org4 != org_item[3] or
+                member.org5 != org_item[4] or member.org6 != org_item[5] or
+                member.org7 != org_item[6] or member.org8 != org_item[7] or
+                member.org9 != org_item[8] or member.org10 != org_item[9] or
+                member.item1 != org_item[10] or member.item2 != org_item[11] or
+                member.item3 != org_item[12] or member.item4 != org_item[13] or
+                member.item5 != org_item[14] or member.item6 != org_item[15] or
+                member.item7 != org_item[16] or member.item8 != org_item[17] or
+                member.item9 != org_item[18] or member.item10 != org_item[19])
+
+    def _member_create(org, group, user, code, org_item, is_active, created_by, creator_org, updated_by, updated_org):
+        Member(
+            org=org, group=group, user=user, code=code,
+            org1=org_item[0], org2=org_item[1], org3=org_item[2], org4=org_item[3],
+            org5=org_item[4], org6=org_item[5], org7=org_item[6], org8=org_item[7],
+            org9=org_item[8], org10=org_item[9], item1=org_item[10], item2=org_item[11],
+            item3=org_item[12], item4=org_item[13], item5=org_item[14],
+            item6=org_item[15],
+            item7=org_item[16], item8=org_item[17], item9=org_item[18],
+            item10=org_item[19],
+            is_active=is_active,
+            created_by=created_by, creator_org=creator_org,
+            updated_by=updated_by, updated_org=updated_org,
+        ).save()
 
     for line_number, target in enumerate(targets, start=1):
         log.info('student member register transaction start')
@@ -294,12 +335,21 @@ def perform_delegate_student_member_register(entry_id, task_input, action_name):
                         register.status = REGISTER_INVITATION_CODE
                         register.save()
 
-                        # CourseEnrollment
+                        # Note: Perform equivalent processing to CourseEnrollment.enroll()
                         for detail in contract_details:
-                            CourseEnrollment.enroll(user, detail.course_id)
+                            enrollment = CourseEnrollment.get_or_create_enrollment(user, detail['key'])
+                            enrollment.update_enrollment(is_active=True, mode=detail['mode'])
 
-                    if contract.can_send_mail:
-                        send_mail(user, contract_mail.mail_subject, contract_mail.mail_body, replace_dict)
+                    if contract.can_send_mail and mail_connection:
+                        mail_subject = replace_braces(contract_mail.mail_subject, replace_dict)
+                        mail_body = replace_braces(contract_mail.mail_body, replace_dict)
+                        django_send_mail(
+                            subject=mail_subject,
+                            message=mail_body,
+                            from_email=settings.DEFAULT_FROM_EMAIL,
+                            recipient_list=[user.email],
+                            connection=mail_connection
+                        )
 
                     # 201805 member register
                     input_columns = target.student.split(',') if target.student else []
@@ -316,102 +366,53 @@ def perform_delegate_student_member_register(entry_id, task_input, action_name):
                         member_code = input_columns[6]
 
                     if member_code != '':
-                        if group_code != '':
-                            group = Group.objects.filter(org=contract.contractor_organization.id,
-                                                         group_code=group_code).first()
-                        else:
-                            group = None
-                        member = Member.find_active_by_email(org=contract.contractor_organization.id,
-                                                             email=email).first()
-                        code_exist = Member.find_active_by_code(org=contract.contractor_organization.id,
-                                                                code=member_code).first()
+                        org = contract.contractor_organization
+                        group = Group.objects.filter(
+                            org=org.id, group_code=group_code).first() if group_code != '' else None
+                        member = Member.find_active_by_email(org=org.id, email=email).first()
+                        code_exist = True if len(Member.find_active_by_code(
+                            org=org.id, code=member_code).values('id')) else False
                         if member:
-                            # Email Exist
+                            # If found by active member by email, then update member.
                             if member.code == member_code:
-                                # Update
-                                if (not member.group and group_code != '') or (
-                                        member.group and member.group.group_code != group_code) or (
-                                        member.org1 != org_item[0] or member.org2 != org_item[1] or
-                                        member.org3 != org_item[2] or member.org4 != org_item[3] or
-                                        member.org5 != org_item[4] or member.org6 != org_item[5] or
-                                        member.org7 != org_item[6] or member.org8 != org_item[7] or
-                                        member.org9 != org_item[8] or member.org10 != org_item[9] or
-                                        member.item1 != org_item[10] or member.item2 != org_item[11] or
-                                        member.item3 != org_item[12] or member.item4 != org_item[13] or
-                                        member.item5 != org_item[14] or member.item6 != org_item[15] or
-                                        member.item7 != org_item[16] or member.item8 != org_item[17] or
-                                        member.item9 != org_item[18] or member.item10 != org_item[19]):
-                                    Member.find_backup_by_code(org=contract.contractor_organization,
-                                                               code=member_code).delete()
-                                    Member.change_active_to_backup_one(org=contract.contractor_organization,
-                                                                       code=member_code)
+                                # Member code not changed.
+                                if _check_update_member(member, group_code, org_item):
+                                    Member.find_backup_by_code(org=org, code=member_code).delete()
+                                    Member.change_active_to_backup_one(org=org, code=member_code)
+                                    _member_create(
+                                        org=org, group=group, user=register.user, code=member_code,
+                                        org_item=org_item, is_active=True,
+                                        created_by=member.created_by, creator_org=member.creator_org,
+                                        updated_by=entry.requester, updated_org=org
+                                    )
 
-                                    Member(
-                                        org=contract.contractor_organization, group=group, user=register.user,
-                                        code=member_code,
-                                        org1=org_item[0], org2=org_item[1], org3=org_item[2], org4=org_item[3],
-                                        org5=org_item[4], org6=org_item[5], org7=org_item[6], org8=org_item[7],
-                                        org9=org_item[8], org10=org_item[9], item1=org_item[10], item2=org_item[11],
-                                        item3=org_item[12], item4=org_item[13], item5=org_item[14],
-                                        item6=org_item[15],
-                                        item7=org_item[16], item8=org_item[17], item9=org_item[18],
-                                        item10=org_item[19],
-                                        is_active=True,
-                                        created_by=member.created_by, creator_org=member.creator_org,
-                                        updated_by=entry.requester, updated_org=contract.contractor_organization,
-                                    ).save()
                             else:
+                                # Member code changed.
                                 if not code_exist:
-                                    # Update(MemberCode Changed)
-                                    Member.find_backup_by_email(org=contract.contractor_organization,
-                                                                email=email).delete()
-                                    Member.change_active_to_backup_one_email(org=contract.contractor_organization,
-                                                                             email=email)
-                                    Member(
-                                        org=contract.contractor_organization, group=group, user=register.user,
-                                        code=member_code,
-                                        org1=org_item[0], org2=org_item[1], org3=org_item[2], org4=org_item[3],
-                                        org5=org_item[4], org6=org_item[5], org7=org_item[6], org8=org_item[7],
-                                        org9=org_item[8], org10=org_item[9], item1=org_item[10], item2=org_item[11],
-                                        item3=org_item[12], item4=org_item[13], item5=org_item[14],
-                                        item6=org_item[15],
-                                        item7=org_item[16], item8=org_item[17], item9=org_item[18],
-                                        item10=org_item[19],
-                                        is_active=True,
+                                    Member.find_backup_by_email(org=org, email=email).delete()
+                                    Member.change_active_to_backup_one_email(org=org, email=email)
+                                    _member_create(
+                                        org=org, group=group, user=register.user, code=member_code,
+                                        org_item=org_item, is_active=True,
                                         created_by=member.created_by, creator_org=member.creator_org,
-                                        updated_by=entry.requester, updated_org=contract.contractor_organization,
-                                    ).save()
+                                        updated_by=entry.requester, updated_org=org
+                                    )
+
                         else:
-                            if not Member.find_delete_by_email(org=contract.contractor_organization, email=email) and not code_exist:
-                                # New Register
-                                Member(
-                                    org=contract.contractor_organization, group=group, user=register.user,
-                                    code=member_code,
-                                    org1=org_item[0], org2=org_item[1], org3=org_item[2], org4=org_item[3],
-                                    org5=org_item[4], org6=org_item[5], org7=org_item[6], org8=org_item[7],
-                                    org9=org_item[8], org10=org_item[9], item1=org_item[10], item2=org_item[11],
-                                    item3=org_item[12], item4=org_item[13], item5=org_item[14],
-                                    item6=org_item[15],
-                                    item7=org_item[16], item8=org_item[17], item9=org_item[18],
-                                    item10=org_item[19],
-                                    is_active=True,
-                                    created_by=entry.requester, creator_org=contract.contractor_organization,
-                                    updated_by=entry.requester, updated_org=contract.contractor_organization,
-                                ).save()
-                                Member(
-                                    org=contract.contractor_organization, group=group, user=register.user,
-                                    code=member_code,
-                                    org1=org_item[0], org2=org_item[1], org3=org_item[2], org4=org_item[3],
-                                    org5=org_item[4], org6=org_item[5], org7=org_item[6], org8=org_item[7],
-                                    org9=org_item[8], org10=org_item[9], item1=org_item[10], item2=org_item[11],
-                                    item3=org_item[12], item4=org_item[13], item5=org_item[14],
-                                    item6=org_item[15],
-                                    item7=org_item[16], item8=org_item[17], item9=org_item[18],
-                                    item10=org_item[19],
-                                    is_active=False,
-                                    created_by=entry.requester, creator_org=contract.contractor_organization,
-                                    updated_by=entry.requester, updated_org=contract.contractor_organization,
-                                ).save()
+                            # If not found by active member by email, then create member.
+                            if not Member.find_delete_by_email(org=org, email=email) and not code_exist:
+                                _member_create(
+                                    org=org, group=group, user=register.user, code=member_code,
+                                    org_item=org_item, is_active=True,
+                                    created_by=entry.requester, creator_org=org,
+                                    updated_by=entry.requester, updated_org=org
+                                )
+                                _member_create(
+                                    org=org, group=group, user=register.user, code=member_code,
+                                    org_item=org_item, is_active=False,
+                                    created_by=entry.requester, creator_org=org,
+                                    updated_by=entry.requester, updated_org=org
+                                )
 
                     if not error_flag:
                         log.info("Task {task_id}: Success to process of register to User {user_id}".format(task_id=task_id, user_id=user.id))
@@ -429,6 +430,10 @@ def perform_delegate_student_member_register(entry_id, task_input, action_name):
                 message=_("Failed to register. Please operation again after a time delay."),
             ))
             log.info('student member register transaction incomplete')
+
+    # Close mail connection
+    if contract.can_send_mail and mail_connection is not None:
+        mail_connection.close()
 
     return task_progress.update_task_state()
 

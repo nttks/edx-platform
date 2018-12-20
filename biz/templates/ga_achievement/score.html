@@ -153,6 +153,28 @@ from django.utils.translation import ugettext as _
             return false;
         });
 
+        // Prevent double click
+        $('#search-download-btn').on('click',function () {
+            var $btn = $(this);
+            var postData = {
+                "csrfmiddlewaretoken": $.cookie("csrftoken"),
+                "search-download": "search-download"
+            };
+            $.each($('#form').find('textarea,input,select').serializeArray(), function(i, value){
+                postData[value.name] = value["value"];
+            });
+            $btn.attr('disabled', true);
+            // Using jquery.fileDownload.js
+            $.fileDownload("${reverse('biz:achievement:score_download_csv')}", {
+                    httpMethod: "POST",
+                    data: postData
+                })
+                .always(function () {
+                    $btn.attr('disabled', false);
+                });
+            return false;
+        });
+
         $('#search').on('click', function () {
             if (!validate_number_text()) { return false }
             lock();
@@ -331,6 +353,9 @@ from django.utils.translation import ugettext as _
         <div class="gc_download">
             <div class="gc_download_btn">
                 <button id="download-btn" class="btn btn-grn" type="button">${_('Download All Students')}</button>
+            </div>
+            <div class="gc_download_btn">
+                <button id="search-download-btn" class="btn btn-grn" type="button">${_('Download Searched Students')}</button>
             </div>
         </div>
     </form>
