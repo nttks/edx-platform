@@ -1919,3 +1919,41 @@ msgstr "組織対象を削除したい場合は、「削除」ボタンを押し
 #: biz/templates/gx_org_group/group_list.html:150
 msgid "delete group"
 msgstr "組織削除"
+
+#: biz/djangoapps/ga_contract_operation/views.py:943
+msgid "Reminder mail deleted."
+msgstr "「課題未提出者向け」督促メールを削除しました。"
+
+#: biz/templates/ga_contract_operation/reminder_mail.html:406
+msgid "Not settings deadline start day"
+msgstr "この講座は課題の提出期日が設定されていません。"
+
+#: biz/templates/ga_contract_operation/reminder_mail.html:405
+msgid "Can not register"
+msgstr "登録不可"
+
+#: biz/templates/ga_course_operation/survey.html:285
+msgid "Select Survey"
+msgstr "対象アンケートを選択"
+
+#: biz/templates/ga_course_operation/survey.html:293
+msgid "Answered"
+msgstr "回答済"
+
+#: biz/templates/ga_course_operation/survey.html:297
+msgid "Unaswered"
+msgstr "未回答"
+
+#: biz/templates/ga_course_operation/survey.html:357
+msgid "Download Answer Status"
+msgstr "全件をダウンロード"
+
+#: biz/templates/ga_course_operation/survey.html:360
+msgid "Download Searched Answer Status"
+msgstr "検索結果をダウンロード"
+
+#: biz/templates/ga_course_operation/survey.html:260
+msgid "Answer Status"
+msgstr "アンケート回答状況一覧"
+
+
