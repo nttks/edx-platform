@@ -24,12 +24,14 @@ class SsoConfig(models.Model):
         Restrict items that can be executed by users of the organization registered in SsoConfig.
         :param user_id:
         :return:
+        TRUE :
         FALSE :
         """
-        member = Member.objects.filter(user_id=user_id).first()
-        if member:
-            if cls.objects.filter(org=member.org_id).exists():
-                return False
+        if user_id is not None:
+            member = Member.objects.filter(user_id=long(user_id)).first()
+            if member:
+                if cls.objects.filter(org=member.org_id).exists():
+                    return False
         return True
 
     @classmethod

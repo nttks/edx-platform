@@ -39,6 +39,7 @@ INSTALLED_APPS += (
     'biz.djangoapps.ga_achievement',
     'biz.djangoapps.ga_contract',
     'biz.djangoapps.ga_contract_operation',
+    'biz.djangoapps.ga_course_anslist',
     'biz.djangoapps.ga_course_operation',
     'biz.djangoapps.ga_course_selection',
     'biz.djangoapps.ga_invitation',
@@ -50,7 +51,8 @@ INSTALLED_APPS += (
     'biz.djangoapps.gx_org_group',
     'biz.djangoapps.gx_username_rule',
     'biz.djangoapps.gx_sso_config',
-    'biz.djangoapps.gx_login',)
+    'biz.djangoapps.gx_login',
+)
 
 """
 Batch Settings

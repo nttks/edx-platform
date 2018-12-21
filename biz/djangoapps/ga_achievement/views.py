@@ -197,50 +197,11 @@ def score_search_ajax(request):
     course_id = request.current_course.id
     manager = request.current_manager
 
-    student_status = request.POST['student_status']
-    total_score_no = 'total_score_no' in request.POST
-    total_score_from = request.POST['total_score_from']
-    total_score_to = request.POST['total_score_to']
-    total_condition = {
-        'no': total_score_no,
-        'from': total_score_from if len(total_score_from) else None,
-        'to': total_score_to if len(total_score_to) else None,
-    }
-    certificate_status = request.POST['certificate_status']
-
-    section_score_conditions = []
-    score_counter = 1
-    while 'detail_condition_score_name_' + str(score_counter) in request.POST:
-        count = str(score_counter)
-        score_counter += 1
-        condition = {}
-        name = request.POST['detail_condition_score_name_' + count]
-        from_val = request.POST['detail_condition_score_from_' + count]
-        to_val = request.POST['detail_condition_score_to_' + count]
-        if name:
-            condition['name'] = name
-            condition['from'] = from_val if len(from_val) else None
-            condition['to'] = to_val if len(to_val) else None
-            condition['no'] = 'detail_condition_score_no_' + count in request.POST
-            section_score_conditions.append(condition)
-
     try:
-        record_offset = int(request.POST['offset'])
-        score_store = ScoreStore(contract_id, unicode(course_id))
-        __, score_records = score_store.get_data_for_w2ui(total_condition=total_condition,
-                                                          section_conditions=section_score_conditions,
-                                                          student_status=student_status,
-                                                          certificate_status=certificate_status,
-                                                          limit=settings.BIZ_MONGO_LIMIT_RECORDS)
-        total_records = len(score_records)
+        __, __, total_records, new_score_records = score_search_filter(request, org, contract_id, course_id, manager)
     except Exception as e:
         log.exception('Caught the exception: ' + type(e).__name__)
         return JsonResponseBadRequest(_("An error has occurred while loading. Please wait a moment and try again."))
-
-    # Member
-    new_score_records = _merge_to_store_by_member_for_search(
-        request, org, request.current_organization_visible_group_ids, manager, _(ScoreStore.FIELD_USERNAME),
-        score_records, True)
 
     content = {
         'status': 'success',
@@ -260,49 +221,11 @@ def playback_search_ajax(request):
     course_id = request.current_course.id
     manager = request.current_manager
 
-    student_status = request.POST['student_status']
-    total_playback_no = 'total_playback_no' in request.POST
-    total_playback_from = request.POST['total_playback_time_from']
-    total_playback_to = request.POST['total_playback_time_to']
-
-    total_condition = {
-        'no': total_playback_no,
-        'from': (int(total_playback_from) * 60) - 60 if len(total_playback_from) else None,
-        'to': int(total_playback_to) * 60 if len(total_playback_to) else None,
-    }
-
-    section_playback_conditions = []
-    playback_counter = 1
-    while 'detail_condition_playback_name_' + str(playback_counter) in request.POST:
-        count = str(playback_counter)
-        playback_counter += 1
-        condition = {}
-        name = request.POST['detail_condition_playback_name_' + count]
-        from_val = request.POST['detail_condition_playback_from_' + count]
-        to_val = request.POST['detail_condition_playback_to_' + count]
-        if name:
-            condition['name'] = name
-            condition['from'] = (int(from_val) * 60) - 60 if len(from_val) else None
-            condition['to'] = int(to_val) * 60 if len(to_val) else None
-            condition['no'] = 'detail_condition_playback_no_' + count in request.POST
-            section_playback_conditions.append(condition)
-
     try:
-        record_offset = int(request.POST['offset'])
-        playback_store = PlaybackStore(contract_id, unicode(course_id))
-        __, playback_list = playback_store.get_data_for_w2ui(total_condition=total_condition,
-                                                             section_conditions=section_playback_conditions,
-                                                             student_status=student_status,
-                                                             limit=MAX_RECORDS_SEARCH_BY_PLAYBACK)
-        total_records = len(playback_list)
+        __, __, total_records, new_playback_records = playback_search_filter(request, org, contract_id, course_id, manager)
     except Exception as e:
         log.exception('Caught the exception: ' + type(e).__name__)
         return JsonResponseBadRequest(_("An error has occurred while loading. Please wait a moment and try again."))
-
-    # Member
-    new_playback_records = _merge_to_store_by_member_for_search(
-        request, org, request.current_organization_visible_group_ids, manager, _(PlaybackStore.FIELD_USERNAME),
-        playback_list, True)
 
     content = {
         'status': 'success',
@@ -335,7 +258,13 @@ def score_download_csv(request):
         update_datetime = 'no-timestamp'
 
     score_store = ScoreStore(contract_id, unicode(course_id))
-    score_columns, score_records = score_store.get_data_for_w2ui(limit=settings.BIZ_MONGO_LIMIT_RECORDS)
+
+    if "search-download" in request.POST:
+        score_columns, score_records, __, new_score_records = score_search_filter(request, org, contract_id, course_id,
+                                                                                  manager)
+    else:
+        score_columns, score_records = score_store.get_data_for_w2ui(limit=settings.BIZ_MONGO_LIMIT_RECORDS)
+        new_score_records = []
 
     # Member
     username_key = _(ScoreStore.FIELD_USERNAME)
@@ -345,7 +274,6 @@ def score_download_csv(request):
     is_manager = not manager.is_director() and manager.is_manager() and Group.objects.filter(org=org).exists()
     child_group_ids = request.current_organization_visible_group_ids
 
-    new_score_records = []
     members_dict = {member.user.username: member for member in members}
 
     for score_record in score_records:
@@ -365,8 +293,9 @@ def score_download_csv(request):
         elif is_manager:
             continue
 
-        score_record.update(member_record)
-        new_score_records.append(score_record)
+        if "search-download" not in request.POST:
+            score_record.update(member_record)
+            new_score_records.append(score_record)
 
     header, types = [], []
     score_columns.insert(1, (_("Organization Groups"), 'text'))
@@ -411,6 +340,8 @@ def score_download_csv(request):
                         data.append('')
                 else:
                     data.append(value)
+            else:
+                data.append('')
 
         datarows.append(data)
 
@@ -447,7 +378,13 @@ def playback_download_csv(request):
         update_datetime = 'no-timestamp'
 
     playback_store = PlaybackStore(contract_id, unicode(course_id))
-    playback_columns, playback_records = playback_store.get_data_for_w2ui(limit=settings.BIZ_MONGO_LIMIT_RECORDS)
+
+    if "search-download" in request.POST:
+        playback_columns, playback_records, __, new_playback_records = playback_search_filter(request, org, contract_id,
+                                                                                              course_id, manager)
+    else:
+        playback_columns, playback_records = playback_store.get_data_for_w2ui(limit=settings.BIZ_MONGO_LIMIT_RECORDS)
+        new_playback_records = []
 
     # Member
     username_key = _(PlaybackStore.FIELD_USERNAME)
@@ -456,7 +393,6 @@ def playback_download_csv(request):
 
     is_manager = not manager.is_director() and manager.is_manager() and Group.objects.filter(org=org).exists()
     child_group_ids = request.current_organization_visible_group_ids
-    new_playback_records = []
     members_dict = {member.user.username: member for member in members}
 
     for playback_record in playback_records:
@@ -476,18 +412,18 @@ def playback_download_csv(request):
         elif is_manager:
             continue
 
-        playback_record.update(member_record)
-        new_playback_records.append(playback_record)
+        if "search-download" not in request.POST:
+            playback_record.update(member_record)
+            new_playback_records.append(playback_record)
 
-    header = []
+    header, types = [], []
     playback_columns.insert(1, (_("Organization Groups"), 'text'))
+    for num in range(1, 11):
+        playback_columns.append([_("Organization") + str(num), 'text'])
+    for num in range(1, 11):
+        playback_columns.append([_("Item") + str(num), 'text'])
     for column in playback_columns:
         header.append(column[0])
-
-    for num in range(1, 11):
-        header.append(_("Organization") + str(num))
-    for num in range(1, 11):
-        header.append(_("Item") + str(num))
 
     datarows = []
     for record in new_playback_records:
@@ -523,6 +459,8 @@ def playback_download_csv(request):
                         data.append('')
                 else:
                     data.append(value)
+            else:
+                data.append('')
         datarows.append(data)
 
     filename = u'{course_prefix}_{csv_name}_{timestamp_str}.csv'.format(
@@ -540,6 +478,95 @@ def _get_member_org_item_list():
     member_org_item_list.update([('org' + str(i), _("Organization") + str(i)) for i in range(1, 11)])
     member_org_item_list.update([('item' + str(i), _("Item") + str(i)) for i in range(1, 11)])
     return member_org_item_list
+
+
+def score_search_filter(request, org, contract_id, course_id, manager):
+    student_status = request.POST['student_status']
+    total_score_no = 'total_score_no' in request.POST
+    total_score_from = request.POST['total_score_from']
+    total_score_to = request.POST['total_score_to']
+    total_condition = {
+        'no': total_score_no,
+        'from': total_score_from if len(total_score_from) else None,
+        'to': total_score_to if len(total_score_to) else None,
+    }
+    certificate_status = request.POST['certificate_status']
+
+    section_score_conditions = []
+    score_counter = 1
+    while 'detail_condition_score_name_' + str(score_counter) in request.POST:
+        count = str(score_counter)
+        score_counter += 1
+        condition = {}
+        name = request.POST['detail_condition_score_name_' + count]
+        from_val = request.POST['detail_condition_score_from_' + count]
+        to_val = request.POST['detail_condition_score_to_' + count]
+        if name:
+            condition['name'] = name
+            condition['from'] = from_val if len(from_val) else None
+            condition['to'] = to_val if len(to_val) else None
+            condition['no'] = 'detail_condition_score_no_' + count in request.POST
+            section_score_conditions.append(condition)
+
+    record_offset = int(request.POST['offset'])
+    score_store = ScoreStore(contract_id, unicode(course_id))
+    score_columns, score_records = score_store.get_data_for_w2ui(total_condition=total_condition,
+                                                                 section_conditions=section_score_conditions,
+                                                                 student_status=student_status,
+                                                                 certificate_status=certificate_status,
+                                                                 limit=settings.BIZ_MONGO_LIMIT_RECORDS)
+    total_records = len(score_records)
+
+    # Member
+    new_score_records = _merge_to_store_by_member_for_search(
+        request, org, request.current_organization_visible_group_ids, manager, _(ScoreStore.FIELD_USERNAME),
+        score_records, True)
+
+    return score_columns, score_records, total_records, new_score_records
+
+
+def playback_search_filter(request, org, contract_id, course_id, manager):
+    student_status = request.POST['student_status']
+    total_playback_no = 'total_playback_no' in request.POST
+    total_playback_from = request.POST['total_playback_time_from']
+    total_playback_to = request.POST['total_playback_time_to']
+
+    total_condition = {
+        'no': total_playback_no,
+        'from': (int(total_playback_from) * 60) - 60 if len(total_playback_from) else None,
+        'to': int(total_playback_to) * 60 if len(total_playback_to) else None,
+    }
+
+    section_playback_conditions = []
+    playback_counter = 1
+    while 'detail_condition_playback_name_' + str(playback_counter) in request.POST:
+        count = str(playback_counter)
+        playback_counter += 1
+        condition = {}
+        name = request.POST['detail_condition_playback_name_' + count]
+        from_val = request.POST['detail_condition_playback_from_' + count]
+        to_val = request.POST['detail_condition_playback_to_' + count]
+        if name:
+            condition['name'] = name
+            condition['from'] = (int(from_val) * 60) - 60 if len(from_val) else None
+            condition['to'] = int(to_val) * 60 if len(to_val) else None
+            condition['no'] = 'detail_condition_playback_no_' + count in request.POST
+            section_playback_conditions.append(condition)
+
+    record_offset = int(request.POST['offset'])
+    playback_store = PlaybackStore(contract_id, unicode(course_id))
+    playback_columns, playback_records = playback_store.get_data_for_w2ui(total_condition=total_condition,
+                                                         section_conditions=section_playback_conditions,
+                                                         student_status=student_status,
+                                                         limit=MAX_RECORDS_SEARCH_BY_PLAYBACK)
+    total_records = len(playback_records)
+
+    # Member
+    new_playback_records = _merge_to_store_by_member_for_search(
+        request, org, request.current_organization_visible_group_ids, manager, _(PlaybackStore.FIELD_USERNAME),
+        playback_records, True)
+
+    return playback_columns, playback_records, total_records, new_playback_records
 
 
 def _merge_to_store_by_member_for_search(

@@ -35,7 +35,6 @@ class OrgUsernameRule(models.Model):
         """
         try:
             str = str.lower()
-            # a = 1 + 'a'
             if cls.objects.filter(org=org).exists():
                 if str.startswith(tuple([r.prefix.lower() for r in cls.objects.filter(org=org)])):
                     return True

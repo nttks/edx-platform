@@ -12,7 +12,7 @@ class Member(models.Model):
     org = models.ForeignKey(Organization)
     group = models.ForeignKey(Group, null=True)
     user = models.ForeignKey(User, related_name='member')
-    code = models.CharField(max_length=255, null=True)
+    code = models.CharField(max_length=255, null=True, db_index=True)
     org1 = models.CharField(max_length=100, null=True)
     org2 = models.CharField(max_length=100, null=True)
     org3 = models.CharField(max_length=100, null=True)

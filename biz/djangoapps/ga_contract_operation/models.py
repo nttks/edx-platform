@@ -271,6 +271,7 @@ class ContractMail(ContractMailBase):
             MAIL_PARAM_LOGINCODE,
             MAIL_PARAM_URLCODE,
         ],
+
     }
 
     @property

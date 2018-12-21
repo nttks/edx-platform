@@ -29,6 +29,7 @@ urlpatterns = patterns(
     url(r'^send_mail_ajax$', 'send_mail_ajax', name='send_mail_ajax'),
     url(r'^reminder_mail$', 'reminder_mail', name='reminder_mail'),
     url(r'^reminder_mail_save_ajax$', 'reminder_mail_save_ajax', name='reminder_mail_save_ajax'),
+    url(r'^reminder_mail_delete_ajax$', 'reminder_mail_delete_ajax', name='reminder_mail_delete_ajax'),
     url(r'^reminder_mail_send_ajax$', 'reminder_mail_send_ajax', name='reminder_mail_send_ajax'),
     url(r'^reminder_search_ajax$', 'reminder_search_ajax', name='reminder_search_ajax'),
     url(r'^reminder_search_mail_send_ajax$', 'reminder_search_mail_send_ajax', name='reminder_search_mail_send_ajax'),

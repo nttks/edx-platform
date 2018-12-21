@@ -1,13 +1,16 @@
 <%inherit file="../main_biz.html" />
+<%namespace name="static" file="../static_content.html" />
 <%!
 from django.utils.translation import ugettext as _
 from django.core.urlresolvers import reverse
 %>
 
-<%block name="pagetitle">${_("Survey Download")}</%block>
+<%block name="pagetitle">${_("Survey")}</%block>
 
 <%block name="js_extra">
 <script type="text/javascript">
+    var grid = grid || [];
+
     $(function () {
         $('#form').w2form({name: 'form'});
         $('.w2ui-buttons').on('click', '#download-btn', function () {
@@ -20,6 +23,242 @@ from django.core.urlresolvers import reverse
             }
         });
         $('#encoding-utf8').prop('checked', getInstructorSurveyEncodingUTF8());
+
+         // Tab
+        $('[role="tab"]').on('click',function(e){
+            var $eTarget = $(e.currentTarget);
+            var $targetPanel = $('[aria-labelledby="' + $eTarget.attr('id') + '"]');
+            $eTarget
+                .attr('aria-selected', true)
+                .addClass('is_active')
+                .siblings('[role="tab"]')
+                .attr('aria-selected', false)
+                .removeClass('is_active');
+            $targetPanel
+                .attr('aria-hidden', false)
+                .addClass('is_active')
+                .siblings('[role="tabpanel"]')
+                .attr('aria-hidden', true)
+                .removeClass('is_active');
+
+            fit_wrapper_height();
+        });
+        function fit_wrapper_height() {
+            var sHeight = $('.side').height();
+            var mHeight = $('.main').height();
+            var height = mHeight > sHeight ? mHeight - 200 : sHeight;
+            $('.content-wrapper').height(height);
+        }
+
+        // below lines for status list
+        function lock() {
+            w2utils.lock($('.biz-wrap'), '', true);
+        }
+        function unlock() {
+            w2utils.unlock($('.biz-wrap'));
+        }
+        function validate_number_text() {
+            var success = true;
+            var $ul = $('<ul class="messages" />');
+            var $error_area = $('#error_area').empty().hide();
+            return success;
+        }
+        function is_filtering() {
+            if ($('#group_id').val() != '') {
+                // console.log('$(\'#group_id\').val()='+$('#group_id').val())
+                $("#is_filter").val('on');
+            }
+            if ($('#detail_condition_member_1').val() != '') {
+                // console.log('$(\'#detail_condition_member_1\').val()='+$('#detail_condition_member_1').val())
+                $("#is_filter").val('on');
+            }
+            if ($('#detail_condition_member_2').val() != '') {
+                // console.log('$(\'#detail_condition_member_2\').val()='+$('#detail_condition_member_2').val())
+                $("#is_filter").val('on');
+            }
+            if ($('#detail_condition_member_3').val() != '') {
+                // console.log('$(\'#detail_condition_member_3\').val()='+$('#detail_condition_member_3').val())
+                $("#is_filter").val('on');
+            }
+            if ($('#detail_condition_member_4').val() != '') {
+                // console.log('$(\'#detail_condition_member_4\').val()='+$('#detail_condition_member_4').val())
+                $("#is_filter").val('on');
+            }
+            if ($('#detail_condition_member_5').val() != '') {
+                // console.log('$(\'#detail_condition_member_5\').val()='+$('#detail_condition_member_5').val())
+                $("#is_filter").val('on');
+            }
+        }
+
+        function createColumn(field, caption, type) {
+            var column = {
+                field: field,
+                caption: caption,
+                sortable: true,
+                size: '10%',
+                min: 80
+            };
+            switch (type) {
+                case 'text':
+                    column['searchable'] = true;
+                    break;
+                case 'time':
+                    column['render'] = renderTime;
+                    column['style'] = 'text-align: right';
+                    break;
+                case 'hidden':
+                    column['searchable'] = true;
+                    column['hidden'] = true;
+                    break;
+            }
+            return column;
+        }
+
+        // collapse
+        $(".gc_collapse button").on("click", function() {
+            var $keBtn = $(this);
+            var $tgtPnl = $(this).next(".gc_collapse_panel");
+            $keBtn
+                .attr('aria-expanded', function (i, attr) { return attr === 'true' ? 'false' : 'true'})
+                .toggleClass('is_open');
+            $tgtPnl
+                .attr('aria-hidden', function (i, attr) { return attr === 'true' ? 'false' : 'true'})
+                .toggleClass('is_show');
+
+            fit_wrapper_height();
+        });
+
+        // select option event
+        $('#survey_name').change(function() {
+            if ($('#survey_name').val() != '') {
+                $("#survey_answered").prop('disabled', false);
+                $("#survey_not_answered").prop('disabled', false);
+
+            } else {
+                $("#survey_answered").prop('disabled', true);
+                $("#survey_not_answered").prop('disabled', true);
+                $("#survey_answered").prop('checked', true);
+                $("#survey_not_answered").prop('checked', true);
+
+            };
+        });
+
+        // set grid
+        var responseColumns = ${resp_columns},
+            responseRecords = ${resp_records},
+            columnGroups = [],
+            columns = [];
+
+        if (responseRecords.length >= 0) {
+            for (var i = 0; i < responseColumns.length; i++) {
+               var responseColumn = responseColumns[i],
+                    splitNames = responseColumn[0].split('___', 2);
+               if (splitNames.length === 2) {
+                    if (columns.length > 0 && columns[columns.length - 1].field.split('___', 2)[0] === splitNames[0]) {
+                        columnGroups[columnGroups.length - 1].span++;
+                    } else {
+                        columnGroups.push({caption: splitNames[0], span: 1});
+                    }
+                    columns.push(createColumn(responseColumn[0], splitNames[1], responseColumn[1]));
+                } else {
+                    columnGroups.push({master: true});
+                    columns.push(createColumn(responseColumn[0], responseColumn[0], responseColumn[1]));
+                }
+            }
+        }
+
+        var res_grid = $('#grid').w2grid({
+            name: 'grid',
+            fixedBody: true,
+            show: {
+                toolbar: true,
+                footer: true,
+                toolbarReload: false,
+                toolbarColumns: true
+            },
+            columnGroups: columnGroups,
+            columns: columns,
+            records: responseRecords
+        });
+
+        // push grid
+        grid.push(res_grid);
+
+
+        // action of download
+        // Prevent double click
+        $('#download-ans-status-btn').on('click',function () {
+            $("#is_filter").val('off');
+            var $btn = $(this);
+            $btn.attr('disabled', true);
+            $.fileDownload("${reverse('biz:course_anslist:status_download')}", {
+                    httpMethod: "POST",
+                    data: {"csrfmiddlewaretoken": $.cookie("csrftoken")}
+                })
+                .always(function () {
+                    $btn.attr('disabled', false);
+                    $("#is_filter").val('off');
+                });
+            return false;
+        });
+
+        $('#download-searched-ans-status-btn').on('click', function () {
+            var $btn = $(this);
+            var postData = {"csrfmiddlewaretoken": $.cookie("csrftoken")};
+            $("#is_filter").val('off');
+            is_filtering()
+            $.each($('#form-status').find('textarea,input,select').serializeArray(), function(i, value){
+                postData[value.name] = value["value"];
+            });
+            $btn.attr('disabled', true);
+            $.fileDownload("${reverse('biz:course_anslist:status_download')}", {
+                    httpMethod: "POST",
+                    data: postData
+                })
+                .always(function () {
+                    $btn.attr('disabled', false);
+                    $("#is_filter").val('off');
+                });
+            return false;
+        });
+
+
+        // action of search
+        $('#search').on('click', function () {
+            if (!validate_number_text()) { return false }
+            $("#is_filter").val('off');
+            is_filtering()
+            lock();
+            var clickButton = $(this);
+            var form_data = new FormData($('#form-status').get(0));
+            $.ajax({
+                //url: clickButton.data('endpoint'),
+                url: "${reverse('biz:course_anslist:status_search_api')}",
+                type: 'POST',
+                cache: false,
+                data: form_data,
+                processData: false,
+                contentType: false,
+                traditional: true
+            }).done(function (data) {
+                //console.log(JSON.stringify(data));
+                w2ui['grid'].records = data.resp_records_json ? JSON.parse(data.resp_records_json) : [];
+                w2ui['grid'].total = w2ui['grid'].records.length;
+                w2ui['grid'].refresh();
+                //console.log(JSON.stringify(JSON.parse(data.resp_records_json)));
+                //pagination_create(data.total_records);
+            }).fail(function(jqXHR) {
+                console.log(jqXHR);
+            }).always(function () {
+                $("#is_filter").val('off');
+                unlock();
+            });
+            return false;
+        });
+
+        // always unlock grid dev
+        w2utils.unlock($('#grid'), '', true);
+
     });
     
     function saveInstructorSurveyEncodingUTF8(value) {
@@ -34,18 +273,135 @@ from django.core.urlresolvers import reverse
         }
     }
 </script>
+<style>
+    .w2ui-grid .w2ui-grid-body table .w2ui-head > div,
+    .w2ui-grid .w2ui-grid-body table td.w2ui-grid-data > div {
+        font-size: 0.6rem;
+    }
+    .content-wrapper {
+        min-height: 500px;
+    }
+</style>
 </%block>
 
 <%block name="custom_content">
-<div id="form" class="field-area">
-    <div class="w2ui-page page-0">
-        <div class="field">
-            <span class="operation">${_("You can download the file of survey results.")}</span>
+<div id="error_area" class="gc_error_area"></div>
+<div class="gc_content">
+    <div class="gc_tab">
+        <ul class="gc_tab_list" role="tablist">
+            <li class="gc_tab_item is_active" id="tab01" role="tab" aria-controls="pnl01" aria-selected="true" tabindex="0">
+                ${_("Survey Download")}</li>
+            <li class="gc_tab_item" id="tab02" role="tab" aria-controls="pnl02" aria-selected="false" tabindex="0">
+                ${_("Answer Status")}</li>
+        </ul>
+    </div>
+    <div class="gc_tab_content">
+        <div class="gc_tab_panel is_active" id="pnl01" role="tabpanel" aria-labelledby="tab01" aria-hidden="false">
+            <div class="gc_data_section">
+                <div id="form" class="field-area">
+                    <div class="w2ui-page page-0">
+                        <div class="field">
+                            <span class="operation">${_("You can download the file of survey results.")}</span>
+                        </div>
+                    </div>
+                    <div class="w2ui-buttons">
+                        <input type="button" id="download-btn" data-endpoint="${reverse('biz:course_operation:survey_download')}" data-endpoint-utf8="${reverse('biz:course_operation:survey_download_utf8')}" value="&#xf1c3 ${_("Get file of survey result")}"/><br/>
+                        <input type="checkbox" id="encoding-utf8" /><label for="encoding-utf8" class="encoding-utf8">${_("If you want to download the file in UTF-8, please place a check mark and then push the button.")}</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="gc_tab_panel" id="pnl02" role="tabpanel" aria-labelledby="tab02" aria-hidden="false">
+            <form id="form-status">
+                <div class="gc_column">
+                    <div class="gc_column_col gc_column_col_full">
+                        <div class="gc_field">
+                            <label class="gc_field_label" for="survey_name">${_('Select Survey')}</label>
+                            <select id="survey_name" class="gc_field_ipt gc_w30em" name="survey_name">
+                                <option value=""></option>
+                                % for survey_name in survey_names_list:
+                                <option value="${survey_name[1]}">${survey_name[1]}</option>
+                                % endfor
+                            </select>
+                            <label class="gc_field_ipt_opt" for="survey_answered">
+                                 <input id="survey_answered" class="gc_field_ipt_chk" type="checkbox" name="survey_answered" checked disabled />
+                                 ${_("Answered")}
+                            </label>
+                            <label class="gc_field_ipt_opt" for="survey_not_answered">
+                                 <input id="survey_not_answered" class="gc_field_ipt_chk" type="checkbox" name="survey_not_answered" checked disabled />
+                                 ${_("Unanswered")}
+                            </label>
+                        </div>
+                        <div class="gc_field">
+                            <label class="gc_field_label" for="group_id">${_('Select Organization')}</label>
+                            <select id="group_id"  class="gc_field_ipt gc_w30em" name="group_id">
+                                <option value=""></option>
+                                % for option in group_list:
+                                <option value="${option[1]}">${option[2] | h}</option>
+                                % endfor
+                            </select>
+                        </div>
+                    </div>
+                <!-- / .gc_column -->
+                </div>
+                <div class="gc_collapse">
+                    <button class="gc_collapse_btn" aria-controls="collapse_panel03" aria-expanded="false"
+                            type="button"><i class="fa fa-plus-square gc_ico_plus" aria-hidden="true"></i><i
+                            class="fa fa-minus-square gc_ico_minus" aria-hidden="true"></i>${_("Search Detail(Other)")}</button>
+                    <div class="gc_collapse_panel" aria-hidden="true" id="collapse_panel03">
+                        <div class="gc_column">
+                            <div class="gc_column_col gc_column_col_full">
+                            % for i in range(1, 6) :
+                                <div class="gc_field">
+                                    <fieldset class="gc_fieldset">
+                                        <div class="gc_fieldset_wrap">
+                                            <legend class="gc_fieldset_label gc_w10em" for="sdc_member_name_${i}">${_("Search Condition")}${i}</legend>
+                                            <div class="gc_field_group">
+                                                <select id="sdc_member_name_${i}" class="gc_field_ipt gc_w15em" name="detail_condition_member_name_${i}">
+                                                    <option value=""></option>
+                                                    % for key in member_org_item_list :
+                                                        <option value="${key}">${member_org_item_list[key]}</option>
+                                                    % endfor;
+                                                </select>
+                                                <input class="gc_field_ipt gc_w30em" rel="search" type="text"
+                                                       id="detail_condition_member_${i}" name="detail_condition_member_${i}" title="" value="" maxlength="255" />
+                                            </div>
+                                        </div>
+                                    </fieldset>
+                                </div>
+                            % endfor;
+                            </div>
+                        </div>
+                    </div>
+                <!-- / .gc_collapse" -->
+                </div>
+                <div class="gc_btn_cta gc_btn_cta_center">
+                    <button id="search" class="btn btn-blue gc_btn_search" name="search"
+                            data-endpoint="${reverse('biz:course_anslist:status_search_api')}" type="search">${_("Search")}</button>
+                <!-- /.gc_btn_cta --></div>
+                <input type="hidden" id="is_filter" name="is_filter" value="off">
+                <input type="hidden" id="offset" name="offset" value="0">
+                <input type="hidden" id="limit" name="limit" value="100">
+            </form>
+            <div class="gc_data_section">
+                <div id="grid" style="height: 610px; min-width: 918px; max-width: 1168px;"></div>
+            </div>
+            <form method="get">
+                <div class="gc_download">
+                    <div class="gc_download_btn">
+                        <button id="download-ans-status-btn" class="btn btn-grn" type="button">${_('Download Answer Status')}</button>
+                    </div>
+                    <div class="gc_download_btn">
+                        <button id="download-searched-ans-status-btn" class="btn btn-grn" type="button">${_('Download Searched Answer Status')}</button>
+                    </div>
+                </div>
+            </form>
         </div>
     </div>
-    <div class="w2ui-buttons">
-        <input type="button" id="download-btn" data-endpoint="${reverse('biz:course_operation:survey_download')}" data-endpoint-utf8="${reverse('biz:course_operation:survey_download_utf8')}" value="&#xf1c3 ${_("Get file of survey result")}"/><br/>
-        <input type="checkbox" id="encoding-utf8" /><label for="encoding-utf8" class="encoding-utf8">${_("If you want to download the file in UTF-8, please place a check mark and then push the button.")}</label>
-    </div>
 </div>
+<script type="text/javascript">
+    // when it ends loading
+    w2utils.lock($('#grid'), '', true);
+</script>
 </%block>
