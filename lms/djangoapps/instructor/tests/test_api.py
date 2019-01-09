@@ -87,14 +87,12 @@ from openedx.core.lib.xblock_utils import grade_histogram
 
 from .test_tools import msk_from_problem_urlname
 
-import logging
-log = logging.getLogger(__name__)
-
 DATE_FIELD = Date()
 EXPECTED_CSV_HEADER = (
     '"code","redeem_code_url","course_id","company_name","created_by","redeemed_by","invoice_id","purchaser",'
     '"customer_reference_number","internal_reference"'
 )
+
 EXPECTED_COUPON_CSV_HEADER = '"Coupon Code","Course Id","% Discount","Description","Expiration Date",' \
                              '"Is Active","Code Redeemed Count","Total Discounted Seats","Total Discounted Amount"'
 
