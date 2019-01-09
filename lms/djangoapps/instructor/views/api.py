@@ -10,6 +10,7 @@ import json
 import logging
 import re
 import time
+from string import Template
 import requests
 from django.conf import settings
 from django.views.decorators.csrf import ensure_csrf_cookie, csrf_exempt
@@ -99,6 +100,8 @@ from bulk_email.models import CourseEmail, SEND_TO_ALL, SEND_TO_ALL_INCLUDE_OPTO
 from ga_survey.models import SurveySubmission
 from student.models import get_user_by_username_or_email
 from ga_advanced_course.analytics import Features, advanced_course_purchased_features, paid_course_purchased_features
+import biz.djangoapps.ga_course_anslist.views as anslist_view
+
 
 from .tools import (
     dump_student_extensions,
@@ -2680,29 +2683,67 @@ def get_survey_utf8(request, course_id):  # pylint: disable=W0613
     return create_survey_response(request, course_id, 'utf-8')
 
 
-def create_survey_response(request, course_id, encoding):
+QUERY_SURVEYSUBMISSION_FILTER_USERS_STATEMENT = ''' 
+    SELECT s.*, u.*, p.*, t.account_status, e.is_active, b.login_code
+        FROM ga_survey_surveysubmission s
+        LEFT OUTER JOIN auth_user u
+        ON s.user_id = u.id
+        LEFT OUTER JOIN auth_userprofile p
+        ON s.user_id = p.user_id
+        LEFT OUTER JOIN student_userstanding t
+        ON s.user_id = t.user_id
+        LEFT OUTER JOIN student_courseenrollment e
+        ON s.user_id = e.user_id and s.course_id = e.course_id
+        LEFT OUTER JOIN ga_login_bizuser b
+        ON s.user_id = b.user_id
+        WHERE s.course_id = '$course_id'
+        AND u.id in ($user_ids)
+        ORDER BY s.unit_id, s.created
+'''
+
+QUERY_SURVEYSUBMISSION_ALL_STATEMENT = ''' 
+    SELECT s.*, u.*, p.*, t.account_status, e.is_active, b.login_code
+        FROM ga_survey_surveysubmission s
+        LEFT OUTER JOIN auth_user u
+        ON s.user_id = u.id
+        LEFT OUTER JOIN auth_userprofile p
+        ON s.user_id = p.user_id
+        LEFT OUTER JOIN student_userstanding t
+        ON s.user_id = t.user_id
+        LEFT OUTER JOIN student_courseenrollment e
+        ON s.user_id = e.user_id and s.course_id = e.course_id
+        LEFT OUTER JOIN ga_login_bizuser b
+        ON s.user_id = b.user_id
+        WHERE s.course_id = '$course_id'
+        ORDER BY s.unit_id, s.created
+'''
+
+def _create_surveysubmission_statement(course_id, user_ids=None):
+    sql_statement = ''
+    if user_ids:
+        str_ids = [str(i) for i in user_ids]
+        templ = Template(QUERY_SURVEYSUBMISSION_FILTER_USERS_STATEMENT)
+        sql_statement = templ.substitute(course_id=course_id, user_ids=','.join(str_ids))
+    else:
+        templ = Template(QUERY_SURVEYSUBMISSION_ALL_STATEMENT)
+        sql_statement = templ.substitute(course_id=course_id)
+
+    return sql_statement
+
+def create_survey_response(request, course_id, encoding, is_manager=None,  org_id=None, child_group_ids=None):
     header = ['Unit ID', 'Survey Name', 'Created', 'User Name', 'Full Name', 'Email', 'Resigned', 'Unenrolled']
     rows = []
+    user_ids = []
+
+    if is_manager:
+        members_grid_dct = {}
+        members_grid_dct = anslist_view._get_members(org_id=org_id, child_group_ids=child_group_ids)
+        user_ids = members_grid_dct.keys()
 
     #Note(yokose): raw() raises InterfaceError when using CourseKey
     #course_id = SlashSeparatedCourseKey.from_deprecated_string(course_id)
-    submissions = list(SurveySubmission.objects.raw(
-        '''SELECT s.*, u.*, p.*, t.account_status, e.is_active, b.login_code
-           FROM ga_survey_surveysubmission s
-           LEFT OUTER JOIN auth_user u
-           ON s.user_id = u.id
-           LEFT OUTER JOIN auth_userprofile p
-           ON s.user_id = p.user_id
-           LEFT OUTER JOIN student_userstanding t
-           ON s.user_id = t.user_id
-           LEFT OUTER JOIN student_courseenrollment e
-           ON s.user_id = e.user_id and s.course_id = e.course_id
-           LEFT OUTER JOIN ga_login_bizuser b
-           ON s.user_id = b.user_id
-           WHERE s.course_id = %s
-           ORDER BY s.unit_id, s.created''',
-        [course_id]
-    ))
+    sql_statement = _create_surveysubmission_statement(str(course_id), user_ids)
+    submissions = list(SurveySubmission.objects.raw(sql_statement))
 
     HEADER_LOGIN_CODE = 'Login Code'
     # NOTE: Try to add login code when called from biz and contract has auth info
@@ -2741,7 +2782,9 @@ def create_survey_response(request, course_id, encoding):
                     value = ','.join(value)
                 row.append(value)
             rows.append(row)
+
     course_key = SlashSeparatedCourseKey.from_deprecated_string(course_id)
+
     # To open this file by Excel by default, will set the extension to csv.
     file_name = '{org}-{course}-{run}-survey.csv'.format(org=course_key.org, course=course_key.course, run=course_key.run)
     return create_tsv_response(file_name, header, rows, encoding)
