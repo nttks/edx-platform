@@ -35,16 +35,23 @@ def _get_org_item_list():
     return member_org_item_list
 
 
-def _get_survey_names_list(course_id):
+def _get_survey_names_list(course_id, get_updated_survey_name=False):
     ## add for answer list on survey
-    sql_statement = helper._create_survey_name_list_statement(course_id)
+    sql_statement = helper._create_survey_name_list_statement(course_id, get_updated_survey_name)
     records = SurveySubmission.objects.raw(sql_statement)
     ret = []
     for record in records:
-        ret.append((record.unit_id,record.survey_name))
+        ret.append((record.unit_id, record.survey_name))
 
     return ret
 
+
+def _get_survey_names_list_merged(course_id):
+    temp_survey_names_list = _get_survey_names_list(course_id)
+    temp_survey_names_list_update_survey_name = _get_survey_names_list(course_id, get_updated_survey_name=True)
+    dct = dict(temp_survey_names_list_update_survey_name)
+    ret_tpl = [(itm[0], dct[itm[0]]) for itm in temp_survey_names_list]
+    return ret_tpl
 
 def _get_grid_columns(survey_names_list):
     columns = []
@@ -155,7 +162,7 @@ def _get_course_members(ids, course_id):
     results = []
     if ids:
         results = CourseEnrollment.objects.filter(
-            is_active=1, user_id__in=ids, course_id=course_id).values('user_id', 'created')
+            user_id__in=ids, course_id=course_id).values('user_id', 'created')
     return results
 
 
@@ -208,9 +215,11 @@ def _retrieve_grid_data(org_id, child_group_ids, contract_id, course_id, is_filt
     users_submissions = _get_surveysubmission(result_members.keys(), course_id)
 
     ## set survey answered date into dict
+    survey_name_tpl = _get_survey_names_list(course_id, get_updated_survey_name=True)
+    survey_name_dct = dict(survey_name_tpl)
     for submission in users_submissions:
         result_members[submission.user_id].update({
-            submission.survey_name : datetime_utils.to_jst(submission.created).strftime('%Y/%m/%d %H:%M')})
+            survey_name_dct[submission.unit_id] : datetime_utils.to_jst(submission.created).strftime('%Y/%m/%d %H:%M')})
 
     return result_members
 
@@ -301,7 +310,7 @@ def download_csv(request):
     log.debug('survey_name_conditions={}'.format(survey_name_conditions))
 
     ## generate select list
-    resp_survey_names_list = _get_survey_names_list(course_id)
+    resp_survey_names_list = _get_survey_names_list_merged(course_id)
 
     ## get grid data
     members_grid_dct = _retrieve_grid_data(org.id, child_group_ids, contract_id, course_id, is_filter, member_conditions)

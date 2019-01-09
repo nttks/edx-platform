@@ -473,7 +473,7 @@ from microsite_configuration import microsite
                     % endif
 
                     ## Course Operation
-                    % if current_manager.can_handle_course_operation() and current_course and current_contract.is_spoc_available:
+                    % if current_manager.can_handle_achievement() and current_course and current_contract.is_spoc_available:
                     <li class="${'current' if current_feature == 'course_operation/survey' else ''}"><a href="${reverse('biz:course_operation:survey')}">${_("Survey Management")}</a></li>
                     % endif
 

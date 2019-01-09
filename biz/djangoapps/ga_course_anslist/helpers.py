@@ -42,11 +42,30 @@ QUERY_STATEMENT_SURVEY_NAMES = '''
 	  and sbm.course_id = '$course_id'
     group by sbm.unit_id
 	order by sbm.created
-'''
+	'''
 
-def _create_survey_name_list_statement(course_id):
-    templ = Template(QUERY_STATEMENT_SURVEY_NAMES)
-    sql_statement = templ.substitute(course_id=course_id)
+QUERY_STATEMENT_SURVEY_NAMES_MAX = '''
+	SELECT 
+	    sbm.id
+	  , sbm.unit_id
+	  , sbm.course_id
+	  , sbm.survey_name
+	  , max(sbm.created)
+	FROM
+	  ga_survey_surveysubmission as sbm
+	WHERE 1 = 1
+	  and sbm.course_id = '$course_id'
+    group by sbm.unit_id
+	order by sbm.created
+	'''
+
+def _create_survey_name_list_statement(course_id, flg_get_updated_survey_name=False):
+    if flg_get_updated_survey_name:
+        templ = Template(QUERY_STATEMENT_SURVEY_NAMES_MAX)
+        sql_statement = templ.substitute(course_id=course_id)
+    else:
+        templ = Template(QUERY_STATEMENT_SURVEY_NAMES)
+        sql_statement = templ.substitute(course_id=course_id)
     return sql_statement
 
 
@@ -161,7 +180,7 @@ def _serialize_post_data_for_detail(post_data):
 
     ret_lst = []
     for k in ret_dct.keys():
-        ret_lst.append({'field' : [k], 'value' : ret_dct[k]})
+        ret_lst.append({'field' : [k], 'value': ret_dct[k]})
 
     return ret_lst
 

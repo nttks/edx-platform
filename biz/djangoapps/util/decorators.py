@@ -146,7 +146,7 @@ def check_course_selection(func):
                 return _render_403(request)
 
         elif re.match('^/biz/course_operation/', request.path):
-            if not manager.can_handle_course_operation():
+            if not manager.can_handle_achievement():
                 log.warning(
                     "Manager(id={}) has no permission to handle '{}' feature.".format(
                         manager.id, 'course_operation')
@@ -248,7 +248,7 @@ def require_survey(func):
 
         if (
             current_manager and current_contract and current_course and
-            current_manager.can_handle_course_operation() and
+            current_manager.can_handle_achievement() and
             current_contract.is_spoc_available
         ):
             return func(request, *args, **kwargs)

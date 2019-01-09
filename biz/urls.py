@@ -20,4 +20,5 @@ urlpatterns = patterns('',
     url(r'^member/', include('biz.djangoapps.gx_member.urls', namespace='member')),
     url(r'^group/', include('biz.djangoapps.gx_org_group.urls', namespace='group')),
     url(r'^admin/', include('biz.djangoapps.gx_login.urls', namespace='admin')),
+    url(r'^register_api/', include('biz.djangoapps.gx_register_api.urls', namespace='register_api')),
 )

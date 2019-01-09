@@ -11,7 +11,8 @@ from biz.djangoapps.gx_org_group.models import Group
 
 class MemberUserCreateForm(forms.Form):
     group_code = forms.CharField(max_length=Group._meta.get_field('group_code').max_length, required=False)
-    code = forms.CharField(max_length=Member._meta.get_field('code').max_length, required=True)
+    code = forms.CharField(max_length=60, required=True,
+                           validators=[RegexValidator(regex=r'^[ -~]*$', code='invalid')])
     login_code = forms.CharField(
         min_length=LOGIN_CODE_MIN_LENGTH, max_length=LOGIN_CODE_MAX_LENGTH, required=False,
         validators=[RegexValidator(regex=r'^[-\w]*$', code='invalid')])

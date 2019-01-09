@@ -59,9 +59,9 @@ QUERY_STATEMENT_SURVEY_NAMES = '''
 	  and sbm.course_id = '$course_id'
     group by sbm.unit_id
 	order by sbm.created
-'''
+	'''
 
-QUERY_STATEMENT_SURVEY_NAMES_ACTUAL = '''
+QUERY_STATEMENT_SURVEY_NAMES_EXPECTED = '''
 	SELECT 
 	    sbm.id
 	  , sbm.unit_id
@@ -74,7 +74,38 @@ QUERY_STATEMENT_SURVEY_NAMES_ACTUAL = '''
 	  and sbm.course_id = 'course-v1:xxxxxxxxxxx+2018_02'
     group by sbm.unit_id
 	order by sbm.created
-'''
+	'''
+
+QUERY_STATEMENT_SURVEY_NAMES_MAX = '''
+	SELECT 
+	    sbm.id
+	  , sbm.unit_id
+	  , sbm.course_id
+	  , sbm.survey_name
+	  , max(sbm.created)
+	FROM
+	  ga_survey_surveysubmission as sbm
+	WHERE 1 = 1
+	  and sbm.course_id = '$course_id'
+    group by sbm.unit_id
+	order by sbm.created
+	'''
+
+
+QUERY_STATEMENT_SURVEY_NAMES_MAX_EXPECTED = '''
+	SELECT 
+	    sbm.id
+	  , sbm.unit_id
+	  , sbm.course_id
+	  , sbm.survey_name
+	  , max(sbm.created)
+	FROM
+	  ga_survey_surveysubmission as sbm
+	WHERE 1 = 1
+	  and sbm.course_id = 'course-v1:xxxxxxxxxxx+2018_02'
+    group by sbm.unit_id
+	order by sbm.created
+	'''
 
 QUERY_STATEMENT_USER_NOT_MEMBERS = '''
     SELECT
@@ -203,12 +234,26 @@ class HelperTest(TestCase):
         self.assertEqual(expected, actual)
         log.debug('DONE')
 
+    def test_query_statement_survey_names_max(self):
+        expected = json.dumps(QUERY_STATEMENT_SURVEY_NAMES_MAX)
+        actual = json.dumps(helper.QUERY_STATEMENT_SURVEY_NAMES_MAX)
+        self.assertEqual(expected, actual)
+        log.debug('DONE')
+
     def test_create_survey_name_list_statement(self):
-        expected = QUERY_STATEMENT_SURVEY_NAMES_ACTUAL
+        expected = QUERY_STATEMENT_SURVEY_NAMES_EXPECTED
         ## arrange
-        org_id = CONST_ORG_ID
         course_id = CONST_COURSE_ID
         actual = helper._create_survey_name_list_statement(course_id)
+        self.assertEqual(expected, actual)
+        log.debug('DONE')
+
+    def test_create_survey_name_list_max_statement(self):
+        expected = QUERY_STATEMENT_SURVEY_NAMES_MAX_EXPECTED
+        ## arrange
+        course_id = CONST_COURSE_ID
+        flg_get_updated_survey_name = True
+        actual = helper._create_survey_name_list_statement(course_id, flg_get_updated_survey_name)
         self.assertEqual(expected, actual)
         log.debug('DONE')
 

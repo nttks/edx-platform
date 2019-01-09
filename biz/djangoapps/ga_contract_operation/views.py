@@ -155,7 +155,12 @@ def _students_initial_search(request):
 
 
 def _contract_register_list_on_page(request, offset=0, limit=CONTRACT_REGISTER_MAX_DISPLAY_NUM):
-    option_sql = [request.current_organization.id, request.current_contract.id]
+    option_sql = [
+        # set default arguments for sql
+        request.current_organization.id,
+        request.current_organization.id,
+        request.current_contract.id
+    ]
     where_sql = ""
 
     radio_operator_exclude = 'exclude'
@@ -185,6 +190,7 @@ def _contract_register_list_on_page(request, offset=0, limit=CONTRACT_REGISTER_M
     # Status and Unregister
     status = request.POST.get('status')
     is_unregister = request.POST.get('is_unregister')
+    # is_unregister is empty when students page initial display.
     if is_unregister in radio_operator:
         if is_unregister == radio_operator_contains:
             if status:
@@ -253,14 +259,17 @@ def _contract_register_list_on_page(request, offset=0, limit=CONTRACT_REGISTER_M
     # Target user of delete member
     member_is_delete = request.POST.get('member_is_delete')
     if member_is_delete == radio_operator_contains:
-        where_sql += "AND (MG.is_active=1 OR MG.is_delete=0 OR MG.is_active=0 OR MG.is_delete=1 OR MG.is_active IS NULL) "
+        where_sql += "AND ((MG.is_active=1 AND MG.is_delete=0) OR (MG.is_active=0 AND MG.is_delete=1) OR MG.is_active IS NULL) "
     elif member_is_delete == radio_operator_only:
         where_sql += "AND MG.is_delete=1 "
-    elif member_is_delete == radio_operator_exclude:
+    else:
+        # member_is_delete in ['', 'exclude']
+        # member_is_delete is empty when students page initial display.
         where_sql += "AND (MG.is_active=1 OR MG.is_active IS NULL) "
 
     # Mask
     is_masked = request.POST.get('is_masked')
+    # is_masked is empty when students page initial display.
     if is_masked == radio_operator_exclude:
         where_sql += "AND email LIKE %s "
         option_sql.append('%@%')
@@ -281,7 +290,7 @@ LEFT OUTER JOIN (
          M.org1, M.org2, M.org3, M.org4, M.org5, M.org6, M.org7, M.org8, M.org9, M.org10, 
          M.item1, M.item2, M.item3, M.item4, M.item5, M.item6, M.item7, M.item8, M.item9, M.item10
   FROM gx_member_member as M LEFT OUTER JOIN gx_org_group_group as G 
-  ON M.group_id = G.id  AND M.org_id = %s) MG ON IC.user_id = MG.user_id 
+  ON M.group_id = G.id  AND M.org_id = %s) MG ON IC.user_id = MG.user_id AND MG.org_id = %s 
 WHERE IC.contract_id = %s ''' + where_sql + '''
 ORDER BY IC.id'''
     count_sql = '''SELECT 1 as id, COUNT(*) as cnt FROM (''' + sql + ''') CNT'''
@@ -797,7 +806,7 @@ def reminder_mail(request):
             ContractReminderMail.MAIL_PARAM_EMAIL_ADDRESS,
             ContractReminderMail.MAIL_PARAM_COURSE_NAME,
             ContractReminderMail.MAIL_PARAM_FULLNAME,
-            # ContractReminderMail.MAIL_PARAM_EXPIRE_DATE,
+            ContractReminderMail.MAIL_PARAM_EXPIRE_DATE,
         ],
     }
 
@@ -1306,10 +1315,7 @@ def reminder_search_mail_send_ajax(request):
             except UserProfile.DoesNotExist:
                 full_name = ''
         else:
-            if course.self_paced:
-                expire_datetime = self_paced_api.get_course_end_date(
-                    CourseEnrollment.get_enrollment(user, detail.course_id)
-                )
+            expire_datetime = course.deadline_start
             full_name = user.profile.name
 
         try:

@@ -65,7 +65,7 @@ class ContractOperationViewTestStudents(BizContractTestBase):
 
     def _create_param_search_students_ajax(
             self, contract_id=None, offset=0, limit=1000, status='',
-            is_unregister='contains', member_is_delete='contains', is_masked='contains', group_name='', free_word=''):
+            is_unregister='contains', member_is_delete='exclude', is_masked='contains', group_name='', free_word=''):
         param = {
             'contract_id': contract_id or self.contract.id,
             'offset': str(offset),
@@ -172,6 +172,7 @@ class ContractOperationViewTestStudents(BizContractTestBase):
         self.assertEqual(render_to_response_args[0], 'ga_contract_operation/students.html')
         self.assertEqual(render_to_response_args[1]['total_count'], expect_num)
         self.assertEqual(len(json.loads(render_to_response_args[1]['show_list'])), expect_num)
+
 
     @ddt.data(0, 1, 10)
     def test_search_students_ajax(self, test_num):
@@ -394,7 +395,7 @@ class ContractOperationViewTestStudents(BizContractTestBase):
         data = json.loads(response.content)
         self._assert_search_ajax_successful(data, 1, 1)
 
-    @ddt.data('exclude', 'only', 'contains')
+    @ddt.data('', 'exclude', 'only', 'contains')
     def test_students_search_students_ajax_is_delete(self, param_is_delete):
         self.setup_user()
         director_manager = self._director_manager
@@ -406,12 +407,16 @@ class ContractOperationViewTestStudents(BizContractTestBase):
         register1 = self._create_user_and_contract_register(username='username_only_delete_target')
         self._create_member(org=self.contract_org, group=group, code='code_delete_target_member', user=register1.user,
                             is_active=False, is_delete=True)
+        self._create_member(org=self.contract_org, group=group, code='code_delete_target_member_backup', user=register1.user,
+                            is_active=False, is_delete=False)
 
         # Active member
         register2 = self._create_user_and_contract_register(username='username_active_and_delete_target')
         self._create_member(org=self.contract_org, group=group, code='code_active_member', user=register2.user)
         self._create_member(org=self.contract_org, group=group, code='code_active_member_old', user=register2.user,
                             is_active=False, is_delete=True)
+        self._create_member(org=self.contract_org, group=group, code='code_active_member_backup', user=register2.user,
+                            is_active=False, is_delete=False)
 
         with self.skip_check_course_selection(current_organization=self.contract_org,
                                               current_contract=self.contract, current_manager=director_manager):
@@ -420,7 +425,7 @@ class ContractOperationViewTestStudents(BizContractTestBase):
         self.assertEqual(200, response.status_code)
         data = json.loads(response.content)
         show_list = json.loads(data['show_list'])
-        if param_is_delete == 'exclude':
+        if param_is_delete in ['', 'exclude']:
             self._assert_search_ajax_successful(data, 1, 1)
             self.assertEqual(show_list[0]['user_name'], 'username_active_and_delete_target')
         elif param_is_delete == 'contains':
@@ -433,7 +438,7 @@ class ContractOperationViewTestStudents(BizContractTestBase):
             self.assertEqual(show_list[0]['user_name'], 'username_only_delete_target')
             self.assertEqual(show_list[1]['user_name'], 'username_active_and_delete_target')
 
-    @ddt.data('exclude', 'only', 'contains')
+    @ddt.data('', 'exclude', 'only', 'contains')
     def test_students_search_students_ajax_is_masked(self, param_is_masked):
         self.setup_user()
         director_manager = self._director_manager
@@ -450,7 +455,7 @@ class ContractOperationViewTestStudents(BizContractTestBase):
         self.assertEqual(200, response.status_code)
         data = json.loads(response.content)
         show_list = json.loads(data['show_list'])
-        if param_is_masked == 'exclude':
+        if param_is_masked in ['', 'exclude']:
             self._assert_search_ajax_successful(data, 1, 1)
             self.assertEqual(show_list[0]['user_name'], 'username_is_not_masked')
         elif param_is_masked == 'contains':
@@ -606,11 +611,51 @@ class ContractOperationViewTestStudents(BizContractTestBase):
         with self.skip_check_course_selection(current_organization=orgs[1],
                                               current_contract=contracts[1], current_manager=managers[1]):
             response = self.client.post(self._url_search_students_ajax, param)
+
         self.assertEqual(200, response.status_code)
         data = json.loads(response.content)
         show_list = json.loads(data['show_list'])
         self._assert_search_ajax_successful(data, 1, 1)
         self.assertFalse(hasattr(show_list[0], 'code'))
+
+    def test_students_search_users_belonging_multiple_organizations(self):
+        self.setup_user()
+        # user1 has member data.
+        user1 = UserFactory.create()
+        # user1 has not member data.
+        user2 = UserFactory.create()
+
+        # create two org and contract
+        orgs = [self._create_organization(org_name='org' + str(i)) for i in range(2)]
+        contracts = [self._create_contract(contractor_organization=orgs[i]) for i in range(2)]
+
+        # create contract register for user1 and user2
+        contract_registers = []
+        for _user in [user1, user2]:
+            for _contract in contracts:
+                contract_registers.append(self.create_contract_register(user=_user, contract=_contract))
+
+        # create member for user1
+        user1_members = [self._create_member(org=_org, user=user1, group=None, code='code' + str(i)) for i, _org in enumerate(orgs)]
+
+        managers = [self._create_manager(org=org, user=self.user, created=self.contract_org,
+                                        permissions=[self.director_permission]) for org in orgs]
+
+        for i in range(2):
+            param = self._create_param_search_students_ajax(contract_id=contracts[i].id)
+            with self.skip_check_course_selection(current_organization=orgs[i],
+                                                  current_contract=contracts[i], current_manager=managers[i]):
+                response = self.client.post(self._url_search_students_ajax, param)
+
+            self.assertEqual(200, response.status_code)
+            data = json.loads(response.content)
+            show_list = json.loads(data['show_list'])
+            self._assert_search_ajax_successful(data, 2, 2)
+            for show_item in show_list:
+                if show_item['user_email'] == user1.email:
+                    self.assertEqual(show_item['code'], user1_members[i].code)
+                else:
+                    self.assertFalse(show_item['code'])
 
 
 class ContractOperationViewTestUnregisterStudents(BizContractTestBase):
