@@ -315,8 +315,8 @@ class UserSpecifiedRegistrationAPI(BizViewTestBase, ModuleStoreTestCase, TaskTes
         self.assertEqual(1, len(ContractRegister.objects.all()))
         self.assertEqual(1, len(CourseEnrollment.objects.all()))
         self.assertEqual(10, len(AdditionalInfo.objects.all()))
-        self.assertEqual(9, len(AdditionalInfoSetting.objects.all()))
-        self.assertFalse(AdditionalInfoSetting.objects.filter(contract_id=self.main_contract.id, display_name='value_add_2').first())
+        self.assertEqual(10, len(AdditionalInfoSetting.objects.all()))
+        self.assertFalse(AdditionalInfoSetting.objects.filter(contract_id=self.main_contract.id, value='value_add_2').first())
 
     def test_register_url_method_delete_fail(self):
         # method DELETE fail. not create register record

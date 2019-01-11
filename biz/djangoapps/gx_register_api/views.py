@@ -139,22 +139,37 @@ def post_user_name(request, org_id, contract_id, user_email):
                     _length_post_data = len(post_add_keys)
                     _length_add_list = len(additional_info_list)
                     # Additional info
-                    for i, additional_info in enumerate(additional_info_list, start=0):
-                        if _counter > _length_post_data:
+                    for i in range(0, 11):
+                        if _length_add_list == i:
                             break
-                        if _counter > _length_add_list:
-                            break
-                        _counter += 1
                         additional_info_setting, created = AdditionalInfoSetting.objects.get_or_create(
                             contract=contract,
-                            display_name=additional_info.display_name,
+                            display_name=additional_info_list[i].display_name,
                             user=user,
-                            defaults={'value': request.POST['add_' + str(i+1)] if 'add_' + str(i+1) in post_add_keys else ''}
+                            defaults={'value': request.POST['add_' + str(i + 1)] if 'add_' + str(
+                                i + 1) in post_add_keys else ''}
                         )
+                        additional_info_setting.save()
                         if not created:
-                            if 'add_' + str(i+1) in post_add_keys:
-                                additional_info_setting.value = request.POST[post_add_keys[post_add_keys.index('add_' + str(i+1))]]
+                            if 'add_' + str(i + 1) in post_add_keys:
+                                additional_info_setting.value = request.POST[
+                                    post_add_keys[post_add_keys.index('add_' + str(i + 1))]]
                                 additional_info_setting.save()
+                    # for i, additional_info in enumerate(additional_info_list, start=0):
+                    #     if _counter == 11:
+                    #         break
+                    #     _counter += 1
+                    #     additional_info_setting, created = AdditionalInfoSetting.objects.get_or_create(
+                    #         contract=contract,
+                    #         display_name=additional_info.display_name,
+                    #         user=user,
+                    #         # defaults={'value': request.POST['add_' + str(i+1)] if 'add_' + str(i+1) in post_add_keys else ''}
+                    #     )
+                    #     additional_info_setting.save()
+                    #     if not created:
+                    #         if 'add_' + str(i+1) in post_add_keys:
+                    #             additional_info_setting.value = request.POST[post_add_keys[post_add_keys.index('add_' + str(i+1))]]
+                    #             additional_info_setting.save()
 
                 if request.POST.has_key('send_mail_flg') and request.POST['send_mail_flg'] == '1':
                     contract_mail = APIContractMail.get_register_mail(contract)
