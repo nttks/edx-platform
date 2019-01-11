@@ -18,7 +18,7 @@ from lms.djangoapps.instructor.views.api import generate_unique_password
 from social.apps.django_app.default.models import UserSocialAuth
 from student.forms import AccountCreationForm
 from student.views import _do_create_account
-from student.models import UserProfile
+from student.models import UserProfile, CourseEnrollment
 from openedx.core.djangoapps.course_global.models import CourseGlobalSetting
 from boto import connect_s3
 from boto.s3.key import Key
@@ -230,6 +230,8 @@ class Command(BaseCommand):
                         # bulk_email_optout create
                         for global_course_id in CourseGlobalSetting.all_course_id():
                             Optout.objects.get_or_create(user=user, course_id=global_course_id)
+                            CourseEnrollment.enroll(user, global_course_id)
+                            CourseEnrollment.unenroll(user, global_course_id)
                         success.append(register_data['username'])
                 except Exception as e:
                     log.error(e)

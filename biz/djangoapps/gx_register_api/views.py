@@ -17,7 +17,7 @@ from student.models import CourseEnrollment
 from biz.djangoapps.ga_contract.models import Contract, ContractDetail, AdditionalInfo
 from biz.djangoapps.ga_invitation.models import ContractRegister, REGISTER_INVITATION_CODE, UNREGISTER_INVITATION_CODE, AdditionalInfoSetting
 from biz.djangoapps.ga_organization.models import Organization
-from biz.djangoapps.gx_register_api.models import APIContractMail
+from biz.djangoapps.gx_register_api.models import APIContractMail, APIGatewayKey
 from biz.djangoapps.gx_sso_config.models import SsoConfig
 from biz.djangoapps.gx_username_rule.models import OrgUsernameRule
 
@@ -65,11 +65,11 @@ def _get_api_data(org_id=0, contract_id=0, user_email=''):
     return organization, contract, user
 
 
-def _validation_api_data(organization, contract, code, user=''):
+def _validation_api_data(organization, contract, code, api_key, user=''):
     if not organization:
         log.info(code['10'])
         return code['10']
-    if not bool(SsoConfig.objects.filter(org_id=organization.id)):
+    if not bool(APIGatewayKey.objects.filter(api_key=api_key, org_id=organization.id)):
         log.info(code['11'])
         return code['11']
     if not contract:
@@ -99,11 +99,15 @@ def post_user_name(request, org_id, contract_id, user_email):
     :param org_id str(int): GET parameter
     :param contract_id str(int): GET parameter
     :param user_email str: GET parameter
-    :return:
+    :return: code_dict()
     """
+
     code = code_dict()
+    # check Amazon API Gateway api_key
+    if not 'HTTP_X_API_KEY' in request.META:
+        return JsonResponse(code['21'], status=400)
     organization, contract, user = _get_api_data(org_id, contract_id, user_email)
-    error_code = _validation_api_data(organization, contract, code, user)
+    error_code = _validation_api_data(organization, contract, code, request.META['HTTP_X_API_KEY'], user)
     if error_code:
         return JsonResponse(error_code, status=400)
     if not user:

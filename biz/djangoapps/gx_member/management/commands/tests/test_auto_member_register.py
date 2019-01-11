@@ -19,7 +19,7 @@ from django.test.utils import override_settings
 from moto import mock_s3
 from openedx.core.djangoapps.course_global.tests.factories import CourseGlobalSettingFactory
 from social.apps.django_app.default.models import UserSocialAuth
-from student.models import UserProfile
+from student.models import UserProfile, CourseEnrollment
 from student.tests.factories import UserFactory
 from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
 from xmodule.modulestore.tests.factories import CourseFactory
@@ -118,6 +118,8 @@ class TestArgParsing(BizViewTestBase, ModuleStoreTestCase):
         self.assertEqual(reg_socialauth.uid, "TES:MemberCode2")
         reg_optout = Optout.objects.filter(user=reg_user).first()
         self.assertEqual(reg_optout.user_id, reg_user.id)
+        reg_unenrollment = CourseEnrollment.objects.filter(user=reg_user, mode="audit", is_active=0).first()
+        self.assertEqual(reg_unenrollment.user_id, reg_user.id)
         reg_success_data = bucket.lookup(
             key_name="output_data/01_member/01_success/" + member_csv).get_contents_as_string(encoding='sjis')
         self.assertEqual(reg_success_data, "Total :  1\r\nSuccessful :  1\r\nFailed :  0\r\n")

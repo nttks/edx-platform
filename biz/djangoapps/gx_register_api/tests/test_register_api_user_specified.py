@@ -20,8 +20,8 @@ from biz.djangoapps.ga_invitation.models import ContractRegister, REGISTER_INVIT
 
 from biz.djangoapps.gx_member.tests.factories import MemberFactory
 from biz.djangoapps.gx_org_group.tests.factories import GroupFactory
-from biz.djangoapps.gx_register_api.models import APIContractMail
-from biz.djangoapps.gx_register_api.tests.factories import APIContractMailFactory
+from biz.djangoapps.gx_register_api.models import APIContractMail, APIGatewayKey
+from biz.djangoapps.gx_register_api.tests.factories import APIContractMailFactory, APIGatewayKeyFactory
 from biz.djangoapps.gx_sso_config.tests.factories import SsoConfigFactory
 from biz.djangoapps.gx_username_rule.tests.factories import OrgUsernameRuleFactory
 
@@ -43,6 +43,7 @@ class UserSpecifiedRegistrationAPI(BizViewTestBase, ModuleStoreTestCase, TaskTes
         self.other_user = UserFactory.create(username='other_user', email='other_user@example.com')
         self.main_username_rule = OrgUsernameRuleFactory.create(prefix='abc-', org=self.main_org)
         self.main_sso = SsoConfigFactory.create(idp_slug='abcde', org=self.main_org)
+        self.api_key = APIGatewayKeyFactory.create(api_key='api_key12345', org_id=self.main_org)
         self.main_course = CourseFactory.create(
             org=self.main_org.org_code, number='main_course', run='run',
             start=datetime(2016, 1, 1, 0, 0, 0, tzinfo=tzutc()),  # must be the past date
@@ -152,6 +153,7 @@ class UserSpecifiedRegistrationAPI(BizViewTestBase, ModuleStoreTestCase, TaskTes
         for i in range(1, 11):
             self.add_full_param_random_position['add_' + str(i)] = 'value_add_' + str(i)
         self.param_random_position.update(self.add_full_param_random_position)
+        self.header = {'HTTP_X_API_KEY': self.api_key.api_key}
 
     def assertHttpBadRequest(self, response):
         """Assert that the given response has the status code 400"""
@@ -159,7 +161,7 @@ class UserSpecifiedRegistrationAPI(BizViewTestBase, ModuleStoreTestCase, TaskTes
 
     def test_register_success(self):
         # method POST success
-        response = self.client.post(self.url.format(self.main_org.id, self.main_contract.id, self.main_user.email), self.param)
+        response = self.client.post(self.url.format(self.main_org.id, self.main_contract.id, self.main_user.email), self.param, **self.header)
         self.assertEqual(200, response.status_code)
         self.assertEqual('{"message": "You got success! student: main_user@example.com register. And send mail.", "code": "30"}', response.content)
         self.assertEqual(REGISTER_INVITATION_CODE, ContractRegister.objects.get(user_id=self.main_user.id).status)
@@ -171,7 +173,7 @@ class UserSpecifiedRegistrationAPI(BizViewTestBase, ModuleStoreTestCase, TaskTes
         self.assertEqual(1, len(ContractRegister.objects.all()))
         self.assertEqual(1, len(CourseEnrollment.objects.all()))
 
-        response = self.client.post(self.url.format(self.main_org.id, self.main_contract.id, self.sub_user.email), self.param)
+        response = self.client.post(self.url.format(self.main_org.id, self.main_contract.id, self.sub_user.email), self.param, **self.header)
         self.assertEqual(200, response.status_code)
         self.assertEqual('{"message": "You got success! student: sub_user@example.com register. And send mail.", "code": "30"}', response.content)
         self.assertEqual(REGISTER_INVITATION_CODE, ContractRegister.objects.get(user_id=self.sub_user.id).status)
@@ -184,7 +186,7 @@ class UserSpecifiedRegistrationAPI(BizViewTestBase, ModuleStoreTestCase, TaskTes
         self.assertEqual(2, len(CourseEnrollment.objects.all()))
 
         # method DELETE success
-        response = self.client.delete(self.url.format(self.main_org.id, self.main_contract.id, self.main_user.email))
+        response = self.client.delete(self.url.format(self.main_org.id, self.main_contract.id, self.main_user.email), **self.header)
 
         self.assertEqual(200, response.status_code)
         self.assertEqual('{"message": "You got success! student: main_user@example.com unregister.", "code": "33"}', response.content)
@@ -200,7 +202,7 @@ class UserSpecifiedRegistrationAPI(BizViewTestBase, ModuleStoreTestCase, TaskTes
         AdditionalInfo.objects.all().delete()
         self.assertEqual(0, len(AdditionalInfo.objects.all()))
         response = self.client.post(self.url.format(self.main_org.id, self.main_contract.id, self.main_user.email),
-                                    self.param_random_position)
+                                    self.param_random_position, **self.header)
         self.assertEqual(200, response.status_code)
         self.assertEqual('{"message": "You got success! student: main_user@example.com register. And send mail.", "code": "30"}',
                          response.content)
@@ -221,7 +223,7 @@ class UserSpecifiedRegistrationAPI(BizViewTestBase, ModuleStoreTestCase, TaskTes
         # AdditionalInfoSetting update and not send mail
         self.add_full_param_random_position['add_3'] = 'update_add_3'
         response = self.client.post(self.url.format(self.main_org.id, self.main_contract.id, self.main_user.email),
-                                    self.add_full_param_random_position)
+                                    self.add_full_param_random_position, **self.header)
         self.assertEqual(200, response.status_code)
         self.assertEqual('{"message": "You got success! student: main_user@example.com register. And not send mail.", "code": "31"}',
                          response.content)
@@ -248,7 +250,7 @@ class UserSpecifiedRegistrationAPI(BizViewTestBase, ModuleStoreTestCase, TaskTes
         self.param.update(self.add_full_param)
         self.param['add_1'] = 'not_update_country'
         response = self.client.post(self.url.format(self.main_org.id, self.main_contract.id, self.main_user.email),
-                                    self.param)
+                                    self.param, **self.header)
         self.assertEqual(200, response.status_code)
         self.assertEqual('{"message": "You got success! student: main_user@example.com register. And send mail.", "code": "30"}',
                          response.content)
@@ -275,7 +277,7 @@ class UserSpecifiedRegistrationAPI(BizViewTestBase, ModuleStoreTestCase, TaskTes
         self.param['add_11'] = 'surplus_data_1'
         self.param['add_12'] = 'surplus_data_2'
         response = self.client.post(self.url.format(self.main_org.id, self.main_contract.id, self.main_user.email),
-                                    self.param)
+                                    self.param, **self.header)
         self.assertEqual(200, response.status_code)
         self.assertEqual('{"message": "You got success! student: main_user@example.com register. And send mail.", "code": "30"}',
                          response.content)
@@ -299,7 +301,7 @@ class UserSpecifiedRegistrationAPI(BizViewTestBase, ModuleStoreTestCase, TaskTes
         self.param.update(self.add_full_param)
         del self.param['add_2']
         response = self.client.post(self.url.format(self.main_org.id, self.main_contract.id, self.main_user.email),
-                                    self.param)
+                                    self.param, **self.header)
         self.assertEqual(200, response.status_code)
         self.assertEqual('{"message": "You got success! student: main_user@example.com register. And send mail.", "code": "30"}',
                          response.content)
@@ -318,7 +320,7 @@ class UserSpecifiedRegistrationAPI(BizViewTestBase, ModuleStoreTestCase, TaskTes
 
     def test_register_url_method_delete_fail(self):
         # method DELETE fail. not create register record
-        response = self.client.delete(self.url.format(self.main_org.id, self.main_contract.id, self.main_user.email))
+        response = self.client.delete(self.url.format(self.main_org.id, self.main_contract.id, self.main_user.email), **self.header)
 
         self.assertHttpBadRequest(response)
         self.assertEqual('{"message": "main_user@example.com is not taking classes. Or, attendance registration has been canceled", "code": "19"}', response.content)
@@ -327,35 +329,35 @@ class UserSpecifiedRegistrationAPI(BizViewTestBase, ModuleStoreTestCase, TaskTes
 
     def test_diffs_request_method(self):
         # request GET
-        response = self.client.get(self.url.format(self.main_org.id, self.main_contract.id, self.main_user.email))
+        response = self.client.get(self.url.format(self.main_org.id, self.main_contract.id, self.main_user.email), **self.header)
         self.assertHttpBadRequest(response)
         self.assertEqual('{"message": "Please a method of POST or DELETE", "code": "20"}', response.content)
         # request PUT
-        response = self.client.put(self.url.format(self.main_org.id, self.main_contract.id, self.main_user.email), self.param)
+        response = self.client.put(self.url.format(self.main_org.id, self.main_contract.id, self.main_user.email), self.param, **self.header)
         self.assertHttpBadRequest(response)
         self.assertEqual('{"message": "Please a method of POST or DELETE", "code": "20"}', response.content)
 
     def test_register_toothless_url_error(self):
         # Toothless URL path
-        response = self.client.post(self.not_enough_path_url1.format(self.main_org.id, self.main_contract.id, self.main_user.email), self.param)
+        response = self.client.post(self.not_enough_path_url1.format(self.main_org.id, self.main_contract.id, self.main_user.email), self.param, **self.header)
         self.assertHttpBadRequest(response)
         self.assertEqual('{"message": "not enough url", "code": "21"}', response.content)
 
         # Toothless URL user_email
         response = self.client.post(
-            self.url.format(self.main_org.id, self.main_contract.id, ''), self.param)
+            self.url.format(self.main_org.id, self.main_contract.id, ''), self.param, **self.header)
         self.assertHttpBadRequest(response)
         self.assertEqual('{"message": "not enough url", "code": "21"}', response.content)
 
         # Toothless URL org_id
         response = self.client.post(
-            self.url.format(int(), self.main_contract.id, self.main_user.email), self.param)
+            self.url.format(None, self.main_contract.id, self.main_user.email), self.param, **self.header)
         self.assertHttpBadRequest(response)
-        self.assertEqual('{"message": "parameter error organization", "code": "10"}', response.content)
+        self.assertEqual('{"message": "not enough url", "code": "21"}', response.content)
 
         # Toothless URL contract_id
         response = self.client.post(
-            self.url.format(self.main_org.id, int(), self.main_user.email), self.param)
+            self.url.format(self.main_org.id, int(), self.main_user.email), self.param, **self.header)
         self.assertHttpBadRequest(response)
         self.assertEqual('{"message": "parameter error contract.", "code": "12"}', response.content)
 
@@ -363,63 +365,63 @@ class UserSpecifiedRegistrationAPI(BizViewTestBase, ModuleStoreTestCase, TaskTes
         response = self.client.post(self.url.format(self.main_org.id, self.main_contract.id, self.main_user.email), {
             'link_url1': self.link_url1,
             'link_url2': self.link_url2,
-        })
+        }, **self.header)
         self.assertEqual(200, response.status_code)
         self.assertEqual('{"message": "You got success! student: main_user@example.com register. And not send mail.", "code": "31"}', response.content)
 
     def test_register_param_is_diffs_error(self):
         # Not exists org_id
         response = self.client.post(
-            self.url.format(1000, self.main_contract.id, self.main_user.email), self.param)
+            self.url.format(1000, self.main_contract.id, self.main_user.email), self.param, **self.header)
         self.assertHttpBadRequest(response)
         self.assertEqual('{"message": "parameter error organization", "code": "10"}', response.content)
 
         # other org_id
         response = self.client.post(
             self.url.format(self.other_org.id, self.main_contract.id,
-                            self.main_user.email), self.param)
+                            self.main_user.email), self.param, **self.header)
         self.assertHttpBadRequest(response)
         self.assertEqual('{"message": "parameter error organization. not exists org_id", "code": "11"}', response.content)
 
         # Not exists contract_id
         response = self.client.post(
             self.url.format(self.main_org.id, 1000,
-                            self.main_user.email), self.param)
+                            self.main_user.email), self.param, **self.header)
         self.assertHttpBadRequest(response)
         self.assertEqual('{"message": "parameter error contract.", "code": "12"}', response.content)
 
         # other contract_id
         response = self.client.post(
             self.url.format(self.main_org.id, self.other_contract.id,
-                            self.main_user.email), self.param)
+                            self.main_user.email), self.param, **self.header)
         self.assertHttpBadRequest(response)
         self.assertEqual('{"message": "parameter error contract.", "code": "12"}', response.content)
 
         # Not exists user_email
         response = self.client.post(
             self.url.format(self.main_org.id, self.main_contract.id,
-                            'not_exists_user@example.com'), self.param)
+                            'not_exists_user@example.com'), self.param, **self.header)
         self.assertHttpBadRequest(response)
         self.assertEqual('{"message": "parameter error user_email: not exists user", "code": "16"}', response.content)
 
         # other contract_id
         response = self.client.post(
             self.url.format(self.main_org.id, self.other_contract.id,
-                            self.main_user.email), self.param)
+                            self.main_user.email), self.param, **self.header)
         self.assertHttpBadRequest(response)
         self.assertEqual('{"message": "parameter error contract.", "code": "12"}', response.content)
 
         # other user_id
         response = self.client.post(
             self.url.format(self.main_org.id, self.main_contract.id,
-                            self.other_user.email), self.param)
+                            self.other_user.email), self.param, **self.header)
         self.assertHttpBadRequest(response)
         self.assertEqual('{"message": "parameter error user_email: not exists member.", "code": "14"}', response.content)
 
         # irregular user_id
         response = self.client.post(
             self.url.format(self.main_org.id, self.main_contract.id,
-                            self.irregular_user.email), self.param)
+                            self.irregular_user.email), self.param, **self.header)
         self.assertHttpBadRequest(response)
         self.assertEqual('{"message": "parameter error user_email: abc- diffs", "code": "15"}', response.content)
 
@@ -431,7 +433,7 @@ class UserSpecifiedRegistrationAPI(BizViewTestBase, ModuleStoreTestCase, TaskTes
                 'send_mail_flg': 'a',
                 'link_url1': self.link_url1,
                 'link_url2': self.link_url2,
-            })
+            }, **self.header)
         self.assertEqual(200, response.status_code)
         self.assertEqual('{"message": "You got success! student: main_user@example.com register. And not send mail.", "code": "31"}',
                          response.content)
@@ -443,7 +445,7 @@ class UserSpecifiedRegistrationAPI(BizViewTestBase, ModuleStoreTestCase, TaskTes
                 'send_mail_flg': '0',
                 'link_url1': self.link_url1,
                 'link_url2': self.link_url2,
-            })
+            }, **self.header)
         self.assertEqual(200, response.status_code)
         self.assertEqual('{"message": "You got success! student: main_user@example.com register. And not send mail.", "code": "31"}',
                          response.content)
@@ -454,7 +456,7 @@ class UserSpecifiedRegistrationAPI(BizViewTestBase, ModuleStoreTestCase, TaskTes
                             self.main_user.email), {
                 'send_mail_flg': '1',
                 'link_url2': self.link_url2,
-            })
+            }, **self.header)
         self.assertEqual(200, response.status_code)
         self.assertEqual('{"message": "You got success! student: main_user@example.com register. And send mail.", "code": "30"}',
                          response.content)
@@ -465,7 +467,7 @@ class UserSpecifiedRegistrationAPI(BizViewTestBase, ModuleStoreTestCase, TaskTes
                             self.main_user.email), {
                 'send_mail_flg': '1',
                 'link_url1': self.link_url1,
-            })
+            }, **self.header)
         self.assertEqual(200, response.status_code)
         self.assertEqual('{"message": "You got success! student: main_user@example.com register. And send mail.", "code": "30"}',
                          response.content)
@@ -473,7 +475,7 @@ class UserSpecifiedRegistrationAPI(BizViewTestBase, ModuleStoreTestCase, TaskTes
         # post data send_mail_flg diffs pattern5
         response = self.client.post(
             self.url.format(self.main_org.id, self.main_contract.id,
-                            self.main_user.email))
+                            self.main_user.email), **self.header)
         self.assertEqual(200, response.status_code)
         self.assertEqual('{"message": "You got success! student: main_user@example.com register. And not send mail.", "code": "31"}',
                          response.content)
@@ -484,7 +486,7 @@ class UserSpecifiedRegistrationAPI(BizViewTestBase, ModuleStoreTestCase, TaskTes
                    side_effect=Exception):
             response = self.client.post(
                 self.url.format(self.main_org.id, self.main_contract.id,
-                                self.main_user.email), self.param)
+                                self.main_user.email), self.param, **self.header)
         self.assertHttpBadRequest(response)
         self.assertEqual('{"message": "ERROR: Did not register main_user@example.com", "code": "17"}',
                          response.content)
@@ -492,7 +494,7 @@ class UserSpecifiedRegistrationAPI(BizViewTestBase, ModuleStoreTestCase, TaskTes
     def test_method_delete_exception_error(self):
         # method DELETE
         response = self.client.post(self.url.format(self.main_org.id, self.main_contract.id, self.main_user.email),
-                                    self.param)
+                                    self.param, **self.header)
         self.assertEqual(200, response.status_code)
         self.assertEqual('{"message": "You got success! student: main_user@example.com register. And send mail.", "code": "30"}', response.content)
 
@@ -500,7 +502,7 @@ class UserSpecifiedRegistrationAPI(BizViewTestBase, ModuleStoreTestCase, TaskTes
                    side_effect=Exception):
             response = self.client.delete(
                 self.url.format(self.main_org.id, self.main_contract.id,
-                                self.main_user.email))
+                                self.main_user.email), **self.header)
         self.assertHttpBadRequest(response)
         self.assertEqual('{"message": "ERROR: Did not unregister main_user@example.com", "code": "18"}',
                          response.content)
@@ -511,6 +513,29 @@ class UserSpecifiedRegistrationAPI(BizViewTestBase, ModuleStoreTestCase, TaskTes
         self.assertFalse(ContractDetail.objects.filter(contract_id=self.main_contract.id))
         response = self.client.post(
             self.url.format(self.main_org.id, self.main_contract.id,
-                            self.main_user.email), self.param)
+                            self.main_user.email), self.param, **self.header)
         self.assertHttpBadRequest(response)
         self.assertEqual('{"message": "parameter error contract not settings contract details.", "code": "13"}', response.content)
+
+    def test_header_none_or_mismatch(self):
+        # method POST header None
+        response = self.client.post(self.url.format(self.main_org.id, self.main_contract.id, self.main_user.email),
+                                    self.param)
+        self.assertHttpBadRequest(response)
+        self.assertEqual('{"message": "not enough url", "code": "21"}', response.content)
+
+        # method POST header mismatch
+        response = self.client.post(self.url.format(self.main_org.id, self.main_contract.id, self.main_user.email),
+                                    self.param, **{'HTTP_X_API_KEY': 'differ'})
+        self.assertHttpBadRequest(response)
+        self.assertEqual('{"message": "parameter error organization. not exists org_id", "code": "11"}', response.content)
+
+        # method DELETE header None
+        response = self.client.delete(self.url.format(self.main_org.id, self.main_contract.id, self.main_user.email))
+        self.assertHttpBadRequest(response)
+        self.assertEqual('{"message": "not enough url", "code": "21"}', response.content)
+
+        # method DELETE header mismatch
+        response = self.client.delete(self.url.format(self.main_org.id, self.main_contract.id, self.main_user.email), **{'HTTP_X_API_KEY': 'differ'})
+        self.assertHttpBadRequest(response)
+        self.assertEqual('{"message": "parameter error organization. not exists org_id", "code": "11"}', response.content)

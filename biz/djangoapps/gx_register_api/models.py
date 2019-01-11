@@ -2,6 +2,8 @@ from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
 from biz.djangoapps.ga_contract.models import Contract
+from biz.djangoapps.ga_organization.models import Organization
+
 # Create your models here.
 class APIContractMailBase(models.Model):
     """
@@ -100,3 +102,16 @@ class APIContractMail(APIContractMailBase):
             cls.MAIL_PARAM_COURSE_NAME[0]: course_name.encode('utf-8'),
         }
         return replace_dict
+
+
+class APIGatewayKey(models.Model):
+    class Meta:
+        app_label = 'gx_register_api'
+        unique_together = ('api_key', 'org_id')
+    def __unicode__(self):
+        return self.org_id.org_name + ' : ' + self.api_key
+
+    api_key = models.CharField(max_length=255)
+    org_id = models.ForeignKey(Organization)
+    created = models.DateTimeField(auto_now_add=True)
+    modified = models.DateTimeField(auto_now=True, null=True, blank=True)
