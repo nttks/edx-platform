@@ -137,6 +137,7 @@ QUERY_STATEMENT_USER_NOT_MEMBERS = '''
     WHERE 1=1
     AND org.id = $org_id
     AND enroll.course_id =  '$course_id'
+    AND reg.contract_id = det.contract_id
     AND reg.contract_id = $contract_id
     AND usr.id not in ($user_ids)
 '''
@@ -171,6 +172,7 @@ QUERY_STATEMENT_USER_NOT_MEMBERS_ACTUAL = '''
     WHERE 1=1
     AND org.id = 85
     AND enroll.course_id =  'course-v1:xxxxxxxxxxx+2018_02'
+    AND reg.contract_id = det.contract_id
     AND reg.contract_id = 284
     AND usr.id not in (370196,345969)
 '''

@@ -217,12 +217,13 @@ def _retrieve_grid_data(org_id, child_group_ids, contract_id, course_id, is_filt
     members_ids = result_members.keys()
 
     if is_filter == 'off':
-        ## get users' rows not in groups
-        results_users_not_member = {}
-        results_users_not_member = _get_users_not_member(org_id, contract_id, course_id, members_ids)
-        ## merge
-        if results_users_not_member:
-            result_members.update(results_users_not_member)
+        if not is_manager:
+            ## get users' rows not in groups
+            results_users_not_member = {}
+            results_users_not_member = _get_users_not_member(org_id, contract_id, course_id, members_ids)
+            ## merge
+            if results_users_not_member:
+                result_members.update(results_users_not_member)
 
     log.debug(result_members)
 

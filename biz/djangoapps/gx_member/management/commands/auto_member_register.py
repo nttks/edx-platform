@@ -202,6 +202,9 @@ class Command(BaseCommand):
                             member = Member.objects.create(org=organization, user=user,
                                                            code=register_data['code'], created_by=superuser,
                                                            creator_org=organization)
+                        if register_data['group_code']:
+                            member.group = Group.objects.filter(org=organization,
+                                                                group_code=register_data['group_code']).first()
                         member.updated_by = superuser
                         member.updated_org = organization
                         for i in range(1, 11):

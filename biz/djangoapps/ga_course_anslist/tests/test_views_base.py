@@ -857,3 +857,233 @@ class CourseAnslistDownloadAddTest(BizContractTestBase, BizStoreTestBase):
             self.assertEqual(expected_len, actual_len)
 
         self.assertEqual(200, actual_response.status_code)
+
+
+class CourseAnslistDownload4ManagerAddTest(BizContractTestBase, BizStoreTestBase):
+
+    def setUp(self):
+        #super(AnslistTestBase, self).setUp()
+        #super(BizViewTestBase, self).setUp()
+        super(BizContractTestBase, self).setUp()
+        self.setup_user()
+
+        ## organization
+        self.org100 = self._create_organization(org_name='gacco100', org_code='gacco-100', creator_org=self.gacco_organization)
+        ## course
+        self.course10 = CourseFactory.create(org='gacco', number='course10', run='run10')
+        ## contract
+        self.contract1 = self._create_contract(
+                            contract_name='contract1', contractor_organization=self.org100,
+                            detail_courses=[self.course10.id], additional_display_names=['country', 'dept'],
+                            send_submission_reminder=True,
+        )
+        ## director user
+        ### set up self.user for director
+        self._director = self._create_manager(
+            org=self.org100,
+            user=self.user,
+            created=self.org100,
+            permissions=[self.director_permission]
+        )
+        ## user
+        self.user10 = UserFactory.create(username='na10000', email='nauser10000@example.com')
+        ## manager user10
+        self._manager = self._create_manager(
+            org=self.org100,
+            user=self.user10,
+            created=self.gacco_organization,
+            permissions=[self.manager_permission]
+        )
+        self.user11 = UserFactory.create(username='na11000', email='nauser11000@example.com')
+        self.user12 = UserFactory.create(username='na12000', email='nauser12000@example.com')
+
+        ## register
+        self.user60 = UserFactory.create(username='na60000', email='nauser60000@example.com')
+        self.reg60 = self._register_contract(self.contract1, self.user60)
+
+
+        ## group
+        self.group1000 = GroupFactory.create(
+            parent_id=0, level_no=0, group_code='1000', group_name='G1000', org=self.org100,
+            created_by=self.user, modified_by=self.user)
+        self.group1100 = GroupFactory.create(
+            parent_id=0, level_no=0, group_code='1100', group_name='G1100', org=self.org100,
+            created_by=self.user, modified_by=self.user)
+        self.group1200 = GroupFactory.create(
+            parent_id=0, level_no=0, group_code='1200', group_name='G1200', org=self.org100,
+            created_by=self.user, modified_by=self.user)
+
+        ## member
+        self.member10 = MemberFactory.create(
+            org=self.org100,
+            group=self.group1000,
+            user=self.user10,
+            code='0010',
+            created_by=self.user,
+            creator_org=self.gacco_organization,
+            updated_by=self.user,
+            updated_org=self.gacco_organization,
+            org1='gacco1',
+        )
+        self.member11 = MemberFactory.create(
+            org=self.org100,
+            group=self.group1100,
+            user=self.user11,
+            code='0011',
+            created_by=self.user,
+            creator_org=self.gacco_organization,
+            updated_by=self.user,
+            updated_org=self.gacco_organization,
+            org1='gacco1',
+            org2='gacco11',
+        )
+        ## enrollment
+        self.enroll10 = CourseEnrollmentFactory.create(user=self.user10, course_id=self.course10.id)
+        self.enroll11 = CourseEnrollmentFactory.create(user=self.user11, course_id=self.course10.id)
+        ### user10
+        submission10_c10_survey1_data = {
+            'course_id': self.course10.id,
+            'unit_id': '11111111111111111111111111111111',
+            'user': self.user10,
+            'survey_name': 'survey1',
+            'survey_answer': '{"Q1": "1", "Q2": ["1", "2"], "Q3": "submission 1"}',
+        }
+        self.submission10_c10_survey1 = SurveySubmissionFactory.create(**submission10_c10_survey1_data)
+
+        submission10_c10_survey2_data = {
+            'course_id': self.course10.id,
+            'unit_id': '22222222222222222222222222222222',
+            'user': self.user10,
+            'survey_name': 'survey2',
+            'survey_answer': '{"Q1": "1", "Q2": ["1", "2"], "Q3": "submission 1"}',
+        }
+        self.submission10_c10_survey2 = SurveySubmissionFactory.create(**submission10_c10_survey2_data)
+
+        ### user11
+        submission11_c10_survey1_data = {
+            'course_id': self.course10.id,
+            'unit_id': '11111111111111111111111111111111',
+            'user': self.user11,
+            'survey_name': 'survey1',
+            'survey_answer': '{"Q1": "1", "Q2": ["1", "2"], "Q3": "submission 1"}',
+        }
+        self.submission11_c10_survey1 = SurveySubmissionFactory.create(**submission11_c10_survey1_data)
+
+    POST_DATA_INIT_OFF = {
+        u'group_id': [u''],
+        u'survey_name': [u''],
+        u'survey_answered': [u'on'],
+        u'survey_not_answered': [u'on'],
+        u'detail_condition_member_name_1': [u''],
+        u'detail_condition_member_1': [u''],
+        u'detail_condition_member_name_2': [u''],
+        u'detail_condition_member_2': [u''],
+        u'detail_condition_member_name_3': [u''],
+        u'detail_condition_member_3': [u''],
+        u'detail_condition_member_name_4': [u''],
+        u'detail_condition_member_4': [u''],
+        u'detail_condition_member_name_5': [u''],
+        u'detail_condition_member_5': [u''],
+        u'search': [u''],
+        u'is_filter': u'off',
+        u'limit': [u'100'],
+        u'offset': [u'0'],
+    }
+    POST_DATA_INIT_ON = {
+        u'group_id': [u''],
+        u'survey_name': [u''],
+        u'survey_answered': [u'on'],
+        u'survey_not_answered': [u'on'],
+        u'detail_condition_member_name_1': [u''],
+        u'detail_condition_member_1': [u''],
+        u'detail_condition_member_name_2': [u''],
+        u'detail_condition_member_2': [u''],
+        u'detail_condition_member_name_3': [u''],
+        u'detail_condition_member_3': [u''],
+        u'detail_condition_member_name_4': [u''],
+        u'detail_condition_member_4': [u''],
+        u'detail_condition_member_name_5': [u''],
+        u'detail_condition_member_5': [u''],
+        u'search': [u''],
+        u'is_filter': u'on',
+        u'limit': [u'100'],
+        u'offset': [u'0'],
+    }
+
+    def _validate_bom(self, content):
+        return self._validate_bom_utf16(content)
+
+    def _validate_bom_utf16(self, content):
+        # UTF8 no BOM
+        return not content.startswith(codecs.BOM_UTF8)
+
+    def _convert_csv_rows(self, content):
+        body = content.rstrip('\n').replace('\r', '')
+        return body.split('\n')
+
+    def _get_url_download(self):
+        return reverse('biz:course_anslist:status_download')
+
+    def _get_url_search(self):
+        return reverse('biz:course_anslist:status_search_api')
+
+    def test_request_anslist_search_o100_c10_off(self):
+        with self.skip_check_course_selection(current_organization=self.org100, current_contract=self.contract1,
+                                              current_course=self.course10, current_manager=self._manager):
+            expected_len = 3 ## FIXME expected_len = 1
+            self.POST_DATA_INIT_OFF["search-download"] = "search-download"
+            actual_response = self.client.post(self._get_url_search(), self.POST_DATA_INIT_OFF)
+            self.assertEqual('application/json', actual_response['Content-Type'], )
+            actual_content = actual_response.content
+            json_obj = json.loads(actual_content)
+            actual_len = len(json_obj)
+            self.assertEqual(expected_len, actual_len)
+
+        self.assertEqual(200, actual_response.status_code)
+
+
+    def test_request_anslist_download_o100_c10_off(self):
+        with self.skip_check_course_selection(current_organization=self.org100, current_contract=self.contract1,
+                                              current_course=self.course10, current_manager=self._manager):
+            expected_len = 5 ## FIXME expected_len = 1
+            self.POST_DATA_INIT_OFF["search-download"] = "search-download"
+            actual_response = self.client.post(self._get_url_download(), self.POST_DATA_INIT_OFF)
+            self.assertEqual('text/tab-separated-values', actual_response['Content-Type'], )
+            actual_content = actual_response.content
+            self.assertTrue(self._validate_bom(actual_content))
+            rows = self._convert_csv_rows(actual_content)
+            actual_len = len(rows)
+            self.assertEqual(expected_len, actual_len)
+
+        self.assertEqual(200, actual_response.status_code)
+
+
+    def test_request_anslist_search_o100_c10_on(self):
+        with self.skip_check_course_selection(current_organization=self.org100, current_contract=self.contract1,
+                                              current_course=self.course10, current_manager=self._manager):
+            expected_len = 3 ## FIXME expected_len = 1
+            self.POST_DATA_INIT_ON["search-download"] = "search-download"
+            actual_response = self.client.post(self._get_url_search(), self.POST_DATA_INIT_ON)
+            self.assertEqual('application/json', actual_response['Content-Type'], )
+            actual_content = actual_response.content
+            json_obj = json.loads(actual_content)
+            actual_len = len(json_obj)
+            self.assertEqual(expected_len, actual_len)
+
+        self.assertEqual(200, actual_response.status_code)
+
+
+    def test_request_anslist_download_o100_c10_on(self):
+        with self.skip_check_course_selection(current_organization=self.org100, current_contract=self.contract1,
+                                              current_course=self.course10, current_manager=self._manager):
+            expected_len = 4 ## FIXME expected_len = 1
+            self.POST_DATA_INIT_ON["search-download"] = "search-download"
+            actual_response = self.client.post(self._get_url_download(), self.POST_DATA_INIT_ON)
+            self.assertEqual('text/tab-separated-values', actual_response['Content-Type'], )
+            actual_content = actual_response.content
+            self.assertTrue(self._validate_bom(actual_content))
+            rows = self._convert_csv_rows(actual_content)
+            actual_len = len(rows)
+            self.assertEqual(expected_len, actual_len)
+
+        self.assertEqual(200, actual_response.status_code)
