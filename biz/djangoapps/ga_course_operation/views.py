@@ -11,6 +11,7 @@ from lms.djangoapps.instructor.views.api import format_survey_response
 from edxmako.shortcuts import render_to_response
 
 import biz.djangoapps.ga_course_anslist.views as anslistview
+from biz.djangoapps.gx_member.models import Member
 from biz.djangoapps.gx_org_group.models import Group
 from biz.djangoapps.util.decorators import check_course_selection, require_survey, check_organization_group
 
@@ -115,8 +116,7 @@ def _survey_download(request, encoding):
     if not manager.is_director() and manager.is_manager() and Group.objects.filter(org=org).exists():
         # add condition when manager
         child_group_ids = request.current_organization_visible_group_ids
-        members_grid_dct = anslistview._get_members(org_id=org.id, child_group_ids=child_group_ids)
-        user_ids = members_grid_dct.keys() or [0]
+        user_ids = Member.find_active_by_org(org=org.id).filter(group__id__in=child_group_ids).values('user__id') or [0]
         sql += 'AND u.id IN (' + ','.join(map(str, user_ids)) + ')'
 
     submissions = list(SurveySubmission.objects.raw(sql + 'ORDER BY s.unit_id, s.created', [course_id, str(org.id)]))
