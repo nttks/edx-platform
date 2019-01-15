@@ -86,71 +86,39 @@ def _survey_download(request, encoding):
     org = request.current_organization
     course_id = unicode(request.current_course.id)
 
+    sql = '''SELECT s.*, u.*, p.*, t.account_status, e.is_active, b.login_code
+               FROM ga_survey_surveysubmission s 
+               LEFT OUTER JOIN auth_user u 
+               ON s.user_id = u.id 
+               LEFT OUTER JOIN auth_userprofile p 
+               ON s.user_id = p.user_id 
+               LEFT OUTER JOIN student_userstanding t 
+               ON s.user_id = t.user_id 
+               LEFT OUTER JOIN student_courseenrollment e 
+               ON s.user_id = e.user_id 
+               and s.course_id = e.course_id 
+               LEFT OUTER JOIN ga_login_bizuser b 
+               ON s.user_id = b.user_id 
+               LEFT OUTER JOIN ga_contract_contractdetail as d 
+               ON s.course_id = d.course_id 
+               LEFT OUTER JOIN ga_contract_contract as c 
+               ON d.contract_id = c.id 
+               LEFT OUTER JOIN ga_organization_organization as o 
+               ON c.contractor_organization_id = o.id 
+               INNER JOIN ga_invitation_contractregister as r 
+               ON s.user_id = r.user_id 
+               AND c.id = r.contract_id 
+               WHERE s.course_id = %s
+               AND o.id = %s
+               '''
+
     if not manager.is_director() and manager.is_manager() and Group.objects.filter(org=org).exists():
-        # manager
+        # add condition when manager
         child_group_ids = request.current_organization_visible_group_ids
         members_grid_dct = anslistview._get_members(org_id=org.id, child_group_ids=child_group_ids)
         user_ids = members_grid_dct.keys() or [0]
+        sql += 'AND u.id IN (' + ','.join(map(str, user_ids)) + ')'
 
-        submissions = list(SurveySubmission.objects.raw(
-            '''SELECT s.*, u.*, p.*, t.account_status, e.is_active, b.login_code
-               FROM ga_survey_surveysubmission s 
-               LEFT OUTER JOIN auth_user u 
-               ON s.user_id = u.id 
-               LEFT OUTER JOIN auth_userprofile p 
-               ON s.user_id = p.user_id 
-               LEFT OUTER JOIN student_userstanding t 
-               ON s.user_id = t.user_id 
-               LEFT OUTER JOIN student_courseenrollment e 
-               ON s.user_id = e.user_id 
-               and s.course_id = e.course_id 
-               LEFT OUTER JOIN ga_login_bizuser b 
-               ON s.user_id = b.user_id 
-               LEFT OUTER JOIN ga_contract_contractdetail as d 
-               ON s.course_id = d.course_id 
-               LEFT OUTER JOIN ga_contract_contract as c 
-               ON d.contract_id = c.id 
-               LEFT OUTER JOIN ga_organization_organization as o 
-               ON c.contractor_organization_id = o.id 
-               INNER JOIN ga_invitation_contractregister as r 
-               ON s.user_id = r.user_id 
-               AND c.id = r.contract_id 
-               WHERE s.course_id = %s
-               AND o.id = %s
-               AND u.id IN (%s)
-               ORDER BY s.unit_id, s.created''',
-            [course_id, str(org.id), ','.join(map(str, user_ids))]
-        ))
-
-    else:
-        # director
-        submissions = list(SurveySubmission.objects.raw(
-            '''SELECT s.*, u.*, p.*, t.account_status, e.is_active, b.login_code
-               FROM ga_survey_surveysubmission s 
-               LEFT OUTER JOIN auth_user u 
-               ON s.user_id = u.id 
-               LEFT OUTER JOIN auth_userprofile p 
-               ON s.user_id = p.user_id 
-               LEFT OUTER JOIN student_userstanding t 
-               ON s.user_id = t.user_id 
-               LEFT OUTER JOIN student_courseenrollment e 
-               ON s.user_id = e.user_id 
-               and s.course_id = e.course_id 
-               LEFT OUTER JOIN ga_login_bizuser b 
-               ON s.user_id = b.user_id 
-               LEFT OUTER JOIN ga_contract_contractdetail as d 
-               ON s.course_id = d.course_id 
-               LEFT OUTER JOIN ga_contract_contract as c 
-               ON d.contract_id = c.id 
-               LEFT OUTER JOIN ga_organization_organization as o 
-               ON c.contractor_organization_id = o.id 
-               INNER JOIN ga_invitation_contractregister as r 
-               ON s.user_id = r.user_id 
-               AND c.id = r.contract_id 
-               WHERE s.course_id = %s
-               AND o.id = %s
-               ORDER BY s.unit_id, s.created''',
-            [course_id, str(org.id)]
-        ))
+    submissions = list(SurveySubmission.objects.raw(sql + 'ORDER BY s.unit_id, s.created', [course_id, str(org.id)]))
 
     return format_survey_response(request, course_id, encoding, submissions)
