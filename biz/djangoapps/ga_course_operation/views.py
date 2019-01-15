@@ -116,7 +116,8 @@ def _survey_download(request, encoding):
     if not manager.is_director() and manager.is_manager() and Group.objects.filter(org=org).exists():
         # add condition when manager
         child_group_ids = request.current_organization_visible_group_ids
-        user_ids = Member.find_active_by_org(org=org.id).filter(group__id__in=child_group_ids).values('user__id') or [0]
+        user_ids = Member.find_active_by_org(org=org.id).filter(
+            group__id__in=child_group_ids).values_list('user__id', flat=True) or [0]
         sql += 'AND u.id IN (' + ','.join(map(str, user_ids)) + ')'
 
     submissions = list(SurveySubmission.objects.raw(sql + 'ORDER BY s.unit_id, s.created', [course_id, str(org.id)]))
