@@ -134,8 +134,8 @@ class ContractOperationViewTestStudents(BizContractTestBase):
             ('item6', 'Item6'), ('item7', 'Item7'), ('item8', 'Item8'), ('item9', 'Item9'), ('item10', 'Item10')
         ]))
         self.assertEqual(json.loads(render_to_response_args[1]['additional_columns']), [
-            {'field': 'country', 'caption': 'country', 'sortable': True, 'hidden': True, 'size': 1},
-            {'field': 'dept', 'caption': 'dept', 'sortable': True, 'hidden': True, 'size': 1}
+            {'field': 'country', 'caption': 'country', 'sortable': True, 'hidden': True, 'size': 5},
+            {'field': 'dept', 'caption': 'dept', 'sortable': True, 'hidden': True, 'size': 5}
         ])
 
     @ddt.unpack
@@ -455,10 +455,10 @@ class ContractOperationViewTestStudents(BizContractTestBase):
         self.assertEqual(200, response.status_code)
         data = json.loads(response.content)
         show_list = json.loads(data['show_list'])
-        if param_is_masked in ['', 'exclude']:
+        if param_is_masked == 'exclude':
             self._assert_search_ajax_successful(data, 1, 1)
             self.assertEqual(show_list[0]['user_name'], 'username_is_not_masked')
-        elif param_is_masked == 'contains':
+        elif param_is_masked in ['', 'contains']:
             self._assert_search_ajax_successful(data, 2, 2)
             self.assertEqual(show_list[0]['user_name'], 'username_is_masked')
             self.assertEqual(show_list[1]['user_name'], 'username_is_not_masked')

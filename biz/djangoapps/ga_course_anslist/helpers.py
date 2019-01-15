@@ -30,33 +30,47 @@ GRID_COLUMNS_HIDDEN = [
 ]
 
 QUERY_STATEMENT_SURVEY_NAMES = '''
-	SELECT 
-	    sbm.id
-	  , sbm.unit_id
-	  , sbm.course_id
-	  , sbm.survey_name
-	  , min(sbm.created)
-	FROM
-	  ga_survey_surveysubmission as sbm
-	WHERE 1 = 1
-	  and sbm.course_id = '$course_id'
-    group by sbm.unit_id
-	order by sbm.created
+    SELECT 
+            sbm2.id
+          , sbm2.unit_id
+          , sbm2.course_id
+          , sbm2.survey_name
+          , sbm2.created
+    FROM
+        (SELECT 
+            sbm.unit_id
+          , min(sbm.created) AS created_min
+        FROM
+          ga_survey_surveysubmission as sbm
+        WHERE 1 = 1
+        and sbm.course_id = '$course_id'
+        group by sbm.unit_id, sbm.course_id
+        ) AS min_data
+        INNER JOIN ga_survey_surveysubmission sbm2
+        ON min_data.unit_id = sbm2.unit_id
+        AND min_data.created_min = sbm2.created
 	'''
 
 QUERY_STATEMENT_SURVEY_NAMES_MAX = '''
-	SELECT 
-	    sbm.id
-	  , sbm.unit_id
-	  , sbm.course_id
-	  , sbm.survey_name
-	  , max(sbm.created)
-	FROM
-	  ga_survey_surveysubmission as sbm
-	WHERE 1 = 1
-	  and sbm.course_id = '$course_id'
-    group by sbm.unit_id
-	order by sbm.created
+    SELECT 
+            sbm2.id
+          , sbm2.unit_id
+          , sbm2.course_id
+          , sbm2.survey_name
+          , sbm2.created
+    FROM
+        (SELECT 
+            sbm.unit_id
+          , max(sbm.created) AS created_max
+        FROM
+          ga_survey_surveysubmission as sbm
+        WHERE 1 = 1
+        and sbm.course_id = '$course_id'
+        group by sbm.unit_id, sbm.course_id
+        ) AS max_data
+        INNER JOIN ga_survey_surveysubmission sbm2
+        ON max_data.unit_id = sbm2.unit_id
+        AND max_data.created_max = sbm2.created
 	'''
 
 def _create_survey_name_list_statement(course_id, flg_get_updated_survey_name=False):
