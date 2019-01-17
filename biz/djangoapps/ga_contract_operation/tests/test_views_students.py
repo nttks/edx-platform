@@ -64,17 +64,15 @@ class ContractOperationViewTestStudents(BizContractTestBase):
         self.assertEqual(len(json.loads(data['show_list'])), show_list)
 
     def _create_param_search_students_ajax(
-            self, contract_id=None, offset=0, limit=1000, status='',
-            is_unregister='contains', member_is_delete='exclude', is_masked='contains', group_name='', free_word=''):
+            self, contract_id=None, offset=0, limit=1000,
+            is_unregister='exclude', member_is_delete='exclude', is_masked='exclude', free_word=''):
         param = {
             'contract_id': contract_id or self.contract.id,
             'offset': str(offset),
             'limit': str(limit),
-            'status': status,
             'is_unregister': is_unregister,
             'member_is_delete': member_is_delete,
             'is_masked': is_masked,
-            'group_name': group_name,
             'free_word': free_word
         }
         for i in range(1, 11):
@@ -121,11 +119,6 @@ class ContractOperationViewTestStudents(BizContractTestBase):
         self.assertEqual(render_to_response_args[1]['total_count'], 1050)
         self.assertEqual(len(json.loads(render_to_response_args[1]['show_list'])), 1000)
         self.assertEqual(render_to_response_args[1]['max_show_num_on_page'], 1000)
-        self.assertDictEqual(render_to_response_args[1]['status_list'], {
-            'Input': 'Input Invitation',
-            'Register': 'Register Invitation',
-            'Unregister': 'Unregister Invitation'
-        })
         self.assertDictEqual(render_to_response_args[1]['member_org_item_list'], OrderedDict([
             ('org1', 'Organization1'), ('org2', 'Organization2'), ('org3', 'Organization3'), ('org4', 'Organization4'),
             ('org5', 'Organization5'), ('org6', 'Organization6'), ('org7', 'Organization7'), ('org8', 'Organization8'),
@@ -220,28 +213,6 @@ class ContractOperationViewTestStudents(BizContractTestBase):
         data = json.loads(response.content)
         self.assertEqual(data['error'], "Unauthorized access.")
 
-    def test_students_search_students_ajax_conflict_conditions(self):
-        self.setup_user()
-        director_manager = self._director_manager
-        # Create contract registers
-        for status in [INPUT_INVITATION_CODE, REGISTER_INVITATION_CODE, UNREGISTER_INVITATION_CODE]:
-            self._create_user_and_contract_register(status=status)
-
-        # Set conflict conditions
-        params = [
-            self._create_param_search_students_ajax(is_unregister='only', status=INPUT_INVITATION_CODE),
-            self._create_param_search_students_ajax(is_unregister='exclude', status=UNREGISTER_INVITATION_CODE)
-        ]
-
-        for param in params:
-            with self.skip_check_course_selection(current_organization=self.contract_org,
-                                                  current_contract=self.contract, current_manager=director_manager):
-                response = self.client.post(self._url_search_students_ajax, param)
-
-            self.assertEqual(200, response.status_code)
-            data = json.loads(response.content)
-            self._assert_search_ajax_successful(data, 0, 0)
-
     @ddt.data('org', 'item')
     def test_students_search_students_ajax_detail(self, key):
         self.setup_user()
@@ -270,23 +241,13 @@ class ContractOperationViewTestStudents(BizContractTestBase):
             self.assertEqual(show_list[0][key + str(i)], 'search_key_word' + str(key) + str(i))
             self.assertEqual(show_list[0]['user_name'], 'username' + str(key) + str(i))
 
-    @ddt.unpack
-    @ddt.data(
-        (INPUT_INVITATION_CODE, ['Input Invitation'], 'exclude', 1),
-        (REGISTER_INVITATION_CODE, ['Register Invitation'], 'exclude', 1),
-        ('', ['Input Invitation', 'Register Invitation'], 'exclude', 2),
-        (UNREGISTER_INVITATION_CODE, ['Unregister Invitation'], 'contains', 1),
-        (UNREGISTER_INVITATION_CODE, ['Unregister Invitation'], 'only', 1),
-        ('', ['Unregister Invitation'], 'only', 1)
-    )
-    def test_students_search_students_ajax_status_and_is_unregister(
-            self, param_status, status_list, is_unregister, expect):
+    @ddt.data('', 'exclude', 'only', 'contains')
+    def test_students_search_students_ajax_is_unregister(self, param_is_unregister):
         self.setup_user()
         director_manager = self._director_manager
-        param = self._create_param_search_students_ajax(status=param_status, is_unregister=is_unregister)
-        # Create contract registers
-        for status in [INPUT_INVITATION_CODE, REGISTER_INVITATION_CODE, UNREGISTER_INVITATION_CODE]:
-            self._create_user_and_contract_register(status=status)
+        param = self._create_param_search_students_ajax(is_unregister=param_is_unregister)
+        self._create_user_and_contract_register(status=REGISTER_INVITATION_CODE, username='username_is_not_unregister')
+        self._create_user_and_contract_register(status=UNREGISTER_INVITATION_CODE, username='username_is_unregister')
 
         with self.skip_check_course_selection(current_organization=self.contract_org,
                                               current_contract=self.contract, current_manager=director_manager):
@@ -294,31 +255,17 @@ class ContractOperationViewTestStudents(BizContractTestBase):
 
         self.assertEqual(200, response.status_code)
         data = json.loads(response.content)
-        self._assert_search_ajax_successful(data, expect, expect)
         show_list = json.loads(data['show_list'])
-        for i in range(expect):
-            self.assertEqual(show_list[i]['contract_register_status'], status_list[i])
-
-    @ddt.unpack
-    @ddt.data(("G3", 0), ("G2-1-1", 1), ("G1-1", 3))
-    def test_students_search_students_ajax_group_name(self, param_group_name, expect_num):
-        self.setup_user()
-        director_manager = self._director_manager
-        GroupUtil(org=self.contract_org, user=self.user).import_data()
-        groups = Group.objects.filter(org=self.contract_org)
-        param = self._create_param_search_students_ajax(group_name=param_group_name)
-
-        for i, group in enumerate(groups):
-            register = self._create_user_and_contract_register()
-            self._create_member(org=self.contract_org, user=register.user, group=group, code='code' + str(i))
-
-        with self.skip_check_course_selection(current_organization=self.contract_org,
-                                              current_contract=self.contract, current_manager=director_manager):
-            response = self.client.post(self._url_search_students_ajax, param)
-
-        self.assertEqual(200, response.status_code)
-        data = json.loads(response.content)
-        self._assert_search_ajax_successful(data, expect_num, expect_num)
+        if param_is_unregister in ['', 'exclude']:
+            self._assert_search_ajax_successful(data, 1, 1)
+            self.assertEqual(show_list[0]['user_name'], 'username_is_not_unregister')
+        elif param_is_unregister == 'contains':
+            self._assert_search_ajax_successful(data, 2, 2)
+            self.assertEqual(show_list[0]['user_name'], 'username_is_not_unregister')
+            self.assertEqual(show_list[1]['user_name'], 'username_is_unregister')
+        elif param_is_unregister == 'only':
+            self._assert_search_ajax_successful(data, 1, 1)
+            self.assertEqual(show_list[0]['user_name'], 'username_is_unregister')
 
     @ddt.data('q', 'Query_Length_Sample_123_Query_Length_Sample_123_Query_Length_Sample_123')
     def test_students_search_students_ajax_free_word_user_data(self, param_free_word):
@@ -455,10 +402,10 @@ class ContractOperationViewTestStudents(BizContractTestBase):
         self.assertEqual(200, response.status_code)
         data = json.loads(response.content)
         show_list = json.loads(data['show_list'])
-        if param_is_masked == 'exclude':
+        if param_is_masked in ['', 'exclude']:
             self._assert_search_ajax_successful(data, 1, 1)
             self.assertEqual(show_list[0]['user_name'], 'username_is_not_masked')
-        elif param_is_masked in ['', 'contains']:
+        elif param_is_masked == 'contains':
             self._assert_search_ajax_successful(data, 2, 2)
             self.assertEqual(show_list[0]['user_name'], 'username_is_masked')
             self.assertEqual(show_list[1]['user_name'], 'username_is_not_masked')

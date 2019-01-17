@@ -5,20 +5,20 @@ import json
 ## django
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext as _
-
 ## TestBase
 from biz.djangoapps.util.tests.testcase import BizViewTestBase, BizStoreTestBase
 from biz.djangoapps.ga_invitation.tests.test_views import BizContractTestBase
-
+## model
+from biz.djangoapps.gx_org_group.models import Group
 ## factory
 from xmodule.modulestore.tests.factories import CourseFactory
 from student.tests.factories import UserFactory
 from biz.djangoapps.gx_member.tests.factories import MemberFactory
 from biz.djangoapps.gx_org_group.tests.factories import GroupFactory
+from biz.djangoapps.gx_org_group.tests.factories import RightFactory, GroupUtil
 from ga_survey.tests.factories import SurveySubmissionFactory
 from student.tests.factories import CourseEnrollmentFactory
 
-#from biz.djangoapps.ga_course_anslist.tests.test_base import AnslistTestBase
 from biz.djangoapps.ga_course_anslist import helpers as helper
 
 @ddt
@@ -629,11 +629,9 @@ class CourseAnslistDownloadTest(BizContractTestBase, BizStoreTestBase):
         self.assertEqual(200, actual_response.status_code)
 
 
-class CourseAnslistDownloadAddTest(BizContractTestBase, BizStoreTestBase):
+class CourseAnslistDownloadTestBase(BizContractTestBase, BizStoreTestBase):
 
     def setUp(self):
-        #super(AnslistTestBase, self).setUp()
-        #super(BizViewTestBase, self).setUp()
         super(BizContractTestBase, self).setUp()
         self.setup_user()
 
@@ -656,32 +654,50 @@ class CourseAnslistDownloadAddTest(BizContractTestBase, BizStoreTestBase):
             permissions=[self.director_permission]
         )
         ## user
+        ## user 10 manager user10 enrolled member
         self.user10 = UserFactory.create(username='na10000', email='nauser10000@example.com')
-        ## manager user10
         self._manager = self._create_manager(
             org=self.org100,
             user=self.user10,
             created=self.gacco_organization,
             permissions=[self.manager_permission]
         )
+        ## user 11 / user 12 enrolled user
         self.user11 = UserFactory.create(username='na11000', email='nauser11000@example.com')
+        ## user 12 unenrolled user
         self.user12 = UserFactory.create(username='na12000', email='nauser12000@example.com')
 
         ## register
         self.user60 = UserFactory.create(username='na60000', email='nauser60000@example.com')
         self.reg60 = self._register_contract(self.contract1, self.user60)
 
+        def _csv_header(self):
+            return [
+                'Organization Group Code',
+                'Organization Group Name',
+                'Parent Organization Code',
+                'Parent Organization Name',
+                'notes'
+            ]
 
         ## group
-        self.group1000 = GroupFactory.create(
-            parent_id=0, level_no=0, group_code='1000', group_name='G1000', org=self.org100,
-            created_by=self.user, modified_by=self.user)
-        self.group1100 = GroupFactory.create(
-            parent_id=0, level_no=0, group_code='1100', group_name='G1100', org=self.org100,
-            created_by=self.user, modified_by=self.user)
-        self.group1200 = GroupFactory.create(
-            parent_id=0, level_no=0, group_code='1200', group_name='G1200', org=self.org100,
-            created_by=self.user, modified_by=self.user)
+        # CSV_DATA = [
+        #     _csv_header,
+        #     ["G1000", "G1000", "", "", ""],
+        #     ["G1100", "G1100", "G1000", "G1000", ""],
+        #     ["G1110", "G1110", "G1100", "G1100", ""],
+        #     ["G2000", "G2000", "", "", ""],
+        # ]
+        # GroupUtil(org=self.org100, user=self.user).import_data(csv_data=CSV_DATA)
+        GroupUtil(org=self.org100, user=self.user).import_data()
+        self.group1000 = Group.objects.filter(org=self.org100, group_code='G01').first()
+        self.group1100 = Group.objects.filter(org=self.org100, group_code='G01-01').first()
+        self.group1110 = Group.objects.filter(org=self.org100, group_code='G01-01-01').first()
+        self.group2000 = Group.objects.filter(org=self.org100, group_code='G02').first()
+
+        ## Group Rights for user10
+        RightFactory.create(org=self.org100, group=self.group1000, user=self.user10, created_by=self.user,
+                            creator_org=self.gacco_organization)
 
         ## member
         self.member10 = MemberFactory.create(
@@ -710,6 +726,8 @@ class CourseAnslistDownloadAddTest(BizContractTestBase, BizStoreTestBase):
         ## enrollment
         self.enroll10 = CourseEnrollmentFactory.create(user=self.user10, course_id=self.course10.id)
         self.enroll11 = CourseEnrollmentFactory.create(user=self.user11, course_id=self.course10.id)
+
+        ## surveysubmission
         ### user10
         submission10_c10_survey1_data = {
             'course_id': self.course10.id,
@@ -796,6 +814,146 @@ class CourseAnslistDownloadAddTest(BizContractTestBase, BizStoreTestBase):
 
     def _get_url_search(self):
         return reverse('biz:course_anslist:status_search_api')
+
+
+class CourseAnslistDownloadAdd4ManagerNoneRightTest(CourseAnslistDownloadTestBase):
+
+    def setUp(self):
+        super(CourseAnslistDownloadAdd4ManagerNoneRightTest, self).setUp()
+
+        ## user 13 manager
+        self.user13 = UserFactory.create(username='na13000', email='nauser13000@example.com')
+        self._manager_no_right = self._create_manager(
+            org=self.org100,
+            user=self.user13,
+            created=self.gacco_organization,
+            permissions=[self.manager_permission]
+        )
+
+    def test_request_anslist_search_manager_o100_c10_off(self):
+        with self.skip_check_course_selection(current_organization=self.org100, current_contract=self.contract1,
+                                              current_course=self.course10, current_manager=self._manager_no_right):
+            expected_len = 3  ##FIXME
+            self.POST_DATA_INIT_OFF["search-download"] = "search-download"
+            actual_response = self.client.post(self._get_url_search(), self.POST_DATA_INIT_OFF)
+            self.assertEqual('application/json', actual_response['Content-Type'], )
+            actual_content = actual_response.content
+            json_obj = json.loads(actual_content)
+            actual_len = len(json_obj)
+            self.assertEqual(expected_len, actual_len)
+
+        self.assertEqual(200, actual_response.status_code)
+
+    def test_request_anslist_download_manager_o100_c10_off(self):
+        with self.skip_check_course_selection(current_organization=self.org100, current_contract=self.contract1,
+                                              current_course=self.course10, current_manager=self._manager_no_right):
+            expected_len = 5
+            self.POST_DATA_INIT_OFF["search-download"] = "search-download"
+            actual_response = self.client.post(self._get_url_download(), self.POST_DATA_INIT_OFF)
+            self.assertEqual('text/tab-separated-values', actual_response['Content-Type'], )
+            actual_content = actual_response.content
+            self.assertTrue(self._validate_bom(actual_content))
+            rows = self._convert_csv_rows(actual_content)
+            actual_len = len(rows)
+            self.assertEqual(expected_len, actual_len)
+
+        self.assertEqual(200, actual_response.status_code)
+
+    def test_request_anslist_search_manager_o100_c10_on(self):
+        with self.skip_check_course_selection(current_organization=self.org100, current_contract=self.contract1,
+                                              current_course=self.course10, current_manager=self._manager_no_right):
+            expected_len = 3
+            self.POST_DATA_INIT_ON["search-download"] = "search-download"
+            actual_response = self.client.post(self._get_url_search(), self.POST_DATA_INIT_ON)
+            self.assertEqual('application/json', actual_response['Content-Type'], )
+            actual_content = actual_response.content
+            json_obj = json.loads(actual_content)
+            actual_len = len(json_obj)
+            self.assertEqual(expected_len, actual_len)
+
+        self.assertEqual(200, actual_response.status_code)
+
+    def test_request_anslist_download_manager_o100_c10_on(self):
+        with self.skip_check_course_selection(current_organization=self.org100, current_contract=self.contract1,
+                                              current_course=self.course10, current_manager=self._manager_no_right):
+            expected_len = 4
+            self.POST_DATA_INIT_ON["search-download"] = "search-download"
+            actual_response = self.client.post(self._get_url_download(), self.POST_DATA_INIT_ON)
+            self.assertEqual('text/tab-separated-values', actual_response['Content-Type'], )
+            actual_content = actual_response.content
+            self.assertTrue(self._validate_bom(actual_content))
+            rows = self._convert_csv_rows(actual_content)
+            actual_len = len(rows)
+            self.assertEqual(expected_len, actual_len)
+
+        self.assertEqual(200, actual_response.status_code)
+
+
+class CourseAnslistDownloadAdd4ManagerRightTest(CourseAnslistDownloadTestBase):
+
+    def setUp(self):
+        super(CourseAnslistDownloadAdd4ManagerRightTest, self).setUp()
+
+    def test_request_anslist_search_manager_o100_c10_off(self):
+        with self.skip_check_course_selection(current_organization=self.org100, current_contract=self.contract1,
+                                              current_course=self.course10, current_manager=self._manager):
+            expected_len = 3  ##FIXME
+            self.POST_DATA_INIT_OFF["search-download"] = "search-download"
+            actual_response = self.client.post(self._get_url_search(), self.POST_DATA_INIT_OFF)
+            self.assertEqual('application/json', actual_response['Content-Type'], )
+            actual_content = actual_response.content
+            json_obj = json.loads(actual_content)
+            actual_len = len(json_obj)
+            self.assertEqual(expected_len, actual_len)
+
+        self.assertEqual(200, actual_response.status_code)
+
+    def test_request_anslist_download_manager_o100_c10_off(self):
+        with self.skip_check_course_selection(current_organization=self.org100, current_contract=self.contract1,
+                                              current_course=self.course10, current_manager=self._manager):
+            expected_len = 5
+            self.POST_DATA_INIT_OFF["search-download"] = "search-download"
+            actual_response = self.client.post(self._get_url_download(), self.POST_DATA_INIT_OFF)
+            self.assertEqual('text/tab-separated-values', actual_response['Content-Type'], )
+            actual_content = actual_response.content
+            self.assertTrue(self._validate_bom(actual_content))
+            rows = self._convert_csv_rows(actual_content)
+            actual_len = len(rows)
+            self.assertEqual(expected_len, actual_len)
+
+        self.assertEqual(200, actual_response.status_code)
+
+    def test_request_anslist_search_manager_o100_c10_on(self):
+        with self.skip_check_course_selection(current_organization=self.org100, current_contract=self.contract1,
+                                              current_course=self.course10, current_manager=self._manager):
+            expected_len = 3
+            self.POST_DATA_INIT_ON["search-download"] = "search-download"
+            actual_response = self.client.post(self._get_url_search(), self.POST_DATA_INIT_ON)
+            self.assertEqual('application/json', actual_response['Content-Type'], )
+            actual_content = actual_response.content
+            json_obj = json.loads(actual_content)
+            actual_len = len(json_obj)
+            self.assertEqual(expected_len, actual_len)
+
+        self.assertEqual(200, actual_response.status_code)
+
+    def test_request_anslist_download_manager_o100_c10_on(self):
+        with self.skip_check_course_selection(current_organization=self.org100, current_contract=self.contract1,
+                                              current_course=self.course10, current_manager=self._manager):
+            expected_len = 4
+            self.POST_DATA_INIT_ON["search-download"] = "search-download"
+            actual_response = self.client.post(self._get_url_download(), self.POST_DATA_INIT_ON)
+            self.assertEqual('text/tab-separated-values', actual_response['Content-Type'], )
+            actual_content = actual_response.content
+            self.assertTrue(self._validate_bom(actual_content))
+            rows = self._convert_csv_rows(actual_content)
+            actual_len = len(rows)
+            self.assertEqual(expected_len, actual_len)
+
+        self.assertEqual(200, actual_response.status_code)
+
+
+class CourseAnslistDownloadAdd4DirectorTest(CourseAnslistDownloadTestBase):
 
     def test_request_anslist_search_o100_c10_off(self):
         with self.skip_check_course_selection(current_organization=self.org100, current_contract=self.contract1,
@@ -859,11 +1017,9 @@ class CourseAnslistDownloadAddTest(BizContractTestBase, BizStoreTestBase):
         self.assertEqual(200, actual_response.status_code)
 
 
-class CourseAnslistDownload4ManagerAddTest(BizContractTestBase, BizStoreTestBase):
+class CourseAnslistDownload4ManagerOrgNotExistGroupAddTest(BizContractTestBase, BizStoreTestBase):
 
     def setUp(self):
-        #super(AnslistTestBase, self).setUp()
-        #super(BizViewTestBase, self).setUp()
         super(BizContractTestBase, self).setUp()
         self.setup_user()
 
@@ -901,42 +1057,6 @@ class CourseAnslistDownload4ManagerAddTest(BizContractTestBase, BizStoreTestBase
         self.user60 = UserFactory.create(username='na60000', email='nauser60000@example.com')
         self.reg60 = self._register_contract(self.contract1, self.user60)
 
-
-        ## group
-        self.group1000 = GroupFactory.create(
-            parent_id=0, level_no=0, group_code='1000', group_name='G1000', org=self.org100,
-            created_by=self.user, modified_by=self.user)
-        self.group1100 = GroupFactory.create(
-            parent_id=0, level_no=0, group_code='1100', group_name='G1100', org=self.org100,
-            created_by=self.user, modified_by=self.user)
-        self.group1200 = GroupFactory.create(
-            parent_id=0, level_no=0, group_code='1200', group_name='G1200', org=self.org100,
-            created_by=self.user, modified_by=self.user)
-
-        ## member
-        self.member10 = MemberFactory.create(
-            org=self.org100,
-            group=self.group1000,
-            user=self.user10,
-            code='0010',
-            created_by=self.user,
-            creator_org=self.gacco_organization,
-            updated_by=self.user,
-            updated_org=self.gacco_organization,
-            org1='gacco1',
-        )
-        self.member11 = MemberFactory.create(
-            org=self.org100,
-            group=self.group1100,
-            user=self.user11,
-            code='0011',
-            created_by=self.user,
-            creator_org=self.gacco_organization,
-            updated_by=self.user,
-            updated_org=self.gacco_organization,
-            org1='gacco1',
-            org2='gacco11',
-        )
         ## enrollment
         self.enroll10 = CourseEnrollmentFactory.create(user=self.user10, course_id=self.course10.id)
         self.enroll11 = CourseEnrollmentFactory.create(user=self.user11, course_id=self.course10.id)
@@ -1030,7 +1150,7 @@ class CourseAnslistDownload4ManagerAddTest(BizContractTestBase, BizStoreTestBase
     def test_request_anslist_search_o100_c10_off(self):
         with self.skip_check_course_selection(current_organization=self.org100, current_contract=self.contract1,
                                               current_course=self.course10, current_manager=self._manager):
-            expected_len = 3 ## FIXME expected_len = 1
+            expected_len = 3
             self.POST_DATA_INIT_OFF["search-download"] = "search-download"
             actual_response = self.client.post(self._get_url_search(), self.POST_DATA_INIT_OFF)
             self.assertEqual('application/json', actual_response['Content-Type'], )
@@ -1045,7 +1165,7 @@ class CourseAnslistDownload4ManagerAddTest(BizContractTestBase, BizStoreTestBase
     def test_request_anslist_download_o100_c10_off(self):
         with self.skip_check_course_selection(current_organization=self.org100, current_contract=self.contract1,
                                               current_course=self.course10, current_manager=self._manager):
-            expected_len = 5 ## FIXME expected_len = 1
+            expected_len = 3 ## FIXME expected_len = 5
             self.POST_DATA_INIT_OFF["search-download"] = "search-download"
             actual_response = self.client.post(self._get_url_download(), self.POST_DATA_INIT_OFF)
             self.assertEqual('text/tab-separated-values', actual_response['Content-Type'], )
@@ -1061,7 +1181,7 @@ class CourseAnslistDownload4ManagerAddTest(BizContractTestBase, BizStoreTestBase
     def test_request_anslist_search_o100_c10_on(self):
         with self.skip_check_course_selection(current_organization=self.org100, current_contract=self.contract1,
                                               current_course=self.course10, current_manager=self._manager):
-            expected_len = 3 ## FIXME expected_len = 1
+            expected_len = 3 ##FIXME
             self.POST_DATA_INIT_ON["search-download"] = "search-download"
             actual_response = self.client.post(self._get_url_search(), self.POST_DATA_INIT_ON)
             self.assertEqual('application/json', actual_response['Content-Type'], )
@@ -1076,7 +1196,7 @@ class CourseAnslistDownload4ManagerAddTest(BizContractTestBase, BizStoreTestBase
     def test_request_anslist_download_o100_c10_on(self):
         with self.skip_check_course_selection(current_organization=self.org100, current_contract=self.contract1,
                                               current_course=self.course10, current_manager=self._manager):
-            expected_len = 4 ## FIXME expected_len = 1
+            expected_len = 2 ## FIXME expected_len = 4
             self.POST_DATA_INIT_ON["search-download"] = "search-download"
             actual_response = self.client.post(self._get_url_download(), self.POST_DATA_INIT_ON)
             self.assertEqual('text/tab-separated-values', actual_response['Content-Type'], )

@@ -113,7 +113,6 @@ def students(request):
         {
             'total_count': total_count,
             'show_list': json.dumps(show_list, cls=EscapedEdxJSONEncoder),
-            'status_list': status,
             'additional_columns': json.dumps(additional_columns, cls=EscapedEdxJSONEncoder),
             'max_show_num_on_page': CONTRACT_REGISTER_MAX_DISPLAY_NUM,
             'member_org_item_list': member_org_item_list,
@@ -181,45 +180,15 @@ def _contract_register_list_on_page(request, offset=0, limit=CONTRACT_REGISTER_M
         else:
             where_sql += "AND 0 "
 
-    # Group name
-    group_name = request.POST.get('group_name')
-    if group_name and group_name.strip():
-        where_sql += "AND group_name LIKE %s "
-        option_sql.append('%' + group_name + '%')
-
-    # Status and Unregister
-    status = request.POST.get('status')
+    # Unregister: is_unregister is empty when students page initial display.
     is_unregister = request.POST.get('is_unregister')
-    # is_unregister is empty when students page initial display.
-    if is_unregister in radio_operator:
-        if is_unregister == radio_operator_contains:
-            if status:
-                where_sql += "AND (status = %s OR status = %s) "
-                option_sql.append(status)
-                option_sql.append(UNREGISTER_INVITATION_CODE)
-        elif is_unregister == radio_operator_only:
-            if status:
-                if status == UNREGISTER_INVITATION_CODE:
-                    where_sql += "AND status = %s "
-                    option_sql.append(status)
-                else:
-                    # Return empty list because conflict status conditions
-                    return 0, [], [], []
-            else:
-                where_sql += "AND status = %s "
-                option_sql.append(UNREGISTER_INVITATION_CODE)
-        elif is_unregister == radio_operator_exclude:
-            if status:
-                if status == UNREGISTER_INVITATION_CODE:
-                    # Return empty list because conflict status conditions
-                    return 0, [], [], []
-                else:
-                    where_sql += "AND status = %s "
-                    option_sql.append(status)
-            else:
-                where_sql += "AND (status = %s OR status = %s) "
-                option_sql.append(INPUT_INVITATION_CODE)
-                option_sql.append(REGISTER_INVITATION_CODE)
+    if is_unregister not in radio_operator or is_unregister == radio_operator_exclude:
+        where_sql += "AND (status = %s OR status = %s) "
+        option_sql.append(INPUT_INVITATION_CODE)
+        option_sql.append(REGISTER_INVITATION_CODE)
+    elif is_unregister == radio_operator_only:
+        where_sql += "AND status = %s "
+        option_sql.append(UNREGISTER_INVITATION_CODE)
 
     # Free word
     free_word = request.POST.get('free_word')
@@ -263,14 +232,12 @@ def _contract_register_list_on_page(request, offset=0, limit=CONTRACT_REGISTER_M
     elif member_is_delete == radio_operator_only:
         where_sql += "AND MG.is_delete=1 "
     else:
-        # member_is_delete in ['', 'exclude']
         # member_is_delete is empty when students page initial display.
         where_sql += "AND (MG.is_active=1 OR MG.is_active IS NULL) "
 
-    # Mask
+    # Mask: is_masked is empty when students page initial display.
     is_masked = request.POST.get('is_masked')
-    # is_masked is empty when students page initial display.
-    if is_masked == radio_operator_exclude:
+    if is_masked not in radio_operator or is_masked == radio_operator_exclude:
         where_sql += "AND email LIKE %s "
         option_sql.append('%@%')
     elif is_masked == radio_operator_only:
