@@ -57,8 +57,8 @@ class Command(BaseCommand):
 
         def _s3bucket_connection():
             try:
-                conn = connect_s3()
-                # conn = connect_s3(settings.AWS_ACCESS_KEY_ID, settings.AWS_SECRET_ACCESS_KEY)
+                # conn = connect_s3()
+                conn = connect_s3(settings.AWS_ACCESS_KEY_ID, settings.AWS_SECRET_ACCESS_KEY)
                 bucket = conn.get_bucket(s3_bucket_name)
             except Exception as e:
                 log.error(e)
@@ -303,20 +303,26 @@ class Command(BaseCommand):
         try:
             s3items = _s3file_list_get()
             for s3item in s3items:
-                csv_records = _s3file_download_read(s3item)
-                register_list, errors_list = _member_validate(csv_records)
-                success_list, errors_list2 = _member_create_or_update(register_list)
-                result += _s3report_upload(s3item, len(csv_records), len(success_list), errors_list + errors_list2)
+                try:
+                    csv_records = _s3file_download_read(s3item)
+                    register_list, errors_list = _member_validate(csv_records)
+                    success_list, errors_list2 = _member_create_or_update(register_list)
+                    result += _s3report_upload(s3item, len(csv_records), len(success_list), errors_list + errors_list2)
+                except Exception as ex:
+                    result += str(ex) + "\\n"
         except Exception as ex:
             result += str(ex) + "\\n"
         # Non SSO csv register
         try:
             s3items = _s3file_list_get(non_sso=True)
             for s3item in s3items:
-                csv_records = _s3file_download_read(s3item)
-                register_list, errors_list = _member_validate(csv_records, non_sso=True)
-                success_list, errors_list2 = _member_create_or_update(register_list)
-                result += _s3report_upload(s3item, len(csv_records), len(success_list), errors_list + errors_list2)
+                try:
+                    csv_records = _s3file_download_read(s3item)
+                    register_list, errors_list = _member_validate(csv_records, non_sso=True)
+                    success_list, errors_list2 = _member_create_or_update(register_list)
+                    result += _s3report_upload(s3item, len(csv_records), len(success_list), errors_list + errors_list2)
+                except Exception as ex:
+                    result += str(ex) + "\\n"
         except Exception as ex:
             result += str(ex) + "\\n"
 

@@ -6,6 +6,7 @@ Replace this with more appropriate tests for your application.
 """
 from biz.djangoapps.ga_organization.models import Organization
 from biz.djangoapps.gx_member.models import Member
+from biz.djangoapps.gx_org_group.models import Group
 from biz.djangoapps.gx_sso_config.models import SsoConfig
 from biz.djangoapps.gx_username_rule.models import OrgUsernameRule
 from biz.djangoapps.util.tests.testcase import BizViewTestBase
@@ -139,6 +140,11 @@ class TestArgParsing(BizViewTestBase, ModuleStoreTestCase):
         UserProfile.objects.create(user=user)
         UserSocialAuth.objects.get_or_create(user=user, provider='tpa-saml',
                                              uid="TEST:PRE-username2")
+        Group.objects.create(
+            parent_id=-1, level_no=-1,
+            group_code='0001', group_name='hoge',
+            notes='hoge', org=self.gacco_organization, created_by=user
+        )
 
         conn = connect_s3('foobar', 'bizbaz')
         conn.create_bucket('test-bucket')
@@ -163,7 +169,7 @@ class TestArgParsing(BizViewTestBase, ModuleStoreTestCase):
         member_csv = "no_sso_member_2000-01-01-0000_01.csv"
         with codecs.open('/tmp/' + member_csv, 'w', 'utf8') as fou:
             fou.write("[Header],MemberCode,eMail.LastName,FirstName,Username,pwd,org1,,,,,,,,,item1,,,,,,,,,\r\n")
-            fou.write(",MemberCode2,hoge2@mail.com,Lname2,Fname2,PRE-username2,Password"
+            fou.write("0001,MemberCode2,hoge2@mail.com,Lname2,Fname2,PRE-username2,Password"
                       ",org1,,,,,,,,,org10,item1,,,,,,,,,item10\r\n")
         with ZipFile('/tmp/' + member_csv[:-4] + '.zip', 'w', ZIP_DEFLATED) as create_zip:
             create_zip.write('/tmp/' + member_csv, member_csv)
@@ -392,3 +398,43 @@ class TestArgParsing(BizViewTestBase, ModuleStoreTestCase):
                                          "username2,hoge2@mail.com\r\nPRE-username2d,hoge2@mail.com\r\n"
                                          "PRE-username2e,hoge2@mail.com\r\nPRE-username2f,hoge2"+"a"*70+"@mail.com\r\n")
 
+    @mock_s3
+    @override_settings(AWS_ACCESS_KEY_ID='foobar', AWS_SECRET_ACCESS_KEY='bizbaz')
+    def test_command_error_except_test(self):
+        conn = connect_s3('foobar', 'bizbaz')
+        conn.create_bucket('test-bucket')
+        bucket = conn.get_bucket('test-bucket')
+        s3key = Key(bucket)
+
+        member_csv = "sso_member_2000-01-01-0000_01.csv"
+        member_zip = "sso_member_2000-01-01-0001_01.zip"
+        with codecs.open('/tmp/' + member_csv, 'w', 'utf8') as fou:
+            fou.write("[Header],MemberCode,eMail.LastName,FirstName,Username,org1,,,,,,,,,item1,,,,,,,,,\r\n")
+        with ZipFile('/tmp/' + member_zip[:-4] + '.zip', 'w', ZIP_DEFLATED) as create_zip:
+            create_zip.write('/tmp/' + member_csv, member_csv)
+        s3key.key = "input_data/01_member/" + member_zip[:-4] + '.zip'
+        s3key.set_contents_from_filename("/tmp/" + member_zip[:-4] + '.zip')
+        if os.path.exists("/tmp/" + member_csv):
+            os.remove("/tmp/" + member_csv)
+        if os.path.exists("/tmp/" + member_zip[:-4] + '.zip'):
+            os.remove("/tmp/" + member_zip[:-4] + '.zip')
+
+        member_csv = "no_sso_member_2000-01-01-0000_01.csv"
+        member_zip = "no_sso_member_2000-01-01-0001_01.zip"
+        with codecs.open('/tmp/' + member_csv, 'w', 'utf8') as fou:
+            fou.write("[Header],MemberCode,eMail.LastName,FirstName,Username,pwd,org1,,,,,,,,,item1,,,,,,,,,\r\n")
+        with ZipFile('/tmp/' + member_zip[:-4] + '.zip', 'w', ZIP_DEFLATED) as create_zip:
+            create_zip.write('/tmp/' + member_csv, member_csv)
+        s3key.key = "input_data/01_member/" + member_zip[:-4] + '.zip'
+        s3key.set_contents_from_filename("/tmp/" + member_zip[:-4] + '.zip')
+        if os.path.exists("/tmp/" + member_csv):
+            os.remove("/tmp/" + member_csv)
+        if os.path.exists("/tmp/" + member_zip[:-4] + '.zip'):
+            os.remove("/tmp/" + member_zip[:-4] + '.zip')
+
+        call_command('auto_member_register', '-bucket=test-bucket', '-prefix=sso_member',
+                     '-prefix2=no_sso_member', '-user=1', '-org='+str(self.gacco_organization.id))
+
+        # SSO target
+        reg_user = User.objects.filter(username="PRE-username1")
+        self.assertFalse(reg_user.exists())
