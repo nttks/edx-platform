@@ -57,8 +57,8 @@ class Command(BaseCommand):
 
         def _s3bucket_connection():
             try:
-                # conn = connect_s3()
-                conn = connect_s3(settings.AWS_ACCESS_KEY_ID, settings.AWS_SECRET_ACCESS_KEY)
+                conn = connect_s3()
+                # conn = connect_s3(settings.AWS_ACCESS_KEY_ID, settings.AWS_SECRET_ACCESS_KEY)
                 bucket = conn.get_bucket(s3_bucket_name)
             except Exception as e:
                 log.error(e)
@@ -328,5 +328,5 @@ class Command(BaseCommand):
 
         end_time = datetime_utils.timezone_now()
         log.info(u"Command auto_member_register completed at {}.".format(end_time))
-        return result
+        return result.replace("\"", "'")
 
