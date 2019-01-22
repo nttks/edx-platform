@@ -1397,7 +1397,6 @@ class ContractOperationReminderMailViewTest(BizContractTestBase, BizStoreTestBas
                                               current_manager=director_manager), patch(
                 'biz.djangoapps.ga_contract_operation.views.send_mail') as send_mail:
             response = self.client.post(self._url_search_send_ajax, param)
-
         self.assertEqual(200, response.status_code)
         data = json.loads(response.content)
         self.assertEqual(data['info'], 'Complete of send the e-mail.')
@@ -1407,7 +1406,7 @@ class ContractOperationReminderMailViewTest(BizContractTestBase, BizStoreTestBas
             'email_address': self.user.email,
             'fullname': profile.name if exist_profile else '',
             'course_name': self.course_self_paced1.display_name,
-            'expire_date': unicode(datetime.now().strftime("%Y-%m-%d")),
+            'expire_date': datetime(2016, 1, 5, 0, 0, 0, tzinfo=tzutc()).strftime("%Y-%m-%d"),
         })
 
     def test_reminder_search_mail_send_ajax_authorized_error(self):

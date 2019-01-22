@@ -58,7 +58,7 @@ log = logging.getLogger(__name__)
 
 CONTRACT_REGISTER_MAX_DISPLAY_NUM = 1000
 BIZ_MAX_CHAR_LENGTH_REGISTER_LINE = 7000
-BIZ_MAX_REGISTER_NUMBER = 50000
+BIZ_MAX_REGISTER_NUMBER = 9999
 
 
 def _error_response(message):
@@ -1275,7 +1275,7 @@ def reminder_search_mail_send_ajax(request):
     for user in users:
         expire_datetime = None
         if is_test:
-            expire_datetime = datetime.now()
+            expire_datetime = course.deadline_start
             try:
                 profile = UserProfile.objects.get(user=request.user)
                 full_name = profile.name
@@ -1284,7 +1284,6 @@ def reminder_search_mail_send_ajax(request):
         else:
             expire_datetime = course.deadline_start
             full_name = user.profile.name
-
         try:
             send_mail(user, mail_subject.encode('utf-8'), mail_body.encode('utf-8'), {
                 'username': user.username,
