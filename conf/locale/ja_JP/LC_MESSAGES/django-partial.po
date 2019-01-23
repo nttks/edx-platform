@@ -1621,32 +1621,32 @@ msgstr "常時"
 
 #: common/lib/xmodule/xmodule/capa_base.py
 msgid "Answered"
-msgstr "回答済み"
+msgstr "回答提出後（リセットあり）"
 
 #: common/lib/xmodule/xmodule/capa_base.py
 msgid "Attempted"
-msgstr "以前取り組んだものです"
+msgstr "回答提出後（リセットなし）"
 
 #: common/lib/xmodule/xmodule/capa_base.py
 msgid "Closed"
-msgstr "〆切済"
+msgstr "試行回数上限／提出期限後"
 
 #: common/lib/xmodule/xmodule/capa_base.py
 msgid "Finished"
-msgstr "終了"
+msgstr "正解／試行回数上限／提出期限後"
 
 #: common/lib/xmodule/xmodule/capa_base.py
 msgid "Correct or Past Due"
-msgstr "正しい、もしくは過去の〆切"
+msgstr "正解／提出期限後"
 
 #: common/lib/xmodule/xmodule/capa_base.py
 msgid "Past Due"
-msgstr "昔の締切"
+msgstr "提出期限後"
 
 #: common/lib/xmodule/xmodule/capa_base.py
 #: common/lib/xmodule/xmodule/capa_base.py
 msgid "Never"
-msgstr "無期限"
+msgstr "非表示"
 
 #: common/lib/xmodule/xmodule/capa_base.py
 msgid "Whether to force the save button to appear on the page"
