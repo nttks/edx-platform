@@ -1937,11 +1937,11 @@ msgid "Select Survey"
 msgstr "対象アンケートを選択"
 
 #: biz/templates/ga_course_operation/survey.html:293
-msgid "Answered"
+msgid "SurveyAnswered"
 msgstr "回答済"
 
 #: biz/templates/ga_course_operation/survey.html:297
-msgid "Unaswered"
+msgid "SurveyUnanswered"
 msgstr "未回答"
 
 #: biz/templates/ga_course_operation/survey.html:357
