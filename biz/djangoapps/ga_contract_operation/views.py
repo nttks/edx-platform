@@ -1128,6 +1128,7 @@ def reminder_search_ajax(request):
              M.item1, M.item2, M.item3, M.item4, M.item5, M.item6, M.item7, M.item8, M.item9, M.item10
       FROM gx_member_member as M LEFT OUTER JOIN gx_org_group_group as G 
       ON M.group_id = G.id  AND M.org_id = %s 
+      WHERE M.is_active = 1 AND M.is_delete = 0 
     ) MG ON AU.id = MG.user_id AND MG.org_id = %s 
     WHERE SC.course_id = %s ''' + where_sql + '''
     ORDER BY AU.id ASC'''
