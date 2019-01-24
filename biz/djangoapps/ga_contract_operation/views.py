@@ -1077,7 +1077,7 @@ def reminder_search_ajax(request):
         return row
 
     where_sql = ""
-    option_sql = [org.id, str(course.id)]
+    option_sql = [org.id, org.id, str(course.id)]
     if not manager.is_director() and manager.is_manager() and Group.objects.filter(org=org).exists():
         if request.current_organization_visible_group_ids:
             where_sql += "AND group_id IN ("
@@ -1128,7 +1128,7 @@ def reminder_search_ajax(request):
              M.item1, M.item2, M.item3, M.item4, M.item5, M.item6, M.item7, M.item8, M.item9, M.item10
       FROM gx_member_member as M LEFT OUTER JOIN gx_org_group_group as G 
       ON M.group_id = G.id  AND M.org_id = %s 
-    ) MG ON AU.id = MG.user_id 
+    ) MG ON AU.id = MG.user_id AND MG.org_id = %s 
     WHERE SC.course_id = %s ''' + where_sql + '''
     ORDER BY AU.id ASC'''
 
