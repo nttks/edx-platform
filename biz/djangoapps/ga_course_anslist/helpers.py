@@ -30,23 +30,56 @@ GRID_COLUMNS_HIDDEN = [
 ]
 
 QUERY_STATEMENT_SURVEY_NAMES = '''
-	SELECT 
-	    sbm.id
-	  , sbm.unit_id
-	  , sbm.course_id
-	  , sbm.survey_name
-	  , min(sbm.created)
-	FROM
-	  ga_survey_surveysubmission as sbm
-	WHERE 1 = 1
-	  and sbm.course_id = '$course_id'
-    group by sbm.unit_id
-	order by sbm.created
-'''
+    SELECT 
+            sbm2.id
+          , sbm2.unit_id
+          , sbm2.course_id
+          , sbm2.survey_name
+          , sbm2.created
+    FROM
+        (SELECT 
+            sbm.unit_id
+          , min(sbm.created) AS created_min
+        FROM
+          ga_survey_surveysubmission as sbm
+        WHERE 1 = 1
+        and sbm.course_id = '$course_id'
+        group by sbm.unit_id, sbm.course_id
+        ) AS min_data
+        INNER JOIN ga_survey_surveysubmission sbm2
+        ON min_data.unit_id = sbm2.unit_id
+        AND min_data.created_min = sbm2.created
+	'''
 
-def _create_survey_name_list_statement(course_id):
-    templ = Template(QUERY_STATEMENT_SURVEY_NAMES)
-    sql_statement = templ.substitute(course_id=course_id)
+QUERY_STATEMENT_SURVEY_NAMES_MAX = '''
+    SELECT 
+            sbm2.id
+          , sbm2.unit_id
+          , sbm2.course_id
+          , sbm2.survey_name
+          , sbm2.created
+    FROM
+        (SELECT 
+            sbm.unit_id
+          , max(sbm.created) AS created_max
+        FROM
+          ga_survey_surveysubmission as sbm
+        WHERE 1 = 1
+        and sbm.course_id = '$course_id'
+        group by sbm.unit_id, sbm.course_id
+        ) AS max_data
+        INNER JOIN ga_survey_surveysubmission sbm2
+        ON max_data.unit_id = sbm2.unit_id
+        AND max_data.created_max = sbm2.created
+	'''
+
+def _create_survey_name_list_statement(course_id, flg_get_updated_survey_name=False):
+    if flg_get_updated_survey_name:
+        templ = Template(QUERY_STATEMENT_SURVEY_NAMES_MAX)
+        sql_statement = templ.substitute(course_id=course_id)
+    else:
+        templ = Template(QUERY_STATEMENT_SURVEY_NAMES)
+        sql_statement = templ.substitute(course_id=course_id)
     return sql_statement
 
 
@@ -80,6 +113,7 @@ QUERY_STATEMENT_USER_NOT_MEMBERS = '''
     WHERE 1=1
     AND org.id = $org_id
     AND enroll.course_id =  '$course_id'
+    AND reg.contract_id = det.contract_id
     AND reg.contract_id = $contract_id
     AND usr.id not in ($user_ids)
 '''
@@ -161,7 +195,7 @@ def _serialize_post_data_for_detail(post_data):
 
     ret_lst = []
     for k in ret_dct.keys():
-        ret_lst.append({'field' : [k], 'value' : ret_dct[k]})
+        ret_lst.append({'field' : [k], 'value': ret_dct[k]})
 
     return ret_lst
 

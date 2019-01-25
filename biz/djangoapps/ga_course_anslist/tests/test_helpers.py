@@ -47,34 +47,93 @@ GRID_COLUMNS_TRANSFORMED = [
 ]
 
 QUERY_STATEMENT_SURVEY_NAMES = '''
-	SELECT 
-	    sbm.id
-	  , sbm.unit_id
-	  , sbm.course_id
-	  , sbm.survey_name
-	  , min(sbm.created)
-	FROM
-	  ga_survey_surveysubmission as sbm
-	WHERE 1 = 1
-	  and sbm.course_id = '$course_id'
-    group by sbm.unit_id
-	order by sbm.created
-'''
+    SELECT 
+            sbm2.id
+          , sbm2.unit_id
+          , sbm2.course_id
+          , sbm2.survey_name
+          , sbm2.created
+    FROM
+        (SELECT 
+            sbm.unit_id
+          , min(sbm.created) AS created_min
+        FROM
+          ga_survey_surveysubmission as sbm
+        WHERE 1 = 1
+        and sbm.course_id = '$course_id'
+        group by sbm.unit_id, sbm.course_id
+        ) AS min_data
+        INNER JOIN ga_survey_surveysubmission sbm2
+        ON min_data.unit_id = sbm2.unit_id
+        AND min_data.created_min = sbm2.created
+	'''
 
-QUERY_STATEMENT_SURVEY_NAMES_ACTUAL = '''
-	SELECT 
-	    sbm.id
-	  , sbm.unit_id
-	  , sbm.course_id
-	  , sbm.survey_name
-	  , min(sbm.created)
-	FROM
-	  ga_survey_surveysubmission as sbm
-	WHERE 1 = 1
-	  and sbm.course_id = 'course-v1:xxxxxxxxxxx+2018_02'
-    group by sbm.unit_id
-	order by sbm.created
-'''
+QUERY_STATEMENT_SURVEY_NAMES_EXPECTED = '''
+    SELECT 
+            sbm2.id
+          , sbm2.unit_id
+          , sbm2.course_id
+          , sbm2.survey_name
+          , sbm2.created
+    FROM
+        (SELECT 
+            sbm.unit_id
+          , min(sbm.created) AS created_min
+        FROM
+          ga_survey_surveysubmission as sbm
+        WHERE 1 = 1
+        and sbm.course_id = 'course-v1:xxxxxxxxxxx+2018_02'
+        group by sbm.unit_id, sbm.course_id
+        ) AS min_data
+        INNER JOIN ga_survey_surveysubmission sbm2
+        ON min_data.unit_id = sbm2.unit_id
+        AND min_data.created_min = sbm2.created
+	'''
+
+QUERY_STATEMENT_SURVEY_NAMES_MAX = '''
+    SELECT 
+            sbm2.id
+          , sbm2.unit_id
+          , sbm2.course_id
+          , sbm2.survey_name
+          , sbm2.created
+    FROM
+        (SELECT 
+            sbm.unit_id
+          , max(sbm.created) AS created_max
+        FROM
+          ga_survey_surveysubmission as sbm
+        WHERE 1 = 1
+        and sbm.course_id = '$course_id'
+        group by sbm.unit_id, sbm.course_id
+        ) AS max_data
+        INNER JOIN ga_survey_surveysubmission sbm2
+        ON max_data.unit_id = sbm2.unit_id
+        AND max_data.created_max = sbm2.created
+	'''
+
+
+QUERY_STATEMENT_SURVEY_NAMES_MAX_EXPECTED = '''
+    SELECT 
+            sbm2.id
+          , sbm2.unit_id
+          , sbm2.course_id
+          , sbm2.survey_name
+          , sbm2.created
+    FROM
+        (SELECT 
+            sbm.unit_id
+          , max(sbm.created) AS created_max
+        FROM
+          ga_survey_surveysubmission as sbm
+        WHERE 1 = 1
+        and sbm.course_id = 'course-v1:xxxxxxxxxxx+2018_02'
+        group by sbm.unit_id, sbm.course_id
+        ) AS max_data
+        INNER JOIN ga_survey_surveysubmission sbm2
+        ON max_data.unit_id = sbm2.unit_id
+        AND max_data.created_max = sbm2.created
+	'''
 
 QUERY_STATEMENT_USER_NOT_MEMBERS = '''
     SELECT
@@ -106,6 +165,7 @@ QUERY_STATEMENT_USER_NOT_MEMBERS = '''
     WHERE 1=1
     AND org.id = $org_id
     AND enroll.course_id =  '$course_id'
+    AND reg.contract_id = det.contract_id
     AND reg.contract_id = $contract_id
     AND usr.id not in ($user_ids)
 '''
@@ -140,6 +200,7 @@ QUERY_STATEMENT_USER_NOT_MEMBERS_ACTUAL = '''
     WHERE 1=1
     AND org.id = 85
     AND enroll.course_id =  'course-v1:xxxxxxxxxxx+2018_02'
+    AND reg.contract_id = det.contract_id
     AND reg.contract_id = 284
     AND usr.id not in (370196,345969)
 '''
@@ -203,16 +264,30 @@ class HelperTest(TestCase):
         self.assertEqual(expected, actual)
         log.debug('DONE')
 
+    def test_query_statement_survey_names_max(self):
+        expected = json.dumps(QUERY_STATEMENT_SURVEY_NAMES_MAX)
+        actual = json.dumps(helper.QUERY_STATEMENT_SURVEY_NAMES_MAX)
+        self.assertEqual(expected, actual)
+        log.debug('DONE')
+
     def test_create_survey_name_list_statement(self):
-        expected = QUERY_STATEMENT_SURVEY_NAMES_ACTUAL
+        expected = QUERY_STATEMENT_SURVEY_NAMES_EXPECTED
         ## arrange
-        org_id = CONST_ORG_ID
         course_id = CONST_COURSE_ID
         actual = helper._create_survey_name_list_statement(course_id)
         self.assertEqual(expected, actual)
         log.debug('DONE')
 
-    def test_query_statement_user_nat_members(self):
+    def test_create_survey_name_list_max_statement(self):
+        expected = QUERY_STATEMENT_SURVEY_NAMES_MAX_EXPECTED
+        ## arrange
+        course_id = CONST_COURSE_ID
+        flg_get_updated_survey_name = True
+        actual = helper._create_survey_name_list_statement(course_id, flg_get_updated_survey_name)
+        self.assertEqual(expected, actual)
+        log.debug('DONE')
+
+    def test_query_statement_user_not_members(self):
         expected = json.dumps(QUERY_STATEMENT_USER_NOT_MEMBERS)
         actual = json.dumps(helper.QUERY_STATEMENT_USER_NOT_MEMBERS)
         self.assertEqual(expected, actual)

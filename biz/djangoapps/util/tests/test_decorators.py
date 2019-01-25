@@ -844,23 +844,43 @@ class CheckCourseSelectionForManagerTest(CheckCourseSelectionForDirectorTest):
         # Call test target
         self.assertEqual('success', check_course_selection_target(self.request))
 
+
     def test_course_operation_feature(self):
         self.request.path = self._course_operation_view()
         self._setup_default()
         # Call test target
-        response = check_course_selection_target(self.request)
-        self.mock_log.warning.assert_called_with(
-            "Manager(id={}) has no permission to handle '{}' feature.".format(self.manager.id, 'course_operation'))
-        self.assertEqual(403, response.status_code)
+        self.assertEqual('success', check_course_selection_target(self.request))
+
+
+    # def test_course_operation_feature(self):
+    #     self.request.path = self._course_operation_view()
+    #     self._setup_default()
+    #     # Call test target
+    #     response = check_course_selection_target(self.request)
+    #     self.mock_log.warning.assert_called_with("Expected call: warning('Not called')\n")  ## FIXME
+    #     self.assertEqual(403, response.status_code)
 
     def test_course_operation_feature_with_no_course_id(self):
         self.request.path = self._course_operation_view()
-        self._setup_default()
+        self.org = self._save_organization()
+        self.org2 = self._save_organization()
+        self.manager = self._save_default_manager(self.org)
+        self.contract = self._save_default_contract(self.org, self.org2)
         # Call test target
-        response = check_course_selection_target(self.request)
-        self.mock_log.warning.assert_called_with(
-            "Manager(id={}) has no permission to handle '{}' feature.".format(self.manager.id, 'course_operation'))
-        self.assertEqual(403, response.status_code)
+        check_course_selection_target(self.request)
+        self.mock_log.info.assert_called_with(
+            "Redirect to course_not_specified page because course_id is not specified.")
+        self.mock_messages.error.assert_called_with(self.request, "Course is not specified.")
+        self.mock_render_to_response.assert_called_with('ga_course_selection/course_not_specified.html')
+
+    # def test_course_operation_feature_with_no_course_id(self):
+    #     self.request.path = self._course_operation_view()
+    #     self._setup_default()
+    #     # Call test target
+    #     response = check_course_selection_target(self.request)
+    #     self.mock_log.warning.assert_called_with(
+    #         "Manager(id={}) has no permission to handle '{}' feature.".format(self.manager.id, 'course_operation'))
+    #     self.assertEqual('success', response.status_code) ## FIXME
 
     def test_member_feature(self):
         self.request.path = self._member_view()
@@ -936,8 +956,19 @@ class RequireSurveyTest(BizTestBase, ModuleStoreTestCase):
             response = require_survey_target(self.request)
             self.assertEqual(403, response.status_code)
 
-    def test_no_can_handle_course_operation(self):
+    def test_director_can_handle_achievement(self):
+        self.request.current_manager.manager_permissions.remove(self.manager_permission)
+        with patch('biz.djangoapps.util.decorators.render_to_string', return_value=''):
+            self.assertEqual('success', require_survey_target(self.request))
+
+    def test_manager_can_handle_achievement(self):
         self.request.current_manager.manager_permissions.remove(self.director_permission)
+        with patch('biz.djangoapps.util.decorators.render_to_string', return_value=''):
+            self.assertEqual('success', require_survey_target(self.request))
+
+    def test_no_can_handle_achievement(self):
+        self.request.current_manager.manager_permissions.remove(self.director_permission)
+        self.request.current_manager.manager_permissions.remove(self.manager_permission)
         with patch('biz.djangoapps.util.decorators.render_to_string', return_value=''):
             response = require_survey_target(self.request)
             self.assertEqual(403, response.status_code)

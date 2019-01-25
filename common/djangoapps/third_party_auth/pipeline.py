@@ -70,6 +70,7 @@ import analytics
 from eventtracking import tracker
 
 from django.conf import settings
+from django.contrib.auth import login
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseBadRequest, Http404
@@ -623,6 +624,9 @@ def set_logged_in_cookies(backend=None, user=None, strategy=None, auth_entry=Non
             # This ensures that we allow the user to continue to the next
             # pipeline step once he/she has the cookie set by this step.
             has_cookie = student.cookies.is_logged_in_cookie_set(request)
+            if kwargs['response'].has_key('idp_name') and SsoConfig.is_hide_icon(kwargs['response']['idp_name']):
+                user.backend = 'django.contrib.auth.backends.ModelBackend'
+                login(request, user)
             if not has_cookie:
                 try:
                     redirect_url = get_complete_url(backend.name)

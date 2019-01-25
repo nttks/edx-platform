@@ -30,7 +30,7 @@ def get_additional_info_by_contract(contract):
                 'caption': additional_info.display_name,
                 'sortable': True,
                 'hidden': True,
-                'size': 1,
+                'size': 5,
             })
             display_names.append(additional_info.display_name)
 

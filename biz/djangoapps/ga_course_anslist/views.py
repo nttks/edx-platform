@@ -35,16 +35,23 @@ def _get_org_item_list():
     return member_org_item_list
 
 
-def _get_survey_names_list(course_id):
+def _get_survey_names_list(course_id, flg_get_updated_survey_name=False):
     ## add for answer list on survey
-    sql_statement = helper._create_survey_name_list_statement(course_id)
+    sql_statement = helper._create_survey_name_list_statement(course_id, flg_get_updated_survey_name)
     records = SurveySubmission.objects.raw(sql_statement)
     ret = []
     for record in records:
-        ret.append((record.unit_id,record.survey_name))
+        ret.append((record.unit_id, record.survey_name))
 
     return ret
 
+
+def _get_survey_names_list_merged(course_id):
+    temp_survey_names_list = _get_survey_names_list(course_id)
+    temp_survey_names_list_update_survey_name = _get_survey_names_list(course_id, flg_get_updated_survey_name=True)
+    dct = dict(temp_survey_names_list_update_survey_name)
+    ret_tpl = [(itm[0], dct[itm[0]]) for itm in temp_survey_names_list]
+    return ret_tpl
 
 def _get_grid_columns(survey_names_list):
     columns = []
@@ -140,7 +147,8 @@ def _get_users_not_member(org_id, contract_id, course_id, user_ids_of_members):
     sql_statement = helper._create_users_not_members_statement(org_id, contract_id, course_id, user_ids_of_members)
     records = SurveySubmission.objects.raw(sql_statement)
     log.debug('contract_id={}'.format(contract_id))
-    #log.debug(records)
+    log.debug(sql_statement)
+    log.debug(records)
     return _populate_users_not_members(records)
 
 
@@ -155,7 +163,7 @@ def _get_course_members(ids, course_id):
     results = []
     if ids:
         results = CourseEnrollment.objects.filter(
-            is_active=1, user_id__in=ids, course_id=course_id).values('user_id', 'created')
+            user_id__in=ids, course_id=course_id).values('user_id', 'created')
     return results
 
 
@@ -176,8 +184,22 @@ def _get_group_choice_list(manager, org, visible_group_ids):
     return group_list
 
 
-def _retrieve_grid_data(org_id, child_group_ids, contract_id, course_id, is_filter, members_condition=None):
+def _retrieve_grid_data(org_id, child_group_ids, contract_id, course_id, is_filter, members_condition=None, is_manager=False):
     result_members = {}
+
+    ## judge can_retrieve_data
+    can_retrieve_data = True
+    if child_group_ids:
+        pass
+    else:
+        if is_manager:
+            can_retrieve_data = False
+
+    if not can_retrieve_data:
+        return result_members
+    else:
+        ## process is continued
+        pass
 
     ## get members' rows in groups
     members_dcts = _get_members(org_id, child_group_ids, members_condition)
@@ -195,12 +217,13 @@ def _retrieve_grid_data(org_id, child_group_ids, contract_id, course_id, is_filt
     members_ids = result_members.keys()
 
     if is_filter == 'off':
-        ## get users' rows not in groups
-        results_users_not_member = {}
-        results_users_not_member = _get_users_not_member(org_id, contract_id, course_id, members_ids)
-        ## merge
-        if results_users_not_member:
-            result_members.update(results_users_not_member)
+        if not is_manager:
+            ## get users' rows not in groups
+            results_users_not_member = {}
+            results_users_not_member = _get_users_not_member(org_id, contract_id, course_id, members_ids)
+            ## merge
+            if results_users_not_member:
+                result_members.update(results_users_not_member)
 
     log.debug(result_members)
 
@@ -208,9 +231,11 @@ def _retrieve_grid_data(org_id, child_group_ids, contract_id, course_id, is_filt
     users_submissions = _get_surveysubmission(result_members.keys(), course_id)
 
     ## set survey answered date into dict
+    survey_name_tpl = _get_survey_names_list(course_id, flg_get_updated_survey_name=True)
+    survey_name_dct = dict(survey_name_tpl)
     for submission in users_submissions:
         result_members[submission.user_id].update({
-            submission.survey_name : datetime_utils.to_jst(submission.created).strftime('%Y/%m/%d %H:%M')})
+            survey_name_dct[submission.unit_id] : datetime_utils.to_jst(submission.created).strftime('%Y/%m/%d %H:%M')})
 
     return result_members
 
@@ -240,7 +265,13 @@ def search_ajax(request):
     if 'is_filter' in request.POST:
         is_filter = request.POST['is_filter']
 
+    ## judge is_manager_no_exist_group_group
+    ## if no_exist group_group is_manager = False
+    ## if exist group_group is_manager = True
+    is_manager = not manager.is_director() and manager.is_manager() and Group.objects.filter(org=org,).exists()
+
     log.debug('is_filter={}'.format(is_filter))
+    log.debug('is_manager={}'.format(is_manager))
     log.debug('org={},contract_id={},course_id="{}",manager={}'.format(org.id, contract_id, course_id, manager.user))
     log.debug('child_group_ids={}'.format(child_group_ids))
     log.debug('request.POST={}'.format(request.POST))
@@ -248,7 +279,7 @@ def search_ajax(request):
     log.debug('survey_name_conditions={}'.format(survey_name_conditions))
 
     ## get grid data
-    members_grid_dct = _retrieve_grid_data(org.id, child_group_ids, contract_id, course_id, is_filter, member_conditions)
+    members_grid_dct = _retrieve_grid_data(org.id, child_group_ids, contract_id, course_id, is_filter, member_conditions, is_manager)
 
     ## generate grid
     resp_records = sorted(
@@ -293,7 +324,13 @@ def download_csv(request):
     if 'is_filter' in request.POST:
         is_filter = request.POST['is_filter']
 
+    ## judge is_manager_no_exist_group_group
+    ## if no_exist group_group is_manager = False
+    ## if exist group_group is_manager = True
+    is_manager = not manager.is_director() and manager.is_manager() and Group.objects.filter(org=org,).exists()
+
     log.debug('is_filter={}'.format(is_filter))
+    log.debug('is_manager={}'.format(is_manager))
     log.debug('org={},contract_id={},course_id="{}",manager={}'.format(org.id, contract_id, course_id, manager.user))
     log.debug('org={}'.format(org))
     log.debug('child_group_ids={}'.format(child_group_ids))
@@ -301,10 +338,10 @@ def download_csv(request):
     log.debug('survey_name_conditions={}'.format(survey_name_conditions))
 
     ## generate select list
-    resp_survey_names_list = _get_survey_names_list(course_id)
+    resp_survey_names_list = _get_survey_names_list_merged(course_id)
 
     ## get grid data
-    members_grid_dct = _retrieve_grid_data(org.id, child_group_ids, contract_id, course_id, is_filter, member_conditions)
+    members_grid_dct = _retrieve_grid_data(org.id, child_group_ids, contract_id, course_id, is_filter, member_conditions, is_manager)
 
     ## generate grid
     resp_columns = _get_grid_columns(resp_survey_names_list)

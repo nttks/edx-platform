@@ -2681,10 +2681,7 @@ def get_survey_utf8(request, course_id):  # pylint: disable=W0613
 
 
 def create_survey_response(request, course_id, encoding):
-    header = ['Unit ID', 'Survey Name', 'Created', 'User Name', 'Full Name', 'Email', 'Resigned', 'Unenrolled']
-    rows = []
-
-    #Note(yokose): raw() raises InterfaceError when using CourseKey
+    #Note: raw() raises InterfaceError when using CourseKey
     #course_id = SlashSeparatedCourseKey.from_deprecated_string(course_id)
     submissions = list(SurveySubmission.objects.raw(
         '''SELECT s.*, u.*, p.*, t.account_status, e.is_active, b.login_code
@@ -2703,6 +2700,13 @@ def create_survey_response(request, course_id, encoding):
            ORDER BY s.unit_id, s.created''',
         [course_id]
     ))
+
+    return format_survey_response(request, course_id, encoding, submissions)
+
+
+def format_survey_response(request, course_id, encoding, submissions):
+    header = ['Unit ID', 'Survey Name', 'Created', 'User Name', 'Full Name', 'Email', 'Resigned', 'Unenrolled']
+    rows = []
 
     HEADER_LOGIN_CODE = 'Login Code'
     # NOTE: Try to add login code when called from biz and contract has auth info

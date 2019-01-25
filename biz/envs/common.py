@@ -52,6 +52,7 @@ INSTALLED_APPS += (
     'biz.djangoapps.gx_username_rule',
     'biz.djangoapps.gx_sso_config',
     'biz.djangoapps.gx_login',
+    'biz.djangoapps.gx_register_api',
 )
 
 """

@@ -263,7 +263,9 @@ def perform_delegate_student_member_register(entry_id, task_input, action_name):
             for num in range(17, 27):
                 if len(input_columns[num]) > 100:
                     return _fail(_("Please enter of {0} within {1} characters.").format(_("Item"), 100))
-        if member_code != '':
+        if member_code:
+            if not re.match(r'^[ -~]*$', member_code):
+                return _fail(_("Illegal format on {0}.").format(_("Member Code")))
             email = input_columns[1]
             members = Member.find_active_by_email(org=contract.contractor_organization.id, email=email).values('code')
             code_exist = True if len(Member.find_active_by_code(

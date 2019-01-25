@@ -285,21 +285,8 @@ from django.core.urlresolvers import reverse
         <div class="gc_column">
             <div class="gc_column_col gc_column_col_full">
                 <div class="gc_field">
-                    <label class="gc_field_label" for="search_status">${_("Register Status")}</label>
-                    <select id="search_status" rel="search" class="gc_field_ipt gc_w15em" name="status" title="">
-                        <option value=""></option>
-                        % for status in status_list :
-                            <option value="${status}">${status_list[status]}</option>
-                        % endfor;
-                    </select>
-                </div>
-                <div class="gc_field">
-                    <label class="gc_field_label" for="search_group_name">${_("Organization Name")}</label>
-                    <input class="gc_field_ipt gc_w30em" id="search_group_name" name="group_name" value="" type="text" title=""  maxlength="255"/>
-                </div>
-                <div class="gc_field">
-                    <label class="gc_field_label" for="search_group_name">${_("Search all columns by word")}</label>
-                    <input rel="search"  class="gc_field_ipt gc_w30em" name="free_word" value="" title="" type="text" maxlength="255">
+                    <label class="gc_field_label" for="free_word">${_("Search all columns by word")}</label>
+                    <input id="free_word" rel="search"  class="gc_field_ipt gc_w30em" name="free_word" value="" title="" type="text" maxlength="255">
                 </div>
                 <div class="gc_field">
                     <fieldset class="gc_fieldset">
@@ -308,11 +295,11 @@ from django.core.urlresolvers import reverse
                             <div class="gc_fieldset_ipt">
                                 <label class="gc_fieldset_label_radio">
                                     <input rel="search" class="gc_fieldset_ipt_radio"
-                                           name="is_unregister" value="exclude" type="radio">${_("Exclude")}
+                                           name="is_unregister" value="exclude" type="radio" checked>${_("Exclude")}
                                 </label>
                                 <label class="gc_fieldset_label_radio">
                                     <input rel="search" class="gc_fieldset_ipt_radio"
-                                           name="is_unregister" value="contains" type="radio" checked>${_("Contains")}
+                                           name="is_unregister" value="contains" type="radio">${_("Contains")}
                                 </label>
                                 <label class="gc_fieldset_label_radio">
                                     <input rel="search" class="gc_fieldset_ipt_radio"
@@ -329,11 +316,11 @@ from django.core.urlresolvers import reverse
                             <div class="gc_fieldset_ipt">
                                 <label class="gc_fieldset_label_radio">
                                     <input rel="search" class="gc_fieldset_ipt_radio"
-                                           name="is_masked" value="exclude" type="radio">${_("Exclude")}
+                                           name="is_masked" value="exclude" type="radio" checked>${_("Exclude")}
                                 </label>
                                 <label class="gc_fieldset_label_radio">
                                     <input rel="search" class="gc_fieldset_ipt_radio"
-                                           name="is_masked" value="contains" type="radio" checked>${_("Contains")}
+                                           name="is_masked" value="contains" type="radio">${_("Contains")}
                                 </label>
                                 <label class="gc_fieldset_label_radio">
                                     <input rel="search" class="gc_fieldset_ipt_radio"
@@ -350,11 +337,11 @@ from django.core.urlresolvers import reverse
                             <div class="gc_fieldset_ipt">
                                 <label class="gc_fieldset_label_radio">
                                     <input rel="search" class="gc_fieldset_ipt_radio"
-                                           name="member_is_delete" value="exclude" type="radio">${_("Exclude")}
+                                           name="member_is_delete" value="exclude" type="radio" checked>${_("Exclude")}
                                 </label>
                                 <label class="gc_fieldset_label_radio">
                                     <input rel="search" class="gc_fieldset_ipt_radio"
-                                           name="member_is_delete" value="contains" type="radio" checked>${_("Contains")}
+                                           name="member_is_delete" value="contains" type="radio">${_("Contains")}
                                 </label>
                                 <label class="gc_fieldset_label_radio">
                                     <input rel="search" class="gc_fieldset_ipt_radio"

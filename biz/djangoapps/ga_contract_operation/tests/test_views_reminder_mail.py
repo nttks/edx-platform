@@ -48,6 +48,7 @@ class ContractOperationReminderMailViewTest(BizContractTestBase, BizStoreTestBas
             start=datetime(2016, 1, 1, 0, 0, 0, tzinfo=tzutc()),  # must be the past date
             self_paced=True,
             individual_end_days=10,
+            deadline_start=datetime(2016, 1, 5, 0, 0, 0, tzinfo=tzutc())
         )
 
         self.contract_submission_reminder = self._create_contract(
@@ -296,7 +297,7 @@ class ContractOperationReminderMailViewTest(BizContractTestBase, BizStoreTestBas
             ContractReminderMail.MAIL_PARAM_EMAIL_ADDRESS,
             ContractReminderMail.MAIL_PARAM_COURSE_NAME,
             ContractReminderMail.MAIL_PARAM_FULLNAME,
-            # ContractReminderMail.MAIL_PARAM_EXPIRE_DATE,
+            ContractReminderMail.MAIL_PARAM_EXPIRE_DATE,
         ], search_mail_info['search_mail_params'])
         expect_search_detail_other_list = OrderedDict()
         expect_search_detail_other_list['login_code'] = "Login Code"
@@ -1375,7 +1376,7 @@ class ContractOperationReminderMailViewTest(BizContractTestBase, BizStoreTestBas
             'email_address': user1.email,
             'fullname': user1.profile.name,
             'course_name': self.course_self_paced1.display_name,
-            'expire_date': unicode(self_paced_api.get_course_end_date(enrollment).strftime("%Y-%m-%d")),
+            'expire_date': datetime(2016, 1, 5, 0, 0, 0, tzinfo=tzutc()).strftime("%Y-%m-%d"),
         })
 
     @ddt.data(True, False)
@@ -1396,7 +1397,6 @@ class ContractOperationReminderMailViewTest(BizContractTestBase, BizStoreTestBas
                                               current_manager=director_manager), patch(
                 'biz.djangoapps.ga_contract_operation.views.send_mail') as send_mail:
             response = self.client.post(self._url_search_send_ajax, param)
-
         self.assertEqual(200, response.status_code)
         data = json.loads(response.content)
         self.assertEqual(data['info'], 'Complete of send the e-mail.')
@@ -1406,7 +1406,7 @@ class ContractOperationReminderMailViewTest(BizContractTestBase, BizStoreTestBas
             'email_address': self.user.email,
             'fullname': profile.name if exist_profile else '',
             'course_name': self.course_self_paced1.display_name,
-            'expire_date': unicode(datetime.now().strftime("%Y-%m-%d")),
+            'expire_date': datetime(2016, 1, 5, 0, 0, 0, tzinfo=tzutc()).strftime("%Y-%m-%d"),
         })
 
     def test_reminder_search_mail_send_ajax_authorized_error(self):

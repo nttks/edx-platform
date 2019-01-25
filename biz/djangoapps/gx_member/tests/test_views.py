@@ -264,7 +264,7 @@ class MemberViewTest(BizViewTestBase):
         data = json.loads(response.content)
         self.assertEqual(
             data['error'][0],
-            "Please enter of {0} within {1} characters.".format("Member Code", code_max_length)
+            "Please enter of {0} within {1} characters.".format("Member Code", 60)
         )
 
         # ------------------------------------------------------------------------------------------
