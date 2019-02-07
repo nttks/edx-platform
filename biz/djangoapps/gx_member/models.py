@@ -39,7 +39,7 @@ class Member(models.Model):
     updated = models.DateTimeField(auto_now=True, db_index=True, null=True)
     updated_org = models.ForeignKey(Organization, related_name='updater_org_member', null=True)
     created_by = models.ForeignKey(User, related_name='creator_members')
-    created = models.DateTimeField(default=datetime.now(), db_index=True)
+    created = models.DateTimeField(auto_now_add=True, db_index=True)
     creator_org = models.ForeignKey(Organization, related_name='creator_org_member')
 
     class Meta:
@@ -216,3 +216,18 @@ class MemberRegisterTaskTarget(models.Model):
             history_id=history_id,
         )
 
+
+class MemberRegisterMail(models.Model):
+    class Meta:
+        app_label = 'gx_member'
+        ordering = ['org_id']
+
+    def __unicode__(self):
+        return self.org_id.org_name
+
+    org_id = models.ForeignKey(Organization)
+    mail_to = models.CharField(max_length=255)
+    mail_subject = models.CharField(max_length=128)
+    mail_body = models.TextField()
+    created = models.DateTimeField(auto_now_add=True)
+    modified = models.DateTimeField(auto_now=True, null=True, blank=True)

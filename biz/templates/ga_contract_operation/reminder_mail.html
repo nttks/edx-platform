@@ -402,13 +402,13 @@ from biz.djangoapps.ga_contract_operation.models import ContractReminderMail
             <span class="" id="register_msg">
             % if deadline is None:
                 <div>
-                <div style="background:#777a;color:#fff;padding:5px;width:150px;text-align:center;display:inline-block">${_("Can not register")}</div>
+                <div style="background:rgba(102,102,102,100);color:#fff;padding:5px;width:150px;text-align:center;display:inline-block">${_("Can not register")}</div>
                 <span class="red">&nbsp;&nbsp;${_("Not settings deadline start day")}</span>
                 </div>
             % elif reminder_mail_contract_id is not None:
-                <div style="background:#43ac6a;color:#fff;padding:5px;width:150px;text-align:center">${_("Register Invitation")}</div>
+                <div style="background:rgba(67,172,106,100);color:#fff;padding:5px;width:150px;text-align:center">${_("Register Invitation")}</div>
             % elif reminder_mail_contract_id is None:
-                <div style="background:#cf0f31;color:#fff;padding:5px;width:150px;text-align:center">${_("Input Invitation")}</div>
+                <div style="background:rgba(207,15,49,100);color:#fff;padding:5px;width:150px;text-align:center">${_("Input Invitation")}</div>
             % endif
             </span>
             <div class="gc_data_section">
