@@ -245,6 +245,7 @@ function (Iterator) {
 
             this.closeMenu();
             this.state.videoCommands.execute('speed', speed);
+            this.state.videoPlayer.setPlaybackRate(speed);
 
             return false;
         },

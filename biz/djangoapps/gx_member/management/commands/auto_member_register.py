@@ -7,9 +7,10 @@ from bulk_email.models import Optout
 from django.db import transaction
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.core.mail import send_mail as django_send_mail
 from biz.djangoapps.util import datetime_utils
 from biz.djangoapps.ga_organization.models import Organization
-from biz.djangoapps.gx_member.models import Member
+from biz.djangoapps.gx_member.models import Member, MemberRegisterMail
 from biz.djangoapps.gx_member.forms import MemberUserCreateForm
 from biz.djangoapps.gx_username_rule.models import OrgUsernameRule
 from biz.djangoapps.gx_sso_config.models import SsoConfig
@@ -104,7 +105,7 @@ class Command(BaseCommand):
                 existing_zip.extract(def_s3item[:-4] + '.csv', '/tmp/')
             with codecs.open('/tmp/' + def_s3item[:-4] + '.csv', 'r', 'utf8') as fin:
                 for line in fin:
-                    csv_list.append(line.replace("\r", "").replace("\n", ""))
+                    csv_list.append(line.replace("\r", "").replace("\n", "").replace('"', ''))
             if os.path.exists('/tmp/' + def_s3item):
                 os.remove('/tmp/' + def_s3item)
             if os.path.exists('/tmp/' + def_s3item[:-4] + '.csv'):
@@ -192,6 +193,10 @@ class Command(BaseCommand):
                         user.save()
 
                         # gx_member_member create or update
+                        member = Member.objects.filter(org=organization, code=register_data['code'], is_active=True)
+                        if member.exists() and user != member[0].user:
+                            raise ValueError()
+
                         member = Member.objects.filter(user=user, is_active=True, org=organization)
                         if member.exists():
                             # member exist
@@ -299,15 +304,28 @@ class Command(BaseCommand):
             return user, profile, registration
 
         result = "Auto Member Register Batch: Complete(Started at {0:%Y/%m/%d %H:%M:%S}) \\n".format(start_time)
+        af_total = 0
+        af_success = 0
+        af_failed = 0
+        af_target = []
+        af_errors = []
         # SSO csv register
         try:
             s3items = _s3file_list_get()
+            af_target += s3items
             for s3item in s3items:
                 try:
                     csv_records = _s3file_download_read(s3item)
                     register_list, errors_list = _member_validate(csv_records)
                     success_list, errors_list2 = _member_create_or_update(register_list)
                     result += _s3report_upload(s3item, len(csv_records), len(success_list), errors_list + errors_list2)
+                    af_total += len(csv_records)
+                    af_success += len(success_list)
+                    af_failed += len(errors_list + errors_list2)
+                    if len(errors_list + errors_list2):
+                        af_errors.append(
+                            'https://s3-ap-northeast-1.amazonaws.com/' + s3_bucket_name + '/' +
+                            s3_report_directory + '02_error/' + s3item[:-4] + '.csv')
                 except Exception as ex:
                     result += str(ex) + "\\n"
         except Exception as ex:
@@ -315,18 +333,45 @@ class Command(BaseCommand):
         # Non SSO csv register
         try:
             s3items = _s3file_list_get(non_sso=True)
+            af_target += s3items
             for s3item in s3items:
                 try:
                     csv_records = _s3file_download_read(s3item)
                     register_list, errors_list = _member_validate(csv_records, non_sso=True)
                     success_list, errors_list2 = _member_create_or_update(register_list)
                     result += _s3report_upload(s3item, len(csv_records), len(success_list), errors_list + errors_list2)
+                    af_total += len(csv_records)
+                    af_success += len(success_list)
+                    af_failed += len(errors_list + errors_list2)
+                    if len(errors_list + errors_list2):
+                        af_errors.append(
+                            'https://s3-ap-northeast-1.amazonaws.com/' + s3_bucket_name + '/' +
+                            s3_report_directory + '02_error/' + s3item[:-4] + '.csv')
                 except Exception as ex:
                     result += str(ex) + "\\n"
         except Exception as ex:
             result += str(ex) + "\\n"
 
         end_time = datetime_utils.timezone_now()
+
+        try:
+            reg_mail = MemberRegisterMail.objects.filter(org_id=Organization.objects.get(id=register_org_id)).first()
+            if reg_mail:
+                mail_body = reg_mail.mail_body.replace("{now}", format(end_time, "%Y-%m-%d %H:%M:%S"))
+                mail_body = mail_body.replace("{Total}", str(af_total))
+                mail_body = mail_body.replace("{Successed}", str(af_success))
+                mail_body = mail_body.replace("{Failed}", str(af_failed))
+                mail_body = mail_body.replace("{TargetFile}", "\n".join(af_target))
+                mail_body = mail_body.replace("{ErrorFile}", "\n".join(af_errors))
+                django_send_mail(
+                    reg_mail.mail_subject,
+                    mail_body,
+                    settings.DEFAULT_FROM_EMAIL,
+                    reg_mail.mail_to.split(',')
+                )
+        except Exception as ex:
+            result += str(ex) + "\\n"
+
         log.info(u"Command auto_member_register completed at {}.".format(end_time))
         return result.replace("\"", "'")
 
