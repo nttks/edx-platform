@@ -118,13 +118,13 @@ class CapaFields(object):
         default=SHOWANSWER.FINISHED,
         values=[
             {"display_name": _("Always"), "value": SHOWANSWER.ALWAYS},
-            {"display_name": _("Answered"), "value": SHOWANSWER.ANSWERED},
-            {"display_name": _("Attempted"), "value": SHOWANSWER.ATTEMPTED},
-            {"display_name": _("Closed"), "value": SHOWANSWER.CLOSED},
-            {"display_name": _("Finished"), "value": SHOWANSWER.FINISHED},
-            {"display_name": _("Correct or Past Due"), "value": SHOWANSWER.CORRECT_OR_PAST_DUE},
-            {"display_name": _("Past Due"), "value": SHOWANSWER.PAST_DUE},
-            {"display_name": _("Never"), "value": SHOWANSWER.NEVER}]
+            {"display_name": _("After submitting answer. with reset"), "value": SHOWANSWER.ANSWERED},
+            {"display_name": _("After submitting answer"), "value": SHOWANSWER.ATTEMPTED},
+            {"display_name": _("Trial limit"), "value": SHOWANSWER.CLOSED},
+            {"display_name": _("Correct. with reset after deadline"), "value": SHOWANSWER.FINISHED},
+            {"display_name": _("Correct. with after deadline"), "value": SHOWANSWER.CORRECT_OR_PAST_DUE},
+            {"display_name": _("After deadline"), "value": SHOWANSWER.PAST_DUE},
+            {"display_name": _("Hide display"), "value": SHOWANSWER.NEVER}]
     )
     force_save_button = Boolean(
         help=_("Whether to force the save button to appear on the page"),

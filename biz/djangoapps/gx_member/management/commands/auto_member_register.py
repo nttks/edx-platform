@@ -129,26 +129,32 @@ class Command(BaseCommand):
                 member_one['last_name'] = csv_record[4]
                 member_one['username'] = csv_record[5]
                 if not member_one['first_name']:
-                    errors.append({'username': member_one['username'], 'email': member_one['email']})
+                    errors.append({'username': member_one['username'], 'email': member_one['email'],
+                                   'cause': 'Validation error : First_name'})
                     continue
                 if not member_one['last_name']:
-                    errors.append({'username': member_one['username'], 'email': member_one['email']})
+                    errors.append({'username': member_one['username'], 'email': member_one['email'],
+                                   'cause': 'Validation error : Last_name'})
                     continue
                 if prefix_username and not re.match(r'^'+prefix_username, member_one['username']):
-                    errors.append({'username': member_one['username'], 'email': member_one['email']})
+                    errors.append({'username': member_one['username'], 'email': member_one['email'],
+                                   'cause': 'Validation error : Username'})
                     continue
                 if member_one['group_code']:
                     if not Group.objects.filter(org=organization, group_code=member_one['group_code']).exists():
-                        errors.append({'username': member_one['username'], 'email': member_one['email']})
+                        errors.append({'username': member_one['username'], 'email': member_one['email'],
+                                       'cause': 'Validation error : Group_code'})
                         continue
                 if member_one['code'] and len(member_one['code']) > 60:
-                    errors.append({'username': member_one['username'], 'email': member_one['email']})
+                    errors.append({'username': member_one['username'], 'email': member_one['email'],
+                                   'cause': 'Character length error : Member_code'})
                     continue
 
                 if non_sso:
                     member_one['password'] = csv_record[6]
                     if not member_one['password']:
-                        errors.append({'username': member_one['username'], 'email': member_one['email']})
+                        errors.append({'username': member_one['username'], 'email': member_one['email'],
+                                       'cause': 'Validation error : Password'})
                         continue
                     for i in range(1, 11):
                         member_one['org' + str(i)] = csv_record[i + 6]
@@ -165,7 +171,8 @@ class Command(BaseCommand):
                 if form.is_valid():
                     success.append(form.cleaned_data)
                 else:
-                    errors.append({'username': member_one['username'], 'email': member_one['email']})
+                    errors.append({'username': member_one['username'], 'email': member_one['email'],
+                                   'cause': 'Character length error'})
             return success, errors
 
         def _member_create_or_update(def_register_list):
@@ -175,9 +182,16 @@ class Command(BaseCommand):
             prefix_uid = SsoConfig.objects.filter(org=organization).first()
             prefix_uid = getattr(prefix_uid, "idp_slug", "")
             for register_data in def_register_list:
+                expected = False
                 try:
                     with transaction.atomic():
                         # auth_user create or update
+                        if User.objects.filter(email=register_data['email']).exclude(
+                                username=register_data['username']).exists():
+                            errors.append({'username': register_data['username'], 'email': register_data['email'],
+                                           'cause': 'The e-mail address is already registered'})
+                            expected = True
+                            raise ValueError()
                         user = User.objects.filter(username=register_data['username'])
                         if user.exists():
                             # user exist
@@ -195,6 +209,9 @@ class Command(BaseCommand):
                         # gx_member_member create or update
                         member = Member.objects.filter(org=organization, code=register_data['code'], is_active=True)
                         if member.exists() and user != member[0].user:
+                            errors.append({'username': register_data['username'], 'email': register_data['email'],
+                                           'cause': 'Validation error : Member_code'})
+                            expected = True
                             raise ValueError()
 
                         member = Member.objects.filter(user=user, is_active=True, org=organization)
@@ -216,7 +233,6 @@ class Command(BaseCommand):
                             setattr(member, 'org'+str(i), register_data['org'+str(i)])
                         for i in range(1, 11):
                             setattr(member, 'item'+str(i), register_data['item'+str(i)])
-
                         member.save()
 
                         # auth_userprofile create or update
@@ -242,8 +258,10 @@ class Command(BaseCommand):
                             CourseEnrollment.unenroll(user, global_course_id)
                         success.append(register_data['username'])
                 except Exception as e:
+                    if not expected:
+                        errors.append({'username': register_data['username'], 'email': register_data['email'],
+                                       'cause': 'System error'})
                     log.error(e)
-                    errors.append({'username': register_data['username'], 'email': register_data['email']})
             return success, errors
 
         def _s3report_upload(def_s3item, total_cnt, success_cnt, errors):
@@ -256,9 +274,9 @@ class Command(BaseCommand):
             report_path_error = '/tmp/' + def_s3item[:-4] + '_errors.csv'
             # with open(report_path_error, mode='w') as f:
             with codecs.open(report_path_error, 'w', 'utf8') as f:
-                f.write("username,email\r\n")
+                f.write("username,email,cause\r\n")
                 for error in errors:
-                    f.write(error['username'] + "," + error['email'] + "\r\n")
+                    f.write(error['username'] + "," + error['email'] + "," + error['cause'] + "\r\n")
 
             # S3 Connect
             bucket = _s3bucket_connection()

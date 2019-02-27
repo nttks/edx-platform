@@ -1649,6 +1649,34 @@ msgid "Never"
 msgstr "無期限"
 
 #: common/lib/xmodule/xmodule/capa_base.py
+msgid "After submitting answer. with reset"
+msgstr "回答提出後（リセットあり）"
+
+#: common/lib/xmodule/xmodule/capa_base.py
+msgid "After submitting answer"
+msgstr "回答提出後（リセットなし）"
+
+#: common/lib/xmodule/xmodule/capa_base.py
+msgid "Trial limit"
+msgstr "試行回数上限／提出期限後"
+
+#: common/lib/xmodule/xmodule/capa_base.py
+msgid "Correct. with reset after deadline"
+msgstr "正解／試行回数上限／提出期限後"
+
+#: common/lib/xmodule/xmodule/capa_base.py
+msgid "Correct. with after deadline"
+msgstr "正解／提出期限後"
+
+#: common/lib/xmodule/xmodule/capa_base.py
+msgid "After deadline"
+msgstr "提出期限後"
+
+#: common/lib/xmodule/xmodule/capa_base.py
+msgid "Hide display"
+msgstr "非表示"
+
+#: common/lib/xmodule/xmodule/capa_base.py
 msgid "Whether to force the save button to appear on the page"
 msgstr "saveボタンをページに表示するよう強制するか否か"
 
@@ -2796,7 +2824,9 @@ msgid "Count"
 msgstr "問題数"
 
 #: common/lib/xmodule/xmodule/library_content_module.py
-msgid "Enter the number of components to display to each student. Enter the half-width number 1 and over."
+msgid ""
+"Enter the number of components to display to each student. Enter the half-"
+"width number 1 and over."
 msgstr "受講者に表示する出題数を入力してください。1以上の半角数字を入力してください。"
 
 #: common/lib/xmodule/xmodule/library_content_module.py
