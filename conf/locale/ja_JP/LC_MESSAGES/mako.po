@@ -3269,6 +3269,50 @@ msgid ""
 msgstr ""
 "お支払いがなかったため、この講座へはアクセスができません。お支払いについての{contact_link_start}問い合わせ{contact_link_end}をするか、この講座を{unenroll_link_start}受講解除{unenroll_link_end}しましょう。"
 
+#: lms/templates/dashboard/_dashboard_course_listing.html
+msgid "Not Offered"
+msgstr "未開講"
+
+#: lms/templates/dashboard/_dashboard_course_listing.html
+msgid "Not Enrolled"
+msgstr "未受講"
+
+#: lms/templates/dashboard/_dashboard_course_listing.html
+msgid "Finish Enrolled"
+msgstr "受講済"
+
+#: lms/templates/dashboard/_dashboard_course_listing.html
+msgid "Already terminate"
+msgstr "閉講済"
+
+#: lms/templates/dashboard/_dashboard_search_block.html
+msgid "No Course Category Genre"
+msgstr "ジャンルなし"
+
+#: lms/templates/dashboard/_dashboard_search_block.html
+msgid "Please Select"
+msgstr "選択してください"
+
+#: lms/templates/dashboard/_dashboard_search_block.html
+msgid "Please select Genre1"
+msgstr "ジャンル1を選択してください"
+
+#: lms/templates/dashboard/_dashboard_search_block.html
+msgid "Asc"
+msgstr "昇順"
+
+#: lms/templates/dashboard/_dashboard_search_block.html
+msgid "Desc"
+msgstr "降順"
+
+#: lms/templates/dashboard/_dashboard_search_block.html
+msgid "Search / Sort"
+msgstr "検索 / 並び替え"
+
+#: lms/templates/dashboard/_dashboard_search_block.html
+msgid "Enrolled Status"
+msgstr "ステータス"
+
 #. Translators: provider_name is the name of a credit provider or university
 #. (e.g. State University)
 #: lms/templates/dashboard/_dashboard_credit_info.html

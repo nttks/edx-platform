@@ -600,9 +600,49 @@ msgstr "JW Playerオプション設定"
 msgid "Hide Playback Rate"
 msgstr "再生スピードを非表示にする"
 
+#: cms/templates/settings.html
+msgid "Course Order"
+msgstr "講座表示順"
+
+#: cms/templates/settings.html
+msgid "Course Category Genre"
+msgstr "ジャンル"
+
+#: cms/templates/settings.html
+msgid "Please enter the course order."
+msgstr "講座表示順を入力してください。"
+
+#: cms/templates/settings.html
+msgid "Please enter the course category1."
+msgstr "コースのジャンル1を入力してください。"
+
+#: cms/templates/settings.html
+msgid "Please enter the course category2."
+msgstr "コースのジャンル2を入力してください。"
+
+#: cms/templates/settings.html
+msgid "Please enter the course category Genre1 display order."
+msgstr "ジャンル1の表示順を入力してください。"
+
+#: cms/templates/settings.html
+msgid "Please enter the course category Genre2 display order."
+msgstr "ジャンル2の表示順を入力してください。"
+
+#: cms/templates/settings.html
+msgid "Please do not input a comma(,)."
+msgstr "カンマ「,」を入力しないでください"
+
+#: cms/templates/settings.html
+msgid "*Please be careful when you input [gacco] into genre1 because a lecture is placed in the top page of the gacco."
+msgstr "ジャンル1に「gacco」を入力すると、gaccoのTOPページに講座が掲載されますのでご注意ください。"
+
 #: lms/djangoapps/courseware/tabs.py
 msgid "Playback"
 msgstr "動画視聴状況"
+
+#: lms/djangoapps/courseware/tabs.py
+msgid "Attendance"
+msgstr "受講状況"
 
 #: cms/djangoapps/contentstore/views/entrance_exam.py
 #: lms/djangoapps/courseware/tabs.py
@@ -746,6 +786,26 @@ msgstr ""
 #: templates/courseware/playback.html
 msgid "{course_number} Playback"
 msgstr "{course_number}の動画視聴状況"
+
+#: templates/courseware/playback.html
+msgid "Submitted"
+msgstr "完了"
+
+#: templates/courseware/playback.html
+msgid "Not submitted"
+msgstr "未完了"
+
+#: templates/courseware/attendance.html
+msgid "Attendance Status"
+msgstr "受講ステータス"
+
+#: templates/courseware/attendance.html
+msgid "Unit that display 'Submitted' or 'Not submitted' is status managed.<br/>"
+"Attendance status change to 'Finish Enrolled' when all unit submitted.<br/>"
+"*But attendance status not change to 'Finish Enrolled' when exist not display unit."
+msgstr "「未完了」または「完了」が表示されている単元は、ステータス管理が設定されています。<br/>"
+"すべて「完了」にすると、受講状況が「受講済」になります。<br/>"
+"※ただし、未公開の単元がある場合は、「受講済」にならない場合があります。"
 
 #: templates/register-sidebar.html
 msgid "Please check the 'FAQs' if you experience any problems."
@@ -1422,6 +1482,22 @@ msgstr "動画視聴状況タブを表示"
 #: common/lib/xmodule/xmodule/course_module.py
 msgid "Allows showing of the playback tab."
 msgstr "動画視聴状況タブを表示することを許可する。"
+
+#: common/lib/xmodule/xmodule/course_module.py
+msgid "Show Attendance Tab"
+msgstr "受講状況タブを表示"
+
+#: common/lib/xmodule/xmodule/course_module.py
+msgid "Allows showing of the attendance tab."
+msgstr "受講状況タブを表示することを許可する。"
+
+#: common/lib/xmodule/xmodule/course_module.py
+msgid "Set course as status management target."
+msgstr "講座をステータス管理対象にする"
+
+#: common/lib/xmodule/xmodule/course_module.py
+msgid "Select 'True' to manage the status of this course."
+msgstr "講座をステータス管理する場合はtrueを入力してください。"
 
 #: cms/templates/index.html
 msgid ""

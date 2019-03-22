@@ -11,6 +11,7 @@ class SsoConfig(models.Model):
     org = models.ForeignKey(Organization)
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     modified = models.DateTimeField(auto_now=True, null=True, db_index=True, blank=True)
+    logout_show = models.BooleanField(default=0)
 
     class Meta:
         app_label = 'gx_sso_config'
@@ -28,10 +29,10 @@ class SsoConfig(models.Model):
         FALSE :
         """
         if user_id is not None:
-            member = Member.objects.filter(user_id=long(user_id)).first()
-            if member:
-                if cls.objects.filter(org=member.org_id).exists():
-                    return False
+            for member in Member.objects.filter(user_id=long(user_id), is_active=True):
+                if member:
+                    if cls.objects.filter(org=member.org_id).exists():
+                        return False
         return True
 
     @classmethod
@@ -44,3 +45,19 @@ class SsoConfig(models.Model):
         if cls.objects.filter(idp_slug=str(provider_id).replace('SAML-', '').replace('saml-','')).exists():
                 return True
         return False
+
+    @classmethod
+    def user_control_process2(cls, user_id):
+        """
+        Restrict items that can be executed by users of the organization registered in SsoConfig.
+        :param user_id:
+        :return:
+        TRUE :
+        FALSE :
+        """
+        if user_id is not None:
+            for member in Member.objects.filter(user_id=long(user_id), is_active=True):
+                if member:
+                    if cls.objects.filter(org=member.org_id, logout_show=0).exists():
+                        return False
+        return True

@@ -139,6 +139,7 @@ class VideoModule(VideoFields, VideoTranscriptsMixin, VideoStudentViewHandlers, 
             resource_string(module, 'js/src/video/09_events_bumper_plugin.js'),
             resource_string(module, 'js/src/video/09_poster.js'),
             resource_string(module, 'js/src/video/095_video_context_menu.js'),
+            resource_string(module, 'js/src/video/096_ended_modal.js'),
             resource_string(module, 'js/src/video/10_commands.js'),
             resource_string(module, 'js/src/video/10_main.js')
         ]
@@ -298,6 +299,9 @@ class VideoModule(VideoFields, VideoTranscriptsMixin, VideoStudentViewHandlers, 
             # TODO: Later on the value 1500 should be taken from some global
             # configuration setting field.
             'ytTestTimeout': 1500,
+
+            # custom video settings
+            'isStatusManaged': self.is_status_managed,
 
             'ytApiUrl': settings.YOUTUBE['API'],
             'ytMetadataUrl': settings.YOUTUBE['METADATA_URL'],

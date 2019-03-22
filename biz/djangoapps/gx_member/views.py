@@ -10,23 +10,31 @@ from django.utils.translation import ugettext as _
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_GET, require_POST
 
+from biz.djangoapps.ga_organization.models import OrganizationOption
 from biz.djangoapps.gx_member.models import Group
 from biz.djangoapps.gx_member.models import MemberTaskHistory, MemberRegisterTaskTarget
 from biz.djangoapps.gx_member.forms import MemberUserCreateForm
 from biz.djangoapps.gx_member.builders import MemberTsv
-from biz.djangoapps.gx_member.tasks import TASKS, MEMBER_REGISTER, member_register, member_register_one
+from biz.djangoapps.gx_member.tasks import MEMBER_REGISTER, member_register, member_register_one
 from biz.djangoapps.util.decorators import check_course_selection
 from biz.djangoapps.util.json_utils import EscapedEdxJSONEncoder
-from biz.djangoapps.util.task_utils import submit_task, validate_task, get_org_task_key
-from biz.djangoapps.util.unicodetsv_utils import get_utf8_csv, create_tsv_response
+from biz.djangoapps.util.task_utils import submit_org_task
+from biz.djangoapps.util.unicodetsv_utils import create_tsv_response, create_csv_response_double_quote, get_sjis_csv
 
 from edxmako.shortcuts import render_to_response
 from openedx.core.lib.ga_datetime_utils import to_timezone
 from openedx.core.djangoapps.ga_task.models import Task
-from openedx.core.djangoapps.ga_task.api import AlreadyRunningError
 from util.json_request import JsonResponse, JsonResponseBadRequest
 
 log = logging.getLogger(__name__)
+
+
+def _get_or_create_organization_option(user, org):
+    options = OrganizationOption.objects.filter(org=org)
+    if len(options) == 0:
+        return OrganizationOption.objects.create(org=org, modified_by=user)
+    else:
+        return options[0]
 
 
 @require_GET
@@ -40,9 +48,11 @@ def index(request):
     :return: HttpResponse
     """
     current_org = request.current_organization
+    auto_mask_flg = _get_or_create_organization_option(org=current_org, user=request.user).auto_mask_flg
 
     return render_to_response('gx_member/index.html', {
         'org_group_list': Group.objects.filter(org=current_org).order_by('group_code'),
+        'auto_mask_flg': 1 if auto_mask_flg else 0
     })
 
 
@@ -83,7 +93,13 @@ def register_ajax(request):
     else:
         history = MemberTaskHistory.create(current_org, user)
         MemberRegisterTaskTarget.bulk_create(history, members)
-        return _submit_task(request, MEMBER_REGISTER, member_register_one, MemberTaskHistory, history)
+
+        task_input = {
+            'organization_id': current_org.id,
+            'history_id': history.id,
+        }
+        return submit_org_task(
+            request, current_org, task_input, MEMBER_REGISTER, member_register_one, MemberTaskHistory, history)
 
 
 @transaction.non_atomic_requests
@@ -106,7 +122,7 @@ def register_csv_ajax(request):
 
     # Read file
     try:
-        lines = get_utf8_csv(request, 'member_csv')
+        lines = get_sjis_csv(request, 'member_csv')
         if len(lines) is 0:
             return _error_response(_("The file is empty."))
     except UnicodeDecodeError:
@@ -185,7 +201,12 @@ def register_csv_ajax(request):
             MemberRegisterTaskTarget.bulk_create(
                 history, members[(i - 1) * task_target_max_num:i * task_target_max_num])
 
-        return _submit_task(request, MEMBER_REGISTER, member_register, MemberTaskHistory, history)
+        task_input = {
+            'organization_id': current_org.id,
+            'history_id': history.id,
+        }
+        return submit_org_task(
+            request, current_org, task_input, MEMBER_REGISTER, member_register, MemberTaskHistory, history)
 
 
 @require_POST
@@ -270,39 +291,50 @@ def download_ajax(request):
     org_name = current_org.org_name
     current_datetime = datetime.now()
     date_str = current_datetime.strftime("%Y-%m-%d-%H%M")
-    return create_tsv_response(org_name + '_member_' + date_str + '.csv', headers, rows)
+    if 'encode' in request.POST:
+        return create_tsv_response(org_name + '_member_' + date_str + '.csv', headers, rows)
+    else:
+        return create_csv_response_double_quote(org_name + '_member_' + date_str + '.csv', headers, rows)
+
+
+@require_POST
+@login_required
+@check_course_selection
+def update_auto_mask_flg_ajax(request):
+    if any(i not in request.POST for i in ['organization', 'auto_mask_flg']):
+        return _error_response(_("Unauthorized access."))
+
+    param_flg = request.POST.get('auto_mask_flg')
+    option = _get_or_create_organization_option(org=request.current_organization, user=request.user)
+
+    option.auto_mask_flg = True if int(param_flg) == 1 else False
+    option.modified_by = request.user
+    option.save()
+
+    return JsonResponse({
+        'info': _('Success'),
+    })
+
+
+@require_POST
+@login_required
+@check_course_selection
+def download_headers_ajax(request):
+    if 'organization' not in request.POST:
+        return _error_response(_("Unauthorized access."))
+
+    current_org = request.current_organization
+
+    tsv = MemberTsv(current_org)
+    headers = tsv.headers_for_export
+
+    org_name = current_org.org_name
+    current_datetime = datetime.now()
+    date_str = current_datetime.strftime("%Y-%m-%d-%H%M")
+    return create_csv_response_double_quote(org_name + '_member_template_' + date_str + '.csv', headers, rows='')
 
 
 def _error_response(message):
     return JsonResponseBadRequest({
         'error': message,
-    })
-
-
-def _submit_task(request, task_type, task_class, history_cls, history):
-    try:
-        task_input = {
-            'organization_id': request.current_organization.id,
-            'history_id': history.id,
-        }
-
-        # Check the task running within the same current_organization.
-        validate_task_message = validate_task(request.current_organization)
-        if validate_task_message:
-            return _error_response(validate_task_message)
-
-        # task prevents duplicate execution by current_organization_id
-        task = submit_task(request, task_type, task_class, task_input, get_org_task_key(request.current_organization))
-        history = history_cls.objects.get(pk=history.id)
-        history.link_to_task(task)
-
-    except AlreadyRunningError:
-        return _error_response(
-            _("Processing of {task_type} is running.").format(task_type=TASKS[task_type]) +
-            _("Execution status, please check from the task history.")
-        )
-
-    return JsonResponse({
-        'info': _("Began the processing of {task_type}.")
-                    .format(task_type=TASKS[task_type]) + _("Execution status, please check from the task history."),
     })

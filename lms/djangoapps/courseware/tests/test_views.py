@@ -17,13 +17,14 @@ from nose.plugins.attrib import attr
 from freezegun import freeze_time
 
 from django.conf import settings
-from django.contrib.auth.models import AnonymousUser
+from django.contrib.auth.models import User, AnonymousUser
 from django.core.urlresolvers import reverse
-from django.http import Http404, HttpResponseBadRequest
+from django.http import Http404, HttpResponse, HttpResponseBadRequest
 from django.test import TestCase
 from django.test.client import RequestFactory
 from django.test.client import Client
 from django.test.utils import override_settings
+from django.utils import timezone
 from django.utils.crypto import get_random_string
 from mock import MagicMock, patch, create_autospec, Mock
 from opaque_keys.edx.locations import Location, SlashSeparatedCourseKey
@@ -48,12 +49,16 @@ from course_modes.tests.factories import CourseModeFactory
 from courseware.ga_progress_restriction import ProgressRestriction
 from courseware.model_data import set_score
 from courseware.testutils import RenderXBlockTestMixin
-from courseware.tests.factories import GaCourseScorerFactory, GaGlobalCourseCreatorFactory, StudentModuleFactory
+from courseware.tests.factories import (
+    GaCourseScorerFactory, GaGlobalCourseCreatorFactory, StudentModuleFactory, PlaybackFinishFactory)
 from courseware.user_state_client import DjangoXBlockUserStateClient
 from edxmako.tests import mako_middleware_process_request
+from ga_survey.tests.factories import SurveySubmissionFactory
+from lms.djangoapps.courseware.tests.test_ga_mongo_utils import PlaybackFinishTestBase
+from lms.djangoapps.courseware.ga_mongo_utils import PlaybackFinishStore
 from openedx.core.djangoapps.self_paced.models import SelfPacedConfiguration
 from student.models import CourseEnrollment
-from student.tests.factories import AdminFactory, UserFactory, CourseEnrollmentFactory
+from student.tests.factories import AdminFactory, UserFactory, CourseEnrollmentFactory, CourseEnrollmentAttributeFactory
 from util.tests.test_date_utils import fake_ugettext, fake_pgettext
 from util.url import reload_django_url_config
 from util.views import ensure_valid_course_key
@@ -1042,7 +1047,7 @@ class ProgressPageTests(ModuleStoreTestCase):
         self.assertContains(resp, u"Download Your Certificate")
 
     @ddt.data(
-        *itertools.product(((69, 5, True), (44, 5, False)), (True, False))
+        *itertools.product(((71, 5, True), (46, 5, False)), (True, False))
     )
     @ddt.unpack
     def test_query_counts(self, (sql_calls, mongo_calls, self_paced), self_paced_enabled):
@@ -1271,6 +1276,247 @@ class PlaybackPageTests(ModuleStoreTestCase):
         with self.assertRaises(Http404):
             views.playback(self.request, course_id=unicode(self.course.id))
 
+
+@attr('shard_1')
+class AttendancePageTests(ModuleStoreTestCase, PlaybackFinishTestBase):
+    """
+    Tests that verify that the attendance page works correctly.
+    """
+    def setUp(self, **kwargs):
+        super(AttendancePageTests, self).setUp()
+        self.request_factory = RequestFactory()
+        self.password = '1234'
+        self.user = UserFactory.create(password=self.password)
+
+        self.gacco_org = OrganizationFactory.create(
+            org_name='docomo gacco',
+            org_code='gacco',
+            creator_org_id=1,
+            created_by=UserFactory.create(),
+        )
+
+        """
+        Set up course and module
+        ---
+        course
+          |- chapter_x
+          |   |- section_x1
+          |   |  |- vertical_x11
+          |   |  |    |- module_x11_problem1, module_x11_problem2, module_x11_problem3
+          |   |  |- vertical_x12
+          |   |  |    |- module_x12_video1, module_x12_video2, module_x12_video3
+          |   |  |- vertical_x13
+          |   |  |    |- module_x13_survey1
+          |   |  |- vertical_x14
+          |   |  |    |- module_x14_survey1
+          |   |  |- vertical_x15
+          |   |  |    |- module_x15_survey1
+          |- chapter_y
+          |   |- section_y1
+        """
+        self.course = CourseFactory.create(org='gacco', number='course', run='run1',
+                                           metadata={
+                                               'start': datetime(2000, 1, 1, 0, 0, 0),
+                                               'end': datetime(2010, 1, 1, 0, 0, 0),
+                                               'is_status_managed': True,
+                                           })
+        self.chapter_x = ItemFactory.create(parent=self.course, category='chapter', display_name="chapter_x",
+                                            metadata={'start': datetime(2000, 1, 1, 0, 0, 0)})
+        self.section_x1 = ItemFactory.create(parent=self.chapter_x, category='sequential', display_name="section_x1",
+                                             metadata={'start': datetime(2000, 1, 1, 0, 0, 0)})
+        # vertical_x11
+        self.vertical_x11 = ItemFactory.create(parent=self.section_x1, category='vertical', display_name="vertical_x11")
+        self.module_x11_problem1 = ItemFactory.create(
+            category='problem', parent_location=self.vertical_x11.location, display_name='module_x11_problem1',
+            metadata={'is_status_managed': True})
+        self.module_x11_problem2 = ItemFactory.create(
+            category='problem', parent_location=self.vertical_x11.location, display_name='module_x11_problem2',
+            metadata = {'is_status_managed': True})
+        self.module_x11_problem3 = ItemFactory.create(
+            category='problem', parent_location=self.vertical_x11.location, display_name='module_x11_problem3',
+            metadata = {'is_status_managed': False})
+        # vertical_x12
+        self.vertical_x12 = ItemFactory.create(parent=self.section_x1, category='vertical', display_name="vertical_x12")
+        self.module_x12_video1 = ItemFactory.create(
+            category='video', parent_location=self.vertical_x12.location, display_name='module_x12_video1',
+            metadata = {'is_status_managed': True})
+        self.module_x12_video2 = ItemFactory.create(
+            category='video', parent_location=self.vertical_x12.location, display_name='module_x12_video2',
+            metadata = {'is_status_managed': True})
+        self.module_x12_video3 = ItemFactory.create(
+            category='video', parent_location=self.vertical_x12.location, display_name='module_x12_video3',
+            metadata = {'is_status_managed': False})
+        # vertical_x13
+        self.vertical_x13 = ItemFactory.create(parent=self.section_x1, category='vertical', display_name="vertical_x13")
+        self.vertical_x13_survey1 = ItemFactory.create(
+            category='html', parent_location=self.vertical_x13.location, display_name='vertical_x13_survey1',
+            metadata = {'is_status_managed': True})
+        # vertical_x14
+        self.vertical_x14 = ItemFactory.create(parent=self.section_x1, category='vertical', display_name="vertical_x14")
+        self.vertical_x14_survey1 = ItemFactory.create(
+            category='html', parent_location=self.vertical_x14.location, display_name='vertical_x14_survey1',
+            metadata = {'is_status_managed': True})
+        # vertical_x15
+        self.vertical_x15 = ItemFactory.create(parent=self.section_x1, category='vertical', display_name="vertical_x15")
+        self.vertical_x15_survey1 = ItemFactory.create(
+            category='html', parent_location=self.vertical_x15.location, display_name='vertical_x15_survey1',
+            metadata = {'is_status_managed': False})
+        # chapter_y
+        self.chapter_y = ItemFactory.create(parent=self.course, category='chapter', display_name="chapter_y",
+                                            metadata={'start': datetime(2000, 1, 1, 0, 0, 0)})
+        self.section_y1 = ItemFactory.create(parent=self.chapter_y, category='sequential', display_name="section_y1",
+                                             metadata={'start': datetime(2000, 1, 1, 0, 0, 0)})
+
+        self.enrollment = CourseEnrollmentFactory(user=self.user, course_id=self.course.id)
+        # set request
+        self.client.login(username=self.user.username, password=self.password)
+        self.request = self.request_factory.get(reverse('attendance', args=[unicode(self.course.id)]))
+        self.request.user = self.user
+        mako_middleware_process_request(self.request)
+
+    @freeze_time('2005-01-01 00:00:00')
+    @patch('courseware.views.render_to_response', return_value=HttpResponse())
+    def test_attendance_when_status_working(self, mock_render_to_response):
+        # arrange
+        StudentModuleFactory.create(
+            course_id=self.course.id, module_state_key=self.module_x11_problem1.location, student=self.user,
+            grade=1, max_grade=4, state=None)
+        PlaybackFinishFactory._create(course=self.course, user=self.user, module_list=[
+            PlaybackFinishFactory._create_module_param(module=self.module_x12_video1, status=True)])
+        SurveySubmissionFactory.create(
+            course_id=self.course.id, unit_id=self.vertical_x13.location.block_id, user=self.user,
+            survey_name=self.vertical_x13_survey1.display_name, survey_answer='')
+        CourseEnrollmentAttributeFactory.create(
+            enrollment=self.enrollment, namespace='ga', name='attended_status',
+            value='{"attended_date": "2010-10-10T10:10:10.123456+00:00"}')
+        # act
+        views.attendance(self.request, self.course.id.to_deprecated_string())
+        # assert
+        render_to_response_args = mock_render_to_response.call_args[0]
+        self.assertEqual(render_to_response_args[0], 'courseware/attendance.html')
+        self.assertEqual(render_to_response_args[1]['course'].id, self.course.id)
+        self.assertEqual(render_to_response_args[1]['student'], self.user)
+        self.assertEqual(render_to_response_args[1]['display_status'], 'working')
+        self.assertEqual(render_to_response_args[1]['course_details'], [
+            {
+                'name': self.chapter_x.display_name,
+                'url_name': self.chapter_x.url_name,
+                'is_display': True,
+                'sections': [
+                    {
+                        'name': self.section_x1.display_name,
+                        'url_name': self.section_x1.url_name,
+                        'is_display': True,
+                        'verticals': [
+                            {
+                                'name': self.vertical_x11.display_name,
+                                'status': False,
+                                'is_display': True,
+                                'modules': [
+                                    {'name': self.module_x11_problem1.display_name, 'status': True},
+                                    {'name': self.module_x11_problem2.display_name, 'status': False}
+                                ]
+                            },
+                            {
+                                'name': self.vertical_x12.display_name,
+                                'status': False,
+                                'is_display': True,
+                                'modules': [
+                                    {'name': self.module_x12_video1.display_name, 'status': True},
+                                    {'name': self.module_x12_video2.display_name, 'status': False}
+                                ]
+                            },
+                            {
+                                'name': self.vertical_x13.display_name,
+                                'status': True,
+                                'is_display': True,
+                                'modules': [
+                                    {'name': self.vertical_x13_survey1.display_name, 'status': True}
+                                ]
+                            },
+                            {
+                                'name': self.vertical_x14.display_name,
+                                'status': False,
+                                'is_display': True,
+                                'modules': [
+                                    {'name': self.vertical_x14_survey1.display_name, 'status': False}
+                                ]
+                            },
+                            {
+                                'name': self.vertical_x15.display_name,
+                                'status': True,
+                                'is_display': True,
+                                'modules': []
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                'name': self.chapter_y.display_name,
+                'url_name': self.chapter_y.url_name,
+                'is_display': True,
+                'sections': [
+                    {
+                        'name': self.section_y1.display_name,
+                        'is_display': True,
+                        'url_name': self.section_y1.url_name,
+                        'verticals': []
+                    }
+                ]
+            }
+        ])
+
+    @freeze_time('2005-01-01 00:00:00')
+    @patch('courseware.views.render_to_response', return_value=HttpResponse())
+    def test_attendance_when_status_completed(self, mock_render_to_response):
+        # arrange
+        StudentModuleFactory.create(
+            course_id=self.course.id, module_state_key=self.module_x11_problem1.location, student=self.user,
+            grade=1, max_grade=4, state=None)
+        StudentModuleFactory.create(
+            course_id=self.course.id, module_state_key=self.module_x11_problem2.location, student=self.user,
+            grade=1, max_grade=4, state=None)
+        PlaybackFinishFactory._create(course=self.course, user=self.user, module_list=[
+            PlaybackFinishFactory._create_module_param(module=self.module_x12_video1, status=True)])
+        PlaybackFinishFactory._create(course=self.course, user=self.user, module_list=[
+            PlaybackFinishFactory._create_module_param(module=self.module_x12_video2, status=True)])
+        SurveySubmissionFactory.create(
+            course_id=self.course.id, unit_id=self.vertical_x13.location.block_id, user=self.user,
+            survey_name=self.vertical_x13_survey1.display_name, survey_answer='')
+        SurveySubmissionFactory.create(
+            course_id=self.course.id, unit_id=self.vertical_x14.location.block_id, user=self.user,
+            survey_name=self.vertical_x14_survey1.display_name, survey_answer='')
+        CourseEnrollmentAttributeFactory.create(
+            enrollment=self.enrollment, namespace='ga', name='attended_status',
+            value='{"attended_date": "2010-10-10T10:10:10.123456+00:00","completed_date": "2010-10-10T10:10:10.123456+00:00"}')
+        # act
+        views.attendance(self.request, self.course.id.to_deprecated_string())
+        # assert
+        render_to_response_args = mock_render_to_response.call_args[0]
+        self.assertEqual(render_to_response_args[1]['display_status'], 'completed')
+
+    @patch('courseware.views.render_to_response', return_value=HttpResponse())
+    def test_attendance_when_status_waiting(self, mock_render_to_response):
+        # arrange
+        self.course.end = datetime(2020, 1, 1, 0, 0, 0)
+        self.update_course(self.course, self.user.id)
+        # act
+        views.attendance(self.request, self.course.id.to_deprecated_string())
+        # assert
+        render_to_response_args = mock_render_to_response.call_args[0]
+        self.assertEqual(render_to_response_args[1]['display_status'], 'waiting')
+
+    @patch('courseware.views.render_to_response', return_value=HttpResponse())
+    def test_attendance_when_status_closing(self, mock_render_to_response):
+        # arrange
+        self.course.terminate_start = timezone.now() - timedelta(days=1)
+        self.update_course(self.course, self.user.id)
+        # act
+        views.attendance(self.request, self.course.id.to_deprecated_string())
+        # assert
+        render_to_response_args = mock_render_to_response.call_args[0]
+        self.assertEqual(render_to_response_args[1]['display_status'], 'closing')
 
 @attr('shard_1')
 class VerifyCourseKeyDecoratorTests(TestCase):
@@ -1642,3 +1888,250 @@ class TestVisibleStudioUrl(ModuleStoreTestCase):
         # GaCourseScorer
         ga_course_scorer = GaCourseScorerFactory(course_key=self.course.id)
         self.assertIsNone(views._get_studio_url(ga_course_scorer, self.course, 'course'))
+
+
+@attr('shard_1')
+class FinishPlaybackMongoTests(ModuleStoreTestCase, PlaybackFinishTestBase):
+    """
+    Tests that verify that the finish_playback_mongo works correctly.
+    """
+    def setUp(self, **kwargs):
+        super(FinishPlaybackMongoTests, self).setUp()
+        self.request_factory = RequestFactory()
+        self.password = '1234'
+        self.user = UserFactory.create(password=self.password)
+
+        self.gacco_org = OrganizationFactory.create(
+            org_name='docomo gacco',
+            org_code='gacco',
+            creator_org_id=1,
+            created_by=UserFactory.create(),
+        )
+
+        self.utc_datetime = datetime(2018, 7, 1, 9, 58, 30, 0, tzinfo=pytz.utc)
+        self.utc_datetime_update = datetime(2018, 7, 17, 10, 58, 30, 0, tzinfo=pytz.utc)
+
+        self.course = CourseFactory.create(org='gacco', number='course', run='run1')
+        self.chapter_x = ItemFactory.create(parent=self.course, category='chapter', display_name="chapter_x")
+        self.section_x1 = ItemFactory.create(parent=self.chapter_x, category='sequential', display_name="section_x1")
+        # vertical_x11
+        self.vertical_x11 = ItemFactory.create(parent=self.section_x1, category='vertical', display_name="vertical_x11")
+
+        self.module_x11_video1 = ItemFactory.create(
+            category='video', parent_location=self.vertical_x11.location, display_name='module_x11_video1',
+            metadata={'is_status_managed': True})
+
+        CourseEnrollmentFactory(user=self.user, course_id=self.course.id)
+
+        self.client.login(username=self.user.username, password=self.password)
+        self.request = self.request_factory.get(reverse('finish_playback_mongo', args=[unicode(self.course.id)]))
+        self.request.user = self.user
+        mako_middleware_process_request(self.request)
+
+    def test_finish_playback_mongo_from_false_to_true(self):
+        """
+        Tests that verify that the finish_playback_mongo works correctly.
+        Test Case
+            button push: Yes
+            find_result: True
+            request_module_id: True
+            before status: False
+        Expected Results
+            status: False -> True
+        """
+        self.course.is_status_managed = True
+        self.update_course(self.course, self.user.id)
+
+        self._url = reverse('finish_playback_mongo', kwargs={'course_id': unicode(self.course.id)})
+
+        PlaybackFinishFactory._create(course=self.course, user=self.user, module_list=[
+            PlaybackFinishFactory._create_module_param(module=self.module_x11_video1, status=False)])
+
+        before = PlaybackFinishStore().find_record(self.user.id, unicode(self.course.id))
+
+        response = self.client.post(self._url, data={'data': 'Yes',
+                                                     'module_id': self.module_x11_video1.location.block_id})
+
+        after = PlaybackFinishStore().find_record(self.user.id, unicode(self.course.id))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(before[0]['module_list'][0]['status'], False)
+        self.assertEqual(after[0]['module_list'][0]['status'], True)
+        self.assertNotEqual(before[0]['module_list'][0]['change_time'], after[0]['module_list'][0]['change_time'])
+
+    def test_finish_playback_mongo_from_none_to_true_when_not_module_id(self):
+        """
+        Tests that verify that the finish_playback_mongo works correctly.
+        Test Case
+            button push: Yes
+            find_result: True
+            request_module_id: False
+            before status: None
+        Expected Results
+            status: --- -> True
+        """
+
+        self._url = reverse('finish_playback_mongo', kwargs={'course_id': unicode(self.course.id)})
+
+        _module_list = PlaybackFinishFactory._create_module_param(module=self.module_x11_video1, status=False)
+        _module_list['block_id'] = 999999
+        PlaybackFinishFactory._create(course=self.course, user=self.user, module_list=[_module_list])
+
+        before = PlaybackFinishStore().find_record(self.user.id, unicode(self.course.id))
+
+        response = self.client.post(self._url, data={'data': 'Yes',
+                                                     'module_id': self.module_x11_video1.location.block_id})
+
+        search_result = PlaybackFinishStore().find_record(self.user.id, unicode(self.course.id))
+        for mid in search_result[0]['module_list']:
+            if not mid['block_id'] == self.module_x11_video1.location.block_id:
+                after = mid
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(before[0]['module_list'][0]['status'], False)
+        self.assertEqual(after['status'], False)
+
+    def test_finish_playback_mongo_from_none_to_true_when_not_find_result(self):
+        """
+        Tests that verify that the finish_playback_mongo works correctly.
+        Test Case
+            button push: Yes
+            find_result: False
+        Expected Results
+            status: --- -> True
+        """
+
+        self._url = reverse('finish_playback_mongo', kwargs={'course_id': unicode(self.course.id)})
+
+        before = PlaybackFinishStore().find_record(self.user.id, unicode(self.course.id))
+
+        response = self.client.post(self._url, data={'data': 'Yes',
+                                                     'module_id': self.module_x11_video1.location.block_id})
+
+        after = PlaybackFinishStore().find_record(self.user.id, unicode(self.course.id))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertNotEqual(len(before), len(after))
+        self.assertEqual(before, [])
+        self.assertEqual(after[0]['module_list'][0]['status'], True)
+
+    def test_finish_playback_mongo_from_none_to_false(self):
+        """
+        Tests that verify that the finish_playback_mongo works correctly.
+        Test Case
+            button push: No
+            find_result: True
+            request_module_id: False
+        Expected Results
+            status: --- -> False
+        """
+
+        self._url = reverse('finish_playback_mongo', kwargs={'course_id': unicode(self.course.id)})
+
+        _module_list = PlaybackFinishFactory._create_module_param(module=self.module_x11_video1, status=True)
+        _module_list['block_id'] = 999999
+        PlaybackFinishFactory._create(course=self.course, user=self.user, module_list=[_module_list])
+
+        before = PlaybackFinishStore().find_record(self.user.id, unicode(self.course.id))
+
+        response = self.client.post(self._url, data={'data': 'No',
+                                                     'module_id': self.module_x11_video1.location.block_id})
+
+        search_result = PlaybackFinishStore().find_record(self.user.id, unicode(self.course.id))
+        for mid in search_result[0]['module_list']:
+            if not mid['block_id'] == self.module_x11_video1.location.block_id:
+                after = mid
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(before[0]['module_list'][0]['status'], True)
+        self.assertEqual(mid['status'], False)
+
+    def test_finish_playback_mongo_from_none_to_false_when_not_find_result(self):
+        """
+        Tests that verify that the finish_playback_mongo works correctly.
+        Test Case
+            button push: No
+            find_result: False
+        Expected Results
+            status: --- -> False
+        """
+
+        self._url = reverse('finish_playback_mongo', kwargs={'course_id': unicode(self.course.id)})
+
+        before = PlaybackFinishStore().find_record(self.user.id, unicode(self.course.id))
+
+        response = self.client.post(self._url, data={'data': 'No',
+                                                     'module_id': self.module_x11_video1.location.block_id})
+
+        after = PlaybackFinishStore().find_record(self.user.id, unicode(self.course.id))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertNotEqual(len(before), len(after))
+        self.assertEqual(before, [])
+        self.assertEqual(after[0]['module_list'][0]['status'], False)
+
+    def test_error_response(self):
+        self._url = reverse('finish_playback_mongo', kwargs={'course_id': unicode(self.course.id)})
+        response = self.client.post(self._url, data={'data': 'hoge',
+                                                     'module_id': self.module_x11_video1.location.block_id})
+        self.assertEqual(response.status_code, 400)
+
+    def test_search_playback_mongo_when_false_module_status_managed(self):
+        self._url = reverse('search_playback_mongo', kwargs={'course_id': unicode(self.course.id)})
+        # arrange
+        self.course.is_status_managed = True
+        self.update_course(self.course, self.user.id)
+
+        PlaybackFinishFactory._create(course=self.course, user=self.user, module_list=[
+            PlaybackFinishFactory._create_module_param(module=self.module_x11_video1, status=False)])
+
+        response = self.client.post(self._url)
+        data = json.loads(response.content)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(data['find_result'], True)
+
+    def test_search_playback_mongo_when_find_result(self):
+        self._url = reverse('search_playback_mongo', kwargs={'course_id': unicode(self.course.id)})
+        # arrange
+        self.course.is_status_managed = True
+        self.update_course(self.course, self.user.id)
+
+        _module_list = PlaybackFinishFactory._create_module_param(module=self.module_x11_video1, status=False)
+        _module_list['block_id'] = 999999
+        PlaybackFinishFactory._create(course=self.course, user=self.user, module_list=[_module_list])
+
+        response = self.client.post(self._url, data={'block_id': self.module_x11_video1.location.block_id})
+        data = json.loads(response.content)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(data['find_result'], False)
+
+    def test_search_playback_mongo_when_not_find_result(self):
+        self._url = reverse('search_playback_mongo', kwargs={'course_id': unicode(self.course.id)})
+        # arrange
+        self.course.is_status_managed = True
+        self.update_course(self.course, self.user.id)
+
+        PlaybackFinishFactory._create(course=self.course, user=self.user, module_list=[
+            PlaybackFinishFactory._create_module_param(module=self.module_x11_video1, status=False)])
+
+        response = self.client.post(self._url, data={'block_id': self.module_x11_video1.location.block_id})
+        data = json.loads(response.content)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(data['find_result'], False)
+
+    def test_search_playback_mongo_when_no_course_status_managed(self):
+        self._url = reverse('search_playback_mongo', kwargs={'course_id': unicode(self.course.id)})
+        # arrange
+        self.course.is_status_managed = False
+        self.update_course(self.course, self.user.id)
+
+        PlaybackFinishFactory._create(course=self.course, user=self.user, module_list=[
+            PlaybackFinishFactory._create_module_param(module=self.module_x11_video1, status=True)])
+
+        response = self.client.post(self._url)
+        data = json.loads(response.content)
+
+        self.assertEqual(data['find_result'], True)

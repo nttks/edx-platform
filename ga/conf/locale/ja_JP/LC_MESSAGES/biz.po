@@ -1334,6 +1334,18 @@ msgstr "ファイルのアップロードが完了"
 msgid "Complete Datetime"
 msgstr "実行終了日時"
 
+#: biz/templates/djangoapps/gx_member/index.html
+msgid "Mask personal info automatically"
+msgstr "受講登録条件の自動反映時の個人情報削除"
+
+#: biz/templates/djangoapps/gx_member/index.html
+msgid "Mask personal info on member of delete target when register students automatically."
+msgstr "受講登録条件の自動反映時に、受講解除対象の個人情報を自動削除します。"
+
+#: biz/templates/djangoapps/gx_member/index.html
+msgid "Auto delete"
+msgstr "自動削除"
+
 #: biz/templates/djangoapps/gx_member/_task_history.html
 msgid "Total Result"
 msgstr "総合結果"
@@ -1467,6 +1479,7 @@ msgstr "組織コード"
 #: biz/templates/gx_org_group/detail.html:187
 #: biz/templates/gx_org_group/group_list.html:90
 #: biz/templates/gx_org_group/group_list.html:94
+#: biz/djangoapps/gx_save_register_condition/detail.html
 msgid "Organization Group Name"
 msgstr "組織名"
 
@@ -1612,8 +1625,29 @@ msgid "Complete form submit."
 msgstr "ファイルのアップロードが完了"
 
 #: biz/djangoapps/gx_member/tasks.py:14
+#: biz/djangoapps/gx_member/tasks.py:18
 msgid "Member Register"
 msgstr "社員登録"
+
+#: biz/djangoapps/gx_member/tasks.py
+msgid "Reflect Conditions Immediate"
+msgstr "自動受講登録（即時）"
+
+#: biz/djangoapps/gx_member/tasks.py
+msgid "Reflect Conditions Reservation"
+msgstr "自動受講登録（予約）"
+
+#: biz/djangoapps/gx_member/tasks.py
+msgid "Reflect Conditions Batch"
+msgstr "自動受講登録（定時）"
+
+#: biz/djangoapps/gx_member/tasks.py
+msgid "Reflect Conditions Member Register"
+msgstr "社員登録（自動反映）"
+
+#: biz/djangoapps/gx_member/tasks.py
+msgid "Reflect Conditions Student Member Register"
+msgstr "受講者登録（自動反映）"
 
 #: biz/djangoapps/gx_member/views.py:125
 msgid "The number of columns did not match."
@@ -1956,4 +1990,357 @@ msgstr "検索結果をダウンロード"
 msgid "Answer Status"
 msgstr "アンケート回答状況一覧"
 
+#: biz/templates/ga_achievment/playback.html:374
+msgid "If you want to download the playback in UTF-16, please place a check mark and then push the button."
+msgstr "動画視聴状況をエンコード「UTF-16」でダウンロードしたい場合は、チェックを入れてダウンロードしてください。<br />チェックを入れていない場合は、エンコード「Shift_JIS」になります。"
 
+#: biz/templates/ga_achievment/score.html:375
+msgid "If you want to download the score in UTF-16, please place a check mark and then push the button."
+msgstr "スコア状況をエンコード「UTF-16」でダウンロードしたい場合は、チェックを入れてダウンロードしてください。<br />チェックを入れていない場合は、エンコード「Shift_JIS」になります。"
+
+#: biz/templates/ga_course_operation/survey.html:320
+msgid "If you want to download the survey results in UTF-16, please place a check mark and then push the button."
+msgstr "アンケート結果をエンコード「UTF-16」でダウンロードしたい場合は、チェックを入れてダウンロードしてください。<br />チェックを入れていない場合は、エンコード「Shift_JIS」になります。"
+
+#: biz/templates/ga_course_operation/survey.html:412
+msgid "If you want to download the survey status in UTF-16, please place a check mark and then push the button."
+msgstr "アンケート回答状況一覧をエンコード「UTF-16」でダウンロードしたい場合は、チェックを入れてダウンロードしてください。<br />チェックを入れていない場合は、エンコード「Shift_JIS」になります。"
+
+#: biz/templates/gx_member/index.html:410
+msgid "If you want to download the member list in UTF-16, please place a check mark and then push the button.(Please note that when you open the file downloaded with 'Shift-JIS' in Excel, 0 at the head disappears.)"
+msgstr "社員マスタをエンコード「UTF-16」でダウンロードしたい場合は、チェックを入れてダウンロードしてください。<br />チェックを入れていない場合は、エンコード「Shift_JIS」になります。<br /><br />※「Shift−JIS」でダウンロードしたファイルをExcelで開いた場合、先頭にある0が消えますのでご注意ください。"
+
+#: biz/templates/gx_org_group/group_list.html:249
+msgid "If you want to download the group list in UTF-16, please place a check mark and then push the button.(Please note that when you open the file downloaded with 'Shift-JIS' in Excel, 0 at the head disappears.)"
+msgstr "組織マスタをエンコード「UTF-16」でダウンロードしたい場合は、チェックを入れてダウンロードしてください。<br />チェックを入れていない場合は、エンコード「Shift_JIS」になります。<br /><br />※「Shift−JIS」でダウンロードしたファイルをExcelで開いた場合、先頭にある0が消えますのでご注意ください。"
+
+#: biz/templates/ga_contract_operation/students.html:423
+msgid "If you want to download the students in UTF-16, please place a check mark and then push the button."
+msgstr "受講者一覧をエンコード「UTF-16」でダウンロードしたい場合は、チェックを入れてダウンロードしてください。<br />チェックを入れていない場合は、エンコード「Shift_JIS」になります。"
+
+#: biz/templates/gx_member/index.html:404
+msgid "Download current registration status"
+msgstr "現在の登録状況をダウンロード"
+
+#: biz/templates/ga_contract_operation/register_students.html:672
+msgid "Send registration registration mail."
+msgstr "受講登録時配信メールを送信する"
+
+### Save Registration Condition
+#: biz/templates/gx_save_register_condition/index.html
+msgid "Condition Settings"
+msgstr "設定"
+
+#: biz/templates/gx_save_register_condition/index.html
+msgid "Unknown condition"
+msgstr "未設定"
+
+#: biz/templates/gx_save_register_condition/index.html
+msgid "Copy conditions"
+msgstr "他契約から条件をコピー"
+
+#: biz/templates/gx_save_register_condition/index.html
+msgid "Copy"
+msgstr "コピー"
+
+#: biz/templates/gx_save_register_condition/index.html
+msgid "Users who meet one or more of the conditions are eligible."
+msgstr "いずれか１つ以上の条件を満たしたユーザが対象となります。"
+
+#: biz/templates/gx_save_register_condition/index.html
+msgid "Save Registration Condition"
+msgstr "受講登録条件設定"
+
+#: biz/templates/gx_save_register_condition/index.html
+msgid "Add condition"
+msgstr "条件を追加"
+
+#: biz/templates/gx_save_register_condition/index.html
+msgid "Result num"
+msgstr "件数"
+
+#: biz/templates/gx_save_register_condition/index.html
+msgid "Save condition for registration"
+msgstr "受講登録条件設定"
+
+#: biz/templates/gx_save_register_condition/index.html
+msgid "Interlock flag with member update"
+msgstr "社員マスタ更新時の自動反映"
+
+#: biz/templates/gx_save_register_condition/index.html
+msgid "Immediate reflection"
+msgstr "今すぐ反映"
+
+#: biz/templates/gx_save_register_condition/index.html
+msgid "Set reflection date of condition"
+msgstr "受講登録条件の反映を日時指定で予約"
+
+#: biz/templates/gx_save_register_condition/index.html
+msgid "Automatically reflection"
+msgstr "自動反映"
+
+#: biz/templates/gx_save_register_condition/detail.html
+msgid "Save details condition for registration"
+msgstr "詳細条件設定"
+
+#: biz/templates/gx_save_register_condition/detail.html
+msgid "Simple Setting"
+msgstr "簡易設定"
+
+#: biz/templates/gx_save_register_condition/detail.html
+msgid "Advanced Setting"
+msgstr "上級設定"
+
+#: biz/templates/gx_save_register_condition/detail.html
+msgid "Condition Name"
+msgstr "受講登録条件名"
+
+#: biz/templates/gx_save_register_condition/detail.html
+msgid "is"
+msgstr "が"
+
+#: biz/djangoapps/gx_save_register_condition/models.py
+msgid "Comparison Equal"
+msgstr "と等しい"
+
+#: biz/djangoapps/gx_save_register_condition/models.py
+msgid "Comparison Not Equal"
+msgstr "と等しくない"
+
+#: biz/djangoapps/gx_save_register_condition/models.py
+msgid "Comparison Contains"
+msgstr "を含む"
+
+#: biz/djangoapps/gx_save_register_condition/models.py
+msgid "Comparison Not Contains"
+msgstr "を含まない"
+
+#: biz/djangoapps/gx_save_register_condition/models.py
+msgid "Comparison Starts With"
+msgstr "と先頭が一致"
+
+#: biz/djangoapps/gx_save_register_condition/models.py
+msgid "Comparison Ends With"
+msgstr "と末尾が一致"
+
+#: biz/djangoapps/gx_save_register_condition/models.py
+msgid "Comparison Equal In"
+msgstr "のいずれかと等しい"
+
+#: biz/djangoapps/gx_save_register_condition/models.py
+msgid "Comparison Not Equal In"
+msgstr "のいずれとも等しくない"
+
+#: biz/djangoapps/gx_save_register_condition/utils.py
+msgid "Failed to register of {username}."
+msgstr "{username}の受講登録に失敗しました。"
+
+#: biz/djangoapps/gx_save_register_condition/utils.py
+msgid "Failed to unregister of {username}."
+msgstr "{username}の受講解除に失敗しました。"
+
+#: biz/templates/gx_save_register_condition/index.html
+msgid "Reflect condition of register students now"
+msgstr "今すぐ受講登録条件を反映"
+
+#: biz/djangoapps/gx_save_register_condition/index.html
+msgid "Delete condition {0}<br/>Is it OK?<br/>Once deleted condition can not be restored."
+msgstr "{0}を削除します。<br/>よろしいですか？<br/>※一度削除した条件は元に戻せません"
+
+#: biz/djangoapps/gx_save_register_condition/index.html
+msgid "Copy the condition, is it OK?<br/>(Original:{0})Once deleted condition can not be restored."
+msgstr "受講登録条件をコピーします。よろしいですか？<br/>（コピー元の契約：{0})<br/>※設定済みの受講登録条件は破棄されます"
+
+#: biz/djangoapps/gx_save_register_condition/index.html
+msgid "The contract is not selected. Please select a contract."
+msgstr "契約が選択されていません。契約を選択してください。"
+
+#: biz/djangoapps/gx_save_register_condition/index.html
+msgid "Reservation reflection"
+msgstr "予約反映"
+
+#: biz/djangoapps/gx_save_register_condition/index.html
+msgid "Cancel reservation"
+msgstr "予約解除"
+
+#: biz/djangoapps/gx_save_register_condition/index.html
+msgid "Cancel the reservation date."
+msgstr "受講登録条件の反映の予約を解除しました。"
+
+#: biz/djangoapps/gx_save_register_condition/index.html
+msgid "Cancel the reflection, is it OK?<br/>(Reflection date: {0})"
+msgstr "受講登録条件の反映の予約を解除します。<br/>よろしいですか？<br/>(予約反映日：{0})"
+
+#: biz/djangoapps/gx_save_register_condition/index.html
+msgid "Reservation date of reflection"
+msgstr "予約反映日"
+
+#: biz/djangoapps/gx_save_register_condition/index.html
+msgid "Copy failed because the following conditions include additional information."
+msgstr "以下の条件は追加情報を含むため他契約からコピーできません。"
+
+#: biz/djangoapps/gx_save_register_condition/index.html
+msgid "The maximum number of conditions is 10 cases."
+msgstr "条件数の上限は１０件です。"
+
+#: biz/djangoapps/gx_save_register_condition/index.html
+msgid "Immediate reflection, is it OK?"
+msgstr "今すぐ受講登録条件を反映します。<br/>よろしいですか？"
+
+#: biz/djangoapps/gx_save_register_condition/index.html
+msgid "Execute immediate reflection."
+msgstr "受講登録条件を反映しました。"
+
+#: biz/djangoapps/gx_save_register_condition/index.html
+msgid "Can't use immediate reflection, because Target is over 10000.<br/>Please use reservation reflection."
+msgstr "受講登録対象件数が1万件以上のため「今すぐ反映」をご利用いただけません。<br/>1万件以上となる場合は「予約反映」をご利用ください。"
+
+#: biz/djangoapps/gx_save_register_condition/index.html
+msgid "Schedule the reflection, is it OK?<br/>(Reflection date: {0})"
+msgstr "受講登録条件の反映を予約します。<br/>よろしいですか？<br/>（予約反映日：{0}）"
+
+#: biz/djangoapps/gx_save_register_condition/index.html
+msgid "Set the reservation date."
+msgstr "受講登録条件の反映を予約しました。"
+
+#: biz/djangoapps/gx_save_register_condition/index.html
+msgid "The format of reservation reflection date is wrong. Please enter in the correct format."
+msgstr "日付の入力形式が正しくありません。正しい日付を入力してください。"
+
+#: biz/djangoapps/gx_save_register_condition/index.html
+msgid "The past date is entered. Please enter a future date."
+msgstr "過去の日付が入力されています。将来の日付を入力してください。"
+
+#: biz/djangoapps/gx_save_register_condition/index.html
+msgid "Today 's reception is over. Please enter the date of the future from tomorrow."
+msgstr "本日分の予約反映受付は終了しています。明日以降の日付を指定してください。"
+
+#: biz/djangoapps/gx_save_register_condition/index.html
+msgid "No reservation"
+msgstr "未定"
+
+#: biz/djangoapps/gx_save_register_condition/index.html
+msgid "When immediate reflect condition, we send mail"
+msgstr "受講登録時配信メールを送信する"
+
+#: biz/djangoapps/gx_save_register_condition/index.html
+msgid "Because time has passed, reservation can not be canceled."
+msgstr "本日分の予約解除受付時間を過ぎているため、予約反映は解除できません。"
+
+#: biz/djangoapps/gx_save_register_condition/index.html
+msgid "You can't switch if the reservation reflection date is set. Please cancel reservation."
+msgstr "既に受講登録条件の反映が予約されています。"
+
+#: biz/djangoapps/gx_save_register_condition/detail.html
+msgid "Condition does not exist. Please set at least one condition."
+msgstr "条件が設定されていません。１件以上の条件を設定してください。"
+
+#: biz/djangoapps/gx_save_register_condition/detail.html
+msgid "Save detailed conditions.<br/>Is it OK?<br/>Conditions on the advanced setting side are deleted."
+msgstr "詳細条件を保存します。<br/>よろしいですか？<br/>※上級設定側の条件は削除されます"
+
+#: biz/djangoapps/gx_save_register_condition/detail.html
+msgid "Saved detailed conditions."
+msgstr "詳細条件を保存しました。"
+
+#: biz/djangoapps/gx_save_register_condition/detail.html
+msgid "Condition name is not entered. Please enter a condition name."
+msgstr "受講登録条件名が入力されていません。受講登録条件名を入力してください。"
+
+#: biz/djangoapps/gx_save_register_condition/detail.html
+msgid "Save detailed conditions.<br/>Is it OK?<br/>Conditions on the simplified setting side are deleted."
+msgstr "詳細条件を保存します。<br/>よろしいですか？<br/>※簡易設定側の条件は削除されます"
+
+#: biz/djangoapps/gx_save_register_condition/detail.html
+msgid "Condition has no input items. Please input and complete."
+msgstr "条件に未入力項目があります。入力してから完了してください。"
+
+#: biz/djangoapps/gx_save_register_condition/detail.html
+msgid "There is a condition under editing. Please complete editing the conditions."
+msgstr "編集中の条件があります。条件の編集を完了してください。"
+
+#: biz/djangoapps/gx_save_register_condition/detail.html
+msgid "Save Settings"
+msgstr "保存"
+
+#: biz/djangoapps/ga_contract_operation/tasks.py:28
+msgid "Student Register Batch"
+msgstr "受講者自動登録"
+
+#: biz/djangoapps/ga_contract_operation/tasks.py:29
+msgid "Student Unregister Batch"
+msgstr "受講者自動登録解除"
+
+#: biz/djangoapps/gx_students_register_batch/management/commands/student_register_batch.py:606
+#: biz/djangoapps/gx_students_register_batch/management/commands/student_register_batch.py:610
+#: biz/djangoapps/gx_students_register_batch/management/commands/student_register_batch.py:617
+#, python-brace-format
+msgid "It is not registered as an employee master: {email}"
+msgstr "社員マスタに登録されていません：{email}"
+
+#: biz/djangoapps/gx_save_register_condition/detail.html
+msgid "Register: {register}, Unregister: {unregister}, Masked: {masked}, Failed: {failed}"
+msgstr "受講登録: {register}件、受講解除: {unregister}件、個人情報削除: {masked}件、失敗: {failed}件"
+
+#: biz/djangoapps/gx_students_register_batch/management/commands/student_status.py:454
+msgid "Current Status"
+msgstr "現在のステータス"
+
+#: biz/djangoapps/gx_students_register_batch/management/commands/student_status.py:455
+msgid "Enrolled Change Date"
+msgstr "受講中変更日"
+
+#: biz/djangoapps/gx_students_register_batch/management/commands/student_status.py:456
+msgid "Enrolled Change Time"
+msgstr "受講中変更時刻"
+
+#: biz/djangoapps/gx_students_register_batch/management/commands/student_status.py:457
+msgid "Finish Enrolled Change Date"
+msgstr "受講済変更日"
+
+#: biz/djangoapps/gx_students_register_batch/management/commands/student_status.py:458
+msgid "Finish Enrolled Change Time"
+msgstr "受講済変更時刻"
+
+#: biz/djangoapps/gx_students_register_batch/management/commands/student_status.py:459
+msgid "Already terminate Change Date"
+msgstr "閉講済変更日"
+
+#: biz/djangoapps/gx_students_register_batch/management/commands/student_status.py:460
+msgid "Already terminate Change Time"
+msgstr "閉講済変更時刻"
+
+#: biz/djangoapps/gx_students_register_batch/management/commands/student_status.py:469
+msgid "0001Module"
+msgstr "モジュール"
+
+#: biz/djangoapps/gx_students_register_batch/management/commands/student_status.py:470
+msgid "0001Module Name"
+msgstr "モジュール名"
+
+#: biz/djangoapps/gx_students_register_batch/management/commands/student_status.py:471
+msgid "0001Status"
+msgstr "ステータス"
+
+#: biz/djangoapps/gx_students_register_batch/management/commands/student_status.py:472
+msgid "Status Change Date"
+msgstr "ステータス変更日"
+
+#: biz/djangoapps/gx_students_register_batch/management/commands/student_status.py:473
+msgid "Status Change Time"
+msgstr "ステータス変更時刻"
+
+#: biz/djangoapps/gx_students_register_batch/management/commands/student_status_csv_batch.py:286
+#: biz/djangoapps/gx_students_register_batch/management/commands/student_status_csv_batch.py:302
+msgid "0001CourseID"
+msgstr "コースID"
+
+#: biz/djangoapps/gx_students_register_batch/management/commands/student_status_csv_batch.py:290
+#: biz/djangoapps/gx_students_register_batch/management/commands/student_status_csv_batch.py:305
+msgid "0001UserID"
+msgstr "ユーザID"
+
+#: biz/djangoapps/gx_students_register_batch/management/commands/student_status_csv_batch.py:291
+#: biz/djangoapps/gx_students_register_batch/management/commands/student_status_csv_batch.py:306
+msgid "0001UserName"
+msgstr "ユーザ名"

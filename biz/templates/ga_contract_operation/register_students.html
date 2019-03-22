@@ -118,6 +118,7 @@ from biz.djangoapps.ga_invitation.models import REGISTER_INVITATION_CODE
             var clickButton = $(this),
                 messages = $('.messages'),
                 registerStatus = $pnl01.find('#register-status'),
+                sendmailFlg = $pnl01.find('#sendmail-flg'),
                 csvFile = $pnl01.find('#csv-file');
 
             reset_messages();
@@ -139,6 +140,7 @@ from biz.djangoapps.ga_invitation.models import REGISTER_INVITATION_CODE
                 var formData = new FormData();
                 formData.append('contract_id', common_form.contract_id);
                 formData.append('register_status', (registerStatus.prop('checked') ? registerStatus.val() : ''));
+                formData.append('sendmail_flg', (sendmailFlg.prop('checked') ? sendmailFlg.val() : ''));
                 formData.append('csv_data', csv_file);
                 $.ajax({
                     url: clickButton.data('endpoint'),
@@ -169,7 +171,8 @@ from biz.djangoapps.ga_invitation.models import REGISTER_INVITATION_CODE
         $pnl02.on('click', '#register-btn-new', function () {
             var clickButton = $(this),
                 messages = $('.messages'),
-                registerStatus = $pnl02.find('#register-status-new');
+                registerStatus = $pnl02.find('#register-status-new'),
+                sendmailFlg = $pnl02.find('#sendmail-one-register-flg');
 
             reset_messages();
             clickButton.prop("disabled", true);
@@ -184,6 +187,7 @@ from biz.djangoapps.ga_invitation.models import REGISTER_INVITATION_CODE
                     var form_data = {
                         contract_id: common_form.contract_id,
                         register_status: (registerStatus.prop('checked') ? registerStatus.val() : ''),
+                        sendmail_flg: (sendmailFlg.prop('checked') ? sendmailFlg.val() : ''),
                         employee_email: $("#employee_email").val(),
                         user_name: $("#user_name").val(),
                         employee_last_name: $("#employee_last_name").val(),
@@ -304,7 +308,8 @@ from biz.djangoapps.ga_invitation.models import REGISTER_INVITATION_CODE
         $pnl03.on('click', '#register-btn-list', function() {
             var clickButton = $(this),
                 messages = $('.messages'),
-                registerStatus = $pnl03.find('#register-status-list');
+                registerStatus = $pnl03.find('#register-status-list'),
+                sendmailFlg = $pnl03.find('#sendmail-students-list-flg');
 
             reset_messages();
 
@@ -329,6 +334,7 @@ from biz.djangoapps.ga_invitation.models import REGISTER_INVITATION_CODE
                     data: {
                         contract_id: common_form.contract_id,
                         register_status: (registerStatus.prop('checked') ? registerStatus.val() : ''),
+                        sendmail_flg: (sendmailFlg.prop('checked') ? sendmailFlg.val() : ''),
                         add_list: JSON.stringify(add_list)
                     }
                 }).done(function (data) {
@@ -657,13 +663,18 @@ from biz.djangoapps.ga_invitation.models import REGISTER_INVITATION_CODE
                             data-endpoint='${reverse("biz:contract_operation:register_students_csv_ajax")}'
                             data-confirm-message='${_("Do the bulk students register. Are you sure?")}'>
                             ${_('Registration')}</button>
-                        <span class="gc_step_item_note red">${_("Please be aware that once you press the Registration button, a welcome e-mail of the course will be sent automatically.")}</span>
+                        <!--<span class="gc_step_item_note red">${_("Please be aware that once you press the Registration button, a welcome e-mail of the course will be sent automatically.")}</span>-->
                     </div>
                 </div>
                 <div class="gc_optional">
                     <label class="gc_optional_label" for="register-status"><input id="register-status"
                             class="gc_optional_chk js_register_status_popup" name="register_status" value="${REGISTER_INVITATION_CODE}" checked="checked"
                             type="checkbox">${_("Register with the invitation code. (Unnecessary invitation code by user)")}</label>
+                </div>
+                <div class="gc_optional" style="visibility:hidden">
+                    <label class="gc_optional_label" for="sendmail-flg"><input id="sendmail-flg"
+                            class="gc_optional_chk js_mail_status_popup" name="sendmail-flg"
+                            type="checkbox" checked="checked">${_("Send registration registration mail.")}</label>
                 </div>
 
                 <div class="gc_data_section gc_mt30 gc_data_section_file_attention" id="notes">
@@ -771,7 +782,11 @@ from biz.djangoapps.ga_invitation.models import REGISTER_INVITATION_CODE
                         <label class="gc_optional_label" for="register-status-new"><input id="register-status-new"
                                 class="gc_optional_chk js_register_status_popup" name="register-status-new" value="${REGISTER_INVITATION_CODE}" checked="checked"
                                 type="checkbox">${_("Register with the invitation code. (Unnecessary invitation code by user)")}</label>
-                        <span class="gc_step_item_note red">${_("Please be aware that once you press the Registration button, a welcome e-mail of the course will be sent automatically.")}</span>
+                    </div>
+                    <div class="gc_optional" style="visibility:hidden">
+                    <label class="gc_optional_label" for="sendmail-one-register-flg"><input id="sendmail-one-register-flg"
+                            class="gc_optional_chk js_mail_status_popup" name="sendmail-flg"
+                            type="checkbox" checked="checked">${_("Send registration registration mail.")}</label>
                     </div>
                     <div class="gc_btn_cta gc_btn_cta_center gc_mt20">
                         <button id="register-btn-new" class="btn btn-grn"
@@ -884,7 +899,11 @@ from biz.djangoapps.ga_invitation.models import REGISTER_INVITATION_CODE
                         <label class="gc_optional_label"><input
                                 class="gc_optional_chk js_register_status_popup" type="checkbox" name="register-status-list" id="register-status-list" value="${REGISTER_INVITATION_CODE}"
                                 checked />${_("Register with the invitation code. (Unnecessary invitation code by user)")}</label>
-                        <span class="gc_step_item_note red">${_("Please be aware that once you press the Registration button, a welcome e-mail of the course will be sent automatically.")}</span>
+                    </div>
+                    <div class="gc_optional" style="visibility:hidden">
+                    <label class="gc_optional_label" for="sendmail-students-list-flg"><input id="sendmail-students-list-flg"
+                            class="gc_optional_chk js_mail_status_popup" name="sendmail-flg"
+                            type="checkbox" checked="checked">${_("Send registration registration mail.")}</label>
                     </div>
                     <div class="gc_btn_cta gc_btn_cta_right gc_mt10">
                         <button id="register-btn-list" class="btn btn-grn" type="button"

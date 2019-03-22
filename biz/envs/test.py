@@ -26,3 +26,9 @@ Monthly report info
 BIZ_MONTHLY_REPORT_COMMAND_OUTPUT = tempfile.NamedTemporaryFile().name
 BIZ_FROM_EMAIL = 'from@test.com'
 BIZ_RECIPIENT_LIST = ['recipient@test.com']
+
+"""
+AWS
+"""
+AWS_ACCESS_KEY_ID = 'testbiz'
+AWS_SECRET_ACCESS_KEY = 'test'

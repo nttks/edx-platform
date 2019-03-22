@@ -165,7 +165,7 @@ class ScoreStore(AchievementStoreBase):
                 ordered[k] = self.COLUMN_TYPE__TEXT
         return ordered
 
-    def get_section_names(self):
+    def get_section_names(self, total_show=None):
         """
         Get section name list of stored documents
 
@@ -193,9 +193,11 @@ class ScoreStore(AchievementStoreBase):
             _(self.FIELD_ENROLL_DATE),
             _(self.FIELD_CERTIFICATE_STATUS),
             _(self.FIELD_CERTIFICATE_ISSUE_DATE),
-            _(self.FIELD_TOTAL_SCORE),
             _(self.FIELD_EXPIRE_DATE),
         ]
+
+        if not total_show:
+            excludes.append(_(self.FIELD_TOTAL_SCORE))
 
         for column in column_document:
             if column in excludes:
@@ -317,7 +319,7 @@ class PlaybackStore(AchievementStoreBase):
             course_id
         )
 
-    def get_section_names(self):
+    def get_section_names(self, total_show=None):
         """
         Get section name list of stored documents
 
@@ -342,8 +344,10 @@ class PlaybackStore(AchievementStoreBase):
             _(self.FIELD_USERNAME),
             _(self.FIELD_EMAIL),
             _(self.FIELD_STUDENT_STATUS),
-            _(self.FIELD_TOTAL_PLAYBACK_TIME),
         ]
+
+        if not total_show:
+            excludes.append(_(self.FIELD_TOTAL_PLAYBACK_TIME))
 
         for column in column_document:
             if column in excludes:

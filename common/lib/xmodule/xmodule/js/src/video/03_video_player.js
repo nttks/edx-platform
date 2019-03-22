@@ -267,6 +267,7 @@ function (HTML5Video, Resizer) {
         $(window).on('resize.video', _.debounce(function () {
             state.trigger('videoFullScreen.updateControlsHeight', null);
             state.el.trigger('caption:resize');
+            state.el.trigger('endedModal:resize');
             state.resizer.align();
         }, 100));
     }

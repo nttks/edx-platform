@@ -182,3 +182,13 @@ class VideoFields(object):
         scope=Scope.preferences,
         default=False,
     )
+    is_status_managed = Boolean(
+        display_name=_("Is status managed"),
+        help=_(
+            "Please set \"True\" if you want to make it status management target module. "
+            "Only \"survey\", \"problem\" and \"movie\" are available for status management. "
+            "Otherwise, please set \"no\"."
+        ),
+        scope=Scope.settings,
+        default=False,
+    )

@@ -133,6 +133,10 @@
   .course-info {
     @extend .content;
 
+    .lead {
+      font-size: em(14);
+    }
+
     header {
       @extend .clearfix;
       @extend h1.top-header;
@@ -268,6 +272,7 @@
           @include box-sizing(border-box);
           display: table-cell;
           letter-spacing: 0;
+          word-break: break-all;
           margin: 0;
           padding: 0;
           padding-right: flex-gutter(9);
@@ -304,6 +309,41 @@
             p {
               color: #999;
               font-size: em(14);
+            }
+
+            &.attendance {
+              h3 {
+                margin: 0 0 em(16) 0;
+                word-break: break-all;
+              }
+              dl {
+                @extend .clearfix;
+                margin: 0 0 em(16) em(16);
+                &.modules {
+                  display: none;
+                  margin: 0 0 em(16) em(48);
+                }
+                &.verticals > dd {
+                  cursor : pointer;
+                }
+                dd {
+                  float: left;
+                  word-break: break-all;
+                  margin: 0 em(32) 0 0;
+                  display: inline-block;
+                  width: 60%;
+                  i {
+                    display:inline-block;
+                    margin-right: em(8);
+                  }
+                }
+                dt {
+                  float: left;
+                  word-break: break-all;
+                  display: inline-block;
+                  width: 15%;
+                }
+              }
             }
 
             .scores {

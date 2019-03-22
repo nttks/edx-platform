@@ -102,4 +102,3 @@ class CommentStore(GaOperationStore):
     def __init__(self):
         self._store_config = settings.GA_OPERATION_MONGO['comment']
         super(CommentStore, self).__init__(self._store_config)
-

@@ -39,7 +39,7 @@ class Member(models.Model):
     updated = models.DateTimeField(auto_now=True, db_index=True, null=True)
     updated_org = models.ForeignKey(Organization, related_name='updater_org_member', null=True)
     created_by = models.ForeignKey(User, related_name='creator_members')
-    created = models.DateTimeField(auto_now_add=True, db_index=True)
+    created = models.DateTimeField(default=datetime.now, db_index=True)
     creator_org = models.ForeignKey(Organization, related_name='creator_org_member')
 
     class Meta:
@@ -94,6 +94,23 @@ class Member(models.Model):
         ).order_by('id')
 
     @classmethod
+    def find_backup_by_user(cls, org, user):
+        return cls.objects.filter(
+            org=org,
+            user=user,
+            is_active=False,
+            is_delete=False,
+        ).order_by('id')
+
+    @classmethod
+    def find_delete_by_org(cls, org):
+        return cls.objects.filter(
+            org=org,
+            is_active=False,
+            is_delete=True,
+        ).order_by('id')
+
+    @classmethod
     def find_delete_by_code(cls, org, code):
         return cls.objects.filter(
             org=org,
@@ -110,6 +127,16 @@ class Member(models.Model):
             is_active=False,
             is_delete=True,
         ).order_by('id')
+
+    @classmethod
+    def find_delete_by_user(cls, org, user):
+        return cls.objects.filter(
+            org=org,
+            user=user,
+            is_active=False,
+            is_delete=True,
+        ).order_by('id')
+
 
     @classmethod
     def delete_backup(cls, org):

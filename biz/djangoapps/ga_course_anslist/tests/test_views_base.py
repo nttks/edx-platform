@@ -194,6 +194,7 @@ class CourseAnslistDownloadTest(BizContractTestBase, BizStoreTestBase):
        u'search':[u''],
        u'limit':[u'100'],
        u'offset':[u'0'],
+       u'encode': [u'true'],
     }
 
 
@@ -303,7 +304,7 @@ class CourseAnslistDownloadTest(BizContractTestBase, BizStoreTestBase):
             self.assertEqual(405, response.status_code)
 
 
-    POST_DATA_EMPTY = {u'csrfmiddlewaretoken': [u'FwScQwdW2lH9l3GEYXUgn2cWsSASHa62']}
+    POST_DATA_EMPTY = {u'csrfmiddlewaretoken': [u'FwScQwdW2lH9l3GEYXUgn2cWsSASHa62'],'encode': ['true']}
     @data((POST_DATA_EMPTY, 4))
     @unpack
     def test_request_anslist_download_o100_c10_post_condition_empty(self, post_data, expected_len):
@@ -335,6 +336,7 @@ class CourseAnslistDownloadTest(BizContractTestBase, BizStoreTestBase):
        u'search':[u''],
        u'limit':[u'100'],
        u'offset':[u'0'],
+       u'encode': [u'true'],
     }
     @data((POST_DATA_CONDITION_0, 4))
     @unpack
@@ -368,6 +370,7 @@ class CourseAnslistDownloadTest(BizContractTestBase, BizStoreTestBase):
        u'search':[u''],
        u'limit':[u'100'],
        u'offset':[u'0'],
+       u'encode': [u'true'],
     }
     @data((POST_DATA_CONDITION_1, 3))
     @unpack
@@ -401,6 +404,7 @@ class CourseAnslistDownloadTest(BizContractTestBase, BizStoreTestBase):
        u'search':[u''],
        u'limit':[u'100'],
        u'offset':[u'0'],
+       u'encode': [u'true'],
     }
     @data((POST_DATA_CONDITION_2, 2))
     @unpack
@@ -435,6 +439,7 @@ class CourseAnslistDownloadTest(BizContractTestBase, BizStoreTestBase):
        u'search':[u''],
        u'limit':[u'100'],
        u'offset':[u'0'],
+       u'encode': [u'true'],
     }
     @data((POST_DATA_CONDITION_3, 2))
     @unpack
@@ -467,6 +472,7 @@ class CourseAnslistDownloadTest(BizContractTestBase, BizStoreTestBase):
        u'search':[u''],
        u'limit':[u'100'],
        u'offset':[u'0'],
+       u'encode': [u'true'],
     }
     @data((POST_DATA_CONDITION_4, 2))
     @unpack
@@ -500,6 +506,7 @@ class CourseAnslistDownloadTest(BizContractTestBase, BizStoreTestBase):
        u'search':[u''],
        u'limit':[u'100'],
        u'offset':[u'0'],
+       u'encode': [u'true'],
     }
     @data((POST_DATA_CONDITION_5, 2))
     @unpack
@@ -533,6 +540,7 @@ class CourseAnslistDownloadTest(BizContractTestBase, BizStoreTestBase):
        u'search':[u''],
        u'limit':[u'100'],
        u'offset':[u'0'],
+       u'encode': [u'true'],
     }
     @data((POST_DATA_CONDITION_6, 2))
     @unpack
@@ -565,6 +573,7 @@ class CourseAnslistDownloadTest(BizContractTestBase, BizStoreTestBase):
        u'search':[u''],
        u'limit':[u'100'],
        u'offset':[u'0'],
+       u'encode': [u'true'],
     }
     @data((POST_DATA_CONDITION_7, 2))
     @unpack
@@ -598,6 +607,7 @@ class CourseAnslistDownloadTest(BizContractTestBase, BizStoreTestBase):
        u'search':[u''],
        u'limit':[u'100'],
        u'offset':[u'0'],
+       u'encode': [u'true'],
     }
     @data((POST_DATA_CONDITION_8, 2))
     @unpack
@@ -630,6 +640,7 @@ class CourseAnslistDownloadTest(BizContractTestBase, BizStoreTestBase):
        u'search':[u''],
        u'limit':[u'100'],
        u'offset':[u'0'],
+       u'encode': [u'true'],
     }
     @data((POST_DATA_CONDITION_99, 4))
     @unpack
@@ -819,6 +830,7 @@ class CourseAnslistDownloadTestDataBase(BizContractTestBase, BizStoreTestBase):
         u'is_filter': u'off',
         u'limit': [u'100'],
         u'offset': [u'0'],
+        u'encode': [u'true'],
     }
     POST_DATA_INIT_ON = {
         u'group_id': [u''],
@@ -839,6 +851,7 @@ class CourseAnslistDownloadTestDataBase(BizContractTestBase, BizStoreTestBase):
         u'is_filter': u'on',
         u'limit': [u'100'],
         u'offset': [u'0'],
+        u'encode': [u'true'],
     }
 
     def _validate_bom(self, content):
@@ -1114,6 +1127,7 @@ class CourseAnslistDownloadAdd4ManagerRightTest(BizContractTestBase, BizStoreTes
         u'is_filter': u'off',
         u'limit': [u'100'],
         u'offset': [u'0'],
+        u'encode': [u'true'],
     }
     POST_DATA_INIT_ON = {
         u'group_id': [u''],
@@ -1134,6 +1148,7 @@ class CourseAnslistDownloadAdd4ManagerRightTest(BizContractTestBase, BizStoreTes
         u'is_filter': u'on',
         u'limit': [u'100'],
         u'offset': [u'0'],
+        u'encode': [u'true'],
     }
 
     def _validate_bom(self, content):
@@ -1403,8 +1418,30 @@ class CourseAnslistDownloadAdd4ManagerOrgNotExistGroupTest(BizContractTestBase, 
         u'is_filter': u'off',
         u'limit': [u'100'],
         u'offset': [u'0'],
+        u'encode': [u'true'],
     }
     POST_DATA_INIT_ON = {
+        u'group_id': [u''],
+        u'survey_name': [u''],
+        u'survey_answered': [u'on'],
+        u'survey_not_answered': [u'on'],
+        u'detail_condition_member_name_1': [u''],
+        u'detail_condition_member_1': [u''],
+        u'detail_condition_member_name_2': [u''],
+        u'detail_condition_member_2': [u''],
+        u'detail_condition_member_name_3': [u''],
+        u'detail_condition_member_3': [u''],
+        u'detail_condition_member_name_4': [u''],
+        u'detail_condition_member_4': [u''],
+        u'detail_condition_member_name_5': [u''],
+        u'detail_condition_member_5': [u''],
+        u'search': [u''],
+        u'is_filter': u'on',
+        u'limit': [u'100'],
+        u'offset': [u'0'],
+        u'encode': [u'true'],
+    }
+    POST_DATA_INIT_ON_ENCODE = {
         u'group_id': [u''],
         u'survey_name': [u''],
         u'survey_answered': [u'on'],
@@ -1502,3 +1539,19 @@ class CourseAnslistDownloadAdd4ManagerOrgNotExistGroupTest(BizContractTestBase, 
             self.assertEqual(expected_len, actual_len)
 
         self.assertEqual(200, actual_response.status_code)
+
+    def test_request_anslist_download_encode(self):
+        with self.skip_check_course_selection(current_organization=self.org100, current_contract=self.contract1,
+                                              current_course=self.course10, current_manager=self._manager_org_not_exist_in_group):
+            expected_len = 1
+            self.POST_DATA_INIT_ON_ENCODE["search-download"] = "search-download"
+            actual_response = self.client.post(self._get_url_download(), self.POST_DATA_INIT_ON_ENCODE)
+            self.assertEqual('text/csv', actual_response['Content-Type'], )
+            actual_content = actual_response.content
+            self.assertTrue(self._validate_bom(actual_content))
+            rows = self._convert_csv_rows(actual_content)
+            actual_len = len(rows)
+            self.assertEqual(expected_len, actual_len)
+
+        self.assertEqual(200, actual_response.status_code)
+

@@ -105,7 +105,7 @@ class TestArgParsing(BizViewTestBase, ModuleStoreTestCase):
         reg_optout = Optout.objects.filter(user=reg_user).first()
         self.assertEqual(reg_optout.user_id, reg_user.id)
         reg_success_data = bucket.lookup(
-            key_name="output_data/01_member/01_success/" + member_csv).get_contents_as_string(encoding='utf8')
+            key_name="output_data/01_member/01_success/" + member_csv).get_contents_as_string(encoding='sjis')
         self.assertEqual(reg_success_data, "Total :  1\r\nSuccessful :  1\r\nFailed :  0\r\n")
 
         # Non SSO target
@@ -122,7 +122,7 @@ class TestArgParsing(BizViewTestBase, ModuleStoreTestCase):
         reg_unenrollment = CourseEnrollment.objects.filter(user=reg_user, mode="audit", is_active=0).first()
         self.assertEqual(reg_unenrollment.user_id, reg_user.id)
         reg_success_data = bucket.lookup(
-            key_name="output_data/01_member/01_success/" + member_csv).get_contents_as_string(encoding='utf8')
+            key_name="output_data/01_member/01_success/" + member_csv).get_contents_as_string(encoding='sjis')
         self.assertEqual(reg_success_data, "Total :  1\r\nSuccessful :  1\r\nFailed :  0\r\n")
 
     @mock_s3
@@ -208,7 +208,7 @@ class TestArgParsing(BizViewTestBase, ModuleStoreTestCase):
         reg_optout = Optout.objects.filter(user=reg_user).first()
         self.assertEqual(reg_optout.user_id, reg_user.id)
         reg_success_data = bucket.lookup(
-            key_name="output_data/01_member/01_success/" + member_csv).get_contents_as_string(encoding='utf8')
+            key_name="output_data/01_member/01_success/" + member_csv).get_contents_as_string(encoding='sjis')
         self.assertEqual(reg_success_data, "Total :  1\r\nSuccessful :  1\r\nFailed :  0\r\n")
 
         # Non SSO target
@@ -226,7 +226,7 @@ class TestArgParsing(BizViewTestBase, ModuleStoreTestCase):
         reg_optout = Optout.objects.filter(user=reg_user).first()
         self.assertEqual(reg_optout.user_id, reg_user.id)
         reg_success_data = bucket.lookup(
-            key_name="output_data/01_member/01_success/" + member_csv).get_contents_as_string(encoding='utf8')
+            key_name="output_data/01_member/01_success/" + member_csv).get_contents_as_string(encoding='sjis')
         self.assertEqual(reg_success_data, "Total :  1\r\nSuccessful :  1\r\nFailed :  0\r\n")
 
     @mock_s3
@@ -283,11 +283,11 @@ class TestArgParsing(BizViewTestBase, ModuleStoreTestCase):
 
         member_csv = "sso_member_2000-01-01-0000_01.csv"
         reg_success_data = bucket.lookup(
-            key_name="output_data/01_member/01_success/" + member_csv).get_contents_as_string(encoding='utf8')
+            key_name="output_data/01_member/01_success/" + member_csv).get_contents_as_string(encoding='sjis')
         self.assertEqual(reg_success_data, "Total :  1\r\nSuccessful :  0\r\nFailed :  1\r\n")
         reg_error_data = bucket.lookup(
-            key_name="output_data/01_member/02_error/" + member_csv).get_contents_as_string(encoding='utf8')
-        self.assertEqual(reg_error_data, "username,email,cause\r\nPRE-username1,hoge1@mail.com,Character length error\r\n")
+            key_name="output_data/01_member/02_error/" + member_csv).get_contents_as_string(encoding='sjis')
+        self.assertEqual(reg_error_data, "username,email\r\nPRE-username1,hoge1@mail.com\r\n")
 
         # Non SSO target
         reg_user = User.objects.filter(username="PRE-username2")
@@ -295,11 +295,11 @@ class TestArgParsing(BizViewTestBase, ModuleStoreTestCase):
 
         member_csv = "no_sso_member_2000-01-01-0000_01.csv"
         reg_success_data = bucket.lookup(
-            key_name="output_data/01_member/01_success/" + member_csv).get_contents_as_string(encoding='utf8')
+            key_name="output_data/01_member/01_success/" + member_csv).get_contents_as_string(encoding='sjis')
         self.assertEqual(reg_success_data, "Total :  1\r\nSuccessful :  0\r\nFailed :  1\r\n")
         reg_error_data = bucket.lookup(
-            key_name="output_data/01_member/02_error/" + member_csv).get_contents_as_string(encoding='utf8')
-        self.assertEqual(reg_error_data, "username,email,cause\r\nPRE-username2,hoge2@mail.com,Character length error\r\n")
+            key_name="output_data/01_member/02_error/" + member_csv).get_contents_as_string(encoding='sjis')
+        self.assertEqual(reg_error_data, "username,email\r\nPRE-username2,hoge2@mail.com\r\n")
 
     @mock_s3
     @override_settings(AWS_ACCESS_KEY_ID='foobar', AWS_SECRET_ACCESS_KEY='bizbaz')
@@ -319,7 +319,7 @@ class TestArgParsing(BizViewTestBase, ModuleStoreTestCase):
                 ",MemberCode1,hoge1@mail.com,Lname1,,PRE-username1b"
                 ",org1,,,,,,,,,org10,item1,,,,,,,,,item10\r\n")
             fou.write(
-                ",MemberCode1,hoge1@mail.com,Lname1,Fname1,username1"
+                ",MemberCode1,hoge1@mail.com,Lname1,,username1"
                 ",org1,,,,,,,,,org10,item1,,,,,,,,,item10\r\n")
             fou.write(
                 "Code1,MemberCode1,hoge1@mail.com,Lname1,Fname1,PRE-username1c"
@@ -335,9 +335,6 @@ class TestArgParsing(BizViewTestBase, ModuleStoreTestCase):
                 ",org1,,,,,,,,,org10,item1,,,,,,,,,item10\r\n")
             fou.write(
                 ",MemberCode01,hoge01x@mail.com,Lname1,Fname1,PRE-username1g"
-                ",org1,,,,,,,,,org10,item1,,,,,,,,,item10\r\n")
-            fou.write(
-                ",MemberCode001,hoge01@mail.com,Lname1,Fname1,PRE-username1h"
                 ",org1,,,,,,,,,org10,item1,,,,,,,,,item10\r\n")
         with ZipFile('/tmp/' + member_csv[:-4] + '.zip', 'w', ZIP_DEFLATED) as create_zip:
             create_zip.write('/tmp/' + member_csv, member_csv)
@@ -369,8 +366,6 @@ class TestArgParsing(BizViewTestBase, ModuleStoreTestCase):
                       ",org1,,,,,,,,,org10,item1,,,,,,,,,item10\r\n")
             fou.write(",MemberCode02,hoge02x@mail.com,Lname2,Fname2,PRE-username2h,Password"
                       ",org1,,,,,,,,,org10,item1,,,,,,,,,item10\r\n")
-            fou.write(",MemberCode002,hoge02@mail.com,Lname2,Fname2,PRE-username2i,Password"
-                      ",org1,,,,,,,,,org10,item1,,,,,,,,,item10\r\n")
         with ZipFile('/tmp/' + member_csv[:-4] + '.zip', 'w', ZIP_DEFLATED) as create_zip:
             create_zip.write('/tmp/' + member_csv, member_csv)
         s3key.key = "input_data/01_member/" + member_csv[:-4] + '.zip'
@@ -389,19 +384,15 @@ class TestArgParsing(BizViewTestBase, ModuleStoreTestCase):
 
         member_csv = "sso_member_2000-01-01-0000_01.csv"
         reg_success_data = bucket.lookup(
-            key_name="output_data/01_member/01_success/" + member_csv).get_contents_as_string(encoding='utf8')
-        self.assertEqual(reg_success_data, "Total :  9\r\nSuccessful :  1\r\nFailed :  8\r\n")
+            key_name="output_data/01_member/01_success/" + member_csv).get_contents_as_string(encoding='sjis')
+        self.assertEqual(reg_success_data, "Total :  8\r\nSuccessful :  1\r\nFailed :  7\r\n")
         reg_error_data = bucket.lookup(
-            key_name="output_data/01_member/02_error/" + member_csv).get_contents_as_string(encoding='utf8')
-        self.assertEqual(reg_error_data, "username,email,cause\r\n"
-                                         "PRE-username1a,hoge1@mail.com,Validation error : First_name\r\n"
-                                         "PRE-username1b,hoge1@mail.com,Validation error : Last_name\r\n"
-                                         "username1,hoge1@mail.com,Validation error : Username\r\n"
-                                         "PRE-username1c,hoge1@mail.com,Validation error : Group_code\r\n"
-                                         "PRE-username1d,hoge1@mail.com,Character length error : Member_code\r\n"
-                                         "PRE-username1e,hoge1"+"a"*70+"@mail.com,System error\r\n"
-                                         "PRE-username1g,hoge01x@mail.com,Validation error : Member_code\r\n"
-                                         "PRE-username1h,hoge01@mail.com,The e-mail address is already registered\r\n")
+            key_name="output_data/01_member/02_error/" + member_csv).get_contents_as_string(encoding='sjis')
+        self.assertEqual(reg_error_data, "username,email\r\nPRE-username1a,hoge1@mail.com\r\n"
+                                         "PRE-username1b,hoge1@mail.com\r\nusername1,hoge1@mail.com\r\n"
+                                         "PRE-username1c,hoge1@mail.com\r\nPRE-username1d,hoge1@mail.com\r\n"
+                                         "PRE-username1e,hoge1"+"a"*70+"@mail.com\r\n"
+                                         "PRE-username1g,hoge01x@mail.com\r\n")
 
         # Non SSO target
         reg_user = User.objects.filter(username="PRE-username2")
@@ -409,20 +400,15 @@ class TestArgParsing(BizViewTestBase, ModuleStoreTestCase):
 
         member_csv = "no_sso_member_2000-01-01-0000_01.csv"
         reg_success_data = bucket.lookup(
-            key_name="output_data/01_member/01_success/" + member_csv).get_contents_as_string(encoding='utf8')
-        self.assertEqual(reg_success_data, "Total :  10\r\nSuccessful :  1\r\nFailed :  9\r\n")
+            key_name="output_data/01_member/01_success/" + member_csv).get_contents_as_string(encoding='sjis')
+        self.assertEqual(reg_success_data, "Total :  9\r\nSuccessful :  1\r\nFailed :  8\r\n")
         reg_error_data = bucket.lookup(
-            key_name="output_data/01_member/02_error/" + member_csv).get_contents_as_string(encoding='utf8')
-        self.assertEqual(reg_error_data, "username,email,cause\r\n"
-                                         "PRE-username2a,hoge2@mail.com,Validation error : First_name\r\n"
-                                         "PRE-username2b,hoge2@mail.com,Validation error : Last_name\r\n"
-                                         "PRE-username2c,hoge2@mail.com,Validation error : Password\r\n"
-                                         "username2,hoge2@mail.com,Validation error : Username\r\n"
-                                         "PRE-username2d,hoge2@mail.com,Validation error : Group_code\r\n"
-                                         "PRE-username2e,hoge2@mail.com,Character length error : Member_code\r\n"
-                                         "PRE-username2f,hoge2"+"a"*70+"@mail.com,System error\r\n"
-                                         "PRE-username2h,hoge02x@mail.com,Validation error : Member_code\r\n"
-                                         "PRE-username2i,hoge02@mail.com,The e-mail address is already registered\r\n")
+            key_name="output_data/01_member/02_error/" + member_csv).get_contents_as_string(encoding='sjis')
+        self.assertEqual(reg_error_data, "username,email\r\nPRE-username2a,hoge2@mail.com\r\n"
+                                         "PRE-username2b,hoge2@mail.com\r\nPRE-username2c,hoge2@mail.com\r\n"
+                                         "username2,hoge2@mail.com\r\nPRE-username2d,hoge2@mail.com\r\n"
+                                         "PRE-username2e,hoge2@mail.com\r\nPRE-username2f,hoge2"+"a"*70+"@mail.com\r\n"
+                                         "PRE-username2h,hoge02x@mail.com\r\n")
 
     @mock_s3
     @override_settings(AWS_ACCESS_KEY_ID='foobar', AWS_SECRET_ACCESS_KEY='bizbaz')
@@ -555,7 +541,7 @@ class TestArgParsing(BizViewTestBase, ModuleStoreTestCase):
         reg_optout = Optout.objects.filter(user=reg_user).first()
         self.assertEqual(reg_optout.user_id, reg_user.id)
         reg_success_data = bucket.lookup(
-            key_name="output_data/01_member/01_success/" + member_csv).get_contents_as_string(encoding='utf8')
+            key_name="output_data/01_member/01_success/" + member_csv).get_contents_as_string(encoding='sjis')
         self.assertEqual(reg_success_data, "Total :  1\r\nSuccessful :  1\r\nFailed :  0\r\n")
 
         # Non SSO target
@@ -573,7 +559,7 @@ class TestArgParsing(BizViewTestBase, ModuleStoreTestCase):
         reg_optout = Optout.objects.filter(user=reg_user).first()
         self.assertEqual(reg_optout.user_id, reg_user.id)
         reg_success_data = bucket.lookup(
-            key_name="output_data/01_member/01_success/" + member_csv).get_contents_as_string(encoding='utf8')
+            key_name="output_data/01_member/01_success/" + member_csv).get_contents_as_string(encoding='sjis')
         self.assertEqual(reg_success_data, "Total :  1\r\nSuccessful :  1\r\nFailed :  0\r\n")
 
     @mock_s3
@@ -667,7 +653,7 @@ class TestArgParsing(BizViewTestBase, ModuleStoreTestCase):
         reg_optout = Optout.objects.filter(user=reg_user).first()
         self.assertEqual(reg_optout.user_id, reg_user.id)
         reg_success_data = bucket.lookup(
-            key_name="output_data/01_member/01_success/" + member_csv).get_contents_as_string(encoding='utf8')
+            key_name="output_data/01_member/01_success/" + member_csv).get_contents_as_string(encoding='sjis')
         self.assertEqual(reg_success_data, "Total :  1\r\nSuccessful :  1\r\nFailed :  0\r\n")
 
         # Non SSO target
@@ -685,5 +671,5 @@ class TestArgParsing(BizViewTestBase, ModuleStoreTestCase):
         reg_optout = Optout.objects.filter(user=reg_user).first()
         self.assertEqual(reg_optout.user_id, reg_user.id)
         reg_success_data = bucket.lookup(
-            key_name="output_data/01_member/01_success/" + member_csv).get_contents_as_string(encoding='utf8')
+            key_name="output_data/01_member/01_success/" + member_csv).get_contents_as_string(encoding='sjis')
         self.assertEqual(reg_success_data, "Total :  1\r\nSuccessful :  1\r\nFailed :  0\r\n")

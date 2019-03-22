@@ -18,6 +18,8 @@ from biz.djangoapps.ga_login.models import BizUser, LOGIN_CODE_MIN_LENGTH, LOGIN
 from biz.djangoapps.gx_member.models import Member
 from biz.djangoapps.gx_org_group.models import Group
 from biz.djangoapps.gx_username_rule.models import OrgUsernameRule
+from biz.djangoapps.gx_save_register_condition.utils import reflect_condition_execute_call_by_another_task
+
 from bulk_email.models import Optout
 
 from lms.djangoapps.instructor.views.api import generate_unique_password
@@ -342,7 +344,7 @@ def perform_delegate_student_member_register(entry_id, task_input, action_name):
                             enrollment = CourseEnrollment.get_or_create_enrollment(user, detail['key'])
                             enrollment.update_enrollment(is_active=True, mode=detail['mode'])
 
-                    if contract.can_send_mail and mail_connection:
+                    if contract.can_send_mail and mail_connection and task_input['sendmail_flg']:
                         mail_subject = replace_braces(contract_mail.mail_subject, replace_dict)
                         mail_body = replace_braces(contract_mail.mail_body, replace_dict)
                         django_send_mail(
@@ -437,5 +439,9 @@ def perform_delegate_student_member_register(entry_id, task_input, action_name):
     if contract.can_send_mail and mail_connection is not None:
         mail_connection.close()
 
-    return task_progress.update_task_state()
+    # Auto student register task.
+    reflect_condition_execute_call_by_another_task(
+        task_id=task_id, org=contract.contractor_organization, user=entry.requester,
+        action_name='reflect_conditions_student_member_register')
 
+    return task_progress.update_task_state()

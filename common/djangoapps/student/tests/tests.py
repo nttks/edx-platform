@@ -7,6 +7,8 @@ import unittest
 import ddt
 from datetime import datetime, timedelta
 from urlparse import urljoin
+from unittest import skip
+
 
 import pytz
 from mock import Mock, patch
@@ -543,6 +545,7 @@ class DashboardTest(ModuleStoreTestCase):
         )
         self.assertContains(response, expected_url)
 
+    @skip("jast #2643-2")
     @unittest.skipUnless(settings.ROOT_URLCONF == 'lms.urls', 'Test only valid in lms')
     @ddt.data(ModuleStoreEnum.Type.mongo, ModuleStoreEnum.Type.split)
     def test_dashboard_metadata_caching(self, modulestore_type):

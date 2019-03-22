@@ -8,7 +8,7 @@ a:hover {
     cursor: pointer
 }
 
-/* ボーダー消し */
+/* No Border */
 input, button, a:focus, *:focus {
     outline: none;
 }
@@ -716,7 +716,6 @@ textarea.gc_mail_conf_ctl {
     margin: -.1em .3em 0 0;
 }
 
-
 /* ga_adduser */
 .gc_adduser{
     background-color: #EDEDED;
@@ -743,6 +742,25 @@ textarea.gc_mail_conf_ctl {
     margin: -.1em .3em 0 0;
 }
 
+/* gc center blue btn */
+.gc_add_condition_btn {
+    display: block;
+    text-align: center;
+    padding: 20px;
+}
+.gc_add_condition_btn span {
+    display: inline-block;
+    cursor: pointer;
+    padding: 10px 50px;
+    color: #126f9a;
+    border: 1px solid #126f9a;
+    border-radius: 20px;
+    border-bottom: 2px solid #072b48;
+}
+.gc_add_condition_btn span:hover {
+    background: #126f9a;
+    color: #fff;
+}
 
 /* ga_tab */
 .gc_tab{
@@ -908,7 +926,6 @@ button.gc_collapse_btn:hover .fa{
     color: #fff;
 }
 
-
 /* gc_btn_group */
 .gc_btn_group{
     margin-bottom: 30px;
@@ -1001,9 +1018,15 @@ button.gc_collapse_btn:hover .fa{
 .gc_mb30{
     margin-bottom: 30px!important;
 }
+.gc_mb50{
+    margin-bottom: 50px!important;
+}
 
 
 /* em width */
+.gc_w2em{
+    width: 2em!important;
+}
 .gc_w5em{
     width: 5em!important;
 }
@@ -1027,6 +1050,9 @@ button.gc_collapse_btn:hover .fa{
 }
 .gc_w20em{
     width: 20em!important;
+}
+.gc_w21em{
+    width: 21em!important;
 }
 .gc_w25em{
     width: 25em!important;

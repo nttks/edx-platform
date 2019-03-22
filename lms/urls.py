@@ -489,6 +489,20 @@ urlpatterns += (
         name='courseware',
     ),
     url(
+        r'^courses/{}/update_db_ajax$'.format(
+            settings.COURSE_ID_PATTERN,
+        ),
+        'courseware.views.finish_playback_mongo',
+        name='finish_playback_mongo',
+    ),
+    url(
+        r'^courses/{}/search_db_ajax$'.format(
+            settings.COURSE_ID_PATTERN,
+        ),
+        'courseware.views.search_playback_mongo',
+        name='search_playback_mongo',
+    ),
+    url(
         r'^courses/{}/courseware/(?P<chapter>[^/]*)/$'.format(
             settings.COURSE_ID_PATTERN,
         ),
@@ -516,6 +530,14 @@ urlpatterns += (
         ),
         'courseware.views.playback',
         name='playback',
+    ),
+
+    url(
+        r'^courses/{}/attendance'.format(
+            settings.COURSE_ID_PATTERN,
+        ),
+        'courseware.views.attendance',
+        name='attendance',
     ),
 
     url(

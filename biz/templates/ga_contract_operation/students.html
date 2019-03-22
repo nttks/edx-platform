@@ -20,7 +20,8 @@ from django.core.urlresolvers import reverse
             $csvFormHidden = $('#student-download-csv-form-hidden'),
             $pagenation = $('#pagenation'),
             $searchDetailToggleBtn = $("#search_detail_toggle_btn"),
-            $searchDetailToggleTarget = $('#search_detail_toggle_target');
+            $searchDetailToggleTarget = $('#search_detail_toggle_target'),
+            $enc = {"encode": $('[name=encode]').prop('checked')};
 
         studentGrid = $('#grid').w2grid({
                 name: 'student_grid',
@@ -271,6 +272,21 @@ from django.core.urlresolvers import reverse
     .content-wrapper {
         min-height: 1300px;
     }
+    .chk_encode {
+        margin-right: 0.5em;
+    }
+    .gc_download_chk {
+        float: right;
+        text-align: center;
+        padding-left: 0em;
+        font-size: 0.8rem;
+        font-weight: normal;
+        font-style: normal;
+        margin-bottom: 40px;
+    }
+    .gc_download {
+        margin-bottom: 10px;
+    }
 </style>
 </%block>
 
@@ -404,6 +420,10 @@ from django.core.urlresolvers import reverse
         </div>
     </div>
     <div id="student-download-csv-form-hidden" style="display:none"></div>
+    <div class="gc_fieldset_ipt_center">
+        <label class="gc_optional_label">
+            <input class="chk_encode" type="checkbox" name="encode" value="on"/><p class="gc_download_chk">${_("If you want to download the students in UTF-16, please place a check mark and then push the button.")}</p></label>
+    </div>
 </form>
 
 <div id="failed_add_search_conditions_popup" style="display: none; width: 300px; height: 150px; overflow: auto">

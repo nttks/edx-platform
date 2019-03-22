@@ -71,7 +71,8 @@ class BizTestBase(TestCase):
     def _create_contract(self, contract_name='test contract', contract_type='PF', register_type='ERS',
                          contractor_organization=None, owner_organization=None, end_date=None,
                          detail_courses=[], additional_display_names=[], url_code=None, send_mail=False,
-                         customize_mail=False, send_submission_reminder=False):
+                         customize_mail=False, send_submission_reminder=False, auto_register_students_flg=False,
+                         auto_register_reservation_date=None):
         contract = ContractFactory.create(
             contract_name=contract_name,
             contract_type=contract_type,
@@ -88,9 +89,11 @@ class BizTestBase(TestCase):
             self._create_additional_info(contract=contract, display_name=d)
         if url_code:
             ContractAuthFactory.create(contract=contract, url_code=url_code, send_mail=send_mail)
-        if customize_mail or send_submission_reminder:
+        if customize_mail or send_submission_reminder or auto_register_students_flg or auto_register_reservation_date:
             ContractOptionFactory.create(contract=contract, customize_mail=customize_mail,
-                                         send_submission_reminder=send_submission_reminder)
+                                         send_submission_reminder=send_submission_reminder,
+                                         auto_register_students_flg=auto_register_students_flg,
+                                         auto_register_reservation_date=auto_register_reservation_date)
         return contract
 
     def _create_additional_info(self, contract=None, display_name=None):

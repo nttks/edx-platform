@@ -1,8 +1,8 @@
 """Provides factories for student models."""
 from student.models import (User, UserProfile, Registration,
-                            CourseEnrollmentAllowed, CourseEnrollment,
+                            CourseEnrollmentAllowed, CourseEnrollment, CourseEnrollmentAttribute,
                             PendingEmailChange, UserStanding,
-                            CourseAccessRole)
+                            CourseAccessRole, CourseEnrollmentAttribute)
 from course_modes.models import CourseMode
 from django.contrib.auth.models import Group, AnonymousUser
 from datetime import datetime
@@ -121,6 +121,11 @@ class CourseEnrollmentFactory(DjangoModelFactory):
 
     user = factory.SubFactory(UserFactory)
     course_id = SlashSeparatedCourseKey('edX', 'toy', '2012_Fall')
+
+
+class CourseEnrollmentAttributeFactory(DjangoModelFactory):
+    class Meta(object):
+        model = CourseEnrollmentAttribute
 
 
 class CourseAccessRoleFactory(DjangoModelFactory):

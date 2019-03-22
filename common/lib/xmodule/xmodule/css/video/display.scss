@@ -116,6 +116,61 @@ html:not('.afontgarde') .icon-fallback-img {
   .tc-wrapper {
     @include clearfix();
     position: relative;
+
+
+    .video_ended_modal {
+      display: none;
+      position: absolute;
+      text-align: center;
+      width: 60%;
+      padding: 3% 5%;
+      background: #fff;
+      border-style: solid;
+      border-width: 1px;
+      border-color: black;
+
+      .video_ended_modal-button {
+        margin: 0px 5%;
+        padding: 3% 0%;
+        color: white;
+        background-image: none;
+        width: 30%;
+        text-align: center;
+        border-radius: 3px;
+      }
+
+      .video_ended_modal-button.yes {
+        background-color: #43ac6a;
+      }
+
+      .video_ended_modal-button.no {
+        background-color: #b62567;
+      }
+
+      .video_ended_modal-button.yes:hover {
+        background: #368a55;
+        color: white;
+      }
+
+      .video_ended_modal-button.no:hover {
+        background: #90235f;
+        color: white;
+      }
+
+      @media screen and (max-width: 480px) {
+
+        .video_ended_modal-button {
+          font-size: em(10);
+        }
+      }
+    }
+
+    @media screen and (max-width: 480px) {
+
+      .video_ended_modal {
+        font-size: em(10);
+      }
+    }
   }
 
   .focus_grabber {

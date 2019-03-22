@@ -21,6 +21,17 @@ class Organization(models.Model):
     def __unicode__(self):
         return self.org_name
 
+    @property
+    def can_auto_mask(self):
+        return hasattr(self, 'organizationoption') and self.organizationoption.auto_mask_flg
+
+    @property
+    def get_reservation_mail_date(self):
+        if hasattr(self, 'organizationoption'):
+            return self.organizationoption.reservation_mail_date
+        else:
+            return None
+
     @classmethod
     def find_by_creator_org(cls, org):
         """
@@ -50,3 +61,27 @@ class Organization(models.Model):
         :return: filtered query
         """
         return cls.objects.filter(managers__user=user).order_by('-created')
+
+
+class OrganizationOption(models.Model):
+    """
+    This table contains organization option info.
+    """
+    org = models.OneToOneField(
+        Organization,
+        on_delete=models.CASCADE,
+        primary_key=True,
+    )
+    # For gx_reservation_mail
+    reservation_mail_date = models.TimeField(null=True, blank=True)
+    # For gx_save_register_condition
+    auto_mask_flg = models.BooleanField(default=False)
+    modified_by = models.ForeignKey(User)
+    modified = models.DateTimeField(auto_now=True)
+
+    def __unicode__(self):
+        return self.org.org_name
+
+    class Meta:
+        app_label = 'ga_organization'
+        ordering = ['org']

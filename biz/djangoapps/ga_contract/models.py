@@ -131,6 +131,14 @@ class Contract(models.Model):
     def can_send_submission_reminder(self):
         return hasattr(self, 'contractoption') and self.contractoption.send_submission_reminder
 
+    @property
+    def can_auto_register_students(self):
+        return hasattr(self, 'contractoption') and self.contractoption.auto_register_students_flg
+
+    @property
+    def auto_register_reservation_date(self):
+        return hasattr(self, 'contractoption') and self.contractoption.auto_register_reservation_date
+
     @classmethod
     def get_contract_types(cls, manager):
         """
@@ -447,6 +455,10 @@ class ContractOption(models.Model):
     customize_mail = models.BooleanField(default=False)
     # Feature option for submission reminder email (#1816)
     send_submission_reminder = models.BooleanField(default=False)
+    # Feature option for register students automatically flag
+    auto_register_students_flg = models.BooleanField(default=False)
+    # Feature option for register students automatically reservation date
+    auto_register_reservation_date = models.DateField(default=None, null=True, blank=True)
     modified_by = models.ForeignKey(User)
     modified = models.DateTimeField(auto_now=True)
 

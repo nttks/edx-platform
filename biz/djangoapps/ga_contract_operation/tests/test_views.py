@@ -18,6 +18,7 @@ from biz.djangoapps.ga_contract_operation.tests.factories import ContractTaskHis
 from biz.djangoapps.ga_invitation.models import REGISTER_INVITATION_CODE, UNREGISTER_INVITATION_CODE
 from biz.djangoapps.ga_invitation.tests.factories import ContractRegisterFactory
 from biz.djangoapps.ga_invitation.tests.test_views import BizContractTestBase
+from biz.djangoapps.gx_students_register_batch.tests.factories import StudentsRegisterBatchTargetFactory
 from openedx.core.djangoapps.ga_task.models import Task
 from openedx.core.djangoapps.ga_task.tests.factories import TaskFactory
 from openedx.core.lib.ga_datetime_utils import to_timezone
@@ -783,9 +784,9 @@ class ContractOperationViewBulkStudentTest(BizContractTestBase):
         # assert not to be created new Task instance.
         self.assertEqual(1, Task.objects.count())
 
-    # # ------------------------------------------------------------
-    # # Personalinfo Mask
-    # # ------------------------------------------------------------
+    # ------------------------------------------------------------
+    # Personalinfo Mask
+    # ------------------------------------------------------------
     @property
     def _url_bulk_personalinfo_mask_students_ajax(self):
         return reverse('biz:contract_operation:bulk_personalinfo_mask_ajax')
@@ -987,6 +988,11 @@ class ContractOperationViewBulkStudentTest(BizContractTestBase):
             history=history, student=inputdata, message=message, completed=completed
         )
 
+    def _create_task_student_register_batch_target(self, history, inputdata='', message=None, completed=False):
+        return StudentsRegisterBatchTargetFactory.create(
+            history=history, student=inputdata, message=message, completed=completed
+        )
+
     def _assert_task_history(self, history, recid, task_type, state, requester, created, total=0, succeeded=0, skipped=0, failed=0, mes_recid=0, mes_message=None):
         self.assertEqual(history['recid'], recid)
         self.assertEqual(history['task_type'], task_type)
@@ -1008,13 +1014,17 @@ class ContractOperationViewBulkStudentTest(BizContractTestBase):
             self._create_task('student_member_register', 'key4', 'task_id4', 'SUCCESS', 1, 1, 1, 0, 0),
             self._create_task('additionalinfo_update', 'key5', 'task_id5', 'PROGRESS'),
             self._create_task('dummy_task', 'key6', 'tesk_id6', 'DUMMY'),
+            self._create_task('student_register_batch', 'key7', 'task_id7', 'SUCCESS', 1, 1, 1, 0, 0),
+            self._create_task('student_unregister_batch', 'key8', 'task_id8', 'SUCCESS', 1, 1, 1, 0, 0),
         ]
         # Create histories for target contract
-        histories = [ContractTaskHistoryFactory.create(contract=self.contract, requester=self.user) for i in range(7)]
+        histories = [ContractTaskHistoryFactory.create(contract=self.contract, requester=self.user) for i in range(9)]
         task_target_mask = self._create_task_mask_target(histories[0], message='message1')
         task_target_unregister = self._create_task_unregister_target(histories[1], message='message2')
         task_target_register = self._create_task_register_target(histories[2], message='message3')
         task_target_member_register = self._create_task_member_register_target(histories[3], message='message4')
+        task_target_student_register_batch = self._create_task_student_register_batch_target(histories[6], message='message5')
+        task_target_student_unregister_batch = self._create_task_student_register_batch_target(histories[7], message='message6')
         _now = datetime.now(pytz.UTC)
         for i, history in enumerate(histories):
             if i < len(tasks):
@@ -1030,12 +1040,14 @@ class ContractOperationViewBulkStudentTest(BizContractTestBase):
         self.assertEqual(200, response.status_code)
         data = json.loads(response.content)
         self.assertEqual('success', data['status'])
-        self.assertEqual(6, data['total'])
+        self.assertEqual(8, data['total'])
         records = data['records']
-        self._assert_task_history(records[0], 1, 'Unknown', 'Unknown', self.user.username, histories[5].created)
-        self._assert_task_history(records[1], 2, 'Additional Item Update', 'In Progress', self.user.username, histories[4].created)
-        self._assert_task_history(records[2], 3, 'Student Member Register', 'Complete', self.user.username, histories[3].created, 1, 1, 0, 0, task_target_member_register.id, 'message4')
-        self._assert_task_history(records[3], 4, 'Student Register', 'Waiting', self.user.username, histories[2].created, 1, 0, 0, 1, task_target_register.id, 'message3')
-        self._assert_task_history(records[4], 5, 'Student Unregister', 'Complete', self.user.username, histories[1].created, 1, 0, 1, 0, task_target_unregister.id, 'message2')
-        self._assert_task_history(records[5], 6, 'Personal Information Mask', 'Complete', self.user.username, histories[0].created, 1, 1, 0, 0, task_target_mask.id, 'message1')
+        self._assert_task_history(records[0], 1, 'Student Unregister Batch', 'Complete', self.user.username, histories[7].created, 1, 1, 0, 0, task_target_student_unregister_batch.id, 'message6')
+        self._assert_task_history(records[1], 2, 'Student Register Batch', 'Complete', self.user.username, histories[6].created, 1, 1, 0, 0, task_target_student_register_batch.id, 'message5')
+        self._assert_task_history(records[2], 3, 'Unknown', 'Unknown', self.user.username, histories[5].created)
+        self._assert_task_history(records[3], 4, 'Additional Item Update', 'In Progress', self.user.username, histories[4].created)
+        self._assert_task_history(records[4], 5, 'Student Member Register', 'Complete', self.user.username, histories[3].created, 1, 1, 0, 0, task_target_member_register.id, 'message4')
+        self._assert_task_history(records[5], 6, 'Student Register', 'Waiting', self.user.username, histories[2].created, 1, 0, 0, 1, task_target_register.id, 'message3')
+        self._assert_task_history(records[6], 7, 'Student Unregister', 'Complete', self.user.username, histories[1].created, 1, 0, 1, 0, task_target_unregister.id, 'message2')
+        self._assert_task_history(records[7], 8, 'Personal Information Mask', 'Complete', self.user.username, histories[0].created, 1, 1, 0, 0, task_target_mask.id, 'message1')
 

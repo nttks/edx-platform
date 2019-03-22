@@ -44,18 +44,201 @@ import json
         signInUser: "${reverse('signin_user')}",
         changeEmailSettings: "${reverse('change_email_settings')}"
       });
-      $('.js-search').on('keyup change', function() {
-        var searchText = $(this).val().toLowerCase();
-        $('.listing-courses>.course-item').each(function() {
-          var course = $(this), titleText = course.find('.course-title').text().toLowerCase().trim(),
-            courseIds = course.data('course-id').split(/[:+/]/).slice(-3);
-          if (titleText.indexOf(searchText) !== -1 || courseIds.join('\n').indexOf(searchText) !== -1) {
-            course.show();
-          } else {
-            course.hide();
+
+      /**  Custom Search Initialize
+       --------------------------------------------------*/
+      var NO_GENRE = '__GENRE_NULL__',
+              $courseWrapper = $('#my-courses .listing-courses'),
+              $searchGenre1 = $('.search-block [name=genre1]'),
+              $searchGenre2 = $('.search-block [name=genre2]'),
+              $searchStatus = $('.search-block [name=status]'),
+              $searchSortKey = $('.search-block [name=display-order]'),
+              $searchText = $('.js-search'),
+              $spDisplayBtn = $('#js-sp-display-btn'),
+              resizeTime = null,
+              tmpResizeWidth = null,
+              courseDataList = [];
+      // get course data
+      _.each($courseWrapper.find('.course-item'), function(el) {
+          var $el = $(el);
+          var statusOrder;
+          switch($el.data('course-status')) {
+              case 'previous':  statusOrder = 1; break;
+              case 'waiting':   statusOrder = 1; break;
+              case 'working':   statusOrder = 1; break;
+              case 'completed': statusOrder = 2; break;
+              case 'closing':   statusOrder = 2; break;
+              default:         statusOrder = 99; break;
           }
-        });
+          courseDataList.push({
+              el: $el.clone(true),
+              name: $el.data('course-name') || '',
+              priorityLast: $el.data('priority-last'),
+              forceLast: $el.data('force-last'),
+              genre1: $el.data('course-category'),
+              genre2: $el.data('course-category2'),
+              status: $el.data('course-status'),
+              statusOrder: statusOrder,
+              order: $el.data('course-order'),
+              startDate: $el.data('course-start-date'),
+              endDate: $el.data('course-end-date'),
+              enrollDate: $el.data('course-enroll-date')
+          });
       });
+
+      // sort course data for initial display
+      courseDataList = searchSort(courseDataList, [
+          ['forceLast', 'asc'], ['statusOrder', 'asc'], ['priorityLast', 'asc'], ['order', 'asc'], ['name', 'asc']]);
+      displayCourseList(courseDataList);
+      // for sp display/hidden search block
+      $spDisplayBtn.on('click', function() {
+          if ($(this).data('active') === 0) {
+              $(this).data('active', 1);
+              $(this).find('i').removeClass('fa-plus').addClass('fa-minus');
+              $('.search-item').show();
+          } else {
+              $(this).data('active', 0);
+              $(this).find('i').removeClass('fa-minus').addClass('fa-plus');
+              $('.search-item').hide();
+          }
+      });
+      $(window).on('load', function() {
+          tmpResizeWidth = window.innerWidth;
+      });
+      $(window).on('resize', function() {
+          clearTimeout(resizeTime);
+          resizeTime = setTimeout(function() {
+              var resizeWidth = window.innerWidth;
+              if (tmpResizeWidth <= 1120 && resizeWidth > 1120 && $spDisplayBtn.data('active') === 0) {
+                  $spDisplayBtn.trigger('click');
+              } else if (tmpResizeWidth > 1120 && resizeWidth <= 1120 && $spDisplayBtn.data('active') === 1) {
+                  $spDisplayBtn.trigger('click');
+              }
+              tmpResizeWidth = resizeWidth;
+          }, 300);
+      });
+
+
+      /** Custom Search Event Binding
+       --------------------------------------------------*/
+      // Reset
+      $('.search-block .search-reset').on('click', function() {
+          $('.search-block select').val('');
+          $('.search-block input[name=display_order_type]:eq(0)').click();
+          // refresh search
+          $searchGenre1.trigger('change');
+      });
+      // Search
+      $('.js-search').on('keyup change', function() {
+        $searchGenre1.trigger('change');
+      });
+      $('.search-block select,.search-block input[name=display_order_type]').on('change', function() {
+          var $this = $(this);
+          // Reset genre2 when changed genre1
+          if ($this.attr('name') === 'genre1') {
+              if ($this.val() === '' || $this.val() === NO_GENRE) {
+                  $searchGenre2.val('').prop('disabled', true);
+              } else {
+                  $searchGenre2.val('').prop('disabled', false);
+                  _.each($searchGenre2.find('option'), function(el) {
+                      if ($(el).val() === '' || $(el).val() === NO_GENRE || $(el).data('genre1') === $this.val()) {
+                          $(el).show();
+                      } else {
+                          $(el).hide();
+                      }
+                  });
+              }
+          }
+          $courseWrapper.hide();
+          displayCourseList(searchCourseList(courseDataList));
+      });
+      function searchCourseList(dataList) {
+          var displayList = [];
+          _.each(dataList, function(course) {
+              var displayFlg = true;
+              _.each({
+                  name: $searchText.val().toLowerCase(),
+                  genre1: $searchGenre1.val(),
+                  genre2: $searchGenre2.val(),
+                  status: $searchStatus.val()
+              }, function(val, key) {
+                  if (val !== '') {
+                      if (key === 'name') {
+                          if (course[key].toLowerCase().trim().indexOf(val) === -1) {
+                              displayFlg = false;
+                          }
+                      } else if (val === NO_GENRE) {
+                          if (course[key] !== '') {
+                              displayFlg = false;
+                          }
+                      } else {
+                          if (course[key] !== val) {
+                              displayFlg = false;
+                          }
+                      }
+                  }
+              });
+              if (displayFlg) {
+                  displayList.push(course);
+              }
+          });
+
+          // sort course
+          var sortType = $('.search-block [name=display_order_type]:checked').val();
+          switch($searchSortKey.val()) {
+              case 'priority':
+                  displayList = searchSort(displayList, [
+                      ['order', sortType], ['statusOrder', 'asc'], ['name', 'asc']]);
+                  break;
+              case 'name':
+                  displayList = searchSort(displayList, [
+                      ['name', sortType], ['statusOrder', 'asc'], ['order', 'asc']]);
+                  break;
+              case 'enroll_date':
+                  displayList = searchSort(displayList, [
+                      ['enrollDate', sortType], ['statusOrder', 'asc'], ['order', 'asc'], ['name', 'asc']]);
+                  break;
+              case 'start_date':
+                  displayList = searchSort(displayList, [
+                      ['startDate', sortType], ['statusOrder', 'asc'], ['order', 'asc'], ['name', 'asc']]);
+                  break;
+              case 'end_date':
+                  displayList = searchSort(displayList, [
+                      ['endDate', sortType], ['statusOrder', 'asc'], ['order', 'asc'], ['name', 'asc']]);
+                  break;
+              default:
+                  displayList = searchSort(displayList, [
+                      ['forceLast', 'asc'], ['statusOrder', 'asc'], ['priorityLast', 'asc'], ['order', 'asc'],
+                      ['name', 'asc']]);
+                  break;
+          }
+          return displayList;
+      }
+      function searchSort(dataList, sortKeyList) {
+          return dataList.sort(function(a, b) {
+              var result = 0;
+              for (var i = 0; i < sortKeyList.length; i++) {
+                  if (a[sortKeyList[i][0]] > b[sortKeyList[i][0]]) {
+                      result = sortKeyList[i][1] === 'asc' ? 1 : -1;
+                  } else if (a[sortKeyList[i][0]] < b[sortKeyList[i][0]]) {
+                      result = sortKeyList[i][1] === 'asc' ? -1 : 1;
+                  }
+                  if (result !== 0) {
+                      break;
+                  }
+              }
+              if (result !== 0) {
+                  return result;
+              }
+          });
+      }
+      function displayCourseList(dataList) {
+          $courseWrapper.html('');
+          _.each(dataList, function(item) {
+              $courseWrapper.append(item.el.clone(true));
+          });
+          $courseWrapper.show();
+      };
     });
   </script>
   % if settings.FEATURES.get('ENABLE_DASHBOARD_SEARCH'):
@@ -87,6 +270,10 @@ import json
 </div>
 
 <section class="container dashboard" id="dashboard-main">
+  <!-- search-block -->
+  <%include file='dashboard/_dashboard_search_block.html' args="search_genre1_list=search_genre1_list,search_genre2_list=search_genre2_list" />
+  <!-- ./search-block -->
+
   <section id="dashboard-sidebar">
     % if settings.FEATURES.get('ENABLE_DASHBOARD_SEARCH'):
       <div id="dashboard-search-bar" class="search-bar dashboard-search-bar" role="search" aria-label="Dashboard">
@@ -135,9 +322,8 @@ import json
       <div class="search-box"><input class="js-search" type="search" placeholder="${_("Search...")}"></div>
     </header>
 
-
     % if len(course_enrollments) > 0:
-      <ul class="listing-courses">
+      <ul class="listing-courses" style="display:none;">
       <% share_settings = getattr(settings, 'SOCIAL_SHARING_SETTINGS', {}) %>
       % for dashboard_index, enrollment in enumerate(course_enrollments):
         <% show_courseware_link = (enrollment.course_id in show_courseware_links_for) %>
@@ -153,7 +339,11 @@ import json
         <% course_requirements = courses_requirements_not_met.get(enrollment.course_id) %>
         <% course_program_info = course_programs.get(unicode(enrollment.course_id)) %>
         <% advanced_course_status = advanced_course_statuses.get(enrollment.course_id) %>
-        <%include file = 'dashboard/_dashboard_course_listing.html' args="course_overview=enrollment.course_overview, enrollment=enrollment, show_courseware_link=show_courseware_link, cert_status=cert_status, can_unenroll=can_unenroll, credit_status=credit_status, show_email_settings=show_email_settings, course_mode_info=course_mode_info, show_refund_option=show_refund_option, is_paid_course=is_paid_course, is_course_blocked=is_course_blocked, verification_status=course_verification_status, course_requirements=course_requirements, dashboard_index=dashboard_index, share_settings=share_settings, user=user, course_program_info=course_program_info, advanced_course_status=advanced_course_status" />
+        <% enroll_status = enroll_statuses[enrollment.course_id] %>
+        <% course_category = course_categories[enrollment.course_id] %>
+        <% course_order = course_orders[enrollment.course_id] %>
+        <% course_enroll_date = course_enroll_dates[enrollment.course_id] %>
+        <%include file = 'dashboard/_dashboard_course_listing.html' args="course_overview=enrollment.course_overview, enrollment=enrollment, show_courseware_link=show_courseware_link, cert_status=cert_status, can_unenroll=can_unenroll, credit_status=credit_status, show_email_settings=show_email_settings, course_mode_info=course_mode_info, show_refund_option=show_refund_option, is_paid_course=is_paid_course, is_course_blocked=is_course_blocked, verification_status=course_verification_status, course_requirements=course_requirements, dashboard_index=dashboard_index, share_settings=share_settings, user=user, course_program_info=course_program_info, advanced_course_status=advanced_course_status, enroll_status=enroll_status, course_category=course_category, course_order=course_order, course_enroll_date=course_enroll_date" />
       % endfor
 
       </ul>

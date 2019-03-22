@@ -26,11 +26,11 @@ class MemberTsv:
         self.header_columns[FIELD_GROUP_CODE] = _("Organization Code")
         self.header_columns[FIELD_CODE] = _("Member Code")
         self.header_columns[FIELD_EMAIL] = _("Email Address")
+        self.header_columns[FIELD_USERNAME] = _("Username")
         self.header_columns[FIELD_FIRST_NAME] = _("Last Name")
         self.header_columns[FIELD_LAST_NAME] = _("First Name")
-        self.header_columns[FIELD_PASSWORD] = _("Password")
-        self.header_columns[FIELD_USERNAME] = _("Username")
         self.header_columns[FIELD_LOGIN_CODE] = _("Login Code")
+        self.header_columns[FIELD_PASSWORD] = _("Password")
         for i in range(1, 11):
             self.header_columns[FIELD_ORG_NUMBER + str(i)] = _("Organization") + str(i)
         for i in range(1, 11):

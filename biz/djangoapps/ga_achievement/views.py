@@ -7,6 +7,7 @@ import logging
 import numbers
 from collections import OrderedDict
 from datetime import datetime
+from string import Template
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
@@ -21,7 +22,7 @@ from biz.djangoapps.gx_member.models import Member
 from biz.djangoapps.util import datetime_utils
 from biz.djangoapps.util.json_utils import EscapedEdxJSONEncoder
 from biz.djangoapps.util.decorators import check_course_selection, check_organization_group
-from biz.djangoapps.util.unicodetsv_utils import create_tsv_response
+from biz.djangoapps.util.unicodetsv_utils import create_tsv_response, create_csv_response_double_quote
 
 from edxmako.shortcuts import render_to_response
 from util.file import course_filename_prefix_generator
@@ -350,9 +351,16 @@ def score_download_csv(request):
         csv_name='score_status',
         timestamp_str=update_datetime,
     )
-    response = create_tsv_response(filename, header, datarows)
-    response['Set-Cookie'] = 'fileDownload=true; path=/'
-    return response
+    if 'encode' not in request.POST:
+        request.POST['encode'] = 'false'
+    if request.POST['encode'] == 'false':
+        response = create_csv_response_double_quote(filename, header, datarows)
+        response['Set-Cookie'] = 'fileDownload=true; path=/'
+        return response
+    elif request.POST['encode'] == 'true':
+        response = create_tsv_response(filename, header, datarows)
+        response['Set-Cookie'] = 'fileDownload=true; path=/'
+        return response
 
 
 @require_POST
@@ -468,9 +476,16 @@ def playback_download_csv(request):
         csv_name='playback_status',
         timestamp_str=update_datetime,
     )
-    response = create_tsv_response(filename, header, datarows)
-    response['Set-Cookie'] = 'fileDownload=true; path=/'
-    return response
+    if 'encode' not in request.POST:
+        request.POST['encode'] = 'false'
+    if request.POST['encode'] == 'false':
+        response = create_csv_response_double_quote(filename, header, datarows)
+        response['Set-Cookie'] = 'fileDownload=true; path=/'
+        return response
+    elif request.POST['encode'] == 'true':
+        response = create_tsv_response(filename, header, datarows)
+        response['Set-Cookie'] = 'fileDownload=true; path=/'
+        return response
 
 
 def _get_member_org_item_list():

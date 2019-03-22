@@ -5,6 +5,7 @@ from contextlib import nested
 from datetime import timedelta
 import ddt
 from mock import patch
+from unittest import skip
 
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
@@ -15,7 +16,7 @@ from courseware.access_utils import ACCESS_DENIED, ACCESS_GRANTED
 from courseware.tests.helpers import LoginEnrollmentTestCase
 from opaque_keys.edx.keys import CourseKey
 from student.roles import CourseBetaTesterRole, CourseStaffRole, GaCourseScorerRole, GaGlobalCourseCreatorRole, GaOldCourseViewerStaffRole, GlobalStaff
-from student.tests.factories import UserFactory
+from student.tests.factories import UserFactory, CourseEnrollmentFactory
 from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
 from xmodule.modulestore.tests.factories import CourseFactory, ItemFactory
 
@@ -298,6 +299,7 @@ class CourseAboutTest(SpocStatusTestBase):
 
     def test_not_spoc_course_with_not_logged_in(self):
         self.setup_user()
+        CourseEnrollmentFactory(user=self.user, course_id=self.course.id)
 
         # Create Contract as SPOC
         contract_detail = self._create_contract(
@@ -397,6 +399,7 @@ class CourseAboutTest(SpocStatusTestBase):
         )
         # Create ContractRegister as having SPOC access
         self._create_contract_register(self.user, contract_detail.contract, INPUT_INVITATION_CODE)
+        CourseEnrollmentFactory(user=self.user, course_id=self.course.id)
 
         url = reverse('about_course', args=[self.course.id.to_deprecated_string()])
         with patch('courseware.views.log.warning') as warning_log:
@@ -429,6 +432,7 @@ class CourseAboutTest(SpocStatusTestBase):
 
     def test_spoc_course_with_course_staff(self):
         self.setup_user()
+        CourseEnrollmentFactory(user=self.user, course_id=self.course.id)
 
         # Make user to course staff
         CourseStaffRole(self.course.id).add_users(User.objects.get(pk=self.user.id))
@@ -498,6 +502,7 @@ class CourseInfoTest(SpocStatusTestBase):
 
     def test_spoc_course_with_not_logged_in(self):
         self.setup_user()
+        CourseEnrollmentFactory(user=self.user, course_id=self.course.id)
 
         # Create Contract as SPOC
         contract_detail = self._create_contract(
@@ -516,6 +521,7 @@ class CourseInfoTest(SpocStatusTestBase):
 
     def test_not_spoc_course_with_not_logged_in(self):
         self.setup_user()
+        CourseEnrollmentFactory(user=self.user, course_id=self.course.id)
 
         # Create Contract as SPOC
         contract_detail = self._create_contract(
@@ -542,6 +548,7 @@ class CourseInfoTest(SpocStatusTestBase):
     )
     def test_spoc_course_with_has_access(self, contract_type, status):
         self.setup_user()
+        CourseEnrollmentFactory(user=self.user, course_id=self.course.id)
 
         # Create Contract as SPOC
         contract_detail = self._create_contract(
@@ -559,6 +566,7 @@ class CourseInfoTest(SpocStatusTestBase):
 
     def test_not_spoc_with_not_has_access(self):
         self.setup_user()
+        CourseEnrollmentFactory(user=self.user, course_id=self.course.id)
 
         # Create Contract as not SPOC
         contract_detail = self._create_contract(
@@ -579,6 +587,7 @@ class CourseInfoTest(SpocStatusTestBase):
     )
     def test_spoc_course_with_not_has_access(self, contract_type):
         self.setup_user()
+        CourseEnrollmentFactory(user=self.user, course_id=self.course.id)
 
         # Create Contract but not SPOC
         contract_detail = self._create_contract(
@@ -605,6 +614,7 @@ class CourseInfoTest(SpocStatusTestBase):
     )
     def test_spoc_course_with_disabled_contract(self, contract_type):
         self.setup_user()
+        CourseEnrollmentFactory(user=self.user, course_id=self.course.id)
 
         # Create Contract but disabled
         contract_detail = self._create_contract(
@@ -628,6 +638,7 @@ class CourseInfoTest(SpocStatusTestBase):
 
     def test_spoc_course_with_global_staff(self):
         self.setup_user()
+        CourseEnrollmentFactory(user=self.user, course_id=self.course.id)
 
         # Make user to global_staff
         self.user.is_staff = True
@@ -647,6 +658,7 @@ class CourseInfoTest(SpocStatusTestBase):
 
     def test_spoc_course_with_course_staff(self):
         self.setup_user()
+        CourseEnrollmentFactory(user=self.user, course_id=self.course.id)
 
         # Make user to course staff
         CourseStaffRole(self.course.id).add_users(User.objects.get(pk=self.user.id))
@@ -665,6 +677,7 @@ class CourseInfoTest(SpocStatusTestBase):
 
     def test_spoc_course_with_ga_global_course_creator(self):
         self.setup_user()
+        CourseEnrollmentFactory(user=self.user, course_id=self.course.id)
 
         # Make user to ga_global_course_creator
         GaGlobalCourseCreatorRole().add_users(User.objects.get(pk=self.user.id))
@@ -683,6 +696,7 @@ class CourseInfoTest(SpocStatusTestBase):
 
     def test_spoc_course_with_ga_course_scorer(self):
         self.setup_user()
+        CourseEnrollmentFactory(user=self.user, course_id=self.course.id)
 
         # Make user to ga_course_scorer
         GaCourseScorerRole(self.course.id).add_users(User.objects.get(pk=self.user.id))

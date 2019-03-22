@@ -89,8 +89,10 @@ def create_csv_response(filename, header, rows, encoding='cp932'):
     filename = urllib.quote(filename.encode("utf-8"))
     response['Content-Disposition'] = "attachment; filename*=UTF-8''{0}".format(filename)
     writer = CSVWriter(f=response, encoding=encoding)
-    writer.writerow(header)
-    writer.writerows(rows)
+    if header is not None:
+        writer.writerow(header)
+    if rows is not None:
+        writer.writerows(rows)
     return response
 
 
@@ -100,7 +102,48 @@ def get_sjis_csv(request, filename, delimiter=','):
 
     result = []
     for line in tmp_sjis_str.splitlines():
+        if line:
+            line = line.replace('"', '')
         if line.strip():
             result.append(line.split(delimiter))
 
     return result
+
+
+class CSVWriterDoubleQuote(object):
+    def __init__(self, f, encoding='cp932', delimiter=',', **kwargs):
+        self.queue = StringIO()
+        self.writer = csv.writer(self.queue, delimiter=delimiter, quoting=csv.QUOTE_ALL, escapechar=None, **kwargs)
+        self.stream = f
+        self.encoder = codecs.getincrementalencoder(encoding)()
+
+    def writerow(self, row):
+        self.writer.writerow([unicode(s).encode('cp932', 'ignore') for s in row])
+        data = self.queue.getvalue()
+        data = data.decode('cp932')
+        data = self.encoder.encode(data)
+        self.stream.write(data)
+        self.queue.truncate(0)
+
+    def writerows(self, rows):
+        for row in rows:
+            self.writerow(row)
+
+
+def create_csv_response_double_quote(filename, header, rows, encoding='cp932'):
+    """
+    :param filename: output_file_name
+    :param header: csv_header
+    :param rows: csv_rows
+    :param encoding: default utf-16
+    :return: http_output
+    """
+    response = HttpResponse(content_type='text/csv')
+    filename = urllib.quote(filename.encode("utf-8"))
+    response['Content-Disposition'] = "attachment; filename*=UTF-8''{0}".format(filename)
+    writer = CSVWriterDoubleQuote(f=response, encoding=encoding)
+    writer.writerow(header)
+    writer.writerows(rows)
+    return response
+
+

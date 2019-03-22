@@ -1,8 +1,17 @@
+# -*- coding: utf-8 -*-
 """
 Views for contract feature
 """
+import os
 import re
+import csv
+import codecs
 import logging
+import  shutil
+from boto import connect_s3
+from boto.s3.key import Key
+from datetime import datetime
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import transaction
 from django.http import JsonResponse
@@ -21,7 +30,15 @@ from biz.djangoapps.gx_register_api.models import APIContractMail, APIGatewayKey
 from biz.djangoapps.gx_sso_config.models import SsoConfig
 from biz.djangoapps.gx_username_rule.models import OrgUsernameRule
 
+from biz.djangoapps.gx_member.models import Member
+from biz.djangoapps.gx_students_register_batch.models import S3BucketName
+from biz.djangoapps.util.unicodetsv_utils import create_csv_response
+
 log = logging.getLogger(__name__)
+
+
+LOCAL_DIR = '/tmp/'
+TARGET_PATH = 'input_data'
 
 def code_dict(user_email='', prefix=''):
     """
@@ -42,10 +59,14 @@ def code_dict(user_email='', prefix=''):
     '19':{"code":"19", "message":"{} is not taking classes. Or, attendance registration has been canceled".format(user_email)},
     '20':{"code":"20", "message":"Please a method of POST or DELETE"},
     '21':{"code":"21", "message":"not enough url"},
+    '22':{"code":"22", "message":"Please a method of POST"},
+    '23':{"code":"23", "message":"An unexpected error occurred"},
+    '24':{"code":"24", "message":"The number of characters of additional information exceeds 255 characters"},
     '30':{"code":"30", "message":"You got success! student: {} register. And send mail.".format(user_email)},
     '31':{"code":"31", "message":"You got success! student: {} register. And not send mail.".format(user_email)},
     '32':{"code":"32", "message":"Mail information of the current contract is not registered in the database. So, Did not send mail."},
     '33':{"code":"33", "message":"You got success! student: {} unregister.".format(user_email)},
+    '34':{"code":"34", "message":"Has completed. It will be reflected in tomorrow."},
     }
     return code
 
@@ -203,4 +224,161 @@ def post_user_name(request, org_id, contract_id, user_email):
     else:
         return JsonResponse(code['20'], status=400)
 
+
+@csrf_exempt
+def post_all(request, org_id, contract_id):
+    code = code_dict()
+    if request.method not in ['POST', 'DELETE']:
+        return JsonResponse(code['20'], status=400)
+    # check Amazon API Gateway api_key
+    if not 'HTTP_X_API_KEY' in request.META:
+        return JsonResponse(code['21'], status=400)
+    org, contract, __ = _get_api_data(org_id, contract_id)
+    error_code = _validation_api_data(org, contract, code, request.META['HTTP_X_API_KEY'])
+    if error_code:
+        return JsonResponse(error_code, status=400)
+    filename = _create_csv_file(request, 'all', org)
+    if filename == 'add_error':
+        return JsonResponse(code['24'], status=400)
+    try:
+        _upload_s3_bucket(org_id, contract_id, filename)
+        _delete_local_file(filename)
+        log.info('Success Upload File All')
+        return JsonResponse(code['34'])
+    except Exception as e:
+        log.info(e)
+        _delete_local_file(filename)
+        return JsonResponse(code['23'], status=400)
+
+
+@csrf_exempt
+def post_group(request, org_id, contract_id):
+    code = code_dict()
+    if request.method != 'POST':
+        return JsonResponse(code['22'], status=400)
+    # check Amazon API Gateway api_key
+    if not 'HTTP_X_API_KEY' in request.META:
+        return JsonResponse(code['21'], status=400)
+    org, contract, __ = _get_api_data(org_id, contract_id)
+    error_code = _validation_api_data(org, contract, code, request.META['HTTP_X_API_KEY'])
+    if error_code:
+        return JsonResponse(error_code, status=400)
+    filename = _create_csv_file(request, 'group', org)
+    if filename == 'add_error':
+        return JsonResponse(code['24'], status=400)
+    try:
+        _upload_s3_bucket(org_id, contract_id, filename)
+        _delete_local_file(filename)
+        log.info('Success Upload File Group')
+        return JsonResponse(code['34'])
+    except Exception as e:
+        log.info(e)
+        _delete_local_file(filename)
+        return JsonResponse(code['23'], status=400)
+
+
+
+def _get_post_data(request):
+    """
+    create columns
+    :param request:
+    :return: -> list ['value1', ~  '', 'value10', 'link_url1', 'link_url2'], -> str 'add_error' or ''
+    """
+    add = []
+    for i in range(1, 11):
+        if 'add_' + str(i) in request.POST:
+            if len(request.POST['add_' + str(i)]) > 255:
+                return [], 'add_error'
+            add += [' '] if request.POST['add_' + str(i)] == '' else [request.POST['add_' + str(i)]]
+        else:
+            add += ['']
+    return [add + [request.POST['link_url' + str(i)] if 'link_url' + str(i) in request.POST else '' for i in range(1, 3)], '']
+
+
+def _get_emails(request, org, type):
+    """
+    :param org: -> objects Organization
+    :param type: -> str 'all' or 'group'
+    :return: -> list emails ['xxx@xxx.xx,', 'yyy@yyy.yy,']
+    """
+    strip_extra = re.compile(r'[\"\'|\[|\]|\s]')
+    email_check = re.compile(r'^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$')
+    if type == 'group':
+        return [[email] for email in re.split(',', re.sub(strip_extra, '', request.POST['email'])) if bool(re.search(email_check, email))] if 'email' in request.POST else []
+    return [[x['user__email']] for x in Member.objects.filter(org=org, is_active=True).values('user__email')]
+
+
+def _get_date_format():
+    """
+    :return: -> str '201902080942485'
+    """
+    return datetime.now().strftime('%Y%m%d%H%M%S%f')[:-5]
+
+
+def _create_header():
+    return ['email'] + ['add_' + str(i) for i in range(1, 11)] + ['link_url1', 'link_url2']
+
+
+def _create_record(request, org, type):
+    """
+    :param request:
+    :param header_length: -> int 1 or
+    :param org: -> object Organization
+    :param type: -> str 'all' or 'group'
+    :return:
+    """
+    data, message = _get_post_data(request)
+    if message:
+        return [], message
+    return [email + data for email in _get_emails(request, org, type)], ''
+
+
+def _create_csv_file(request, type, org):
+    """
+    :param request:
+    :param type: -> str 'all' or 'group'
+    :param org: -> object Organization
+    :return:
+    """
+    header = _create_header()
+    data, message = _create_record(request, org, type)
+    if message:
+        return message
+    send_mail_flg = request.POST['send_mail_flg'] if 'send_mail_flg' in request.POST and request.POST['send_mail_flg'] == '1' else '0'
+    filename = 'student_' + type + '_' + request.method + '_' + _get_date_format() + '_' + send_mail_flg + '.csv'
+    response = create_csv_response(filename, header, data)
+    with codecs.open(LOCAL_DIR + filename, 'w', 'SJIS') as f:
+        f.writer.writelines(response.content.decode('SJIS'))
+    return filename
+
+
+def _s3_connect(org_id, contract_id, filename):
+    """
+    :param org_id: -> int id
+    :param contract_id: -> int id
+    :param filename: -> str 'aaaaa.csv'
+    :return:
+    """
+    bucket_name = S3BucketName.objects.get(type='student_register_batch').bucket_name
+    # conn = connect_s3(settings.AWS_ACCESS_KEY_ID, settings.AWS_SECRET_ACCESS_KEY)
+    conn = connect_s3()
+    bucket = conn.get_bucket(bucket_name)
+    key = Key(bucket)
+    key.key = org_id + '/' + contract_id + '/' + TARGET_PATH + '/' + filename
+    return key
+
+
+def _upload_s3_bucket(org_id, contract_id, filename):
+    """
+    :param bucket_info: -> object S3BucketFilePath
+    :param filename: -> str 'aaaaa.csv':
+    :return:
+    """
+    upload_key = _s3_connect(org_id, contract_id, filename)
+    upload_key.set_contents_from_filename(LOCAL_DIR + filename)
+    return '{} file uploading is complete'.format(filename)
+
+def _delete_local_file(filename):
+    if os.path.exists('/tmp/' + filename):
+        os.remove('/tmp/' + filename)
 

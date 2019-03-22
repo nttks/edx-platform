@@ -7,11 +7,39 @@ from django.utils.translation import ugettext as _
 
 from biz.djangoapps.ga_organization.models import Organization
 from biz.djangoapps.ga_contract_operation.tasks import TASKS as CONTRACT_OPERATION_TASKS
-from biz.djangoapps.gx_member.tasks import TASKS as MEMBER_TASKS
+from biz.djangoapps.gx_member.tasks import TASKS as ORGANIZATION_TASKS
 from openedx.core.djangoapps.ga_task import api as task_api
 from openedx.core.djangoapps.ga_task.models import Task
+from openedx.core.djangoapps.ga_task.api import AlreadyRunningError
+from util.json_request import JsonResponse, JsonResponseBadRequest
 
 log = logging.getLogger(__name__)
+
+
+def submit_org_task(request, org, task_input, task_type, task_class, history_cls, history):
+    try:
+        # Check the task running within the same current_organization.
+        validate_task_message = validate_task(org)
+        if validate_task_message:
+            return JsonResponseBadRequest({
+                'error': validate_task_message,
+            })
+
+        # task prevents duplicate execution by current_organization_id
+        task = submit_task(request, task_type, task_class, task_input, get_org_task_key(org))
+        history = history_cls.objects.get(pk=history.id)
+        history.link_to_task(task)
+
+    except AlreadyRunningError:
+        return JsonResponseBadRequest({
+            'error': _("Processing of {task_type} is running.").format(task_type=ORGANIZATION_TASKS[task_type]) +
+            _("Execution status, please check from the task history."),
+        })
+
+    return JsonResponse({
+        'info': _("Began the processing of {task_type}.")
+                    .format(task_type=ORGANIZATION_TASKS[task_type]) + _("Execution status, please check from the task history."),
+    })
 
 
 def submit_task(request, task_type, task_class, task_input, task_key, queue=None):
@@ -49,7 +77,7 @@ def validate_task(key_model):
 def _get_task_type_name_by_task_type(task_type):
     tasks = {}
     tasks.update(CONTRACT_OPERATION_TASKS)
-    tasks.update(MEMBER_TASKS)
+    tasks.update(ORGANIZATION_TASKS)
     return tasks[task_type]
 
 

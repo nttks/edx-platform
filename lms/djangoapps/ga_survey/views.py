@@ -4,15 +4,24 @@ Views for Survey
 import json
 import logging
 from urlparse import parse_qsl
+from datetime import datetime
+from opaque_keys.edx.keys import CourseKey
 
+from xmodule.modulestore.django import modulestore
+from pytz import timezone
+from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.http import Http404
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.http import require_POST
+from django.utils.timezone import UTC
 
+from lms.djangoapps.courseware.courses import get_course
 from ga_survey.models import SurveySubmission
+from student.models import CourseEnrollment, CourseEnrollmentAttribute
 from opaque_keys.edx.locator import CourseLocator
 from util.json_request import JsonResponse
+from util.ga_attendance_status import AttendanceStatusExecutor
 
 
 log = logging.getLogger(__name__)
@@ -97,4 +106,17 @@ def survey_ajax(request):
         survey_answer=survey_answer,
     )
     submission.save()
+
+    course_key = CourseKey.from_string(course_id)
+    course = get_course(course_key)
+
+    if course.is_status_managed:
+        course_enrollment = CourseEnrollment.objects.get(user=request.user.id,
+                                                         course_id=course_key)
+        executor = AttendanceStatusExecutor(enrollment=course_enrollment)
+        if not executor.is_completed:
+            status_check = executor.check_attendance_status(course, request.user.id)
+            if status_check:
+                executor.set_completed(datetime.now(UTC()))
+
     return JsonResponse({'success': True})

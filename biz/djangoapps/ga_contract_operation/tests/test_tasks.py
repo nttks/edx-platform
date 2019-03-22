@@ -1142,10 +1142,10 @@ class PersonalinfoMaskTaskTest(BizTestBase, ModuleStoreTestCase, ThirdPartyAuthT
         # ----------------------------------------------------------
         self.random_value = 'test1'
         with patch(
-            'biz.djangoapps.ga_contract_operation.personalinfo._PersonalinfoMaskExecutor.check_enrollment'
+            'biz.djangoapps.ga_contract_operation.utils.PersonalinfoMaskExecutor.check_enrollment'
         ) as mock_check_enrollment:
             # raise Exception at last call
-            mock_check_enrollment.side_effect = [True, True, True, True, Exception]
+            mock_check_enrollment.side_effect = [None, None, None, None, Exception]
             self._test_run_with_task(personalinfo_mask, 'personalinfo_mask', 4, 0, 1, 5, 5, entry)
 
         # ----------------------------------------------------------
@@ -1198,10 +1198,10 @@ class PersonalinfoMaskTaskTest(BizTestBase, ModuleStoreTestCase, ThirdPartyAuthT
         # ----------------------------------------------------------
         self.random_value = 'test1'
         with patch(
-            'biz.djangoapps.ga_contract_operation.personalinfo._PersonalinfoMaskExecutor.check_enrollment'
+            'biz.djangoapps.ga_contract_operation.utils.PersonalinfoMaskExecutor.check_enrollment'
         ) as mock_check_enrollment:
             # raise Exception at last call
-            mock_check_enrollment.side_effect = [True, True, True, True, Exception]
+            mock_check_enrollment.side_effect = [None, None, None, None, Exception]
             self._test_run_with_task(personalinfo_mask, 'personalinfo_mask', 4, 0, 1, 5, 5, entry)
 
         # ----------------------------------------------------------

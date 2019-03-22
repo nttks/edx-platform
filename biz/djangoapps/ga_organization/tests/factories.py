@@ -1,6 +1,6 @@
 from factory.django import DjangoModelFactory
 
-from biz.djangoapps.ga_organization.models import Organization
+from biz.djangoapps.ga_organization.models import Organization, OrganizationOption
 
 
 class OrganizationFactory(DjangoModelFactory):
@@ -9,3 +9,8 @@ class OrganizationFactory(DjangoModelFactory):
         model = Organization
 
     org_name = 'test organization'
+
+class OrganizationOptionFactory(DjangoModelFactory):
+    """Factory for the OrganizationOption model"""
+    class Meta(object):
+        model = OrganizationOption

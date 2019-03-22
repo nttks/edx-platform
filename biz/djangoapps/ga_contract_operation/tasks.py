@@ -12,7 +12,7 @@ from biz.djangoapps.ga_contract_operation.student_unregister import perform_dele
 from openedx.core.djangoapps.ga_task.task import BaseTask, run_main_task
 
 from biz.djangoapps.ga_contract_operation.student_member_register import perform_delegate_student_member_register
-
+from biz.djangoapps.gx_students_register_batch.models import STUDENT_REGISTER_BATCH, STUDENT_UNREGISTER_BATCH
 
 PERSONALINFO_MASK = 'personalinfo_mask'
 STUDENT_REGISTER = 'student_register'
@@ -25,6 +25,8 @@ TASKS = {
     STUDENT_UNREGISTER: _("Student Unregister"),
     ADDITIONALINFO_UPDATE: _("Additional Item Update"),
     STUDENT_MEMBER_REGISTER: _("Student Member Register"),
+    STUDENT_REGISTER_BATCH: _("Student Register Batch"),
+    STUDENT_UNREGISTER_BATCH: _("Student Unregister Batch"),
 }
 
 
