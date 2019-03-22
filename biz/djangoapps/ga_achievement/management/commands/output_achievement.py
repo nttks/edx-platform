@@ -280,8 +280,8 @@ class Command(BaseCommand):
                     continue
                 if course_mongo.start > datetime.datetime.now(timezone(settings.TIME_ZONE_DISPLAYED_FOR_DEADLINES)):
                     continue
-                if course_mongo.terminate_start:
-                    course_endline = course_mongo.terminate_start + datetime.timedelta(days=3)
+                if course_mongo.end:
+                    course_endline = course_mongo.end + datetime.timedelta(days=3)
                     if course_endline < datetime.datetime.now(timezone(settings.TIME_ZONE_DISPLAYED_FOR_DEADLINES)):
                         continue
 
