@@ -1,0 +1,696 @@
+<%inherit file="../main_biz.html" />
+<%namespace name="static" file="../static_content.html" />
+<%!
+from django.utils.translation import ugettext as _
+from django.core.urlresolvers import reverse
+%>
+
+<%block name="pagetitle">${_('Save condition for registration')}</%block>
+
+<%block name="js_extra">
+<script type="text/javascript">
+    var grid = grid || [];
+
+    $(function () {
+        $(document).on("keypress", "input:not(.allow_submit)", function (event) {
+            return event.which !== 13;
+        });
+        /** ------------------------------------
+         * Initialize
+         * ------------------------------------*/
+        var $conditions = $('#js-conditions');
+        var $reflectionDate = $('#js-reflection-date');
+        var $reflectionDateStr = $('#js-reservation-date-str');
+        var $reservationDateBtn = $('#js-reservation-date-btn');
+        var $cancelReservationBtn = $('#js-cancel-reservation-btn');
+        var $autoRegisterStudentsFlg = $('#js-auto-register-students-flg');
+
+        $(${show_p_condition_list}).each(function(index, value) {
+            createElementByDummy(value.id, value.parent_condition_name, index+1 );
+        });
+        $reflectionDate.w2field('date', {format: 'yyyy/mm/dd'});
+
+        % if auto_register_students_flag == True:
+            $autoRegisterStudentsFlg.data('flg', 1);
+            $('#js-auto-register-students-flg-on').prop('checked', true);
+            $reflectionDate.prop('disabled', true);
+            $reservationDateBtn.prop('disabled', true);
+            $cancelReservationBtn.prop('disabled', true);
+        % else:
+            % if auto_register_reservation_date:
+                $reflectionDate.prop('disabled', true);
+                $reservationDateBtn.prop('disabled', true);
+                $cancelReservationBtn.prop('disabled', false);
+                $autoRegisterStudentsFlg.find('input[name=auto_register_students_flg]').prop('disabled', true);
+            % else:
+                $reflectionDate.prop('disabled', false);
+                $reservationDateBtn.prop('disabled', false);
+                $cancelReservationBtn.prop('disabled', true);
+                $autoRegisterStudentsFlg.find('input[name=auto_register_students_flg]').prop('disabled', false);
+            % endif
+        % endif
+
+        var resultGrid = $('#grid').w2grid({
+                name: 'result_grid',
+                fixedBody: true,
+                selectType : 'row',
+                show: {
+                    toolbar: false,
+                    footer: false,
+                    selectColumn: false,
+                    toolbarReload: false
+                },
+                columns: [
+                    {field: 'full_name', caption: '${_("Full Name")}', size: 2, min: 80, sortable: true, hidden: false},
+                    {field: 'user_name', caption: '${_("Username")}', size: 2, min: 120, sortable: true, hidden: false},
+                    {field: 'user_email', caption: '${_("Email Address")}', size: 5, min: 150, sortable: true, hidden: false},
+                    {field: 'login_code', caption: '${_("Login Code")}', size: 2, min: 120, sortable: true, hidden: false},
+                ],
+                records: [],
+        });
+        grid.push(resultGrid);
+
+        fit_wrapper_height();
+
+        /** ------------------------------------
+         * Event Binding
+         * ------------------------------------*/
+        // Click:[ Add condition Btn ]
+        $('#js-add-condition-btn').on('click', function() {
+            lock();
+            reset_error_message_area();
+            var error_messages = [];
+
+            var $this = $(this);
+
+            // Check conditions count
+            var current_num = $conditions.find('.js-condition').length + 1;
+            if (current_num > 10) {
+                error_messages.push('${_("The maximum number of conditions is 10 cases.")}');
+                display_error_message_area(error_messages);
+                unlock();
+                return;
+            }
+
+            // Add condition
+            $.ajax({
+                url: $this.data('endpoint'),
+                type: 'post',
+                traditional: true,
+                data: {contract_id: $this.data('contract')},
+                dataType: 'json',
+            }).done(function(data) {
+                createElementByDummy(data.condition_id, null, current_num);
+                fit_wrapper_height();
+
+            }).fail(function (jqXHR) {
+                var data = JSON.parse(jqXHR.responseText);
+                display_error_message_area([data.error]);
+
+            }).always(function() {
+                unlock();
+            });
+        });
+        function createElementByDummy(id, name, num) {
+            var $dummy = $('#js-dummy-condition .js-condition').clone();
+            $dummy.find('input[name=condition_id]').val(id);
+            if (name != null && name.length > 0) $dummy.find('.js-condition-name').text(name);
+            $dummy.find('.js-condition-number').text(num);
+            $dummy.find('.js-condition-delete').on('click', deleteCondition);
+            $dummy.find('.js-condition-save').on('click', settingsCondition);
+            $conditions.append($dummy);
+        }
+        function deleteCondition() {
+            var $this = $(this);
+
+            reset_error_message_area();
+            $this.prop('disabled', true);
+
+            var $condition = $this.closest('.js-condition');
+            w2confirm({
+                msg: $this.data('confirm-message').replace(
+                    "{0}", '${_("Condition")}' + $condition.find('.js-condition-number').text()),
+                yes_class: 'btn-right',
+                no_class: 'btn-left'
+            }).yes(function() {
+                // Delete condition
+                $.ajax({
+                    url: $this.data('endpoint'),
+                    type: 'post',
+                    traditional: true,
+                    data: {
+                        contract_id: $this.data('contract'),
+                        condition_id: $condition.find('input[name=condition_id]').val()
+                    },
+                    dataType: 'json',
+                }).done(function(data) {
+                    $conditions.find('.js-condition').remove();
+                    $.each(data.conditions, function(i, condition) {
+                        createElementByDummy(condition.id, condition.parent_condition_name, i + 1);
+                    });
+                    fit_wrapper_height();
+                }).fail(function(jqXHR) {
+                    var data = JSON.parse(jqXHR.responseText);
+                    display_error_message_area([data.error]);
+
+                }).always(function() {
+                    $this.prop('disabled', true);
+                });
+
+            }).no(function() {
+                $this.prop('disabled', false);
+            });
+        }
+        function settingsCondition() {
+            $(this).prop('disabled', true);
+            var $condition = $(this).closest('.js-condition');
+            var id = $condition.find('input[name=condition_id]').val();
+            location.href = '${reverse("biz:save_register_condition:detail", kwargs={"condition_id": 0})}'.replace('0', id);
+        }
+
+        // Click:[ Search Btn ]
+        $('#js-search-by-condition-btn').on('click', function() {
+            reset_error_message_area();
+            lock();
+            var $this = $(this);
+
+            $.ajax({
+                url: $this.data('endpoint'),
+                type: 'post',
+                traditional: true,
+                data: {contract_id: $this.data('contract')},
+                dataType: 'json',
+            }).done(function(data) {
+                resultGrid.records = data.show_list ? JSON.parse(data.show_list) : [];
+                $('#js-result-count').text(resultGrid.records.length);
+                resultGrid.refresh();
+            }).fail(function(jqXHR) {
+                    var data = JSON.parse(jqXHR.responseText);
+                    display_error_message_area([data.error]);
+            }).always(function() {
+                unlock();
+            });
+
+            return false;
+        });
+
+        // Click:[ Copy Btn ]
+        $('#js-copy-by-other-condition-btn').on('click', function() {
+            reset_error_message_area();
+            lock();
+
+            var $this = $(this);
+            if ($('#js-copy-contract-select').val()) {
+                w2confirm({
+                    msg: $this.data('confirm-message').replace("{0}", $('#js-copy-contract-select option:selected').text()),
+                    yes_class: 'btn-right',
+                    no_class: 'btn-left'
+                }).yes(function() {
+                    $.ajax({
+                        url: $this.data('endpoint'),
+                        type: 'post',
+                        traditional: true,
+                        data: {
+                            contract_id: $this.data('contract'),
+                            copy_contract_id: $('#js-copy-contract-select').val()
+                        },
+                        dataType: 'json',
+                    }).done(function(data) {
+                        $conditions.find('.js-condition').remove();
+                        $.each(data.conditions, function(i, condition) {
+                            createElementByDummy(condition.id, condition.parent_condition_name, i + 1);
+                        });
+                        if(data.no_copy_parents.length>0){
+                            var error_message = ["${_("Copy failed because the following conditions include additional information.")}"];
+                            error_message = error_message.concat(data.no_copy_parents);
+                            display_error_message_area(error_message);
+                        };
+                        fit_wrapper_height();
+                    }).fail(function(data) {
+                        var data = JSON.parse(jqXHR.responseText);
+                        display_error_message_area([data.error]);
+
+                    }).always(function() {
+                        unlock();
+                    });
+                }).no(function() {
+                    unlock();
+                });
+            } else {
+                display_error_message_area(["${_("The contract is not selected. Please select a contract.")}"]);
+                unlock();
+            }
+        });
+
+        // Click:[ Reflect Condition Btn ]
+        $('#js-reflect-condition-btn').on('click', function() {
+            reset_error_message_area();
+            lock();
+            var $this = $(this);
+
+            w2confirm({
+                msg: $this.data('confirm-message'),
+                yes_class: 'btn-right',
+                no_class: 'btn-left'
+            }).yes(function() {
+                $.ajax({
+                    url: $this.data('endpoint'),
+                    type: 'post',
+                    traditional: true,
+                    data: {
+                        contract_id: $this.data('contract'),
+                        org_id: $this.data('organization'),
+                        send_mail_flg: $('#js-immediate-mail-send-flg:checked').length > 0 ? 1 : 0
+                    },
+                    dataType: 'json',
+                }).done(function(data) {
+                    messageModal('${_("Execute immediate reflection.")}');
+                }).fail(function(jqXHR) {
+                    var data = JSON.parse(jqXHR.responseText);
+                    display_error_message_area([data.error]);
+                }).always(function() {
+                    w2ui['task_history_grid'].load('${reverse("biz:save_register_condition:task_history_ajax")}');
+                    unlock();
+                });
+            }).no(function() {
+                unlock();
+            });
+            return false;
+        });
+
+        // Click:[ Auto Register Students Flg Radio Btn ]
+        $autoRegisterStudentsFlg.find('input[name=auto_register_students_flg]').on('click', function() {
+            reset_error_message_area();
+            lock();
+            var $this = $(this);
+
+            $.ajax({
+                url: $autoRegisterStudentsFlg.data('endpoint'),
+                type: 'post',
+                traditional: true,
+                data: {
+                    contract_id: $autoRegisterStudentsFlg.data('contract'),
+                    auto_register_students_flag: $this.val()
+                },
+                dataType: 'json',
+            }).done(function() {
+                $autoRegisterStudentsFlg.data('flg', $this.val());
+                if ($this.val() == 1) {
+                    $reflectionDate.prop('disabled', true);
+                    $reservationDateBtn.prop('disabled', true);
+                } else {
+                    $reflectionDate.prop('disabled', false);
+                    $reservationDateBtn.prop('disabled', false);
+                }
+
+            }).fail(function(jqXHR) {
+                var data = JSON.parse(jqXHR.responseText);
+                display_error_message_area([data.error]);
+
+            }).always(function() {
+                unlock();
+            });
+        });
+
+        // Click:[ Reservation Date Input Btn ]
+        $reservationDateBtn.on('click', function() {
+            reset_error_message_area();
+            lock();
+            var $this = $(this);
+            var date = $reflectionDate.val();
+            // validate
+            var now = new Date();
+            var error_messages = [];
+            if (! date.match(/^\d{4}\/\d{2}\/\d{2}$/)) {
+                error_messages.push(
+                    '${_("The format of reservation reflection date is wrong. Please enter in the correct format.")}');
+            } else if (date < ([now.getFullYear(), ("0"+(now.getMonth() + 1)).slice(-2), ("0"+now.getDate()).slice(-2)].join("/"))) {
+                error_messages.push(
+                    '${_("The past date is entered. Please enter a future date.")}');
+            } else if (new Date(now.getFullYear(), now.getMonth(), now.getDate(), 18, 0, 0, 0) <= now
+                    && now <= new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 9, 0, 0, 0)) {
+                error_messages.push(
+                    "${_("Today 's reception is over. Please enter the date of the future from tomorrow.")}");
+            }
+            if (error_messages.length !== 0) {
+                display_error_message_area(error_messages);
+                unlock();
+                return true;
+            }
+
+            w2confirm({
+                msg: $this.data('confirm-message').replace("{0}", date),
+                yes_class: 'btn-right',
+                no_class: 'btn-left'
+            }).yes(function() {
+                $.ajax({
+                    url: $this.data('endpoint'),
+                    type: 'post',
+                    traditional: true,
+                    data: {
+                        contract_id: $this.data('contract'),
+                        reservation_date: date
+                    },
+                    dataType: 'json',
+                }).done(function(data) {
+                    $reflectionDate.val('');
+                    $reflectionDateStr.text(data.reservation_date);
+                    $reflectionDate.prop('disabled', true);
+                    $reservationDateBtn.prop('disabled', true);
+                    $cancelReservationBtn.prop('disabled', false);
+                    $autoRegisterStudentsFlg.find('input[name=auto_register_students_flg]').prop('disabled', true);
+                    messageModal('${_("Set the reservation date.")}');
+
+                }).fail(function(jqXHR) {
+                    var data = JSON.parse(jqXHR.responseText);
+                    display_error_message_area([data.error]);
+
+                }).always(function() {
+                    unlock();
+                });
+            }).no(function() {
+                unlock();
+            });
+            return false;
+        });
+
+        // Click:[ Cancel Reservation Btn ]
+        $cancelReservationBtn.on('click', function() {
+            reset_error_message_area();
+            lock();
+
+            var $this = $(this);
+            var now = new Date();
+            var error_messages = [];
+            if (new Date(now.getFullYear(), now.getMonth(), now.getDate(), 18, 0, 0, 0) <= now
+                    && now <= new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 9, 0, 0, 0)) {
+                error_messages.push(
+                    '${_("Because time has passed, reservation can not be canceled.")}');
+            }
+            if (error_messages.length !== 0) {
+                display_error_message_area(error_messages);
+                unlock();
+                return true;
+            }
+
+            w2confirm({
+                msg: $this.data('confirm-message').replace("{0}", $reflectionDateStr.text()),
+                yes_class: 'btn-right',
+                no_class: 'btn-left'
+            }).yes(function() {
+                $.ajax({
+                    url: $this.data('endpoint'),
+                    type: 'post',
+                    traditional: true,
+                    data: {
+                        contract_id: $this.data('contract'),
+                    },
+                    dataType: 'json',
+                }).done(function() {
+                    $reflectionDateStr.text('${_("No reservation")}');
+                    $reflectionDate.prop('disabled', false);
+                    $reservationDateBtn.prop('disabled', false);
+                    $cancelReservationBtn.prop('disabled', true);
+                    $autoRegisterStudentsFlg.find('input[name=auto_register_students_flg]').prop('disabled', false);
+                    messageModal('${_("Cancel the reservation date.")}');
+
+                }).fail(function(jqXHR) {
+                    var data = JSON.parse(jqXHR.responseText);
+                    display_error_message_area([data.error]);
+
+                }).always(function() {
+                    unlock();
+                });
+            }).no(function() {
+                unlock();
+            });
+            return false;
+        });
+
+        /** ------------------------------------
+         * Common
+         * ------------------------------------*/
+        function lock() {
+            w2utils.lock($('div.main'), '', true);
+        }
+        function unlock() {
+            w2utils.unlock($('div.main'));
+        }
+        function reset_error_message_area() {
+            $('#error_area').empty().hide();
+        }
+        function display_error_message_area(messages) {
+            var $ul = $('<ul class="messages" />');
+            $.each(messages || [], function(i, msg) {
+                $ul.append('<li class="error">' + msg + '</li>');
+            });
+            $('#error_area').append($ul).show();
+            scrollTo(0, 100);
+        }
+        function fit_wrapper_height() {
+            var sHeight = $('.side').height();
+            var mHeight = $('.main').height();
+            var height = mHeight > sHeight ? mHeight - 200 : sHeight;
+            $('.content-wrapper').height(height);
+        }
+        function messageModal(msg) {
+            w2popup.open({
+                title: w2utils.lang('Confirmation'),
+                body: '<div class="w2ui-centered">' + msg + '</div>',
+                width: 540,
+                height: 240,
+                buttons: '<button class="w2ui-popup-btn btn" onclick="w2popup.close();">' + w2utils.lang('Ok') + '</button>',
+            });
+        }
+    });
+</script>
+<style>
+    .content-wrapper {
+        min-height: 1500px;
+    }
+    .gc_conditions {
+        margin-bottom: 30px;
+    }
+    .gc_conditions .gc_column {
+        padding-bottom: 10px;
+        margin-bottom: 10px;
+        border-bottom: 1px dotted #cdcdcd;
+    }
+    .gc_column_col.gc_column_col_15 {
+        width: calc(15% - 2em);
+    }
+    .gc_column_col.gc_column_col_25 {
+        width: calc(25% - 2em);
+    }
+    .gc_column_col.gc_column_col_30 {
+        width: calc(30% - 2em);
+    }
+    .gc_column_col.gc_column_col_45 {
+        width: calc(45% - 2em);
+    }
+    .gc_column_col.gc_column_col_55 {
+        width: calc(55% - 2em);
+    }
+    .gc_column_col.gc_column_col_45.copy_contract_select {
+        margin-left: 0;
+        width: calc(45% + 2em);
+    }
+    .gc_column_col.gc_column_col_45.copy_contract_select select {
+        width: 100%;
+    }
+    .gc_column_col span {
+        display: inline-block;
+        padding-top: .5em;
+    }
+    .js-condition span {
+        word-break: break-all;
+    }
+    .gc_error_area {
+        overflow: auto;
+    }
+</style>
+</%block>
+
+<%block name="custom_content">
+<div id="error_area" class="gc_error_area"></div>
+<div class="gc_content">
+    <!-- dummy condition -->
+    <div id="js-dummy-condition" style="display: none;">
+        <div class="gc_column js-condition">
+            <div class="gc_column_col gc_column_col_15">
+                <span>${_("Condition")} </span><span class="js-condition-number"></span>
+            </div>
+            <div class="gc_column_col gc_column_col_55">
+                <span class="js-condition-name">${_("Unknown condition")}</span>
+            </div>
+            <div class="gc_column_col gc_column_col_30">
+                <input type="hidden" name="condition_id" value="" />
+                <button class="btn btn-grn js-condition-save" type="button">${_("Condition Settings")}</button>
+                <button class="btn js-condition-delete" type="button"
+                        data-contract="${request.current_contract.id}"
+                        data-confirm-message="${_("Delete condition {0}<br/>Is it OK?<br/>Once deleted condition can not be restored.")}"
+                        data-endpoint="${reverse('biz:save_register_condition:delete_condition_ajax')}">${_("Delete")}</button>
+            </div>
+        </div>
+    </div>
+    <!-- ./dummy condition -->
+
+    <!-- condition list -->
+    <div class="gc_conditions">
+        <div id="js-conditions"></div>
+        <div class="gc_add_condition">
+            <p class="gc_add_condition_btn">
+                <span id="js-add-condition-btn"
+                      data-endpoint="${reverse('biz:save_register_condition:add_condition_ajax')}"
+                      data-contract="${request.current_contract.id}">${_("Add condition")}</span>
+            </p>
+        </div>
+    </div>
+    <!-- ./condition list -->
+
+    <!-- message -->
+    <div class="gc_column gc_mb30">
+        <div class="gc_column_col gc_column_col_full">
+            <p>${_("Users who meet one or more of the conditions are eligible.")}</p>
+        </div>
+    </div>
+    <!-- ./message -->
+
+    <!-- copy condition -->
+    <div class="gc_column gc_mb30">
+        <div class="gc_column_col gc_column_col_25">
+            <span style="margin-right: 10px;">${_("Copy conditions")}</span>
+        </div>
+        <div class="gc_column_col gc_column_col_45 copy_contract_select">
+            <select id="js-copy-contract-select">
+                <option value=""></option>
+                % for contract in search_other_condition_list :
+                <option value="${contract.id}">${contract.contract_name}</option>
+                % endfor
+            </select>
+        </div>
+        <div class="gc_column_col gc_column_col_30">
+            <button id="js-copy-by-other-condition-btn" class="btn btn-grn" type="button"
+                    data-confirm-message="${_("Copy the condition, is it OK?<br/>(Original:{0})Once deleted condition can not be restored.")}"
+                    data-endpoint="${reverse('biz:save_register_condition:copy_condition_ajax')}"
+                    data-contract="${request.current_contract.id}">${_("Copy")}</button>
+        </div>
+    </div>
+    <!-- ./copy condition -->
+
+    <!-- search btn -->
+    <div class="gc_column">
+        <div class="gc_column_col gc_column_col_full">
+            <div class="gc_btn_cta gc_btn_cta_center">
+                <button id="js-search-by-condition-btn" class="btn btn-blue gc_btn_search" type="submit"
+                        data-endpoint="${reverse('biz:save_register_condition:search_target_ajax')}"
+                        data-contract="${request.current_contract.id}">${_('Search')}</button>
+            </div>
+        </div>
+    </div>
+    <!-- ./search btn -->
+
+    <!-- search result -->
+    <h2>${_("Search Result")}</h2>
+    <div class="gc_column">
+        <div class="gc_column_col gc_column_col_full">
+            <p>${_("Result num")}: <span id="js-result-count">0</span></p>
+        </div>
+    </div>
+    <div id="grid" class="w2ui-reset w2ui-grid gc_mb30"></div>
+    <!-- ./search result -->
+
+    <!-- Send mail flg -->
+    <div class="gc_column" style="display: none;">
+        <div class="gc_field">
+            <fieldset class="gc_fieldset">
+                <div class="gc_fieldset_wrap">
+                    <div class="gc_w2em">
+                        <!-- Note: force setting to on -->
+                        <input id="js-immediate-mail-send-flg" type="checkbox" name="immediate_mail_send_flg" value="1" checked />
+                    </div>
+                    <legend class="gc_w20em" for="js-immediate-mail-send-flg" style="padding-left:10px">
+                        ${_("When immediate reflect condition, we send mail")}</legend>
+                </div>
+            </fieldset>
+        </div>
+    </div>
+    <!-- ./Send mail flg -->
+
+    <!-- ON / OFF -->
+    <div class="gc_column">
+        <div class="gc_field">
+            <fieldset class="gc_fieldset">
+                <div class="gc_fieldset_wrap">
+                    <legend class="gc_fieldset_label gc_w20em">${_("Interlock flag with member update")}</legend>
+                    <div id="js-auto-register-students-flg" class="gc_fieldset_ipt" data-flg="0"
+                        data-endpoint="${reverse('biz:save_register_condition:update_auto_register_students_flg')}"
+                        data-contract="${request.current_contract.id}">
+                            <label class="gc_fieldset_label_radio">
+                                <input id="js-auto-register-students-flg-on" class="gc_fieldset_ipt_radio"
+                                       name="auto_register_students_flg" value="1"
+                                       type="radio">${_("Automatically reflection")} ON</label>
+                            <label class="gc_fieldset_label_radio">
+                                <input id="js-auto-register-students-flg-off" class="gc_fieldset_ipt_radio"
+                                       name="auto_register_students_flg" value="0"
+                                       type="radio" checked>${_("Automatically reflection")} OFF</label>
+                    </div>
+                </div>
+            </fieldset>
+        </div>
+    </div>
+    <!-- ./ON / OFF -->
+
+    <!-- Immediate btn -->
+    <div class="gc_column">
+        <div class="gc_field">
+            <fieldset class="gc_fieldset">
+                <div class="gc_fieldset_wrap">
+                    <legend class="gc_fieldset_label gc_w20em">${_("Reflect condition of register students now")}</legend>
+                    <button id="js-reflect-condition-btn" class="btn btn-grn" type="submit"
+                            data-confirm-message="${_('Immediate reflection, is it OK?')}"
+                            data-endpoint="${reverse('biz:save_register_condition:reflect_condition_ajax')}"
+                            data-organization="${request.current_organization.id}"
+                            data-contract="${request.current_contract.id}">${_('Immediate reflection')}</button>
+                </div>
+            </fieldset>
+        </div>
+    </div>
+    <!-- ./Immediate btn -->
+
+    <!-- Reflection date btn -->
+    <div class="gc_column gc_mb50">
+        <div class="gc_field">
+            <fieldset class="gc_fieldset">
+                <div class="gc_fieldset_wrap">
+                    <legend class="gc_fieldset_label gc_w20em">${_("Set reflection date of condition")}</legend>
+                    <input id="js-reflection-date" class="gc_w15em" type="text" value="" />
+                    <button id="js-reservation-date-btn" class="btn btn-grn" type="submit"
+                            data-confirm-message="${_('Schedule the reflection, is it OK?<br/>(Reflection date: {0})')}"
+                            data-endpoint="${reverse('biz:save_register_condition:reservation_date_ajax')}"
+                            data-contract="${request.current_contract.id}">${_('Reservation reflection')}</button>
+                </div>
+                <div class="gc_fieldset_wrap">
+                    <legend class="gc_w20em"></legend>
+                    <div class="gc_w15em">
+                        % if auto_register_reservation_date:
+                        <span>${_("Reservation date of reflection")}：</span> <span id="js-reservation-date-str">${auto_register_reservation_date}</span>
+                        % else:
+                        <span>${_("Reservation date of reflection")}：</span> <span id="js-reservation-date-str">${_("No reservation")}</span>
+                        % endif
+                    </div>
+                    <button id="js-cancel-reservation-btn" class="btn" type="submit"
+                            data-confirm-message="${_('Cancel the reflection, is it OK?<br/>(Reflection date: {0})')}"
+                            data-endpoint="${reverse('biz:save_register_condition:cancel_reservation_date_ajax')}"
+                            data-contract="${request.current_contract.id}">${_('Cancel reservation')}</button>
+                </div>
+            </fieldset>
+        </div>
+    </div>
+    <!-- ./Reflection date btn -->
+
+
+</div>
+
+<%include file="_task_history.html" />
+</%block>

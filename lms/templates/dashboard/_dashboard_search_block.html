@@ -1,0 +1,62 @@
+<%page args="search_genre1_list, search_genre2_list" />
+<%!
+from django.utils.translation import ugettext as _
+%>
+<%namespace name='static' file='../static_content.html'/>
+
+<section class="search-block">
+  <a id="js-sp-display-btn" class="sp-display-btn" data-active="0" href="javascript:void(0)"><i class="fa fa-plus"></i> ${_("Search / Sort")}</a>
+  <div class="search-item">
+    <label>${_('Course Category Genre')} 1</label>
+    <select name="genre1">
+      <option value="">${_('All')}</option>
+      % for name in search_genre1_list:
+        <option value="${name}">${name}</option>
+      % endfor
+      <option value="__GENRE_NULL__">${_('No Course Category Genre')}</option>
+    </select>
+  </div>
+  <div class="search-item">
+    <label>${_('Course Category Genre')} 2</label>
+    <select name="genre2" disabled="disabled">
+      <option value="">${_('Please select Genre1')}</option>
+      % for genre2 in search_genre2_list:
+        % for name in genre2['genre2_list']:
+          <option data-genre1="${genre2['genre1_name']}" value="${name}">${name}</option>
+        % endfor
+      % endfor
+      <option value="__GENRE_NULL__">${_('No Course Category Genre')}</option>
+    </select>
+  </div>
+  <div class="search-item">
+    <label>${_('Enrolled Status')}</label>
+    <select name="status">
+      <option value="">${_('All')}</option>
+      <option value="waiting">${_('Not Enrolled')}</option>
+      <option value="working">${_('Currently Enrolled')}</option>
+      <option value="completed">${_('Finish Enrolled')}</option>
+      <option value="previous">${_('Not Offered')}</option>
+      <option value="closing">${_('Already terminate')}</option>
+    </select>
+  </div>
+  <div class="search-item">
+    <label>${_("Display Order")}</label>
+    <select name="display-order">
+      <option value="">${_("Please Select")}</option>
+      <option value="priority">${_("Course Order")}</option>
+      <option value="name">${_("Course Name")}</option>
+      <option value="enroll_date">${_("Enroll Date")}</option>
+      <option value="start_date">${_("Course Start Date")}</option>
+      <option value="end_date">${_("Course End Date")}</option>
+    </select>
+  </div>
+  <div class="search-item search-item-display-order-type">
+    <label>${_("Asc")}</label>
+    <input type="radio" name="display_order_type" value="asc" checked>
+    <label>${_("Desc")}</label>
+    <input type="radio" name="display_order_type" value="desc">
+  </div>
+  <div class="search-item search-item-reset">
+      <a class="search-reset" href="javascript:void(0)">${_("Reset")}</a>
+  </div>
+</section>
