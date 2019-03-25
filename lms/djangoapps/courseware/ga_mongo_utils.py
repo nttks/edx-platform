@@ -82,6 +82,9 @@ class PlaybackFinishStore(PlaybackFinishConnectionStore):
     def update_record(self, find_result, updates):
         return self._collection.update(find_result, updates)
 
+    def find_status_data_by_course_id(self, course_id):
+        return list(self._collection.find({"course_id": course_id}))
+
     def find_status_false_data(self, user_id, course_id, block_id):
         return list(self._collection.find({
             "user_id": user_id, "course_id": course_id, "module_list": {'$elemMatch': {'block_id': block_id,
