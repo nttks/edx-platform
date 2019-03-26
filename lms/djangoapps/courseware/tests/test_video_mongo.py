@@ -72,6 +72,7 @@ class TestVideoYouTube(TestVideo):
                 "ytApiUrl": "https://www.youtube.com/iframe_api",
                 "ytMetadataUrl": "https://www.googleapis.com/youtube/v3/videos/",
                 "ytKey": None,
+                "isStatusManaged": False,
                 "transcriptTranslationUrl": self.item_descriptor.xmodule_runtime.handler_url(
                     self.item_descriptor, 'transcript', 'translation/__lang__'
                 ).rstrip('/?'),
@@ -150,6 +151,7 @@ class TestVideoNonYouTube(TestVideo):
                 "ytApiUrl": "https://www.youtube.com/iframe_api",
                 "ytMetadataUrl": "https://www.googleapis.com/youtube/v3/videos/",
                 "ytKey": None,
+                "isStatusManaged": False,
                 "transcriptTranslationUrl": self.item_descriptor.xmodule_runtime.handler_url(
                     self.item_descriptor, 'transcript', 'translation/__lang__'
                 ).rstrip('/?'),
@@ -204,6 +206,7 @@ class TestGetHtmlMethod(BaseTestXmodule):
             "ytApiUrl": "https://www.youtube.com/iframe_api",
             "ytMetadataUrl": "https://www.googleapis.com/youtube/v3/videos/",
             "ytKey": None,
+            "isStatusManaged": False,
             "transcriptTranslationUrl": self.item_descriptor.xmodule_runtime.handler_url(
                 self.item_descriptor, 'transcript', 'translation/__lang__'
             ).rstrip('/?'),
@@ -1261,6 +1264,7 @@ class TestVideoWithBumper(TestVideo):
                 "ytApiUrl": "https://www.youtube.com/iframe_api",
                 "ytMetadataUrl": "https://www.googleapis.com/youtube/v3/videos/",
                 "ytKey": None,
+                "isStatusManaged": False,
                 "transcriptTranslationUrl": self.item_descriptor.xmodule_runtime.handler_url(
                     self.item_descriptor, 'transcript', 'translation/__lang__'
                 ).rstrip('/?'),

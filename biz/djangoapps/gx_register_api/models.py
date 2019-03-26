@@ -1,6 +1,9 @@
+from datetime import datetime
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
+from django import forms
 
+from django.contrib.auth.models import User
 from biz.djangoapps.ga_contract.models import Contract
 from biz.djangoapps.ga_organization.models import Organization
 
@@ -50,9 +53,13 @@ class APIContractMailBase(models.Model):
 
 class APIContractMail(APIContractMailBase):
 
+    user = models.ForeignKey(User, default=None, null=True, blank=True, db_index=True)
+
     API_MAIL_TYPE_REGISTER_NEW_USER = 'RNU'
+    API_MAIL_TYPE_ADMINISTRATOR = 'API_ADM'
     MAIL_TYPE = (
         (API_MAIL_TYPE_REGISTER_NEW_USER, _("For New User")),
+        (API_MAIL_TYPE_ADMINISTRATOR, _("Administrator")),
     )
 
     MAIL_PARAM_USERNAME = ('username', _("Replaced with the user name"))
@@ -62,6 +69,12 @@ class APIContractMail(APIContractMailBase):
     MAIL_PARAM_EMAIL_ADDRESS = ('email_address', _("Replaced with the user e-mail address"))
     MAIL_PARAM_CONTRACT_NAME = ('contract_name', _(""))
     MAIL_PARAM_COURSE_NAME = ('course_name', _("Replaced with the course name"))
+    MAIL_PARAM_CURRENT_TIME = ('current_time', _(""))
+    MAIL_PARAM_TOTAL_RECORDS = ('total', _(""))
+    MAIL_PARAM_SUCCEEDED_RECORDS = ('succeeded', _(""))
+    MAIL_PARAM_FAILED_RECORDS = ('failed', _(""))
+    MAIL_PARAM_TARGET_FILE = ('target_file', _(""))
+    MAIL_PARAM_CONTRACT_ID = ('contract_id', _(""))
     MAIL_PARAMS = {
         API_MAIL_TYPE_REGISTER_NEW_USER: [
             MAIL_PARAM_USERNAME,
@@ -72,6 +85,14 @@ class APIContractMail(APIContractMailBase):
             MAIL_PARAM_CONTRACT_NAME,
             MAIL_PARAM_COURSE_NAME,
         ],
+        API_MAIL_TYPE_ADMINISTRATOR: [
+            MAIL_PARAM_CURRENT_TIME,
+            MAIL_PARAM_TOTAL_RECORDS,
+            MAIL_PARAM_SUCCEEDED_RECORDS,
+            MAIL_PARAM_FAILED_RECORDS,
+            MAIL_PARAM_TARGET_FILE,
+            MAIL_PARAM_CONTRACT_ID,
+        ],
 
 
     }
@@ -79,6 +100,10 @@ class APIContractMail(APIContractMailBase):
     @classmethod
     def get_register_mail(cls, contract):
         return cls.objects.filter(contract=contract, mail_type=cls.API_MAIL_TYPE_REGISTER_NEW_USER).first()
+
+    @classmethod
+    def get_administrator_mail(cls, contract):
+        return cls.objects.filter(contract=contract, mail_type=cls.API_MAIL_TYPE_ADMINISTRATOR).first()
 
     @classmethod
     def register_replace_dict(cls, user, fullname, link_url1, link_url2, contract_name, course_name):
@@ -103,6 +128,23 @@ class APIContractMail(APIContractMailBase):
         }
         return replace_dict
 
+    @classmethod
+    def register_replace_dict_admin(cls, result, file_name, contract_id):
+        """
+        Conversion function to display in the mail body.
+
+        :return:
+        """
+        replace_dict = {
+            cls.MAIL_PARAM_CURRENT_TIME[0]: datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+            cls.MAIL_PARAM_TOTAL_RECORDS[0]: str(result.total).encode('utf-8'),
+            cls.MAIL_PARAM_SUCCEEDED_RECORDS[0]: str(result.succeeded).encode('utf-8'),
+            cls.MAIL_PARAM_FAILED_RECORDS[0]: str(result.failed).encode('utf-8'),
+            cls.MAIL_PARAM_TARGET_FILE[0]: file_name.encode('utf-8'),
+            cls.MAIL_PARAM_CONTRACT_ID[0]: str(contract_id).encode('utf-8'),
+        }
+        return replace_dict
+
 
 class APIGatewayKey(models.Model):
     class Meta:
@@ -115,3 +157,13 @@ class APIGatewayKey(models.Model):
     org_id = models.ForeignKey(Organization)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True, null=True, blank=True)
+
+
+class ChoiceModelForm(forms.ModelForm):
+    API_MAIL_TYPE_REGISTER_NEW_USER = 'RNU'
+    API_MAIL_TYPE_ADMINISTRATOR = 'API_ADM'
+    MAIL_TYPE = (
+        (API_MAIL_TYPE_REGISTER_NEW_USER, _("For New User")),
+        (API_MAIL_TYPE_ADMINISTRATOR, _("Administrator")),
+    )
+

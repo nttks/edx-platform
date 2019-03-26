@@ -329,6 +329,18 @@ msgstr "コース略称の入力が必要です。"
 msgid "Teacher Name is required input."
 msgstr "講師名の入力が必要です。"
 
+#: cms/static/js/models/settings/course_details.js
+msgid "Commas（,） can not be used"
+msgstr "カンマ（,）は使用することができません。"
+
+#: cms/static/js/models/settings/course_details.js
+msgid "Please enter only half-width numbers."
+msgstr "半角数字のみ入力してください。"
+
+#: cms/static/js/models/settings/course_details.js
+msgid "Please enter the course_category previously."
+msgstr "ジャンル1を先に設定してください。"
+
 #: cms/static/js/views/settings/main.js
 msgid "Course pacing cannot be changed once a course has started."
 msgstr "講座の種類は開講するまでは変更できますが、開講後の変更はできませんのでご注意ください。"
@@ -499,6 +511,18 @@ msgstr "公開"
 #: lms/static/js/student_profile/views/learner_profile_factory.js
 msgid "About me"
 msgstr "自己紹介"
+
+#: common/lib/xmodule/xmodule/js/src/video/96_ended_modal.js
+msgid "Would you like to view it already?"
+msgstr "この動画の視聴ステータスを「完了」にしますか？"
+
+#: common/lib/xmodule/xmodule/js/src/video/96_ended_modal.js
+msgid "Yes"
+msgstr "はい"
+
+#: common/lib/xmodule/xmodule/js/src/video/96_ended_modal.js
+msgid "No"
+msgstr "いいえ"
 
 #: lms/static/js/student_profile/views/learner_profile_fields.js
 msgid ""

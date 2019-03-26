@@ -1761,6 +1761,26 @@ msgstr ""
 "'リセット'ボタンが表示されるかを設定します。リセットボタンはユーザーが自身の回答をリセットするためのものです。デフォルト値は詳細設定で設定できます。"
 
 #: common/lib/xmodule/xmodule/capa_base.py
+#: common/lib/xmodule/xmodule/video_module/video_xfields.py
+#: common/lib/xmodule/xmodule/html_module.py
+msgid "Is status managed"
+msgstr "ステータス管理"
+
+#: common/lib/xmodule/xmodule/capa_base.py
+#: common/lib/xmodule/xmodule/video_module/video_xfields.py
+#: common/lib/xmodule/xmodule/html_module.py
+msgid "Please set \"True\" if you want to make it status management target module"
+msgstr "ステータス管理対象モジュールとしたい場合は「はい」を設定してください"
+
+#: common/lib/xmodule/xmodule/html_module.py
+msgid ""
+"Please set \"True\" if you want to make it status management target module. "
+"Only \"survey\", \"problem\" and \"movie\" are available for status management."
+" Otherwise, please set \"no\"."
+msgstr ""
+"ステータス管理対象モジュールとしたい場合は「はい」を設定してください。<br><span style=\"color:red\">ステータス管理ができるのは、「アンケート」「課題」「動画」のみです。</span><br>また、必ず詳細設定で、ステータス管理「ON」になっていることを確認してください。"
+
+#: common/lib/xmodule/xmodule/capa_base.py
 #: common/lib/xmodule/xmodule/modulestore/inheritance.py
 msgid "Randomization"
 msgstr "ランダム化"

@@ -32,13 +32,16 @@ class MemberEditTaskTest(BizViewTestBase, TaskTestMixin):
         """
         super(MemberEditTaskTest, self).setUp()
         self.setup_user()
-        self.organization = self.gacco_organization
+        self.organization = self._create_organization()
         self.test_group1 = GroupFactory.create(
             parent_id=0, level_no=0, group_code='group_code1', group_name='test_group_name1', org=self.organization,
             created_by=self.user, modified_by=self.user)
         self.test_group2 = GroupFactory.create(
             parent_id=0, level_no=0, group_code='group_code2', group_name='test_group_name2', org=self.organization,
             created_by=self.user, modified_by=self.user)
+        self.contract = self._create_contract(
+            contractor_organization=self.organization, owner_organization=self.gacco_organization,
+            auto_register_students_flg=False)
 
         patcher = patch('biz.djangoapps.gx_member.member_editer.log')
         self.mock_log = patcher.start()
@@ -1011,3 +1014,7 @@ class MemberEditTaskTest(BizViewTestBase, TaskTestMixin):
         self.assertEqual(0, Member.objects.filter(org=another_org2).count())
         self.assertEqual(0, User.objects.filter(email='rule1@example.com').count())
         self._assert_failed_log()
+
+    def test_reflect_condition_execute_call_by_another_task(self):
+        """ Note: Detail test is written to 'gx_save_register_condition/tests/test_utils.py'."""
+        pass

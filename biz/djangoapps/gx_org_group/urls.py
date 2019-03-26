@@ -10,4 +10,5 @@ urlpatterns = patterns(
     url(r'^accessible_user_list$', 'accessible_user_list', name='accessible_user_list'),
     url(r'^accessible_parent_list$', 'accessible_parent_list', name='accessible_parent_list'),
     url(r'^delete_group', 'delete_group', name='delete_group'),
+    url(r'^download_headers_csv$', 'download_headers_csv', name='download_headers_csv'),
 )

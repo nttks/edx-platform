@@ -18,7 +18,7 @@ from biz.djangoapps.gx_org_group.models import Group
 from biz.djangoapps.util import datetime_utils
 from biz.djangoapps.util.json_utils import EscapedEdxJSONEncoder
 from biz.djangoapps.util.decorators import check_course_selection, check_organization_group
-from biz.djangoapps.util.unicodetsv_utils import create_tsv_response
+from biz.djangoapps.util.unicodetsv_utils import create_tsv_response, create_csv_response_double_quote
 
 from util.file import course_filename_prefix_generator
 from util.json_request import JsonResponse
@@ -137,6 +137,7 @@ def _populate_users_not_members(results):
             _('Full Name'): result.name,
             _('Login Code'): result.login_code,
             _('Enroll Date'): datetime_utils.to_jst(result.created).strftime('%Y/%m/%d'),
+            #_('Register Status'): result.status,
             _('Group Code'): '',
             _('Member Code'): "",
         } for result in results
@@ -357,7 +358,14 @@ def download_csv(request):
         csv_name=CSV_NAME,
         timestamp_str=timestamp_str,
     )
-    response = create_tsv_response(filename, header, datarows)
-    response['Set-Cookie'] = 'fileDownload=true; path=/'
-    return response
+    if 'encode' not in request.POST:
+        request.POST['encode'] = 'false'
+    if request.POST['encode'] == 'false':
+        response = create_csv_response_double_quote(filename, header, datarows)
+        response['Set-Cookie'] = 'fileDownload=true; path=/'
+        return response
+    elif request.POST['encode'] == 'true':
+        response = create_tsv_response(filename, header, datarows)
+        response['Set-Cookie'] = 'fileDownload=true; path=/'
+        return response
 

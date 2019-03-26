@@ -709,10 +709,34 @@ class CourseFields(object):
         scope=Scope.settings,
         deprecated=True
     )
+    course_order = String(
+        display_name=_("Course Order"),
+        help=_("Course Order"),
+        default=None,
+        scope=Scope.settings,
+    )
     course_category = List(
         display_name=_("Course Category"),
         help=_("Course Category"),
         default=[],
+        scope=Scope.settings,
+    )
+    course_category_order = String(
+        display_name=_("Course Category Order"),
+        help=_("Course Category Order"),
+        default=None,
+        scope=Scope.settings,
+    )
+    course_category2 = String(
+        display_name=_("Course Category2"),
+        help=_("Course Category2"),
+        default=None,
+        scope=Scope.settings,
+    )
+    course_category_order2 = String(
+        display_name=_("Course Category Order2"),
+        help=_("Course Category Order2"),
+        default=None,
         scope=Scope.settings,
     )
     is_f2f_course = Boolean(
@@ -824,6 +848,20 @@ class CourseFields(object):
         help=_("Allows showing of the playback tab."),
         default=False,
         scope=Scope.settings,
+    )
+
+    show_attendance_tab = Boolean(
+        display_name=_("Show Attendance Tab"),
+        help=_("Allows showing of the attendance tab."),
+        default=False,
+        scope=Scope.settings
+    )
+
+    is_status_managed = Boolean(
+        display_name=_("Set course as status management target."),
+        help=_("Select 'True' to manage the status of this course."),
+        default=False,
+        scope=Scope.settings
     )
 
     target_library = List(

@@ -22,6 +22,8 @@ DjangoOrmFieldCache: A base-class for single-row-per-field caches.
 """
 
 import json
+from datetime import datetime
+from pytz import UTC
 from abc import abstractmethod, ABCMeta
 from collections import defaultdict, namedtuple
 from .models import (
@@ -36,14 +38,18 @@ from opaque_keys.edx.block_types import BlockTypeKeyV1
 from opaque_keys.edx.asides import AsideUsageKeyV1
 from contracts import contract, new_contract
 
+from courseware.user_state_client import DjangoXBlockUserStateClient
+
 from django.db import DatabaseError
+
+from student.models import CourseEnrollment
+from util.ga_attendance_status import AttendanceStatusExecutor
 
 from xblock.runtime import KeyValueStore
 from xblock.exceptions import KeyValueMultiSaveError, InvalidScopeError
 from xblock.fields import Scope, UserScope
 from xmodule.modulestore.django import modulestore
 from xblock.core import XBlockAside
-from courseware.user_state_client import DjangoXBlockUserStateClient
 
 
 log = logging.getLogger(__name__)
@@ -1008,3 +1014,13 @@ def set_score(user_id, usage_key, score, max_score):
         student_module.grade = score
         student_module.max_grade = max_score
         student_module.save()
+
+        course = modulestore().get_course(usage_key.course_key)
+        if course.is_status_managed:
+            course_enrollment = CourseEnrollment.objects.get(user=user_id,
+                                                             course_id=usage_key.course_key)
+            executor = AttendanceStatusExecutor(enrollment=course_enrollment)
+            if not executor.is_completed:
+                status_check = executor.check_attendance_status(course, user_id)
+                if status_check:
+                    executor.set_completed(datetime.now(UTC))

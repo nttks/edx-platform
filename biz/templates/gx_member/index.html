@@ -94,6 +94,31 @@ from django.core.urlresolvers import reverse
             $('#member-download-csv').submit();
         });
 
+
+        $('#member-headers-download-csv button').on('click', function(event) {
+            $('#member-headers-download-csv').submit();
+        });
+
+        $('input[name=auto_mask_flg]').on('click', function() {
+            var $this = $(this);
+            w2utils.lock($('.gc_content'), '', true);
+            $.ajax({
+                url: $('#js-auto-mask-flg').data('endpoint'),
+                type: 'POST',
+                data: {
+                    organization: $('#js-auto-mask-flg').data('organization'),
+                    auto_mask_flg: $this.val()
+                },
+            }).always(function () {
+                w2utils.unlock($('.gc_content'));
+            });
+        });
+        if ('${auto_mask_flg}' === '1') {
+            $('#js-auto-mask-flg-on').prop('checked', true);
+        } else {
+            $('#js-auto-mask-flg-off').prop('checked', true);
+        }
+
         function validate_member_form() {
             $('#error_area').empty().hide();
             var errorMessages = [];
@@ -216,7 +241,21 @@ from django.core.urlresolvers import reverse
 </script>
 <style>
     .content-wrapper {
-        min-height: 500px;
+        min-height: 780px;
+    }
+    .gc_download {
+        margin-bottom: 20px;
+    }
+    .chk_encode {
+        margin-right: 0.5em;
+    }
+    .gc_download_chk {
+        float: right;
+        text-align: center;
+        padding-left: 0em;
+        font-size: 0.8rem;
+        font-weight: normal;
+        font-style: normal;
     }
 </style>
 </%block>
@@ -232,7 +271,7 @@ from django.core.urlresolvers import reverse
     </div>
     <div class="gc_step">
         <div class="gc_step_item">
-            <form id="member-download-csv" action='${reverse("biz:member:download_ajax")}' method="post">
+            <form id="member-headers-download-csv" action='${reverse("biz:member:download_headers_ajax")}' method="post">
                 <button class="btn btn-grn" type="button">${_("Download format file")}</button>
                 <input type="hidden" name="csrfmiddlewaretoken" value="${csrf_token}" />
                 <input type="hidden" name="organization" value="${request.current_organization.id}" />
@@ -351,6 +390,32 @@ from django.core.urlresolvers import reverse
         </div>
     </form>
     -->
+    <!-- ON / OFF -->
+    <hr>
+    <div class="gc_column">
+        <div class="gc_field">
+            <fieldset class="gc_fieldset">
+                <div class="gc_fieldset_wrap">
+                    <legend class="gc_fieldset_label gc_w21em">${_("Mask personal info automatically")}</legend>
+                    <div id="js-auto-mask-flg" class="gc_fieldset_ipt"
+                        data-endpoint="${reverse('biz:member:update_auto_mask_flg_ajax')}"
+                        data-organization="${request.current_organization.id}">
+                            <label class="gc_fieldset_label_radio">
+                                <input id="js-auto-mask-flg-on" class="gc_fieldset_ipt_radio"
+                                       name="auto_mask_flg" value="1" type="radio">${_("Auto delete")} ON</label>
+                            <label class="gc_fieldset_label_radio">
+                                <input id="js-auto-mask-flg-off" class="gc_fieldset_ipt_radio"
+                                       name="auto_mask_flg" value="0" type="radio" checked>${_("Auto delete")} OFF</label>
+                    </div>
+                </div>
+                <div class="gc_fieldset_wrap">
+                    <legend class="gc_w21em"></legend>
+                    <span>${_("Mask personal info on member of delete target when register students automatically.")}</span>
+                </div>
+            </fieldset>
+        </div>
+    </div>
+    <!-- ./ON / OFF -->
 </div>
 
 <%include file="_task_history.html" />
@@ -381,6 +446,19 @@ from django.core.urlresolvers import reverse
     <form id="get_member_task">
         <input type="hidden" name="csrfmiddlewaretoken" value="${csrf_token}" />
         <input type="hidden" name="organization" value="${request.current_organization.id}" />
+    </form>
+</div>
+<div class="gc_step_item">
+    <form id="member-download-csv" action='${reverse("biz:member:download_ajax")}' method="post">
+        <div class="gc_download">
+            <button class="btn btn-grn" type="button" style="width: 50%">${_("Download current registration status")}</button>
+            <input type="hidden" name="csrfmiddlewaretoken" value="${csrf_token}" />
+            <input type="hidden" name="organization" value="${request.current_organization.id}" />
+        </div>
+            <div class="gc_fieldset_ipt_center">
+                <label class="gc_optional_label">
+                <input class="chk_encode" type="checkbox" name="encode" value="on"/><p class="gc_download_chk">${_("If you want to download the member list in UTF-16, please place a check mark and then push the button.(Please note that when you open the file downloaded with 'Shift-JIS' in Excel, 0 at the head disappears.)")}</p></label>
+            </div>
     </form>
 </div>
 </%block>

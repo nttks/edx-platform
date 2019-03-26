@@ -18,8 +18,7 @@ from biz.djangoapps.gx_member.models import Member, MemberTaskHistory, MemberReg
 from biz.djangoapps.gx_org_group.models import Group
 from biz.djangoapps.gx_username_rule.models import OrgUsernameRule
 from biz.djangoapps.gx_sso_config.models import SsoConfig
-
-from social.storage.django_orm import DjangoUserMixin
+from biz.djangoapps.gx_save_register_condition.utils import reflect_condition_execute_call_by_another_task
 
 from openedx.core.djangoapps.ga_task.models import Task
 from openedx.core.djangoapps.ga_task.task import TaskProgress
@@ -115,6 +114,11 @@ def perform_delegate_member_register(entry_id, task_input, action_name):
     with transaction.atomic():
         task_history.update_result(task_result, ','.join(error_messages))
 
+    # Auto student register task.
+    reflect_condition_execute_call_by_another_task(
+        task_id=task_id, org=task_history.organization, user=task_history.requester,
+        action_name='reflect_conditions_member_register')
+
     return task_progress.update_task_state()
 
 
@@ -181,6 +185,11 @@ def perform_delegate_member_register_one(entry_id, task_input, action_name):
 
     with transaction.atomic():
         task_history.update_result(task_result, error_message)
+
+    # Auto student register task.
+    reflect_condition_execute_call_by_another_task(
+        task_id=task_id, org=task_history.organization, user=task_history.requester,
+        action_name='reflect_conditions_member_register')
 
     return task_progress.update_task_state()
 
@@ -284,9 +293,7 @@ def _create_member(data, request_user, org, social):
                 user.first_name = data['first_name']
                 user.last_name = data['last_name']
                 user.save()
-                # if social:
-                #     social_user = DjangoUserMixin.create_social_auth(user=user, provider='tpa-saml', uid=social.idp_slug + ':' + data['code'])
-                #     social_user.save()
+
                 # Create biz user when login_code is not empty.
                 if data['login_code'].strip():
                     # Validate login code

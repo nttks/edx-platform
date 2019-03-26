@@ -1,84 +1,16 @@
 import logging
 import time
-
 from django.contrib.auth.models import User
 from django.db import transaction
 from django.utils.translation import ugettext as _
-
-from biz.djangoapps.ga_contract.models import ContractDetail
 from biz.djangoapps.ga_contract_operation.models import ContractTaskHistory, ContractTaskTarget
-from biz.djangoapps.ga_invitation.models import AdditionalInfoSetting, ContractRegister, UNREGISTER_INVITATION_CODE
+from biz.djangoapps.ga_contract_operation.utils import PersonalinfoMaskExecutor
+from biz.djangoapps.ga_invitation.models import ContractRegister
 from biz.djangoapps.util import mask_utils
-from biz.djangoapps.util.access_utils import has_staff_access
-from openedx.core.djangoapps.course_global.models import CourseGlobalSetting
 from openedx.core.djangoapps.ga_task.models import Task
 from openedx.core.djangoapps.ga_task.task import TaskProgress
-from student.models import CourseEnrollment
 
 log = logging.getLogger(__name__)
-
-
-class _PersonalinfoMaskExecutor(object):
-    """
-    Helper class for executing mask of personal information.
-    """
-
-    def __init__(self, task_id, contract):
-        self.task_id = task_id
-        self.contract = contract
-        _all_spoc_contract_details = ContractDetail.find_all_spoc()
-        # all of spoc course ids
-        self.spoc_course_ids = set([cd.course_id for cd in _all_spoc_contract_details])
-        # spoc course ids which excluding courses relate with unavailable contract.
-        self.enabled_spoc_course_ids = set([cd.course_id for cd in _all_spoc_contract_details if cd.contract.is_enabled()])
-        # spoc course ids of target contract
-        self.target_spoc_course_ids = set([cd.course_id for cd in contract.details.all()])
-        # course ids of global course
-        self.global_course_ids = set(CourseGlobalSetting.all_course_id())
-
-    def check_enrollment(self, user):
-        enrollment_course_ids = set([ce.course_id for ce in CourseEnrollment.enrollments_for_user(user)])
-        # exclude global course
-        enrollment_course_ids = enrollment_course_ids - self.global_course_ids
-
-        enrollment_other_spoc_course_ids = (enrollment_course_ids & self.enabled_spoc_course_ids) - self.target_spoc_course_ids
-        if enrollment_other_spoc_course_ids:
-            log.info("Task {task_id}: User {user_id} is enrolled in other SPOC course {course_ids}".format(
-                task_id=self.task_id,
-                user_id=user.id,
-                course_ids=','.join([unicode(course_id) for course_id in enrollment_other_spoc_course_ids])
-            ))
-            return False
-
-        enrollment_mooc_course_ids = enrollment_course_ids - self.spoc_course_ids
-        if enrollment_mooc_course_ids:
-            log.info("Task {task_id}: User {user_id} is enrolled in MOOC course {course_ids}".format(
-                task_id=self.task_id,
-                user_id=user.id,
-                course_ids=','.join([unicode(course_id) for course_id in enrollment_mooc_course_ids])
-            ))
-            return False
-
-        return True
-
-    def disable_additional_info(self, contract_register):
-        """
-        Override masked value to additional information.
-
-        Note: We can `NEVER` restore the masked value.
-        """
-        for additional_setting in AdditionalInfoSetting.find_by_user_and_contract(contract_register.user, self.contract):
-            additional_setting.value = mask_utils.hash(additional_setting.value)
-            additional_setting.save()
-
-        # ContractRegister and ContractRegisterHistory for end-of-month
-        contract_register.status = UNREGISTER_INVITATION_CODE
-        contract_register.save()
-        # CourseEnrollment only spoc
-        if self.contract.is_spoc_available:
-            for course_key in self.target_spoc_course_ids:
-                if CourseEnrollment.is_enrolled(contract_register.user, course_key) and not has_staff_access(contract_register.user, course_key):
-                    CourseEnrollment.unenroll(contract_register.user, course_key)
 
 
 def _validate_and_get_arguments(task_id, task_input):
@@ -124,7 +56,7 @@ def perform_delegate_personalinfo_mask(entry_id, task_input, action_name):
     task_progress = TaskProgress(action_name, len(targets), time.time())
     task_progress.update_task_state()
 
-    executor = _PersonalinfoMaskExecutor(task_id, contract)
+    executor = PersonalinfoMaskExecutor(contract)
 
     for line_number, target in enumerate(targets, start=1):
         task_progress.attempt()
@@ -185,10 +117,23 @@ def perform_delegate_personalinfo_mask(entry_id, task_input, action_name):
                 executor.disable_additional_info(contract_register)
                 # Try to mask user information if contract is SPOC.
                 if contract.is_spoc_available:
-                    if not executor.check_enrollment(user):
+                    error_setting = executor.check_enrollment(user)
+                    if error_setting is not None and error_setting['code'] is executor.ERROR_CODE_ENROLLMENT_SPOC:
+                        log.info("Task {task_id}: User {user_id} is enrolled in other SPOC course {course_ids}".format(
+                            task_id=task_id, user_id=user.id,
+                            course_ids=','.join([unicode(course_id) for course_id in error_setting['course_id']])))
                         task_progress.skip()
                         continue
-                    mask_utils.disable_user_info(user)
+                    elif error_setting is not None and error_setting['code'] is executor.ERROR_CODE_ENROLLMENT_MOOC:
+                        log.info("Task {task_id}: User {user_id} is enrolled in MOOC course {course_ids}".format(
+                            task_id=task_id, user_id=user.id,
+                            course_ids=','.join([unicode(course_id) for course_id in error_setting['course_id']])
+                        ))
+                        task_progress.skip()
+                        continue
+                    else:
+                        # No error
+                        mask_utils.disable_user_info(user)
                 target.complete()
         except:
             # If an exception occur, logging it and to continue processing next target.

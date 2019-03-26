@@ -600,3 +600,14 @@ from ga_app.envs.test import *
 
 ##### Settings for Gacco.org's Bulk email #####
 GA_BULK_EMAIL_SEND_SELF_PACED_COURSE_CLOSURE_REMINDER_EMAIL_COMMAND_OUTPUT = tempfile.NamedTemporaryFile().name
+
+#### Settings for "playback_finish" of mongo collection ####
+PLAYBACK_FINISH_MONGO = {
+    "playback_finish_connection": {
+        "collection": "playback_status",
+        "db": "edxapp",
+        "host": MONGO_HOST,
+        "port": MONGO_PORT_NUM,
+        "user": "edxapp"
+    }
+}

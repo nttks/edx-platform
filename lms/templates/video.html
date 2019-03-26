@@ -6,14 +6,14 @@
 
 <div
     id="video_${id}"
-    class="video closed"
+    data-module_id='${id}'
+    class="video closed video-module_id"
     data-metadata='${metadata}'
     data-bumper-metadata='${bumper_metadata}'
     data-poster='${poster}'
     tabindex="-1"
 >
     <div class="focus_grabber first"></div>
-
     <div class="tc-wrapper">
       <a href="#before-transcript_${id}" class="nav-skip sr">${_("Skip to a navigable version of this video's transcript.")}</a>
 

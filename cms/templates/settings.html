@@ -364,10 +364,31 @@ CMS.URL.UPLOAD_ASSET = '${upload_asset_url}';
               <ol class="list-input">
                 ## Note: GaGlobalCourseCreator can edit course category (#2150)
                 % if user.is_staff or GaGlobalCourseCreatorRole().has_user(user):
+                <li class="field" id="field-course-order">
+                  <label for="course-order">${_("Course Order")}</label>
+                  <input type="text" class="placeholder short" id="course-order" value="" autocomplete="off" />
+                  <span class="tip tip-stacked">${_("Please enter the course order.")}</span>
+                </li>
                 <li class="field" id="field-course-category">
-                  <label for="course-category">${_("Course Category")}</label>
+                  <label for="course-category">${_("Course Category Genre")}1</label>
                   <input type="text" class="placeholder" id="course-category" value="" autocomplete="off" />
-                  <span class="tip tip-stacked">${_("Please enter the course category, separated by commas.")}</span>
+                  <span class="tip tip-stacked">${_("Please enter the course category1.")}${_("Please do not input a comma(,).")}</span>
+                  <span class="tip tip-reminder">${_("*Please be careful when you input [gacco] into genre1 because a lecture is placed in the top page of the gacco.")}</span>
+                </li>
+                <li class="field" id="field-course-category-order">
+                  <label for="course-category-order">${_("Course Category Genre")}1${_("Display Order")}</label>
+                  <input type="text" class="placeholder short" id="course-category-order" value="" autocomplete="off" />
+                  <span class="tip tip-stacked">${_("Please enter the course category Genre1 display order.")}</span>
+                </li>
+                <li class="field" id="field-course-category2">
+                  <label for="course-category2">${_("Course Category Genre")}2</label>
+                  <input type="text" class="placeholder" id="course-category2" value="" autocomplete="off" />
+                  <span class="tip tip-stacked">${_("Please enter the course category2.")}</span>
+                </li>
+                <li class="field" id="field-course-category-order2">
+                  <label for="course-category-order2">${_("Course Category Genre")}2${_("Display Order")}</label>
+                  <input type="text" class="placeholder short" id="course-category-order2" value="" autocomplete="off" />
+                  <span class="tip tip-stacked">${_("Please enter the course category Genre2 display order.")}</span>
                 </li>
                 % endif
                 <li class="field required" id="field-course-canonical-name">

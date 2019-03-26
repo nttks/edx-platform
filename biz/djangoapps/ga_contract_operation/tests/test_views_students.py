@@ -535,6 +535,51 @@ class ContractOperationViewTestStudents(BizContractTestBase):
             response = self.client.post(self._url_students_download, param)
         self.assertEqual(200, response.status_code)
 
+    def test_students_download_user_sjis(self):
+        self.setup_user()
+        director_manager = self._director_manager
+        for i in range(100):
+            self._create_user_and_contract_register()
+        GroupUtil(org=self.contract_org, user=self.user).import_data()
+        group = Group.objects.get(org=self.contract_org, group_code="G01")
+        manager_manager = self._manager_manager
+        RightFactory.create(org=self.contract_org, group=group, user=manager_manager.user, created_by=self.user,
+                            creator_org=self.contract_org)
+
+        with self.skip_check_course_selection(current_organization=self.contract_org,
+                                              current_contract=self.contract, current_manager=director_manager):
+            param = self._create_param_search_students_ajax()
+            param['current_organization_visible_group_ids'] = group.pk
+            param["encode"] = "on"
+            response = self.client.post(self._url_students_download, param)
+        self.assertEqual(200, response.status_code)
+
+    def test_students_download_member_sjis(self):
+        self.setup_user()
+        # Create groups
+        GroupUtil(org=self.contract_org, user=self.user).import_data()
+        groups = Group.objects.filter(org=self.contract_org)
+        # Create member in group
+        for i, group in enumerate(groups):
+            register = self._create_user_and_contract_register()
+            self._create_member(
+                org=self.contract_org, group=group, user=register.user, code='code' + str(i))
+        # Create member belong to group
+        register = self._create_user_and_contract_register()
+        self._create_member(
+            org=self.contract_org, group=None, user=register.user, code='code_not_group')
+        director_manager = self._director_manager
+        manager_manager = self._manager_manager
+        right_group = Group.objects.filter(org=self.contract_org).get(group_code='G01')
+        RightFactory.create(org=self.contract_org, group=right_group, user=manager_manager.user, created_by=self.user,
+                            creator_org=self.contract_org)
+        with self.skip_check_course_selection(current_organization=self.contract_org,
+                                              current_contract=self.contract, current_manager=director_manager):
+            param = self._create_param_search_students_ajax()
+            param["encode"] = "on"
+            response = self.client.post(self._url_students_download, param)
+        self.assertEqual(200, response.status_code)
+
     def test_another_organization_member(self):
         self.setup_user()
         orgs = [self._create_organization(org_name='org' + str(i)) for i in range(2)]

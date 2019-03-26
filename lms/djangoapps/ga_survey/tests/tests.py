@@ -16,17 +16,20 @@ from ga_survey.views import survey_init, survey_ajax
 from opaque_keys.edx.locator import CourseLocator
 from student.tests.factories import UserFactory
 
+from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
+from xmodule.modulestore.tests.factories import CourseFactory
 
 log = logging.getLogger(__name__)
 
 
-class SuveyTests(TestCase):
+class SuveyTests(ModuleStoreTestCase, TestCase):
     """
     Tests for survey functionality
     """
     request_factory = RequestFactory()
 
     def setUp(self):
+        super(SuveyTests, self).setUp()
         self.user = UserFactory.create()
         self.course_id = CourseLocator.from_string('edX/test/course1')
         self.unit_id = '22222222222222222222222222222222'
@@ -153,6 +156,7 @@ class SuveyTests(TestCase):
 
     def test_survey_ajax_success(self):
         """Ensures that /survey_ajax/ succeeds"""
+        CourseFactory.create(org='edX', number='test', display_name='course1')
         data = {
             'course_id': self.course_id,
             'unit_id': self.unit_id,

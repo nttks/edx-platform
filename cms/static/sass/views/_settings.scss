@@ -233,6 +233,7 @@
           }
 
           &.short {
+            width: flex-grid(3, 9);
           }
 
           &.error {
@@ -270,6 +271,10 @@
           & + label {
             display: inline-block;
           }
+        }
+
+        .tip-reminder {
+          color: red;
         }
       }
 

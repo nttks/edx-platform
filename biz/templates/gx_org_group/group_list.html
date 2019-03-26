@@ -100,10 +100,20 @@ from django.core.urlresolvers import reverse
          $('form#download-form button').on('click', function(event) {
             $.fileDownload($(event.target).data('endpoint'), {
                     httpMethod: "POST",
-                    data: {"csrfmiddlewaretoken": $.cookie("csrftoken")}
+                    data: {"csrfmiddlewaretoken": $.cookie("csrftoken"),"encode":$('#download-form').find('[name=encode]').prop('checked')}
                 })
                 .always(function () {
                     $('#download-btn').attr('disabled', false);
+                });
+        });
+
+         $('form#download-header-form button').on('click', function(event) {
+            $.fileDownload($(event.target).data('endpoint'), {
+                    httpMethod: "POST",
+                    data: {"csrfmiddlewaretoken": $.cookie("csrftoken")}
+                })
+                .always(function () {
+                    $('#download-header-btn').attr('disabled', false);
                 });
         });
 
@@ -193,9 +203,9 @@ from django.core.urlresolvers import reverse
     </div>
     <div class="gc_step">
         <div class="gc_step_item">
-            <form id="download-form" method="get">
-                <button id="download-btn" class="btn btn-grn" type="button"
-                    data-endpoint="${reverse('biz:group:download_csv')}">${_("Download format file")}</button>
+            <form id="download-header-form" method="get">
+                <button id="download-header-btn" class="btn btn-grn" type="button"
+                    data-endpoint="${reverse('biz:group:download_headers_csv')}">${_("Download format file")}</button>
                 <input type="hidden" name="csrfmiddlewaretoken" value="${csrf_token}" />
                 <input type="hidden" name="organization" value="${request.current_organization.id}" />
             </form>
@@ -225,5 +235,19 @@ from django.core.urlresolvers import reverse
         <p class="gc_mb10">${_('Click [delete] to delete group tree with the belongings ')}</p>
     </div>
     <div id="grid" class="w2ui-reset w2ui-grid"></div>
+</div>
+<div class="gc_step_item">
+    <form id="download-form" method="get">
+        <div class="gc_download">
+            <button id="download-btn" class="btn btn-grn" type="button" style="width: 50%"
+                    data-endpoint="${reverse('biz:group:download_csv')}">${_("Download current registration status")}</button>
+            <input type="hidden" name="csrfmiddlewaretoken" value="${csrf_token}" />
+            <input type="hidden" name="organization" value="${request.current_organization.id}" />
+        </div>
+        <div class="gc_fieldset_ipt_center">
+            <label class="gc_optional_label">
+                <input class="chk_encode" type="checkbox" name="encode"/><p class="gc_download_chk">${_("If you want to download the group list in UTF-16, please place a check mark and then push the button.(Please note that when you open the file downloaded with 'Shift-JIS' in Excel, 0 at the head disappears.)")}</p></label>
+        </div>
+    </form>
 </div>
 </%block>

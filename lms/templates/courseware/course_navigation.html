@@ -119,7 +119,8 @@ include_special_exams = settings.FEATURES.get('ENABLE_SPECIAL_EXAMS', False) and
                <li class="help-tab">
                  <a href="#help-modal" rel="leanModal" role="button">${_("Help")}</a>
                </li>
-               % if member:
+               <% member2 = SsoConfig.user_control_process2(user.id)%>
+               % if member2:
                 <li><a href="${reverse('logout')}">${_("Log Out")}</a></li>
                % endif
              </ul>

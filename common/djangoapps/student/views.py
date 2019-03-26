@@ -3,6 +3,7 @@ Student Views
 """
 import datetime
 import logging
+import re
 import uuid
 import json
 import warnings
@@ -51,7 +52,8 @@ from edxmako.shortcuts import render_to_response, render_to_string, marketing_li
 
 from course_modes.models import CourseMode
 from courseware.ga_access import is_terminated
-from shoppingcart.api import paid_course_order_history 
+from class_dashboard.dashboard_data import get_array_section_has_problem
+from shoppingcart.api import paid_course_order_history
 from student.models import (
     get_user_by_username_or_email,
     Registration, UserProfile,
@@ -61,6 +63,7 @@ from student.models import (
     DashboardConfiguration, LinkedInAddToProfileConfiguration, ManualEnrollmentAudit, ALLOWEDTOENROLL_TO_ENROLLED)
 from student.forms import (AccountCreationForm, PasswordResetFormNoActive,
                            SetPasswordFormErrorMessages, ResignForm, SetResignReasonForm)
+from util.ga_attendance_status import AttendanceStatusExecutor
 
 from lms.djangoapps.verify_student.models import SoftwareSecurePhotoVerification
 from certificates.models import CertificateStatuses, GeneratedCertificate, certificate_status_for_student
@@ -71,15 +74,18 @@ from certificates.api import (  # pylint: disable=import-error
 
 from xmodule.modulestore.django import modulestore
 from opaque_keys import InvalidKeyError
-from opaque_keys.edx.keys import CourseKey
-from opaque_keys.edx.locations import SlashSeparatedCourseKey
+from opaque_keys.edx.keys import CourseKey, UsageKey
+from opaque_keys.edx.locations import SlashSeparatedCourseKey, Location
 from opaque_keys.edx.locator import CourseLocator
 from xmodule.modulestore import ModuleStoreEnum
 
 from collections import namedtuple
 
-from courseware.courses import get_courses, sort_by_announcement, sort_by_start_date  # pylint: disable=import-error
+from courseware.courses import get_course, get_courses, sort_by_announcement, sort_by_start_date  # pylint: disable=import-error
 from courseware.access import has_access
+from courseware.models import StudentModule
+from courseware.grades import check_attempted
+from courseware.module_render import get_module_for_descriptor
 
 from django_comment_common.models import Role
 
@@ -100,6 +106,7 @@ import dogstats_wrapper as dog_stats_api
 from util.db import outer_atomic
 from util.json_request import JsonResponse
 from util.bad_request_rate_limiter import BadRequestRateLimiter
+from util.module_utils import yield_dynamic_descriptor_descendants
 from util.milestones_helpers import (
     get_pre_requisite_courses_not_completed,
 )
@@ -129,13 +136,16 @@ from notification_prefs.views import enable_notifications
 from openedx.core.djangoapps.user_api.preferences import api as preferences_api
 from openedx.core.djangoapps.programs.utils import get_programs_for_dashboard
 
+from ga_survey.models import SurveySubmission
 from ga_advanced_course.status import AdvancedCourseStatus
+from openedx.core.djangoapps.models.course_details import CourseDetails
 from openedx.core.djangoapps.course_global.models import CourseGlobalSetting
 from openedx.core.djangoapps.ga_self_paced import api as self_paced_api
 
 from biz.djangoapps.ga_contract.models import ContractDetail
 from biz.djangoapps.util import mask_utils
 
+from lms.djangoapps.courseware.ga_mongo_utils import PlaybackFinishStore
 
 log = logging.getLogger("edx.student")
 AUDIT_LOG = logging.getLogger("audit")
@@ -576,6 +586,41 @@ def dashboard(request):
         for course_id, modes in unexpired_course_modes.iteritems()
     }
 
+    course_categories = {}
+    course_orders = {}
+    enroll_statuses = {}
+    course_enroll_dates = {}
+
+    for course_id in enrolled_course_ids:
+        course = get_course(course_id)
+
+        # Set course category1, category2
+        course_categories[course_id] = [{
+            'name': ''.join(course.course_category or []),
+            'order': int(course.course_category_order) if course.course_category_order else ''
+        },{
+            'name': course.course_category2 or '',
+            'order': int(course.course_category_order2) if course.course_category_order2 else ''
+        }]
+        # Set course display order
+        course_orders[course_id] = int(course.course_order) if course.course_order else ''
+
+        course_enrollment = CourseEnrollment.get_enrollment(request.user, course_key=course_id)
+        course_enroll_dates[course_id] = course_enrollment.created
+        # check attendance status
+        executor = AttendanceStatusExecutor(enrollment=course_enrollment)
+        enroll_statuses[course_id] = executor.get_attendance_status_str(course=course, user=course_enrollment.user)
+
+    # Set max order when course_order is empty.
+    max_course_orders = max(filter(lambda x: x != '', course_orders.values()) or [0]) + 1
+    course_orders = {
+        key : course_orders[key] if course_orders[key] != '' else max_course_orders
+        for key in course_orders
+    }
+
+    # Create display genre selection by course_categories or course_categories2.
+    search_genre1_list, search_genre2_list = _create_search_genre_list(course_categories)
+
     # Check to see if the student has recently enrolled in a course.
     # If so, display a notification message confirming the enrollment.
     enrollment_message = _create_recent_enrollment_message(
@@ -752,6 +797,12 @@ def dashboard(request):
         'nav_hidden': True,
         'course_programs': course_programs,
         'advanced_course_statuses': advanced_course_statuses,
+        'enroll_statuses': enroll_statuses,
+        'course_categories': course_categories,
+        'course_orders': course_orders,
+        'search_genre1_list': search_genre1_list,
+        'search_genre2_list': search_genre2_list,
+        'course_enroll_dates': course_enroll_dates,
     }
 
     return render_to_response('dashboard.html', context)
@@ -963,6 +1014,67 @@ def _credit_statuses(user, course_enrollments):
         statuses[course_key] = status
 
     return statuses
+
+
+def _create_search_genre_list(course_categories):
+    """
+    Create genre list for display dashboard page.
+    :param course_categories: {
+        course_id : [{
+            course.course_category: course.course_category_order
+        },{
+            course.course_category2: course.course_category_order2
+        }]
+    }
+    :return: (
+        genre1_list: course_category list sorted by course.course_category_order
+        genre2_list: course_category2 list sorted by course.course_category_order2
+    )
+    """
+    genre1_dict = {}
+    genre2_dict = {}
+    for course_id in course_categories:
+        # Create genre1 dict and set the lowest order value
+        category1 = course_categories[course_id][0]
+        if category1['name'] == '':
+            continue
+
+        if category1['name'] in genre1_dict:
+            if genre1_dict[category1['name']] > category1['order']:
+                genre1_dict[category1['name']] = category1['order']
+        else:
+            genre1_dict[category1['name']] = category1['order']
+            genre2_dict[category1['name']] = {}
+
+        # Create genre2 dict and set the lowest order value
+        category2 = course_categories[course_id][1]
+        if category2['name'] == '':
+            continue
+
+        if category2['name'] in genre2_dict[category1['name']]:
+            if genre2_dict[category1['name']][category2['name']] > category2['order']:
+                genre2_dict[category1['name']][category2['name']] = category2['order']
+        else:
+            genre2_dict[category1['name']][category2['name']] = category2['order']
+
+    # if genre1 is 'gacco' then display at the end and if genre 1 is empty then display at before the end.
+    max_genre1_order = max(filter(lambda x: x != '', genre1_dict.values()) or [0])
+    for genre1_name in genre1_dict:
+        if genre1_name == 'gacco':
+            genre1_dict[genre1_name] = max_genre1_order + 2
+        elif genre1_dict[genre1_name] == '':
+            genre1_dict[genre1_name] = max_genre1_order + 1
+        else:
+            continue
+
+    # sort genre order num
+    genre1_list = [ name for name, order in sorted(genre1_dict.items(), key=lambda x: (x[1], x[0])) ]
+    genre2_list = [{
+        'genre1_name': genre1_name,
+        'genre2_list': [ name for name, order in sorted(genre2_dict[genre1_name].items(), key=lambda x: (x[1], x[0])) ]
+    } for genre1_name in genre2_dict]
+
+    return genre1_list, genre2_list
 
 
 @transaction.non_atomic_requests

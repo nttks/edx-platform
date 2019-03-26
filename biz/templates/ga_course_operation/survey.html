@@ -14,15 +14,15 @@ from django.core.urlresolvers import reverse
     $(function () {
         $('#form').w2form({name: 'form'});
         $('.w2ui-buttons').on('click', '#download-btn', function () {
-            if ($('#encoding-utf8').prop('checked')) {
-                saveInstructorSurveyEncodingUTF8('true');
-                downloadFileUsingPost($(this).data('endpointUtf8'));
+            if ($('#encoding-utf16').prop('checked')) {
+                saveInstructorSurveyEncodingUTF16('true');
+                downloadFileUsingPost($(this).data('endpointUtf16'));
             } else {
-                saveInstructorSurveyEncodingUTF8('false');
+                saveInstructorSurveyEncodingUTF16('false');
                 downloadFileUsingPost($(this).data('endpoint'));
             }
         });
-        $('#encoding-utf8').prop('checked', getInstructorSurveyEncodingUTF8());
+        $('#encoding-utf16').prop('checked', getInstructorSurveyEncodingUTF16());
 
          // Tab
         $('[role="tab"]').on('click',function(e){
@@ -193,7 +193,7 @@ from django.core.urlresolvers import reverse
             $btn.attr('disabled', true);
             $.fileDownload("${reverse('biz:course_anslist:status_download')}", {
                     httpMethod: "POST",
-                    data: {"csrfmiddlewaretoken": $.cookie("csrftoken")}
+                    data: {"csrfmiddlewaretoken": $.cookie("csrftoken"),"encode":$('#survey_form').find('[name=encode]').prop('checked')}
                 })
                 .always(function () {
                     $btn.attr('disabled', false);
@@ -204,7 +204,7 @@ from django.core.urlresolvers import reverse
 
         $('#download-searched-ans-status-btn').on('click', function () {
             var $btn = $(this);
-            var postData = {"csrfmiddlewaretoken": $.cookie("csrftoken")};
+            var postData = {"csrfmiddlewaretoken": $.cookie("csrftoken"),"encode":$('#survey_form').find('[name=encode]').prop('checked')};
             $("#is_filter").val('off');
             is_filtering()
             $.each($('#form-status').find('textarea,input,select').serializeArray(), function(i, value){
@@ -261,15 +261,15 @@ from django.core.urlresolvers import reverse
 
     });
     
-    function saveInstructorSurveyEncodingUTF8(value) {
+    function saveInstructorSurveyEncodingUTF16(value) {
         if (window.localStorage) {
-            window.localStorage.setItem('biz.survey.encodingUTF8', value);
+            window.localStorage.setItem('biz.survey.encodingUTF16', value);
         }
     }
     
-    function getInstructorSurveyEncodingUTF8() {
+    function getInstructorSurveyEncodingUTF16() {
         if (window.localStorage) {
-            return window.localStorage.getItem('biz.survey.encodingUTF8') === 'true';
+            return window.localStorage.getItem('biz.survey.encodingUTF16') === 'true';
         }
     }
 </script>
@@ -280,6 +280,23 @@ from django.core.urlresolvers import reverse
     }
     .content-wrapper {
         min-height: 500px;
+    }
+    .gc_download {
+        margin-bottom: 20px;
+    }
+    .chk_encode {
+        margin-right: 0.5em;
+    }
+    .gc_download_chk {
+        float: right;
+        text-align: center;
+        padding-left: 0em;
+        font-size: 0.8rem;
+        font-weight: normal;
+        font-style: normal;
+    }
+    .encoding-utf16 {
+        font-size: 0.8rem;
     }
 </style>
 </%block>
@@ -305,8 +322,8 @@ from django.core.urlresolvers import reverse
                         </div>
                     </div>
                     <div class="w2ui-buttons">
-                        <input type="button" id="download-btn" data-endpoint="${reverse('biz:course_operation:survey_download')}" data-endpoint-utf8="${reverse('biz:course_operation:survey_download_utf8')}" value="&#xf1c3 ${_("Get file of survey result")}"/><br/>
-                        <input type="checkbox" id="encoding-utf8" /><label for="encoding-utf8" class="encoding-utf8">${_("If you want to download the file in UTF-8, please place a check mark and then push the button.")}</label>
+                        <input type="button" id="download-btn" data-endpoint="${reverse('biz:course_operation:survey_download_cp932')}" data-endpoint-utf16="${reverse('biz:course_operation:survey_download')}" value="&#xf1c3 ${_("Get file of survey result")}"/><br/>
+                        <input  class="chk_encode" type="checkbox" id="encoding-utf16" /><label for="encoding-utf16" class="encoding-utf16">${_("If you want to download the survey results in UTF-16, please place a check mark and then push the button.")}</label>
                     </div>
                 </div>
             </div>
@@ -387,7 +404,7 @@ from django.core.urlresolvers import reverse
             <div class="gc_data_section">
                 <div id="grid" style="height: 610px; min-width: 918px; max-width: 1168px;"></div>
             </div>
-            <form method="get">
+            <form id="survey_form" method="get">
                 <div class="gc_download">
                     <div class="gc_download_btn">
                         <button id="download-ans-status-btn" class="btn btn-grn" type="button">${_('Download Answer Status')}</button>
@@ -395,6 +412,10 @@ from django.core.urlresolvers import reverse
                     <div class="gc_download_btn">
                         <button id="download-searched-ans-status-btn" class="btn btn-grn" type="button">${_('Download Searched Answer Status')}</button>
                     </div>
+                </div>
+                <div class="gc_fieldset_ipt_center">
+                    <label class="gc_optional_label">
+                        <input class="chk_encode" type="checkbox" name="encode"/><p class="gc_download_chk">${_("If you want to download the survey status in UTF-16, please place a check mark and then push the button.")}</p></label>
                 </div>
             </form>
         </div>

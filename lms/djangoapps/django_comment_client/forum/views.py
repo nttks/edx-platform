@@ -5,7 +5,9 @@ Views handling read (GET) requests for the Discussion tab and inline discussions
 from functools import wraps
 import json
 import logging
+from datetime import datetime
 
+from pytz import timezone
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django.core.context_processors import csrf
@@ -15,6 +17,7 @@ from django.http import Http404, HttpResponseBadRequest
 from django.utils.translation import ugettext_noop
 from django.views.decorators.http import require_GET
 import newrelic.agent
+from django.utils.timezone import UTC
 
 from edxmako.shortcuts import render_to_response
 from courseware.courses import get_course_with_access
@@ -41,6 +44,8 @@ from django_comment_client.utils import (
 )
 import django_comment_client.utils as utils
 import lms.lib.comment_client as cc
+from student.models import UserTestGroup, CourseEnrollment, CourseEnrollmentAttribute
+from util.ga_attendance_status import AttendanceStatusExecutor
 
 from opaque_keys.edx.keys import CourseKey
 
@@ -234,6 +239,14 @@ def forum_form_discussion(request, course_key):
 
     user = cc.User.from_django_user(request.user)
     user_info = user.to_dict()
+
+    try:
+        course_enrollment = CourseEnrollment.objects.get(user=request.user.id, course_id=course_key)
+        executor = AttendanceStatusExecutor(enrollment=course_enrollment)
+        if not executor.is_attended:
+            executor.set_attended(datetime.now(UTC()))
+    except CourseEnrollment.DoesNotExist:
+        pass
 
     try:
         unsafethreads, query_params = get_threads(request, course)   # This might process a search query

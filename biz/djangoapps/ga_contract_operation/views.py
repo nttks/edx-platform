@@ -37,11 +37,13 @@ from biz.djangoapps.ga_invitation.models import (
 )
 from biz.djangoapps.gx_member.models import Member
 from biz.djangoapps.gx_org_group.models import Group
+from biz.djangoapps.gx_students_register_batch.models import StudentsRegisterBatchTarget, STUDENT_REGISTER_BATCH, STUDENT_UNREGISTER_BATCH
 from biz.djangoapps.util.access_utils import has_staff_access
 from biz.djangoapps.util.decorators import check_course_selection, check_organization_group
 from biz.djangoapps.util.json_utils import EscapedEdxJSONEncoder
 from biz.djangoapps.util.task_utils import submit_task, validate_task, get_task_key
-from biz.djangoapps.util.unicodetsv_utils import create_tsv_response, create_csv_response, get_sjis_csv
+from biz.djangoapps.util.unicodetsv_utils import create_tsv_response, create_csv_response, get_sjis_csv,\
+    create_csv_response_double_quote
 
 from edxmako.shortcuts import render_to_response
 from openedx.core.djangoapps.ga_self_paced import api as self_paced_api
@@ -59,6 +61,7 @@ log = logging.getLogger(__name__)
 CONTRACT_REGISTER_MAX_DISPLAY_NUM = 1000
 BIZ_MAX_CHAR_LENGTH_REGISTER_LINE = 7000
 BIZ_MAX_REGISTER_NUMBER = 50000
+BIZ_MAX_REGISTER_NUMBER_CSV = 9999
 
 
 def _error_response(message):
@@ -193,12 +196,12 @@ def _contract_register_list_on_page(request, offset=0, limit=CONTRACT_REGISTER_M
     # Free word
     free_word = request.POST.get('free_word')
     if free_word and free_word.strip():
-        where_sql += 'AND (username LIKE %s OR email LIKE %s OR name LIKE %s OR group_name LIKE %s OR org1 LIKE %s ' \
-                     'OR org2 LIKE %s OR org3 LIKE %s OR org4 LIKE %s OR org5 LIKE %s OR org6 LIKE %s OR org7 LIKE %s ' \
-                     'OR org8 LIKE %s OR org9 LIKE %s OR org10 LIKE %s OR item1 LIKE %s OR item2 LIKE %s ' \
+        where_sql += 'AND (username LIKE %s OR email LIKE %s OR name LIKE %s OR group_code LIKE %s OR group_name LIKE %s' \
+                     'OR org1 LIKE %s OR org2 LIKE %s OR org3 LIKE %s OR org4 LIKE %s OR org5 LIKE %s OR org6 LIKE %s' \
+                     'OR org7 LIKE %s OR org8 LIKE %s OR org9 LIKE %s OR org10 LIKE %s OR item1 LIKE %s OR item2 LIKE %s ' \
                      'OR item3 LIKE %s OR item4 LIKE %s OR item5 LIKE %s OR item6 LIKE %s OR item7 LIKE %s ' \
-                     'OR item8 LIKE %s OR item9 LIKE %s OR item10 LIKE %s OR login_code LIKE %s '
-        for p in range(0, 25):
+                     'OR item8 LIKE %s OR item9 LIKE %s OR item10 LIKE %s OR login_code LIKE %s OR code LIKE %s '
+        for p in range(0, 27):
             option_sql.append('%' + free_word + '%')
 
         user_ids = AdditionalInfoSetting.objects.filter(contract=request.current_contract,
@@ -245,7 +248,7 @@ def _contract_register_list_on_page(request, offset=0, limit=CONTRACT_REGISTER_M
         option_sql.append('%@%')
 
     sql = '''SELECT DISTINCT IC.id, IC.status, IC.user_id, user.username, user.email, profile.name as full_name, 
-bizuser.login_code, MG.group_name, MG.code, MG.is_active, MG.is_delete, 
+bizuser.login_code, MG.group_name, MG.code, MG.group_code, MG.is_active, MG.is_delete, 
 MG.org1, MG.org2, MG.org3, MG.org4, MG.org5, MG.org6, MG.org7, MG.org8, MG.org9, MG.org10, 
 MG.item1, MG.item2, MG.item3, MG.item4, MG.item5, MG.item6, MG.item7, MG.item8, MG.item9, MG.item10, MG.org_id
 FROM ga_invitation_contractregister as IC
@@ -280,6 +283,7 @@ ORDER BY IC.id'''
             'login_code': register.login_code or '',
             'is_delete': register.is_delete or '',
             'code': register.code or '',
+            'group_code': register.group_code or '',
             'group_name': register.group_name or '',
         }
         if not register.org_id or register.org_id == request.current_organization.id:
@@ -303,8 +307,8 @@ ORDER BY IC.id'''
 def students_students_download(request):
     total_count, show_list, __, additional_columns = _contract_register_list_on_page(request, 0, None)
 
-    headers = [_("Student Status"), _("Full Name"), _("Organization Groups"), _("Member Code"), _("Email Address"),
-               _("Login Code"), _("Username"), _("Target user of delete member master")]
+    headers = [_("Student Status"),  _("Target user of delete member master"), _("Email Address"), _("Username"),
+               _("Full Name"), _("Login Code"), _("Organization Groups"), _("Organization Code"), _("Member Code")]
     for i in range(1, 11):
         headers.append(_("Organization") + str(i))
     for i in range(1, 11):
@@ -314,9 +318,10 @@ def students_students_download(request):
 
     rows = []
     for show_row in show_list:
-        row = [show_row.get('contract_register_status', ''), show_row.get('full_name', ''),
-               show_row.get('group_name', ''), show_row.get('code', ''), show_row.get('user_email', ''),
-               show_row.get('login_code', ''), show_row.get('user_name', ''), show_row.get('is_delete', ''),
+        row = [show_row.get('contract_register_status', ''), show_row.get('is_delete', ''),
+               show_row.get('user_email', ''), show_row.get('user_name', ''),
+               show_row.get('full_name', ''), show_row.get('login_code', ''),
+               show_row.get('group_name', ''), show_row.get('group_code', ''), show_row.get('code', ''),
                show_row.get('org1', ''), show_row.get('org2', ''), show_row.get('org3', ''), show_row.get('org4', ''),
                show_row.get('org5', ''), show_row.get('org6', ''), show_row.get('org7', ''), show_row.get('org8', ''),
                show_row.get('org9', ''), show_row.get('org10', ''), show_row.get('item1', ''),
@@ -331,7 +336,10 @@ def students_students_download(request):
     current_datetime = datetime.now()
     date_str = current_datetime.strftime("%Y-%m-%d-%H%M")
 
-    return create_tsv_response(org_name + '_students_list_' + date_str + '.csv', headers, rows)
+    if 'encode' in request.POST:
+        return create_tsv_response(org_name + '_students_list_' + date_str + '.csv', headers, rows)
+    else:
+        return create_csv_response_double_quote(org_name + '_students_list_' + date_str + '.csv', headers, rows)
 
 
 @require_POST
@@ -519,9 +527,12 @@ def bulk_students(request):
 
 def _submit_task(request, task_type, task_class, history, additional_info_list=None):
     try:
+        if 'sendmail_flg' not in request.POST:
+            request.sendmail_flg = None
         task_input = {
             'contract_id': request.current_contract.id,
             'history_id': history.id,
+            'sendmail_flg': request.sendmail_flg
         }
         if additional_info_list:
             task_input['additional_info_ids'] = [a.id for a in additional_info_list]
@@ -588,6 +599,10 @@ def task_history_ajax(request):
                 _task_targets = AdditionalInfoUpdateTaskTarget.find_by_history_id_and_message(history.id)
             elif task.task_type == STUDENT_MEMBER_REGISTER:
                 _task_targets = StudentMemberRegisterTaskTarget.find_by_history_id_and_message(history.id)
+            elif task.task_type == STUDENT_REGISTER_BATCH:
+                _task_targets = StudentsRegisterBatchTarget.find_by_history_id_and_message(history.id)
+            elif task.task_type == STUDENT_UNREGISTER_BATCH:
+                _task_targets = StudentsRegisterBatchTarget.find_by_history_id_and_message(history.id)
         return [
             {
                 'recid': task_target.id,
@@ -1600,11 +1615,11 @@ def register_students_csv_ajax(request):
         log.info('Could not find student list.')
         return _error_response(_("Could not find student list."))
 
-    if len(students) > BIZ_MAX_REGISTER_NUMBER:
+    if len(students) > BIZ_MAX_REGISTER_NUMBER_CSV:
         log.info('max_register_number')
         return _error_response(_(
             "It has exceeded the number({max_register_number}) of cases that can be a time of registration."
-        ).format(max_register_number=BIZ_MAX_REGISTER_NUMBER))
+        ).format(max_register_number=BIZ_MAX_REGISTER_NUMBER_CSV))
 
     if any([len(s) > BIZ_MAX_CHAR_LENGTH_REGISTER_LINE for s in students]):
         log.info('biz_max_char_length_register_line')
@@ -1621,6 +1636,11 @@ def register_students_csv_ajax(request):
 
     # To register status. Register or Input
     students = [u'{},{}'.format(register_status, s) for s in students]
+
+    if 'sendmail_flg' in request.POST and request.POST.get('sendmail_flg') == 'on':
+        request.sendmail_flg = True
+    else:
+        request.sendmail_flg = False
 
     log.info('register_students_csv_ajax_create')
     history = ContractTaskHistory.create(request.current_contract, request.user)
@@ -1688,6 +1708,11 @@ def register_students_new_ajax(request):
 
     # To register status. Register or Input
     students = [u'{},{}'.format(register_status, s) for s in students]
+
+    if 'sendmail_flg' in request.POST and request.POST.get('sendmail_flg') == 'on':
+        request.sendmail_flg = True
+    else:
+        request.sendmail_flg = False
 
     log.info('register_students_new_ajax_create')
     history = ContractTaskHistory.create(request.current_contract, request.user)
@@ -1835,6 +1860,11 @@ def register_students_list_ajax(request):
 
     # To register status. Register or Input
     students = [u'{},{}'.format(register_status, s) for s in students]
+
+    if 'sendmail_flg' in request.POST and request.POST.get('sendmail_flg') == 'on':
+        request.sendmail_flg = True
+    else:
+        request.sendmail_flg = False
 
     log.info('register_students_list_ajax_create')
     history = ContractTaskHistory.create(request.current_contract, request.user)

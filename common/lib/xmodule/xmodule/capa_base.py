@@ -140,6 +140,16 @@ class CapaFields(object):
         scope=Scope.settings,
         default=default_reset_button
     )
+    is_status_managed = Boolean(
+        display_name=_("Is status managed"),
+        help=_(
+            "Please set \"True\" if you want to make it status management target module. "
+            "Only \"survey\", \"problem\" and \"movie\" are available for status management. "
+            "Otherwise, please set \"no\"."
+        ),
+        scope=Scope.settings,
+        default=False,
+    )
     rerandomize = Randomization(
         display_name=_("Randomization"),
         help=_(

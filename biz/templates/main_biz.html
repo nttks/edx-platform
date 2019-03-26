@@ -6,6 +6,8 @@ from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext as _
 from django.conf import settings
 from microsite_configuration import microsite
+
+from biz.djangoapps.gx_member.models import Member
 %>
 
 <%block name="bodyclass">view-biz</%block>
@@ -311,6 +313,8 @@ from microsite_configuration import microsite
                 current_feature = 'member'
             elif re.match('^/biz/group/', request.path):
                 current_feature = 'group'
+            elif re.match('^/biz/save_register_condition/', request.path):
+                current_feature = 'save_register_condition'
             else:
                 current_feature = None
             current_organization = getattr(request, 'current_organization', None)
@@ -506,6 +510,9 @@ from microsite_configuration import microsite
                     <li class="${'current' if current_feature == 'manager' else ''}"><a href="${reverse('biz:manager:index')}">${_("Manager Setting")}</a></li>
                     <li class="${'current' if current_feature == 'member' else ''}"><a href="${reverse('biz:member:index')}">${_("Member Master")}</a></li>
                     <li class="${'current' if current_feature == 'group' else ''}"><a href="${reverse('biz:group:group_list')}">${_("Organization Master")}</a></li>
+                        % if Member.find_active_by_org(org=current_organization).count():
+                        <li class="${'current' if current_feature == 'save_register_condition' else ''}"><a href="${reverse('biz:save_register_condition:index')}">${_("Save Registration Condition")}</a></li>
+                        % endif
                     % endif
                 % endif
             </ul>

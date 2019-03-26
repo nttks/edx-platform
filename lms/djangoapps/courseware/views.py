@@ -7,8 +7,11 @@ import json
 import numbers
 import textwrap
 import urllib
+import copy
+from util.json_request import JsonResponse
 
 from collections import OrderedDict
+from pytz import timezone
 from datetime import datetime
 from django.utils import translation
 from django.utils.translation import ugettext as _
@@ -59,6 +62,7 @@ from openedx.core.djangoapps.credit.api import (
 )
 from openedx.core.djangoapps.ga_optional.api import is_available
 from openedx.core.djangoapps.ga_optional.models import DISCCUSION_IMAGE_UPLOAD_KEY, PROGRESS_RESTRICTION_OPTION_KEY
+from courseware.models import StudentModule
 from courseware.models import StudentModuleHistory
 from courseware.model_data import FieldDataCache, ScoresClient
 from .module_render import toc_for_course, get_module_for_descriptor, get_module, get_module_by_usage_id
@@ -77,12 +81,13 @@ from biz.djangoapps.ga_achievement.models import PlaybackBatchStatus, BATCH_STAT
 from biz.djangoapps.ga_contract.models import ContractDetail
 from biz.djangoapps.util import datetime_utils
 from pdfgen import api as pdfgen_api
-from student.models import UserTestGroup, CourseEnrollment
+from student.models import UserTestGroup, CourseEnrollment, CourseEnrollmentAttribute
 from student.roles import GaCourseScorerRole, GaGlobalCourseCreatorRole
 from student.views import is_course_blocked
 from util.cache import cache, cache_if_anonymous
 from util.date_utils import strftime_localized
 from util.db import outer_atomic
+from util.ga_attendance_status import AttendanceStatusExecutor
 from xblock.fragment import Fragment
 from xmodule.modulestore.django import modulestore
 from xmodule.modulestore.exceptions import ItemNotFoundError, NoPathToItem
@@ -107,6 +112,11 @@ from util.views import ensure_valid_course_key
 from eventtracking import tracker
 import analytics
 from courseware.url_helpers import get_redirect_url
+from util.json_request import JsonResponse, JsonResponseBadRequest
+
+from lms.djangoapps.courseware.ga_mongo_utils import PlaybackFinishStore
+from ga_survey.models import SurveySubmission
+
 
 log = logging.getLogger("edx.courseware")
 
@@ -370,6 +380,14 @@ def index(request, course_id, chapter=None, section=None,
             course_key.to_deprecated_string()
         )
         return redirect(reverse('dashboard'))
+
+    try:
+        course_enrollment = CourseEnrollment.objects.get(user=request.user.id, course_id=course_key)
+        executor = AttendanceStatusExecutor(enrollment=course_enrollment)
+        if not executor.is_attended:
+            executor.set_attended(datetime.now(UTC()))
+    except CourseEnrollment.DoesNotExist:
+        pass
 
     request.user = user  # keep just one instance of User
     with modulestore().bulk_operations(course_key):
@@ -685,6 +703,15 @@ def course_info(request, course_id):
     Assumes the course_id is in a valid format.
     """
     course_key = CourseKey.from_string(course_id)
+
+    try:
+        course_enrollment = CourseEnrollment.objects.get(user=request.user.id, course_id=course_key)
+        executor = AttendanceStatusExecutor(enrollment=course_enrollment)
+        if not executor.is_attended:
+            executor.set_attended(datetime.now(UTC()))
+    except CourseEnrollment.DoesNotExist:
+        pass
+
     with modulestore().bulk_operations(course_key):
         course = get_course_by_id(course_key, depth=2)
         access_response = has_access(request.user, 'load', course, course_key)
@@ -1197,6 +1224,104 @@ def _playback(request, course_key):
     translation.activate(lang_code)
 
     return render_to_response('courseware/playback.html', context)
+
+
+@transaction.non_atomic_requests
+@login_required
+@ensure_valid_course_key
+def attendance(request, course_id):
+    """
+    Display the attendance page.
+    """
+    course_key = CourseKey.from_string(course_id)
+
+    with modulestore().bulk_operations(course_key):
+        return _attendance(request, course_key)
+
+
+def _attendance(request, course_key):
+    """
+    Unwrapped version of "attendance".
+    """
+    course = get_course_with_access(request.user, 'load', course_key, depth=None, check_if_enrolled=True)
+    now = datetime.now(UTC())
+
+    try:
+        student = User.objects.get(id=request.user.id)
+    except User.DoesNotExist:
+        raise Http404
+
+    def _check_module_status(_course_id, _vertical, _module, _student):
+        """
+        :param _course_id: int
+        :param _vertical: XModulediscussion/forum
+        :param _module: XModule
+        :param _student: User
+        :return: bool
+        """
+        if _module.location.category == 'problem' and StudentModule.objects.filter(
+                module_state_key=UsageKey.from_string(_module.location.to_deprecated_string()),
+                module_type__exact='problem', student=_student, course_id=_course_id,
+                grade__isnull=False).count() is not 0:
+            return True
+
+        elif _module.location.category == 'html' and SurveySubmission.objects.filter(
+                course_id=_course_id, unit_id=_vertical.location.block_id, user=_student).count() is not 0:
+            return True
+
+        elif _module.location.category in ['video', 'jwplayerxblock']:
+            if PlaybackFinishStore().find_status_true_data(
+                user_id=_student.id, course_id=unicode(_course_id), block_id=_module.location.block_id):
+                return True
+
+        return False
+
+    # Execute
+    course_details = []
+    for chapter in course.get_children():
+        display_chapter = {
+            'name': chapter.display_name,
+            'is_display': chapter.start <= now and not chapter.visible_to_staff_only,
+            'url_name': chapter.url_name,
+            'sections': []
+        }
+        for section in chapter.get_children():
+            display_section = {
+                'name': section.display_name,
+                'is_display': section.start <= now and not section.visible_to_staff_only,
+                'url_name': section.url_name,
+                'verticals': []
+            }
+            for vertical in section.get_children():
+                display_vertical = {
+                    'name': vertical.display_name,
+                    'is_display': not vertical.visible_to_staff_only,
+                    'status': False,
+                    'modules': []
+                }
+                for module in vertical.get_children():
+                    if hasattr(module, 'is_status_managed') and module.is_status_managed:
+                        module_status = _check_module_status(course.id, vertical, module, student)
+                        display_vertical['modules'].append({
+                            'name': module.display_name,
+                            'status': module_status
+                        })
+
+                display_vertical['status'] = all(module['status'] for module in display_vertical['modules'])
+                display_section['verticals'].append(display_vertical)
+            display_chapter['sections'].append(display_section)
+        course_details.append(display_chapter)
+
+    # Check attendance status
+    executor = AttendanceStatusExecutor(enrollment=CourseEnrollment.get_enrollment(user=student, course_key=course.id))
+    display_status = executor.get_attendance_status_str(course=course, user=student)
+
+    return render_to_response('courseware/attendance.html', {
+        'course': course,
+        'student': student,
+        'course_details': course_details,
+        'display_status': display_status,
+    })
 
 
 @login_required
@@ -1767,3 +1892,140 @@ def _get_studio_url(user, course, page):
     if GaGlobalCourseCreatorRole().has_user(user) or GaCourseScorerRole(course.id).has_user(user):
         return None
     return get_studio_url(course, page)
+
+
+@require_POST
+def finish_playback_mongo(request, course_id):
+
+    course = modulestore().get_course(CourseKey.from_string(course_id))
+    items = modulestore().get_items(CourseKey.from_string(course_id))
+
+    course_name = course.display_name
+    user_id = request.user.id
+
+    target_record = {"course_id": course_id, "user_id": user_id}
+
+    request_module_id = request.POST.get('module_id')
+
+    for item in items:
+        if request_module_id == item.location.block_id:
+            module_type_name = item.category
+            display_name = item.display_name
+
+    find_result = PlaybackFinishStore().find_record(user_id, course_id)
+    # Yes button push
+    if 'Yes' in request.POST.get('data'):
+        if find_result:
+            if request_module_id in [mid['block_id'] for mid in find_result[0]['module_list']]:
+                updates = copy.deepcopy(find_result)
+                for i, block_id in enumerate(updates[0]['module_list']):
+                    if request_module_id == updates[0]['module_list'][i]['block_id']:
+                        updates[0]['module_list'][i]['status'] = True
+                        updates[0]['module_list'][i]['change_time'] = datetime.now(UTC())
+                        PlaybackFinishStore().update_record(target_record, updates[0])
+            else:
+                updates = copy.deepcopy(find_result)
+                inserts = {
+                    "block_id": request_module_id,
+                    "module_type_name": module_type_name,
+                    "display_name": display_name,
+                    "status": True,
+                    "change_time": datetime.now(UTC())
+                }
+                updates[0]['module_list'].append(inserts)
+                PlaybackFinishStore().update_record(target_record, updates[0])
+        else:
+            posts = {
+                "course_id": course_id,
+                "course_name": course_name,
+                "user_id": user_id,
+                "module_list": [
+                    {
+                        "block_id": request_module_id,
+                        "module_type_name": module_type_name,
+                        "display_name": display_name,
+                        "status": True,
+                        "change_time": datetime.now(UTC())
+                    }
+                ]
+            }
+            PlaybackFinishStore().set_record(posts)
+
+    # No button push
+    elif 'No' in request.POST.get('data'):
+        if find_result:
+            if not request_module_id in [mid['block_id'] for mid in find_result[0]['module_list']]:
+                updates = copy.deepcopy(find_result)
+                new_module = {
+                    "block_id": request_module_id,
+                    "module_type_name": module_type_name,
+                    "display_name": display_name,
+                    "status": False,
+                    "change_time": datetime.now(UTC())
+                }
+                updates[0]['module_list'].append(new_module)
+                PlaybackFinishStore().update_record(target_record, updates[0])
+        else:
+            posts = {
+                "course_id": course_id,
+                "course_name": course_name,
+                "user_id": user_id,
+                "module_list": [
+                    {
+                        "block_id": request_module_id,
+                        "module_type_name": module_type_name,
+                        "display_name": display_name,
+                        "status": False,
+                        "change_time": datetime.now(UTC())
+                    }
+                ]
+            }
+            PlaybackFinishStore().set_record(posts)
+
+    else:
+        return _error_response(_("Unauthorized access."))
+
+    if course.is_status_managed:
+        course_enrollment = CourseEnrollment.objects.get(user=user_id,
+                                                         course_id=course.location.course_key)
+        executor = AttendanceStatusExecutor(enrollment=course_enrollment)
+        if not executor.is_completed:
+            status_check = executor.check_attendance_status(course, user_id)
+            if status_check:
+                executor.set_completed(datetime.now(UTC()))
+
+    return HttpResponse(status=status.HTTP_200_OK)
+
+
+def _error_response(message):
+    return JsonResponseBadRequest({
+        'error': message,
+    })
+
+
+@require_POST
+def search_playback_mongo(request, course_id):
+
+    user_id = request.user.id
+    block_id = request.POST.get('block_id')
+    find_result = PlaybackFinishStore().find_module(user_id, course_id, block_id)
+    course_key = CourseKey.from_string(course_id)
+    course = get_course(course_key)
+
+    if course.is_status_managed:
+        module_status_managed = False
+        modules = modulestore().get_items(
+            course_key=course.id, qualifiers={'category': {'$in': ['video', 'jwplayerxblock']}})
+        for module in modules:
+            if module.location.block_id == block_id:
+                module_status_managed = module.is_status_managed
+                break
+        if not module_status_managed:
+            return JsonResponse({'find_result': True})
+        else:
+            if find_result is None:
+                return JsonResponse({'find_result': False})
+            else:
+                return JsonResponse({'find_result': True if find_result['status'] else False})
+    else:
+        return JsonResponse({'find_result': True})

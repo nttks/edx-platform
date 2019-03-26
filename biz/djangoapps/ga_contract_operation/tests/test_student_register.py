@@ -43,6 +43,16 @@ class StudentRegisterTaskTest(BizViewTestBase, ModuleStoreTestCase, TaskTestMixi
             task_input['contract_id'] = contract.id
         if history is not None:
             task_input['history_id'] = history.id
+        task_input['sendmail_flg'] = 'on'
+        return TaskTestMixin._create_input_entry(self, task_input=task_input)
+
+    def _create_input_entry_not_sendmail(self, contract=None, history=None):
+        task_input = {}
+        if contract is not None:
+            task_input['contract_id'] = contract.id
+        if history is not None:
+            task_input['history_id'] = history.id
+        task_input['sendmail_flg'] = ''
         return TaskTestMixin._create_input_entry(self, task_input=task_input)
 
     def setup_user(self, login_code=None):
@@ -1160,4 +1170,51 @@ class StudentRegisterTaskTest(BizViewTestBase, ModuleStoreTestCase, TaskTestMixi
         self.assertEqual(ContractRegister.objects.get(user__email='test_student@example.com', contract=contract).status, INPUT_INVITATION_CODE)
         if url_code:
             self.assertEqual('Test_Student_1', BizUser.objects.get(user=user).login_code)
+        self.assertEqual(send_mail_call_count, send_mail_to_student.call_count)
+
+    @ddt.data(
+        (None, None, [
+            "Input,test_student2@example.com,test_student_2,tester2",
+        ], 0),
+        ("contract-url-code", True, [
+            "Input,test_student2@example.com,test_student_2,tester2,Test_Student_2,TestStudent1",
+        ], 0),
+        ("contract-url-code", False, [
+            "Input,test_student2@example.com,test_student_2,tester2,Test_Student_2,TestStudent2",
+        ], 0),
+    )
+    @ddt.unpack
+    @patch('biz.djangoapps.ga_contract_operation.student_register.django_send_mail')
+    def test_register_not_send_mail(self, url_code, send_mail, students, send_mail_call_count, send_mail_to_student):
+        # ----------------------------------------------------------
+        # Setup test data
+        # ----------------------------------------------------------
+        contract = self._create_contract(url_code=url_code, send_mail=send_mail)
+        history = self._create_task_history(contract=contract)
+        self._create_targets(history, students)
+
+        # ----------------------------------------------------------
+        # Execute task
+        # ----------------------------------------------------------
+        self._test_run_with_task(
+            student_register,
+            'student_register',
+            task_entry=self._create_input_entry_not_sendmail(contract=contract, history=history),
+            expected_attempted=1,
+            expected_num_succeeded=1,
+            expected_total=1,
+        )
+
+        # ----------------------------------------------------------
+        # Assertion
+        # ----------------------------------------------------------
+        self.assertEqual(0, StudentRegisterTaskTarget.objects.filter(history=history, completed=False).count())
+        self.assertEqual(1, StudentRegisterTaskTarget.objects.filter(history=history, completed=True).count())
+        self.assertIsNone(StudentRegisterTaskTarget.objects.get(history=history, student=students[0]).message)
+
+        user = User.objects.get(email='test_student2@example.com')
+        self.assertTrue(user.is_active)
+        self.assertEqual(ContractRegister.objects.get(user__email='test_student2@example.com', contract=contract).status, INPUT_INVITATION_CODE)
+        if url_code:
+            self.assertEqual('Test_Student_2', BizUser.objects.get(user=user).login_code)
         self.assertEqual(send_mail_call_count, send_mail_to_student.call_count)

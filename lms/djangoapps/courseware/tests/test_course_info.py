@@ -16,6 +16,7 @@ from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase, SharedMo
 from xmodule.modulestore.tests.django_utils import TEST_DATA_MIXED_CLOSED_MODULESTORE
 from xmodule.modulestore.tests.factories import CourseFactory, ItemFactory, check_mongo_calls
 from student.models import CourseEnrollment
+from student.tests.factories import CourseEnrollmentFactory
 
 from .helpers import LoginEnrollmentTestCase
 
@@ -42,6 +43,8 @@ class CourseInfoTestCase(LoginEnrollmentTestCase, ModuleStoreTestCase):
         self.assertIn("You are not currently enrolled in this course", resp.content)
 
     def test_logged_in_enrolled(self):
+        self.setup_user()
+        CourseEnrollmentFactory(user=self.user, course_id=self.course.id)
         self.enroll(self.course)
         url = reverse('info', args=[self.course.id.to_deprecated_string()])
         resp = self.client.get(url)
@@ -55,6 +58,7 @@ class CourseInfoTestCase(LoginEnrollmentTestCase, ModuleStoreTestCase):
 
     def test_logged_in_not_enrolled(self):
         self.setup_user()
+        CourseEnrollmentFactory(user=self.user, course_id=self.course.id)
         url = reverse('info', args=[self.course.id.to_deprecated_string()])
         self.client.get(url)
 
@@ -65,7 +69,7 @@ class CourseInfoTestCase(LoginEnrollmentTestCase, ModuleStoreTestCase):
         enrollment_exists = CourseEnrollment.objects.filter(
             user=self.user, course_id=self.course.id
         ).exists()
-        self.assertFalse(enrollment_exists)
+        self.assertTrue(enrollment_exists)
 
     @mock.patch.dict(settings.FEATURES, {'DISABLE_START_DATES': False})
     def test_non_live_course(self):
@@ -73,6 +77,7 @@ class CourseInfoTestCase(LoginEnrollmentTestCase, ModuleStoreTestCase):
         the student dashboard, not a 404.
         """
         self.setup_user()
+        CourseEnrollmentFactory(user=self.user, course_id=self.course.id)
         self.enroll(self.course)
         url = reverse('info', args=[unicode(self.course.id)])
         response = self.client.get(url)
@@ -92,6 +97,7 @@ class CourseInfoTestCase(LoginEnrollmentTestCase, ModuleStoreTestCase):
         the student dashboard, not a 404, even if the localized date is unicode
         """
         self.setup_user()
+        CourseEnrollmentFactory(user=self.user, course_id=self.course.id)
         self.enroll(self.course)
         fake_unicode_start_time = u"üñîçø∂é_ßtå®t_tîµé"
         mock_strftime_localized.return_value = fake_unicode_start_time
@@ -108,6 +114,7 @@ class CourseInfoTestCase(LoginEnrollmentTestCase, ModuleStoreTestCase):
 
     def test_nonexistent_course(self):
         self.setup_user()
+        CourseEnrollmentFactory(user=self.user, course_id=self.course.id)
         url = reverse('info', args=['not/a/course'])
         response = self.client.get(url)
         self.assertEqual(response.status_code, 404)
@@ -132,6 +139,8 @@ class CourseInfoTestCaseXML(LoginEnrollmentTestCase, ModuleStoreTestCase):
     @mock.patch.dict('django.conf.settings.FEATURES', {'DISABLE_START_DATES': False})
     def test_logged_in_xml(self):
         self.setup_user()
+        self.course = CourseFactory.create()
+        CourseEnrollmentFactory(user=self.user, course_id=self.course.id)
         url = reverse('info', args=[self.xml_course_key.to_deprecated_string()])
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
@@ -170,7 +179,7 @@ class SelfPacedCourseInfoTestCase(LoginEnrollmentTestCase, SharedModuleStoreTest
         self.assertEqual(resp.status_code, 200)
 
     def test_num_queries_instructor_paced(self):
-        self.fetch_course_info_with_queries(self.instructor_paced_course, 33, 10)
+        self.fetch_course_info_with_queries(self.instructor_paced_course, 36, 10)
 
     def test_num_queries_self_paced(self):
-        self.fetch_course_info_with_queries(self.self_paced_course, 36, 10)
+        self.fetch_course_info_with_queries(self.self_paced_course, 39, 10)

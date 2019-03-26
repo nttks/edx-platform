@@ -102,7 +102,8 @@ site_status_msg = get_site_status_msg(course_id)
             <li><a href="${marketing_link('FAQ')}">${_("FAQ")}</a></li>
             % endif
             <li class="help-tab"><a href="#help-modal" rel="leanModal" role="button">${_("Help")}</a></li>
-            % if member:
+            <% member2 = SsoConfig.user_control_process2(long(user.id)) %>
+            % if member2:
             <li><a href="${reverse('logout')}" role="menuitem">${_("Log Out")}</a></li>
             % endif
           </%block>

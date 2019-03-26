@@ -128,6 +128,10 @@ var DetailsView = ValidatingView.extend({
 
         var course_category = this.model.get('course_category');
         this.$el.find('#' + this.fieldToSelectorMap['course_category']).val(course_category);
+        this.$el.find('#' + this.fieldToSelectorMap['course_category2']).val(this.model.get('course_category2'));
+        this.$el.find('#' + this.fieldToSelectorMap['course_order']).val(this.model.get('course_order'));
+        this.$el.find('#' + this.fieldToSelectorMap['course_category_order']).val(this.model.get('course_category_order'));
+        this.$el.find('#' + this.fieldToSelectorMap['course_category_order2']).val(this.model.get('course_category_order2'));
         if (this.model.get('is_f2f_course')) {
             this.$('#' + this.fieldToSelectorMap['is_f2f_course']).attr('checked', this.model.get('is_f2f_course'));
         } else {
@@ -182,7 +186,11 @@ var DetailsView = ValidatingView.extend({
         'pre_requisite_courses': 'pre-requisite-course',
         'entrance_exam_enabled': 'entrance-exam-enabled',
         'entrance_exam_minimum_score_pct': 'entrance-exam-minimum-score-pct',
+        'course_order' : 'course-order',
         'course_category' : 'course-category',
+        'course_category_order' : 'course-category-order',
+        'course_category2' : 'course-category2',
+        'course_category_order2' : 'course-category-order2',
         'is_f2f_course' : 'face2face-course',
         'is_f2f_course_sell' : 'face2face-course-sell',
         "playback_rate_1x_only" : 'playback-rate-1x-only',
@@ -336,9 +344,15 @@ var DetailsView = ValidatingView.extend({
             break;
         case 'course-category':
             var value = $(event.currentTarget).val();
-            value = value == "" ? [] : value.split(/\s*,\s*/);
-            this.setAndValidate('course_category', value);
+            // value = value == "" ? [] : value.split(/\s*,\s*/);
+            value = value == "" ? [] : [value];
+            // this.setAndValidate('course_category', value);
+            this.setCategoryValidate('course_category', value);
             break;
+        case 'course-category2':
+        case 'course-order':
+        case 'course-category-order':
+        case 'course-category-order2':
         case 'face2face-course':
         case 'face2face-course-sell':
         case 'course-canonical-name':
@@ -424,6 +438,11 @@ var DetailsView = ValidatingView.extend({
         // see the right validation errors the next time validate() is
         // called on the model. So we set *without* validating, then
         // call validate ourselves.
+        this.model.set(attr, value);
+        this.model.isValid();
+    },
+    setCategoryValidate: function(attr, value) {
+        this.clearValidationErrors();
         this.model.set(attr, value);
         this.model.isValid();
     },

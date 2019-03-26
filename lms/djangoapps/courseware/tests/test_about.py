@@ -18,7 +18,7 @@ from track.tests import EventTrackingTestCase
 from xmodule.modulestore.tests.django_utils import TEST_DATA_MIXED_CLOSED_MODULESTORE
 
 from student.models import CourseEnrollment
-from student.tests.factories import UserFactory, CourseEnrollmentAllowedFactory
+from student.tests.factories import UserFactory, CourseEnrollmentAllowedFactory, CourseEnrollmentFactory
 from shoppingcart.models import Order, PaidCourseRegistration
 from xmodule.course_module import CATALOG_VISIBILITY_ABOUT, CATALOG_VISIBILITY_NONE
 from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
@@ -157,6 +157,7 @@ class AboutTestCase(LoginEnrollmentTestCase, ModuleStoreTestCase, EventTrackingT
     @patch.dict(settings.FEATURES, {'ENABLE_MKTG_SITE': True})
     def test_logged_in_marketing(self):
         self.setup_user()
+        CourseEnrollmentFactory(user=self.user, course_id=self.course.id)
         url = reverse('about_course', args=[self.course.id.to_deprecated_string()])
         resp = self.client.get(url)
         # should be redirected

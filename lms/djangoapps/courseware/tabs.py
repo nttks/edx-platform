@@ -122,6 +122,27 @@ class PlaybackTab(EnrolledTab):
         return ContractDetail.objects.filter(course_id=course.id).exists()
 
 
+class AttendanceTab(EnrolledTab):
+    """
+    The course attendance view.
+    """
+    type = 'attendance'
+    icon = 'fa fa-th-list'
+    title = ugettext_noop('Attendance')
+    priority = 60
+    view_name = 'attendance'
+    is_dynamic = True
+    is_default = True
+
+    @classmethod
+    def is_enabled(cls, course, user=None):
+        return course.show_attendance_tab
+
+    @staticmethod
+    def _is_biz_course(course):
+        return ContractDetail.objects.filter(course_id=course.id).exists()
+
+
 class TextbookTabsBase(CourseTab):
     """
     Abstract class for textbook collection tabs classes.

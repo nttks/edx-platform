@@ -248,7 +248,7 @@ def perform_delegate_student_register(entry_id, task_input, action_name):
                             enrollment = CourseEnrollment.get_or_create_enrollment(user, detail['key'])
                             enrollment.update_enrollment(is_active=True, mode=detail['mode'])
 
-                    if contract.can_send_mail and mail_connection:
+                    if contract.can_send_mail and mail_connection and task_input['sendmail_flg']:
                         mail_subject = replace_braces(contract_mail.mail_subject, replace_dict)
                         mail_body = replace_braces(contract_mail.mail_body, replace_dict)
                         django_send_mail(

@@ -850,6 +850,30 @@ class ContractOperationViewTestRegisterStudentsNewAjax(BizContractTestBase):
         history = ContractTaskHistory.objects.get(pk=task_input['history_id'])
         self.assertEqual(history.task_id, task.task_id)
 
+    def test_register_student_submit_successful_mail_flg(self):
+        self.setup_user()
+        director_manager = self._director_manager
+        register_data = self._register_students_data
+
+        with self.skip_check_course_selection(current_contract=self.contract, current_manager=director_manager,
+                                              current_organization=self.gacco_organization):
+            register_data['contract_id'] = self.contract.id
+            register_data['sendmail_flg'] = 'on'
+            response = self.client.post(self._url_register_students_ajax, register_data)
+
+        self.assertEqual(200, response.status_code)
+        data = json.loads(response.content)
+        self.assertEqual("Began the processing of Student Member Register.Execution status, please check from the task history.", data['info'])
+
+        # get latest task and assert
+        task = Task.objects.all().order_by('-id')[0]
+        self.assertEqual('student_member_register', task.task_type)
+
+        task_input = json.loads(task.task_input)
+        self.assertEqual(self.contract.id, task_input['contract_id'])
+        history = ContractTaskHistory.objects.get(pk=task_input['history_id'])
+        self.assertEqual(history.task_id, task.task_id)
+
     def test_register_student_submit_successful_has_auth(self):
         self.setup_user()
         director_manager = self._director_manager
@@ -1141,6 +1165,31 @@ class ContractOperationViewTestRegisterStudentsListAjax(BizContractTestBase):
         history = ContractTaskHistory.objects.get(pk=task_input['history_id'])
         self.assertEqual(history.task_id, task.task_id)
 
+    def test_register_student_submit_successful_mail_flg(self):
+        self.setup_user()
+        director_manager = self._director_manager
+        register_data = self._register_students_data
+        register_json = json.dumps(register_data)
+
+        with self.skip_check_course_selection(current_contract=self.contract, current_manager=director_manager,
+                                              current_organization=self.gacco_organization):
+            response = self.client.post(self._url_register_students_ajax, {'contract_id': self.contract.id,
+                                                                           'add_list': register_json,
+                                                                           'sendmail_flg': 'on'},)
+
+        self.assertEqual(200, response.status_code)
+        data = json.loads(response.content)
+        self.assertEqual("Began the processing of Student Register.Execution status, please check from the task history.", data['info'])
+
+        # get latest task and assert
+        task = Task.objects.all().order_by('-id')[0]
+        self.assertEqual('student_register', task.task_type)
+
+        task_input = json.loads(task.task_input)
+        self.assertEqual(self.contract.id, task_input['contract_id'])
+        history = ContractTaskHistory.objects.get(pk=task_input['history_id'])
+        self.assertEqual(history.task_id, task.task_id)
+
     def test_register_student_submit_successful_has_auth(self):
         self.setup_user()
         director_manager = self._director_manager
@@ -1369,7 +1418,7 @@ class ContractOperationViewTestRegisterStudentsCsvAjax(BizContractTestBase):
         self.assertEqual(400, response.status_code)
         data = json.loads(response.content)
         self.assertEquals(
-            data['error'], 'It has exceeded the number(50000) of cases that can be a time of registration.')
+            data['error'], 'It has exceeded the number(9999) of cases that can be a time of registration.')
 
     def test_register_student_csv_over_item_length(self):
         self.setup_user()
@@ -1463,6 +1512,37 @@ class ContractOperationViewTestRegisterStudentsCsvAjax(BizContractTestBase):
                 self._url_register_students_ajax, {
                     'contract_id': self.contract.id,
                     'csv_data': register_csv_data
+                }, format='multipart'
+            )
+
+        self.assertEqual(200, response.status_code)
+        data = json.loads(response.content)
+        self.assertEqual(
+            "Began the processing of Student Member Register.Execution status, please check from the task history.",
+            data['info']
+        )
+
+        # get latest task and assert
+        task = Task.objects.all().order_by('-id')[0]
+        self.assertEqual('student_member_register', task.task_type)
+
+        task_input = json.loads(task.task_input)
+        self.assertEqual(self.contract.id, task_input['contract_id'])
+        history = ContractTaskHistory.objects.get(pk=task_input['history_id'])
+        self.assertEqual(history.task_id, task.task_id)
+
+    def test_register_student_submit_successful_mail_flg(self):
+        self.setup_user()
+        director_manager = self._director_manager
+        register_csv_data = self._register_students_data()
+
+        with self.skip_check_course_selection(current_contract=self.contract, current_manager=director_manager,
+                                              current_organization=self.gacco_organization):
+            response = self.client.post(
+                self._url_register_students_ajax, {
+                    'contract_id': self.contract.id,
+                    'csv_data': register_csv_data,
+                    'sendmail_flg': 'on',
                 }, format='multipart'
             )
 

@@ -13,6 +13,8 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User
 
+from biz.djangoapps.ga_organization.models import OrganizationOption
+from biz.djangoapps.ga_organization.tests.factories import OrganizationOptionFactory
 from biz.djangoapps.ga_login.models import BizUser, LOGIN_CODE_MIN_LENGTH
 from biz.djangoapps.ga_login.tests.factories import BizUserFactory
 from biz.djangoapps.gx_member.builders import MemberTsv
@@ -36,8 +38,10 @@ class MemberViewTest(BizViewTestBase):
         Set up for test
         """
         super(MemberViewTest, self).setUp()
-        self.file_delimiter = "\t"
-        self.file_quotechar = "'"
+        self.file_delimiter = ","
+        self.file_quotechar = '"'
+        self.file_delimiter_utf8 = "\t"
+        self.file_quotechar_utf8 = "'"
         self.setup_user()
 
         self.organization = self.gacco_organization
@@ -69,8 +73,16 @@ class MemberViewTest(BizViewTestBase):
         return reverse("biz:member:download_ajax")
 
     @property
+    def _url_download_headers_ajax(self):
+        return reverse("biz:member:download_headers_ajax")
+
+    @property
     def _url_task_history_ajax(self):
         return reverse("biz:member:task_history_ajax")
+
+    @property
+    def _url_update_auto_mask_flg_ajax(self):
+        return reverse("biz:member:update_auto_mask_flg_ajax")
 
     def _create_member(
             self, org, group, user, code, is_active, is_delete,
@@ -120,20 +132,20 @@ class MemberViewTest(BizViewTestBase):
         # set header
         header_columns = tsv.headers_for_export
         for i, column in enumerate(header_columns, start=1):
-            content += "'" + column + "'" + ("\t" if i != len(header_columns) else "")
+            content += column + ("," if i != len(header_columns) else "")
         # set record
         records = tsv.get_rows_for_export()
         for i, record in enumerate(records, start=1):
             content += "\n"
             for j, column in enumerate(record, start=1):
-                content += "'" + (column if column else "") + "'" + ("\t" if j != len(record) else "")
+                content += (column if column else "") + ("," if j != len(record) else "")
 
         return content
 
     def _create_uploaded_file(self, org, content=None):
         if content is None:
             content = self._create_content_uploaded_file(org)
-        return SimpleUploadedFile('sample.csv', content.encode('utf-16'), content_type='multipart/form-data')
+        return SimpleUploadedFile('sample.csv', content.encode('cp932'), content_type='multipart/form-data')
 
     def _create_task(self, task_type, task_key, task_id, task_state, total=0, attempted=0, succeeded=0, skipped=0,
                      failed=0):
@@ -505,13 +517,83 @@ class MemberViewTest(BizViewTestBase):
         # Post
         with self.skip_check_course_selection(
                 current_organization=self.organization, current_manager=self._director_manager):
+            response = self.client.post(self._url_download_ajax, {'organization': self.organization.id, 'encode': 'on'})
+
+        # Assertion
+        self.assertEqual(200, response.status_code)
+
+        tmp_utf8_str = response.content.decode('utf-16').replace(self.file_quotechar_utf8, '')
+        lines = tmp_utf8_str.splitlines()
+        # header(index 0) pop
+        lines.pop(0)
+        # Check count member num
+        self.assertTrue(len(lines) == Member.objects.filter(
+            org=self.organization, is_active=True, is_delete=False).count())
+
+        tsv = MemberTsv(self.organization)
+        for line in lines:
+            member = tsv.get_dic_by_import_row(line.split(self.file_delimiter_utf8))
+            # Check member data has created
+            member_counter = Member.objects.filter(
+                org=self.organization,
+                code=member['code'],
+                group__group_code=member['group_code'],
+                user__email=member['email'],
+                user__first_name=member['first_name'],
+                user__last_name=member['last_name'],
+                user__username=member['username'],
+                org1=member['org1'], org2=member['org2'], org3=member['org3'], org4=member['org4'],
+                org5=member['org5'], org6=member['org6'], org7=member['org7'], org8=member['org8'],
+                org9=member['org9'], org10=member['org10'],
+                item1=member['item1'], item2=member['item2'], item3=member['item3'], item4=member['item4'],
+                item5=member['item5'], item6=member['item6'], item7=member['item7'], item8=member['item8'],
+                item9=member['item9'], item10=member['item10'],
+                is_active=True,
+                is_delete=False
+            )
+            if member['login_code']:
+                member_counter.filter(user__bizuser__login_code=member['login_code'])
+            self.assertEqual(1, member_counter.count())
+
+    @ddt.data(1, 10)
+    def test_download_cp932_ajax(self, test_member_num):
+        # Set test data
+        another_org = self._create_organization(org_name='another_org_name', org_code='another_org_code')
+
+        for i in range(test_member_num):
+            # Active data
+            active_user = UserFactory.create()
+            member = self._create_member(
+                org=self.organization, group=self.test_default_group, user=active_user,
+                code="code_" + str(i), is_active=True, is_delete=False
+            )
+            BizUserFactory.create(user=active_user, login_code='login-code' + str(i))
+            # Backup data
+            self._create_member(
+                org=self.organization, group=self.test_default_group, user=member.user,
+                code="code_" + str(i) + "_backup", is_active=False, is_delete=False
+            )
+            # Delete data
+            self._create_member(
+                org=self.organization, group=self.test_default_group, user=UserFactory.create(),
+                code='code_' + str(i) + "_delete", is_active=False, is_delete=True
+            )
+            # Another organization data
+            self._create_member(
+                org=another_org, group=self.test_default_group, user=UserFactory.create(),
+                code="code_" + str(i), is_active=True, is_delete=False
+            )
+
+        # Post
+        with self.skip_check_course_selection(
+                current_organization=self.organization, current_manager=self._director_manager):
             response = self.client.post(self._url_download_ajax, {'organization': self.organization.id})
 
         # Assertion
         self.assertEqual(200, response.status_code)
 
-        tmp_utf8_str = response.content.decode('utf-16').replace(self.file_quotechar, '')
-        lines = tmp_utf8_str.splitlines()
+        tmp_cp932_str = response.content.decode('cp932').replace(self.file_quotechar, '')
+        lines = tmp_cp932_str.splitlines()
         # header(index 0) pop
         lines.pop(0)
         # Check count member num
@@ -543,11 +625,44 @@ class MemberViewTest(BizViewTestBase):
                 member_counter.filter(user__bizuser__login_code=member['login_code'])
             self.assertEqual(1, member_counter.count())
 
+    def test_download_headers_ajax(self):
+        org = self.organization
+        tsv = MemberTsv(org)
+        # set header
+        header_columns = tsv.headers_for_export
+        header_column = ','.join(header_columns)
+
+        # Post
+        with self.skip_check_course_selection(
+                current_organization=self.organization, current_manager=self._director_manager):
+            response = self.client.post(self._url_download_headers_ajax, {'organization': self.organization.id})
+
+        # Assertion
+        self.assertEqual(200, response.status_code)
+
+        tmp_cp932_str = response.content.decode('cp932').replace(self.file_quotechar, '')
+        lines = tmp_cp932_str.splitlines()
+        # header(index 0) pop
+        headers = lines.pop(0)
+        self.assertEqual(header_column, headers)
+        self.assertEqual(0, len(lines))
+
     def test_download_ajax_validate_authorized_error(self):
         # Post
         with self.skip_check_course_selection(
                 current_organization=self.organization, current_manager=self._director_manager):
             response = self.client.post(self._url_download_ajax, {})
+
+        # Assertion
+        self.assertEqual(400, response.status_code)
+        data = json.loads(response.content)
+        self.assertEqual(data['error'], "Unauthorized access.")
+
+    def test_download_headers_ajax_validate_authorized_error(self):
+        # Post
+        with self.skip_check_course_selection(
+                current_organization=self.organization, current_manager=self._director_manager):
+            response = self.client.post(self._url_download_headers_ajax, {})
 
         # Assertion
         self.assertEqual(400, response.status_code)
@@ -619,19 +734,18 @@ class MemberViewTest(BizViewTestBase):
             org=self.organization, group=self.test_default_group, user=UserFactory.create(),
             code="code", is_active=True, is_delete=False
         )
-
-        param = {
-            'organization': self.organization.id,
-            'member_csv': SimpleUploadedFile(
-                'sample.csv',
-                self._create_content_uploaded_file(org=self.organization).encode('utf-8'),
-                content_type='multipart/form-data'
-            )
-        }
+        encode_data = SimpleUploadedFile(
+            'sample.csv', "sample".encode('utf-8'), content_type='multipart/form-data')
 
         with self.skip_check_course_selection(
-                current_organization=self.organization, current_manager=self._director_manager):
-            response = self.client.post(self._url_register_csv_ajax, param, format='multipart')
+                current_organization=self.organization, current_manager=self._director_manager), patch(
+            'biz.djangoapps.gx_member.views.get_sjis_csv',
+                side_effect=UnicodeDecodeError('utf-8', 'arg', 1, 1, 'arg')):
+            response = self.client.post(
+                self._url_register_csv_ajax, {
+                    'organization': self.organization.id,
+                    'member_csv': encode_data
+                }, format='multipart')
 
         self.assertEqual(400, response.status_code)
         data = json.loads(response.content)
@@ -691,15 +805,15 @@ class MemberViewTest(BizViewTestBase):
         tsv = MemberTsv(self.organization)
         header_columns = tsv.headers_for_export
         for i, column in enumerate(header_columns, start=1):
-            content += "'" + column + "'" + ("\t" if i != len(header_columns) else "")
+            content += column + ("," if i != len(header_columns) else "")
 
         records = tsv.get_rows_for_export()
         for i, record in enumerate(records, start=1):
             content += "\n"
             for j, column in enumerate(record, start=1):
-                content += "'" + (column if column else "") + "'" + ("\t" if j != len(record) else "")
+                content += (column if column else "") + ("," if j != len(record) else "")
 
-        content += "\t'add_over_column'"
+        content += ',"add_over_column"'
 
         param = {
             'organization': self.organization.id,
@@ -963,7 +1077,7 @@ class MemberViewTest(BizViewTestBase):
 
         with self.skip_check_course_selection(
                 current_organization=self.organization, current_manager=self._director_manager), patch(
-                'biz.djangoapps.gx_member.views.validate_task') as mock_validate_task:
+                'biz.djangoapps.util.task_utils.validate_task') as mock_validate_task:
             mock_validate_task.return_value = None
             response = self.client.post(self._url_register_ajax, param)
 
@@ -998,6 +1112,29 @@ class MemberViewTest(BizViewTestBase):
         self.assertEqual('success', data['status'])
         self.assertEqual(0, data['total'])
         self.mock_log.warning.assert_any_call('Can not find Task by member task history')
+
+    def test_update_auto_mask_flg_ajax_validate_authorized_error(self):
+        with self.skip_check_course_selection(
+                current_organization=self.organization, current_manager=self._director_manager):
+            response = self.client.post(self._url_update_auto_mask_flg_ajax, {})
+
+        self.assertEqual(400, response.status_code)
+        data = json.loads(response.content)
+        self.assertEqual(data['error'], "Unauthorized access.")
+
+    @ddt.data(False, True)
+    def test_update_auto_mask_flg_ajax(self, default_test_auto_mask_flg):
+        OrganizationOptionFactory.create(
+            org=self.organization, auto_mask_flg=default_test_auto_mask_flg, modified_by=self.user)
+        param_auto_mask_flg = '0' if default_test_auto_mask_flg else '1'
+        with self.skip_check_course_selection(
+                current_organization=self.organization, current_manager=self._director_manager):
+            response = self.client.post(self._url_update_auto_mask_flg_ajax, {
+                'organization': self.organization.id, 'auto_mask_flg': param_auto_mask_flg})
+
+        self.assertEqual(200, response.status_code)
+        option = OrganizationOption.objects.get(org=self.organization)
+        self.assertEqual(not default_test_auto_mask_flg, option.auto_mask_flg)
 
     def test_models(self):
         """

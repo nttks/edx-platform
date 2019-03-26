@@ -67,6 +67,17 @@ class HtmlBlock(object):
         scope=Scope.settings
     )
 
+    is_status_managed = Boolean(
+        display_name=_("Is status managed"),
+        help=_(
+            "Please set \"True\" if you want to make it status management target module. "
+            "Only \"survey\", \"problem\" and \"movie\" are available for status management. "
+            "Otherwise, please set \"no\"."
+        ),
+        scope=Scope.settings,
+        default=False,
+    )
+
     @XBlock.supports("multi_device")
     def student_view(self, _context):
         """

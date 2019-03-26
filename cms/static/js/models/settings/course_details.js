@@ -27,7 +27,11 @@ var CourseDetails = Backbone.Model.extend({
         pre_requisite_courses: [],
         entrance_exam_enabled : '',
         entrance_exam_minimum_score_pct: '50',
+        course_order: null,
         course_category: [],
+        course_category_order: null,
+        course_category2: '',
+        course_category_order2: null,
         is_f2f_course: false,
         is_f2f_course_sell: false,
         playback_rate_1x_only: false,
@@ -87,6 +91,32 @@ var CourseDetails = Backbone.Model.extend({
         }
         if (newattrs.teacher_name === '') {
             errors.teacher_name = gettext("Teacher Name is required input.");
+        }
+        if (newattrs.course_category.length > 0) {
+            if (newattrs.course_category[0].match(/^(?=.*,).*$/)) {
+                errors.course_category = gettext("Commas（,） can not be used");
+            }
+        }
+        if (newattrs.course_category2 !== null && newattrs.course_category2 !== '' &&
+            newattrs.course_category2 !==undefined) {
+            if (newattrs.course_category.length <= 0) {
+                errors.course_category2 = gettext("Please enter the course_category previously.");
+            }
+        }
+        if (newattrs.course_order !== null) {
+            if (! newattrs.course_order.match(/^[0-9]*$/)) {
+                errors.course_order = gettext("Please enter only half-width numbers.");
+            }
+        }
+        if (newattrs.course_category_order !== null) {
+            if (! newattrs.course_category_order.match(/^[0-9]*$/)) {
+                errors.course_category_order = gettext("Please enter only half-width numbers.");
+            }
+        }
+        if (newattrs.course_category_order2 !== null) {
+            if (! newattrs.course_category_order2.match(/^[0-9]*$/)) {
+                errors.course_category_order2 = gettext("Please enter only half-width numbers.");
+            }
         }
         if (newattrs.intro_video && newattrs.intro_video !== this.get('intro_video')) {
             if (this._videokey_illegal_chars.exec(newattrs.intro_video)) {

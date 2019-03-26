@@ -25,7 +25,7 @@ from biz.djangoapps.gx_org_group.models import Group, Right, Parent, Child
 from biz.djangoapps.gx_member.models import Member
 from biz.djangoapps.util.decorators import check_course_selection
 from biz.djangoapps.util.json_utils import EscapedEdxJSONEncoder, LazyEncoder
-from biz.djangoapps.util.unicodetsv_utils import get_utf8_csv, create_tsv_response
+from biz.djangoapps.util.unicodetsv_utils import get_sjis_csv, create_tsv_response, create_csv_response_double_quote
 
 _exception_001 = _('specified email could not found: ')               # grant error case 'a'
 _exception_002 = _('specified username could not found: ')            # grant error case 'b'
@@ -409,7 +409,31 @@ def download_csv(request):
     current_datetime = datetime.now()
     date_str = current_datetime.strftime("%Y-%m-%d-%H%M")
     filename = org.org_code + '_' + date_str + '.csv'
-    return create_tsv_response(filename, org_tsv.column_list.values(), groups)
+    # return create_tsv_response(filename, org_tsv.column_list.values(), groups)
+    if 'encode' not in request.POST:
+        request.POST['encode'] = 'false'
+    if request.POST['encode'] == 'false':
+        return create_csv_response_double_quote(filename, org_tsv.column_list.values(), groups)
+    elif request.POST['encode'] == 'true':
+        return create_tsv_response(filename, org_tsv.column_list.values(), groups)
+
+
+@require_POST
+@login_required
+@check_course_selection
+def download_headers_csv(request):
+    """
+    Download file
+    :param request:
+    :return:
+    """
+    org = request.current_organization
+    org_tsv = OrgTsv(org, request.user)
+    groups = ''
+    current_datetime = datetime.now()
+    date_str = current_datetime.strftime("%Y-%m-%d-%H%M")
+    filename = org.org_code + '_template_' + date_str + '.csv'
+    return create_csv_response_double_quote(filename, org_tsv.column_list.values(), groups)
 
 
 @require_POST
@@ -429,7 +453,7 @@ def upload_csv(request):
     error_messages = []
     ret = 0
     try:
-        lines = get_utf8_csv(request, input_file)
+        lines = get_sjis_csv(request, input_file)
     except UnicodeDecodeError:
         return _upload_error_response(_exception_021)
     try:

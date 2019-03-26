@@ -66,7 +66,11 @@ class CourseDetails(object):
             '50'
         )  # minimum passing score for entrance exam content module/tree,
         self.self_paced = None
+        self.course_order = ""
         self.course_category = []
+        self.course_category2 = ""
+        self.course_category_order = ""
+        self.course_category_order2 = ""
         self.is_f2f_course = False
         self.is_f2f_course_sell = False
         self.playback_rate_1x_only = False
@@ -122,7 +126,11 @@ class CourseDetails(object):
 
         course_details.intro_video = cls.fetch_youtube_video_id(course_key)
 
+        course_details.course_order = descriptor.course_order
         course_details.course_category = descriptor.course_category
+        course_details.course_category2 = descriptor.course_category2
+        course_details.course_category_order = descriptor.course_category_order
+        course_details.course_category_order2 = descriptor.course_category_order2
         course_details.is_f2f_course = descriptor.is_f2f_course
         course_details.is_f2f_course_sell = descriptor.is_f2f_course_sell
         course_details.playback_rate_1x_only = descriptor.playback_rate_1x_only
@@ -305,12 +313,32 @@ class CourseDetails(object):
         # Import here to avoid circular import.
         from student.roles import GaGlobalCourseCreatorRole
 
+        if 'course_order' in jsondict \
+                and (user.is_staff or GaGlobalCourseCreatorRole().has_user(user)):
+            descriptor.course_order = jsondict['course_order']
+            dirty = True
+
         if 'course_category' in jsondict \
                 and (user.is_staff or GaGlobalCourseCreatorRole().has_user(user)) \
                 and sorted(jsondict['course_category']) != sorted(descriptor.course_category):
             # course_category can be updated by only staff user
             # Note: GaGlobalCourseCreator can updated course_category (#2150)
             descriptor.course_category = jsondict['course_category']
+            dirty = True
+
+        if 'course_category_order' in jsondict \
+                and (user.is_staff or GaGlobalCourseCreatorRole().has_user(user)):
+            descriptor.course_category_order = jsondict['course_category_order']
+            dirty = True
+
+        if 'course_category2' in jsondict \
+                and (user.is_staff or GaGlobalCourseCreatorRole().has_user(user)):
+            descriptor.course_category2 = jsondict['course_category2']
+            dirty = True
+
+        if 'course_category_order2' in jsondict \
+                and (user.is_staff or GaGlobalCourseCreatorRole().has_user(user)):
+            descriptor.course_category_order2 = jsondict['course_category_order2']
             dirty = True
 
         if 'is_f2f_course' in jsondict and jsondict['is_f2f_course'] != descriptor.is_f2f_course:

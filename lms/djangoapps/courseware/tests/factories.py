@@ -11,6 +11,7 @@ from student.tests.factories import UserFactory  # Imported to re-export
 from student.tests.factories import UserProfileFactory as StudentUserProfileFactory
 from courseware.models import StudentModule, XModuleUserStateSummaryField
 from courseware.models import XModuleStudentInfoField, XModuleStudentPrefsField
+from courseware.ga_mongo_utils import PlaybackFinishStore
 from student.roles import (
     CourseInstructorRole,
     CourseStaffRole,
@@ -215,3 +216,40 @@ class StudentInfoFactory(DjangoModelFactory):
     field_name = 'existing_field'
     value = json.dumps('old_value')
     student = factory.SubFactory(UserFactory)
+
+
+class PlaybackFinishFactory(factory.Factory):
+    class Meta(object):
+        model = PlaybackFinishStore
+
+    @staticmethod
+    def _create_module_param(module, status, change_time=None):
+        """
+        :param module: CourseModule
+        :param status: bool
+        :param change_time: datetime
+        :return: dict
+        """
+        return {
+            'block_id': module.location.block_id,
+            'module_type_name': module.category,
+            'display_name': module.display_name,
+            'status': status,
+            'change_time': change_time
+        }
+
+    @staticmethod
+    def _create(course, user, module_list):
+        """
+        :param course: course
+        :param user: User
+        :param module_list: list(_create_module_param(), ...)
+        :return:
+        """
+        return PlaybackFinishStore().set_record({
+            'course_id': unicode(course.id),
+            'course_name': course.display_name,
+            "user_id": user.id,
+            "module_list": module_list
+        })
+

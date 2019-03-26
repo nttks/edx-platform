@@ -55,14 +55,15 @@
             'video/09_events_bumper_plugin.js',
             'video/09_poster.js',
             'video/10_commands.js',
-            'video/095_video_context_menu.js'
+            'video/095_video_context_menu.js',
+            'video/096_ended_modal.js'
         ],
         function (
             VideoStorage, initialize, FocusGrabber, VideoAccessibleMenu, VideoControl, VideoFullScreen,
             VideoQualityControl, VideoProgressSlider, VideoVolumeControl, VideoSpeedControl, VideoCaption,
             VideoPlayPlaceholder, VideoPlayPauseControl, VideoPlaySkipControl, VideoSkipControl, VideoBumper,
             VideoSaveStatePlugin, VideoEventsPlugin, VideoEventsBumperPlugin, VideoPoster, VideoCommands,
-            VideoContextMenu
+            VideoContextMenu, VideoEndedModal
         ) {
             var youtubeXhr = null,
                 oldVideo = window.Video;
@@ -75,7 +76,7 @@
                     mainVideoModules = [FocusGrabber, VideoControl, VideoPlayPlaceholder,
                         VideoPlayPauseControl, VideoProgressSlider, VideoSpeedControl, VideoVolumeControl,
                         VideoQualityControl, VideoFullScreen, VideoCaption, VideoCommands, VideoContextMenu,
-                        VideoSaveStatePlugin, VideoEventsPlugin],
+                        VideoSaveStatePlugin, VideoEventsPlugin, VideoEndedModal],
                     bumperVideoModules = [VideoControl, VideoPlaySkipControl, VideoSkipControl,
                         VideoVolumeControl, VideoCaption, VideoCommands, VideoSaveStatePlugin, VideoEventsBumperPlugin],
                     state = {

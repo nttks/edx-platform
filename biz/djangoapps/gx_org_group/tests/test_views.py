@@ -1,3 +1,6 @@
+import json
+from mock import patch
+
 from django.core.urlresolvers import reverse
 from django.core.files.uploadedfile import SimpleUploadedFile
 from student.tests.factories import UserFactory
@@ -57,6 +60,13 @@ class OrgGroupListViewTest(BizContractTestBase):
         """
         return reverse('biz:group:download_csv')
 
+    def _download_headers_csv(self):
+        """
+        Returns URL of group list download API
+        :return:
+        """
+        return reverse('biz:group:download_headers_csv')
+
     def _detail_view(self, selected_group_id):
         """
         Returns URL of detail of group known access right settings
@@ -88,7 +98,7 @@ class OrgGroupListViewTest(BizContractTestBase):
 
     @property
     def _csv_header(self):
-        return "\t".join([
+        return ",".join([
             'Organization Group Code',
             'Organization Group Name',
             'Parent Organization Code',
@@ -98,42 +108,42 @@ class OrgGroupListViewTest(BizContractTestBase):
 
     @property
     def _csv_data_first(self):
-        csv_data = "G01\tG1\t\t\t\r\n" \
-                   "G01-01\tG1-1\tG01\tG1\t\r\n" \
-                   "G01-01-01\tG1-1-1\tG01-01\tG1-1\t\r\n" \
-                   "G01-01-02\tG1-1-2\tG01-01\tG1-1\t\r\n" \
-                   "G01-02\tG1-2\tG01\tG1\t\r\n" \
-                   "G02\tG2\t\t\t\r\n" \
-                   "G02-01\tG2-1\tG02\tG2\t\r\n" \
-                   "G02-01-01\tG2-1-1\tG02-01\tG2-1\t\r\n" \
-                   "G02-01-02\tG2-1-2\tG02-01\tG2-1\t\r\n" \
-                   "G02-02\tG2-2\tG02\tG2\t\r\n"
+        csv_data = "G01,G1,,,\r\n" \
+                   "G01-01,G1-1,G01,G1,\r\n" \
+                   "G01-01-01,G1-1-1,G01-01,G1-1,\r\n" \
+                   "G01-01-02,G1-1-2,G01-01,G1-1,\r\n" \
+                   "G01-02,G1-2,G01,G1,\r\n" \
+                   "G02,G2,,,\r\n" \
+                   "G02-01,G2-1,G02,G2,\r\n" \
+                   "G02-01-01,G2-1-1,G02-01,G2-1,\r\n" \
+                   "G02-01-02,G2-1-2,G02-01,G2-1,\r\n" \
+                   "G02-02,G2-2,G02,G2,\r\n"
         return csv_data
 
     @property
     def _csv_data_cir_err_master(self):
-        csv_data = "1000\tgroup1\t\t\t\r\n" \
-                   "1000aaa\tgroup3\t1000\tgroup1\t\r\n" \
-                   "1001\tgroup4\t\t\t\r\n" \
-                   "1002\tgroup3\t1000\tgroup1\t\r\n" \
-                   "1003\tgroup3\t1000\tgroup1\t\r\n" \
-                   "1005\tgroup5\t\t\t\r\n" \
-                   "1006\tgroup6\t\t\t\r\n" \
-                   "1007\tgroup7\t1009\tgroup9\t\r\n" \
-                   "1008\tgroup8\t\t\t\r\n" \
-                   "1009\tgroup9\t\t\t\r\n" \
-                   "aaaaaaaaabbbbbbbbbcc\tgroup3\t1000\tgroup1\t\r\n"
+        csv_data = "1000,group1,,,\r\n" \
+                   "1000aaa,group3,1000,group1,\r\n" \
+                   "1001,group4,,,\r\n" \
+                   "1002,group3,1000,group1,\r\n" \
+                   "1003,group3,1000,group1,\r\n" \
+                   "1005,group5,,,\r\n" \
+                   "1006,group6,,,\r\n" \
+                   "1007,group7,1009,group9,\r\n" \
+                   "1008,group8,,,\r\n" \
+                   "1009,group9,,,\r\n" \
+                   "aaaaaaaaabbbbbbbbbcc,group3,1000,group1,\r\n"
         return csv_data
 
     @property
     def _csv_data_cir_err_tran(self):
-        csv_data = "1000\tgroup6\t1000\t\t\r\n"
+        csv_data = "1000,group6,1000,,\r\n"
         return csv_data
 
     def _test_upload_cir_err_master(self):
         csv_header = self._csv_header
         csv_data = self._csv_data_cir_err_master
-        csv_content = (csv_header + csv_data).encode('UTF-16')
+        csv_content = (csv_header + csv_data).encode('cp932')
         upload_file = SimpleUploadedFile("org_group.csv", csv_content)
         with self.skip_check_course_selection(current_organization=self.gacco_organization):
             response = self.client.post(self._upload_csv(), {'organization': '', 'org_group_csv': upload_file})
@@ -142,7 +152,7 @@ class OrgGroupListViewTest(BizContractTestBase):
     def _test_upload_first(self):
         csv_header = self._csv_header
         csv_data = self._csv_data_first
-        csv_content = (csv_header + csv_data).encode('UTF-16')
+        csv_content = (csv_header + csv_data).encode('cp932')
         upload_file = SimpleUploadedFile("org_group.csv", csv_content)
         with self.skip_check_course_selection(current_organization=self.gacco_organization):
             response = self.client.post(self._upload_csv(), {'organization': '', 'org_group_csv': upload_file})
@@ -152,7 +162,7 @@ class OrgGroupListViewTest(BizContractTestBase):
         self._test_group('G01-01-01', 'G1-1-1', 'G01-01', 'G1-1', '', 2, ['G01', 'G01-01'], [])
         self._test_group('G01-01-02', 'G1-1-2', 'G01-01', 'G1-1', '', 2, ['G01', 'G01-01'], [])
         self._test_group('G01-02', 'G1-2', 'G01', 'G1', '', 1, ['G01'], [])
-        self._test_group('G02', 'G2',  '', '', '', 0, [], ['G02-01', 'G02-02', 'G02-01-01', 'G02-01-02'])
+        self._test_group('G02', 'G2','', '', '', 0, [], ['G02-01', 'G02-02', 'G02-01-01', 'G02-01-02'])
         self._test_group('G02-01', 'G2-1', 'G02', 'G2', '', 1, ['G02'], ['G02-01-01', 'G02-01-02'])
         self._test_group('G02-01-01', 'G2-1-1', 'G02-01', 'G2-1', '', 2, ['G02', 'G02-01'], [])
         self._test_group('G02-01-02', 'G2-1-2', 'G02-01', 'G2-1', '', 2, ['G02', 'G02-01'], [])
@@ -160,8 +170,8 @@ class OrgGroupListViewTest(BizContractTestBase):
 
     def _test_upload_second(self):
         csv_header = self._csv_header
-        csv_data = "G02\tG02underG1\tG01\tG1\tmoved to under G1\r\n"
-        csv_content = (csv_header + csv_data).encode('UTF-16')
+        csv_data = "G02,G02underG1,G01,G1,moved to under G1\r\n"
+        csv_content = (csv_header + csv_data).encode('cp932')
         upload_file = SimpleUploadedFile("org_group.csv", csv_content)
         with self.skip_check_course_selection(current_organization=self.gacco_organization):
             response = self.client.post(self._upload_csv(), {'organization': '', 'org_group_csv': upload_file})
@@ -170,12 +180,12 @@ class OrgGroupListViewTest(BizContractTestBase):
 
     def _test_upload_third(self):
         csv_header = self._csv_header
-        csv_data = "G03\tG3\tG01\tG1\tconnect to under G1\r\n" \
-                   "G03-01\tG3-1\tG03\tG3\t\r\n" \
-                   "G03-01-01\tG3-1-1\tG03-01\tG3-1\t\r\n" \
-                   "G03-01-02\tG3-1-2\tG03-01\tG3-1\t\r\n" \
-                   "G03-02\tG3-2\tG03\tG3\t\r\n"
-        csv_content = (csv_header + csv_data).encode('UTF-16')
+        csv_data = "G03,G3,G01,G1,connect to under G1\r\n" \
+                   "G03-01,G3-1,G03,G3,\r\n" \
+                   "G03-01-01,G3-1-1,G03-01,G3-1,\r\n" \
+                   "G03-01-02,G3-1-2,G03-01,G3-1,\r\n" \
+                   "G03-02,G3-2,G03,G3,\r\n"
+        csv_content = (csv_header + csv_data).encode('cp932')
         upload_file = SimpleUploadedFile("org_group.csv", csv_content)
         with self.skip_check_course_selection(current_organization=self.gacco_organization):
             response = self.client.post(self._upload_csv(), {'organization': '', 'org_group_csv': upload_file})
@@ -424,43 +434,47 @@ class OrgGroupListViewTest(BizContractTestBase):
         # test unicode error
         csv_content = self._csv_header
         upload_file = SimpleUploadedFile("org_group.csv", csv_content)
-        with self.skip_check_course_selection(current_organization=self.gacco_organization):
+        with self.skip_check_course_selection(current_organization=self.gacco_organization), patch(
+            'biz.djangoapps.gx_org_group.views.get_sjis_csv',
+                side_effect=UnicodeDecodeError('utf-8', 'arg', 1, 1, 'arg')):
             response = self.client.post(self._upload_csv(), {'organization': '', 'org_group_csv': upload_file})
         self.assertEqual(400, response.status_code)
+        data = json.loads(response.content)
+        self.assertEqual(data['errors'], [u'invalid header or file type'])
 
         # invalid header format (_exception_001)
-        csv_content = "group_code\tgroup_name\txxx_parent_code\tparent_name\tnotes\r\n".encode('UTF-16')
+        csv_content = "group_code,group_name,xxx_parent_code,parent_name,notes\r\n".encode('cp932')
         upload_file = SimpleUploadedFile("org_group.csv", csv_content)
         with self.skip_check_course_selection(current_organization=self.gacco_organization):
             response = self.client.post(self._upload_csv(), {'organization': '', 'org_group_csv': upload_file})
         self.assertEqual(400, response.status_code)
 
         # wrong number of columns (_exception_002)
-        csv_data = "G01-01\tG1-1\tG01\t\t\t\t\tG1\t\r\n"
-        csv_content = (csv_header + csv_data).encode('UTF-16')
+        csv_data = "G01-01,G1-1,G01,,,,,G1,\r\n"
+        csv_content = (csv_header + csv_data).encode('cp932')
         upload_file = SimpleUploadedFile("org_group.csv", csv_content)
         with self.skip_check_course_selection(current_organization=self.gacco_organization):
             response = self.client.post(self._upload_csv(), {'organization': '', 'org_group_csv': upload_file})
         self.assertEqual(400, response.status_code)
 
         # invalid parent code (_exception_003)
-        csv_data = "G01-01\tG1-1\tXXX\tG1\t\r\n"
-        csv_content = (csv_header + csv_data).encode('UTF-16')
+        csv_data = "G01-01,G1-1,XXX,G1,\r\n"
+        csv_content = (csv_header + csv_data).encode('cp932')
         upload_file = SimpleUploadedFile("org_group.csv", csv_content)
         with self.skip_check_course_selection(current_organization=self.gacco_organization):
             response = self.client.post(self._upload_csv(), {'organization': '', 'org_group_csv': upload_file})
         self.assertEqual(400, response.status_code)
 
         # duplicated group code (_exception_004)
-        csv_data = "G01-01\tG1-1\t\t\t\r\n" + "G01-01\tG1-1\t\t\t\r\n"
-        csv_content = (csv_header + csv_data).encode('UTF-16')
+        csv_data = "G01-01,G1-1,,,\r\n" + "G01-01,G1-1,,,\r\n"
+        csv_content = (csv_header + csv_data).encode('cp932')
         upload_file = SimpleUploadedFile("org_group.csv", csv_content)
         with self.skip_check_course_selection(current_organization=self.gacco_organization):
             response = self.client.post(self._upload_csv(), {'organization': '', 'org_group_csv': upload_file})
         self.assertEqual(400, response.status_code)
 
         # circular ref (_exception_011) (1) (Parent Code in import file)
-        csv_data = "G02-02\tG2-2\tG02-02\tG2-2\tcircular ref1\r\n"
+        csv_data = "G02-02,G2-2,G02-02,G2-2,circular ref1\r\n"
         csv_content = (csv_header + csv_data).encode('UTF-16')
         upload_file = SimpleUploadedFile("org_group.csv", csv_content)
         with self.skip_check_course_selection(current_organization=self.gacco_organization):
@@ -470,15 +484,15 @@ class OrgGroupListViewTest(BizContractTestBase):
         # circular ref (_exception_011) (2) (Parent Code in Group model)
         self._test_upload_cir_err_master()  # load master data
         csv_data = self._csv_data_cir_err_tran
-        csv_content = (csv_header + csv_data).encode('UTF-16')
+        csv_content = (csv_header + csv_data).encode('cp932')
         upload_file = SimpleUploadedFile("org_group.csv", csv_content)
         with self.skip_check_course_selection(current_organization=self.gacco_organization):
             response = self.client.post(self._upload_csv(), {'organization': '', 'org_group_csv': upload_file})
         self.assertEqual(400, response.status_code)
 
         # max length over  (_exception_021)
-        csv_data = "ABCDEFGHIJ12345678901\tMAX_CODE\t\t\tgroup code error\r\n"
-        csv_content = (csv_header + csv_data).encode('UTF-16')
+        csv_data = "ABCDEFGHIJ12345678901,MAX_CODE,group code error\r\n"
+        csv_content = (csv_header + csv_data).encode('cp932')
         upload_file = SimpleUploadedFile("org_group.csv", csv_content)
         with self.skip_check_course_selection(current_organization=self.gacco_organization):
             response = self.client.post(self._upload_csv(), {'organization': '', 'org_group_csv': upload_file})
@@ -494,7 +508,7 @@ class OrgGroupListViewTest(BizContractTestBase):
         self.setup_user()
 
         # import empty
-        csv_content = csv_header.encode('UTF-16')
+        csv_content = csv_header.encode('cp932')
         upload_file = SimpleUploadedFile("org_group.csv", csv_content)
         with self.skip_check_course_selection(current_organization=self.gacco_organization):
             response = self.client.post(self._upload_csv(), {'organization': '', 'org_group_csv': upload_file})
@@ -505,7 +519,7 @@ class OrgGroupListViewTest(BizContractTestBase):
         self._test_upload_second()
         self._test_upload_third()
 
-    def test_download_csv(self):
+    def test_download_cp936_csv(self):
         """
         Test download group list API
         :return:
@@ -513,6 +527,26 @@ class OrgGroupListViewTest(BizContractTestBase):
         self.setup_user()
         with self.skip_check_course_selection(current_organization=self.gacco_organization):
             response = self.client.post(self._download_csv())
+        self.assertEqual(200, response.status_code)
+
+    def test_download_utf16_csv(self):
+        """
+        Test download group list API
+        :return:
+        """
+        self.setup_user()
+        with self.skip_check_course_selection(current_organization=self.gacco_organization):
+            response = self.client.post(self._download_csv(), {'encode': 'true'})
+        self.assertEqual(200, response.status_code)
+
+    def test_download_headers_csv(self):
+        """
+        Test download group list API
+        :return:
+        """
+        self.setup_user()
+        with self.skip_check_course_selection(current_organization=self.gacco_organization):
+            response = self.client.post(self._download_headers_csv())
         self.assertEqual(200, response.status_code)
 
     def test_detail(self):

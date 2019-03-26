@@ -1,0 +1,104 @@
+<%inherit file="/main.html" />
+<%namespace name='static' file='/static_content.html'/>
+<%!
+from django.utils.translation import ugettext as _
+from django.core.urlresolvers import reverse
+%>
+<%block name="bodyclass">view-in-course view-playback</%block>
+
+<%include file="/courseware/course_navigation.html" args="active_page='attendance'" />
+<%block name="pagetitle">${_("{course_number} Attendance").format(course_number=course.display_number_with_default) | h}</%block>
+
+<%block name="headextra">
+<%static:css group='style-course-vendor'/>
+<%static:css group='style-course'/>
+</%block>
+
+<div class="container">
+  <div class="profile-wrapper">
+
+    <div class="course-info" id="course-info-playback">
+      % if display_status:
+        <h2>${_("Attendance Status") | h} :
+        % if display_status == 'previous':
+            ${_('Not Offered')}
+        % elif display_status == 'waiting':
+            ${_('Not Enrolled')}
+        % elif display_status == 'working':
+            ${_('Currently Enrolled')}
+        % elif display_status == 'completed':
+            ${_('Finish Enrolled')}
+        % elif display_status == 'closing':
+            ${_('Already terminate')}
+        % endif
+        </h2>
+      % endif
+      <p class="lead">${_("Unit that display 'Submitted' or 'Not submitted' is status managed.<br/>"
+      "Attendance status change to 'Finish Enrolled' when all unit submitted.<br/>"
+      "*But attendance status not change to 'Finish Enrolled' when exist not display unit.")}</p>
+      <div class="chapters">
+        % for i, chapter in enumerate(filter(lambda x: x['is_display'], course_details)):
+            <section>
+              <h2>${chapter['name']}</h2>
+              <div class="sections">
+                % for j, section in enumerate(filter(lambda x: x['is_display'], chapter['sections'])):
+                  <div class="attendance">
+                    <h3>
+                        <a href="${reverse('courseware_section', kwargs=dict(course_id=course.id.to_deprecated_string(), chapter=chapter['url_name'], section=section['url_name'])) | h}">
+                            ${section['name']}
+                        </a>
+                    </h3>
+                    % for k, vertical in enumerate(filter(lambda x: x['is_display'], section['verticals'])):
+                      % if len(vertical['modules']) is not 0:
+                        <dl class="verticals" data-group="g${i}${j}${k}">
+                          <dd class="active"><i class="fa fa-plus"></i>${vertical['name']}</dd>
+                          % if vertical['status']:
+                            <dt>${_("Submitted")}</dt>
+                          % else:
+                            <dt>${_("Not submitted")}</dt>
+                          % endif
+                        </dl>
+                      % else:
+                        <dl class="verticals">
+                          <dd><i class="fa fa-minus"></i>${vertical['name']}</dd>
+                          <dt>-</dt>
+                        </dl>
+                      % endif
+                      % for module in vertical['modules']:
+                        <dl class="modules modules_g${i}${j}${k}">
+                          <dd>${module['name']}</dd>
+                          % if module['status']:
+                            <dt>${_("Submitted")}</dt>
+                          % else:
+                            <dt>${_("Not submitted")}</dt>
+                          % endif
+                        </dl>
+                      % endfor
+                    % endfor
+                  <!-- End section -->
+                  </div>
+                % endfor
+                <!-- End sections -->
+              </div>
+            </section>
+        % endfor
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+    $(document).ready(function() {
+        $('.attendance .verticals .active').on('click', function() {
+            var $this = $(this);
+            if ($this.find('i').hasClass('fa-plus')) {
+                $this.find('i').removeClass('fa-plus').addClass('fa-minus');
+                var key = $this.closest('.verticals').data('group');
+                $('.attendance .modules_' + key).show();
+            } else {
+                $this.find('i').removeClass('fa-minus').addClass('fa-plus');
+                var key = $this.closest('.verticals').data('group');
+                $('.attendance .modules_' + key).hide();
+            }
+        });
+    });
+</script>

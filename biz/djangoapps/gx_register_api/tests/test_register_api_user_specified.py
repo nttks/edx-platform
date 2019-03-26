@@ -14,6 +14,8 @@ from student.models import CourseEnrollment
 from xmodule.modulestore.tests.factories import CourseFactory
 from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
 
+from django.test.utils import override_settings
+
 from biz.djangoapps.ga_contract.models import ContractDetail, AdditionalInfo
 from biz.djangoapps.ga_contract.tests.factories import ContractAuthFactory
 from biz.djangoapps.ga_invitation.models import ContractRegister, REGISTER_INVITATION_CODE, UNREGISTER_INVITATION_CODE, AdditionalInfoSetting
@@ -27,7 +29,7 @@ from biz.djangoapps.gx_username_rule.tests.factories import OrgUsernameRuleFacto
 
 from biz.djangoapps.util.tests.testcase import BizViewTestBase
 
-
+@override_settings(AWS_ACCESS_KEY_ID='apicontractregister', AWS_SECRET_ACCESS_KEY='test')
 class UserSpecifiedRegistrationAPI(BizViewTestBase, ModuleStoreTestCase, TaskTestMixin):
 
     def setUp(self):
@@ -539,3 +541,9 @@ class UserSpecifiedRegistrationAPI(BizViewTestBase, ModuleStoreTestCase, TaskTes
         response = self.client.delete(self.url.format(self.main_org.id, self.main_contract.id, self.main_user.email), **{'HTTP_X_API_KEY': 'differ'})
         self.assertHttpBadRequest(response)
         self.assertEqual('{"message": "parameter error organization. not exists org_id", "code": "11"}', response.content)
+    def test_register_success_not_exists_contract_mail(self):
+        self.main_mail.delete()
+        # method POST success
+        response = self.client.post(self.url.format(self.main_org.id, self.main_contract.id, self.main_user.email), self.param, **self.header)
+        self.assertEqual(200, response.status_code)
+        self.assertEqual('{"message": "Mail information of the current contract is not registered in the database. So, Did not send mail.", "code": "32"}', response.content)

@@ -53,6 +53,9 @@ INSTALLED_APPS += (
     'biz.djangoapps.gx_sso_config',
     'biz.djangoapps.gx_login',
     'biz.djangoapps.gx_register_api',
+    'biz.djangoapps.gx_reservation_mail',
+    'biz.djangoapps.gx_save_register_condition',
+    'biz.djangoapps.gx_students_register_batch',
 )
 
 """

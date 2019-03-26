@@ -22,6 +22,7 @@ GRID_COLUMNS = [
     ["Login Code", "text"],
     ["Enroll Date","date"],
     #["Student Status","text"]
+    #["Register Status", "text"],
 ]
 
 GRID_COLUMNS_HIDDEN = [

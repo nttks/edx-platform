@@ -40,6 +40,12 @@ function (VideoPlayer, i18n, moment) {
                     _hideWaitPlaceholder(state);
                     state.el.trigger('initialize', arguments);
 
+                    $.map(state.modules, function(module) {
+                        if (module.moduleName === 'VideoEndedModal') {
+                            module(state, i18n, state.options[module.moduleName] || {});
+                        }
+                    });
+
                     return false;
                 }
 
