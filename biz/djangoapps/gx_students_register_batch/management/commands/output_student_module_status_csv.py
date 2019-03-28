@@ -178,7 +178,21 @@ class Command(BaseCommand):
         timer = time.time()
         with open(self.FILE_DIR_ENROLLMENT + '/enrollment.csv', 'w') as enrollment_file:
             enrollment_file_writer = csv.writer(enrollment_file, delimiter=',', quotechar=',')
-            enrollment_file_writer.writerows(self._get_enrollments(target_course_ids))
+            for enrollment in self._get_enrollments(target_course_ids):
+                # Set EnrollmentAttribute value
+                attr_value_attended = None
+                attr_value_completed = None
+                if enrollment[6]:
+                    attr_value = json.loads(enrollment[6])
+                    if 'attended_date' in attr_value:
+                        attr_value_attended = attr_value['attended_date']
+                    if 'completed_date' in attr_value:
+                        attr_value_completed = attr_value['completed_date']
+
+                enrollment_file_writer.writerow([
+                    enrollment[0], enrollment[1], enrollment[2], enrollment[3], enrollment[4], enrollment[5],
+                    attr_value_attended, attr_value_completed,
+                ])
         log.debug('write to enrollment csv time: {}'.format(time.time() - timer))
 
     def _write_course_info(self, course_file_writer, course, playback_finish_store):
@@ -350,7 +364,8 @@ class Command(BaseCommand):
                     enroll_user_id = enroll[3]
                     enroll_user_username = enroll[4]
                     enroll_user_email = enroll[5]
-                    enroll_attr_value = enroll[6]
+                    enroll_attr_value_attended = enroll[6]
+                    enroll_attr_value_completed = enroll[7]
 
                     # first time at loop or different course from the last time
                     # get course and module created
@@ -365,7 +380,7 @@ class Command(BaseCommand):
                         modules_created[enroll_user_id]) if enroll_user_id in modules_created else None
 
                     # Check is attended
-                    if not module_created and not enroll_attr_value:
+                    if not module_created and not enroll_attr_value_attended:
                         student_status[self.STUDENT_KEY_STATUS] = self.STATUS_WAITING
                         if course_end and course_end < now_str:
                             student_status[self.STUDENT_KEY_STATUS] = self.STATUS_CLOSING
@@ -378,17 +393,10 @@ class Command(BaseCommand):
                         continue
 
                     # Check status date of attended date and completed date
-                    attended_datetime = None
-                    completed_datetime = None
-                    if enroll_attr_value:
-                        attr_value = json.loads(enroll_attr_value)
-                        if 'attended_date' in attr_value:
-                            attended_datetime = self._str_to_datetime(
-                                attr_value['attended_date'], '%Y-%m-%dT%H:%M:%S')
-
-                        if 'completed_date' in attr_value:
-                            completed_datetime = self._str_to_datetime(
-                                attr_value['completed_date'], '%Y-%m-%dT%H:%M:%S')
+                    attended_datetime = self._str_to_datetime(
+                        enroll_attr_value_attended, '%Y-%m-%dT%H:%M:%S.%f') if enroll_attr_value_attended else None
+                    completed_datetime = self._str_to_datetime(
+                        enroll_attr_value_completed, '%Y-%m-%dT%H:%M:%S.%f') if enroll_attr_value_completed else None
 
                     # Check status working or completed
                     working_flag = False
@@ -452,8 +460,7 @@ class Command(BaseCommand):
                         else:
                             student_status[self.STUDENT_KEY_STATUS] = self.STATUS_COMPLETED
                             if completed_datetime:
-                                self._set_date_time(
-                                    self._str_to_datetime(completed_datetime), student_status, 'completed')
+                                self._set_date_time(completed_datetime, student_status, 'completed')
                     else:
                         self._set_date_time(
                             self._str_to_datetime(enroll_created), student_status, 'working')
@@ -486,7 +493,7 @@ class Command(BaseCommand):
                 if len(tmp_student_write_data) != 0:
                     student_file_writer.writerows(tmp_student_write_data)
 
-            log.info('end write to student adn module csv.')
+            log.info('end write to student and module csv.')
 
     def _get_course_info_from_file(self, course_id):
         modules = {}
@@ -561,12 +568,17 @@ class Command(BaseCommand):
             cursor.execute("UNLOCK TABLES")
         return student_modules
 
-    def _str_to_datetime(self, datetime_str, str_format='%Y-%m-%d %H:%M:%S'):
+    def _str_to_datetime(self, datetime_str, str_format=None):
         try:
             if len(datetime_str) > 25:
-                return UTC.localize(datetime.strptime(datetime_str[:-13], str_format))
+                # exists millisecond
+                if str_format:
+                    return UTC.localize(datetime.strptime(datetime_str[:-6], str_format))
+                else:
+                    return UTC.localize(datetime.strptime(datetime_str[:-6], '%Y-%m-%d %H:%M:%S.%f'))
             else:
-                return UTC.localize(datetime.strptime(datetime_str[:-6], str_format))
+                # not exists millisecond
+                return UTC.localize(datetime.strptime(datetime_str[:-6], '%Y-%m-%d %H:%M:%S'))
         except Exception as e:
             log.error(e)
             log.error(datetime_str)
