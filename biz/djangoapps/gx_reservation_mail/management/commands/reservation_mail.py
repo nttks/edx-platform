@@ -78,12 +78,6 @@ class Command(BaseCommand):
                                 count += 1
                         except Exception as e:
                             log.info("email[" + str(email.id) + "] send error:" + str(e))
-                    else:
-                        log.info("email[" + str(email.id) + "] not send (new) batch_time:" + str(
-                            email.batch_datetime) + " created:" + str(email.created))
-                else:
-                    log.info("email[" + str(email.id) + "] not send (before) batch_time:" + str(
-                        email.batch_datetime) + " created:" + str(email.created))
             return count
 
         log.info(u"Command reservation_mail started.")

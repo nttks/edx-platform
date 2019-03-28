@@ -240,8 +240,8 @@ class Command(BaseCommand):
         exists_bucket_key_list -> type: list, element type: <class 'boto.resultset.ResultSet'>
         not_exists_buckets -> type: list, element type: <class 'django.db.models.query.QuerySet'>
         # """
-        conn = connect_s3(settings.AWS_ACCESS_KEY_ID, settings.AWS_SECRET_ACCESS_KEY)
-        # conn = connect_s3()
+        # conn = connect_s3(settings.AWS_ACCESS_KEY_ID, settings.AWS_SECRET_ACCESS_KEY)
+        conn = connect_s3()
         key_list = []
         try:
             for key in conn.get_bucket(bucket_name).get_all_keys():
@@ -263,8 +263,8 @@ class Command(BaseCommand):
         return key_list, 'There is no csv file.'
 
     def upload_s3_bucket(self, split_str_key, bucket_name, date_now):
-        conn = connect_s3(settings.AWS_ACCESS_KEY_ID, settings.AWS_SECRET_ACCESS_KEY)
-        # conn = connect_s3()
+        # conn = connect_s3(settings.AWS_ACCESS_KEY_ID, settings.AWS_SECRET_ACCESS_KEY)
+        conn = connect_s3()
         bucket = conn.get_bucket(bucket_name)
         upload_key = Key(bucket)
         upload_key.key = split_str_key[2] + '/' + split_str_key[3] + '/' + BACKUP_PATH + '/' + split_str_key[-1]
@@ -273,8 +273,8 @@ class Command(BaseCommand):
         return u'{} file uploading is complete'.format(split_str_key[-1])
 
     def _delete_s3_file(self, split_str_key, bucket_name):
-        conn = connect_s3(settings.AWS_ACCESS_KEY_ID, settings.AWS_SECRET_ACCESS_KEY)
-        # conn = connect_s3()
+        # conn = connect_s3(settings.AWS_ACCESS_KEY_ID, settings.AWS_SECRET_ACCESS_KEY)
+        conn = connect_s3()
         bucket = conn.get_bucket(bucket_name)
         key = Key(bucket)
         key.key = split_str_key[2] + '/' + split_str_key[3] + '/' + split_str_key[4] + '/' + split_str_key[-1]
@@ -284,8 +284,8 @@ class Command(BaseCommand):
 
     def download_and_create_student_list(self, bucket_name, key_name, date_now):
         students_list = []
-        conn = connect_s3(settings.AWS_ACCESS_KEY_ID, settings.AWS_SECRET_ACCESS_KEY)
-        # conn = connect_s3()
+        # conn = connect_s3(settings.AWS_ACCESS_KEY_ID, settings.AWS_SECRET_ACCESS_KEY)
+        conn = connect_s3()
         bucket = conn.get_bucket(bucket_name)
         key = Key(bucket)
         key.key = key_name
