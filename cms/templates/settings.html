@@ -363,6 +363,7 @@ CMS.URL.UPLOAD_ASSET = '${upload_asset_url}';
               </header>
               <ol class="list-input">
                 ## Note: GaGlobalCourseCreator can edit course category (#2150)
+                % if user.is_staff or GaGlobalCourseCreatorRole().has_user(user):
                 <li class="field" id="field-course-order">
                   <label for="course-order">${_("Course Order")}</label>
                   <input type="text" class="placeholder short" id="course-order" value="" autocomplete="off" />
@@ -389,6 +390,7 @@ CMS.URL.UPLOAD_ASSET = '${upload_asset_url}';
                   <input type="text" class="placeholder short" id="course-category-order2" value="" autocomplete="off" />
                   <span class="tip tip-stacked">${_("Please enter the course category Genre2 display order.")}</span>
                 </li>
+                % endif
                 <li class="field required" id="field-course-canonical-name">
                   <label for="course-canonical-name">${_("Course Canonical Name")}</label>
                   <input type="text" class="placeholder" id="course-canonical-name" value="" autocomplete="off" />
