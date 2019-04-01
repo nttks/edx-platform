@@ -24,8 +24,8 @@ class AttendanceStatusExecutor(object):
         self.enrollment = enrollment
         # get coruse_enrollment
         try:
-            self.attr = CourseEnrollmentAttribute.objects.get(
-                enrollment=self.enrollment, namespace=self.NAMESPACE, name=self.NAME)
+            self.attr = CourseEnrollmentAttribute.objects.filter(
+                enrollment=self.enrollment, namespace=self.NAMESPACE, name=self.NAME).last()
         except CourseEnrollmentAttribute.DoesNotExist:
             self.attr = None
 
