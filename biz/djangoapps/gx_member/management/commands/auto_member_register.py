@@ -25,6 +25,7 @@ from boto import connect_s3
 from boto.s3.key import Key
 from zipfile import ZipFile
 import codecs
+import csv
 import logging
 import re
 import os
@@ -103,9 +104,13 @@ class Command(BaseCommand):
             s3key.get_contents_to_filename('/tmp/' + def_s3item)
             with ZipFile('/tmp/' + def_s3item, 'r') as existing_zip:
                 existing_zip.extract(def_s3item[:-4] + '.csv', '/tmp/')
-            with codecs.open('/tmp/' + def_s3item[:-4] + '.csv', 'r', 'utf8') as fin:
-                for line in fin:
-                    csv_list.append(line.replace("\r", "").replace("\n", "").replace('"', ''))
+            # with codecs.open('/tmp/' + def_s3item[:-4] + '.csv', 'r', 'utf8') as fin:
+            #     for line in fin:
+            #         csv_list.append(line.replace("\r", "").replace("\n", "").replace('"', ''))
+            with open('/tmp/' + def_s3item[:-4] + '.csv', 'r') as fin:
+                for line in csv.reader(fin):
+                    line = [col.decode('utf-8') for col in line]
+                    csv_list.append(line)
             if os.path.exists('/tmp/' + def_s3item):
                 os.remove('/tmp/' + def_s3item)
             if os.path.exists('/tmp/' + def_s3item[:-4] + '.csv'):
@@ -119,8 +124,7 @@ class Command(BaseCommand):
             prefix_username = OrgUsernameRule.objects.filter(org=organization).first()
             prefix_username = getattr(prefix_username, "prefix", "")
             success, errors = [], []
-            for csv_record_str in def_csv_records:
-                csv_record = csv_record_str.split(',')
+            for csv_record in def_csv_records:
                 member_one = dict()
                 member_one['group_code'] = csv_record[0]
                 member_one['code'] = csv_record[1]
@@ -392,4 +396,3 @@ class Command(BaseCommand):
 
         log.info(u"Command auto_member_register completed at {}.".format(end_time))
         return result.replace("\"", "'")
-

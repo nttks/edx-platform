@@ -27,7 +27,7 @@ from student.tests.factories import UserFactory
 
 
 @ddt.ddt
-class SaveRegistConditionViewTest(BizContractTestBase):
+class SaveRegisterConditionViewTest(BizContractTestBase):
 
     def _create_member(self, org, group, user, code, is_active=True, is_delete=False, **kwargs):
         return MemberFactory.create(
