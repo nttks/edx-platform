@@ -22,6 +22,12 @@ class CourseOverviewExtra(models.Model):
 
     is_course_hidden = models.BooleanField(default=False)
     terminate_start = models.DateTimeField(null=True)
+    is_status_managed = models.BooleanField(default=False)
+    course_category = models.TextField(default="", null=True)
+    course_category_order = models.IntegerField(null=True)
+    course_category2 = models.TextField(default="", null=True)
+    course_category_order2 = models.IntegerField(null=True)
+    course_order = models.IntegerField(null=True)
 
     # for face-to-face course
     is_f2f_course = models.BooleanField(default=False)
@@ -40,6 +46,12 @@ class CourseOverviewExtra(models.Model):
             course_overview=overview,
             is_course_hidden=course.is_course_hidden,
             terminate_start=course.terminate_start,
+            is_status_managed=course.is_status_managed,
+            course_category=''.join(course.course_category or []),
+            course_category_order=course.course_category_order,
+            course_category2=course.course_category2,
+            course_category_order2=course.course_category_order2,
+            course_order=course.course_order,
             is_f2f_course=course.is_f2f_course,
             is_f2f_course_sell=course.is_f2f_course_sell,
             self_paced=course.self_paced,
