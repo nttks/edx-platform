@@ -179,7 +179,7 @@ class Command(BaseCommand):
                                    'cause': 'Character length error'})
             return success, errors
 
-        def _member_create_or_update(def_register_list):
+        def _member_create_or_update(def_register_list, non_sso=False):
             success, errors = [], []
             organization = Organization.objects.get(id=register_org_id)
             superuser = User.objects.get(id=register_superuser_id)
@@ -248,13 +248,18 @@ class Command(BaseCommand):
                                                 last_name=register_data['last_name']).get_full_name()
                             profile.save()
 
-                        # social_auth_usersocialauth create
-                        if prefix_uid:
-                            UserSocialAuth.objects.filter(provider='tpa-saml',
-                                                          uid=prefix_uid + ':' + register_data['code']).exclude(
-                                user=user).delete()
-                            UserSocialAuth.objects.get_or_create(user=user, provider='tpa-saml',
-                                                                 uid=prefix_uid + ':' + register_data['code'])
+                        # social_auth_usersocialauth create / delete
+                        if non_sso:
+                            UserSocialAuth.objects.filter(
+                                provider='tpa-saml', user=user, uid__startswith=prefix_uid).delete()
+                        else:
+                            if prefix_uid:
+                                UserSocialAuth.objects.filter(
+                                    provider='tpa-saml', uid=prefix_uid + ':' + register_data['code']).exclude(
+                                    user=user).delete()
+                                UserSocialAuth.objects.get_or_create(
+                                    user=user, provider='tpa-saml', uid=prefix_uid + ':' + register_data['code'])
+
                         # bulk_email_optout create
                         for global_course_id in CourseGlobalSetting.all_course_id():
                             Optout.objects.get_or_create(user=user, course_id=global_course_id)
@@ -360,7 +365,7 @@ class Command(BaseCommand):
                 try:
                     csv_records = _s3file_download_read(s3item)
                     register_list, errors_list = _member_validate(csv_records, non_sso=True)
-                    success_list, errors_list2 = _member_create_or_update(register_list)
+                    success_list, errors_list2 = _member_create_or_update(register_list, non_sso=True)
                     result += _s3report_upload(s3item, len(csv_records), len(success_list), errors_list + errors_list2)
                     af_total += len(csv_records)
                     af_success += len(success_list)

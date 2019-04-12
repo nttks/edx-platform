@@ -2023,6 +2023,9 @@ INSTALLED_APPS = (
 
     # Send notice of closure email for self-paced course
     'ga_bulk_email',
+
+    # Support for  page of student_account (Login and Register)
+    'ga_student_account',
 )
 
 # Migrations which are not in the standard module "migrations"
