@@ -191,7 +191,7 @@ class SaveRegisterConditionViewTest(BizContractTestBase):
         """
         Set up for test
         """
-        super(SaveRegistConditionViewTest, self).setUp()
+        super(SaveRegisterConditionViewTest, self).setUp()
         self.setup_user()
 
         self._director_manager = self._create_manager(
