@@ -590,10 +590,7 @@ def dashboard(request):
     course_orders = {}
     enroll_statuses = {}
     course_enroll_dates = {}
-    attendance_values_dict = {
-        attr['enrollment']: attr['value']
-        for attr in AttendanceStatusExecutor.get_attendance_values([e.id for e in course_enrollments])
-    }
+    attendance_values_dict = AttendanceStatusExecutor.get_attendance_values([e.id for e in course_enrollments])
 
     for enrollment in course_enrollments:
         overview = enrollment.course_overview

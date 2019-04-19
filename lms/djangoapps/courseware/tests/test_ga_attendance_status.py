@@ -435,4 +435,4 @@ class AttendanceStatusExecutorTests(ModuleStoreTestCase, PlaybackFinishTestBase)
         # act
         act = AttendanceStatusExecutor.get_attendance_values([self.enrollment.id, enrollment2.id])
         # assert
-        self.assertEqual(2, len(act))
+        self.assertEqual(2, len(act.keys()))
