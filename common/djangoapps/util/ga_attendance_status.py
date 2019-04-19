@@ -159,12 +159,12 @@ class AttendanceStatusExecutor(object):
     @staticmethod
     def get_attendance_values(enrollment_ids):
         unique_enrollments = []
-        result = []
-        for attr in CourseEnrollmentAttribute.objects.filter(
-            enrollment__in=enrollment_ids, namespace=NAMESPACE, name=NAME).order_by('id').values('enrollment', 'value'):
+        result = {}
+        for attr in CourseEnrollmentAttribute.objects.filter(enrollment__in=enrollment_ids, namespace=NAMESPACE,
+                                                             name=NAME).order_by('id').values('enrollment', 'value'):
             if unique_enrollments.count(attr['enrollment']) is 0:
                 unique_enrollments.append(attr['enrollment'])
-                result.append(attr['enrollment'])
+                result[attr['enrollment']] = attr['value']
         return result
 
     @staticmethod
