@@ -144,11 +144,11 @@
     <ul>
         <li>
             <label for="text">対象講座ID</label>
-            <input type="text" name="course_id" placeholder="placeholder">
+            <input type="text" name="course_id" id="course_id_list" placeholder="placeholder">
             <label id="course_id" for="text" class="error"></label>
         </li>
         <li>
-          <ul id="certs_templates">
+          <ul class="id_error" id="certs_templates">
           </ul>
         </li>
         <li>
@@ -182,7 +182,7 @@
     <ul>
         <li>
             <label for="text">対象講座ID</label>
-            <input type="text" name="course_id" placeholder="placeholder">
+            <input type="text" name="course_id" id="course_id_list" placeholder="placeholder">
             <label id="course_id" for="text" class="error"></label>
         </li>
         <li>
@@ -202,6 +202,10 @@
                 <img id="indicator" src="${static.url('images/spinner.gif')}" alt="実行中..." hidden>
             </div>
         </li>
+        <li>
+          <ul class="id_error" id="create_certs_error">
+          </ul>
+        </li>
     </ul>
 </script>
 
@@ -210,7 +214,7 @@
     <ul>
         <li>
             <label for="text">対象講座ID</label>
-            <input type="text" name="course_id" placeholder="placeholder">
+            <input type="text" name="course_id" id="course_id_list" placeholder="placeholder">
             <label id="course_id" for="text" class="error"></label>
         </li>
         <li>
@@ -229,6 +233,10 @@
                 <img id="indicator" src="${static.url('images/spinner.gif')}" alt="実行中..." hidden>
             </div>
         </li>
+        <li>
+          <ul class="id_error" id="create_certs_meeting_error">
+          </ul>
+        </li>
     </ul>
 </script>
 
@@ -237,7 +245,7 @@
     <ul>
         <li>
             <label for="text">対象講座ID</label>
-            <input type="text" name="course_id" placeholder="placeholder">
+            <input type="text" name="course_id" id="course_id_list" placeholder="placeholder">
             <label id="course_id" for="text" class="error"></label>
         </li>
         <li>
@@ -255,6 +263,10 @@
                 <button id="publish_certs" class="button" name="publish_certs">公開</button>
                 <img id="indicator" src="${static.url('images/spinner.gif')}" alt="実行中..." hidden>
             </div>
+        </li>
+        <li>
+          <ul class="id_error" id="publish_certs_error">
+          </ul>
         </li>
     </ul>
 </script>
@@ -407,5 +419,8 @@
     }
     .operation-comment {
         font-size: 12px;
+    }
+    li ul.id_error li:nth-child(n+2){
+        display: none;
     }
 </style>
