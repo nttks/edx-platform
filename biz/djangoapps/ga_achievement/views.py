@@ -58,9 +58,9 @@ def score(request):
     status = {k: unicode(v) for k, v in dict(CONTRACT_REGISTER_STATUS).items()}
 
     student_status = [
-        "Finish Enrolled",
-        "Enrolled",
         "Not Enrolled",
+        "Enrolled",
+        "Finish Enrolled",
     ]
     certificate_status = [
         ScoreStore.FIELD_CERTIFICATE_STATUS__DOWNLOADABLE,
@@ -92,8 +92,8 @@ def score(request):
 
     new_score_records = _merge_to_store_by_member_for_search(
         request, org, child_group_ids, manager, _(ScoreStore.FIELD_USERNAME), score_records)
-    score_columns = insert_columns(score_columns, 5, 4)
-    score_columns = column_delete(request, score_columns)
+    score_columns = _insert_columns(score_columns, 5, 4)
+    score_columns = _column_delete(request, score_columns)
 
     context = {
         'update_datetime': update_datetime,
@@ -176,8 +176,8 @@ def playback(request):
 
     new_playback_records = _merge_to_store_by_member_for_search(
         request, org, child_group_ids, manager, _(PlaybackStore.FIELD_USERNAME), playback_records)
-    playback_columns = insert_columns(playback_columns, 5, 4)
-    playback_columns = column_delete(request, playback_columns)
+    playback_columns = _insert_columns(playback_columns, 5, 4)
+    playback_columns = _column_delete(request, playback_columns)
 
     context = {
         'update_datetime': update_datetime,
@@ -268,12 +268,12 @@ def score_download_csv(request):
     if "search-download" in request.POST:
         score_columns, score_records, __, new_score_records = score_search_filter(request, org, contract_id, course_id,
                                                                                   manager)
-        score_columns = insert_columns(score_columns, 4, 3)
-        score_columns = column_delete(request, score_columns)
+        score_columns = _insert_columns(score_columns, 4, 3)
+        score_columns = _column_delete(request, score_columns)
     else:
         score_columns, score_records = score_store.get_data_for_w2ui(limit=settings.BIZ_MONGO_LIMIT_RECORDS)
-        score_columns = insert_columns(score_columns, 4, 3)
-        score_columns = column_delete(request, score_columns)
+        score_columns = _insert_columns(score_columns, 4, 3)
+        score_columns = _column_delete(request, score_columns)
         new_score_records = []
 
     # Member
@@ -289,14 +289,14 @@ def score_download_csv(request):
     enrollment_attribute_dict = {}
     course = get_course(request.current_course.id)
     if course.is_status_managed:
-        enrollment_attribute_dict = create_attribute_value(request, course)
+        enrollment_attribute_dict = _set_attribute_value(request, course)
 
     for score_record in score_records:
         current_user_name = score_record[username_key]
-        score_record = change_of_value_name(score_record)
-        score_record = change_of_value_name(score_record)
+        score_record = _change_of_value_name(score_record)
+        score_record = _change_of_value_name(score_record)
         if course.is_status_managed:
-            score_record = create_student_status_record(score_record, enrollment_attribute_dict, current_user_name)
+            score_record = _set_student_status_record(score_record, enrollment_attribute_dict, current_user_name)
 
         member_record = {_("Organization Groups"): ''}
         if current_user_name in members_dict:
@@ -409,12 +409,12 @@ def playback_download_csv(request):
     if "search-download" in request.POST:
         playback_columns, playback_records, __, new_playback_records = playback_search_filter(request, org, contract_id,
                                                                                               course_id, manager)
-        playback_columns = insert_columns(playback_columns, 4, 3)
-        playback_columns = column_delete(request, playback_columns)
+        playback_columns = _insert_columns(playback_columns, 4, 3)
+        playback_columns = _column_delete(request, playback_columns)
     else:
         playback_columns, playback_records = playback_store.get_data_for_w2ui(limit=settings.BIZ_MONGO_LIMIT_RECORDS)
-        playback_columns = insert_columns(playback_columns, 4, 3)
-        playback_columns = column_delete(request, playback_columns)
+        playback_columns = _insert_columns(playback_columns, 4, 3)
+        playback_columns = _column_delete(request, playback_columns)
         new_playback_records = []
 
     # Member
@@ -429,13 +429,13 @@ def playback_download_csv(request):
     enrollment_attribute_dict = {}
     course = get_course(request.current_course.id)
     if course.is_status_managed:
-        enrollment_attribute_dict = create_attribute_value(request, course)
+        enrollment_attribute_dict = _set_attribute_value(request, course)
 
     for playback_record in playback_records:
         current_username = playback_record[username_key]
-        playback_record = change_of_value_name(playback_record)
+        playback_record = _change_of_value_name(playback_record)
         if course.is_status_managed:
-            playback_record = create_student_status_record(playback_record, enrollment_attribute_dict, current_username)
+            playback_record = _set_student_status_record(playback_record, enrollment_attribute_dict, current_username)
 
         member_record = {_("Organization Groups"): ''}
         if current_username in members_dict:
@@ -643,14 +643,14 @@ def _merge_to_store_by_member_for_search(
     enrollment_attribute_dict = {}
     course = get_course(request.current_course.id)
     if course.is_status_managed:
-        enrollment_attribute_dict = create_attribute_value(request, course)
+        enrollment_attribute_dict = _set_attribute_value(request, course)
 
     for store_record in store_list:
         insert_flag = True
         current_user_name = store_record[merge_key]
-        store_record = change_of_value_name(store_record)
+        store_record = _change_of_value_name(store_record)
         if course.is_status_managed:
-            store_record = create_student_status_record(store_record, enrollment_attribute_dict, current_user_name)
+            store_record = _set_student_status_record(store_record, enrollment_attribute_dict, current_user_name)
 
         if current_user_name in members_dict:
             member = members_dict[current_user_name]
@@ -708,7 +708,7 @@ def _merge_to_store_by_member_for_search(
     return result
 
 
-def insert_columns(columns, len_1, len_2):
+def _insert_columns(columns, len_1, len_2):
     if (_("Login Code"), 'text') in columns:
         columns.insert(len_1, (_("Register Status"), 'text'))
     else:
@@ -717,7 +717,7 @@ def insert_columns(columns, len_1, len_2):
     return columns
 
 
-def column_delete(request, columns):
+def _column_delete(request, columns):
     course = get_course(request.current_course.id)
     if not course.is_status_managed:
         if (_("Login Code"), 'text') in columns:
@@ -729,7 +729,7 @@ def column_delete(request, columns):
     return columns
 
 
-def create_attribute_value(request, course):
+def _set_attribute_value(request, course):
     enrollment_ids = []
     enroll_dict = {}
     enrollment_attribute_dict = {}
@@ -738,17 +738,16 @@ def create_attribute_value(request, course):
             enrollment_ids.append(enrollment['id'])
             enroll_dict[enrollment['id']] = enrollment['user__username']
     if enrollment_ids:
-        for enrollment_attribute_id, enrollment_attribute_value in AttendanceStatusExecutor.get_attendance_values(
-                enrollment_ids).items():
-            for enrollment_id, enrollment_username in enroll_dict.items():
-                if enrollment_id == enrollment_attribute_id:
-                    enrollment_attribute_dict[enrollment_username] = enrollment_attribute_value
+        enrollment_attribute = AttendanceStatusExecutor.get_attendance_values(enrollment_ids)
+        for enrollment_id, enrollment_username in enroll_dict.items():
+            if enrollment_id in enrollment_attribute:
+                enrollment_attribute_dict[enrollment_username] = enrollment_attribute[enrollment_id]
 
     return enrollment_attribute_dict
 
 
-def create_student_status_record(record, attr_dict, username):
-    if username in attr_dict.keys():
+def _set_student_status_record(record, attr_dict, username):
+    if username in attr_dict:
         if AttendanceStatusExecutor.attendance_status_is_completed(attr_dict[username]):
             record[_("Student Status")] = _("Finish Enrolled")
         elif AttendanceStatusExecutor.attendance_status_is_attended(attr_dict[username]):
@@ -756,14 +755,13 @@ def create_student_status_record(record, attr_dict, username):
         else:
             record[_("Student Status")] = _("Not Enrolled")
 
-        return record
     else:
         record[_("Student Status")] = _("Not Enrolled")
 
-        return record
+    return record
 
 
-def change_of_value_name(record):
+def _change_of_value_name(record):
     if record[_("Student Status")] == _('Not Enrolled'):
         record[_("Register Status")] = _("Unregistered")
 
