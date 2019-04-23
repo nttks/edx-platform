@@ -307,7 +307,7 @@ ORDER BY IC.id'''
 def students_students_download(request):
     total_count, show_list, __, additional_columns = _contract_register_list_on_page(request, 0, None)
 
-    headers = [_("Student Status"),  _("Target user of delete member master"), _("Email Address"), _("Username"),
+    headers = [_("Contract Status"),  _("Target user of delete member master"), _("Email Address"), _("Username"),
                _("Full Name"), _("Login Code"), _("Organization Groups"), _("Organization Code"), _("Member Code")]
     for i in range(1, 11):
         headers.append(_("Organization") + str(i))
