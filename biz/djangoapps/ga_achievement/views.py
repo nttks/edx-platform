@@ -25,9 +25,9 @@ from biz.djangoapps.util.json_utils import EscapedEdxJSONEncoder
 from biz.djangoapps.util.decorators import check_course_selection, check_organization_group
 from biz.djangoapps.util.unicodetsv_utils import create_tsv_response, create_csv_response_double_quote
 
-from lms.djangoapps.courseware.courses import get_course
 from courseware.models import StudentModule
 from edxmako.shortcuts import render_to_response
+from openedx.core.djangoapps.content.course_overviews.models import CourseOverview
 from student.models import CourseEnrollment
 from util.file import course_filename_prefix_generator
 from util.json_request import JsonResponse, JsonResponseBadRequest
@@ -53,8 +53,8 @@ def score(request):
     org = request.current_organization
     contract_id = request.current_contract.id
     course_id = request.current_course.id
+    course_overview = CourseOverview.get_from_id(course_id)
     manager = request.current_manager
-    course = get_course(course_id)
 
     status = {k: unicode(v) for k, v in dict(CONTRACT_REGISTER_STATUS).items()}
 
@@ -82,7 +82,7 @@ def score(request):
     hidden_score_columns = score_store.get_section_names()
     score_section_names = [column[0] for column in hidden_score_columns]
 
-    score_columns = _change_column(request, score_columns)
+    score_columns = _change_column(course_overview, score_columns)
     score_columns.insert(1, (_("Organization Groups"), 'text'))
     score_columns.extend([(_("Organization") + str(i), 'text') for i in range(1, 4)])
     score_columns.extend([(_("Item") + str(i), 'text') for i in range(1, 4)])
@@ -106,7 +106,7 @@ def score(request):
         'student_status': student_status,
         'certificate_status': certificate_status,
         'score_section_names': score_section_names,
-        'is_status_managed': course.is_status_managed,
+        'is_status_managed': course_overview.extra.is_status_managed,
     }
     return render_to_response('ga_achievement/score.html', context)
 
@@ -142,9 +142,9 @@ def playback(request):
     org = request.current_organization
     contract_id = request.current_contract.id
     course_id = request.current_course.id
+    course_overview = CourseOverview.get_from_id(course_id)
     manager = request.current_manager
     batch_status = PlaybackBatchStatus.get_last_status(contract_id, course_id)
-    course = get_course(course_id)
 
     status = {k: unicode(v) for k, v in dict(CONTRACT_REGISTER_STATUS).items()}
 
@@ -167,7 +167,7 @@ def playback(request):
     hidden_playback_columns = playback_store.get_section_names()
     playback_section_names = [column[0] for column in hidden_playback_columns]
 
-    playback_columns = _change_column(request, playback_columns)
+    playback_columns = _change_column(course_overview, playback_columns)
     playback_columns.insert(1, (_("Organization Groups"), 'text'))
     playback_columns.extend([(_("Organization") + str(i), 'text') for i in range(1, 4)])
     playback_columns.extend([(_("Item") + str(i), 'text') for i in range(1, 4)])
@@ -190,7 +190,7 @@ def playback(request):
         'group_list': _create_group_choice_list(manager, org, child_group_ids),
         'student_status': student_status,
         'playback_section_names': playback_section_names,
-        'is_status_managed': course.is_status_managed,
+        'is_status_managed': course_overview.extra.is_status_managed,
     }
     return render_to_response('ga_achievement/playback.html', context)
 
@@ -257,6 +257,7 @@ def score_download_csv(request):
     org = request.current_organization
     contract_id = request.current_contract.id
     course_id = request.current_course.id
+    course_overview = CourseOverview.get_from_id(course_id)
     manager = request.current_manager
 
     batch_status = ScoreBatchStatus.get_last_status(contract_id, course_id)
@@ -270,10 +271,10 @@ def score_download_csv(request):
     if "search-download" in request.POST:
         score_columns, score_records, __, new_score_records = score_search_filter(request, org, contract_id, course_id,
                                                                                   manager)
-        score_columns = _change_column(request, score_columns)
+        score_columns = _change_column(course_overview, score_columns)
     else:
         score_columns, score_records = score_store.get_data_for_w2ui(limit=settings.BIZ_MONGO_LIMIT_RECORDS)
-        score_columns = _change_column(request, score_columns)
+        score_columns = _change_column(course_overview, score_columns)
         new_score_records = []
 
     # Member
@@ -287,15 +288,14 @@ def score_download_csv(request):
     members_dict = {member.user.username: member for member in members}
 
     enrollment_attribute_dict = {}
-    course = get_course(request.current_course.id)
-    if course.is_status_managed:
-        enrollment_attribute_dict = _set_attribute_value(course)
+    if course_overview.extra.is_status_managed:
+        enrollment_attribute_dict = _get_attribute_value(course_id)
 
     for score_record in score_records:
         current_user_name = score_record[username_key]
         score_record = _change_of_value_name(score_record)
         score_record = _change_of_value_name(score_record)
-        if course.is_status_managed:
+        if course_overview.extra.is_status_managed:
             score_record = _set_student_status_record(score_record, enrollment_attribute_dict, current_user_name)
 
         member_record = {_("Organization Groups"): ''}
@@ -396,6 +396,7 @@ def playback_download_csv(request):
     org = request.current_organization
     contract_id = request.current_contract.id
     course_id = request.current_course.id
+    course_overview = CourseOverview.get_from_id(course_id)
     manager = request.current_manager
 
     batch_status = PlaybackBatchStatus.get_last_status(contract_id, course_id)
@@ -409,10 +410,10 @@ def playback_download_csv(request):
     if "search-download" in request.POST:
         playback_columns, playback_records, __, new_playback_records = playback_search_filter(request, org, contract_id,
                                                                                               course_id, manager)
-        playback_columns = _change_column(request, playback_columns)
+        playback_columns = _change_column(course_overview, playback_columns)
     else:
         playback_columns, playback_records = playback_store.get_data_for_w2ui(limit=settings.BIZ_MONGO_LIMIT_RECORDS)
-        playback_columns = _change_column(request, playback_columns)
+        playback_columns = _change_column(course_overview, playback_columns)
         new_playback_records = []
 
     # Member
@@ -425,14 +426,13 @@ def playback_download_csv(request):
     members_dict = {member.user.username: member for member in members}
 
     enrollment_attribute_dict = {}
-    course = get_course(request.current_course.id)
-    if course.is_status_managed:
-        enrollment_attribute_dict = _set_attribute_value(course)
+    if course_overview.extra.is_status_managed:
+        enrollment_attribute_dict = _get_attribute_value(course_id)
 
     for playback_record in playback_records:
         current_username = playback_record[username_key]
         playback_record = _change_of_value_name(playback_record)
-        if course.is_status_managed:
+        if course_overview.extra.is_status_managed:
             playback_record = _set_student_status_record(playback_record, enrollment_attribute_dict, current_username)
 
         member_record = {_("Organization Groups"): ''}
@@ -639,15 +639,16 @@ def _merge_to_store_by_member_for_search(
     members_dict = {member[select_columns.get('user_name')]: member for member in members}
 
     enrollment_attribute_dict = {}
-    course = get_course(request.current_course.id)
-    if course.is_status_managed:
-        enrollment_attribute_dict = _set_attribute_value(course)
+    course_id = request.current_course.id
+    course_overview = CourseOverview.get_from_id(course_id)
+    if course_overview.extra.is_status_managed:
+        enrollment_attribute_dict = _get_attribute_value(course_id)
 
     for store_record in store_list:
         insert_flag = True
         current_user_name = store_record[merge_key]
         store_record = _change_of_value_name(store_record)
-        if course.is_status_managed:
+        if course_overview.extra.is_status_managed:
             store_record = _set_student_status_record(store_record, enrollment_attribute_dict, current_user_name)
 
         if current_user_name in members_dict:
@@ -706,14 +707,13 @@ def _merge_to_store_by_member_for_search(
     return result
 
 
-def _change_column(request, columns):
-    course = get_course(request.current_course.id)
+def _change_column(course_overview, columns):
     for i, column in enumerate(columns):
         if column[0] == _("Student Status"):
             columns.insert(i, (_("Register Status"), 'text'))
             break
 
-    if not course.is_status_managed:
+    if not course_overview.extra.is_status_managed:
         for i, column in enumerate(columns):
             if column[0] == _("Student Status"):
                 columns.pop(i)
@@ -722,21 +722,21 @@ def _change_column(request, columns):
     return columns
 
 
-def _set_attribute_value(course):
-    enrollment_ids = []
-    enroll_dict = {}
-    enrollment_attribute_dict = {}
-    for enrollment in CourseEnrollment.objects.filter(course_id=course.id).values('id', 'user__username'):
-        if enrollment_ids.count(enrollment['id']) is 0:
-            enrollment_ids.append(enrollment['id'])
-            enroll_dict[enrollment['id']] = enrollment['user__username']
-    if enrollment_ids:
-        enrollment_attribute = AttendanceStatusExecutor.get_attendance_values(enrollment_ids)
-        for enrollment_id, enrollment_username in enroll_dict.items():
-            if enrollment_id in enrollment_attribute:
-                enrollment_attribute_dict[enrollment_username] = enrollment_attribute[enrollment_id]
+def _get_attribute_value(course_id):
+    enroll_dict = {
+        enrollment['id']: enrollment['user__username']
+        for enrollment in CourseEnrollment.objects.filter(course_id=course_id).values('id', 'user__username')
+    }
 
-    return enrollment_attribute_dict
+    if enroll_dict:
+        enrollment_attribute = AttendanceStatusExecutor.get_attendance_values(enroll_dict.keys())
+        return {
+            enrollment_username: enrollment_attribute[enrollment_id]
+            for enrollment_id, enrollment_username in enroll_dict.items()
+            if enrollment_id in enrollment_attribute
+        }
+    else:
+        return {}
 
 
 def _set_student_status_record(record, attr_dict, username):

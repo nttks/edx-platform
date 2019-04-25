@@ -47,6 +47,7 @@ from biz.djangoapps.util.unicodetsv_utils import create_tsv_response, create_csv
 
 from edxmako.shortcuts import render_to_response
 from lms.djangoapps.courseware.courses import get_course
+from openedx.core.djangoapps.content.course_overviews.models import CourseOverview
 from openedx.core.djangoapps.ga_self_paced import api as self_paced_api
 from openedx.core.djangoapps.ga_task.api import AlreadyRunningError
 from openedx.core.djangoapps.ga_task.task import STATES as TASK_STATES
@@ -774,9 +775,9 @@ def reminder_mail(request):
     is_manager = not request.current_manager.is_director() and request.current_manager.is_manager()
 
     # Reminder mail
-    reminder_mail = {}
+    contract_reminder_mail = {}
     if request.current_contract.can_send_submission_reminder:
-        reminder_mail = ContractReminderMail.get_or_default(
+        contract_reminder_mail = ContractReminderMail.get_or_default(
             request.current_contract, ContractReminderMail.MAIL_TYPE_SUBMISSION_REMINDER)
 
     # Search Reminder mail
@@ -834,10 +835,10 @@ def reminder_mail(request):
         'ga_contract_operation/reminder_mail.html',
         {
             'is_manager': is_manager,
-            'mail_info': reminder_mail,
+            'mail_info': contract_reminder_mail,
             'search_mail_info': search_reminder_mail,
             'deadline': course.deadline_start,
-            'reminder_mail_contract_id': reminder_mail.contract_id,
+            'reminder_mail_contract_id': contract_reminder_mail.contract_id,
             'is_status_managed': course.is_status_managed,
         }
     )
@@ -897,6 +898,7 @@ def reminder_mail_save_ajax(request):
         return JsonResponse({
             'info': _("Successfully to save the template e-mail."),
         })
+
 
 @require_POST
 @login_required
@@ -992,8 +994,8 @@ def reminder_mail_send_ajax(request):
 def reminder_search_ajax(request):
     org = request.current_organization
     contract = request.current_contract
-    course_id = request.current_course.id
-    course = get_course(course_id)
+    course = request.current_course
+    course_overview = CourseOverview.get_from_id(course.id)
     manager = request.current_manager
 
     if 'contract_id' not in request.POST:
@@ -1057,7 +1059,7 @@ def reminder_search_ajax(request):
         return has_condition, total_condition, section_conditions
 
     def _create_row(recid, register_status, student_status, user,
-                    score_section_names, score, playback_section_names, playback, course):
+                    score_section_names, score, playback_section_names, playback, course_overview):
         row = {
             'recid': recid,
             'user_id': user.id or '',
@@ -1082,7 +1084,7 @@ def reminder_search_ajax(request):
         row['register_status'] = register_status
 
         # Set student status
-        if course.is_status_managed:
+        if course_overview.extra.is_status_managed:
             row['student_status'] = student_status
 
         # Set score
@@ -1198,18 +1200,19 @@ def reminder_search_ajax(request):
         playback_section_names = []
         username_playback = {}
     enrollment_attribute_dict = {}
-    if course.is_status_managed:
-        enrollment_ids = []
-        enroll_dict = {}
-        for enrollment in CourseEnrollment.objects.filter(course_id=course.id).values('id', 'user__username'):
-            if enrollment_ids.count(enrollment['id']) is 0:
-                enrollment_ids.append(enrollment['id'])
-                enroll_dict[enrollment['id']] = enrollment['user__username']
-        if enrollment_ids:
-            enrollment_attribute = AttendanceStatusExecutor.get_attendance_values(enrollment_ids)
-            for enrollment_id, enrollment_username in enroll_dict.items():
-                if enrollment_id in enrollment_attribute:
-                    enrollment_attribute_dict[enrollment_username] = enrollment_attribute[enrollment_id]
+    if course_overview.extra.is_status_managed:
+        enroll_dict = {
+            enrollment['id']: enrollment['user__username']
+            for enrollment in CourseEnrollment.objects.filter(course_id=course.id).values('id', 'user__username')
+        }
+
+        if enroll_dict:
+            enrollment_attribute = AttendanceStatusExecutor.get_attendance_values(enroll_dict.keys())
+            enrollment_attribute_dict = {
+                enrollment_username: enrollment_attribute[enrollment_id]
+                for enrollment_id, enrollment_username in enroll_dict.items()
+                if enrollment_id in enrollment_attribute
+            }
 
     # Create row by usernames
     show_list = []
@@ -1263,7 +1266,7 @@ def reminder_search_ajax(request):
 
         # Check student status
         student_status = ''
-        if course.is_status_managed:
+        if course_overview.extra.is_status_managed:
             if user.username in enrollment_attribute_dict:
                 if AttendanceStatusExecutor.attendance_status_is_completed(enrollment_attribute_dict[user.username]):
                     student_status = _("Finish Enrolled")
@@ -1280,7 +1283,7 @@ def reminder_search_ajax(request):
 
         show_list.append(
             _create_row(i, register_status, student_status, user,
-                        score_section_names, score, playback_section_names, playback, course)
+                        score_section_names, score, playback_section_names, playback, course_overview)
         )
     return JsonResponse({
         'info': _("Successfully to search."),

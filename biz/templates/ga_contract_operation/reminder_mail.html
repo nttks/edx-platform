@@ -206,9 +206,9 @@ from biz.djangoapps.ga_contract_operation.models import ContractReminderMail
                     {field: 'user_name', caption: '${_("Username")}', size: 2, min: 120, sortable: true, hidden: false},
                     {field: 'user_email', caption: '${_("Email Address")}', size: 3, min: 150, sortable: true, hidden: false},
                     {field: 'register_status', caption: '${_("Register Status")}', size: 2, min: 120, sortable: true, hidden: false},
-                    %if is_status_managed:
+                    % if is_status_managed:
                     {field: 'student_status', caption: '${_("Student Status")}', size: 2, min: 120, sortable: true, hidden: false},
-                    %endif
+                    % endif
                     {field: 'total_score', caption: '${_("Total Score")}', size: 2, min: 100, sortable: true, hidden: false,
                         render:renderPercent, style:'text-align: right'},
                     {field: 'total_playback', caption: '${_("Total Playback Time")}', size: 2, min: 100, sortable: true, hidden: false,

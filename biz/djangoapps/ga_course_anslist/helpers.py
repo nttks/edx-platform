@@ -1,21 +1,13 @@
 # -*- coding: utf-8 -*-
 import logging
 import copy
-
-from django.utils.translation import ugettext as _
-
 from collections import OrderedDict
-from lms.djangoapps.courseware.courses import get_course
-from student.models import CourseEnrollment
 from string import Template
+from django.utils.translation import ugettext as _
+from openedx.core.djangoapps.content.course_overviews.models import CourseOverview
+from student.models import CourseEnrollment
 from util.ga_attendance_status import AttendanceStatusExecutor
 
-LOG_LEVEL = logging.DEBUG
-logging.basicConfig(
-    level=LOG_LEVEL,
-    format="[%(asctime)s][%(levelname)s](%(filename)s:%(lineno)s) %(message)s",
-    datefmt="%Y/%m/%d %H:%M:%S"
-)
 log = logging.getLogger(__name__)
 
 GRID_COLUMNS = [
@@ -41,7 +33,6 @@ GRID_COLUMNS_NON_STATUS = [
 
 GRID_COLUMNS_HIDDEN = [
     ["Group Code", "hidden"],
-    # ["Student Status","hidden"]
 ]
 
 QUERY_STATEMENT_SURVEY_NAMES = '''
@@ -147,8 +138,8 @@ def _create_users_not_members_statement(org_id, contract_id, course_id, user_ids
 
 def _get_grid_columns_base(course_id, survey_names_list):
     columns_list = []
-    course = get_course(course_id)
-    if course.is_status_managed:
+    course_overview = CourseOverview.get_from_id(course_id)
+    if course_overview.extra.is_status_managed:
         columns_list.extend([(col[0], col[1]) for col in GRID_COLUMNS])
     else:
         columns_list.extend([(col[0], col[1]) for col in GRID_COLUMNS_NON_STATUS])
@@ -271,15 +262,15 @@ def _transform_grid_records(course_id, dct_added, conditions=None):
         survey_name = ''
 
     enrollment_attribute_dict = {}
-    course = get_course(course_id)
-    if course.is_status_managed:
-        enrollment_attribute_dict = _set_attribute_value(course)
+    course_overview = CourseOverview.get_from_id(course_id)
+    if course_overview.extra.is_status_managed:
+        enrollment_attribute_dict = _get_attribute_value(course_id)
 
     grid_records = []
     recid = 0
     users = dct_added.keys()
     for user_id in users:
-        if course.is_status_managed:
+        if course_overview.extra.is_status_managed:
             dct_added[user_id] = _set_student_status_record(dct_added[user_id], enrollment_attribute_dict, user_id)
         if all_flag:
             recid += 1
@@ -321,25 +312,21 @@ def _populate_for_tsv(columns, records):
     return header, rows
 
 
-def _smoke_test(a, b):
-    return a + b
+def _get_attribute_value(course_id):
+    enroll_dict = {
+        enrollment['id']: enrollment['user__id']
+        for enrollment in CourseEnrollment.objects.filter(course_id=course_id).values('id', 'user__id')
+    }
 
-
-def _set_attribute_value(course):
-    enrollment_ids = []
-    enroll_dict = {}
-    enrollment_attribute_dict = {}
-    for enrollment in CourseEnrollment.objects.filter(course_id=course.id).values('id', 'user__id'):
-        if enrollment_ids.count(enrollment['id']) is 0:
-            enrollment_ids.append(enrollment['id'])
-            enroll_dict[enrollment['id']] = enrollment['user__id']
-    if enrollment_ids:
-        enrollment_attribute = AttendanceStatusExecutor.get_attendance_values(enrollment_ids)
-        for enrollment_id, enrollment_user_id in enroll_dict.items():
-            if enrollment_id in enrollment_attribute:
-                enrollment_attribute_dict[enrollment_user_id] = enrollment_attribute[enrollment_id]
-
-    return enrollment_attribute_dict
+    if enroll_dict:
+        enrollment_attribute = AttendanceStatusExecutor.get_attendance_values(enroll_dict.keys())
+        return {
+            enrollment_username: enrollment_attribute[enrollment_id]
+            for enrollment_id, enrollment_username in enroll_dict.items()
+            if enrollment_id in enrollment_attribute
+        }
+    else:
+        return {}
 
 
 def _set_student_status_record(record, attr_dict, user_id):
