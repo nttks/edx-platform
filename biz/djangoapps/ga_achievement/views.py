@@ -54,6 +54,7 @@ def score(request):
     contract_id = request.current_contract.id
     course_id = request.current_course.id
     manager = request.current_manager
+    course = get_course(course_id)
 
     status = {k: unicode(v) for k, v in dict(CONTRACT_REGISTER_STATUS).items()}
 
@@ -81,6 +82,7 @@ def score(request):
     hidden_score_columns = score_store.get_section_names()
     score_section_names = [column[0] for column in hidden_score_columns]
 
+    score_columns = _change_column(request, score_columns)
     score_columns.insert(1, (_("Organization Groups"), 'text'))
     score_columns.extend([(_("Organization") + str(i), 'text') for i in range(1, 4)])
     score_columns.extend([(_("Item") + str(i), 'text') for i in range(1, 4)])
@@ -92,8 +94,6 @@ def score(request):
 
     new_score_records = _merge_to_store_by_member_for_search(
         request, org, child_group_ids, manager, _(ScoreStore.FIELD_USERNAME), score_records)
-    score_columns = _insert_columns(score_columns, 5, 4)
-    score_columns = _column_delete(request, score_columns)
 
     context = {
         'update_datetime': update_datetime,
@@ -106,6 +106,7 @@ def score(request):
         'student_status': student_status,
         'certificate_status': certificate_status,
         'score_section_names': score_section_names,
+        'is_status_managed': course.is_status_managed,
     }
     return render_to_response('ga_achievement/score.html', context)
 
@@ -143,6 +144,7 @@ def playback(request):
     course_id = request.current_course.id
     manager = request.current_manager
     batch_status = PlaybackBatchStatus.get_last_status(contract_id, course_id)
+    course = get_course(course_id)
 
     status = {k: unicode(v) for k, v in dict(CONTRACT_REGISTER_STATUS).items()}
 
@@ -165,6 +167,7 @@ def playback(request):
     hidden_playback_columns = playback_store.get_section_names()
     playback_section_names = [column[0] for column in hidden_playback_columns]
 
+    playback_columns = _change_column(request, playback_columns)
     playback_columns.insert(1, (_("Organization Groups"), 'text'))
     playback_columns.extend([(_("Organization") + str(i), 'text') for i in range(1, 4)])
     playback_columns.extend([(_("Item") + str(i), 'text') for i in range(1, 4)])
@@ -176,8 +179,6 @@ def playback(request):
 
     new_playback_records = _merge_to_store_by_member_for_search(
         request, org, child_group_ids, manager, _(PlaybackStore.FIELD_USERNAME), playback_records)
-    playback_columns = _insert_columns(playback_columns, 5, 4)
-    playback_columns = _column_delete(request, playback_columns)
 
     context = {
         'update_datetime': update_datetime,
@@ -189,6 +190,7 @@ def playback(request):
         'group_list': _create_group_choice_list(manager, org, child_group_ids),
         'student_status': student_status,
         'playback_section_names': playback_section_names,
+        'is_status_managed': course.is_status_managed,
     }
     return render_to_response('ga_achievement/playback.html', context)
 
@@ -268,12 +270,10 @@ def score_download_csv(request):
     if "search-download" in request.POST:
         score_columns, score_records, __, new_score_records = score_search_filter(request, org, contract_id, course_id,
                                                                                   manager)
-        score_columns = _insert_columns(score_columns, 4, 3)
-        score_columns = _column_delete(request, score_columns)
+        score_columns = _change_column(request, score_columns)
     else:
         score_columns, score_records = score_store.get_data_for_w2ui(limit=settings.BIZ_MONGO_LIMIT_RECORDS)
-        score_columns = _insert_columns(score_columns, 4, 3)
-        score_columns = _column_delete(request, score_columns)
+        score_columns = _change_column(request, score_columns)
         new_score_records = []
 
     # Member
@@ -289,7 +289,7 @@ def score_download_csv(request):
     enrollment_attribute_dict = {}
     course = get_course(request.current_course.id)
     if course.is_status_managed:
-        enrollment_attribute_dict = _set_attribute_value(request, course)
+        enrollment_attribute_dict = _set_attribute_value(course)
 
     for score_record in score_records:
         current_user_name = score_record[username_key]
@@ -409,12 +409,10 @@ def playback_download_csv(request):
     if "search-download" in request.POST:
         playback_columns, playback_records, __, new_playback_records = playback_search_filter(request, org, contract_id,
                                                                                               course_id, manager)
-        playback_columns = _insert_columns(playback_columns, 4, 3)
-        playback_columns = _column_delete(request, playback_columns)
+        playback_columns = _change_column(request, playback_columns)
     else:
         playback_columns, playback_records = playback_store.get_data_for_w2ui(limit=settings.BIZ_MONGO_LIMIT_RECORDS)
-        playback_columns = _insert_columns(playback_columns, 4, 3)
-        playback_columns = _column_delete(request, playback_columns)
+        playback_columns = _change_column(request, playback_columns)
         new_playback_records = []
 
     # Member
@@ -429,7 +427,7 @@ def playback_download_csv(request):
     enrollment_attribute_dict = {}
     course = get_course(request.current_course.id)
     if course.is_status_managed:
-        enrollment_attribute_dict = _set_attribute_value(request, course)
+        enrollment_attribute_dict = _set_attribute_value(course)
 
     for playback_record in playback_records:
         current_username = playback_record[username_key]
@@ -643,7 +641,7 @@ def _merge_to_store_by_member_for_search(
     enrollment_attribute_dict = {}
     course = get_course(request.current_course.id)
     if course.is_status_managed:
-        enrollment_attribute_dict = _set_attribute_value(request, course)
+        enrollment_attribute_dict = _set_attribute_value(course)
 
     for store_record in store_list:
         insert_flag = True
@@ -708,28 +706,23 @@ def _merge_to_store_by_member_for_search(
     return result
 
 
-def _insert_columns(columns, len_1, len_2):
-    if (_("Login Code"), 'text') in columns:
-        columns.insert(len_1, (_("Register Status"), 'text'))
-    else:
-        columns.insert(len_2, (_("Register Status"), 'text'))
-
-    return columns
-
-
-def _column_delete(request, columns):
+def _change_column(request, columns):
     course = get_course(request.current_course.id)
-    if not course.is_status_managed:
-        if (_("Login Code"), 'text') in columns:
-            columns.pop(6)
-        else:
-            columns.pop(5)
+    for i, column in enumerate(columns):
+        if column[0] == _("Student Status"):
+            columns.insert(i, (_("Register Status"), 'text'))
+            break
 
-        return columns
+    if not course.is_status_managed:
+        for i, column in enumerate(columns):
+            if column[0] == _("Student Status"):
+                columns.pop(i)
+                break
+
     return columns
 
 
-def _set_attribute_value(request, course):
+def _set_attribute_value(course):
     enrollment_ids = []
     enroll_dict = {}
     enrollment_attribute_dict = {}

@@ -236,6 +236,7 @@ from django.utils.translation import ugettext as _
     <form id="form">
         <div class="gc_column">
             <div class="gc_column_col gc_column_col_full">
+                %if is_status_managed:
                 <div class="gc_field">
                     <label class="gc_field_label" for="student_status">${_('Student Status')}</label>
                     <select id="student_status" class="gc_field_ipt gc_w10em" name="student_status">
@@ -245,6 +246,7 @@ from django.utils.translation import ugettext as _
                         % endfor
                     </select>
                 </div>
+                %endif
                 <div class="gc_field">
                     <label class="gc_field_label" for="certificate_status">${_('Certificate Status')}</label>
                     <select id="certificate_status" class="gc_field_ipt gc_w10em" name="certificate_status">

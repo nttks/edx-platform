@@ -1,8 +1,14 @@
 # -*- coding: utf-8 -*-
 import logging
 import copy
-from string import Template
+
+from django.utils.translation import ugettext as _
+
 from collections import OrderedDict
+from lms.djangoapps.courseware.courses import get_course
+from student.models import CourseEnrollment
+from string import Template
+from util.ga_attendance_status import AttendanceStatusExecutor
 
 LOG_LEVEL = logging.DEBUG
 logging.basicConfig(
@@ -13,21 +19,29 @@ logging.basicConfig(
 log = logging.getLogger(__name__)
 
 GRID_COLUMNS = [
-    ["Organization Name","text"],
-    #["Group Code", "text"],
-    ["Member Code","text"],
-    ["Username","text"],
-    ["Email","text"],
+    ["Organization Name", "text"],
+    ["Member Code", "text"],
+    ["Username", "text"],
+    ["Email", "text"],
     ["Full Name", "text"],
     ["Login Code", "text"],
-    ["Enroll Date","date"],
-    #["Student Status","text"]
-    #["Register Status", "text"],
+    ["Student Status","text"],
+    ["Enroll Date", "date"],
+]
+
+GRID_COLUMNS_NON_STATUS = [
+    ["Organization Name", "text"],
+    ["Member Code", "text"],
+    ["Username", "text"],
+    ["Email", "text"],
+    ["Full Name", "text"],
+    ["Login Code", "text"],
+    ["Enroll Date", "date"],
 ]
 
 GRID_COLUMNS_HIDDEN = [
     ["Group Code", "hidden"],
-    ["Student Status","hidden"]
+    # ["Student Status","hidden"]
 ]
 
 QUERY_STATEMENT_SURVEY_NAMES = '''
@@ -50,7 +64,7 @@ QUERY_STATEMENT_SURVEY_NAMES = '''
         INNER JOIN ga_survey_surveysubmission sbm2
         ON min_data.unit_id = sbm2.unit_id
         AND min_data.created_min = sbm2.created
-	'''
+        '''
 
 QUERY_STATEMENT_SURVEY_NAMES_MAX = '''
     SELECT 
@@ -72,7 +86,8 @@ QUERY_STATEMENT_SURVEY_NAMES_MAX = '''
         INNER JOIN ga_survey_surveysubmission sbm2
         ON max_data.unit_id = sbm2.unit_id
         AND max_data.created_max = sbm2.created
-	'''
+        '''
+
 
 def _create_survey_name_list_statement(course_id, flg_get_updated_survey_name=False):
     if flg_get_updated_survey_name:
@@ -117,7 +132,7 @@ QUERY_STATEMENT_USER_NOT_MEMBERS = '''
     AND reg.contract_id = det.contract_id
     AND reg.contract_id = $contract_id
     AND usr.id not in ($user_ids)
-'''
+    '''
 
 
 def _create_users_not_members_statement(org_id, contract_id, course_id, user_ids):
@@ -129,11 +144,17 @@ def _create_users_not_members_statement(org_id, contract_id, course_id, user_ids
         sql_statement = templ.substitute(course_id=course_id, contract_id=contract_id, org_id=org_id, user_ids=-1)
     return sql_statement
 
-def _get_grid_columns_base(survey_names_list):
+
+def _get_grid_columns_base(course_id, survey_names_list):
     columns_list = []
-    columns_list.extend([(col[0], col[1]) for col in GRID_COLUMNS])
+    course = get_course(course_id)
+    if course.is_status_managed:
+        columns_list.extend([(col[0], col[1]) for col in GRID_COLUMNS])
+    else:
+        columns_list.extend([(col[0], col[1]) for col in GRID_COLUMNS_NON_STATUS])
     columns_list.extend([(item[1], 'text') for item in survey_names_list])
     return columns_list
+
 
 def _get_grid_columns_hidden():
     columns_list = []
@@ -229,7 +250,7 @@ def _set_conditions(post_data):
     return conditions_members, condition_survey_name
 
 
-def _transform_grid_records(dct_added, conditions=None):
+def _transform_grid_records(course_id, dct_added, conditions=None):
     log.debug('condition={}'.format(conditions))
     if conditions:
         answered = bool(conditions[0]['survey_answered'][0])
@@ -249,13 +270,20 @@ def _transform_grid_records(dct_added, conditions=None):
         not_answered = True
         survey_name = ''
 
+    enrollment_attribute_dict = {}
+    course = get_course(course_id)
+    if course.is_status_managed:
+        enrollment_attribute_dict = _set_attribute_value(course)
+
     grid_records = []
     recid = 0
     users = dct_added.keys()
     for user_id in users:
+        if course.is_status_managed:
+            dct_added[user_id] = _set_student_status_record(dct_added[user_id], enrollment_attribute_dict, user_id)
         if all_flag:
             recid += 1
-            dct_added[user_id].update({'recid' : recid, })
+            dct_added[user_id].update({'recid': recid, })
             del dct_added[user_id]['obj']
             grid_records.append(copy.deepcopy(dct_added[user_id]))
         else:
@@ -295,3 +323,35 @@ def _populate_for_tsv(columns, records):
 
 def _smoke_test(a, b):
     return a + b
+
+
+def _set_attribute_value(course):
+    enrollment_ids = []
+    enroll_dict = {}
+    enrollment_attribute_dict = {}
+    for enrollment in CourseEnrollment.objects.filter(course_id=course.id).values('id', 'user__id'):
+        if enrollment_ids.count(enrollment['id']) is 0:
+            enrollment_ids.append(enrollment['id'])
+            enroll_dict[enrollment['id']] = enrollment['user__id']
+    if enrollment_ids:
+        enrollment_attribute = AttendanceStatusExecutor.get_attendance_values(enrollment_ids)
+        for enrollment_id, enrollment_user_id in enroll_dict.items():
+            if enrollment_id in enrollment_attribute:
+                enrollment_attribute_dict[enrollment_user_id] = enrollment_attribute[enrollment_id]
+
+    return enrollment_attribute_dict
+
+
+def _set_student_status_record(record, attr_dict, user_id):
+    if user_id in attr_dict:
+        if AttendanceStatusExecutor.attendance_status_is_completed(attr_dict[user_id]):
+            record[_("Student Status")] = _("Finish Enrolled")
+        elif AttendanceStatusExecutor.attendance_status_is_attended(attr_dict[user_id]):
+            record[_("Student Status")] = _("Enrolled")
+        else:
+            record[_("Student Status")] = _("Not Enrolled")
+
+    else:
+        record[_("Student Status")] = _("Not Enrolled")
+
+    return record

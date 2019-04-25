@@ -53,9 +53,10 @@ def _get_survey_names_list_merged(course_id):
     ret_tpl = [(itm[0], dct[itm[0]]) for itm in temp_survey_names_list]
     return ret_tpl
 
-def _get_grid_columns(survey_names_list):
+
+def _get_grid_columns(course_id, survey_names_list):
     columns = []
-    columns_list = helper._get_grid_columns_base(survey_names_list)
+    columns_list = helper._get_grid_columns_base(course_id, survey_names_list)
     columns_list_hidden = helper._get_grid_columns_hidden()
     columns.extend([(_(item[0]), item[1]) for item in columns_list])
     columns.extend([(_("Organization") + str(i), 'text') for i in range(1, 4)])
@@ -284,7 +285,7 @@ def search_ajax(request):
 
     ## generate grid
     resp_records = sorted(
-        helper._transform_grid_records(members_grid_dct, survey_name_conditions),
+        helper._transform_grid_records(course_id, members_grid_dct, survey_name_conditions),
         key=lambda x: (x[_('Group Code')], x[_('Member Code')], x[_('Username')])
     )
     resp_total_rec_num = len(resp_records)
@@ -342,12 +343,13 @@ def download_csv(request):
     resp_survey_names_list = _get_survey_names_list_merged(course_id)
 
     ## get grid data
-    members_grid_dct = _retrieve_grid_data(org.id, child_group_ids, contract_id, course_id, is_filter, member_conditions, is_manager)
+    members_grid_dct = _retrieve_grid_data(org.id, child_group_ids, contract_id,
+                                           course_id, is_filter, member_conditions, is_manager)
 
     ## generate grid
-    resp_columns = _get_grid_columns(resp_survey_names_list)
+    resp_columns = _get_grid_columns(course_id, resp_survey_names_list)
     resp_records = sorted(
-        helper._transform_grid_records(members_grid_dct, survey_name_conditions),
+        helper._transform_grid_records(course_id, members_grid_dct, survey_name_conditions),
         key=lambda x: (x[_('Group Code')], x[_('Member Code')], x[_('Username')])
     )
 

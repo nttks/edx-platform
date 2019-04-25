@@ -205,7 +205,10 @@ from biz.djangoapps.ga_contract_operation.models import ContractReminderMail
                     {field: 'full_name', caption: '${_("Full Name")}', size: 2, min: 80, sortable: true, hidden: false},
                     {field: 'user_name', caption: '${_("Username")}', size: 2, min: 120, sortable: true, hidden: false},
                     {field: 'user_email', caption: '${_("Email Address")}', size: 3, min: 150, sortable: true, hidden: false},
+                    {field: 'register_status', caption: '${_("Register Status")}', size: 2, min: 120, sortable: true, hidden: false},
+                    %if is_status_managed:
                     {field: 'student_status', caption: '${_("Student Status")}', size: 2, min: 120, sortable: true, hidden: false},
+                    %endif
                     {field: 'total_score', caption: '${_("Total Score")}', size: 2, min: 100, sortable: true, hidden: false,
                         render:renderPercent, style:'text-align: right'},
                     {field: 'total_playback', caption: '${_("Total Playback Time")}', size: 2, min: 100, sortable: true, hidden: false,
@@ -509,17 +512,19 @@ from biz.djangoapps.ga_contract_operation.models import ContractReminderMail
                 <input type="hidden" name="csrfmiddlewaretoken" value="${csrf_token}" />
                 <input type="hidden" name="contract_id" value="${request.current_contract.id}" />
                 <div class="gc_column">
+                    % if is_status_managed:
                     <div class="gc_column_col gc_column_tight">
                         <div class="gc_field">
                             <label class="gc_field_label gc_w10em" for="search_student_status">${_('Student Status')}</label>
                             <select id="search_student_status" class="gc_field_ipt gc_w15em" rel="search" name="student_status" title="">
                                 <option value=""></option>
                                 % for student_status in search_mail_info['student_status_list']:
-                                <option value="${student_status}">${student_status}</option>
-                                % endfor;
+                                <option value="${_(student_status)}">${_(student_status)}</option>
+                                % endfor
                             </select>
                         </div>
                     </div>
+                    % endif
                     <div class="gc_column_col gc_column_tight">
                         <div class="gc_field">
                             <fieldset class="gc_fieldset">
