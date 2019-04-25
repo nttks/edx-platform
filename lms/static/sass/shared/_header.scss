@@ -895,13 +895,34 @@ header.global-new {
 
 div.wrap-top-page{
   display: block;
-  padding-bottom: 5px;
+  padding-bottom: 0px;
   a.top-page{
     float: right;
     font-size: 13px;
     padding: 2px 10px;
     border-radius: 5px;
     background-color: rgba(0,0,0,0.05);
+    text-align: right;
+    text-transform: uppercase;
+    color: #b62567;
+    &:hover {
+      background-color: $staff-color;
+      color: $white;
+      text-decoration: none;
+    }
+  }
+}
+
+div.wrap-my-page{
+  display: block;
+  padding-bottom: 20px;
+  a.my-page {
+    margin-right: 10px;
+    float: right;
+    font-size: 13px;
+    padding: 2px 10px;
+    border-radius: 5px;
+    background-color: rgba(0, 0, 0, 0.05);
     text-align: right;
     text-transform: uppercase;
     color: #b62567;

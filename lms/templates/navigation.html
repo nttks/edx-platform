@@ -64,7 +64,10 @@ site_status_msg = get_site_status_msg(course_id)
       <span class="course-name">${display_name}</span></h2>
     % endif
     <div class="wrap-top-page">
-      <a class="top-page" href="${marketing_link('ROOT')}" id="top-page"><i class="fa fa-chevron-circle-up"></i>${_("Top Page")}</a><br>
+      <a class="top-page" href="${marketing_link('ROOT')}" id="top-page"><i class="fa fa-chevron-circle-up"></i>${_("Top Page")}</a>
+    </div>
+    <div class="wrap-my-page">
+      <a class="my-page" href="${reverse('dashboard')}" id="my-page"><i class="fa fa-chevron-circle-up"></i>${_("My Page")}</a>
     </div>
     % if user.is_authenticated():
     <ol class="left nav-global authenticated">
