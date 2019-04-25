@@ -503,6 +503,13 @@ urlpatterns += (
         name='search_playback_mongo',
     ),
     url(
+        r'^courses/{}/update_attendance_status'.format(
+            settings.COURSE_ID_PATTERN,
+        ),
+        'courseware.views.update_attendance_status',
+        name='update_attendance_status',
+    ),
+    url(
         r'^courses/{}/courseware/(?P<chapter>[^/]*)/$'.format(
             settings.COURSE_ID_PATTERN,
         ),
