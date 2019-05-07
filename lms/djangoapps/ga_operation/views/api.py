@@ -32,7 +32,7 @@ from openedx.core.djangoapps.ga_operation.utils import (
     staff_only, course_filename, handle_file_from_s3,
     get_s3_bucket, get_s3_connection, CSVResponse, JSONFileResponse,
     handle_operation, RESPONSE_FIELD_ID,
-    ga_analyzer_only
+    ga_analyzer_only, authority_check
 )
 from pdfgen.certificate import CertPDFException, CertPDFUserNotFoundException
 from util.json_request import JsonResponse
@@ -40,7 +40,7 @@ from util.json_request import JsonResponse
 log = logging.getLogger(__name__)
 
 
-@staff_only
+@authority_check
 @login_required
 @require_POST
 @ensure_csrf_cookie
@@ -63,7 +63,7 @@ def confirm_certs_template(request, form_instance):
     })
 
 
-@staff_only
+@authority_check
 @login_required
 @require_POST
 @ensure_csrf_cookie
@@ -75,7 +75,7 @@ def upload_certs_template(request, form_instance):
     })
 
 
-@staff_only
+@authority_check
 @login_required
 @require_POST
 @ensure_csrf_cookie
@@ -96,7 +96,7 @@ def create_certs(request, form_instance):
     })
 
 
-@staff_only
+@authority_check
 @login_required
 @require_POST
 @ensure_csrf_cookie
@@ -118,7 +118,7 @@ def create_certs_meeting(request, form_instance):
     })
 
 
-@staff_only
+@authority_check
 @login_required
 @require_POST
 @ensure_csrf_cookie
