@@ -174,6 +174,8 @@ class PersonalInfoSetting(models.Model):
     Only one of advanced_course and course_mode can be save.
     It is controlled by PersonalInfoModelForm.
     """
+    VALIDATION_CHOICES = ((0, _("None")), (1, _("Email")),
+                          (2, _("harf-width alphanumeric")), (3, _("Half-width number")))
     advanced_course = models.OneToOneField(AdvancedCourse, null=True, blank=True, verbose_name=_('Event ID'))
     course_mode = models.OneToOneField(CourseMode, null=True, blank=True, verbose_name=_('Professional Course ID'))
     full_name = models.BooleanField(default=True, verbose_name=_('Full Name'))
@@ -184,10 +186,25 @@ class PersonalInfoSetting(models.Model):
     phone_number = models.BooleanField(default=True, verbose_name=_('Phone Number'))
     gaccatz_check = models.BooleanField(default=True, verbose_name=_('Gaccatz Check'))
     free_entry_field_1_title = models.TextField(blank=True, verbose_name=_('Free Entry Field 1 Title'))
+    free_entry_field_1_textbox = models.BooleanField(default=False, verbose_name=_('Free Entry Field 1 TextBox'))
+    free_entry_field_1_validation = models.IntegerField(default=0, verbose_name=_('Free Entry Field 1 Validation'),
+                                                        choices=VALIDATION_CHOICES)
     free_entry_field_2_title = models.TextField(blank=True, verbose_name=_('Free Entry Field 2 Title'))
+    free_entry_field_2_textbox = models.BooleanField(default=False, verbose_name=_('Free Entry Field 2 TextBox'))
+    free_entry_field_2_validation = models.IntegerField(default=0, verbose_name=_('Free Entry Field 2 Validation'),
+                                                        choices=VALIDATION_CHOICES)
     free_entry_field_3_title = models.TextField(blank=True, verbose_name=_('Free Entry Field 3 Title'))
+    free_entry_field_3_textbox = models.BooleanField(default=False, verbose_name=_('Free Entry Field 3 TextBox'))
+    free_entry_field_3_validation = models.IntegerField(default=0, verbose_name=_('Free Entry Field 3 Validation'),
+                                                        choices=VALIDATION_CHOICES)
     free_entry_field_4_title = models.TextField(blank=True, verbose_name=_('Free Entry Field 4 Title'))
+    free_entry_field_4_textbox = models.BooleanField(default=False, verbose_name=_('Free Entry Field 4 TextBox'))
+    free_entry_field_4_validation = models.IntegerField(default=0, verbose_name=_('Free Entry Field 4 Validation'),
+                                                        choices=VALIDATION_CHOICES)
     free_entry_field_5_title = models.TextField(blank=True, verbose_name=_('Free Entry Field 5 Title'))
+    free_entry_field_5_textbox = models.BooleanField(default=False, verbose_name=_('Free Entry Field 5 TextBox'))
+    free_entry_field_5_validation = models.IntegerField(default=0, verbose_name=_('Free Entry Field 5 Validation'),
+                                                        choices=VALIDATION_CHOICES)
 
     class Meta:
         app_label = 'ga_shoppingcart'
