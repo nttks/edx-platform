@@ -74,11 +74,11 @@ form#personal_input_form {
                 line-height: $default_line_height;
                 cursor: default;
             }
-            label[for='free_entry_field_1'],
-            label[for='free_entry_field_2'],
-            label[for='free_entry_field_3'],
-            label[for='free_entry_field_4'],
-            label[for='free_entry_field_5'] {
+            label[for='free_entry_field_1x'],
+            label[for='free_entry_field_2x'],
+            label[for='free_entry_field_3x'],
+            label[for='free_entry_field_4x'],
+            label[for='free_entry_field_5x'] {
                 font-weight: normal;
                 width: 100%;
                 line-height: 1.5em;
@@ -148,7 +148,7 @@ form#personal_input_form {
         li.note_free_entry_field_3,
         li.note_free_entry_field_4,
         li.note_free_entry_field_5 {
-            margin-top: -20px;
+            margin-top: -10px;
             margin-left: 0;
         }
     }
@@ -289,11 +289,11 @@ form#personal_input_preview_form {
                 display: block;
             }
         }
-        label[for="free_entry_field_1"],
-        label[for="free_entry_field_2"],
-        label[for="free_entry_field_3"],
-        label[for="free_entry_field_4"],
-        label[for="free_entry_field_5"] {
+        label[for="free_entry_field_1x"],
+        label[for="free_entry_field_2x"],
+        label[for="free_entry_field_3x"],
+        label[for="free_entry_field_4x"],
+        label[for="free_entry_field_5x"] {
             border-left: solid 3px #555;
             padding-left: 10px;
             display: block;

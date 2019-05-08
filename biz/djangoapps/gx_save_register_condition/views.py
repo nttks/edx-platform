@@ -14,12 +14,12 @@ from biz.djangoapps.ga_contract.models import Contract, AdditionalInfo, Contract
 from biz.djangoapps.gx_member.models import Member
 from biz.djangoapps.gx_member.tasks import TASKS, REFLECT_CONDITIONS_IMMEDIATE, reflect_conditions_immediate
 from biz.djangoapps.gx_org_group.models import Group
-from biz.djangoapps.gx_save_register_condition.models import ParentCondition, ChildCondition, ReflectConditionTaskHistory
+from biz.djangoapps.gx_save_register_condition.models import (
+    ParentCondition, ChildCondition, ReflectConditionTaskHistory)
 from biz.djangoapps.gx_save_register_condition.reflect_conditions import (
     TASK_PROGRESS_META_KEY_REGISTER, TASK_PROGRESS_META_KEY_UNREGISTER, TASK_PROGRESS_META_KEY_MASK)
 from biz.djangoapps.gx_save_register_condition.utils import (
-    get_members_by_child_conditions, get_members_by_all_parents_conditions, IMMEDIATE_REFLECT_MAX_SIZE,
-    REFLECT_CONDITIONS_OTHER_TASK_TYPE)
+    get_members_by_child_conditions, get_members_by_all_parents_conditions, IMMEDIATE_REFLECT_MAX_SIZE)
 from biz.djangoapps.util.decorators import check_course_selection, check_organization_group
 from biz.djangoapps.util.json_utils import EscapedEdxJSONEncoder
 from biz.djangoapps.util.task_utils import submit_org_task
@@ -476,7 +476,7 @@ def task_history_ajax(request):
     if ReflectConditionTaskHistory.objects.filter(organization=org, contract=contract):
         results = []
         for i, history in enumerate(ReflectConditionTaskHistory.objects.filter(
-            organization=org, contract=contract).order_by('id').reverse(), start=1):
+                organization=org, contract=contract).order_by('id').reverse(), start=1):
             try:
                 task = Task.objects.get(task_id=history.task_id)
             except Task.DoesNotExist:
@@ -494,9 +494,7 @@ def task_history_ajax(request):
                 } for j, message in enumerate(history.messages.split(',') if history.messages else [], start=1)]
 
             task_type = task.task_type
-            if task.task_type in REFLECT_CONDITIONS_OTHER_TASK_TYPE:
-                task_type = REFLECT_CONDITIONS_OTHER_TASK_TYPE[task.task_type]
-            elif task.task_type in TASKS:
+            if task.task_type in TASKS:
                 task_type = TASKS[task.task_type]
 
             results.append({

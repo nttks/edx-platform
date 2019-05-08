@@ -41,10 +41,11 @@
             getUsernameRules: function() {
                 var _this = this;
                 $.ajax({
-                    url: "/org_username_rules/",
+                    url: "/ga_student_account/get_org_username_rules",
+                    headers: {'X-CSRFToken': $.cookie('csrftoken')},
                 }).done(function(data) {
-                    if (data['list']) {
-                        _this.orgUsernameRule = JSON.parse(data['list']);
+                    if (data.list) {
+                        _this.orgUsernameRule = JSON.parse(data.list);
                     }
                 }).fail(function() {
                     console.log('error');

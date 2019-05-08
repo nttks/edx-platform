@@ -119,10 +119,17 @@ urlpatterns = (
     # Several operations for a gacco.org's staff
     url(r'^ga_operation$',
         'ga_operation.views.ga_operation_dashboard.ga_operation_dashboard', name="ga_operation_dashboard"),
+    # Customer specific certificate issuance screen
+    url(r'^certificate$',
+        'ga_operation.views.ga_operation_dashboard.ga_operation_user_dashboard', name="ga_operation_user_dashboard"),
+
     url(r'^ga_operation/api/', include('ga_operation.views.api_urls', namespace="ga_operation_api")),
 
     # Advanced Course
     url(r'^advanced_course/', include('ga_advanced_course.urls', namespace='advanced_course')),
+
+    # Support for student account
+    url(r'^ga_student_account/', include('ga_student_account.urls', namespace='ga_student_account')),
 )
 
 if settings.FEATURES["ENABLE_COMBINED_LOGIN_REGISTRATION"]:
@@ -1086,8 +1093,3 @@ if settings.FEATURES.get('ENABLE_FINANCIAL_ASSISTANCE_FORM'):
             name='submit_financial_assistance_request'
         )
     )
-
-# for get org username pattern 
-urlpatterns += (
-    url(r'^org_username_rules/$', 'org_username_rules.views.get_rules'),
-)

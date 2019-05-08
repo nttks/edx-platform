@@ -12,9 +12,10 @@ from django.core.management.base import BaseCommand
 from biz.djangoapps.ga_organization.models import Organization
 from biz.djangoapps.ga_contract.models import Contract, ContractOption
 from biz.djangoapps.gx_member.models import Member
+from biz.djangoapps.gx_member.tasks import REFLECT_CONDITIONS_BATCH, REFLECT_CONDITIONS_RESERVATION
 from biz.djangoapps.gx_save_register_condition.utils import (
     ReflectConditionExecutor, TASK_PROGRESS_META_KEY_REGISTER, TASK_PROGRESS_META_KEY_UNREGISTER,
-    TASK_PROGRESS_META_KEY_MASK, REFLECT_CONDITIONS_RESERVATION, REFLECT_CONDITIONS_BATCH)
+    TASK_PROGRESS_META_KEY_MASK)
 from biz.djangoapps.gx_save_register_condition.models import ReflectConditionTaskHistory
 from openedx.core.djangoapps.ga_task.models import Task
 from openedx.core.djangoapps.ga_task.task import TaskProgress
@@ -56,7 +57,7 @@ class Command(BaseCommand):
 
         for org in self._get_organization():
             log.debug('Target organization is {0}'.format(str(org.id)))
-            member_total_count =  Member.find_active_by_org(org=org).count()
+            member_total_count = Member.find_active_by_org(org=org).count()
             for contract in self._get_contract(org):
                 # check contract and set action_name
                 action_name = None

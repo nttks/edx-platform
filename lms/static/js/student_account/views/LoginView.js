@@ -140,6 +140,60 @@
                     this.element.show( this.$errors );
                 }
                 this.toggleDisableButton(false);
+            },
+
+            getQueryString: function() {
+                var obj = {}, param, set, i;
+                param = location.search.substring(1).split('&');
+                for( i=0; i<param.length; i++ ) {
+                    if (param[i].search(/=/) !== -1) {
+                        set = param[i].split('=');
+                        if(set[0] !== '') {
+                            obj[set[0]] = set[1];
+                        }
+                    }
+                }
+                return obj;
+            },
+
+            customValidate: function() {
+                var _this = this,
+                    qs = this.getQueryString(),
+                    is_redirect = false,
+                    $el = null,
+                    email = '',
+                    i,
+                    elements;
+
+                // get email from input
+                elements = this.$form[0].elements;
+                for ( i=0; i<elements.length; i++ ) {
+                    $el = $( elements[i] );
+                    if ($el.attr('name') === 'email') {
+                        email = $el.val();
+                        break;
+                    }
+                }
+
+                // ajax request
+                $.ajax({
+                    url: '/ga_student_account/check_redirect_saml_login',
+                    type: 'post',
+                    headers: {'X-CSRFToken': $.cookie('csrftoken')},
+                    data: { email: email, next: qs.next || '' },
+                    async: false
+                }).done(function( data ) {
+                    if (data.exist_saml_master && data.redirect_url) {
+                        location.href = data.redirect_url;
+                        is_redirect = true;
+                    }
+                });
+
+                if (is_redirect) {
+                    // Set dummy error and stop errors display, because redirect to saml login page.
+                    _this.setErrors = function() {};
+                    this.errors.push(is_redirect);
+                }
             }
         });
     });

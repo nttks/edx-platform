@@ -25,6 +25,7 @@ from boto import connect_s3
 from boto.s3.key import Key
 from zipfile import ZipFile
 import codecs
+import csv
 import logging
 import re
 import os
@@ -103,9 +104,13 @@ class Command(BaseCommand):
             s3key.get_contents_to_filename('/tmp/' + def_s3item)
             with ZipFile('/tmp/' + def_s3item, 'r') as existing_zip:
                 existing_zip.extract(def_s3item[:-4] + '.csv', '/tmp/')
-            with codecs.open('/tmp/' + def_s3item[:-4] + '.csv', 'r', 'utf8') as fin:
-                for line in fin:
-                    csv_list.append(line.replace("\r", "").replace("\n", "").replace('"', ''))
+            # with codecs.open('/tmp/' + def_s3item[:-4] + '.csv', 'r', 'utf8') as fin:
+            #     for line in fin:
+            #         csv_list.append(line.replace("\r", "").replace("\n", "").replace('"', ''))
+            with open('/tmp/' + def_s3item[:-4] + '.csv', 'r') as fin:
+                for line in csv.reader(fin):
+                    line = [col.decode('utf-8') for col in line]
+                    csv_list.append(line)
             if os.path.exists('/tmp/' + def_s3item):
                 os.remove('/tmp/' + def_s3item)
             if os.path.exists('/tmp/' + def_s3item[:-4] + '.csv'):
@@ -119,8 +124,7 @@ class Command(BaseCommand):
             prefix_username = OrgUsernameRule.objects.filter(org=organization).first()
             prefix_username = getattr(prefix_username, "prefix", "")
             success, errors = [], []
-            for csv_record_str in def_csv_records:
-                csv_record = csv_record_str.split(',')
+            for csv_record in def_csv_records:
                 member_one = dict()
                 member_one['group_code'] = csv_record[0]
                 member_one['code'] = csv_record[1]
@@ -175,7 +179,7 @@ class Command(BaseCommand):
                                    'cause': 'Character length error'})
             return success, errors
 
-        def _member_create_or_update(def_register_list):
+        def _member_create_or_update(def_register_list, non_sso=False):
             success, errors = [], []
             organization = Organization.objects.get(id=register_org_id)
             superuser = User.objects.get(id=register_superuser_id)
@@ -244,13 +248,18 @@ class Command(BaseCommand):
                                                 last_name=register_data['last_name']).get_full_name()
                             profile.save()
 
-                        # social_auth_usersocialauth create
-                        if prefix_uid:
-                            UserSocialAuth.objects.filter(provider='tpa-saml',
-                                                          uid=prefix_uid + ':' + register_data['code']).exclude(
-                                user=user).delete()
-                            UserSocialAuth.objects.get_or_create(user=user, provider='tpa-saml',
-                                                                 uid=prefix_uid + ':' + register_data['code'])
+                        # social_auth_usersocialauth create / delete
+                        if non_sso:
+                            UserSocialAuth.objects.filter(
+                                provider='tpa-saml', user=user, uid__startswith=prefix_uid).delete()
+                        else:
+                            if prefix_uid:
+                                UserSocialAuth.objects.filter(
+                                    provider='tpa-saml', uid=prefix_uid + ':' + register_data['code']).exclude(
+                                    user=user).delete()
+                                UserSocialAuth.objects.get_or_create(
+                                    user=user, provider='tpa-saml', uid=prefix_uid + ':' + register_data['code'])
+
                         # bulk_email_optout create
                         for global_course_id in CourseGlobalSetting.all_course_id():
                             Optout.objects.get_or_create(user=user, course_id=global_course_id)
@@ -356,7 +365,7 @@ class Command(BaseCommand):
                 try:
                     csv_records = _s3file_download_read(s3item)
                     register_list, errors_list = _member_validate(csv_records, non_sso=True)
-                    success_list, errors_list2 = _member_create_or_update(register_list)
+                    success_list, errors_list2 = _member_create_or_update(register_list, non_sso=True)
                     result += _s3report_upload(s3item, len(csv_records), len(success_list), errors_list + errors_list2)
                     af_total += len(csv_records)
                     af_success += len(success_list)
@@ -392,4 +401,3 @@ class Command(BaseCommand):
 
         log.info(u"Command auto_member_register completed at {}.".format(end_time))
         return result.replace("\"", "'")
-
