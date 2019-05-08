@@ -304,10 +304,13 @@ class Command(BaseCommand):
             FROM
              student_courseenrollment as enrollment
             INNER JOIN auth_user as user ON enrollment.user_id = user.id
-            LEFT OUTER JOIN student_courseenrollmentattribute as attr
-             ON attr.enrollment_id = enrollment.id
-             AND attr.namespace = 'ga'
-             AND attr.name = 'attended_status'
+            LEFT OUTER JOIN (
+                SELECT enrollment_id, MIN(value) as value
+                FROM student_courseenrollmentattribute
+                WHERE namespace = 'ga'
+                AND name = 'attended_status'
+                GROUP BY enrollment_id
+            ) as attr ON attr.enrollment_id = enrollment.id
             WHERE user.is_staff = 0 AND user.is_superuser = 0 AND enrollment.course_id in %s
             ORDER BY enrollment.course_id
             """
