@@ -85,6 +85,7 @@ import student
 from third_party_auth.models import OAuth2ProviderConfig
 from biz.djangoapps.gx_sso_config.models import SsoConfig
 from logging import getLogger
+from ga_daccount.models import DAccountNumber
 
 from . import provider
 
@@ -560,6 +561,10 @@ def ensure_user_information(strategy, auth_entry, backend=None, user=None, socia
             return redirect_to_custom_form(strategy.request, auth_entry, kwargs)
         else:
             raise AuthEntryError(backend, 'auth_entry invalid')
+    else:
+        if kwargs['response'].has_key('d_pt_number'):
+            # logger.info("d_pt_number:"+str(kwargs['response']['d_pt_number']))
+            DAccountNumber.save_number(user, str(kwargs['response']['d_pt_number']))
 
     if not user.is_active:
         # The user account has not been verified yet.

@@ -6,7 +6,7 @@ from django.db import models
 from django.contrib.auth.models import User
 
 
-class AccountNumber(models.Model):
+class DAccountNumber(models.Model):
     """
     Account Number models.
     """
@@ -24,7 +24,8 @@ class AccountNumber(models.Model):
     @classmethod
     def save_number(cls, user, number):
         enc_number = base64.b64encode(number)
-        return cls.objects.get_or_create(
+        cls.objects.update_or_create(
             user=user,
-            number=enc_number
+            defaults={'number': enc_number},
         )
+        return 0
