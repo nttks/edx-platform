@@ -10,12 +10,30 @@ from biz.djangoapps.gx_org_group.models import Group
 from biz.djangoapps.gx_org_group.tests.factories import GroupUtil
 from biz.djangoapps.util.tests.testcase import BizViewTestBase
 
+from openedx.core.djangoapps.content.course_overviews.models import CourseOverview
+from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
+from xmodule.modulestore.tests.factories import CourseFactory
+
 
 @ddt
-class GetGridColumnsTest(BizViewTestBase):
+class GetGridColumnsTest(ModuleStoreTestCase):
 
     def setUp(self):
+        super(GetGridColumnsTest, self).setUp()
+        self.course = CourseFactory.create(org='gacco', number='course', run='run1')
+        self.overview = CourseOverview.get_from_id(self.course.id)
+
         self.EXPECTED_BASE_COLUMNS = [
+            ("Organization Name", "text"),
+            ("Member Code", "text"),
+            ("Username", "text"),
+            ("Email", "text"),
+            ("Full Name", "text"),
+            ("Login Code", "text"),
+            ("Student Status", "text"),
+            ("Enroll Date", "date"),
+        ]
+        self.EXPECTED_BASE_COLUMNS_NON_STATUS = [
             ("Organization Name", "text"),
             ("Member Code", "text"),
             ("Username", "text"),
@@ -26,12 +44,11 @@ class GetGridColumnsTest(BizViewTestBase):
         ]
         self.EXPECTED_BASE_COLUMNS_HIDDEN = [
             ("Group Code", "hidden"),
-            ("Student Status", "hidden"),
         ]
         self.EXPECTED_ORGS_ITEMS_COLUMNS = [
-            ( _("Organization") + "1", 'text'),
-            ( _("Organization") + "2", 'text'),
-            ( _("Organization") + "3", 'text'),
+            (_("Organization") + "1", 'text'),
+            (_("Organization") + "2", 'text'),
+            (_("Organization") + "3", 'text'),
             (_("Item") + "1", 'text'),
             (_("Item") + "2", 'text'),
             (_("Item") + "3", 'text'),
@@ -76,20 +93,44 @@ class GetGridColumnsTest(BizViewTestBase):
         ])
 
     def test_get_grid_columns_empty(self):
+        self.overview.extra.is_status_managed = True
+        self.overview.extra.save()
         expected = self.EXPECTED_BASE_COLUMNS + self.EXPECTED_ORGS_ITEMS_COLUMNS + self.EXPECTED_BASE_COLUMNS_HIDDEN + self.EXPECTED_ORGS_ITEMS_COLUMNS_HIDDEN
-        actual = view._get_grid_columns([])
+        actual = view._get_grid_columns(self.course.id, [])
+        self.assertEqual(expected, actual)
+
+    def test_get_grid_columns_empty_non_status(self):
+        self.overview.extra.is_status_managed = False
+        self.overview.extra.save()
+        expected = self.EXPECTED_BASE_COLUMNS_NON_STATUS + self.EXPECTED_ORGS_ITEMS_COLUMNS + self.EXPECTED_BASE_COLUMNS_HIDDEN + self.EXPECTED_ORGS_ITEMS_COLUMNS_HIDDEN
+        actual = view._get_grid_columns(self.course.id, [])
         self.assertEqual(expected, actual)
 
     def test_get_grid_columns_one(self):
+        self.overview.extra.is_status_managed = True
+        self.overview.extra.save()
         survey_names_list = [('11111111111111111111111111111111', 'survey1')]
         survey_names_list_mod = []
         for tpl in survey_names_list:
             survey_names_list_mod.append((tpl[1], 'text'))
         expected = self.EXPECTED_BASE_COLUMNS + survey_names_list_mod + self.EXPECTED_ORGS_ITEMS_COLUMNS + self.EXPECTED_BASE_COLUMNS_HIDDEN + self.EXPECTED_ORGS_ITEMS_COLUMNS_HIDDEN
-        actual = view._get_grid_columns(survey_names_list)
+        actual = view._get_grid_columns(self.course.id, survey_names_list)
+        self.assertEqual(expected, actual)
+
+    def test_get_grid_columns_one_non_status(self):
+        self.overview.extra.is_status_managed = False
+        self.overview.extra.save()
+        survey_names_list = [('11111111111111111111111111111111', 'survey1')]
+        survey_names_list_mod = []
+        for tpl in survey_names_list:
+            survey_names_list_mod.append((tpl[1], 'text'))
+        expected = self.EXPECTED_BASE_COLUMNS_NON_STATUS + survey_names_list_mod + self.EXPECTED_ORGS_ITEMS_COLUMNS + self.EXPECTED_BASE_COLUMNS_HIDDEN + self.EXPECTED_ORGS_ITEMS_COLUMNS_HIDDEN
+        actual = view._get_grid_columns(self.course.id, survey_names_list)
         self.assertEqual(expected, actual)
 
     def test_get_grid_columns_two(self):
+        self.overview.extra.is_status_managed = True
+        self.overview.extra.save()
         survey_names_list = [('11111111111111111111111111111111', 'survey1'),
                              ('22222222222222222222222222222222', 'survey2'),
                              ]
@@ -98,7 +139,21 @@ class GetGridColumnsTest(BizViewTestBase):
             survey_names_list_mod.append((tpl[1], 'text'))
 
         expected = self.EXPECTED_BASE_COLUMNS + survey_names_list_mod + self.EXPECTED_ORGS_ITEMS_COLUMNS + self.EXPECTED_BASE_COLUMNS_HIDDEN + self.EXPECTED_ORGS_ITEMS_COLUMNS_HIDDEN
-        actual = view._get_grid_columns(survey_names_list)
+        actual = view._get_grid_columns(self.course.id, survey_names_list)
+        self.assertEqual(expected, actual)
+
+    def test_get_grid_columns_two_non_status(self):
+        self.overview.extra.is_status_managed = False
+        self.overview.extra.save()
+        survey_names_list = [('11111111111111111111111111111111', 'survey1'),
+                             ('22222222222222222222222222222222', 'survey2'),
+                             ]
+        survey_names_list_mod = []
+        for tpl in survey_names_list:
+            survey_names_list_mod.append((tpl[1], 'text'))
+
+        expected = self.EXPECTED_BASE_COLUMNS_NON_STATUS + survey_names_list_mod + self.EXPECTED_ORGS_ITEMS_COLUMNS + self.EXPECTED_BASE_COLUMNS_HIDDEN + self.EXPECTED_ORGS_ITEMS_COLUMNS_HIDDEN
+        actual = view._get_grid_columns(self.course.id, survey_names_list)
         self.assertEqual(expected, actual)
 
     def test_get_org_item_list(self):

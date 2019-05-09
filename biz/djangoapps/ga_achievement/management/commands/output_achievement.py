@@ -139,6 +139,7 @@ class Command(BaseCommand):
             strdata += '\r\n'.join([','.join(x if len(x) != 11 else x + ['"-"'] * len(columns)) for x in
                                     user_dict_score.values()])
             output_csv_s3(file_name, strdata)
+            print "->output score"
 
         def _output_playback(user_dict_playback, course, update_datetime):
             playback_store = PlaybackStore(course.contract.id, unicode(course.course_id))
@@ -178,6 +179,7 @@ class Command(BaseCommand):
             strdata += '\r\n'.join([','.join(x if len(x) != 11 else x + ['"0:00:00"'] * len(columns)) for x in
                                     user_dict_playback.values()])
             output_csv_s3(file_name, strdata)
+            print "->output playback"
 
         def _output_playback2(user_dict_playback, course, update_datetime):
             mongodb_query = '{contract_id:' + str(course.contract.id) + ', course_id:"' + unicode(
@@ -188,7 +190,7 @@ class Command(BaseCommand):
                           " --host " + mongodb_host + \
                           " --query '" + mongodb_query + "'"
             commands.getoutput(mongodb_cmd)
-
+            print "->mongodb export playback"
             json_list = []
             with codecs.open('/tmp/output_playback_data.json', 'r', 'utf8') as fin:
                 for line in fin:
@@ -210,6 +212,7 @@ class Command(BaseCommand):
                     for column in columns:
                         user_dict_playback[data[_('Username')]].append(
                             '"' + str((datetime.timedelta(seconds=data[column]))) + '"')
+            print "->json list playback"
 
             vertical_dict = {}
             with ms.bulk_operations(course.course_id):
@@ -231,9 +234,12 @@ class Command(BaseCommand):
             # columns = ['"' + col + '__' + _('Time') + '"' for col in columns]
 
             strdata = CSV_HEADER + u'"合計動画視聴時間",' + ','.join(columns) + "\r\n"
+            print "->target count:" + str(len(user_dict_playback))
             strdata += '\r\n'.join([','.join(x if len(x) != 11 else x + ['"0:00:00"'] * len(columns)) for x in
                                     user_dict_playback.values()])
             output_csv_s3(file_name, strdata)
+
+            print "->output playback."
 
         def output_csv_s3(filename, write):
             with codecs.open("/tmp/" + filename, 'w', 'sjis', 'ignore') as f:
@@ -278,6 +284,8 @@ class Command(BaseCommand):
                     course_endline = course_mongo.end + datetime.timedelta(days=3)
                     if course_endline < datetime.datetime.now(timezone(settings.TIME_ZONE_DISPLAYED_FOR_DEADLINES)):
                         continue
+
+                print course.contract.contract_name
                 user_dict = _get_user_list_contract(contract_detail=course, mongo=course_mongo)
 
                 if target_mode and target_mode != "score":
@@ -289,6 +297,8 @@ class Command(BaseCommand):
                         user_dict_score = copy.deepcopy(user_dict)
                         _output_score(user_dict_score, course, update_datetime)
                         del user_dict_score
+                    else:
+                        print "->score non data course"
 
                 if target_mode and target_mode != "playback":
                     pass
@@ -300,6 +310,8 @@ class Command(BaseCommand):
                         # _output_playback(user_dict_playback, course, update_datetime)
                         _output_playback2(user_dict_playback, course, update_datetime)
                         del user_dict_playback
+                    else:
+                        print "->playback non data course"
 
         translation.activate('ja')
         log.info(u"Command output_achievement started.")

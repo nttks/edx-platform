@@ -20,6 +20,7 @@ from django.views.decorators.http import require_GET, require_POST
 from biz.djangoapps.ga_achievement.achievement_store import PlaybackStore, ScoreStore
 from biz.djangoapps.ga_achievement.management.commands.update_biz_score_status import get_grouped_target_sections
 from biz.djangoapps.ga_achievement.models import PlaybackBatchStatus, ScoreBatchStatus
+import biz.djangoapps.ga_course_anslist.views as anslistview
 from biz.djangoapps.ga_contract.models import AdditionalInfo, Contract, ContractDetail
 from biz.djangoapps.ga_contract_operation.models import (
     ContractMail, ContractReminderMail,
@@ -770,8 +771,8 @@ def reminder_mail(request):
         raise Http404()
 
     contract = request.current_contract
-    course_id = request.current_course.id
-    course = get_course(course_id)
+    course = request.current_course
+    course_overview = CourseOverview.get_from_id(course.id)
     is_manager = not request.current_manager.is_director() and request.current_manager.is_manager()
 
     # Reminder mail
@@ -831,6 +832,9 @@ def reminder_mail(request):
 
     search_reminder_mail['search_detail_other_list'] = search_detail_other_list
 
+    # survey_name and unit it
+    resp_survey_names_list = anslistview._get_survey_names_list_merged(course.id)
+
     return render_to_response(
         'ga_contract_operation/reminder_mail.html',
         {
@@ -839,7 +843,8 @@ def reminder_mail(request):
             'search_mail_info': search_reminder_mail,
             'deadline': course.deadline_start,
             'reminder_mail_contract_id': contract_reminder_mail.contract_id,
-            'is_status_managed': course.is_status_managed,
+            'survey_names_list': resp_survey_names_list,
+            'is_status_managed': course_overview.extra.is_status_managed,
         }
     )
 
@@ -924,9 +929,9 @@ def reminder_mail_delete_ajax(request):
     # Delete template
     try:
         if ContractReminderMail.objects.filter(
-            contract=request.current_contract, mail_type=mail_type).first():
+                contract=request.current_contract, mail_type=mail_type).first():
             ContractReminderMail.objects.filter(
-            contract=request.current_contract, mail_type=mail_type).delete()
+                contract=request.current_contract, mail_type=mail_type).delete()
         else:
             return _error_response(_("Input Invitation"))
     except:
@@ -937,6 +942,7 @@ def reminder_mail_delete_ajax(request):
         return JsonResponse({
             'info': _("Reminder mail deleted."),
         })
+
 
 @require_POST
 @login_required
@@ -1141,11 +1147,43 @@ def reminder_search_ajax(request):
                 where_sql += "AND " + key + " LIKE %s "
                 option_sql.append("%" + value + "%")
 
-        sql = '''SELECT DISTINCT AU.id, AU.email, UP.name as fullname, AU.username, LB.login_code, SU.account_status, MG.org_id, MG.code, 
+    sql = '''SELECT DISTINCT AU.id, AU.email, UP.name as fullname, AU.username, LB.login_code, SU.account_status, MG.org_id, MG.code, 
     MG.org1, MG.org2, MG.org3, MG.org4, MG.org5, MG.org6, MG.org7, MG.org8, MG.org9, MG.org10, 
     MG.item1, MG.item2, MG.item3, MG.item4, MG.item5, MG.item6, MG.item7, MG.item8, MG.item9, MG.item10 
     FROM auth_user as AU
-    INNER JOIN student_courseenrollment as SC ON AU.id = SC.user_id 
+    INNER JOIN student_courseenrollment as SC ON AU.id = SC.user_id'''
+
+    sql_survey_answered = '''
+        INNER JOIN ga_survey_surveysubmission AS SS ON AU.id = SS.user_id AND SS.unit_id = %s '''
+
+    sql_survey_not_answered = '''
+        LEFT OUTER JOIN ga_survey_surveysubmission AS SS ON AU.id = SS.user_id  AND SS.unit_id = %s'''
+
+    # survey
+    s_n = request.POST['survey_name_unit_id']
+    if s_n:
+        if 'survey_answered' in request.POST:
+            is_exist_survey_answered = True
+        else:
+            is_exist_survey_answered = False
+
+        if 'survey_not_answered' in request.POST:
+            is_exist_survey_not_answered = True
+        else:
+            is_exist_survey_not_answered = False
+
+        if (is_exist_survey_answered and is_exist_survey_not_answered) or (
+                not is_exist_survey_answered and not is_exist_survey_not_answered):
+            pass
+        else:
+            option_sql.insert(0, s_n)
+            if is_exist_survey_answered:
+                sql = sql + sql_survey_answered
+            elif is_exist_survey_not_answered:
+                sql = sql + sql_survey_not_answered
+                where_sql += " AND SS.created IS NULL "
+
+    sql2 = '''
     LEFT OUTER JOIN student_userstanding as SU ON AU.id = SU.user_id 
     LEFT OUTER JOIN auth_userprofile as UP ON AU.id = UP.user_id 
     LEFT OUTER JOIN ga_login_bizuser as LB ON AU.id = LB.user_id 
@@ -1160,6 +1198,7 @@ def reminder_search_ajax(request):
     WHERE SC.course_id = %s ''' + where_sql + '''
     ORDER BY AU.id ASC'''
 
+    sql += sql2
     enroll_users = ContractRegister.objects.raw(sql, option_sql)
     enroll_usernames = [enroll_user.username for enroll_user in enroll_users]
 

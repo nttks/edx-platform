@@ -268,6 +268,7 @@ def score_download_csv(request):
 
     score_store = ScoreStore(contract_id, unicode(course_id))
 
+    enrollment_attribute_dict = {}
     if "search-download" in request.POST:
         score_columns, score_records, __, new_score_records = score_search_filter(request, org, contract_id, course_id,
                                                                                   manager)
@@ -275,6 +276,8 @@ def score_download_csv(request):
     else:
         score_columns, score_records = score_store.get_data_for_w2ui(limit=settings.BIZ_MONGO_LIMIT_RECORDS)
         score_columns = _change_column(course_overview, score_columns)
+        if course_overview.extra.is_status_managed:
+            enrollment_attribute_dict = _get_attribute_value(course_id)
         new_score_records = []
 
     # Member
@@ -287,16 +290,14 @@ def score_download_csv(request):
 
     members_dict = {member.user.username: member for member in members}
 
-    enrollment_attribute_dict = {}
-    if course_overview.extra.is_status_managed:
-        enrollment_attribute_dict = _get_attribute_value(course_id)
-
     for score_record in score_records:
         current_user_name = score_record[username_key]
-        score_record = _change_of_value_name(score_record)
-        score_record = _change_of_value_name(score_record)
-        if course_overview.extra.is_status_managed:
-            score_record = _set_student_status_record(score_record, enrollment_attribute_dict, current_user_name)
+        if "search-download" not in request.POST:
+            score_record = _change_of_value_name(score_record)
+            if course_overview.extra.is_status_managed:
+                score_record = _set_student_status_record(score_record, enrollment_attribute_dict, current_user_name)
+            else:
+                del score_record[_("Student Status")]
 
         member_record = {_("Organization Groups"): ''}
         if current_user_name in members_dict:
@@ -407,6 +408,7 @@ def playback_download_csv(request):
 
     playback_store = PlaybackStore(contract_id, unicode(course_id))
 
+    enrollment_attribute_dict = {}
     if "search-download" in request.POST:
         playback_columns, playback_records, __, new_playback_records = playback_search_filter(request, org, contract_id,
                                                                                               course_id, manager)
@@ -414,6 +416,8 @@ def playback_download_csv(request):
     else:
         playback_columns, playback_records = playback_store.get_data_for_w2ui(limit=settings.BIZ_MONGO_LIMIT_RECORDS)
         playback_columns = _change_column(course_overview, playback_columns)
+        if course_overview.extra.is_status_managed:
+            enrollment_attribute_dict = _get_attribute_value(course_id)
         new_playback_records = []
 
     # Member
@@ -425,15 +429,14 @@ def playback_download_csv(request):
     child_group_ids = request.current_organization_visible_group_ids
     members_dict = {member.user.username: member for member in members}
 
-    enrollment_attribute_dict = {}
-    if course_overview.extra.is_status_managed:
-        enrollment_attribute_dict = _get_attribute_value(course_id)
-
     for playback_record in playback_records:
         current_username = playback_record[username_key]
-        playback_record = _change_of_value_name(playback_record)
-        if course_overview.extra.is_status_managed:
-            playback_record = _set_student_status_record(playback_record, enrollment_attribute_dict, current_username)
+        if "search-download" not in request.POST:
+            playback_record = _change_of_value_name(playback_record)
+            if course_overview.extra.is_status_managed:
+                playback_record = _set_student_status_record(playback_record, enrollment_attribute_dict, current_username)
+            else:
+                del playback_record[_("Student Status")]
 
         member_record = {_("Organization Groups"): ''}
         if current_username in members_dict:
@@ -650,6 +653,8 @@ def _merge_to_store_by_member_for_search(
         store_record = _change_of_value_name(store_record)
         if course_overview.extra.is_status_managed:
             store_record = _set_student_status_record(store_record, enrollment_attribute_dict, current_user_name)
+        else:
+            del store_record[_("Student Status")]
 
         if current_user_name in members_dict:
             member = members_dict[current_user_name]
@@ -695,7 +700,7 @@ def _merge_to_store_by_member_for_search(
                 if request.POST['group_code'] != '':
                     continue
 
-        if search_flg:
+        if search_flg and course_overview.extra.is_status_managed:
             student_status = request.POST['student_status']
             if student_status:
                 if student_status != store_record[_("Student Status")]:

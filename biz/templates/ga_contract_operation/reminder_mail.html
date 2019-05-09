@@ -59,6 +59,20 @@ from biz.djangoapps.ga_contract_operation.models import ContractReminderMail
             fit_wrapper_height();
         });
 
+
+        // select option event
+        $('#survey_name').change(function() {
+            if ($('#survey_name').val() != '') {
+                $("#survey_answered").prop('disabled', false);
+                $("#survey_not_answered").prop('disabled', false);
+            } else {
+                $("#survey_answered").prop('disabled', true);
+                $("#survey_not_answered").prop('disabled', true);
+                $("#survey_answered").prop('checked', true);
+                $("#survey_not_answered").prop('checked', true);
+            };
+        });
+
         /*------------------------------------------------------------------------
          * Save Tab
          ------------------------------------------------------------------------*/
@@ -636,6 +650,34 @@ from biz.djangoapps.ga_contract_operation.models import ContractReminderMail
                             </div>
                         </div>
                     </div>
+                 <!-- / .gc_collapse" --></div>
+                <div class="gc_collapse">
+                    <button class="gc_collapse_btn" aria-controls="collapse_panel04" aria-expanded="false"
+                            type="button"><i class="fa fa-plus-square gc_ico_plus" aria-hidden="true"></i><i
+                            class="fa fa-minus-square gc_ico_minus" aria-hidden="true"></i>${_("Search Detail(survey_name)")}</button>
+                    <div class="gc_collapse_panel" aria-hidden="true" id="collapse_panel04">
+                        <div class="gc_column">
+                            <div class="gc_column_col gc_column_col_full">
+                                <div class="gc_field">
+                                   <label class="gc_field_label" for="survey_name">${_('Select Survey')}</label>
+                                   <select id="survey_name" class="gc_field_ipt gc_w30em" name="survey_name_unit_id">
+                                      <option value=""></option>
+                                   % for i in survey_names_list:
+                                       <option value="${i[0]}">${i[1]}</option>
+                                    % endfor
+                                    </select>
+                                    <label class ="gc_field_ipt_opt" for="survey_answered">
+                                        <input id="survey_answered" class="gc_field_ipt_chk" type="checkbox" name="survey_answered" checked disabled>
+                                        ${_("SurveyAnswered")}
+                                    </label>
+                                    <label class ="gc_field_ipt_opt" for="survey_not_answered">
+                                        <input id="survey_not_answered" class="gc_field_ipt_chk" type="checkbox" name="survey_not_answered" checked disabled>
+                                        ${_("SurveyUnanswered")}
+                                    </label>
+                                 </div>
+                            </div>
+                         </div>
+                     </div>
                 <!-- / .gc_collapse" --></div>
                 <div class="gc_collapse">
                     <button class="gc_collapse_btn" aria-controls="collapse_panel03" aria-expanded="false"
