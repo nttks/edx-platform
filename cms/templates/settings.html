@@ -9,7 +9,7 @@
   from django.utils.translation import ugettext as _
   from contentstore import utils
   from openedx.core.lib.js_utils import escape_json_dumps
-  from student.roles import GaGlobalCourseCreatorRole
+  from student.roles import GaGlobalCourseCreatorRole, CourseInstructorRole, OrgInstructorRole
 %>
 
 <%block name="header_extras">
@@ -362,8 +362,10 @@ CMS.URL.UPLOAD_ASSET = '${upload_asset_url}';
                 <span class="tip">${_("Information for prospective students")}</span>
               </header>
               <ol class="list-input">
-                ## Note: GaGlobalCourseCreator can edit course category (#2150)
-                % if user.is_staff or GaGlobalCourseCreatorRole().has_user(user):
+                ## Note: GaGlobalCourseCreator and CourseInstructorRole can edit course category
+                % if user.is_staff or GaGlobalCourseCreatorRole().has_user(user) \
+                                         or CourseInstructorRole(course_locator).has_user(user) \
+                                         or OrgInstructorRole(course_locator).has_user(user):
                 <li class="field" id="field-course-order">
                   <label for="course-order">${_("Course Order")}</label>
                   <input type="text" class="placeholder short" id="course-order" value="" autocomplete="off" />

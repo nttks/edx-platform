@@ -35,6 +35,22 @@ class AttendanceStatusExecutorTests(ModuleStoreTestCase, PlaybackFinishTestBase)
         self.enrollment = CourseEnrollmentFactory(user=self.user, course_id=self.course.id)
 
     """
+    Test for init on when multi records exists
+    """
+    def test_init_when_multi_records_exits(self):
+        # arrange
+        attr1 = CourseEnrollmentAttributeFactory.create(
+            enrollment=self.enrollment, namespace='ga', name='attended_status', value='sample1')
+        attr2 = CourseEnrollmentAttributeFactory.create(
+            enrollment=self.enrollment, namespace='ga', name='attended_status', value='sample2')
+        # act
+        executor = AttendanceStatusExecutor(enrollment=self.enrollment)
+        # assert
+        self.assertEqual(executor.attr.id, attr1.id)
+        self.assertEqual(1, CourseEnrollmentAttribute.objects.filter(
+            enrollment=self.enrollment, namespace='ga', name='attended_status').count())
+
+    """
     Test for get_attended_datetime
     """
     def test_get_attended_datetime(self):
@@ -162,20 +178,25 @@ class AttendanceStatusExecutorTests(ModuleStoreTestCase, PlaybackFinishTestBase)
 
     """
     Test for get_attendance_status_str
+    get_attendance_status_str(self, start, end, course_id, is_status_managed, user):
     """
     @freeze_time('2000-03-01 00:00:00')
     def test_get_attendance_status_str_when_previous(self):
         # act
-        status = AttendanceStatusExecutor(
-            enrollment=self.enrollment).get_attendance_status_str(course=self.course, user=self.user)
+        executor = AttendanceStatusExecutor(enrollment=self.enrollment)
+        status = executor.get_attendance_status_str(
+            start=self.course.start, end=self.course.end, course_id=self.course.id,
+            is_status_managed=self.course.is_status_managed, user=self.user)
         # assert
         self.assertEqual(status, 'previous')
 
     @freeze_time('2001-03-02 00:00:00')
     def test_get_attendance_status_str_when_not_attended(self):
         # act
-        status = AttendanceStatusExecutor(
-            enrollment=self.enrollment).get_attendance_status_str(course=self.course, user=self.user)
+        executor = AttendanceStatusExecutor(enrollment=self.enrollment)
+        status = executor.get_attendance_status_str(
+            start=self.course.start, end=self.course.end, course_id=self.course.id,
+            is_status_managed=self.course.is_status_managed, user=self.user)
         # assert
         self.assertEqual(status, 'waiting')
 
@@ -186,8 +207,10 @@ class AttendanceStatusExecutorTests(ModuleStoreTestCase, PlaybackFinishTestBase)
             value='{"attended_date": "test", "completed_date": "test"}')
         self.course.is_status_managed = True
         # act
-        status = AttendanceStatusExecutor(
-            enrollment=self.enrollment).get_attendance_status_str(course=self.course, user=self.user)
+        executor = AttendanceStatusExecutor(enrollment=self.enrollment)
+        status = executor.get_attendance_status_str(
+            start=self.course.start, end=self.course.end, course_id=self.course.id,
+            is_status_managed=self.course.is_status_managed, user=self.user)
         # assert
         self.assertEqual(status, 'completed')
 
@@ -198,8 +221,10 @@ class AttendanceStatusExecutorTests(ModuleStoreTestCase, PlaybackFinishTestBase)
             enrollment=self.enrollment, namespace='ga', name='attended_status', value='{"attended_date": "test"}')
         self.course.is_status_managed = True
         # act
-        status = AttendanceStatusExecutor(
-            enrollment=self.enrollment).get_attendance_status_str(course=self.course, user=self.user)
+        executor = AttendanceStatusExecutor(enrollment=self.enrollment)
+        status = executor.get_attendance_status_str(
+            start=self.course.start, end=self.course.end, course_id=self.course.id,
+            is_status_managed=self.course.is_status_managed, user=self.user)
         # assert
         self.assertEqual(status, 'closing')
 
@@ -210,8 +235,10 @@ class AttendanceStatusExecutorTests(ModuleStoreTestCase, PlaybackFinishTestBase)
             enrollment=self.enrollment, namespace='ga', name='attended_status', value='{"attended_date": "test"}')
         self.course.is_status_managed = True
         # act
-        status = AttendanceStatusExecutor(
-            enrollment=self.enrollment).get_attendance_status_str(course=self.course, user=self.user)
+        executor = AttendanceStatusExecutor(enrollment=self.enrollment)
+        status = executor.get_attendance_status_str(
+            start=self.course.start, end=self.course.end, course_id=self.course.id,
+            is_status_managed=self.course.is_status_managed, user=self.user)
         # assert
         self.assertEqual(status, 'working')
 
@@ -222,8 +249,10 @@ class AttendanceStatusExecutorTests(ModuleStoreTestCase, PlaybackFinishTestBase)
             enrollment=self.enrollment, namespace='ga', name='attended_status', value='{"attended_date": "test"}')
         self.course.is_status_managed = False
         # act
-        status = AttendanceStatusExecutor(
-            enrollment=self.enrollment).get_attendance_status_str(course=self.course, user=self.user)
+        executor = AttendanceStatusExecutor(enrollment=self.enrollment)
+        status = executor.get_attendance_status_str(
+            start=self.course.start, end=self.course.end, course_id=self.course.id,
+            is_status_managed=self.course.is_status_managed, user=self.user)
         # assert
         self.assertEqual(status, 'working')
 
@@ -387,3 +416,23 @@ class AttendanceStatusExecutorTests(ModuleStoreTestCase, PlaybackFinishTestBase)
             enrollment=self.enrollment).check_attendance_status(course=self.course, user_id=self.user.id)
         # assert
         self.assertFalse(act)
+
+    """
+    Test for get_attendance_values
+    """
+    def test_get_attendance_values(self):
+        # arrange
+        course2 = CourseFactory.create(
+            org='gacco', number='course2', run='run1', start=datetime(2000, 3, 3, tzinfo=UTC),
+            end=datetime(2001, 3, 3, tzinfo=UTC))
+        enrollment2 = CourseEnrollmentFactory(user=self.user, course_id=course2.id)
+        CourseEnrollmentAttributeFactory.create(
+            enrollment=self.enrollment, namespace='ga', name='attended_status', value='sample1')
+        CourseEnrollmentAttributeFactory.create(
+            enrollment=self.enrollment, namespace='ga', name='attended_status', value='sample2')
+        CourseEnrollmentAttributeFactory.create(
+            enrollment=enrollment2, namespace='ga', name='attended_status', value='sample3')
+        # act
+        act = AttendanceStatusExecutor.get_attendance_values([self.enrollment.id, enrollment2.id])
+        # assert
+        self.assertEqual(2, len(act.keys()))

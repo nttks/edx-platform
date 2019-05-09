@@ -2026,6 +2026,9 @@ INSTALLED_APPS = (
 
     # daccount number
     'ga_daccount',
+
+    # Support for  page of student_account (Login and Register)
+    'ga_student_account',
 )
 
 # Migrations which are not in the standard module "migrations"

@@ -27,7 +27,7 @@ from student.tests.factories import UserFactory
 
 
 @ddt.ddt
-class SaveRegistConditionViewTest(BizContractTestBase):
+class SaveRegisterConditionViewTest(BizContractTestBase):
 
     def _create_member(self, org, group, user, code, is_active=True, is_delete=False, **kwargs):
         return MemberFactory.create(
@@ -191,7 +191,7 @@ class SaveRegistConditionViewTest(BizContractTestBase):
         """
         Set up for test
         """
-        super(SaveRegistConditionViewTest, self).setUp()
+        super(SaveRegisterConditionViewTest, self).setUp()
         self.setup_user()
 
         self._director_manager = self._create_manager(
