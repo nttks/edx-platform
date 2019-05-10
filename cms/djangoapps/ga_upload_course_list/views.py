@@ -156,7 +156,7 @@ class CourseList(object):
                 if course.terminate_start is not None and course.terminate_start < self.base_now:
                     archive_courses.append(course)
                     log.debug('archive_courses {}'.format(course.id.to_deprecated_string()))
-                elif course.has_ended():
+                elif course.has_ended() or (course.enrollment_end and course.enrollment_end < self.base_now):
                     list_closed_courses.append(course)
                     log.debug('list_closed {}'.format(course.id.to_deprecated_string()))
                     archive_courses.append(course)
