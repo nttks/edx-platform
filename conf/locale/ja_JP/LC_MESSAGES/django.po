@@ -8548,6 +8548,10 @@ msgstr "このフィールドは編集できません"
 msgid "harf-width alphanumeric"
 msgstr "半角英数字"
 
+#: lms/djangoapps/ga_shoppingcart/forms.py:243
+msgid "Please type using half-width alphabet."
+msgstr "半角英数字以外の文字が含まれています"
+
 #: cms/djangoapps/contentstore/course_group_config.py
 #: cms/djangoapps/contentstore/views/certificates.py
 msgid "invalid JSON"
