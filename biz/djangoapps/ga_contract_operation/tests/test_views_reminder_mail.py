@@ -27,10 +27,11 @@ from biz.djangoapps.gx_org_group.tests.factories import GroupUtil, RightFactory
 from biz.djangoapps.util import datetime_utils
 from biz.djangoapps.util.tests.testcase import BizStoreTestBase
 
-from openedx.core.djangoapps.ga_self_paced import api as self_paced_api
+from openedx.core.djangoapps.content.course_overviews.models import CourseOverview
 
 from student.models import UserStanding, UserProfile
-from student.tests.factories import UserFactory, UserStandingFactory, CourseEnrollmentFactory
+from student.tests.factories import UserFactory, UserStandingFactory, CourseEnrollmentFactory,\
+    CourseEnrollmentAttributeFactory
 
 from xmodule.modulestore.tests.factories import CourseFactory, ItemFactory
 
@@ -287,10 +288,9 @@ class ContractOperationReminderMailViewTest(BizContractTestBase, BizStoreTestBas
 
         search_mail_info = render_to_response_args[1]['search_mail_info']
         self.assertEqual([
-            ScoreStore.FIELD_STUDENT_STATUS__ENROLLED,
-            ScoreStore.FIELD_STUDENT_STATUS__UNENROLLED,
-            ScoreStore.FIELD_STUDENT_STATUS__DISABLED,
-            ScoreStore.FIELD_STUDENT_STATUS__EXPIRED
+            'Not Enrolled',
+            'Enrolled',
+            'Finish Enrolled',
         ], search_mail_info['student_status_list'])
         self.assertEqual([
             ContractReminderMail.MAIL_PARAM_USERNAME,
@@ -338,6 +338,46 @@ class ContractOperationReminderMailViewTest(BizContractTestBase, BizStoreTestBas
         self.assertEqual([], search_mail_info['score_section_names'])
         self.assertDictEqual({}, search_mail_info['hidden_playback_columns'])
         self.assertEqual([], search_mail_info['playback_section_names'])
+
+    def test_mail_is_status_managed_true(self):
+        self.setup_user()
+        director_manager = self._director_manager
+        self.course = CourseFactory.create(org='gacco', number='course', run='run1')
+        self.overview = CourseOverview.get_from_id(self.course.id)
+        self.overview.extra.is_status_managed = True
+        self.overview.extra.save()
+
+        with self.skip_check_course_selection(current_organization=self.contract_org,
+                                              current_contract=self.contract_submission_reminder,
+                                              current_course=self.course, current_manager=director_manager):
+            with patch('biz.djangoapps.ga_contract_operation.views.render_to_response',
+                       return_value=HttpResponse()) as mock_render_to_response:
+                self.assert_request_status_code(200, self._url_mail())
+
+        render_to_response_args = mock_render_to_response.call_args[0]
+        self.assertEqual(render_to_response_args[0], 'ga_contract_operation/reminder_mail.html')
+        is_status_managed = render_to_response_args[1]['is_status_managed']
+        self.assertEqual(True, is_status_managed)
+
+    def test_mail_is_status_managed_false(self):
+        self.setup_user()
+        director_manager = self._director_manager
+        self.course = CourseFactory.create(org='gacco', number='course', run='run1')
+        self.overview = CourseOverview.get_from_id(self.course.id)
+        self.overview.extra.is_status_managed = False
+        self.overview.extra.save()
+
+        with self.skip_check_course_selection(current_organization=self.contract_org,
+                                              current_contract=self.contract_submission_reminder,
+                                              current_course=self.course, current_manager=director_manager):
+            with patch('biz.djangoapps.ga_contract_operation.views.render_to_response',
+                       return_value=HttpResponse()) as mock_render_to_response:
+                self.assert_request_status_code(200, self._url_mail())
+
+        render_to_response_args = mock_render_to_response.call_args[0]
+        self.assertEqual(render_to_response_args[0], 'ga_contract_operation/reminder_mail.html')
+        is_status_managed = render_to_response_args[1]['is_status_managed']
+        self.assertEqual(False, is_status_managed)
 
     # ------------------------------------------------------------
     # Save Reminder Mail
@@ -821,15 +861,17 @@ class ContractOperationReminderMailViewTest(BizContractTestBase, BizStoreTestBas
 
     def _create_reminder_search_param(
             self, contract_id=None, student_status='', total_score_from='', total_score_to='', total_playback_from='',
-            total_playback_to='', total_playback_no=False, **kwargs):
+            total_playback_to='', total_playback_no=False, is_status_managed=False, survey_name_unit_id='', **kwargs):
         param = {
             'contract_id': contract_id or self.contract_submission_reminder.id,
-            'student_status': student_status,
             'total_score_from': total_score_from,
             'total_score_to': total_score_to,
             'total_playback_from': total_playback_from,
             'total_playback_to': total_playback_to,
+            'survey_name_unit_id': survey_name_unit_id,
         }
+        if is_status_managed:
+            param['student_status'] = student_status
         if total_playback_no:
             param['total_playback_no'] = 1
 
@@ -950,15 +992,18 @@ class ContractOperationReminderMailViewTest(BizContractTestBase, BizStoreTestBas
         self.assertEquals(data['info'], 'Successfully to search.')
         self.assertEqual(len(json.loads(data['show_list'])), show_list)
 
-    def _assert_search_result_base(self, result, recid, user, profile, status='Enrolled', total_score='0.9',
-                                   score_section1='0.3', score_section2='0.5', total_time='10080',
-                                   playback_section1='6000', playback_section2='4080', is_score=True, is_playback=True):
+    def _assert_search_result_base(self, result, recid, user, profile, status='During registration',
+                                   student_status='Enrolled', total_score='0.9', score_section1='0.3',
+                                   score_section2='0.5', total_time='10080', playback_section1='6000',
+                                   playback_section2='4080', is_score=True, is_playback=True, is_status_managed=False):
         self.assertEqual(result['recid'], recid)
         self.assertEqual(result['user_id'], user.id)
         self.assertEqual(result['user_name'], user.username)
         self.assertEqual(result['user_email'], user.email)
         self.assertEqual(result['full_name'], profile.name)
-        self.assertEqual(result['student_status'], status)
+        self.assertEqual(result['register_status'], status)
+        if is_status_managed:
+            self.assertEqual(result['student_status'], student_status)
         _none = 'None'
         if is_score:
             self.assertEqual(result['total_score'], float(total_score) if total_score is not _none else _none)
@@ -1233,22 +1278,26 @@ class ContractOperationReminderMailViewTest(BizContractTestBase, BizStoreTestBas
             self._assert_search_result_base(
                 result=show_list[0], recid=1, user=user1, profile=user1.profile, is_score=False)
 
-    def test_reminder_search_ajax_status_unenrolled(self):
+    def test_reminder_search_ajax_student_status_enrolled(self):
         self.setup_user()
         director_manager = self._director_manager
+        self.course = CourseFactory.create(org='gacco', number='course', run='run1')
         # Search target user
         user1 = UserFactory.create()
-        enrollment = CourseEnrollmentFactory.create(user=user1, course_id=self.course_spoc1.id, is_active=False)
-        enrollment.deactivate()
-        # Not search target user
-        user2 = UserFactory.create()
-        CourseEnrollmentFactory.create(user=user2, course_id=self.course_spoc1.id)
+        enrollment = CourseEnrollmentFactory.create(user=user1, course_id=self.course.id)
+        self.attr = CourseEnrollmentAttributeFactory.create(
+            enrollment=enrollment, namespace='ga', name='attended_status',
+            value='{"attended_date": "2010-10-10T10:10:10.123456+00:00"}')
 
-        param = self._create_reminder_search_param(student_status='Unenrolled')
+        self.overview = CourseOverview.get_from_id(self.course.id)
+        self.overview.extra.is_status_managed = True
+        self.overview.extra.save()
+
+        param = self._create_reminder_search_param(student_status='Enrolled', is_status_managed=True)
 
         with self.skip_check_course_selection(current_organization=self.contract_org,
                                               current_contract=self.contract_submission_reminder,
-                                              current_course=self.course_spoc1, current_manager=director_manager):
+                                              current_course=self.course, current_manager=director_manager):
             response = self.client.post(self._url_search_ajax, param)
 
         self.assertEqual(200, response.status_code)
@@ -1256,58 +1305,141 @@ class ContractOperationReminderMailViewTest(BizContractTestBase, BizStoreTestBas
         self._assert_search_ajax_successful(data, 1)
         show_list = json.loads(data['show_list'])
         self._assert_search_result_base(
-            result=show_list[0], recid=1, user=user1, profile=user1.profile, status='Unenrolled',
-            is_score=False, is_playback=False
+            result=show_list[0], recid=1, user=user1, profile=user1.profile, status='During registration',
+            student_status='Enrolled', is_score=False, is_playback=False, is_status_managed=True
         )
+
+    def test_reminder_search_ajax_student_status_finish_enrolled(self):
+        self.setup_user()
+        director_manager = self._director_manager
+        self.course = CourseFactory.create(org='gacco', number='course', run='run1')
+        # Search target user
+        user1 = UserFactory.create()
+        enrollment = CourseEnrollmentFactory.create(user=user1, course_id=self.course.id)
+        self.attr = CourseEnrollmentAttributeFactory.create(
+            enrollment=enrollment, namespace='ga', name='attended_status',
+            value='{"completed_date": "2010-10-10T10:10:10.123456+00:00"}')
+
+        self.overview = CourseOverview.get_from_id(self.course.id)
+        self.overview.extra.is_status_managed = True
+        self.overview.extra.save()
+
+        param = self._create_reminder_search_param(student_status='Finish Enrolled', is_status_managed=True)
+
+        with self.skip_check_course_selection(current_organization=self.contract_org,
+                                              current_contract=self.contract_submission_reminder,
+                                              current_course=self.course, current_manager=director_manager):
+            response = self.client.post(self._url_search_ajax, param)
+
+        self.assertEqual(200, response.status_code)
+        data = json.loads(response.content)
+        self._assert_search_ajax_successful(data, 1)
+        show_list = json.loads(data['show_list'])
+        self._assert_search_result_base(
+            result=show_list[0], recid=1, user=user1, profile=user1.profile, status='During registration',
+            student_status='Finish Enrolled', is_score=False, is_playback=False, is_status_managed=True
+        )
+
+    def test_reminder_search_ajax_student_status_not_enrolled(self):
+        self.setup_user()
+        director_manager = self._director_manager
+        self.course = CourseFactory.create(org='gacco', number='course', run='run1')
+        # Search target user
+        user1 = UserFactory.create()
+        enrollment = CourseEnrollmentFactory.create(user=user1, course_id=self.course.id)
+        self.overview = CourseOverview.get_from_id(self.course.id)
+        self.overview.extra.is_status_managed = True
+        self.overview.extra.save()
+
+        param = self._create_reminder_search_param(student_status='Not Enrolled', is_status_managed=True)
+
+        with self.skip_check_course_selection(current_organization=self.contract_org,
+                                              current_contract=self.contract_submission_reminder,
+                                              current_course=self.course, current_manager=director_manager):
+            response = self.client.post(self._url_search_ajax, param)
+
+        self.assertEqual(200, response.status_code)
+        data = json.loads(response.content)
+        self._assert_search_ajax_successful(data, 1)
+        show_list = json.loads(data['show_list'])
+        self._assert_search_result_base(
+            result=show_list[0], recid=1, user=user1, profile=user1.profile, status='During registration',
+            student_status='Not Enrolled', is_score=False, is_playback=False, is_status_managed=True
+        )
+
+    def test_reminder_search_ajax_status_unenrolled(self):
+        self.setup_user()
+        director_manager = self._director_manager
+        self.course = CourseFactory.create(org='gacco', number='course', run='run1')
+        # Search target user
+        user1 = UserFactory.create()
+        enrollment = CourseEnrollmentFactory.create(user=user1, course_id=self.course.id, is_active=False)
+        enrollment.deactivate()
+        self.overview = CourseOverview.get_from_id(self.course.id)
+        self.overview.extra.is_status_managed = True
+        self.overview.extra.save()
+
+        param = self._create_reminder_search_param(is_status_managed=True)
+
+        with self.skip_check_course_selection(current_organization=self.contract_org,
+                                              current_contract=self.contract_submission_reminder,
+                                              current_course=self.course, current_manager=director_manager):
+            response = self.client.post(self._url_search_ajax, param)
+
+        self.assertEqual(200, response.status_code)
+        data = json.loads(response.content)
+        self._assert_search_ajax_successful(data, 0)
 
     def test_reminder_search_ajax_status_disabled(self):
         self.setup_user()
         director_manager = self._director_manager
+        self.course = CourseFactory.create(org='gacco', number='course', run='run1')
         user1 = UserFactory.create()
         UserStandingFactory.create(user=user1, account_status=UserStanding.ACCOUNT_DISABLED, changed_by=user1)
-        CourseEnrollmentFactory.create(user=user1, course_id=self.course_spoc1.id, is_active=False)
-        param = self._create_reminder_search_param(student_status='Disabled')
+        CourseEnrollmentFactory.create(user=user1, course_id=self.course.id, is_active=False)
+        self.overview = CourseOverview.get_from_id(self.course.id)
+        self.overview.extra.is_status_managed = True
+        self.overview.extra.save()
+
+        param = self._create_reminder_search_param(is_status_managed=True)
 
         with self.skip_check_course_selection(current_organization=self.contract_org,
                                               current_contract=self.contract_submission_reminder,
-                                              current_course=self.course_spoc1, current_manager=director_manager):
+                                              current_course=self.course, current_manager=director_manager):
             response = self.client.post(self._url_search_ajax, param)
 
         self.assertEqual(200, response.status_code)
         data = json.loads(response.content)
-        self._assert_search_ajax_successful(data, 1)
-        show_list = json.loads(data['show_list'])
-        self._assert_search_result_base(
-            result=show_list[0], recid=1, user=user1, profile=user1.profile, status='Disabled',
-            is_score=False, is_playback=False
-        )
+        self._assert_search_ajax_successful(data, 0)
 
     def test_reminder_search_ajax_status_expired(self):
         self.setup_user()
         director_manager = self._director_manager
-
+        self.course = CourseFactory.create(org='gacco', number='course', run='run1')
         user1 = UserFactory.create()
-        CourseEnrollmentFactory.create(user=user1, course_id=self.course_spoc1.id, is_active=False)
-        self.course_spoc1.created = datetime(year=2000, month=1, day=1)
-        self.course_spoc1.save()
+        CourseEnrollmentFactory.create(user=user1, course_id=self.course.id, is_active=False)
+        self.course.created = datetime(year=2000, month=1, day=1)
+        self.course.save()
+        self.overview = CourseOverview.get_from_id(self.course.id)
+        self.overview.extra.is_status_managed = True
+        self.overview.extra.save()
+        self._create_score_batch_status(course=self.course)
+        self._create_achievement_score_column()
+        self._create_achievement_score_data(user1.username, user1.email, course=self.course,
+                                            status='Expired')
 
-        param = self._create_reminder_search_param(student_status='Expired')
+        param = self._create_reminder_search_param(is_status_managed=True)
 
         with self.skip_check_course_selection(
                 current_organization=self.contract_org, current_contract=self.contract_submission_reminder,
-                current_course=self.course_spoc1, current_manager=director_manager), patch(
+                current_course=self.course, current_manager=director_manager), patch(
             'biz.djangoapps.ga_contract_operation.views.self_paced_api.is_course_closed') as mock_validate_task:
             mock_validate_task.return_value = True
             response = self.client.post(self._url_search_ajax, param)
 
         self.assertEqual(200, response.status_code)
         data = json.loads(response.content)
-        self._assert_search_ajax_successful(data, 1)
-        show_list = json.loads(data['show_list'])
-        self._assert_search_result_base(
-            result=show_list[0], recid=1, user=user1, profile=user1.profile, status='Expired',
-            is_score=False, is_playback=False
-        )
+        self._assert_search_ajax_successful(data, 0)
 
     @ddt.unpack
     @ddt.data(('G01-01', 3), ('G01-01-01', 1), ('G02', 5))
