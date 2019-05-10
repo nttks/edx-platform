@@ -1746,6 +1746,34 @@ msgid "Never"
 msgstr "無期限"
 
 #: common/lib/xmodule/xmodule/capa_base.py
+msgid "After submitting answer. with reset"
+msgstr "回答提出後（リセットあり）"
+
+#: common/lib/xmodule/xmodule/capa_base.py
+msgid "After submitting answer"
+msgstr "回答提出後（リセットなし）"
+
+#: common/lib/xmodule/xmodule/capa_base.py
+msgid "Trial limit"
+msgstr "試行回数上限／提出期限後"
+
+#: common/lib/xmodule/xmodule/capa_base.py
+msgid "Correct. with reset after deadline"
+msgstr "正解／試行回数上限／提出期限後"
+
+#: common/lib/xmodule/xmodule/capa_base.py
+msgid "Correct. with after deadline"
+msgstr "正解／提出期限後"
+
+#: common/lib/xmodule/xmodule/capa_base.py
+msgid "After deadline"
+msgstr "提出期限後"
+
+#: common/lib/xmodule/xmodule/capa_base.py
+msgid "Hide display"
+msgstr "非表示"
+
+#: common/lib/xmodule/xmodule/capa_base.py
 msgid "Whether to force the save button to appear on the page"
 msgstr "saveボタンをページに表示するよう強制するか否か"
 
@@ -1766,19 +1794,20 @@ msgstr ""
 msgid "Is status managed"
 msgstr "ステータス管理"
 
+#: common/lib/xmodule/xmodule/html_module.py
+msgid ""
+"Please set \"True\" if you want to make it status management target module. "
+"Only \"survey\", \"problem\" and \"movie\" are available for status "
+"management. Otherwise, please set \"no\"."
+msgstr ""
+"ステータス管理対象モジュールとしたい場合は「はい」を設定してください。<br><span "
+"style=\"color:red\">ステータス管理ができるのは、「アンケート」「課題」「動画」のみです。</span><br>また、必ず詳細設定で、ステータス管理「ON」になっていることを確認してください。"
+
 #: common/lib/xmodule/xmodule/capa_base.py
 #: common/lib/xmodule/xmodule/video_module/video_xfields.py
 #: common/lib/xmodule/xmodule/html_module.py
 msgid "Please set \"True\" if you want to make it status management target module"
 msgstr "ステータス管理対象モジュールとしたい場合は「はい」を設定してください"
-
-#: common/lib/xmodule/xmodule/html_module.py
-msgid ""
-"Please set \"True\" if you want to make it status management target module. "
-"Only \"survey\", \"problem\" and \"movie\" are available for status management."
-" Otherwise, please set \"no\"."
-msgstr ""
-"ステータス管理対象モジュールとしたい場合は「はい」を設定してください。<br><span style=\"color:red\">ステータス管理ができるのは、「アンケート」「課題」「動画」のみです。</span><br>また、必ず詳細設定で、ステータス管理「ON」になっていることを確認してください。"
 
 #: common/lib/xmodule/xmodule/capa_base.py
 #: common/lib/xmodule/xmodule/modulestore/inheritance.py
@@ -2912,7 +2941,9 @@ msgid "Count"
 msgstr "問題数"
 
 #: common/lib/xmodule/xmodule/library_content_module.py
-msgid "Enter the number of components to display to each student. Enter the half-width number 1 and over."
+msgid ""
+"Enter the number of components to display to each student. Enter the half-"
+"width number 1 and over."
 msgstr "受講者に表示する出題数を入力してください。1以上の半角数字を入力してください。"
 
 #: common/lib/xmodule/xmodule/library_content_module.py
@@ -8513,6 +8544,10 @@ msgstr "入力値に問題があるので見直してください。"
 msgid "This field is not editable"
 msgstr "このフィールドは編集できません"
 
+#: lms/djangoapps/ga_shoppingcart/models.py
+msgid "harf-width alphanumeric"
+msgstr "半角英数字"
+
 #: cms/djangoapps/contentstore/course_group_config.py
 #: cms/djangoapps/contentstore/views/certificates.py
 msgid "invalid JSON"
@@ -11827,6 +11862,50 @@ msgid ""
 "{unenroll_link_start}unenroll{unenroll_link_end} from this course"
 msgstr ""
 "お支払いがなかったため、この講座へはアクセスができません。お支払いについての{contact_link_start}問い合わせ{contact_link_end}をするか、この講座を{unenroll_link_start}受講解除{unenroll_link_end}しましょう。"
+
+#: lms/templates/dashboard/_dashboard_course_listing.html
+msgid "Not Offered"
+msgstr "未開講"
+
+#: lms/templates/dashboard/_dashboard_course_listing.html
+msgid "Not Enrolled"
+msgstr "未受講"
+
+#: lms/templates/dashboard/_dashboard_course_listing.html
+msgid "Finish Enrolled"
+msgstr "受講済"
+
+#: lms/templates/dashboard/_dashboard_course_listing.html
+msgid "Already terminate"
+msgstr "閉講済"
+
+#: lms/templates/dashboard/_dashboard_search_block.html
+msgid "No Course Category Genre"
+msgstr "ジャンルなし"
+
+#: lms/templates/dashboard/_dashboard_search_block.html
+msgid "Please Select"
+msgstr "選択してください"
+
+#: lms/templates/dashboard/_dashboard_search_block.html
+msgid "Please select Genre1"
+msgstr "ジャンル1を選択してください"
+
+#: lms/templates/dashboard/_dashboard_search_block.html
+msgid "Asc"
+msgstr "昇順"
+
+#: lms/templates/dashboard/_dashboard_search_block.html
+msgid "Desc"
+msgstr "降順"
+
+#: lms/templates/dashboard/_dashboard_search_block.html
+msgid "Search / Sort"
+msgstr "検索 / 並び替え"
+
+#: lms/templates/dashboard/_dashboard_search_block.html
+msgid "Enrolled Status"
+msgstr "ステータス"
 
 #. Translators: provider_name is the name of a credit provider or university
 #. (e.g. State University)
@@ -17315,11 +17394,14 @@ msgstr "講座でライブラリコンテンツを使う"
 
 #: cms/templates/library.html
 msgid ""
-"In order to use library content in courses, add a \"Randomized Content Block\" "
-"to your courseware. In the settings for each Randomized Content Block, select "
-"this library as the source library, and specify the number of problems to be "
-"randomly selected and displayed to each student."
-msgstr "講座でライブラリコンテンツを使用するためには「詳細設定」から「Randomized Content Block」をコース教材に追加してください。Randomized Content Blockごとの設定では編集画面からライブラリ名を選択し、受講者ごとにランダムに出題される問題数を設定します。"
+"In order to use library content in courses, add a \"Randomized Content "
+"Block\" to your courseware. In the settings for each Randomized Content "
+"Block, select this library as the source library, and specify the number of "
+"problems to be randomly selected and displayed to each student."
+msgstr ""
+"講座でライブラリコンテンツを使用するためには「詳細設定」から「Randomized Content "
+"Block」をコース教材に追加してください。Randomized Content "
+"Blockごとの設定では編集画面からライブラリ名を選択し、受講者ごとにランダムに出題される問題数を設定します。"
 
 #: cms/templates/library.html
 msgid "Learn more about content libraries"
