@@ -20,6 +20,7 @@ from django.views.decorators.http import require_GET, require_POST
 from biz.djangoapps.ga_achievement.achievement_store import PlaybackStore, ScoreStore
 from biz.djangoapps.ga_achievement.management.commands.update_biz_score_status import get_grouped_target_sections
 from biz.djangoapps.ga_achievement.models import PlaybackBatchStatus, ScoreBatchStatus
+import biz.djangoapps.ga_course_anslist.views as anslistview
 from biz.djangoapps.ga_contract.models import AdditionalInfo, Contract, ContractDetail
 from biz.djangoapps.ga_contract_operation.models import (
     ContractMail, ContractReminderMail,
@@ -46,6 +47,8 @@ from biz.djangoapps.util.unicodetsv_utils import create_tsv_response, create_csv
     create_csv_response_double_quote
 
 from edxmako.shortcuts import render_to_response
+from lms.djangoapps.courseware.courses import get_course
+from openedx.core.djangoapps.content.course_overviews.models import CourseOverview
 from openedx.core.djangoapps.ga_self_paced import api as self_paced_api
 from openedx.core.djangoapps.ga_task.api import AlreadyRunningError
 from openedx.core.djangoapps.ga_task.task import STATES as TASK_STATES
@@ -53,6 +56,7 @@ from openedx.core.lib.ga_datetime_utils import to_timezone
 from openedx.core.lib.ga_mail_utils import send_mail
 from student.models import CourseEnrollment, UserStanding, UserProfile
 from util.json_request import JsonResponse, JsonResponseBadRequest
+from util.ga_attendance_status import AttendanceStatusExecutor
 from xmodule.modulestore.django import modulestore
 
 
@@ -307,7 +311,7 @@ ORDER BY IC.id'''
 def students_students_download(request):
     total_count, show_list, __, additional_columns = _contract_register_list_on_page(request, 0, None)
 
-    headers = [_("Student Status"),  _("Target user of delete member master"), _("Email Address"), _("Username"),
+    headers = [_("Contract Status"),  _("Target user of delete member master"), _("Email Address"), _("Username"),
                _("Full Name"), _("Login Code"), _("Organization Groups"), _("Organization Code"), _("Member Code")]
     for i in range(1, 11):
         headers.append(_("Organization") + str(i))
@@ -768,28 +772,29 @@ def reminder_mail(request):
 
     contract = request.current_contract
     course = request.current_course
+    course_overview = CourseOverview.get_from_id(course.id)
     is_manager = not request.current_manager.is_director() and request.current_manager.is_manager()
 
     # Reminder mail
+    contract_reminder_mail = {}
     if request.current_contract.can_send_submission_reminder:
-        reminder_mail = ContractReminderMail.get_or_default(
+        contract_reminder_mail = ContractReminderMail.get_or_default(
             request.current_contract, ContractReminderMail.MAIL_TYPE_SUBMISSION_REMINDER)
 
     # Search Reminder mail
     search_reminder_mail = {
-        'student_status_list': [
-            _(ScoreStore.FIELD_STUDENT_STATUS__ENROLLED),
-            _(ScoreStore.FIELD_STUDENT_STATUS__UNENROLLED),
-            _(ScoreStore.FIELD_STUDENT_STATUS__DISABLED),
-            _(ScoreStore.FIELD_STUDENT_STATUS__EXPIRED),
-        ],
-        'search_mail_params': [
-            ContractReminderMail.MAIL_PARAM_USERNAME,
-            ContractReminderMail.MAIL_PARAM_EMAIL_ADDRESS,
-            ContractReminderMail.MAIL_PARAM_COURSE_NAME,
-            ContractReminderMail.MAIL_PARAM_FULLNAME,
-            ContractReminderMail.MAIL_PARAM_EXPIRE_DATE,
-        ],
+            'student_status_list': [
+                "Not Enrolled",
+                "Enrolled",
+                "Finish Enrolled",
+            ],
+            'search_mail_params': [
+                ContractReminderMail.MAIL_PARAM_USERNAME,
+                ContractReminderMail.MAIL_PARAM_EMAIL_ADDRESS,
+                ContractReminderMail.MAIL_PARAM_COURSE_NAME,
+                ContractReminderMail.MAIL_PARAM_FULLNAME,
+                ContractReminderMail.MAIL_PARAM_EXPIRE_DATE,
+            ],
     }
 
     # Check score batch
@@ -827,14 +832,19 @@ def reminder_mail(request):
 
     search_reminder_mail['search_detail_other_list'] = search_detail_other_list
 
+    # survey_name and unit it
+    resp_survey_names_list = anslistview._get_survey_names_list_merged(course.id)
+
     return render_to_response(
         'ga_contract_operation/reminder_mail.html',
         {
             'is_manager': is_manager,
-            'mail_info': reminder_mail,
+            'mail_info': contract_reminder_mail,
             'search_mail_info': search_reminder_mail,
             'deadline': course.deadline_start,
-            'reminder_mail_contract_id': reminder_mail.contract_id,
+            'reminder_mail_contract_id': contract_reminder_mail.contract_id,
+            'survey_names_list': resp_survey_names_list,
+            'is_status_managed': course_overview.extra.is_status_managed,
         }
     )
 
@@ -894,6 +904,7 @@ def reminder_mail_save_ajax(request):
             'info': _("Successfully to save the template e-mail."),
         })
 
+
 @require_POST
 @login_required
 @check_course_selection
@@ -918,9 +929,9 @@ def reminder_mail_delete_ajax(request):
     # Delete template
     try:
         if ContractReminderMail.objects.filter(
-            contract=request.current_contract, mail_type=mail_type).first():
+                contract=request.current_contract, mail_type=mail_type).first():
             ContractReminderMail.objects.filter(
-            contract=request.current_contract, mail_type=mail_type).delete()
+                contract=request.current_contract, mail_type=mail_type).delete()
         else:
             return _error_response(_("Input Invitation"))
     except:
@@ -931,6 +942,7 @@ def reminder_mail_delete_ajax(request):
         return JsonResponse({
             'info': _("Reminder mail deleted."),
         })
+
 
 @require_POST
 @login_required
@@ -989,6 +1001,7 @@ def reminder_search_ajax(request):
     org = request.current_organization
     contract = request.current_contract
     course = request.current_course
+    course_overview = CourseOverview.get_from_id(course.id)
     manager = request.current_manager
 
     if 'contract_id' not in request.POST:
@@ -1051,7 +1064,8 @@ def reminder_search_ajax(request):
 
         return has_condition, total_condition, section_conditions
 
-    def _create_row(recid, student_status, user, score_section_names, score, playback_section_names, playback):
+    def _create_row(recid, register_status, student_status, user,
+                    score_section_names, score, playback_section_names, playback, course_overview):
         row = {
             'recid': recid,
             'user_id': user.id or '',
@@ -1072,8 +1086,12 @@ def reminder_search_ajax(request):
                 row['org' + str(p)] = ''
                 row['item' + str(p)] = ''
 
+        # Set register status
+        row['register_status'] = register_status
+
         # Set student status
-        row['student_status'] = student_status
+        if course_overview.extra.is_status_managed:
+            row['student_status'] = student_status
 
         # Set score
         row['total_score'] = score[_(ScoreStore.FIELD_TOTAL_SCORE)] if score else 'None'
@@ -1129,11 +1147,43 @@ def reminder_search_ajax(request):
                 where_sql += "AND " + key + " LIKE %s "
                 option_sql.append("%" + value + "%")
 
-        sql = '''SELECT DISTINCT AU.id, AU.email, UP.name as fullname, AU.username, LB.login_code, SU.account_status, MG.org_id, MG.code, 
+    sql = '''SELECT DISTINCT AU.id, AU.email, UP.name as fullname, AU.username, LB.login_code, SU.account_status, MG.org_id, MG.code, 
     MG.org1, MG.org2, MG.org3, MG.org4, MG.org5, MG.org6, MG.org7, MG.org8, MG.org9, MG.org10, 
     MG.item1, MG.item2, MG.item3, MG.item4, MG.item5, MG.item6, MG.item7, MG.item8, MG.item9, MG.item10 
     FROM auth_user as AU
-    INNER JOIN student_courseenrollment as SC ON AU.id = SC.user_id 
+    INNER JOIN student_courseenrollment as SC ON AU.id = SC.user_id'''
+
+    sql_survey_answered = '''
+        INNER JOIN ga_survey_surveysubmission AS SS ON AU.id = SS.user_id AND SS.unit_id = %s '''
+
+    sql_survey_not_answered = '''
+        LEFT OUTER JOIN ga_survey_surveysubmission AS SS ON AU.id = SS.user_id  AND SS.unit_id = %s'''
+
+    # survey
+    s_n = request.POST['survey_name_unit_id']
+    if s_n:
+        if 'survey_answered' in request.POST:
+            is_exist_survey_answered = True
+        else:
+            is_exist_survey_answered = False
+
+        if 'survey_not_answered' in request.POST:
+            is_exist_survey_not_answered = True
+        else:
+            is_exist_survey_not_answered = False
+
+        if (is_exist_survey_answered and is_exist_survey_not_answered) or (
+                not is_exist_survey_answered and not is_exist_survey_not_answered):
+            pass
+        else:
+            option_sql.insert(0, s_n)
+            if is_exist_survey_answered:
+                sql = sql + sql_survey_answered
+            elif is_exist_survey_not_answered:
+                sql = sql + sql_survey_not_answered
+                where_sql += " AND SS.created IS NULL "
+
+    sql2 = '''
     LEFT OUTER JOIN student_userstanding as SU ON AU.id = SU.user_id 
     LEFT OUTER JOIN auth_userprofile as UP ON AU.id = UP.user_id 
     LEFT OUTER JOIN ga_login_bizuser as LB ON AU.id = LB.user_id 
@@ -1148,6 +1198,7 @@ def reminder_search_ajax(request):
     WHERE SC.course_id = %s ''' + where_sql + '''
     ORDER BY AU.id ASC'''
 
+    sql += sql2
     enroll_users = ContractRegister.objects.raw(sql, option_sql)
     enroll_usernames = [enroll_user.username for enroll_user in enroll_users]
 
@@ -1187,6 +1238,20 @@ def reminder_search_ajax(request):
     else:
         playback_section_names = []
         username_playback = {}
+    enrollment_attribute_dict = {}
+    if course_overview.extra.is_status_managed:
+        enroll_dict = {
+            enrollment['id']: enrollment['user__username']
+            for enrollment in CourseEnrollment.objects.filter(course_id=course.id).values('id', 'user__username')
+        }
+
+        if enroll_dict:
+            enrollment_attribute = AttendanceStatusExecutor.get_attendance_values(enroll_dict.keys())
+            enrollment_attribute_dict = {
+                enrollment_username: enrollment_attribute[enrollment_id]
+                for enrollment_id, enrollment_username in enroll_dict.items()
+                if enrollment_id in enrollment_attribute
+            }
 
     # Create row by usernames
     show_list = []
@@ -1208,29 +1273,56 @@ def reminder_search_ajax(request):
             # Note: Not need append row if not found user by search conditions of score and playback
             continue
 
-        # Check status
+        # Check register status
         if score:
-            student_status = score[_(ScoreStore.FIELD_STUDENT_STATUS)]
+            register_status = score[_(ScoreStore.FIELD_STUDENT_STATUS)]
         elif playback:
-            student_status = playback[_(PlaybackStore.FIELD_STUDENT_STATUS)]
+            register_status = playback[_(PlaybackStore.FIELD_STUDENT_STATUS)]
         else:
             course_enrollment = CourseEnrollment.objects.get(course_id=course.id,
                                                              user=user.id)
             if user.account_status is not None \
                     and user.account_status == UserStanding.ACCOUNT_DISABLED:
-                student_status = _(ScoreStore.FIELD_STUDENT_STATUS__DISABLED)
+                register_status = _(ScoreStore.FIELD_STUDENT_STATUS__DISABLED)
             elif self_paced_api.is_course_closed(course_enrollment):
-                student_status = _(ScoreStore.FIELD_STUDENT_STATUS__EXPIRED)
+                register_status = _(ScoreStore.FIELD_STUDENT_STATUS__EXPIRED)
             elif course_enrollment.is_active:
-                student_status = _(ScoreStore.FIELD_STUDENT_STATUS__ENROLLED)
+                register_status = _(ScoreStore.FIELD_STUDENT_STATUS__ENROLLED)
             else:
-                student_status = _(ScoreStore.FIELD_STUDENT_STATUS__UNENROLLED)
+                register_status = _(ScoreStore.FIELD_STUDENT_STATUS__UNENROLLED)
 
-        if request.POST['student_status'] and student_status != request.POST['student_status']:
+        if register_status == _('Not Enrolled'):
+            register_status = _("Unregistered")
+
+        elif register_status == _('Enrolled'):
+            register_status = _("During registration")
+
+        elif register_status == _('Unenrolled'):
+            register_status = _("Registration cancellation")
+
+        if register_status != _("During registration"):
             continue
 
+        # Check student status
+        student_status = ''
+        if course_overview.extra.is_status_managed:
+            if user.username in enrollment_attribute_dict:
+                if AttendanceStatusExecutor.attendance_status_is_completed(enrollment_attribute_dict[user.username]):
+                    student_status = _("Finish Enrolled")
+                elif AttendanceStatusExecutor.attendance_status_is_attended(enrollment_attribute_dict[user.username]):
+                    student_status = _("Enrolled")
+                else:
+                    student_status = _("Not Enrolled")
+
+            else:
+                student_status = _("Not Enrolled")
+
+            if request.POST['student_status'] and student_status != request.POST['student_status']:
+                continue
+
         show_list.append(
-            _create_row(i, student_status, user, score_section_names, score, playback_section_names, playback)
+            _create_row(i, register_status, student_status, user,
+                        score_section_names, score, playback_section_names, playback, course_overview)
         )
     return JsonResponse({
         'info': _("Successfully to search."),

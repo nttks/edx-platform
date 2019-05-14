@@ -304,10 +304,13 @@ class Command(BaseCommand):
             FROM
              student_courseenrollment as enrollment
             INNER JOIN auth_user as user ON enrollment.user_id = user.id
-            LEFT OUTER JOIN student_courseenrollmentattribute as attr
-             ON attr.enrollment_id = enrollment.id
-             AND attr.namespace = 'ga'
-             AND attr.name = 'attended_status'
+            LEFT OUTER JOIN (
+                SELECT enrollment_id, MIN(value) as value
+                FROM student_courseenrollmentattribute
+                WHERE namespace = 'ga'
+                AND name = 'attended_status'
+                GROUP BY enrollment_id
+            ) as attr ON attr.enrollment_id = enrollment.id
             WHERE user.is_staff = 0 AND user.is_superuser = 0 AND enrollment.course_id in %s
             ORDER BY enrollment.course_id
             """
@@ -399,7 +402,6 @@ class Command(BaseCommand):
                         enroll_attr_value_completed, '%Y-%m-%dT%H:%M:%S.%f') if enroll_attr_value_completed else None
 
                     # Check status working or completed
-                    working_flag = False
                     for module_block_id in modules:
                         module = modules[module_block_id]
                         module_status = {key: '' for key in self.MODULE_KEYS}
@@ -415,7 +417,6 @@ class Command(BaseCommand):
                                 module_status[self.MODULE_KEY_STATUS] = self.MODULE_STATUS_ON
                             else:
                                 module_status[self.MODULE_KEY_STATUS] = self.MODULE_STATUS_OFF
-                                working_flag = True
 
                         elif module['category'] == 'problem':
                             if enroll_user_id in module['problem_modules']:
@@ -427,7 +428,6 @@ class Command(BaseCommand):
                                 module_status[self.MODULE_KEY_STATUS] = self.MODULE_STATUS_ON
                             else:
                                 module_status[self.MODULE_KEY_STATUS] = self.MODULE_STATUS_OFF
-                                working_flag = True
 
                         elif module['category'] in ['video', 'jwplayerxblock']:
                             if enroll_user_id in module['video_modules']:
@@ -438,7 +438,6 @@ class Command(BaseCommand):
                                     module_status[self.MODULE_KEY_STATUS] = self.MODULE_STATUS_ON
                                 else:
                                     module_status[self.MODULE_KEY_STATUS] = self.MODULE_STATUS_OFF
-                                    working_flag = True
                             else:
                                 module_status[self.MODULE_KEY_STATUS] = self.MODULE_STATUS_NON
 
@@ -451,7 +450,7 @@ class Command(BaseCommand):
                     if modules and len(modules) > 0:
                         most_before = self._managed_working_date(module_created, attended_datetime)
                         self._set_date_time(most_before, student_status, 'working')
-                        if working_flag:
+                        if not completed_datetime:
                             if course_end and course_end < now_str:
                                 student_status[self.STUDENT_KEY_STATUS] = self.STATUS_CLOSING
                                 self._set_date_time(self._str_to_datetime(course_end), student_status, 'closing')
@@ -459,8 +458,7 @@ class Command(BaseCommand):
                                 student_status[self.STUDENT_KEY_STATUS] = self.STATUS_WORKING
                         else:
                             student_status[self.STUDENT_KEY_STATUS] = self.STATUS_COMPLETED
-                            if completed_datetime:
-                                self._set_date_time(completed_datetime, student_status, 'completed')
+                            self._set_date_time(completed_datetime, student_status, 'completed')
                     else:
                         self._set_date_time(
                             self._str_to_datetime(enroll_created), student_status, 'working')

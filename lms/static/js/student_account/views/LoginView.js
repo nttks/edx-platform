@@ -159,9 +159,9 @@
             customValidate: function() {
                 var _this = this,
                     qs = this.getQueryString(),
-                    is_redirect = false,
                     $el = null,
                     email = '',
+                    response_data = null,
                     i,
                     elements;
 
@@ -184,15 +184,17 @@
                     async: false
                 }).done(function( data ) {
                     if (data.exist_saml_master && data.redirect_url) {
-                        location.href = data.redirect_url;
-                        is_redirect = true;
+                        response_data = data;
                     }
                 });
 
-                if (is_redirect) {
+                if (response_data) {
                     // Set dummy error and stop errors display, because redirect to saml login page.
                     _this.setErrors = function() {};
-                    this.errors.push(is_redirect);
+                    this.errors.push(true);
+
+                    // Redirect to saml login page.
+                    location.href = response_data.redirect_url;
                 }
             }
         });

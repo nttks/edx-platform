@@ -1778,6 +1778,10 @@ msgstr "詳細条件（視聴時間）"
 msgid "Search Detail(Other)"
 msgstr "詳細条件（その他）"
 
+#: biz/templates/ga_contract_operation/reminder_mail.html:611
+msgid "Search Detail(survey_name)"
+msgstr "詳細条件（アンケート）"
+
 #: biz/templates/ga_achievement/score.html:257
 #: biz/templates/ga_contract_operation/reminder_mail.html:416
 #: biz/templates/ga_contract_operation/reminder_mail.html:440
@@ -2344,3 +2348,19 @@ msgstr "ユーザID"
 #: biz/djangoapps/gx_students_register_batch/management/commands/student_status_csv_batch.py:306
 msgid "0001UserName"
 msgstr "ユーザ名"
+
+#: biz/djangoapps/ga_achievement/views.py.py:766
+msgid "Unregistered"
+msgstr "未登録"
+
+#: biz/djangoapps/ga_achievement/views.py.py:769
+msgid "During registration"
+msgstr "登録中"
+
+#: biz/djangoapps/ga_achievement/views.py.py:772
+msgid "Registration cancellation"
+msgstr "登録取消"
+
+#: biz/djangoapps/ga_achievement/views.py.py:772
+msgid "Contract Status"
+msgstr "契約状況"
