@@ -539,8 +539,6 @@ def ensure_user_information(strategy, auth_entry, backend=None, user=None, socia
         if kwargs['response'].has_key('idp_name'):
             if SsoConfig.is_hide_icon(kwargs['response']['idp_name']):
                 logger.warning("Ssoconfig new account create stoped.")
-                # TODO display To make a final confirmation
-                # raise Http404
                 return redirect(reverse('user_not_found'))
         if auth_entry in [AUTH_ENTRY_LOGIN_API, AUTH_ENTRY_REGISTER_API]:
             return HttpResponseBadRequest()
@@ -563,7 +561,6 @@ def ensure_user_information(strategy, auth_entry, backend=None, user=None, socia
             raise AuthEntryError(backend, 'auth_entry invalid')
     else:
         if kwargs['response'].has_key('d_pt_number'):
-            # logger.info("d_pt_number:"+str(kwargs['response']['d_pt_number']))
             DAccountNumber.save_number(user, str(kwargs['response']['d_pt_number']))
 
     if not user.is_active:
