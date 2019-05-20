@@ -58,7 +58,6 @@ def ga_operation_user_dashboard(request):
                 course_list.append([studio_user['course_id'], course_overview.display_name])
             context = {
                 "company_keys": settings.GA_OPERATION_SPECIFIC_COMPANY_KEYS,
-                "callback_email": settings.GA_OPERATION_CALLBACK_EMAIL,
                 "course_list": course_list,
             }
             return render_to_response('ga_operation/ga_operation_user_dashboard.html', context)
