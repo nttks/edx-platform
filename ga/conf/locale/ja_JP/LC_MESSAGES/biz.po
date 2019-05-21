@@ -2148,6 +2148,10 @@ msgid "Delete condition {0}<br/>Is it OK?<br/>Once deleted condition can not be 
 msgstr "{0}を削除します。<br/>よろしいですか？<br/>※一度削除した条件は元に戻せません"
 
 #: biz/djangoapps/gx_save_register_condition/index.html
+msgid "Delete condition {0}<br/>And disable settings of automatically reflection.<br/>Once deleted condition can not be restored."
+msgstr "{0}を削除します。<br/>また、自動反映設定を無効化します。<br/>よろしいですか？<br/>※一度削除した条件は元に戻せません"
+
+#: biz/djangoapps/gx_save_register_condition/index.html
 msgid "Copy the condition, is it OK?<br/>(Original:{0})Once deleted condition can not be restored."
 msgstr "受講登録条件をコピーします。よろしいですか？<br/>（コピー元の契約：{0})<br/>※設定済みの受講登録条件は破棄されます"
 
@@ -2230,6 +2234,10 @@ msgstr "本日分の予約解除受付時間を過ぎているため、予約反
 #: biz/djangoapps/gx_save_register_condition/index.html
 msgid "You can't switch if the reservation reflection date is set. Please cancel reservation."
 msgstr "既に受講登録条件の反映が予約されています。"
+
+#: biz/djangoapps/gx_save_register_condition/index.html
+msgid "In order to set up automatic reflection setting, it's necessary to set conditions."
+msgstr "自動反映設定を行う場合は、受講登録条件の設定が必要です。"
 
 #: biz/djangoapps/gx_save_register_condition/detail.html
 msgid "Condition does not exist. Please set at least one condition."

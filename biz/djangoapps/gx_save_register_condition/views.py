@@ -88,6 +88,10 @@ def _get_or_create_contract_option(user, contract):
         return options[0]
 
 
+def _check_exits_active_condition(contract):
+    return True if ChildCondition.objects.filter(contract=contract).count() is 0 else False
+
+
 def _error_response(message):
     return JsonResponseBadRequest({
         'error': message,
@@ -112,6 +116,9 @@ def index(request):
             setting_type=1, created=datetime.now(), created_by=user, modified=None
         ).save()
 
+    # Check if parent with children
+    not_exist_active_condition = _check_exits_active_condition(contract=contract)
+
     # Make other contract list
     search_other_condition_list = Contract.objects.filter(
         contractor_organization_id=request.current_organization.id).exclude(id=request.current_contract.id)
@@ -120,7 +127,8 @@ def index(request):
         "show_p_condition_list": json.dumps(_get_p_condition_list(contract), cls=EscapedEdxJSONEncoder),
         "search_other_condition_list": search_other_condition_list,
         "auto_register_students_flag": contract.can_auto_register_students,
-        "auto_register_reservation_date": contract.auto_register_reservation_date if contract.auto_register_reservation_date else ''
+        "auto_register_reservation_date": contract.auto_register_reservation_date if contract.auto_register_reservation_date else '',
+        'not_exist_active_condition': not_exist_active_condition
     })
 
 
@@ -230,17 +238,26 @@ def add_condition_ajax(request):
 @check_course_selection
 @check_organization_group
 def delete_condition_ajax(request):
-    if 'contract_id' not in request.POST or 'condition_id' not in request.POST:
+    if not all(key in request.POST for key in ['contract_id', 'condition_id', 'reset_reservation_settings']):
         return _error_response(_("Unauthorized access."))
 
     contract = request.current_contract
-    select_id = int(request.POST.get('condition_id'))
+    condition_id = int(request.POST.get('condition_id'))
+    reset_reservation_settings = bool(request.POST.get('reset_reservation_settings'))
 
     # ChildCondition Delete
-    _delete_c_condition(select_id)
+    _delete_c_condition(condition_id)
 
     # ParentCondition Delete
-    ParentCondition.objects.get(pk=select_id).delete()
+    ParentCondition.objects.get(pk=condition_id).delete()
+
+    # Check not exist active condition
+    if reset_reservation_settings:
+        option = _get_or_create_contract_option(request.user, request.current_contract)
+        option.auto_register_students_flg = False
+        option.auto_register_reservation_date = None
+        option.modified_by = request.user
+        option.save()
 
     return JsonResponse({
         'info': _('Success'),
@@ -594,3 +611,19 @@ def cancel_reservation_date_ajax(request):
         'info': _('Success'),
     })
 
+
+@require_POST
+@login_required
+@check_course_selection
+def get_active_condition_num_without_one_ajax(request):
+    if not all(key in request.POST for key in ['contract_id', 'without_parent_condition_id']):
+        return _error_response(_("Unauthorized access."))
+
+    contract_id = request.POST['contract_id']
+    without_parent_condition_id = request.POST['without_parent_condition_id']
+
+    return JsonResponse({
+        'active_condition_num': ChildCondition.objects.filter(contract_id=contract_id).exclude(
+            contract_id=contract_id, parent_condition_id=without_parent_condition_id
+        ).count()
+    })

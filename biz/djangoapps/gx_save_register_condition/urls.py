@@ -10,6 +10,8 @@ urlpatterns = patterns(
     url(r'^search_target_ajax$', 'search_target_ajax', name='search_target_ajax'),
     url(r'^add_condition_ajax$', 'add_condition_ajax', name='add_condition_ajax'),
     url(r'^delete_condition_ajax$', 'delete_condition_ajax', name='delete_condition_ajax'),
+    url(r'^get_active_condition_num_without_one_ajax$', 'get_active_condition_num_without_one_ajax',
+        name='get_active_condition_num_without_one_ajax'),
     url(r'^copy_condition_ajax$', 'copy_condition_ajax', name='copy_condition_ajax'),
     url(r'^reflect_condition_ajax$', 'reflect_condition_ajax', name='reflect_condition_ajax'),
     url(r'^task_history_ajax$', 'task_history_ajax', name='task_history_ajax'),

@@ -19,34 +19,42 @@ from django.core.urlresolvers import reverse
          * Initialize
          * ------------------------------------*/
         var $conditions = $('#js-conditions');
+        var $reflectConditionBtn = $('#js-reflect-condition-btn');
         var $reflectionDate = $('#js-reflection-date');
         var $reflectionDateStr = $('#js-reservation-date-str');
         var $reservationDateBtn = $('#js-reservation-date-btn');
         var $cancelReservationBtn = $('#js-cancel-reservation-btn');
         var $autoRegisterStudentsFlg = $('#js-auto-register-students-flg');
+        var $noConditionMessage = $('#js-no-condition-message');
 
         $(${show_p_condition_list}).each(function(index, value) {
             createElementByDummy(value.id, value.parent_condition_name, index+1 );
         });
         $reflectionDate.w2field('date', {format: 'yyyy/mm/dd'});
 
-        % if auto_register_students_flag == True:
-            $autoRegisterStudentsFlg.data('flg', 1);
-            $('#js-auto-register-students-flg-on').prop('checked', true);
-            $reflectionDate.prop('disabled', true);
-            $reservationDateBtn.prop('disabled', true);
-            $cancelReservationBtn.prop('disabled', true);
+        % if not_exist_active_condition:
+            changeDisabledWhenNotExistActiveCondition();
         % else:
-            % if auto_register_reservation_date:
+            % if auto_register_students_flag == True:
+                $autoRegisterStudentsFlg.data('flg', 1);
+                $('#js-auto-register-students-flg-on').prop('checked', true);
                 $reflectionDate.prop('disabled', true);
                 $reservationDateBtn.prop('disabled', true);
-                $cancelReservationBtn.prop('disabled', false);
-                $autoRegisterStudentsFlg.find('input[name=auto_register_students_flg]').prop('disabled', true);
-            % else:
-                $reflectionDate.prop('disabled', false);
-                $reservationDateBtn.prop('disabled', false);
                 $cancelReservationBtn.prop('disabled', true);
-                $autoRegisterStudentsFlg.find('input[name=auto_register_students_flg]').prop('disabled', false);
+            % else:
+                % if auto_register_reservation_date:
+                    $reflectionDate.prop('disabled', true);
+                    $reservationDateBtn.prop('disabled', true);
+                    $cancelReservationBtn.prop('disabled', false);
+                    $autoRegisterStudentsFlg
+                            .find('input[name=auto_register_students_flg]').prop('disabled', true);
+                % else:
+                    $reflectionDate.prop('disabled', false);
+                    $reservationDateBtn.prop('disabled', false);
+                    $cancelReservationBtn.prop('disabled', true);
+                    $autoRegisterStudentsFlg
+                            .find('input[name=auto_register_students_flg]').prop('disabled', false);
+                % endif
             % endif
         % endif
 
@@ -121,45 +129,75 @@ from django.core.urlresolvers import reverse
             $conditions.append($dummy);
         }
         function deleteCondition() {
-            var $this = $(this);
+            var $this = $(this),
+                $condition = $this.closest('.js-condition'),
+                activeConditionNum = null,
+                confirmMessageKey;
 
             reset_error_message_area();
             $this.prop('disabled', true);
 
-            var $condition = $this.closest('.js-condition');
-            w2confirm({
-                msg: $this.data('confirm-message').replace(
-                    "{0}", '${_("Condition")}' + $condition.find('.js-condition-number').text()),
-                yes_class: 'btn-right',
-                no_class: 'btn-left'
-            }).yes(function() {
-                // Delete condition
-                $.ajax({
-                    url: $this.data('endpoint'),
-                    type: 'post',
-                    traditional: true,
-                    data: {
-                        contract_id: $this.data('contract'),
-                        condition_id: $condition.find('input[name=condition_id]').val()
-                    },
-                    dataType: 'json',
-                }).done(function(data) {
-                    $conditions.find('.js-condition').remove();
-                    $.each(data.conditions, function(i, condition) {
-                        createElementByDummy(condition.id, condition.parent_condition_name, i + 1);
-                    });
-                    fit_wrapper_height();
-                }).fail(function(jqXHR) {
-                    var data = JSON.parse(jqXHR.responseText);
-                    display_error_message_area([data.error]);
-
-                }).always(function() {
-                    $this.prop('disabled', true);
-                });
-
-            }).no(function() {
+            // Check active condition number
+            $.ajax({
+                url: $this.data('confirm-active-condition-endpoint'),
+                type: 'post',
+                traditional: true,
+                data: {
+                    contract_id: $this.data('contract'),
+                    without_parent_condition_id: $condition.find('input[name=condition_id]').val()
+                },
+                dataType: 'json',
+                async: false
+            }).done(function(data) {
+                activeConditionNum = data.active_condition_num;
+            }).fail(function(jqXHR) {
+                var data = JSON.parse(jqXHR.responseText);
+                display_error_message_area([data.error]);
                 $this.prop('disabled', false);
             });
+            if (activeConditionNum != null) {
+                // Delete condition
+                var resetReservationSettings = activeConditionNum === 0;
+                confirmMessageKey = resetReservationSettings ? 'confirm-message-no-active-condition': 'confirm-message';
+                w2confirm({
+                    msg: $this.data(confirmMessageKey).replace(
+                        "{0}", '${_("Condition")}' + $condition.find('.js-condition-number').text()),
+                    yes_class: 'btn-right',
+                    no_class: 'btn-left'
+                }).yes(function() {
+                    // Delete condition
+                    $.ajax({
+                        url: $this.data('endpoint'),
+                        type: 'post',
+                        traditional: true,
+                        data: {
+                            contract_id: $this.data('contract'),
+                            condition_id: $condition.find('input[name=condition_id]').val(),
+                            reset_reservation_settings: resetReservationSettings ? '1' : '',
+                        },
+                        dataType: 'json',
+                    }).done(function(data) {
+                        $conditions.find('.js-condition').remove();
+                        if (activeConditionNum === 0) {
+                            changeDisabledWhenNotExistActiveCondition();
+                        }
+                        $.each(data.conditions, function(i, condition) {
+                            createElementByDummy(condition.id, condition.parent_condition_name, i + 1);
+                        });
+
+                        fit_wrapper_height();
+                    }).fail(function(jqXHR) {
+                        var data = JSON.parse(jqXHR.responseText);
+                        display_error_message_area([data.error]);
+
+                    }).always(function() {
+                        $this.prop('disabled', true);
+                    });
+
+                }).no(function() {
+                    $this.prop('disabled', false);
+                });
+            }
         }
         function settingsCondition() {
             $(this).prop('disabled', true);
@@ -243,7 +281,7 @@ from django.core.urlresolvers import reverse
         });
 
         // Click:[ Reflect Condition Btn ]
-        $('#js-reflect-condition-btn').on('click', function() {
+        $reflectConditionBtn.on('click', function() {
             reset_error_message_area();
             lock();
             var $this = $(this);
@@ -462,6 +500,17 @@ from django.core.urlresolvers import reverse
                 buttons: '<button class="w2ui-popup-btn btn" onclick="w2popup.close();">' + w2utils.lang('Ok') + '</button>',
             });
         }
+        function changeDisabledWhenNotExistActiveCondition() {
+            $autoRegisterStudentsFlg.find('input#js-auto-register-students-flg-off').prop('checked', true);
+            $reflectionDate.val('');
+            $reflectionDateStr.text('${_("No reservation")}');
+            $reflectConditionBtn.prop('disabled', true);
+            $reflectionDate.prop('disabled', true);
+            $reservationDateBtn.prop('disabled', true);
+            $cancelReservationBtn.prop('disabled', true);
+            $autoRegisterStudentsFlg.find('input[name=auto_register_students_flg]').prop('disabled', true);
+            $noConditionMessage.show();
+        }
     });
 </script>
 <style>
@@ -529,6 +578,8 @@ from django.core.urlresolvers import reverse
                 <button class="btn js-condition-delete" type="button"
                         data-contract="${request.current_contract.id}"
                         data-confirm-message="${_("Delete condition {0}<br/>Is it OK?<br/>Once deleted condition can not be restored.")}"
+                        data-confirm-message-no-active-condition="${_("Delete condition {0}<br/>And disable settings of automatically reflection.<br/>Once deleted condition can not be restored.")}"
+                        data-confirm-active-condition-endpoint="${reverse('biz:save_register_condition:get_active_condition_num_without_one_ajax')}"
                         data-endpoint="${reverse('biz:save_register_condition:delete_condition_ajax')}">${_("Delete")}</button>
             </div>
         </div>
@@ -616,6 +667,12 @@ from django.core.urlresolvers import reverse
         </div>
     </div>
     <!-- ./Send mail flg -->
+
+    <!-- No condition message -->
+    <div id="js-no-condition-message" class="gc_column" style="display: none;">
+        <p>${_("In order to set up automatic reflection setting, it's necessary to set conditions.")}</p>
+    </div>
+    <!-- ./No condition message -->
 
     <!-- ON / OFF -->
     <div class="gc_column">
