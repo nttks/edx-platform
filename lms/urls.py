@@ -119,6 +119,10 @@ urlpatterns = (
     # Several operations for a gacco.org's staff
     url(r'^ga_operation$',
         'ga_operation.views.ga_operation_dashboard.ga_operation_dashboard', name="ga_operation_dashboard"),
+    # Customer specific certificate issuance screen
+    url(r'^certificate$',
+        'ga_operation.views.ga_operation_dashboard.ga_operation_user_dashboard', name="ga_operation_user_dashboard"),
+
     url(r'^ga_operation/api/', include('ga_operation.views.api_urls', namespace="ga_operation_api")),
 
     # Advanced Course

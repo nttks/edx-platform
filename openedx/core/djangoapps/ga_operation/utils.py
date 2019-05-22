@@ -8,7 +8,7 @@ from exceptions import OSError
 from functools import wraps
 
 from django.conf import settings
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseForbidden
 
 from boto.exception import S3ResponseError
 from boto.s3 import connect_to_region
@@ -18,6 +18,8 @@ from bson import ObjectId
 from courseware.access import has_access, GA_ACCESS_CHECK_TYPE_ANALYZER
 from util.file import course_filename_prefix_generator
 from util.json_request import JsonResponse
+
+from student.models import CourseAccessRole
 
 log = logging.getLogger(__name__)
 RESPONSE_FIELD_ID = 'right_content_response'
@@ -229,3 +231,19 @@ def handle_operation(form_class, has_file=False):
                 log.info('path:{}, user.id:{} End.'.format(request.path, request.user.id))
         return wrapper
     return _handle_operation
+
+
+def authority_check(view_func):
+    """ lms/ga_operation/views/ga_operation_dashboard/ga_operation_user_dashboard
+        Prevent invasion from other roll's user."""
+    def _wrapped_view_func(request, *args, **kwargs):
+        if request.user.is_staff:
+            return view_func(request, *args, **kwargs)
+        else:
+            studio_user_count = CourseAccessRole.objects.filter(user=request.user,
+                                                                role__in=['instructor', 'staff']).count()
+            if not studio_user_count:
+                return HttpResponseForbidden()
+            return view_func(request, *args, **kwargs)
+
+    return _wrapped_view_func

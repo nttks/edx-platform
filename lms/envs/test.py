@@ -611,3 +611,17 @@ PLAYBACK_FINISH_MONGO = {
         "user": "edxapp"
     }
 }
+
+#### Settings for "ga_operation_dashboard" ####
+GA_OPERATION_SPECIFIC_COMPANY_KEYS = {"GA_OPERATION_SPECIFIC_COMPANY_KEYS": {
+        "g1528": {
+            "bucket_name": "dev-g1528.grades.log",
+            "name": "\u4e09\u4e95\u4f4f\u53cb\u6d77\u4e0a",
+            "output_file_name": "g1528_grades.csv",
+            "site_name": "ms-ins.gacco.org"
+        }
+    }
+}
+
+#### Settings for "ga_operation_dashboard" ####
+GA_OPERATION_CALLBACK_EMAIL = {"GA_OPERATION_CALLBACK_EMAIL": "test@test.test.org"}
