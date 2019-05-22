@@ -115,8 +115,8 @@ class TestArgParsing(BizViewTestBase, ModuleStoreTestCase):
         self.assertEqual(reg_userprofile.name, "Lname2 Fname2")
         reg_member = Member.objects.filter(user=reg_user).first()
         self.assertEqual(reg_member.code, "MemberCode2")
-        reg_socialauth = UserSocialAuth.objects.filter(user=reg_user).first()
-        self.assertEqual(reg_socialauth.uid, "TES:MemberCode2")
+        reg_socialauth = UserSocialAuth.objects.filter(user=reg_user).count()
+        self.assertFalse(reg_socialauth)
         reg_optout = Optout.objects.filter(user=reg_user).first()
         self.assertEqual(reg_optout.user_id, reg_user.id)
         reg_unenrollment = CourseEnrollment.objects.filter(user=reg_user, mode="audit", is_active=0).first()
@@ -222,7 +222,7 @@ class TestArgParsing(BizViewTestBase, ModuleStoreTestCase):
         self.assertEqual(reg_member.item1, "item1")
         reg_socialauth = UserSocialAuth.objects.filter(user=reg_user, provider='tpa-saml',
                                                        uid="TES:MemberCode2").exists()
-        self.assertTrue(reg_socialauth)
+        self.assertFalse(reg_socialauth)
         reg_optout = Optout.objects.filter(user=reg_user).first()
         self.assertEqual(reg_optout.user_id, reg_user.id)
         reg_success_data = bucket.lookup(
@@ -569,7 +569,7 @@ class TestArgParsing(BizViewTestBase, ModuleStoreTestCase):
         self.assertEqual(reg_member.item1, "item1")
         reg_socialauth = UserSocialAuth.objects.filter(user=reg_user, provider='tpa-saml',
                                                        uid="TES:MemberCode2").exists()
-        self.assertTrue(reg_socialauth)
+        self.assertFalse(reg_socialauth)
         reg_optout = Optout.objects.filter(user=reg_user).first()
         self.assertEqual(reg_optout.user_id, reg_user.id)
         reg_success_data = bucket.lookup(
@@ -681,7 +681,7 @@ class TestArgParsing(BizViewTestBase, ModuleStoreTestCase):
         self.assertEqual(reg_member.item1, "item1")
         reg_socialauth = UserSocialAuth.objects.filter(user=reg_user, provider='tpa-saml',
                                                        uid="TES:MemberCode2").exists()
-        self.assertTrue(reg_socialauth)
+        self.assertFalse(reg_socialauth)
         reg_optout = Optout.objects.filter(user=reg_user).first()
         self.assertEqual(reg_optout.user_id, reg_user.id)
         reg_success_data = bucket.lookup(

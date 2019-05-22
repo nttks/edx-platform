@@ -311,33 +311,35 @@ class CourseDetails(object):
             dirty = True
 
         # Import here to avoid circular import.
-        from student.roles import GaGlobalCourseCreatorRole
+        from student.roles import GaGlobalCourseCreatorRole, CourseInstructorRole, OrgInstructorRole
+        is_edit_course_category = (
+            user.is_staff
+            or CourseInstructorRole(course_key).has_user(user)
+            or OrgInstructorRole(course_key).has_user(user)
+            or GaGlobalCourseCreatorRole().has_user(user)
+        )
 
-        if 'course_order' in jsondict \
-                and (user.is_staff or GaGlobalCourseCreatorRole().has_user(user)):
+        if 'course_order' in jsondict and is_edit_course_category:
             descriptor.course_order = jsondict['course_order']
             dirty = True
 
         if 'course_category' in jsondict \
-                and (user.is_staff or GaGlobalCourseCreatorRole().has_user(user)) \
+                and is_edit_course_category \
                 and sorted(jsondict['course_category']) != sorted(descriptor.course_category):
             # course_category can be updated by only staff user
             # Note: GaGlobalCourseCreator can updated course_category (#2150)
             descriptor.course_category = jsondict['course_category']
             dirty = True
 
-        if 'course_category_order' in jsondict \
-                and (user.is_staff or GaGlobalCourseCreatorRole().has_user(user)):
+        if 'course_category_order' in jsondict and is_edit_course_category:
             descriptor.course_category_order = jsondict['course_category_order']
             dirty = True
 
-        if 'course_category2' in jsondict \
-                and (user.is_staff or GaGlobalCourseCreatorRole().has_user(user)):
+        if 'course_category2' in jsondict and is_edit_course_category:
             descriptor.course_category2 = jsondict['course_category2']
             dirty = True
 
-        if 'course_category_order2' in jsondict \
-                and (user.is_staff or GaGlobalCourseCreatorRole().has_user(user)):
+        if 'course_category_order2' in jsondict and is_edit_course_category:
             descriptor.course_category_order2 = jsondict['course_category_order2']
             dirty = True
 

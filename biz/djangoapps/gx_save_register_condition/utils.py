@@ -11,7 +11,8 @@ from biz.djangoapps.ga_invitation.models import (
     ContractRegister, AdditionalInfoSetting, UNREGISTER_INVITATION_CODE, REGISTER_INVITATION_CODE)
 from biz.djangoapps.ga_contract_operation.models import ContractMail
 from biz.djangoapps.gx_member.models import Member
-from biz.djangoapps.gx_save_register_condition.models import ParentCondition, ChildCondition, ReflectConditionTaskHistory
+from biz.djangoapps.gx_save_register_condition.models import (
+    ParentCondition, ChildCondition, ReflectConditionTaskHistory)
 from biz.djangoapps.gx_reservation_mail.models import ReservationMail
 from biz.djangoapps.util import mask_utils
 from enrollment.api import _default_course_mode
@@ -27,24 +28,12 @@ TASK_PROGRESS_META_KEY_REGISTER = 'student_register'
 TASK_PROGRESS_META_KEY_UNREGISTER = 'student_unregister'
 TASK_PROGRESS_META_KEY_MASK = 'personalinfo_mask'
 
-# Task name for reflect condition
-REFLECT_CONDITIONS_RESERVATION = 'reflect_conditions_reservation'
-REFLECT_CONDITIONS_BATCH = 'reflect_conditions_batch'
-REFLECT_CONDITIONS_MEMBER_REGISTER = 'reflect_conditions_member_register'
-REFLECT_CONDITIONS_STUDENT_MEMBER_REGISTER = 'reflect_conditions_student_member_register'
-REFLECT_CONDITIONS_OTHER_TASK_TYPE = {
-    REFLECT_CONDITIONS_RESERVATION: _("Reflect Conditions Reservation"),
-    REFLECT_CONDITIONS_BATCH: _("Reflect Conditions Batch"),
-    REFLECT_CONDITIONS_MEMBER_REGISTER: _("Reflect Conditions Member Register"),
-    REFLECT_CONDITIONS_STUDENT_MEMBER_REGISTER: _("Reflect Conditions Student Member Register"),
-}
-
 
 def _get_member_query_by_child_conditions(org, contract, child_conditions):
     """
     Create query of Member by ChildCondition.
-    :param org: biz.djangoapps.ga_organization.models.Organization
-    :param contract: biz.djangoapps.ga_contract.models.Contract
+    :param org: biz.ga_organization.models.Organization
+    :param contract: biz.ga_contract.models.Contract
     :param child_conditions: [ChildCondition, ...]
     :return: Q
     """
@@ -94,14 +83,16 @@ def _get_member_query_by_child_conditions(org, contract, child_conditions):
         elif key == ChildCondition.COMPARISON_TYPE_IN_NO:
             query_string = query_string.split(",")
             # 'NULL' replace blank or None
-            query_string = [replaced_string if tmp_string == replace_string else tmp_string for tmp_string in query_string ]
+            query_string = [
+                replaced_string if tmp_string == replace_string else tmp_string for tmp_string in query_string]
             query_type = ChildCondition.COMPARISON_TYPE_OPERATOR[key]
 
         elif key == ChildCondition.COMPARISON_TYPE_NOT_IN_NO:
             is_not = True
             query_string = query_string.split(",")
             # 'NULL' replace blank or None
-            query_string = [replaced_string if tmp_string == replace_string else tmp_string for tmp_string in query_string ]
+            query_string = [
+                replaced_string if tmp_string == replace_string else tmp_string for tmp_string in query_string]
             query_type = ChildCondition.COMPARISON_TYPE_OPERATOR[ChildCondition.COMPARISON_TYPE_IN_NO]
 
         elif key in ChildCondition.COMPARISON_TYPE_OPERATOR:
@@ -145,8 +136,8 @@ def _get_member_query_by_child_conditions(org, contract, child_conditions):
 def get_members_by_child_conditions(org, contract, child_conditions):
     """
     Search member by ChildCondition.
-    :param org: biz.djangoapps.ga_organization.models.Organization
-    :param contract: biz.djangoapps.ga_contract.models.Contract
+    :param org: biz.ga_organization.models.Organization
+    :param contract: biz.ga_contract.models.Contract
     :param child_conditions: [ChildCondition, ...]
     :return: [Member, ...]
     """
@@ -161,8 +152,8 @@ def get_members_by_child_conditions(org, contract, child_conditions):
 def get_members_by_all_parents_conditions(org, contract):
     """
     Search member by ParentCondition and ChildCondition.
-    :param org: biz.djangoapps.ga_organization.models.Organization
-    :param contract: biz.djangoapps.ga_contract.models.Contract
+    :param org: biz.ga_organization.models.Organization
+    :param contract: biz.ga_contract.models.Contract
     :return: [Member, ...]
     """
     all_conditions_query = None
@@ -185,8 +176,8 @@ class ReflectConditionExecutor(object):
     """
     def __init__(self, org, contract, send_mail_flg=False):
         """
-        :param org: biz.djangoapps.ga_organization.models.Organization
-        :param contract: biz.djangoapps.ga_contract.models.Contract
+        :param org: biz.ga_organization.models.Organization
+        :param contract: biz.ga_contract.models.Contract
         """
         self.errors = []
         self.count_unregister = 0
@@ -321,11 +312,14 @@ def reflect_condition_execute_call_by_another_task(task_id, org, user, action_na
     """
     Called from other task than 'reflect_condition'.
     :param task_id: str
-    :param org: biz.djangoapps.ga_organization.models.Organization
+    :param org: biz.ga_organization.models.Organization
     :param user: django.contrib.auth.models.User
     :param action_name: str
     :return:
     """
+    # Note: Import here to prevent circular reference.
+    from biz.djangoapps.gx_member.tasks import (
+        REFLECT_CONDITIONS_MEMBER_REGISTER, REFLECT_CONDITIONS_STUDENT_MEMBER_REGISTER)
     # Do not call from other than specific tasks
     if action_name not in [REFLECT_CONDITIONS_MEMBER_REGISTER, REFLECT_CONDITIONS_STUDENT_MEMBER_REGISTER]:
         raise ValueError
