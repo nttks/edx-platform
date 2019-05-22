@@ -123,6 +123,9 @@ urlpatterns = (
 
     # Advanced Course
     url(r'^advanced_course/', include('ga_advanced_course.urls', namespace='advanced_course')),
+
+    # Support for student account
+    url(r'^ga_student_account/', include('ga_student_account.urls', namespace='ga_student_account')),
 )
 
 if settings.FEATURES["ENABLE_COMBINED_LOGIN_REGISTRATION"]:
@@ -1086,8 +1089,3 @@ if settings.FEATURES.get('ENABLE_FINANCIAL_ASSISTANCE_FORM'):
             name='submit_financial_assistance_request'
         )
     )
-
-# for get org username pattern 
-urlpatterns += (
-    url(r'^org_username_rules/$', 'org_username_rules.views.get_rules'),
-)
