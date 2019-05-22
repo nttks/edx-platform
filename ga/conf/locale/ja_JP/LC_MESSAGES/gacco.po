@@ -1356,6 +1356,10 @@ msgid "Top Page"
 msgstr "トップページ"
 
 #: lms/templates/navigation.html
+msgid "My Page"
+msgstr "マイページ"
+
+#: lms/templates/navigation.html
 msgid "{course_org} Logo"
 msgstr "{course_org} のロゴ"
 
