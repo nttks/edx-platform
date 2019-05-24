@@ -156,6 +156,9 @@
             <li class="nav-item"><a href="${course_team_url}">${_("Course Team")}</a></li>
             <li class="nav-item"><a href="${utils.reverse_course_url('group_configurations_list_handler', context_course.id)}">${_("Group Configurations")}</a></li>
             <li class="nav-item"><a href="${advanced_settings_url}">${_("Advanced Settings")}</a></li>
+           % if certificate_url:
+            <li class="nav-item"><a href="${certificate_url}">${_("Request Certificate")}</a></li>
+           % endif
           </ul>
         </nav>
       % endif

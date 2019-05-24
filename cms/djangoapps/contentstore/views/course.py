@@ -80,6 +80,7 @@ from openedx.core.lib.ga_course_utils import is_using_jwplayer_course
 from openedx.core.lib.js_utils import escape_json_dumps
 from student import auth
 from student.auth import has_course_author_access, has_studio_write_access, has_studio_read_access
+from student.models import CourseAccessRole
 from student.roles import (
     CourseInstructorRole, CourseStaffRole, CourseCreatorRole, GaGlobalCourseCreatorRole, GlobalStaff, UserBasedRole,
 )
@@ -1172,6 +1173,16 @@ def grading_handler(request, course_key_string, grader_index=None):
         json w/ grader_index: create or update the specific grader (create if index out of range)
     """
     course_key = CourseKey.from_string(course_key_string)
+    if request.user.is_staff:
+        certificate_url = 'http://' + str(settings.LMS_BASE) + '/certificate'
+    else:
+        studio_user_count = CourseAccessRole.objects.filter(user=request.user, course_id=course_key,
+                                                            role__in=['instructor', 'staff']).count()
+        if studio_user_count:
+            certificate_url = 'http://' + str(settings.LMS_BASE) + '/certificate'
+        else:
+            certificate_url = ''
+
     with modulestore().bulk_operations(course_key):
         course_module = get_course_and_check_access(course_key, request.user)
 
@@ -1184,7 +1195,8 @@ def grading_handler(request, course_key_string, grader_index=None):
                 'course_details': course_details,
                 'grading_url': reverse_course_url('grading_handler', course_key),
                 'is_credit_course': is_credit_course(course_key),
-                'library_option': is_available(LIBRARY_OPTION_KEY, course_key)
+                'library_option': is_available(LIBRARY_OPTION_KEY, course_key),
+                'certificate_url': certificate_url,
             })
         elif 'application/json' in request.META.get('HTTP_ACCEPT', ''):
             if request.method == 'GET':

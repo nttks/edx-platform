@@ -3,6 +3,7 @@ import re
 
 from django import forms
 from django.conf import settings
+from django.core.validators import validate_email
 
 from opaque_keys import InvalidKeyError
 from opaque_keys.edx.keys import CourseKey
@@ -35,10 +36,12 @@ class GaOperationEmailField(forms.EmailField):
     def clean(self, value):
         super(GaOperationEmailField, self).clean(value)
         # permit valid domains only.
-        for domain in settings.GA_OPERATION_VALID_DOMAINS_LIST:
-            if re.match('^[_a-z0-9-]+(\.[_a-z0-9-]+)*@{}$'.format(domain), value):
-                return value
-        raise forms.ValidationError(u"このドメインのEメールは使用できません。")
+        # for domain in settings.GA_OPERATION_VALID_DOMAINS_LIST:
+        try:
+            validate_email(value)
+            return value
+        except Exception as e:
+            raise forms.ValidationError(u"このドメインのEメールは使用できません。")
 
 
 class GaOperationDeleteCourseForm(forms.Form):
