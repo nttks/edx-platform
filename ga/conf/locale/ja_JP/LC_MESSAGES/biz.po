@@ -2363,4 +2363,4 @@ msgstr "登録取消"
 
 #: biz/djangoapps/ga_achievement/views.py.py:772
 msgid "Contract Status"
-msgstr "契約状況"
+msgstr "契約状態"
