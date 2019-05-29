@@ -47,13 +47,14 @@ class SaveRegisterConditionViewTest(BizContractTestBase):
             created=datetime.now(),
             created_by_id=self.user.id
         )
-        ChildConditionFactory.create(
+        child = ChildConditionFactory.create(
             contract=self.contract,
             parent_condition_id=parent.id,
             parent_condition_name='test parent name',
             comparison_target='test',
             comparison_type=1,
             comparison_string='test')
+        return parent, child
 
     def _create_parent_condition(self, parent_name):
         return ParentConditionFactory.create(
@@ -143,6 +144,10 @@ class SaveRegisterConditionViewTest(BizContractTestBase):
     @property
     def _delete_condition(self):
         return reverse("biz:save_register_condition:delete_condition_ajax")
+
+    @property
+    def _get_active_condition_num_without_one(self):
+        return reverse("biz:save_register_condition:get_active_condition_num_without_one_ajax")
 
     @property
     def _copy_condition(self):
@@ -474,7 +479,7 @@ class SaveRegisterConditionViewTest(BizContractTestBase):
     """
     delete_condition_ajax
     """
-    def test_delete_condition_unauthorized_access(self):
+    def test_delete_condition_ajax_unauthorized_access(self):
         with self.skip_check_course_selection(
                 current_organization=self.contract_org, current_manager=self._director_manager,
                 current_contract=self.contract):
@@ -484,7 +489,41 @@ class SaveRegisterConditionViewTest(BizContractTestBase):
         data = json.loads(response.content)
         self.assertEqual(data['error'], "Unauthorized access.")
 
-    def test_delete_condition(self):
+    @freezegun.freeze_time('2000-01-01 00:00:00')
+    @ddt.data('', '1')
+    def test_delete_condition_ajax_reset_reservation_settings(self, param_reset_reservation_settings):
+        # Set auto_register_students_flg and auto_register_reservation_date
+        _now = datetime.now()
+        ContractOptionFactory.create(
+            contract=self.contract, auto_register_students_flg=True, auto_register_reservation_date=_now)
+
+        created_parent_condition = ParentConditionFactory.create(
+            contract=self.contract,
+            parent_condition_name='test parent name1',
+            setting_type=1,
+            created_by_id=self.user.id)
+
+        # Request
+        param = {
+            'contract_id': self.contract.id,
+            'condition_id': created_parent_condition.id,
+            'reset_reservation_settings': param_reset_reservation_settings
+        }
+        with self.skip_check_course_selection(
+                current_organization=self.contract_org, current_manager=self._director_manager,
+                current_contract=self.contract):
+            response = self.client.post(self._delete_condition, param)
+
+        # Assertion
+        option = ContractOption.objects.get(contract=self.contract)
+        if not param_reset_reservation_settings:
+            self.assertEqual(True, option.auto_register_students_flg)
+            self.assertNotEqual(None, option.auto_register_reservation_date)
+        else:
+            self.assertEqual(False, option.auto_register_students_flg)
+            self.assertEqual(None, option.auto_register_reservation_date)
+
+    def test_delete_condition_ajax(self):
         # Create self parent and child condition
         setting_type_list = self._get_setting_type_list()
         all_comparison_list = self._get_comparison_list()
@@ -508,11 +547,15 @@ class SaveRegisterConditionViewTest(BizContractTestBase):
                 all_comparison_list[i])
 
         # Request
+        param = {
+            'contract_id': self.contract.id,
+            'condition_id': delete_condition_id,
+            'reset_reservation_settings': False
+        }
         with self.skip_check_course_selection(
                 current_organization=self.contract_org, current_manager=self._director_manager,
                 current_contract=self.contract):
-            response = self.client.post(
-                self._delete_condition, {'contract_id': self.contract.id, 'condition_id': delete_condition_id})
+            response = self.client.post(self._delete_condition, param)
 
         # Assertion
         all_parent_condition = ParentCondition.objects.filter(contract=self.contract)
@@ -1319,3 +1362,52 @@ class SaveRegisterConditionViewTest(BizContractTestBase):
         )
         self.assertEqual(1, ReflectConditionTaskHistory.objects.filter(
             organization=self.contract_org, contract=self.contract).count())
+
+    """
+    get_active_condition_num_without_one
+    """
+    def test_get_active_condition_num_without_one_unauthorized_access(self):
+        with self.skip_check_course_selection(
+                current_organization=self.contract_org, current_manager=self._director_manager,
+                current_contract=self.contract):
+            response = self.client.post(self._get_active_condition_num_without_one, {})
+
+        # Assertion
+        self.assertEqual(400, response.status_code)
+        data = json.loads(response.content)
+        self.assertEqual(data['error'], 'Unauthorized access.')
+
+    def test_get_active_condition_num_without_one_when_zero(self):
+        delete_target_parent, __ = self._create_one_condition()
+        param = {
+            'contract_id': self.contract.id,
+            'without_parent_condition_id': delete_target_parent.id
+        }
+        with self.skip_check_course_selection(
+                current_organization=self.contract_org, current_manager=self._director_manager,
+                current_contract=self.contract):
+            response = self.client.post(self._get_active_condition_num_without_one, param)
+
+        # Assertion
+        self.assertEqual(200, response.status_code)
+        data = json.loads(response.content)
+        self.assertEqual(0, data['active_condition_num'])
+
+    @ddt.data(1, 5)
+    def test_get_active_condition_num_without_one(self, active_condition_num):
+        delete_target_parent, __ = self._create_one_condition()
+        for i in range(active_condition_num - 1):
+            self._create_one_condition()
+
+        with self.skip_check_course_selection(
+                current_organization=self.contract_org, current_manager=self._director_manager,
+                current_contract=self.contract):
+            response = self.client.post(self._get_active_condition_num_without_one, {
+                'contract_id': self.contract.id,
+                'without_parent_condition_id': delete_target_parent.id
+            })
+
+        # Assertion
+        self.assertEqual(200, response.status_code)
+        data = json.loads(response.content)
+        self.assertEqual(active_condition_num - 1, data['active_condition_num'])
