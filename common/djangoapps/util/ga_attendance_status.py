@@ -1,6 +1,7 @@
 import json
 import pytz
 from datetime import datetime
+from django.utils.timezone import UTC
 from opaque_keys.edx.keys import UsageKey
 from student.models import CourseEnrollment, CourseEnrollmentAttribute
 from courseware.models import StudentModule
@@ -128,6 +129,43 @@ class AttendanceStatusExecutor(object):
                                                                                        module.location.block_id):
                                         return_flg = False
                                         break
+                                if module.location.category == 'survey':
+                                    student_module_values = StudentModule.objects.filter(
+                                        module_state_key=UsageKey.from_string(module.location.to_deprecated_string()),
+                                        module_type__exact='survey',
+                                        student=user_id,
+                                        course_id=course.id).values('state')
+                                    if len(student_module_values) is 0:
+                                        return_flg = False
+                                        break
+                                    else:
+                                        student_module_value = json.loads(student_module_values[0]['state'])
+                                        if 'submissions_count' in student_module_value:
+                                            if student_module_value['submissions_count'] is 0:
+                                                return_flg = False
+                                                break
+                                        else:
+                                            return_flg = False
+                                            break
+                                if module.location.category == 'freetextresponse':
+                                    student_module_values = StudentModule.objects.filter(
+                                        module_state_key=UsageKey.from_string(module.location.to_deprecated_string()),
+                                        module_type__exact='freetextresponse',
+                                        student=user_id,
+                                        course_id=course.id).values('state')
+                                    if len(student_module_values) is 0:
+                                        return_flg = False
+                                        break
+                                    else:
+                                        student_module_value = json.loads(student_module_values[0]['state'])
+                                        if 'count_attempts' in student_module_value:
+                                            if student_module_value['count_attempts'] is 0:
+                                                return_flg = False
+                                                break
+                                        else:
+                                            return_flg = False
+                                            break
+
                                 if not return_flg:
                                     break
                             if not return_flg:
@@ -169,6 +207,22 @@ class AttendanceStatusExecutor(object):
 
     @staticmethod
     def get_attendance_status(start, end, course_id, is_status_managed, user, attr_value):
+        """
+        Get attendance status string.
+
+        :param start: course_overview.start
+        :param end: course_overview.end
+        :param course_id: course_overview.id
+        :param is_status_managed: course_overview_extra.is_status_managed
+        :param user: User
+        :param attr_value: common.student.models.CourseEnrollmentAttribute
+        :return:
+            - previous: Not Offered
+            - completed: Finish Enrolled
+            - closing: Already terminate
+            - working: Currently Enrolled
+            - waiting: Not Enrolled
+        """
         now = datetime.now(pytz.UTC)
         is_attended = AttendanceStatusExecutor.attendance_status_is_attended(attr_value)
         is_completed = AttendanceStatusExecutor.attendance_status_is_completed(attr_value)
@@ -200,3 +254,18 @@ class AttendanceStatusExecutor(object):
                 name=NAME,
                 value=json.dumps({key: date.isoformat()})
             )
+
+    @staticmethod
+    def update_attendance_status(course, user_id):
+        """
+        Update attendance status when status managed flg is ON.
+        Called at the time of (problem, video, jwplayerxblock html.survey, survey, freetextresponse) task submission.
+
+        :param course:
+        :param user_id: int
+        """
+        if course.is_status_managed:
+            course_enrollment = CourseEnrollment.objects.get(user=user_id, course_id=course.id)
+            executor = AttendanceStatusExecutor(enrollment=course_enrollment)
+            if not executor.is_completed and AttendanceStatusExecutor.check_attendance_status(course, user_id):
+                executor.set_completed(datetime.now(UTC()))

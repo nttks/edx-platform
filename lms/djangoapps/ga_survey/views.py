@@ -107,16 +107,7 @@ def survey_ajax(request):
     )
     submission.save()
 
-    course_key = CourseKey.from_string(course_id)
-    course = get_course(course_key)
-
-    if course.is_status_managed:
-        course_enrollment = CourseEnrollment.objects.get(user=request.user.id,
-                                                         course_id=course_key)
-        executor = AttendanceStatusExecutor(enrollment=course_enrollment)
-        if not executor.is_completed:
-            status_check = executor.check_attendance_status(course, request.user.id)
-            if status_check:
-                executor.set_completed(datetime.now(UTC()))
+    AttendanceStatusExecutor.update_attendance_status(
+        get_course(CourseKey.from_string(course_id)), request.user.id)
 
     return JsonResponse({'success': True})

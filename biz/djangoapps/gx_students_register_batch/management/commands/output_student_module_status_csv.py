@@ -43,13 +43,13 @@ class Command(BaseCommand):
     FILE_NAME_MODULE = 'student_enrollment_module_status_'
     # file header
     FILE_ENROLLMENT_HEADER = {
-        'enroll_id' : 0,
-        'enroll_course_id' : 1,
-        'enroll_created' : 2,
-        'enroll_user_id' : 3,
-        'enroll_user_username' : 4,
-        'enroll_user_email' : 5,
-        'enroll_attr_value' : 6
+        'enroll_id': 0,
+        'enroll_course_id': 1,
+        'enroll_created': 2,
+        'enroll_user_id': 3,
+        'enroll_user_username': 4,
+        'enroll_user_email': 5,
+        'enroll_attr_value': 6
     }
     FILE_COURSE_HEADER = {
         'course_id': 0,
@@ -59,10 +59,10 @@ class Command(BaseCommand):
         'module_name': 4,
         'module_block_id': 5,
         'module_usage_key': 6,
-        'problem_modified': 7,
+        'module_modified': 7,
         'survey_created': 8,
         'video_status': 9,
-        'video_change_time': 10
+        'video_change_time': 10,
     }
     # student csv keys
     STUDENT_KEY_STATUS = 'status'
@@ -205,7 +205,7 @@ class Command(BaseCommand):
                     for module in vertical.get_children():
                         if hasattr(module, 'is_status_managed') and module.is_status_managed:
                             if module.location.category == 'problem':
-                                for problem in self._get_module(
+                                for problem in self._get_problem_module(
                                         UsageKey.from_string(module.location.to_deprecated_string()),
                                         unicode_course_id):
                                     course_file_writer.writerow(self._format_row_for_course_info(
@@ -213,7 +213,7 @@ class Command(BaseCommand):
                                         module_category=module.location.category, module_name=module.display_name,
                                         module_block_id=module.location.block_id,
                                         module_usage_key=UsageKey.from_string(module.location.to_deprecated_string()),
-                                        problem_modified=problem[1]
+                                        module_modified=problem[1]
                                     ))
 
                             elif module.location.category == 'html':
@@ -246,7 +246,47 @@ class Command(BaseCommand):
                                                 video_change_time=video_module['change_time'],
                                             ))
 
-    def _get_module(self, module_id, course_id):
+                            elif module.location.category == 'survey':
+                                for survey in self._get_survey_module(
+                                        UsageKey.from_string(module.location.to_deprecated_string()),
+                                        unicode_course_id):
+                                    try:
+                                        tmp_state = json.loads(survey[2])
+                                        survey_submission_count = tmp_state['submissions_count']
+                                    except (AttributeError, ValueError, KeyError):
+                                        survey_submission_count = 0
+
+                                    if survey_submission_count > 0:
+                                        course_file_writer.writerow(self._format_row_for_course_info(
+                                            course_id=course.id, end=course.end, user_id=survey[0],
+                                            module_category=module.location.category, module_name=module.display_name,
+                                            module_block_id=module.location.block_id,
+                                            module_usage_key=UsageKey.from_string(
+                                                module.location.to_deprecated_string()),
+                                            module_modified=survey[1]
+                                        ))
+
+                            elif module.location.category == 'freetextresponse':
+                                for free_text_response in self._get_freetextresponse_module(
+                                        UsageKey.from_string(module.location.to_deprecated_string()),
+                                        unicode_course_id):
+                                    try:
+                                        tmp_state = json.loads(free_text_response[2])
+                                        attempts_count = tmp_state['count_attempts']
+                                    except (AttributeError, ValueError, KeyError):
+                                        attempts_count = 0
+
+                                    if attempts_count > 0:
+                                        course_file_writer.writerow(self._format_row_for_course_info(
+                                            course_id=course.id, end=course.end, user_id=free_text_response[0],
+                                            module_category=module.location.category, module_name=module.display_name,
+                                            module_block_id=module.location.block_id,
+                                            module_usage_key=UsageKey.from_string(
+                                                module.location.to_deprecated_string()),
+                                            module_modified=free_text_response[1]
+                                        ))
+
+    def _get_problem_module(self, module_id, course_id):
         with connection.cursor() as cursor:
             sql = """
             SELECT
@@ -259,6 +299,48 @@ class Command(BaseCommand):
               module.module_type = 'problem' AND
               module.course_id = %s AND 
               module.grade is NOT NULL 
+            ORDER BY
+              module.created desc 
+            """
+            cursor.execute(sql, [str(module_id), course_id])
+            student_modules = cursor.fetchall()
+            cursor.execute('UNLOCK TABLES')
+        return student_modules
+
+    def _get_survey_module(self, module_id, course_id):
+        with connection.cursor() as cursor:
+            sql = """
+            SELECT
+                module.student_id,
+                module.modified,
+                module.state
+            FROM
+              courseware_studentmodule as module
+            WHERE 
+              module.module_id = %s AND
+              module.module_type = 'survey' AND
+              module.course_id = %s
+            ORDER BY
+              module.created desc 
+            """
+            cursor.execute(sql, [str(module_id), course_id])
+            student_modules = cursor.fetchall()
+            cursor.execute('UNLOCK TABLES')
+        return student_modules
+
+    def _get_freetextresponse_module(self, module_id, course_id):
+        with connection.cursor() as cursor:
+            sql = """
+            SELECT
+                module.student_id,
+                module.modified,
+                module.state
+            FROM
+              courseware_studentmodule as module
+            WHERE 
+              module.module_id = %s AND
+              module.module_type = 'freetextresponse' AND
+              module.course_id = %s
             ORDER BY
               module.created desc 
             """
@@ -409,9 +491,9 @@ class Command(BaseCommand):
                         module_status[self.MODULE_KEY_NAME] = module['display_name']
 
                         if module['category'] == 'html':
-                            if enroll_user_id in module['survey_modules']:
+                            if enroll_user_id in module['html_survey_modules']:
                                 self._set_date_time(
-                                    self._str_to_datetime(module['survey_modules'][enroll_user_id]),
+                                    self._str_to_datetime(module['html_survey_modules'][enroll_user_id]),
                                     module_status, 'status'
                                 )
                                 module_status[self.MODULE_KEY_STATUS] = self.MODULE_STATUS_ON
@@ -440,6 +522,30 @@ class Command(BaseCommand):
                                     module_status[self.MODULE_KEY_STATUS] = self.MODULE_STATUS_OFF
                             else:
                                 module_status[self.MODULE_KEY_STATUS] = self.MODULE_STATUS_NON
+
+                        elif module['category'] == 'survey':
+                            if enroll_user_id in module['survey_modules']:
+                                self._set_date_time(
+                                    self._str_to_datetime(module['survey_modules'][enroll_user_id]),
+                                    module_status,
+                                    'status'
+                                )
+                                module_status[self.MODULE_KEY_STATUS] = self.MODULE_STATUS_ON
+                            else:
+                                module_status[self.MODULE_KEY_STATUS] = self.MODULE_STATUS_OFF
+                                working_flag = True
+
+                        elif module['category'] == 'freetextresponse':
+                            if enroll_user_id in module['freetextresponse_modules']:
+                                self._set_date_time(
+                                    self._str_to_datetime(module['freetextresponse_modules'][enroll_user_id]),
+                                    module_status,
+                                    'status'
+                                )
+                                module_status[self.MODULE_KEY_STATUS] = self.MODULE_STATUS_ON
+                            else:
+                                module_status[self.MODULE_KEY_STATUS] = self.MODULE_STATUS_OFF
+                                working_flag = True
 
                         # Set to tmp data for write
                         tmp_module_write_data.append(self._create_modules_data(
@@ -514,21 +620,29 @@ class Command(BaseCommand):
                         'display_name': module_dict['module_name'],
                         'module_block_id': module_dict['module_block_id'],
                         'problem_modules': {},
-                        'survey_modules': {},
+                        'html_survey_modules': {},
                         'video_modules': {},
+                        'survey_modules': {},
+                        'freetextresponse_modules': {},
                     }
 
                 if module_dict['module_category'] == 'problem':
-                    modules[module_block_id]['problem_modules'][user_id] = module_dict['problem_modified']
+                    modules[module_block_id]['problem_modules'][user_id] = module_dict['module_modified']
 
                 elif module_dict['module_category'] == 'html':
-                    modules[module_block_id]['survey_modules'][user_id] = module_dict['survey_created']
+                    modules[module_block_id]['html_survey_modules'][user_id] = module_dict['survey_created']
 
                 elif module_dict['module_category'] in ['video', 'jwplayerxblock']:
                     modules[module_block_id]['video_modules'][user_id] = {
                         'status': module_dict['video_status'],
                         'change_time': module_dict['video_change_time']
                     }
+
+                elif module_dict['module_category'] == 'survey':
+                    modules[module_block_id]['survey_modules'][user_id] = module_dict['module_modified']
+
+                elif module_dict['module_category'] == 'freetextresponse':
+                    modules[module_block_id]['freetextresponse_modules'][user_id] = module_dict['module_modified']
 
         return course_id, course_end, modules
 
@@ -542,10 +656,10 @@ class Command(BaseCommand):
 
     def _format_row_for_course_info(
             self, course_id, end, user_id, module_category, module_name, module_block_id,
-            module_usage_key, problem_modified='', survey_created='', video_status='', video_change_time=''):
+            module_usage_key, module_modified='', survey_created='', video_status='', video_change_time=''):
         return [
             unicode(course_id), str(end), str(user_id), module_category, module_name, module_block_id,
-            module_usage_key, problem_modified, survey_created, video_status, video_change_time
+            module_usage_key, module_modified, survey_created, video_status, video_change_time
         ]
 
     def _get_students_module_created(self, course_id):
