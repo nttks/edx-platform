@@ -1283,14 +1283,11 @@ def _attendance(request, course_key):
                 if 'submissions_count' in student_module_value and student_module_value['submissions_count'] > 0:
                     return True
 
-        elif _module.location.category == 'freetextresponse':
-            student_module_values = StudentModule.objects.filter(
-                    module_state_key=UsageKey.from_string(_module.location.to_deprecated_string()),
-                    module_type__exact='freetextresponse', student=_student, course_id=_course_id).values('state')
-            if len(student_module_values) is not 0:
-                student_module_value = json.loads(student_module_values[0]['state'])
-                if 'count_attempts' in student_module_value and student_module_value['count_attempts'] > 0:
-                    return True
+        elif _module.location.category == 'freetextresponse' and StudentModule.objects.filter(
+                module_state_key=UsageKey.from_string(_module.location.to_deprecated_string()),
+                student=_student, module_type__in=('freetextresponse', 'problem'), course_id=_course_id,
+                grade__isnull=False).count() is not 0:
+            return True
 
         return False
 

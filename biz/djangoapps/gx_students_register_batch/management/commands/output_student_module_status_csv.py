@@ -270,21 +270,14 @@ class Command(BaseCommand):
                                 for free_text_response in self._get_freetextresponse_module(
                                         UsageKey.from_string(module.location.to_deprecated_string()),
                                         unicode_course_id):
-                                    try:
-                                        tmp_state = json.loads(free_text_response[2])
-                                        attempts_count = tmp_state['count_attempts']
-                                    except (AttributeError, ValueError, KeyError):
-                                        attempts_count = 0
-
-                                    if attempts_count > 0:
-                                        course_file_writer.writerow(self._format_row_for_course_info(
-                                            course_id=course.id, end=course.end, user_id=free_text_response[0],
-                                            module_category=module.location.category, module_name=module.display_name,
-                                            module_block_id=module.location.block_id,
-                                            module_usage_key=UsageKey.from_string(
-                                                module.location.to_deprecated_string()),
-                                            module_modified=free_text_response[1]
-                                        ))
+                                    course_file_writer.writerow(self._format_row_for_course_info(
+                                        course_id=course.id, end=course.end, user_id=free_text_response[0],
+                                        module_category=module.location.category, module_name=module.display_name,
+                                        module_block_id=module.location.block_id,
+                                        module_usage_key=UsageKey.from_string(
+                                            module.location.to_deprecated_string()),
+                                        module_modified=free_text_response[1]
+                                    ))
 
     def _get_problem_module(self, module_id, course_id):
         with connection.cursor() as cursor:
@@ -333,14 +326,14 @@ class Command(BaseCommand):
             sql = """
             SELECT
                 module.student_id,
-                module.modified,
-                module.state
+                module.modified
             FROM
               courseware_studentmodule as module
             WHERE 
               module.module_id = %s AND
-              module.module_type = 'freetextresponse' AND
-              module.course_id = %s
+              module.module_type IN ('freetextresponse', 'problem') AND
+              module.course_id = %s AND
+              module.grade is NOT NULL 
             ORDER BY
               module.created desc 
             """

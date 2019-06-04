@@ -148,23 +148,15 @@ class AttendanceStatusExecutor(object):
                                             return_flg = False
                                             break
                                 if module.location.category == 'freetextresponse':
-                                    student_module_values = StudentModule.objects.filter(
-                                        module_state_key=UsageKey.from_string(module.location.to_deprecated_string()),
-                                        module_type__exact='freetextresponse',
-                                        student=user_id,
-                                        course_id=course.id).values('state')
-                                    if len(student_module_values) is 0:
+                                    if StudentModule.objects.filter(
+                                            module_state_key=UsageKey.from_string(
+                                                module.location.to_deprecated_string()),
+                                            module_type__in=('freetextresponse', 'problem'),
+                                            student=user_id,
+                                            course_id=course.id,
+                                            grade__isnull=False).count() is 0:
                                         return_flg = False
                                         break
-                                    else:
-                                        student_module_value = json.loads(student_module_values[0]['state'])
-                                        if 'count_attempts' in student_module_value:
-                                            if student_module_value['count_attempts'] is 0:
-                                                return_flg = False
-                                                break
-                                        else:
-                                            return_flg = False
-                                            break
 
                                 if not return_flg:
                                     break
