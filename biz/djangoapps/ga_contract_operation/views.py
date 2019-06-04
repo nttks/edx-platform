@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Views for contract_operation feature
 """
@@ -1164,7 +1165,7 @@ def reminder_search_ajax(request):
             section_conditions=section_score_conditions,
             usernames=enroll_usernames,
         )
-        username_scores = {score[_(ScoreStore.FIELD_USERNAME)]: score for score in score_list}
+        username_scores = {score[u"ユーザー名"]: score for score in score_list}
     else:
         score_section_names = []
         username_scores = {}
@@ -1183,7 +1184,7 @@ def reminder_search_ajax(request):
             section_conditions=section_playback_conditions,
             usernames=enroll_usernames,
         )
-        username_playback = {playback[_(PlaybackStore.FIELD_USERNAME)]: playback for playback in playback_list}
+        username_playback = {playback[u"ユーザー名"]: playback for playback in playback_list}
     else:
         playback_section_names = []
         username_playback = {}
