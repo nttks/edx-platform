@@ -250,13 +250,13 @@ class ScoreStore(AchievementStoreBase):
         # Total score condition
         if total_condition:
             if total_condition['no']:
-                conditions[u"合計スコア"] = self.VALUE__NOT_ATTEMPTED
+                conditions[_(self.FIELD_TOTAL_SCORE)] = self.VALUE__NOT_ATTEMPTED
             elif any([v is not None for v in [total_condition['from'], total_condition['to']]]):
-                conditions[u"合計スコア"] = {}
+                conditions[_(self.FIELD_TOTAL_SCORE)] = {}
                 if total_condition['from']:
-                    conditions[u"合計スコア"]['$gte'] = int(total_condition['from']) / 100.0
+                    conditions[_(self.FIELD_TOTAL_SCORE)]['$gte'] = int(total_condition['from']) / 100.0
                 if total_condition['to']:
-                    conditions[u"合計スコア"]['$lte'] = int(total_condition['to']) / 100.0
+                    conditions[_(self.FIELD_TOTAL_SCORE)]['$lte'] = int(total_condition['to']) / 100.0
 
         # Section score conditions
         for condition in section_conditions:
@@ -271,15 +271,15 @@ class ScoreStore(AchievementStoreBase):
 
         # Username condition
         if len(usernames) != 0:
-            conditions[u"ユーザー名"] = {'$in': usernames}
+            conditions[_(self.FIELD_USERNAME)] = {'$in': usernames}
 
         # Student status
         if student_status:
-            conditions[u"受講ステータス"] = student_status
+            conditions[_(self.FIELD_STUDENT_STATUS)] = student_status
 
         # Certificate status
         if certificate_status:
-            conditions[u"修了証ステータス"] = certificate_status
+            conditions[_(self.FIELD_CERTIFICATE_STATUS)] = certificate_status
 
         excludes = [
             self.FIELD_ID,
@@ -399,13 +399,13 @@ class PlaybackStore(AchievementStoreBase):
         # Total score condition
         if total_condition:
             if total_condition['no']:
-                conditions[u"総視聴時間"] = 0
+                conditions[_(self.FIELD_TOTAL_PLAYBACK_TIME)] = 0
             elif any([v is not None for v in [total_condition['from'], total_condition['to']]]):
-                conditions[u"総視聴時間"] = {}
+                conditions[_(self.FIELD_TOTAL_PLAYBACK_TIME)] = {}
                 if total_condition['from'] is not None:
-                    conditions[u"総視聴時間"]['$gt'] = total_condition['from']
+                    conditions[_(self.FIELD_TOTAL_PLAYBACK_TIME)]['$gt'] = total_condition['from']
                 if total_condition['to'] is not None:
-                    conditions[u"総視聴時間"]['$lte'] = total_condition['to']
+                    conditions[_(self.FIELD_TOTAL_PLAYBACK_TIME)]['$lte'] = total_condition['to']
 
         # Section score conditions
         for condition in section_conditions:
@@ -420,11 +420,11 @@ class PlaybackStore(AchievementStoreBase):
 
         # Username condition
         if len(usernames) != 0:
-            conditions[u"ユーザー名"] = {'$in': usernames}
+            conditions[_(self.FIELD_USERNAME)] = {'$in': usernames}
 
         # Student status
         if student_status:
-            conditions[u"受講ステータス"] = student_status
+            conditions[_(self.FIELD_STUDENT_STATUS)] = student_status
 
         excludes = [
             self.FIELD_ID,
