@@ -62,8 +62,8 @@ class GaOperationEmailFieldTest(TestCase):
         self.assertEqual(GaOperationEmailField().clean(email), email)
 
     @ddt.data(
-        'test@test1.comX',
-        'test@test3.com',
+        'te.st@test1.comX',
+        'te＊st@test3.com',
     )
     def test_clean_invalid(self, email):
         with self.assertRaises(ValidationError) as e:
