@@ -1415,7 +1415,7 @@ class AttendancePageTests(ModuleStoreTestCase, PlaybackFinishTestBase):
             survey_name=self.vertical_x13_survey1.display_name, survey_answer='')
         StudentModuleFactory.create(
             course_id=self.course.id, module_state_key=self.module_x16_freetextresponse1.location, student=self.user,
-            module_type='freetextresponse', state='{"count_attempts": 1}')
+            module_type='freetextresponse', grade=1)
         StudentModuleFactory.create(
             course_id=self.course.id, module_state_key=self.module_x17_survey1.location, student=self.user,
             module_type='survey', state='{"submissions_count": 1}')
@@ -1540,10 +1540,10 @@ class AttendancePageTests(ModuleStoreTestCase, PlaybackFinishTestBase):
             survey_name=self.vertical_x14_survey1.display_name, survey_answer='')
         StudentModuleFactory.create(
             course_id=self.course.id, module_state_key=self.module_x16_freetextresponse1.location, student=self.user,
-            module_type='freetextresponse', state='{"count_attempts": 1}')
+            module_type='freetextresponse', grade=1)
         StudentModuleFactory.create(
             course_id=self.course.id, module_state_key=self.module_x16_freetextresponse2.location, student=self.user,
-            module_type='freetextresponse', state='{"count_attempts": 1}')
+            module_type='freetextresponse', grade=1)
         StudentModuleFactory.create(
             course_id=self.course.id, module_state_key=self.module_x17_survey1.location, student=self.user,
             module_type='survey', state='{"submissions_count": 1}')

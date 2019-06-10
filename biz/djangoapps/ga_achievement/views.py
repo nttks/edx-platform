@@ -93,7 +93,7 @@ def score(request):
     child_group_ids = request.current_organization_visible_group_ids
 
     new_score_records = _merge_to_store_by_member_for_search(
-        request, org, child_group_ids, manager, u"ユーザー名", score_records)
+        request, org, child_group_ids, manager, _(ScoreStore.FIELD_USERNAME), score_records)
 
     context = {
         'update_datetime': update_datetime,
@@ -178,7 +178,7 @@ def playback(request):
     child_group_ids = request.current_organization_visible_group_ids
 
     new_playback_records = _merge_to_store_by_member_for_search(
-        request, org, child_group_ids, manager, u"ユーザー名", playback_records)
+        request, org, child_group_ids, manager, _(PlaybackStore.FIELD_USERNAME), playback_records)
 
     context = {
         'update_datetime': update_datetime,
@@ -281,7 +281,7 @@ def score_download_csv(request):
         new_score_records = []
 
     # Member
-    username_key = u"ユーザー名"
+    username_key = _(ScoreStore.FIELD_USERNAME)
     members = Member.find_active_by_org(org=org.id).select_related('user', 'group').filter(
         user__username__in=[s[username_key] for s in score_records])
 
@@ -421,7 +421,7 @@ def playback_download_csv(request):
         new_playback_records = []
 
     # Member
-    username_key = u"ユーザー名"
+    username_key = _(PlaybackStore.FIELD_USERNAME)
     members = Member.find_active_by_org(org=org.id).select_related('user', 'group').filter(
         user__username__in=[s[username_key] for s in playback_records])
 
@@ -565,7 +565,7 @@ def score_search_filter(request, org, contract_id, course_id, manager):
 
     # Member
     new_score_records = _merge_to_store_by_member_for_search(
-        request, org, request.current_organization_visible_group_ids, manager, u"ユーザー名",
+        request, org, request.current_organization_visible_group_ids, manager, _(ScoreStore.FIELD_USERNAME),
         score_records, True)
 
     return score_columns, score_records, total_records, new_score_records
@@ -607,7 +607,7 @@ def playback_search_filter(request, org, contract_id, course_id, manager):
 
     # Member
     new_playback_records = _merge_to_store_by_member_for_search(
-        request, org, request.current_organization_visible_group_ids, manager, u"ユーザー名",
+        request, org, request.current_organization_visible_group_ids, manager, _(PlaybackStore.FIELD_USERNAME),
         playback_records, True)
 
     return playback_columns, playback_records, total_records, new_playback_records
