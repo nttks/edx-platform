@@ -29,3 +29,10 @@ class DAccountNumber(models.Model):
             defaults={'number': enc_number},
         )
         return 0
+
+    @classmethod
+    def delete_number(cls, user):
+        cls.objects.filter(
+            user=user
+        ).delete()
+        return 0
