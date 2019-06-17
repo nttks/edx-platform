@@ -98,6 +98,7 @@ class AttendanceStatusExecutor(object):
     def check_attendance_status(course, user_id):
 
         return_flg = True
+        non_module_managed_flg = False
 
         if course.is_status_managed:
             for chapter in course.get_children():
@@ -105,6 +106,7 @@ class AttendanceStatusExecutor(object):
                     for vertical in section.get_children():
                         for module in vertical.get_children():
                             if hasattr(module, 'is_status_managed') and module.is_status_managed:
+                                non_module_managed_flg = True
                                 if module.location.category == 'html':
                                     if SurveySubmission.objects.filter(
                                             course_id=course.id,
@@ -168,7 +170,11 @@ class AttendanceStatusExecutor(object):
                         break
                 if not return_flg:
                     break
-        return return_flg
+        if non_module_managed_flg:
+            return return_flg
+        else:
+            return_flg = False
+            return return_flg
 
     @staticmethod
     def attendance_status_is_attended(value):

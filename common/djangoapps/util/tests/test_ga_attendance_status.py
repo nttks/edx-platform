@@ -619,3 +619,26 @@ class AttendanceStatusExecutorTests(ModuleStoreTestCase, PlaybackFinishTestBase)
         # assert
         self.assertTrue(
             json.loads(CourseEnrollmentAttribute.objects.get(enrollment=self.enrollment).value)['completed_date'])
+
+    def test_check_attendance_status_when_module_not_is_status_managed(self):
+        # arrange
+        self.course.is_status_managed = True
+        self.chapter_x = ItemFactory.create(parent=self.course, category='chapter', display_name="chapter_x",
+                                            metadata={'start': datetime(2000, 1, 1, 0, 0, 0)})
+        self.section_x1 = ItemFactory.create(parent=self.chapter_x, category='sequential', display_name="section_x1",
+                                             metadata={'start': datetime(2000, 1, 1, 0, 0, 0)})
+        # vertical_x11
+        self.vertical_x11 = ItemFactory.create(parent=self.section_x1, category='vertical', display_name="vertical_x11")
+        self.module_x11_problem1 = ItemFactory.create(
+            category='problem', parent_location=self.vertical_x11.location, display_name='module_x11_problem1',
+            metadata={'is_status_managed': False})
+
+        StudentModuleFactory.create(
+            course_id=self.course.id, module_state_key=self.module_x11_problem1.location, student=self.user,
+            grade=1, max_grade=4, state=None)
+
+        # act
+        act = AttendanceStatusExecutor(
+            enrollment=self.enrollment).check_attendance_status(course=self.course, user_id=self.user.id)
+        # assert
+        self.assertFalse(act)
