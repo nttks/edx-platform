@@ -39,7 +39,7 @@
         <div class="item_area">
             <form method="POST" id="personal_input_form">
                 <ul class="clear">
-                    <li><span class="required-msg red">${_('Asterisk(*) marked fields are required.')}</span></li>
+                    <li style="float: right"><span class="required-msg red">${_('Asterisk(*) marked fields are required.')}</span></li>
                     % for field in form:
                         <li class="${field.name}">
                             % if field.name == 'gaccatz_check':

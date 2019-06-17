@@ -560,8 +560,11 @@ def ensure_user_information(strategy, auth_entry, backend=None, user=None, socia
         else:
             raise AuthEntryError(backend, 'auth_entry invalid')
     else:
-        if kwargs['response'].has_key('d_pt_number'):
-            DAccountNumber.save_number(user, str(kwargs['response']['d_pt_number']))
+        if kwargs['response'].has_key('d_pt_result'):
+            if str(kwargs['response']['d_pt_result']) == "OK" and kwargs['response'].has_key('d_pt_number'):
+                DAccountNumber.save_number(user, str(kwargs['response']['d_pt_number']))
+            if str(kwargs['response']['d_pt_result']) == "NG":
+                DAccountNumber.delete_number(user)
 
     if not user.is_active:
         # The user account has not been verified yet.
