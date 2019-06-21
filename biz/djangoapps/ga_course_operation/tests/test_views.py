@@ -410,40 +410,6 @@ class CourseOperationSurveyDownloadCp932Test(CourseOperationSurveyDownloadTestMi
 
 
 class CourseOperationSurveyDownloadLoginCodeTest(CourseOperationSurveyDownloadTestMixin):
-    # def setUp(self):
-    #     super(CourseOperationSurveyDownloadLoginCodeTest, self).setUp()
-    #     self.email = 'main_user@example.com'
-    #     self.password = 'bar'
-    #     self.username = 'abc-main_user'
-    #     self.main_user = self.create_account(
-    #         self.username,
-    #         self.email,
-    #         self.password,
-    #     )
-    #     self.activate_user(self.email)
-    #     self.login(self.email, self.password)
-    #     # Update local user data
-    #     # self.main_user.refresh_from_db()
-    #
-    #     self.main_org = self._create_organization(org_name='main_org_name', org_code='main_org_code')
-    #     # self.main_user = UserFactory.create(username='abc-main_user', email='main_user@example.com')
-    #     self.main_course = CourseFactory.create(
-    #         org=self.main_org.org_code, number='main_course', run='run',
-    #         start=datetime(2016, 1, 1, 0, 0, 0, tzinfo=tzutc()),  # must be the past date
-    #         self_paced=True,
-    #         individual_end_days=10,
-    #     )
-    #     self.main_contract = self._create_contract(
-    #         contract_name='test main contract',
-    #         contractor_organization=self.main_org,
-    #         detail_courses=[self.main_course.id],
-    #         additional_display_names=['country', 'dept'],
-    #         send_submission_reminder=True,
-    #     )
-    #     self.main_contract_auth = ContractAuthFactory.create(contract=self.main_contract, send_mail=False)
-    #
-    #     self.survey_downroad_manager = self._create_manager(
-    #         org=self.main_org, user=self.main_user, created=self.main_org, permissions=[self.director_permission])
 
     def get_url(self):
         return reverse('biz:course_operation:survey_download')

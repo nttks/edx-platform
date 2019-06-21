@@ -1778,6 +1778,10 @@ msgstr "詳細条件（視聴時間）"
 msgid "Search Detail(Other)"
 msgstr "詳細条件（その他）"
 
+#: biz/templates/ga_contract_operation/reminder_mail.html:611
+msgid "Search Detail(survey_name)"
+msgstr "詳細条件（アンケート）"
+
 #: biz/templates/ga_achievement/score.html:257
 #: biz/templates/ga_contract_operation/reminder_mail.html:416
 #: biz/templates/ga_contract_operation/reminder_mail.html:440
@@ -2148,6 +2152,10 @@ msgid "Delete condition {0}<br/>Is it OK?<br/>Once deleted condition can not be 
 msgstr "{0}を削除します。<br/>よろしいですか？<br/>※一度削除した条件は元に戻せません"
 
 #: biz/djangoapps/gx_save_register_condition/index.html
+msgid "Delete condition {0}<br/>And disable settings of automatically reflection.<br/>Once deleted condition can not be restored."
+msgstr "{0}を削除します。<br/>また、自動反映設定を無効化します。<br/>よろしいですか？<br/>※一度削除した条件は元に戻せません"
+
+#: biz/djangoapps/gx_save_register_condition/index.html
 msgid "Copy the condition, is it OK?<br/>(Original:{0})Once deleted condition can not be restored."
 msgstr "受講登録条件をコピーします。よろしいですか？<br/>（コピー元の契約：{0})<br/>※設定済みの受講登録条件は破棄されます"
 
@@ -2230,6 +2238,10 @@ msgstr "本日分の予約解除受付時間を過ぎているため、予約反
 #: biz/djangoapps/gx_save_register_condition/index.html
 msgid "You can't switch if the reservation reflection date is set. Please cancel reservation."
 msgstr "既に受講登録条件の反映が予約されています。"
+
+#: biz/djangoapps/gx_save_register_condition/index.html
+msgid "In order to set up automatic reflection setting, it's necessary to set conditions."
+msgstr "自動反映設定を行う場合は、受講登録条件の設定が必要です。"
 
 #: biz/djangoapps/gx_save_register_condition/detail.html
 msgid "Condition does not exist. Please set at least one condition."
@@ -2344,3 +2356,19 @@ msgstr "ユーザID"
 #: biz/djangoapps/gx_students_register_batch/management/commands/student_status_csv_batch.py:306
 msgid "0001UserName"
 msgstr "ユーザ名"
+
+#: biz/djangoapps/ga_achievement/views.py.py:766
+msgid "Unregistered"
+msgstr "未登録"
+
+#: biz/djangoapps/ga_achievement/views.py.py:769
+msgid "During registration"
+msgstr "登録中"
+
+#: biz/djangoapps/ga_achievement/views.py.py:772
+msgid "Registration cancellation"
+msgstr "登録取消"
+
+#: biz/djangoapps/ga_achievement/views.py.py:772
+msgid "Contract Status"
+msgstr "契約状態"

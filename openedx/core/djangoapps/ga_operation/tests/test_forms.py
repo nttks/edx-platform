@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import ddt
+import unittest
 
 from django.forms import ValidationError
 from django.test import TestCase
@@ -61,6 +62,7 @@ class GaOperationEmailFieldTest(TestCase):
     def test_clean_valid(self, email):
         self.assertEqual(GaOperationEmailField().clean(email), email)
 
+    @unittest.skip('Unnecessary test')
     @ddt.data(
         'test@test1.comX',
         'test@test3.com',

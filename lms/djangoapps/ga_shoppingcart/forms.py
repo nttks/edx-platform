@@ -3,7 +3,8 @@ import re
 
 from django import forms
 from django.utils.translation import ugettext as _, get_language
-
+from django.core.exceptions import ValidationError
+from django.core.validators import validate_email
 from .models import PersonalInfo
 
 
@@ -98,26 +99,116 @@ class PersonalInfoModelForm(forms.ModelForm):
             del (self.fields['free_entry_field_1'])
         else:
             self.fields['free_entry_field_1'].label = personal_info_setting.free_entry_field_1_title
+            if personal_info_setting.free_entry_field_1_textbox:
+                widget = forms.TextInput()
+                if personal_info_setting.free_entry_field_1_validation == 1:
+                    widget = forms.EmailInput(attrs={'placeholder': "username@domain.com", 'class': "email"})
+                if personal_info_setting.free_entry_field_1_validation == 2:
+                    widget = forms.TextInput(attrs={'placeholder': _("harf-width alphanumeric"), 'class': "alphanumeric"})
+                if personal_info_setting.free_entry_field_1_validation == 3:
+                    widget = forms.TextInput(attrs={'placeholder':  _("Half-width number"), 'class': "number"})
+                self.fields['free_entry_field_1'].widget = widget
+            else:
+                widget = forms.Textarea()
+                if personal_info_setting.free_entry_field_1_validation == 1:
+                    widget = forms.Textarea(attrs={'placeholder': "username@domain.com", 'class': "email"})
+                if personal_info_setting.free_entry_field_1_validation == 2:
+                    widget = forms.Textarea(attrs={'placeholder': _("harf-width alphanumeric"), 'class': "alphanumeric"})
+                if personal_info_setting.free_entry_field_1_validation == 3:
+                    widget = forms.Textarea(attrs={'placeholder':  _("Half-width number"), 'class': "number"})
+                self.fields['free_entry_field_1'].widget = widget
 
         if not personal_info_setting.free_entry_field_2_title:
             del (self.fields['free_entry_field_2'])
         else:
             self.fields['free_entry_field_2'].label = personal_info_setting.free_entry_field_2_title
+            if personal_info_setting.free_entry_field_2_textbox:
+                widget = forms.TextInput()
+                if personal_info_setting.free_entry_field_2_validation == 1:
+                    widget = forms.EmailInput(attrs={'placeholder': "username@domain.com", 'class': "email"})
+                if personal_info_setting.free_entry_field_2_validation == 2:
+                    widget = forms.TextInput(attrs={'placeholder': _("harf-width alphanumeric"), 'class': "alphanumeric"})
+                if personal_info_setting.free_entry_field_2_validation == 3:
+                    widget = forms.TextInput(attrs={'placeholder':  _("Half-width number"), 'class': "number"})
+                self.fields['free_entry_field_2'].widget = widget
+            else:
+                widget = forms.Textarea()
+                if personal_info_setting.free_entry_field_2_validation == 1:
+                    widget = forms.Textarea(attrs={'placeholder': "username@domain.com", 'class': "email"})
+                if personal_info_setting.free_entry_field_2_validation == 2:
+                    widget = forms.Textarea(attrs={'placeholder': _("harf-width alphanumeric"), 'class': "alphanumeric"})
+                if personal_info_setting.free_entry_field_2_validation == 3:
+                    widget = forms.Textarea(attrs={'placeholder':  _("Half-width number"), 'class': "number"})
+                self.fields['free_entry_field_2'].widget = widget
 
         if not personal_info_setting.free_entry_field_3_title:
             del (self.fields['free_entry_field_3'])
         else:
             self.fields['free_entry_field_3'].label = personal_info_setting.free_entry_field_3_title
+            if personal_info_setting.free_entry_field_3_textbox:
+                widget = forms.TextInput()
+                if personal_info_setting.free_entry_field_3_validation == 1:
+                    widget = forms.EmailInput(attrs={'placeholder': "username@domain.com", 'class': "email"})
+                if personal_info_setting.free_entry_field_3_validation == 2:
+                    widget = forms.TextInput(attrs={'placeholder': _("harf-width alphanumeric"), 'class': "alphanumeric"})
+                if personal_info_setting.free_entry_field_3_validation == 3:
+                    widget = forms.TextInput(attrs={'placeholder':  _("Half-width number"), 'class': "number"})
+                self.fields['free_entry_field_3'].widget = widget
+            else:
+                widget = forms.Textarea()
+                if personal_info_setting.free_entry_field_3_validation == 1:
+                    widget = forms.Textarea(attrs={'placeholder': "username@domain.com", 'class': "email"})
+                if personal_info_setting.free_entry_field_3_validation == 2:
+                    widget = forms.Textarea(attrs={'placeholder': _("harf-width alphanumeric"), 'class': "alphanumeric"})
+                if personal_info_setting.free_entry_field_3_validation == 3:
+                    widget = forms.Textarea(attrs={'placeholder':  _("Half-width number"), 'class': "number"})
+                self.fields['free_entry_field_3'].widget = widget
 
         if not personal_info_setting.free_entry_field_4_title:
             del (self.fields['free_entry_field_4'])
         else:
             self.fields['free_entry_field_4'].label = personal_info_setting.free_entry_field_4_title
+            if personal_info_setting.free_entry_field_4_textbox:
+                widget = forms.TextInput()
+                if personal_info_setting.free_entry_field_4_validation == 1:
+                    widget = forms.EmailInput(attrs={'placeholder': "username@domain.com", 'class': "email"})
+                if personal_info_setting.free_entry_field_4_validation == 2:
+                    widget = forms.TextInput(attrs={'placeholder': _("harf-width alphanumeric"), 'class': "alphanumeric"})
+                if personal_info_setting.free_entry_field_4_validation == 3:
+                    widget = forms.TextInput(attrs={'placeholder':  _("Half-width number"), 'class': "number"})
+                self.fields['free_entry_field_4'].widget = widget
+            else:
+                widget = forms.Textarea()
+                if personal_info_setting.free_entry_field_4_validation == 1:
+                    widget = forms.Textarea(attrs={'placeholder': "username@domain.com", 'class': "email"})
+                if personal_info_setting.free_entry_field_4_validation == 2:
+                    widget = forms.Textarea(attrs={'placeholder': _("harf-width alphanumeric"), 'class': "alphanumeric"})
+                if personal_info_setting.free_entry_field_4_validation == 3:
+                    widget = forms.Textarea(attrs={'placeholder':  _("Half-width number"), 'class': "number"})
+                self.fields['free_entry_field_4'].widget = widget
 
         if not personal_info_setting.free_entry_field_5_title:
             del (self.fields['free_entry_field_5'])
         else:
             self.fields['free_entry_field_5'].label = personal_info_setting.free_entry_field_5_title
+            if personal_info_setting.free_entry_field_5_textbox:
+                widget = forms.TextInput()
+                if personal_info_setting.free_entry_field_5_validation == 1:
+                    widget = forms.EmailInput(attrs={'placeholder': "username@domain.com", 'class': "email"})
+                if personal_info_setting.free_entry_field_5_validation == 2:
+                    widget = forms.TextInput(attrs={'placeholder': _("harf-width alphanumeric"), 'class': "alphanumeric"})
+                if personal_info_setting.free_entry_field_5_validation == 3:
+                    widget = forms.TextInput(attrs={'placeholder':  _("Half-width number"), 'class': "number"})
+                self.fields['free_entry_field_5'].widget = widget
+            else:
+                widget = forms.Textarea()
+                if personal_info_setting.free_entry_field_5_validation == 1:
+                    widget = forms.Textarea(attrs={'placeholder': "username@domain.com", 'class': "email"})
+                if personal_info_setting.free_entry_field_5_validation == 2:
+                    widget = forms.Textarea(attrs={'placeholder': _("harf-width alphanumeric"), 'class': "alphanumeric"})
+                if personal_info_setting.free_entry_field_5_validation == 3:
+                    widget = forms.Textarea(attrs={'placeholder':  _("Half-width number"), 'class': "number"})
+                self.fields['free_entry_field_5'].widget = widget
 
         # overwrite django default messages
         for field in self.fields.values():
@@ -135,6 +226,29 @@ class PersonalInfoModelForm(forms.ModelForm):
             raise forms.ValidationError(_('Please type using half-width numbers.'))
         return value
 
+    @staticmethod
+    def _check_validation(value, form):
+        if not form.widget.attrs:
+            return value
+        if 'class' not in form.widget.attrs:
+            return value
+        if form.widget.attrs['class'] == 'email':
+            try:
+                validate_email(value)
+                return value
+            except ValidationError:
+                raise forms.ValidationError(_('A properly formatted e-mail is required'))
+        elif form.widget.attrs['class'] == 'alphanumeric':
+            if not re.match('^[0-9a-zA-Z]+$', value):
+                raise forms.ValidationError(_('Please type using half-width alphabet.'))
+            return value
+        elif form.widget.attrs['class'] == 'number':
+            if not re.match('^[0-9]*$', value):
+                raise forms.ValidationError(_('Please type using half-width numbers.'))
+            return value
+        else:
+            return value
+
     def clean_postal_code(self):
         postal_code = self.cleaned_data['postal_code']
         return self._check_number(postal_code)
@@ -142,3 +256,19 @@ class PersonalInfoModelForm(forms.ModelForm):
     def clean_phone_number(self):
         phone_number = self.cleaned_data['phone_number']
         return self._check_number(phone_number)
+
+    def clean_free_entry_field_1(self):
+        return self._check_validation(self.cleaned_data['free_entry_field_1'], self.fields['free_entry_field_1'])
+
+    def clean_free_entry_field_2(self):
+        return self._check_validation(self.cleaned_data['free_entry_field_2'], self.fields['free_entry_field_2'])
+
+    def clean_free_entry_field_3(self):
+        return self._check_validation(self.cleaned_data['free_entry_field_3'], self.fields['free_entry_field_3'])
+
+    def clean_free_entry_field_4(self):
+        return self._check_validation(self.cleaned_data['free_entry_field_4'], self.fields['free_entry_field_4'])
+
+    def clean_free_entry_field_5(self):
+        return self._check_validation(self.cleaned_data['free_entry_field_5'], self.fields['free_entry_field_5'])
+

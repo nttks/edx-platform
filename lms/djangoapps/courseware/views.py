@@ -1271,8 +1271,23 @@ def _attendance(request, course_key):
 
         elif _module.location.category in ['video', 'jwplayerxblock']:
             if PlaybackFinishStore().find_status_true_data(
-                user_id=_student.id, course_id=unicode(_course_id), block_id=_module.location.block_id):
+                    user_id=_student.id, course_id=unicode(_course_id), block_id=_module.location.block_id):
                 return True
+
+        elif _module.location.category == 'survey':
+            student_module_values = StudentModule.objects.filter(
+                    module_state_key=UsageKey.from_string(_module.location.to_deprecated_string()),
+                    module_type__exact='survey', student=_student, course_id=_course_id).values('state')
+            if len(student_module_values) is not 0:
+                student_module_value = json.loads(student_module_values[0]['state'])
+                if 'submissions_count' in student_module_value and student_module_value['submissions_count'] > 0:
+                    return True
+
+        elif _module.location.category == 'freetextresponse' and StudentModule.objects.filter(
+                module_state_key=UsageKey.from_string(_module.location.to_deprecated_string()),
+                student=_student, module_type__in=('freetextresponse', 'problem'), course_id=_course_id,
+                grade__isnull=False).count() is not 0:
+            return True
 
         return False
 
@@ -1314,7 +1329,8 @@ def _attendance(request, course_key):
 
     # Check attendance status
     executor = AttendanceStatusExecutor(enrollment=CourseEnrollment.get_enrollment(user=student, course_key=course.id))
-    display_status = executor.get_attendance_status_str(course=course, user=student)
+    display_status = executor.get_attendance_status_str(start=course.start, end=course.end, course_id=course.id,
+                                                        is_status_managed=course.is_status_managed, user=student)
 
     return render_to_response('courseware/attendance.html', {
         'course': course,
@@ -1985,14 +2001,7 @@ def finish_playback_mongo(request, course_id):
     else:
         return _error_response(_("Unauthorized access."))
 
-    if course.is_status_managed:
-        course_enrollment = CourseEnrollment.objects.get(user=user_id,
-                                                         course_id=course.location.course_key)
-        executor = AttendanceStatusExecutor(enrollment=course_enrollment)
-        if not executor.is_completed:
-            status_check = executor.check_attendance_status(course, user_id)
-            if status_check:
-                executor.set_completed(datetime.now(UTC()))
+    AttendanceStatusExecutor.update_attendance_status(course, user_id)
 
     return HttpResponse(status=status.HTTP_200_OK)
 
@@ -2029,3 +2038,12 @@ def search_playback_mongo(request, course_id):
                 return JsonResponse({'find_result': True if find_result['status'] else False})
     else:
         return JsonResponse({'find_result': True})
+
+
+@login_required
+@ensure_csrf_cookie
+@require_POST
+def update_attendance_status(request, course_id):
+    AttendanceStatusExecutor.update_attendance_status(
+        get_course(CourseKey.from_string(course_id)), request.user.id)
+    return HttpResponse(status=status.HTTP_200_OK)

@@ -48,7 +48,7 @@ def survey(request):
     resp_org_item_list = anslistview._get_org_item_list()
     resp_survey_names_list =anslistview._get_survey_names_list_merged(course_id)
 
-    resp_columns = anslistview._get_grid_columns(resp_survey_names_list)
+    resp_columns = anslistview._get_grid_columns(course_id, resp_survey_names_list)
     resp_records = []
     resp_total_rec_num = 0
     context = {

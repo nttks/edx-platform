@@ -590,31 +590,33 @@ def dashboard(request):
     course_orders = {}
     enroll_statuses = {}
     course_enroll_dates = {}
+    attendance_values_dict = AttendanceStatusExecutor.get_attendance_values([e.id for e in course_enrollments])
 
-    for course_id in enrolled_course_ids:
-        course = get_course(course_id)
+    for enrollment in course_enrollments:
+        overview = enrollment.course_overview
 
         # Set course category1, category2
-        course_categories[course_id] = [{
-            'name': ''.join(course.course_category or []),
-            'order': int(course.course_category_order) if course.course_category_order else ''
-        },{
-            'name': course.course_category2 or '',
-            'order': int(course.course_category_order2) if course.course_category_order2 else ''
+        course_categories[enrollment.course_id] = [{
+            'name': ''.join(overview.extra.course_category or []),
+            'order': int(overview.extra.course_category_order) if overview.extra.course_category_order else ''
+        }, {
+            'name': overview.extra.course_category2 or '',
+            'order': int(overview.extra.course_category_order2) if overview.extra.course_category_order2 else ''
         }]
         # Set course display order
-        course_orders[course_id] = int(course.course_order) if course.course_order else ''
+        course_orders[enrollment.course_id] = int(overview.extra.course_order) if overview.extra.course_order else ''
 
-        course_enrollment = CourseEnrollment.get_enrollment(request.user, course_key=course_id)
-        course_enroll_dates[course_id] = course_enrollment.created
+        course_enroll_dates[enrollment.course_id] = enrollment.created
         # check attendance status
-        executor = AttendanceStatusExecutor(enrollment=course_enrollment)
-        enroll_statuses[course_id] = executor.get_attendance_status_str(course=course, user=course_enrollment.user)
+        attribute_value = attendance_values_dict[enrollment.id] if enrollment.id in attendance_values_dict else None
+        enroll_statuses[enrollment.course_id] = AttendanceStatusExecutor.get_attendance_status(
+            start=overview.start, end=overview.end, course_id=enrollment.course_id,
+            is_status_managed=True, user=enrollment.user, attr_value=attribute_value)
 
     # Set max order when course_order is empty.
     max_course_orders = max(filter(lambda x: x != '', course_orders.values()) or [0]) + 1
     course_orders = {
-        key : course_orders[key] if course_orders[key] != '' else max_course_orders
+        key: course_orders[key] if course_orders[key] != '' else max_course_orders
         for key in course_orders
     }
 
@@ -1071,7 +1073,7 @@ def _create_search_genre_list(course_categories):
     genre1_list = [ name for name, order in sorted(genre1_dict.items(), key=lambda x: (x[1], x[0])) ]
     genre2_list = [{
         'genre1_name': genre1_name,
-        'genre2_list': [ name for name, order in sorted(genre2_dict[genre1_name].items(), key=lambda x: (x[1], x[0])) ]
+        'genre2_list': [name for name, order in sorted(genre2_dict[genre1_name].items(), key=lambda x: (x[1], x[0]))]
     } for genre1_name in genre2_dict]
 
     return genre1_list, genre2_list

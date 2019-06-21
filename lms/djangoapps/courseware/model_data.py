@@ -1016,11 +1016,4 @@ def set_score(user_id, usage_key, score, max_score):
         student_module.save()
 
         course = modulestore().get_course(usage_key.course_key)
-        if course.is_status_managed:
-            course_enrollment = CourseEnrollment.objects.get(user=user_id,
-                                                             course_id=usage_key.course_key)
-            executor = AttendanceStatusExecutor(enrollment=course_enrollment)
-            if not executor.is_completed:
-                status_check = executor.check_attendance_status(course, user_id)
-                if status_check:
-                    executor.set_completed(datetime.now(UTC))
+        AttendanceStatusExecutor.update_attendance_status(course, user_id)

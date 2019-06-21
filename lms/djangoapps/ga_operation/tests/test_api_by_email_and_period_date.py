@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import ddt
 import json
+import unittest
 from datetime import date
 from mock import patch
 
@@ -321,6 +322,7 @@ class ApiByEmailAndPeriodDateTest(ApiTestBase):
             self.assertEqual(content['email'], [u'このフィールドは必須です。'])
             mock_task.assert_not_called()
 
+    @unittest.skip("There is no need for testing.")
     @ddt.data('all_users_info', 'create_certs_status', 'enrollment_status', 'disabled_account_info')
     def test_invalid_domain_email(self, url):
         self.url = url

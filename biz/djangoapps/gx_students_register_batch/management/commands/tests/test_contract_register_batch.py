@@ -269,6 +269,7 @@ class TestStudentRegisterBatch(BizViewTestBase, ModuleStoreTestCase):
         target = StudentsRegisterBatchTarget.objects.filter(message=message)
         self.assertEqual(len(target), num)
 
+    @mock_s3
     def test_zero_s3_path_record(self):
         with self.assertRaises(CommandError) as e:
             call_command('student_register_batch')

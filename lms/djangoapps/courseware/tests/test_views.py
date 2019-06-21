@@ -1311,6 +1311,11 @@ class AttendancePageTests(ModuleStoreTestCase, PlaybackFinishTestBase):
           |   |  |    |- module_x14_survey1
           |   |  |- vertical_x15
           |   |  |    |- module_x15_survey1
+          |   |  |- vertical_x16
+          |   |  |    |- module_x16_freetextresponse1, module_x16_freetextresponse2, module_x16_freetextresponse3
+          |   |  |- vertical_x17
+          |   |  |    |- module_x16_survey1, module_x16_survey2, module_x16_survey3
+
           |- chapter_y
           |   |- section_y1
         """
@@ -1331,36 +1336,58 @@ class AttendancePageTests(ModuleStoreTestCase, PlaybackFinishTestBase):
             metadata={'is_status_managed': True})
         self.module_x11_problem2 = ItemFactory.create(
             category='problem', parent_location=self.vertical_x11.location, display_name='module_x11_problem2',
-            metadata = {'is_status_managed': True})
+            metadata={'is_status_managed': True})
         self.module_x11_problem3 = ItemFactory.create(
             category='problem', parent_location=self.vertical_x11.location, display_name='module_x11_problem3',
-            metadata = {'is_status_managed': False})
+            metadata={'is_status_managed': False})
         # vertical_x12
         self.vertical_x12 = ItemFactory.create(parent=self.section_x1, category='vertical', display_name="vertical_x12")
         self.module_x12_video1 = ItemFactory.create(
             category='video', parent_location=self.vertical_x12.location, display_name='module_x12_video1',
-            metadata = {'is_status_managed': True})
+            metadata={'is_status_managed': True})
         self.module_x12_video2 = ItemFactory.create(
             category='video', parent_location=self.vertical_x12.location, display_name='module_x12_video2',
-            metadata = {'is_status_managed': True})
+            metadata={'is_status_managed': True})
         self.module_x12_video3 = ItemFactory.create(
             category='video', parent_location=self.vertical_x12.location, display_name='module_x12_video3',
-            metadata = {'is_status_managed': False})
+            metadata={'is_status_managed': False})
         # vertical_x13
         self.vertical_x13 = ItemFactory.create(parent=self.section_x1, category='vertical', display_name="vertical_x13")
         self.vertical_x13_survey1 = ItemFactory.create(
             category='html', parent_location=self.vertical_x13.location, display_name='vertical_x13_survey1',
-            metadata = {'is_status_managed': True})
+            metadata={'is_status_managed': True})
         # vertical_x14
         self.vertical_x14 = ItemFactory.create(parent=self.section_x1, category='vertical', display_name="vertical_x14")
         self.vertical_x14_survey1 = ItemFactory.create(
             category='html', parent_location=self.vertical_x14.location, display_name='vertical_x14_survey1',
-            metadata = {'is_status_managed': True})
+            metadata={'is_status_managed': True})
         # vertical_x15
         self.vertical_x15 = ItemFactory.create(parent=self.section_x1, category='vertical', display_name="vertical_x15")
         self.vertical_x15_survey1 = ItemFactory.create(
             category='html', parent_location=self.vertical_x15.location, display_name='vertical_x15_survey1',
-            metadata = {'is_status_managed': False})
+            metadata={'is_status_managed': False})
+        # vertical_x16
+        self.vertical_x16 = ItemFactory.create(parent=self.section_x1, category='vertical', display_name="vertical_x16")
+        self.module_x16_freetextresponse1 = ItemFactory.create(
+            category='freetextresponse', parent_location=self.vertical_x16.location,
+            display_name='module_x16_freetextresponse1', metadata={'is_status_managed': True})
+        self.module_x16_freetextresponse2 = ItemFactory.create(
+            category='freetextresponse', parent_location=self.vertical_x16.location,
+            display_name='module_x16_freetextresponse2', metadata={'is_status_managed': True})
+        self.module_x16_freetextresponse3 = ItemFactory.create(
+            category='freetextresponse', parent_location=self.vertical_x16.location,
+            display_name='module_x16_freetextresponse3', metadata={'is_status_managed': False})
+        # vertical_x17
+        self.vertical_x17 = ItemFactory.create(parent=self.section_x1, category='vertical', display_name="vertical_x17")
+        self.module_x17_survey1 = ItemFactory.create(
+            category='survey', parent_location=self.vertical_x17.location, display_name='module_x17_survey1',
+            metadata={'is_status_managed': True})
+        self.module_x17_survey2 = ItemFactory.create(
+            category='survey', parent_location=self.vertical_x17.location, display_name='module_x17_survey2',
+            metadata={'is_status_managed': True})
+        self.module_x17_survey3 = ItemFactory.create(
+            category='survey', parent_location=self.vertical_x17.location, display_name='module_x17_survey3',
+            metadata={'is_status_managed': False})
         # chapter_y
         self.chapter_y = ItemFactory.create(parent=self.course, category='chapter', display_name="chapter_y",
                                             metadata={'start': datetime(2000, 1, 1, 0, 0, 0)})
@@ -1386,6 +1413,12 @@ class AttendancePageTests(ModuleStoreTestCase, PlaybackFinishTestBase):
         SurveySubmissionFactory.create(
             course_id=self.course.id, unit_id=self.vertical_x13.location.block_id, user=self.user,
             survey_name=self.vertical_x13_survey1.display_name, survey_answer='')
+        StudentModuleFactory.create(
+            course_id=self.course.id, module_state_key=self.module_x16_freetextresponse1.location, student=self.user,
+            module_type='freetextresponse', grade=1)
+        StudentModuleFactory.create(
+            course_id=self.course.id, module_state_key=self.module_x17_survey1.location, student=self.user,
+            module_type='survey', state='{"submissions_count": 1}')
         CourseEnrollmentAttributeFactory.create(
             enrollment=self.enrollment, namespace='ga', name='attended_status',
             value='{"attended_date": "2010-10-10T10:10:10.123456+00:00"}')
@@ -1447,6 +1480,24 @@ class AttendancePageTests(ModuleStoreTestCase, PlaybackFinishTestBase):
                                 'status': True,
                                 'is_display': True,
                                 'modules': []
+                            },
+                            {
+                                'name': self.vertical_x16.display_name,
+                                'status': False,
+                                'is_display': True,
+                                'modules': [
+                                    {'name': self.module_x16_freetextresponse1.display_name, 'status': True},
+                                    {'name': self.module_x16_freetextresponse2.display_name, 'status': False}
+                                ]
+                            },
+                            {
+                                'name': self.vertical_x17.display_name,
+                                'status': False,
+                                'is_display': True,
+                                'modules': [
+                                    {'name': self.module_x17_survey1.display_name, 'status': True},
+                                    {'name': self.module_x17_survey2.display_name, 'status': False}
+                                ]
                             }
                         ]
                     }
@@ -1487,9 +1538,22 @@ class AttendancePageTests(ModuleStoreTestCase, PlaybackFinishTestBase):
         SurveySubmissionFactory.create(
             course_id=self.course.id, unit_id=self.vertical_x14.location.block_id, user=self.user,
             survey_name=self.vertical_x14_survey1.display_name, survey_answer='')
+        StudentModuleFactory.create(
+            course_id=self.course.id, module_state_key=self.module_x16_freetextresponse1.location, student=self.user,
+            module_type='freetextresponse', grade=1)
+        StudentModuleFactory.create(
+            course_id=self.course.id, module_state_key=self.module_x16_freetextresponse2.location, student=self.user,
+            module_type='freetextresponse', grade=1)
+        StudentModuleFactory.create(
+            course_id=self.course.id, module_state_key=self.module_x17_survey1.location, student=self.user,
+            module_type='survey', state='{"submissions_count": 1}')
+        StudentModuleFactory.create(
+            course_id=self.course.id, module_state_key=self.module_x17_survey2.location, student=self.user,
+            module_type='survey', state='{"submissions_count": 1}')
         CourseEnrollmentAttributeFactory.create(
             enrollment=self.enrollment, namespace='ga', name='attended_status',
-            value='{"attended_date": "2010-10-10T10:10:10.123456+00:00","completed_date": "2010-10-10T10:10:10.123456+00:00"}')
+            value='{"attended_date": "2010-10-10T10:10:10.123456+00:00",'
+                  '"completed_date": "2010-10-10T10:10:10.123456+00:00"}')
         # act
         views.attendance(self.request, self.course.id.to_deprecated_string())
         # assert

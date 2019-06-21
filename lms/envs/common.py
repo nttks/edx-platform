@@ -2024,6 +2024,9 @@ INSTALLED_APPS = (
     # Send notice of closure email for self-paced course
     'ga_bulk_email',
 
+    # daccount number
+    'ga_daccount',
+
     # Support for  page of student_account (Login and Register)
     'ga_student_account',
 )

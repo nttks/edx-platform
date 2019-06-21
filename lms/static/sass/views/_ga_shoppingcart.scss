@@ -79,7 +79,6 @@ form#personal_input_form {
             label[for='free_entry_field_3'],
             label[for='free_entry_field_4'],
             label[for='free_entry_field_5'] {
-                font-weight: normal;
                 width: 100%;
                 line-height: 1.5em;
                 margin-bottom: 5px;
@@ -121,6 +120,14 @@ form#personal_input_form {
                 height: 146px;
                 box-shadow: 0 -1px 2px 0 rgba(0, 0, 0, 0.16);
                 font: normal 1.2em/1.2em $sans-serif;
+                margin-bottom: 30px;
+            }
+            input[name='free_entry_field_1'],
+            input[name='free_entry_field_2'],
+            input[name='free_entry_field_3'],
+            input[name='free_entry_field_4'],
+            input[name='free_entry_field_5'] {
+                width: 700px;
                 margin-bottom: 30px;
             }
         }

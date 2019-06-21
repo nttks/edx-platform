@@ -85,6 +85,7 @@ import student
 from third_party_auth.models import OAuth2ProviderConfig
 from biz.djangoapps.gx_sso_config.models import SsoConfig
 from logging import getLogger
+from ga_daccount.models import DAccountNumber
 
 from . import provider
 
@@ -538,8 +539,6 @@ def ensure_user_information(strategy, auth_entry, backend=None, user=None, socia
         if kwargs['response'].has_key('idp_name'):
             if SsoConfig.is_hide_icon(kwargs['response']['idp_name']):
                 logger.warning("Ssoconfig new account create stoped.")
-                # TODO display To make a final confirmation
-                # raise Http404
                 return redirect(reverse('user_not_found'))
         if auth_entry in [AUTH_ENTRY_LOGIN_API, AUTH_ENTRY_REGISTER_API]:
             return HttpResponseBadRequest()
@@ -560,6 +559,12 @@ def ensure_user_information(strategy, auth_entry, backend=None, user=None, socia
             return redirect_to_custom_form(strategy.request, auth_entry, kwargs)
         else:
             raise AuthEntryError(backend, 'auth_entry invalid')
+    else:
+        if kwargs['response'].has_key('d_pt_result'):
+            if str(kwargs['response']['d_pt_result']) == "OK" and kwargs['response'].has_key('d_pt_number'):
+                DAccountNumber.save_number(user, str(kwargs['response']['d_pt_number']))
+            if str(kwargs['response']['d_pt_result']) == "NG":
+                DAccountNumber.delete_number(user)
 
     if not user.is_active:
         # The user account has not been verified yet.

@@ -10,7 +10,7 @@ from opaque_keys.edx.locations import SlashSeparatedCourseKey
 from optparse import make_option
 from opaque_keys import InvalidKeyError
 from student.models import CourseEnrollment, CourseEnrollmentAttribute
-from util.ga_attendance_status import AttendanceStatusExecutor
+from util.ga_attendance_status import AttendanceStatusExecutor, KEY_COMPLETE_DATE
 
 log = logging.getLogger(__name__)
 
@@ -44,18 +44,18 @@ class Command(BaseCommand):
         total_counter = 0
         updated_counter = 0
         failed_counter = 0
-        for enrollment in CourseEnrollment.objects.filter(course_id=course_key).values('id'):
+        for enrollment in CourseEnrollment.objects.filter(course_id=course_key):
             try:
                 total_counter += 1
+                executor = AttendanceStatusExecutor(enrollment=enrollment)
+                if executor.attr is None:
+                    continue
+                else:
+                    enrollment_attr = executor.attr
 
-                enrollment_attr = CourseEnrollmentAttribute.objects.get(
-                    enrollment_id=enrollment['id'],
-                    namespace=AttendanceStatusExecutor.NAMESPACE,
-                    name=AttendanceStatusExecutor.NAME
-                )
                 value = json.loads(enrollment_attr.value)
-                if AttendanceStatusExecutor.KEY_COMPLETE_DATE in value:
-                    del value[AttendanceStatusExecutor.KEY_COMPLETE_DATE]
+                if KEY_COMPLETE_DATE in value:
+                    del value[KEY_COMPLETE_DATE]
                     enrollment_attr.value = json.dumps(value)
                     enrollment_attr.save()
                     updated_counter += 1

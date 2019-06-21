@@ -1,12 +1,15 @@
-from unittest import TestCase
-from ddt import ddt, data, file_data, unpack
+from ddt import ddt, data, unpack
 
 from biz.djangoapps.ga_course_anslist import helpers as helper
 from biz.djangoapps.ga_course_anslist.tests import factories as TestData
+from openedx.core.djangoapps.content.course_overviews.models import CourseOverview
 
 import logging
 import copy
 from collections import OrderedDict
+
+from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
+from xmodule.modulestore.tests.factories import CourseFactory
 
 
 LOG_LEBEL = logging.DEBUG
@@ -16,127 +19,127 @@ log = logging.getLogger(__name__)
 
 
 @ddt
-class HelperTest(TestCase):
+class HelperTest(ModuleStoreTestCase):
     EXPECTED_DATA_NO_DATA = []
     EXPECTED_DATA_ALL = [
        {
-          'Item8':'',
-          'Item9':'',
-          'Item2':'jast2',
-          'Item3':'jast3',
-          'Item1':'jast1',
-          'Item6':'',
-          'Item7':'',
-          'Item4':'',
-          'Item5':'',
-          'Login Code':'ohanna',
-          'Org8':'',
-          'Org9':'',
-          'Org2':'gacco2',
-          'Org3':'gacco3',
-          'Organization Name':'Gacco100',
-          'Org6':'',
-          'Email':'ohanna.Harbour@sample.com',
-          'Org4':'',
-          'Org5':'',
-          'Username':'manager-1001',
-          'Org1':'gacco1',
-          'Org10':'',
-          'Item10':'',
-          'id':'1',
-          'Survey1':'2018-11-01',
-          'Survey3':'2018-11-03',
-          'Survey2':'2018-11-02',
-          'Org7':'',
-          'Student Status':'',
-          'Full Name':'ohanna Harbour',
-          'Group Code':'100',
-          'Enroll Date':'2018-10-30',
-          'recid':1,
-          'Member Code':'1001'
+          'Item8': '',
+          'Item9': '',
+          'Item2': 'jast2',
+          'Item3': 'jast3',
+          'Item1': 'jast1',
+          'Item6': '',
+          'Item7': '',
+          'Item4': '',
+          'Item5': '',
+          'Login Code': 'ohanna',
+          'Org8': '',
+          'Org9': '',
+          'Org2': 'gacco2',
+          'Org3': 'gacco3',
+          'Organization Name': 'Gacco100',
+          'Org6': '',
+          'Email': 'ohanna.Harbour@sample.com',
+          'Org4': '',
+          'Org5': '',
+          'Username': 'manager-1001',
+          'Org1': 'gacco1',
+          'Org10': '',
+          'Item10': '',
+          'id': '1',
+          'Survey1': '2018-11-01',
+          'Survey3': '2018-11-03',
+          'Survey2': '2018-11-02',
+          'Org7': '',
+          'Student Status': '',
+          'Full Name': 'ohanna Harbour',
+          'Group Code': '100',
+          'Enroll Date': '2018-10-30',
+          'recid': 1,
+          'Member Code': '1001'
        },
        {
-          'Item8':'',
-          'Item9':'',
-          'Item2':'jast2',
-          'Item3':'',
-          'Item1':'jast1',
-          'Item6':'',
-          'Item7':'',
-          'Item4':'',
-          'Item5':'',
-          'Login Code':'Deandre',
-          'Org8':'',
-          'Org9':'',
-          'Org2':'gacco2',
-          'Org3':'',
-          'Organization Name':'Gacco110',
-          'Org6':'',
-          'Email':'Deandre.Morin@sample.com',
-          'Org4':'',
-          'Org5':'',
-          'Username':'manager-1101',
-          'Org1':'gacco1',
-          'Org10':'',
-          'Item10':'',
-          'id':'2',
-          'Survey1':'2018-11-01',
-          'Survey3':'',
-          'Survey2':'2018-11-02',
-          'Org7':'',
-          'Student Status':'',
-          'Full Name':'Deandre Morin',
-          'Group Code':'110',
-          'Enroll Date':'2018-10-31',
-          'recid':2,
-          'Member Code':'1101'
+          'Item8': '',
+          'Item9': '',
+          'Item2': 'jast2',
+          'Item3': '',
+          'Item1': 'jast1',
+          'Item6': '',
+          'Item7': '',
+          'Item4': '',
+          'Item5': '',
+          'Login Code': 'Deandre',
+          'Org8': '',
+          'Org9': '',
+          'Org2': 'gacco2',
+          'Org3': '',
+          'Organization Name': 'Gacco110',
+          'Org6': '',
+          'Email': 'Deandre.Morin@sample.com',
+          'Org4': '',
+          'Org5': '',
+          'Username': 'manager-1101',
+          'Org1': 'gacco1',
+          'Org10': '',
+          'Item10': '',
+          'id': '2',
+          'Survey1': '2018-11-01',
+          'Survey3': '',
+          'Survey2': '2018-11-02',
+          'Org7': '',
+          'Student Status': '',
+          'Full Name': 'Deandre Morin',
+          'Group Code': '110',
+          'Enroll Date': '2018-10-31',
+          'recid': 2,
+          'Member Code': '1101'
        },
        {
-          'Item8':'',
-          'Item9':'',
-          'Item2':'',
-          'Item3':'',
-          'Item1':'jast1',
-          'Item6':'',
-          'Item7':'',
-          'Item4':'',
-          'Item5':'',
-          'Login Code':'Blossom',
-          'Org8':'',
-          'Org9':'',
-          'Org2':'',
-          'Org3':'',
-          'Organization Name':'Gacco120',
-          'Org6':'',
-          'Email':'Blossom.Blick@sample.com',
-          'Org4':'',
-          'Org5':'',
-          'Username':'user-1201',
-          'Org1':'gacco1',
-          'Org10':'',
-          'Item10':'',
-          'id':'3',
-          'Survey1':'2018-11-01',
-          'Survey3':'',
-          'Survey2':'',
-          'Org7':'',
-          'Student Status':'',
-          'Full Name':'Blossom Blick',
-          'Group Code':'120',
-          'Enroll Date':'2018-11-01',
-          'recid':3,
-          'Member Code':'1201'
+          'Item8': '',
+          'Item9': '',
+          'Item2': '',
+          'Item3': '',
+          'Item1': 'jast1',
+          'Item6': '',
+          'Item7': '',
+          'Item4': '',
+          'Item5': '',
+          'Login Code': 'Blossom',
+          'Org8': '',
+          'Org9': '',
+          'Org2': '',
+          'Org3': '',
+          'Organization Name': 'Gacco120',
+          'Org6': '',
+          'Email': 'Blossom.Blick@sample.com',
+          'Org4': '',
+          'Org5': '',
+          'Username': 'user-1201',
+          'Org1': 'gacco1',
+          'Org10': '',
+          'Item10': '',
+          'id': '3',
+          'Survey1': '2018-11-01',
+          'Survey3': '',
+          'Survey2': '',
+          'Org7': '',
+          'Student Status': '',
+          'Full Name': 'Blossom Blick',
+          'Group Code': '120',
+          'Enroll Date': '2018-11-01',
+          'recid': 3,
+          'Member Code': '1201'
        }
     ]
     _param_survey_name_condition_name_empty_on_on = [{'field': [u'survey_name'], 'survey_answered': [u'on'], 'survey_not_answered': [u'on'], 'value': [u'']}]
     _param_survey_name_condition_name_empty_off_on = [{'field': [u'survey_name'], 'survey_answered': [u''], 'survey_not_answered': [u'on'], 'value': [u'']}]
     _param_survey_name_condition_name_empty_on_off = [{'field': [u'survey_name'], 'survey_answered': [u'on'], 'survey_not_answered': [u''], 'value': [u'']}]
     _param_survey_name_condition_name_empty_off_off = [{'field': [u'survey_name'], 'survey_answered': [u''], 'survey_not_answered': [u''], 'value': [u'']}]
-    _param_survey_name_condition_name_survey1_on_on =  [{'field': [u'survey_name'], 'survey_answered': [u'on'], 'survey_not_answered': [u'on'], 'value': [u'Survey1']}]
+    _param_survey_name_condition_name_survey1_on_on = [{'field': [u'survey_name'], 'survey_answered': [u'on'], 'survey_not_answered': [u'on'], 'value': [u'Survey1']}]
     _param_survey_name_condition_name_survey1_off_on = [{'field': [u'survey_name'], 'survey_answered': [u''], 'survey_not_answered': [u'on'], 'value': [u'Survey1']}]
     _param_survey_name_condition_name_survey1_on_off = [{'field': [u'survey_name'], 'survey_answered': [u'on'], 'survey_not_answered': [u''], 'value': [u'Survey1']}]
     _param_survey_name_condition_name_survey1_off_off = [{'field': [u'survey_name'], 'survey_answered': [u'on'], 'survey_not_answered': [u''], 'value': [u'Survey1']}]
-    _param_survey_name_condition_name_survey2_on_on =  [{'field': [u'survey_name'], 'survey_answered': [u'on'], 'survey_not_answered': [u'on'], 'value': [u'Survey2']}]
+    _param_survey_name_condition_name_survey2_on_on = [{'field': [u'survey_name'], 'survey_answered': [u'on'], 'survey_not_answered': [u'on'], 'value': [u'Survey2']}]
     _param_survey_name_condition_name_survey2_off_on = [{'field': [u'survey_name'], 'survey_answered': [u''], 'survey_not_answered': [u'on'], 'value': [u'Survey2']}]
     _param_survey_name_condition_name_survey2_on_off = [{'field': [u'survey_name'], 'survey_answered': [u'on'], 'survey_not_answered': [u''], 'value': [u'Survey2']}]
     _param_survey_name_condition_name_survey2_off_off = [{'field': [u'survey_name'], 'survey_answered': [u''], 'survey_not_answered': [u''], 'value': [u'Survey2']}]
@@ -156,15 +159,22 @@ class HelperTest(TestCase):
         test_dct = OrderedDict()
         for row_dct in test_dct_lst_ext:
             row_dct['obj'] = copy.deepcopy(row_dct)
-            test_dct.update({row_dct['id'] : row_dct})
+            test_dct.update({row_dct['id']: row_dct})
 
         _test_dct = test_dct
+
+    def _create_course_data(self):
+        self.course = CourseFactory.create(org='gacco', number='course', run='run1')
+        self.overview = CourseOverview.get_from_id(self.course.id)
 
     @data((EXPECTED_DATA_ALL))
     def test_transform_grid_records_no_conditions(self, expected):
         global _test_dct
         self._setup_test_dict()
-        actual = helper._transform_grid_records(_test_dct)
+        self._create_course_data()
+        self.overview.extra.is_status_managed = False
+        self.overview.extra.save()
+        actual = helper._transform_grid_records(self.course.id, _test_dct)
         log.debug('actual={}'.format(actual))
         self.assertEqual(expected, actual)
 
@@ -178,7 +188,10 @@ class HelperTest(TestCase):
     def test_transform_grid_records_conditions_name_empty(self, conditions, expected):
         global _test_dct
         self._setup_test_dict()
-        actual = helper._transform_grid_records(_test_dct, conditions)
+        self._create_course_data()
+        self.overview.extra.is_status_managed = False
+        self.overview.extra.save()
+        actual = helper._transform_grid_records(self.course.id, _test_dct, conditions)
         log.debug('actual_name_not_exists={}'.format(actual))
         #self.assertEqual(expected, actual)
 
@@ -193,7 +206,10 @@ class HelperTest(TestCase):
     def test_transform_grid_records_conditions_name(self, conditions, expected):
         global _test_dct
         self._setup_test_dict()
-        actual = helper._transform_grid_records(_test_dct, conditions)
+        self._create_course_data()
+        self.overview.extra.is_status_managed = False
+        self.overview.extra.save()
+        actual = helper._transform_grid_records(self.course.id, _test_dct, conditions)
         log.debug('actual_name_exists={}'.format(actual))
         self.assertEqual(expected, actual)
 
@@ -205,7 +221,10 @@ class HelperTest(TestCase):
     def test_transform_grid_records_conditions_name_survey2_all(self, conditions, expected):
         global _test_dct
         self._setup_test_dict()
-        actual = helper._transform_grid_records(_test_dct, conditions)
+        self._create_course_data()
+        self.overview.extra.is_status_managed = False
+        self.overview.extra.save()
+        actual = helper._transform_grid_records(self.course.id, _test_dct, conditions)
         log.debug('actual_name_exists={}'.format(actual))
         self.assertEqual(expected, actual)
 
@@ -216,7 +235,10 @@ class HelperTest(TestCase):
     def test_transform_grid_records_conditions_name_survey2_on_off(self, conditions, expected):
         global _test_dct
         self._setup_test_dict()
-        actual = helper._transform_grid_records(_test_dct, conditions)
+        self._create_course_data()
+        self.overview.extra.is_status_managed = False
+        self.overview.extra.save()
+        actual = helper._transform_grid_records(self.course.id, _test_dct, conditions)
         log.debug('actual_name_exists={}'.format(actual))
         self.assertEqual(expected, actual)
 
@@ -227,11 +249,14 @@ class HelperTest(TestCase):
     def test_transform_grid_records_conditions_name_survey2_off_on(self, conditions, expected):
         global _test_dct
         self._setup_test_dict()
+        self._create_course_data()
+        self.overview.extra.is_status_managed = False
+        self.overview.extra.save()
         expected_mod = copy.deepcopy(expected[0])
         expected_mod['recid'] = 1
         log.debug("expected={}".format(expected[0]))
         log.debug("expected_mod={}".format(expected_mod))
-        actual = helper._transform_grid_records(_test_dct, conditions)
+        actual = helper._transform_grid_records(self.course.id, _test_dct, conditions)
         log.debug('actual_name_exists={}'.format(actual))
         self.assertEqual([expected_mod], actual)
 
