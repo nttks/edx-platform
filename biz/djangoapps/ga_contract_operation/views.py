@@ -1094,14 +1094,28 @@ def reminder_search_ajax(request):
             row['student_status'] = student_status
 
         # Set score
-        row['total_score'] = score[_(ScoreStore.FIELD_TOTAL_SCORE)] if score else 'None'
+        if score is not None:
+            if _(ScoreStore.FIELD_TOTAL_SCORE) in score.keys():
+                row['total_score'] = score[_(ScoreStore.FIELD_TOTAL_SCORE)]
+            else:
+                row['total_score'] = 'None'
+        else:
+            row['total_score'] = 'None'
+
         # Set score of section
         if len(score_section_names) > 0:
             for section_name in score_section_names:
                 row[section_name] = score[section_name] if score else 'None'
 
         # Set playback
-        row['total_playback'] = playback[_(PlaybackStore.FIELD_TOTAL_PLAYBACK_TIME)] if playback else 'None'
+        if playback is not None:
+            if _(PlaybackStore.FIELD_TOTAL_PLAYBACK_TIME) in playback.keys():
+                row['total_playback'] = playback[_(PlaybackStore.FIELD_TOTAL_PLAYBACK_TIME)]
+            else:
+                row['total_playback'] = 'None'
+        else:
+            row['total_score'] = 'None'
+
         # Set playback of section
         if len(playback_section_names) > 0:
             for section_name in playback_section_names:
@@ -1110,7 +1124,7 @@ def reminder_search_ajax(request):
         return row
 
     where_sql = ""
-    option_sql = [org.id, org.id, str(course.id)]
+    option_sql = [org.id, org.id, contract.id, str(course.id)]
     if not manager.is_director() and manager.is_manager() and Group.objects.filter(org=org).exists():
         if request.current_organization_visible_group_ids:
             where_sql += "AND group_id IN ("
@@ -1151,7 +1165,10 @@ def reminder_search_ajax(request):
     MG.org1, MG.org2, MG.org3, MG.org4, MG.org5, MG.org6, MG.org7, MG.org8, MG.org9, MG.org10, 
     MG.item1, MG.item2, MG.item3, MG.item4, MG.item5, MG.item6, MG.item7, MG.item8, MG.item9, MG.item10 
     FROM auth_user as AU
-    INNER JOIN student_courseenrollment as SC ON AU.id = SC.user_id'''
+    INNER JOIN student_courseenrollment as SC ON AU.id = SC.user_id
+    INNER JOIN ga_contract_contractdetail as CD ON SC.course_id = CD.course_id
+    INNER JOIN ga_contract_contract AS CC ON CD.contract_id = CC.id
+    INNER JOIN ga_invitation_contractregister AS CR ON AU.id = CR.user_id AND CC.id = CR.contract_id'''
 
     sql_survey_answered = '''
         INNER JOIN ga_survey_surveysubmission AS SS ON AU.id = SS.user_id AND SS.unit_id = %s '''
@@ -1195,7 +1212,7 @@ def reminder_search_ajax(request):
       ON M.group_id = G.id  AND M.org_id = %s 
       WHERE M.is_active = 1 AND M.is_delete = 0 
     ) MG ON AU.id = MG.user_id AND MG.org_id = %s 
-    WHERE SC.course_id = %s ''' + where_sql + '''
+    WHERE CD.contract_id = %s AND SC.course_id = %s ''' + where_sql + '''
     ORDER BY AU.id ASC'''
 
     sql += sql2
