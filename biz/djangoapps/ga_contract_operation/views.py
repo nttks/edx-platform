@@ -1114,7 +1114,7 @@ def reminder_search_ajax(request):
             else:
                 row['total_playback'] = 'None'
         else:
-            row['total_score'] = 'None'
+            row['total_playback'] = 'None'
 
         # Set playback of section
         if len(playback_section_names) > 0:
