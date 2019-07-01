@@ -19,6 +19,8 @@ from biz.djangoapps.ga_achievement.tests.factories import PlaybackFactory, Score
     ScoreBatchStatusFactory
 from biz.djangoapps.ga_achievement.management.commands.update_biz_score_status import get_grouped_target_sections
 from biz.djangoapps.ga_contract_operation.models import ContractReminderMail
+from biz.djangoapps.ga_contract.tests.factories import ContractDetailFactory
+from biz.djangoapps.ga_invitation.tests.factories import ContractRegisterFactory
 from biz.djangoapps.ga_invitation.tests.test_views import BizContractTestBase
 from biz.djangoapps.ga_login.tests.factories import BizUserFactory
 from biz.djangoapps.gx_member.tests.factories import MemberFactory
@@ -1024,7 +1026,9 @@ class ContractOperationReminderMailViewTest(BizContractTestBase, BizStoreTestBas
         param = self._create_reminder_search_param()
 
         user = UserFactory.create()
+        ContractDetailFactory.create(contract=self.contract_submission_reminder, course_id=self.course_spoc1.id)
         CourseEnrollmentFactory.create(user=user, course_id=self.course_spoc1.id)
+        ContractRegisterFactory.create(user=user, contract=self.contract_submission_reminder, status='Register')
         bizuser = BizUserFactory.create(user=user, login_code='login_code')
         member_kwargs = {}
         for i in range(1, 11):
@@ -1091,22 +1095,27 @@ class ContractOperationReminderMailViewTest(BizContractTestBase, BizStoreTestBas
         self.setup_user()
         director_manager = self._director_manager
         search_keyword = 'search_param_sample_char'
+        ContractDetailFactory.create(contract=self.contract_submission_reminder, course_id=self.course_spoc1.id)
 
         bizuser = None
         member = None
         if param_key in ['email', 'username']:
             user = UserFactory.create(**dict({param_key: search_keyword}))
             CourseEnrollmentFactory.create(user=user, course_id=self.course_spoc1.id)
+            ContractRegisterFactory.create(user=user, contract=self.contract_submission_reminder, status='Register')
         elif param_key in ['full_name']:
             user = UserFactory.create(first_name=search_keyword)
             CourseEnrollmentFactory.create(user=user, course_id=self.course_spoc1.id)
+            ContractRegisterFactory.create(user=user, contract=self.contract_submission_reminder, status='Register')
         elif param_key in ['login_code']:
             user = UserFactory.create()
             CourseEnrollmentFactory.create(user=user, course_id=self.course_spoc1.id)
+            ContractRegisterFactory.create(user=user, contract=self.contract_submission_reminder, status='Register')
             bizuser = BizUserFactory.create(user=user, login_code=search_keyword)
         else:
             user = UserFactory.create()
             CourseEnrollmentFactory.create(user=user, course_id=self.course_spoc1.id)
+            ContractRegisterFactory.create(user=user, contract=self.contract_submission_reminder, status='Register')
             member = self._create_member(
                 org=self.contract_org, group=None, user=user, code='code', **dict({param_key: search_keyword}))
 
@@ -1147,7 +1156,9 @@ class ContractOperationReminderMailViewTest(BizContractTestBase, BizStoreTestBas
         self._create_score_batch_status()
 
         user1 = UserFactory.create()
+        ContractDetailFactory.create(contract=self.contract_submission_reminder, course_id=self.course_spoc1.id)
         CourseEnrollmentFactory.create(user=user1, course_id=self.course_spoc1.id)
+        ContractRegisterFactory.create(user=user1, contract=self.contract_submission_reminder, status='Register')
         self._create_achievement_score_data(username=user1.username, email=user1.email)
 
         for i in range(1, 6):
@@ -1186,7 +1197,9 @@ class ContractOperationReminderMailViewTest(BizContractTestBase, BizStoreTestBas
         self._create_playback_batch_status()
         self._create_achievement_playback_column()
         user1 = UserFactory.create()
+        ContractDetailFactory.create(contract=self.contract_submission_reminder, course_id=self.course_spoc1.id)
         CourseEnrollmentFactory.create(user=user1, course_id=self.course_spoc1.id)
+        ContractRegisterFactory.create(user=user1, contract=self.contract_submission_reminder, status='Register')
         self._create_achievement_playback_data(username=user1.username, email=user1.email)
 
         for i in range(1, 6):
@@ -1222,7 +1235,9 @@ class ContractOperationReminderMailViewTest(BizContractTestBase, BizStoreTestBas
         self.setup_user()
         director_manager = self._director_manager
         user1 = UserFactory.create()
+        ContractDetailFactory.create(contract=self.contract_submission_reminder, course_id=self.course_spoc1.id)
         CourseEnrollmentFactory.create(user=user1, course_id=self.course_spoc1.id)
+        ContractRegisterFactory.create(user=user1, contract=self.contract_submission_reminder, status='Register')
         self._create_score_batch_status()
         self._create_achievement_score_column()
         self._create_achievement_score_data(username=user1.username, email=user1.email)
@@ -1253,7 +1268,9 @@ class ContractOperationReminderMailViewTest(BizContractTestBase, BizStoreTestBas
         self.setup_user()
         director_manager = self._director_manager
         user1 = UserFactory.create()
+        ContractDetailFactory.create(contract=self.contract_submission_reminder, course_id=self.course_spoc1.id)
         CourseEnrollmentFactory.create(user=user1, course_id=self.course_spoc1.id)
+        ContractRegisterFactory.create(user=user1, contract=self.contract_submission_reminder, status='Register')
         self._create_playback_batch_status()
         self._create_achievement_playback_column()
         self._create_achievement_playback_data(username=user1.username, email=user1.email)
@@ -1284,7 +1301,9 @@ class ContractOperationReminderMailViewTest(BizContractTestBase, BizStoreTestBas
         self.course = CourseFactory.create(org='gacco', number='course', run='run1')
         # Search target user
         user1 = UserFactory.create()
+        ContractDetailFactory.create(contract=self.contract_submission_reminder, course_id=self.course.id)
         enrollment = CourseEnrollmentFactory.create(user=user1, course_id=self.course.id)
+        ContractRegisterFactory.create(user=user1, contract=self.contract_submission_reminder, status='Register')
         self.attr = CourseEnrollmentAttributeFactory.create(
             enrollment=enrollment, namespace='ga', name='attended_status',
             value='{"attended_date": "2010-10-10T10:10:10.123456+00:00"}')
@@ -1315,7 +1334,9 @@ class ContractOperationReminderMailViewTest(BizContractTestBase, BizStoreTestBas
         self.course = CourseFactory.create(org='gacco', number='course', run='run1')
         # Search target user
         user1 = UserFactory.create()
+        ContractDetailFactory.create(contract=self.contract_submission_reminder, course_id=self.course.id)
         enrollment = CourseEnrollmentFactory.create(user=user1, course_id=self.course.id)
+        ContractRegisterFactory.create(user=user1, contract=self.contract_submission_reminder, status='Register')
         self.attr = CourseEnrollmentAttributeFactory.create(
             enrollment=enrollment, namespace='ga', name='attended_status',
             value='{"completed_date": "2010-10-10T10:10:10.123456+00:00"}')
@@ -1346,7 +1367,9 @@ class ContractOperationReminderMailViewTest(BizContractTestBase, BizStoreTestBas
         self.course = CourseFactory.create(org='gacco', number='course', run='run1')
         # Search target user
         user1 = UserFactory.create()
+        ContractDetailFactory.create(contract=self.contract_submission_reminder, course_id=self.course.id)
         enrollment = CourseEnrollmentFactory.create(user=user1, course_id=self.course.id)
+        ContractRegisterFactory.create(user=user1, contract=self.contract_submission_reminder, status='Register')
         self.overview = CourseOverview.get_from_id(self.course.id)
         self.overview.extra.is_status_managed = True
         self.overview.extra.save()
@@ -1373,8 +1396,10 @@ class ContractOperationReminderMailViewTest(BizContractTestBase, BizStoreTestBas
         self.course = CourseFactory.create(org='gacco', number='course', run='run1')
         # Search target user
         user1 = UserFactory.create()
+        ContractDetailFactory.create(contract=self.contract_submission_reminder, course_id=self.course.id)
         enrollment = CourseEnrollmentFactory.create(user=user1, course_id=self.course.id, is_active=False)
         enrollment.deactivate()
+        ContractRegisterFactory.create(user=user1, contract=self.contract_submission_reminder, status='Register')
         self.overview = CourseOverview.get_from_id(self.course.id)
         self.overview.extra.is_status_managed = True
         self.overview.extra.save()
@@ -1395,8 +1420,10 @@ class ContractOperationReminderMailViewTest(BizContractTestBase, BizStoreTestBas
         director_manager = self._director_manager
         self.course = CourseFactory.create(org='gacco', number='course', run='run1')
         user1 = UserFactory.create()
+        ContractDetailFactory.create(contract=self.contract_submission_reminder, course_id=self.course.id)
         UserStandingFactory.create(user=user1, account_status=UserStanding.ACCOUNT_DISABLED, changed_by=user1)
         CourseEnrollmentFactory.create(user=user1, course_id=self.course.id, is_active=False)
+        ContractRegisterFactory.create(user=user1, contract=self.contract_submission_reminder, status='Register')
         self.overview = CourseOverview.get_from_id(self.course.id)
         self.overview.extra.is_status_managed = True
         self.overview.extra.save()
@@ -1417,7 +1444,9 @@ class ContractOperationReminderMailViewTest(BizContractTestBase, BizStoreTestBas
         director_manager = self._director_manager
         self.course = CourseFactory.create(org='gacco', number='course', run='run1')
         user1 = UserFactory.create()
+        ContractDetailFactory.create(contract=self.contract_submission_reminder, course_id=self.course.id)
         CourseEnrollmentFactory.create(user=user1, course_id=self.course.id, is_active=False)
+        ContractRegisterFactory.create(user=user1, contract=self.contract_submission_reminder, status='Register')
         self.course.created = datetime(year=2000, month=1, day=1)
         self.course.save()
         self.overview = CourseOverview.get_from_id(self.course.id)
@@ -1450,9 +1479,11 @@ class ContractOperationReminderMailViewTest(BizContractTestBase, BizStoreTestBas
         group = Group.objects.get(org=self.contract_org, group_code=group_code)
         RightFactory.create(org=self.contract_org, group=group, user=manager_manager.user, created_by=self.user,
                             creator_org=self.contract_org)
+        ContractDetailFactory.create(contract=self.contract_submission_reminder, course_id=self.course_spoc1.id)
         for i, group in enumerate(Group.objects.filter(org=self.contract_org)):
             user = UserFactory.create()
             CourseEnrollmentFactory.create(user=user, course_id=self.course_spoc1.id)
+            ContractRegisterFactory.create(user=user, contract=self.contract_submission_reminder, status='Register')
             self._create_member(org=self.contract_org, group=group, code='code' + str(i), user=user)
 
         param = self._create_reminder_search_param()
