@@ -1329,7 +1329,9 @@ def _attendance(request, course_key):
 
     # Check attendance status
     executor = AttendanceStatusExecutor(enrollment=CourseEnrollment.get_enrollment(user=student, course_key=course.id))
-    display_status = executor.get_attendance_status_str(start=course.start, end=course.end, course_id=course.id,
+    display_status = executor.get_attendance_status_str(start=course.start, end=course.end,
+                                                        terminate_date=course.terminate_start,
+                                                        self_paced=course.self_paced, course_id=course.id,
                                                         is_status_managed=course.is_status_managed, user=student)
 
     return render_to_response('courseware/attendance.html', {
