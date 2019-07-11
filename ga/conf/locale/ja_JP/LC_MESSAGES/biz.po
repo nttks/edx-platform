@@ -441,16 +441,16 @@ msgid "Confirm Invitation Code"
 msgstr "受講内容確認"
 
 #: biz/templates/ga_invitation/confirm.html
-msgid "{contract_name} contains the course of the following. Please check the course content."
-msgstr "{contract_name}には下記のコースが含まれています。受講内容を確認してください。"
+msgid "Please check the contents and register."
+msgstr "内容についてご確認の上、登録を行ってください。"
 
 #: biz/templates/ga_invitation/confirm.html
 msgid "Confirm Course"
-msgstr "コース内容を確認する"
+msgstr "内容を確認する"
 
 #: biz/templates/ga_invitation/confirm.html
-msgid "To take {contract_name} are required to enter the additional item below."
-msgstr "{contract_name}を受講するには下記の追加情報の入力が必要です。"
+msgid "Please enter the information below and register."
+msgstr "下記の情報を入力し、登録して下さい。"
 
 #: biz/templates/ga_invitation/confirm.html
 msgid "Register invitation code."
@@ -2372,3 +2372,15 @@ msgstr "登録取消"
 #: biz/djangoapps/ga_achievement/views.py.py:772
 msgid "Contract Status"
 msgstr "契約状態"
+
+#: biz/templates/ga_invitation/confilm.html:277
+msgid "Contents of attendance"
+msgstr "受講内容"
+
+#: biz/templates/ga_invitation/confilm.html:311
+msgid "Contents have been confirmed."
+msgstr "内容を確認しました。"
+
+#: biz/templates/ga_invitation/confilm.html:311
+msgid "After confirming the contents, check the 'Confirmation required check box' and press the 'Register' button."
+msgstr "内容を確認のうえ、「確認チェックボックス」をチェックし、「登録する」ボタンを押してください。"
