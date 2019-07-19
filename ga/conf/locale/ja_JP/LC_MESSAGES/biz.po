@@ -442,7 +442,7 @@ msgstr "受講内容確認"
 
 #: biz/templates/ga_invitation/confirm.html
 msgid "Please check the contents and register."
-msgstr "内容についてご確認の上、登録を行ってください。"
+msgstr "内容をご確認のうえ、登録をお願いします。"
 
 #: biz/templates/ga_invitation/confirm.html
 msgid "Confirm Course"
@@ -453,8 +453,8 @@ msgid "Please enter the information below and register."
 msgstr "下記の情報を入力し、登録して下さい。"
 
 #: biz/templates/ga_invitation/confirm.html
-msgid "Register invitation code."
-msgstr "受講コードを登録する"
+msgid "Register invitation code"
+msgstr "登録"
 
 #: biz/templates/ga_invitation/confirm.html
 msgid "Invitation Code:{invitation_code}({contract_name})"
@@ -2378,9 +2378,9 @@ msgid "Contents of attendance"
 msgstr "受講内容"
 
 #: biz/templates/ga_invitation/confilm.html:311
-msgid "Contents have been confirmed."
-msgstr "内容を確認しました。"
+msgid "Contents have been confirmed"
+msgstr "内容を確認しました"
 
 #: biz/templates/ga_invitation/confilm.html:311
-msgid "After confirming the contents, check the 'Confirmation required check box' and press the 'Register' button."
-msgstr "内容を確認のうえ、「確認チェックボックス」をチェックし、「登録する」ボタンを押してください。"
+msgid "After confirming the contents, checking 'Contents have been confirmed' and press the 'Register invitation code' button."
+msgstr "内容をご確認のうえ、「内容を確認しました」をチェックし、「登録」ボタンを押してください。"

@@ -306,18 +306,18 @@ from openedx.core.lib.courses import course_image_url
       % endfor
     % endif
 
-    <h4 class="messege">${_("After confirming the contents, check the 'Confirmation required check box' and press the 'Register' button.")}</h4>
+    <h4 class="messege">${_("After confirming the contents, checking 'Contents have been confirmed' and press the 'Register invitation code' button.")}</h4>
     <div class="check">
         <label for="check">
-            <input type="checkbox" id="check" name="checkbox" style="margin-right: 5px" style="cursor: pointer">${_("Contents have been confirmed.")}
+            <input type="checkbox" id="check" name="checkbox" style="margin-right: 5px" style="cursor: pointer">${_("Contents have been confirmed")}
         </label>
     </div>
     <div class="button-area">
       <input type="hidden" name="invitation_code" value="${contract.invitation_code}">
       <input type="hidden" name="csrfmiddlewaretoken" value="${csrf_token}">
       <br>
-      <input type="submit" id="submit" value="&#xf044; ${_("Register invitation code.")}" />
       <input id="cancel-invitation-code" type="button" data-url="${reverse('account_settings')}" value="&#xf05e; ${_("Cancel")}" />
+      <input type="submit" id="submit" value="&#xf044; ${_("Register invitation code")}" />
     </div>
   </form>
 </div>
