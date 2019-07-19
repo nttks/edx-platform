@@ -58,9 +58,9 @@ class AttendanceStatusExecutor(object):
         """
         return self.attendance_status_is_completed(self.attr.value) if self.has_attr else False
 
-    def get_attendance_status_str(self, start, end, terminate_date, self_paced, course_id, is_status_managed, user):
+    def get_attendance_status_str(self, start, end, course_id, is_status_managed, user):
         return self.get_attendance_status(
-            start, end, terminate_date, self_paced, course_id, is_status_managed,
+            start, end, course_id, is_status_managed,
             user, self.attr.value if self.has_attr else None)
 
     def get_attended_datetime(self):
@@ -209,14 +209,12 @@ class AttendanceStatusExecutor(object):
         return result
 
     @staticmethod
-    def get_attendance_status(start, end, terminate_date, self_paced, course_id, is_status_managed, user, attr_value):
+    def get_attendance_status(start, end, course_id, is_status_managed, user, attr_value):
         """
         Get attendance status string.
 
         :param start: course_overview.start
-        :param end: course_overview.end
-        :param terminate_date: course_overview.extra.terminate_start
-        :param self_paced: course_overview.extra.self_paced
+        :param end: course_overview.end or course_overview.extra.terminate_start
         :param course_id: course_overview.id
         :param is_status_managed: course_overview_extra.is_status_managed
         :param user: User
@@ -236,10 +234,7 @@ class AttendanceStatusExecutor(object):
             return 'previous'
 
         student_module_count = StudentModule.objects.filter(student=user, course_id=course_id).count()
-        if self_paced:
-            is_course_end = True if terminate_date and terminate_date < now else False
-        else:
-            is_course_end = True if end and end < now else False
+        is_course_end = True if end and end < now else False
 
         if student_module_count or is_attended:
             if is_status_managed and is_completed:

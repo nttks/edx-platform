@@ -609,9 +609,9 @@ def dashboard(request):
         course_enroll_dates[enrollment.course_id] = enrollment.created
         # check attendance status
         attribute_value = attendance_values_dict[enrollment.id] if enrollment.id in attendance_values_dict else None
+        end = overview.extra.terminate_start if overview.extra.self_paced else overview.end
         enroll_statuses[enrollment.course_id] = AttendanceStatusExecutor.get_attendance_status(
-            start=overview.start, end=overview.end, terminate_date=overview.extra.terminate_start,
-            self_paced=overview.extra.self_paced, course_id=enrollment.course_id,
+            start=overview.start, end=end,  course_id=enrollment.course_id,
             is_status_managed=True, user=enrollment.user, attr_value=attribute_value)
 
     # Set max order when course_order is empty.
