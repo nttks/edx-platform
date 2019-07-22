@@ -260,7 +260,7 @@ class AttendanceStatusExecutorTests(ModuleStoreTestCase, PlaybackFinishTestBase)
     def test_get_attendance_status_str_when_self_paced_is_true_and_closing(self):
         # arrange
         self.course.self_paced = True
-        self.course.terminate_start = datetime(2001, 01, 01, 00, 00, 00)
+        self.course.terminate_start = datetime(2001, 1, 1, tzinfo=UTC)
         CourseEnrollmentAttributeFactory.create(
             enrollment=self.enrollment, namespace='ga', name='attended_status', value='{"attended_date": "test"}')
         self.course.is_status_managed = True
@@ -268,7 +268,7 @@ class AttendanceStatusExecutorTests(ModuleStoreTestCase, PlaybackFinishTestBase)
         # act
         executor = AttendanceStatusExecutor(enrollment=self.enrollment)
         status = executor.get_attendance_status_str(
-            start=self.course.start, end=self.course.end, course_id=self.course.id,
+            start=self.course.start, end=self.course.terminate_start, course_id=self.course.id,
             is_status_managed=self.course.is_status_managed, user=self.user)
         # assert
         self.assertEqual(status, 'closing')
@@ -277,7 +277,7 @@ class AttendanceStatusExecutorTests(ModuleStoreTestCase, PlaybackFinishTestBase)
     def test_get_attendance_status_str_when_self_paced_is_true_and_complete(self):
         # arrange
         self.course.self_paced = True
-        self.course.terminate_start = datetime(2001, 01, 01, 00, 00, 00)
+        self.course.terminate_start = datetime(2001, 1, 1, tzinfo=UTC)
         CourseEnrollmentAttributeFactory.create(
             enrollment=self.enrollment, namespace='ga', name='attended_status',
             value='{"attended_date": "test", "completed_date": "test"}')
@@ -286,7 +286,7 @@ class AttendanceStatusExecutorTests(ModuleStoreTestCase, PlaybackFinishTestBase)
         # act
         executor = AttendanceStatusExecutor(enrollment=self.enrollment)
         status = executor.get_attendance_status_str(
-            start=self.course.start, end=self.course.end, course_id=self.course.id,
+            start=self.course.start, end=self.course.terminate_start, course_id=self.course.id,
             is_status_managed=self.course.is_status_managed, user=self.user)
         # assert
         self.assertEqual(status, 'completed')
@@ -295,7 +295,7 @@ class AttendanceStatusExecutorTests(ModuleStoreTestCase, PlaybackFinishTestBase)
     def test_get_attendance_status_str_when_self_paced_is_true_and_working(self):
         # arrange
         self.course.self_paced = True
-        self.course.terminate_start = datetime(2001, 05, 01, 00, 00, 00)
+        self.course.terminate_start = datetime(2001, 5, 1, tzinfo=UTC)
         CourseEnrollmentAttributeFactory.create(
             enrollment=self.enrollment, namespace='ga', name='attended_status', value='{"attended_date": "test"}')
         self.course.is_status_managed = True
@@ -303,7 +303,7 @@ class AttendanceStatusExecutorTests(ModuleStoreTestCase, PlaybackFinishTestBase)
         # act
         executor = AttendanceStatusExecutor(enrollment=self.enrollment)
         status = executor.get_attendance_status_str(
-            start=self.course.start, end=self.course.end, course_id=self.course.id,
+            start=self.course.start, end=self.course.terminate_start, course_id=self.course.id,
             is_status_managed=self.course.is_status_managed, user=self.user)
         # assert
         self.assertEqual(status, 'working')
