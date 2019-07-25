@@ -275,9 +275,9 @@ from openedx.core.lib.courses import course_image_url
 <div class="container">
   <h1>${_("Confirm Invitation Code")}</h1>
   <h3 class="code">${_("Invitation Code:{invitation_code}({contract_name})").format(invitation_code=contract.invitation_code, contract_name=contract.contract_name) | h}</h3>
+  % for course in courses:
   <h3 class="subtitle-name">●${_("Contents of attendance")}</h3>
   <h4 class="att">${_("Please check the contents and register.")}</h4>
-  % for course in courses:
     <section class="course-area">
       <div class="course-title">
         <p>${course.id | h}</p>
@@ -293,8 +293,8 @@ from openedx.core.lib.courses import course_image_url
         </figcaption>
       </figure>
     </section>
+    % endfor
   <h3 class="subtitle-name-scd">●${_("Registration")}</h3>
-  % endfor
   <form id="form-invitation-code" class="add-form" action="${reverse('biz:invitation:register')}" method="post">
     % if additionals:
       <h3 class="add-info">${_("Please enter the information below and register.")}</h3>
