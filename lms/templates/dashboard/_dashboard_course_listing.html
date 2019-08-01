@@ -144,7 +144,7 @@ from openedx.core.djangoapps.ga_optional.models import DashboardOptionalConfigur
           <a href="${reverse('shoppingcart.views.show_receipt', args=[order.id])}" class="btn">${_("View Your Order")}</a>
           % endfor
         </div>
-      % elif course_overview.extra and course_overview.extra.is_f2f_course:
+      % elif course_overview.extra and course_overview.extra.is_f2f_course and course_overview.extra.is_f2f_course_sell:
         <div class="advanced-course-information advanced-course apply">
           <a href="${reverse('advanced_course:courses_face_to_face', args=[course_overview.id])}" class="btn">
             % if advanced_course_status.has_available_f2f_course():
