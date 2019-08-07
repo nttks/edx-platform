@@ -35,7 +35,8 @@ from django.core.urlresolvers import reverse
       % endif
       <p class="lead">${_("Unit that display 'Submitted' or 'Not submitted' is status managed.<br/>"
       "Attendance status change to 'Finish Enrolled' when all unit submitted.<br/>"
-      "*But attendance status not change to 'Finish Enrolled' when exist not display unit.")}</p>
+      "*But attendance status not change to 'Finish Enrolled' when exist not display unit.<br/>"
+      "* [-] Is a unit that does not manage status.")}</p>
       <div class="chapters">
         % for i, chapter in enumerate(filter(lambda x: x['is_display'], course_details)):
             <section>

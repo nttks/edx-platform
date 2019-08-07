@@ -74,7 +74,7 @@ from openedx.core.lib.courses import course_image_url
         font-size: 1.6em;
         border-left: solid #43AC6A 4px;
         padding-left: 10px;
-        margin: 30px 0 20px 0;
+        margin: 10px 0 15px 0;
     }
 
     .container h3 {
@@ -87,15 +87,31 @@ from openedx.core.lib.courses import course_image_url
 
     h3.code {
         border-bottom: dashed 1px #aaa;
-        margin: 6px auto 30px;
+        margin: 6px auto 10px;
         width: 97%;
         color: #444;
         font-size: 1.35rem;
     }
 
+    h3.subtitle-name {
+        margin: 0px 40px 10px;
+    }
+
+    h3.subtitle-name-scd {
+        border-top: 1px solid #ccc;
+        margin: 0px 40px 10px;
+    }
+
     h4.att {
         text-align: center;
         font-size: 1.15rem;
+    }
+
+    h4.messege {
+        text-align: center;
+        font-size: 1.1rem;
+        color: red;
+        margin-top: 30px;
     }
 
     .add-form {
@@ -105,8 +121,7 @@ from openedx.core.lib.courses import course_image_url
 
     /* form#form-invitation-code  */
     h3.add-info {
-        border-bottom: 1px solid #ccc;
-        margin: 45px 0 15px;
+        margin: 5px 0px;
         font-size: 1.2rem;
         text-align: center;
     }
@@ -125,8 +140,8 @@ from openedx.core.lib.courses import course_image_url
         background-color: #f3f3f3;
         border: 1px solid #ccc;
         border-radius: 4px;
-        margin: 20px auto;
-        padding: 20px;
+        margin: 10px auto 20px;
+        padding: 10px;
         max-width: 500px;
         width: auto;
     }
@@ -165,7 +180,7 @@ from openedx.core.lib.courses import course_image_url
     }
 
     .course-title {
-        font-size: 1.2rem;
+        font-size: 1rem;
     }
 
     .course-board, .course-title {
@@ -204,8 +219,12 @@ from openedx.core.lib.courses import course_image_url
     }
 
     .button-area {
-        margin: 10px auto 20px;
+        margin: 0px auto 20px;
         text-align: center;
+    }
+    .check {
+        text-align: center;
+        margin: 15px 0px 0px;
     }
 </style>
 </%block>
@@ -237,6 +256,18 @@ from openedx.core.lib.courses import course_image_url
             window.location.href = $(this).data('url');
         });
     });
+
+    $(function() {
+        $('#submit').attr('disabled', 'disabled');
+
+        $('#check').click(function() {
+            if ( $(this).prop('checked') == false ) {
+                $('#submit').attr('disabled', 'disabled');
+            } else {
+            $('#submit').removeAttr('disabled');
+            }
+        });
+    });
 </script>
 </%block>
 
@@ -244,8 +275,9 @@ from openedx.core.lib.courses import course_image_url
 <div class="container">
   <h1>${_("Confirm Invitation Code")}</h1>
   <h3 class="code">${_("Invitation Code:{invitation_code}({contract_name})").format(invitation_code=contract.invitation_code, contract_name=contract.contract_name) | h}</h3>
-  <h4 class="att">${_("{contract_name} contains the course of the following. Please check the course content.").format(contract_name=contract.contract_name) | h}</h4>
   % for course in courses:
+  <h3 class="subtitle-name">●${_("Contents of attendance")}</h3>
+  <h4 class="att">${_("Please check the contents and register.")}</h4>
     <section class="course-area">
       <div class="course-title">
         <p>${course.id | h}</p>
@@ -261,10 +293,11 @@ from openedx.core.lib.courses import course_image_url
         </figcaption>
       </figure>
     </section>
-  % endfor
+    % endfor
+  <h3 class="subtitle-name-scd">●${_("Registration")}</h3>
   <form id="form-invitation-code" class="add-form" action="${reverse('biz:invitation:register')}" method="post">
     % if additionals:
-      <h3 class="add-info">${_("To take {contract_name} are required to enter the additional item below.").format(contract_name=contract.contract_name) | h}</h3>
+      <h3 class="add-info">${_("Please enter the information below and register.")}</h3>
       <div id="message-invitation-code" class="error-message" class="red"></div>
       % for additional in additionals:
         <div class="additional">
@@ -273,12 +306,18 @@ from openedx.core.lib.courses import course_image_url
       % endfor
     % endif
 
+    <h4 class="messege">${_("After confirming the contents, checking 'Contents have been confirmed' and press the 'Register invitation code' button.")}</h4>
+    <div class="check">
+        <label for="check">
+            <input type="checkbox" id="check" name="checkbox" style="margin-right: 5px" style="cursor: pointer">${_("Contents have been confirmed")}
+        </label>
+    </div>
     <div class="button-area">
       <input type="hidden" name="invitation_code" value="${contract.invitation_code}">
       <input type="hidden" name="csrfmiddlewaretoken" value="${csrf_token}">
       <br>
       <input id="cancel-invitation-code" type="button" data-url="${reverse('account_settings')}" value="&#xf05e; ${_("Cancel")}" />
-      <input type="submit" value="&#xf044; ${_("Register invitation code.")}" />
+      <input type="submit" id="submit" value="&#xf044; ${_("Register invitation code")}" />
     </div>
   </form>
 </div>

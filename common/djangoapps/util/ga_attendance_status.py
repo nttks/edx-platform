@@ -60,7 +60,8 @@ class AttendanceStatusExecutor(object):
 
     def get_attendance_status_str(self, start, end, course_id, is_status_managed, user):
         return self.get_attendance_status(
-            start, end, course_id, is_status_managed, user, self.attr.value if self.has_attr else None)
+            start, end, course_id, is_status_managed,
+            user, self.attr.value if self.has_attr else None)
 
     def get_attended_datetime(self):
         attended_datetime = None
@@ -213,7 +214,7 @@ class AttendanceStatusExecutor(object):
         Get attendance status string.
 
         :param start: course_overview.start
-        :param end: course_overview.end
+        :param end: course_overview.end or course_overview.extra.terminate_start
         :param course_id: course_overview.id
         :param is_status_managed: course_overview_extra.is_status_managed
         :param user: User

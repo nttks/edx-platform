@@ -802,10 +802,12 @@ msgstr "受講ステータス"
 #: templates/courseware/attendance.html
 msgid "Unit that display 'Submitted' or 'Not submitted' is status managed.<br/>"
 "Attendance status change to 'Finish Enrolled' when all unit submitted.<br/>"
-"*But attendance status not change to 'Finish Enrolled' when exist not display unit."
+"*But attendance status not change to 'Finish Enrolled' when exist not display unit.<br/>"
+"* [-] Is a unit that does not manage status."
 msgstr "「未完了」または「完了」が表示されている単元は、ステータス管理が設定されています。<br/>"
 "すべて「完了」にすると、受講状況が「受講済」になります。<br/>"
-"※ただし、未公開の単元がある場合は、「受講済」にならない場合があります。"
+"※ただし、未公開の単元がある場合は、「受講済」にならない場合があります。<br/>"
+"※「－」はステータス管理をしていない単元になります。"
 
 #: templates/register-sidebar.html
 msgid "Please check the 'FAQs' if you experience any problems."
@@ -937,7 +939,7 @@ msgstr "対面学習コース申込"
 
 #: templates/dashboard/_dashboard_course_listing.html
 msgid "There is Face-to-Face Course"
-msgstr "対面学習コースあり"
+msgstr "対面授業あり"
 
 #: templates/dashboard/_dashboard_course_listing.html
 msgid "View Your Order"
