@@ -94,6 +94,7 @@ def perform_delegate_member_register(entry_id, task_input, action_name):
                 delete_targets = Member.objects.filter(
                     org=task_history.organization, is_active=False, is_delete=False).exclude(
                     id__in=backup_members).values_list('id', flat=True)
+                Member.objects.filter(id__in=delete_targets, is_active=False, is_delete=True).delete()
                 for delete_target in Member.objects.filter(id__in=delete_targets):
                     delete_target.pk = None
                     delete_target.is_delete = True
