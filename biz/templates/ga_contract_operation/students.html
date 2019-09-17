@@ -393,7 +393,7 @@ from django.core.urlresolvers import reverse
             </div>
         </div>
         <div class="gc_btn_cta gc_btn_cta_center">
-            <button class="btn btn-blue gc_btn_search" type="submit">${_('Search')}</button>
+            <button class="btn btn-blue gc_btn_search" type="submit" id="initial_override">${_('Search')}</button>
         </div>
     </form>
 </div>
@@ -443,3 +443,8 @@ from django.core.urlresolvers import reverse
 <%include file="_task_history.html" />
 % endif
 </%block>
+<script type="text/javascript">
+window.onload = function () {
+    document.getElementById( "initial_override" ).click();
+}
+</script>
