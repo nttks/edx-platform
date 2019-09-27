@@ -55,6 +55,7 @@ class Command(BaseCommand):
             log.setLevel(logging.DEBUG)
         log.info(u"register_students_automatically command start {}".format('(dry run)' if debug else ''))
 
+        now = datetime.now().strftime('%Y/%m/%d')
         for org in self._get_organization():
             log.debug('Target organization is {0}'.format(str(org.id)))
             member_total_count = Member.find_active_by_org(org=org).count()
@@ -64,7 +65,7 @@ class Command(BaseCommand):
                 if contract.can_auto_register_students:
                     action_name = REFLECT_CONDITIONS_BATCH
                 elif contract.auto_register_reservation_date and contract.auto_register_reservation_date.strftime(
-                            '%Y/%m/%d') == datetime.now().strftime('%Y/%m/%d'):
+                        '%Y/%m/%d') == now:
                     action_name = REFLECT_CONDITIONS_RESERVATION
 
                 if action_name:
