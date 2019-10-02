@@ -229,4 +229,4 @@ MODULESTORE = convert_module_store_setting_if_needed(MODULESTORE)
 SECRET_KEY = '85920908f28904ed733fe576320db18cabd7b6cd'
 
 ##### domain control access list test#####
-DOMAIN_CONTROL_ACCESS = ['@test.test.co.jp', '@test.test.jp']
+DOMAIN_CONTROL_ACCESS = ['@test.co.jp', '@test.jp', '@test.com']

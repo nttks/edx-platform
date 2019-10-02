@@ -627,4 +627,4 @@ GA_OPERATION_SPECIFIC_COMPANY_KEYS = {"GA_OPERATION_SPECIFIC_COMPANY_KEYS": {
 GA_OPERATION_CALLBACK_EMAIL = {"GA_OPERATION_CALLBACK_EMAIL": "test@test.test.org"}
 
 ##### domain control access list test#####
-DOMAIN_CONTROL_ACCESS = ['@test.test.co.jp', '@test.test.jp']
+DOMAIN_CONTROL_ACCESS = ['@test.co.jp', '@test.jp', '@test.com']
