@@ -5,6 +5,7 @@ from mock import patch
 from django.core.urlresolvers import reverse
 from django.test import TestCase, RequestFactory
 from django.utils.crypto import get_random_string
+from django.test.utils import override_settings
 
 from opaque_keys.edx.keys import CourseKey
 
@@ -328,6 +329,22 @@ class InvitationViewsConfirmTest(InvitationViewsTest):
         response = self.assert_request_status_code(405, self._url_confirm(self.contract.invitation_code), 'POST')
         with self.assertRaises(ContractRegister.DoesNotExist):
             ContractRegister.objects.get(user=self.user)
+
+    @override_settings(DOMAIN_CONTROL_ACCESS=['@test.com'])
+    def test_domain_control_access_not_pass(self):
+        self.setup_user()
+        response = self.assert_request_status_code(403, self._url_confirm(self.contract.invitation_code))
+
+    @override_settings(DOMAIN_CONTROL_ACCESS=['@tester.com'])
+    def test_domain_control_access_pass(self):
+        self.setup_user()
+        response = self.assert_request_status_code(200, self._url_confirm(self.contract.invitation_code))
+        self.assertEqual(ContractRegister.objects.get(user=self.user).status, INPUT_INVITATION_CODE)
+
+    @override_settings(DOMAIN_CONTROL_ACCESS=['@test.com'])
+    def test_domain_control_access_register_type_not_pass(self):
+        self.setup_user()
+        response = self.assert_request_status_code(404, self._url_confirm(self.contract_auth_student_cannot_register.invitation_code))
 
 
 class InvitationViewsRegisterTest(InvitationViewsTest):

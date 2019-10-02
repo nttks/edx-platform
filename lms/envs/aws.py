@@ -849,3 +849,6 @@ GA_BULK_EMAIL_SEND_SELF_PACED_COURSE_CLOSURE_REMINDER_EMAIL_COMMAND_OUTPUT = ENV
 
 ##### Settings for Gacco.org's app #####
 from ga_app.envs.aws import *
+
+##### domain control access list #####
+DOMAIN_CONTROL_ACCESS = ENV_TOKENS.get('DOMAIN_CONTROL_ACCESS', [])
