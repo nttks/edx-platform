@@ -627,4 +627,34 @@ GA_OPERATION_SPECIFIC_COMPANY_KEYS = {"GA_OPERATION_SPECIFIC_COMPANY_KEYS": {
 GA_OPERATION_CALLBACK_EMAIL = {"GA_OPERATION_CALLBACK_EMAIL": "test@test.test.org"}
 
 ##### domain control access list test#####
-DOMAIN_CONTROL_ACCESS = ['@test.co.jp', '@test.jp', '@test.com']
+DOMAIN_CONTROL_ACCESS = [
+    {
+    "gaccoSalesDemo3": [
+        "@smtb.jp",
+        "@sumitclub.jp",
+        "@smtpfc.jp",
+        "@smtcard.jp",
+        "@smttas.jp",
+        "@smtri.jp",
+        "@hrone.co.jp",
+        "@mi-ri.jp",
+        "@smtlp.jp",
+        "@tosyodai.co.jp",
+        "@smtic.jp",
+        "@jsa-hp.co.jp",
+        "@smtgc.jp",
+        "@japantrustee.co.jp",
+        "@japanpension.co.jp",
+        "@smtreim.jp",
+        "@jp-toushin.jp",
+        "@jast-ds.co.jp",
+        "@sumishinlifecard.co.jp",
+        "@gacco.co.jp",
+        "@gacco.org",
+        "@test.test.co.jp",
+        "@test.co.jp",
+        "@test.jp",
+        "@test.com"
+        ]
+    },
+]

@@ -134,8 +134,8 @@ def confirm(request, invitation_code):
         raise Http404()
 
     email = request.user.email
-    domain_control_access = settings.DOMAIN_CONTROL_ACCESS
-    if contract.register_type == 'ERS' and re.sub(re.compile('(.*)(?=@)'), '', email) not in domain_control_access:
+    domain_control_access = settings.DOMAIN_CONTROL_ACCESS[0].get(contract.invitation_code, [])
+    if contract.register_type == 'ERS' and len(domain_control_access) != 0 and re.sub(re.compile('(.*)(?=@)'), '', email) not in domain_control_access:
         return HttpResponseForbidden(render_to_string('static_templates/403.html', {}))
 
     contract_register, created = ContractRegister.objects.get_or_create(user=request.user, contract=contract)

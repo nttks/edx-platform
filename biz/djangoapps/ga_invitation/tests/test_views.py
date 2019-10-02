@@ -330,20 +330,27 @@ class InvitationViewsConfirmTest(InvitationViewsTest):
         with self.assertRaises(ContractRegister.DoesNotExist):
             ContractRegister.objects.get(user=self.user)
 
-    def test_domain_control_access_not_pass(self):
+    @override_settings(DOMAIN_CONTROL_ACCESS=[{'invitation18': ['@test.com']}])
+    def test_domain_control_access_pass(self):
         self.setup_user()
         response = self.assert_request_status_code(200, self._url_confirm(self.contract.invitation_code))
         self.assertEqual(ContractRegister.objects.get(user=self.user).status, INPUT_INVITATION_CODE)
 
-    @override_settings(DOMAIN_CONTROL_ACCESS=['@tester.com'])
-    def test_domain_control_access_pass(self):
+    @override_settings(DOMAIN_CONTROL_ACCESS=[{'invitation18': '@tester.com'}])
+    def test_domain_control_access_not_pass(self):
         self.setup_user()
         response = self.assert_request_status_code(403, self._url_confirm(self.contract.invitation_code))
 
-
+    @override_settings(DOMAIN_CONTROL_ACCESS=[{'invitation44': '@test.com'}])
     def test_domain_control_access_register_type_not_pass(self):
         self.setup_user()
         response = self.assert_request_status_code(404, self._url_confirm(self.contract_auth_student_cannot_register.invitation_code))
+
+    @override_settings(DOMAIN_CONTROL_ACCESS=[{'invitation44': '@tester.com'}])
+    def test_domain_control_access_register_type_not_pass_2(self):
+        self.setup_user()
+        response = self.assert_request_status_code(404, self._url_confirm(
+            self.contract_auth_student_cannot_register.invitation_code))
 
 
 class InvitationViewsRegisterTest(InvitationViewsTest):
