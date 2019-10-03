@@ -847,8 +847,9 @@ GA_OPERATION_CALLBACK_EMAIL_REGISTRATION_COURSE_DAILY_REPORT = ENV_TOKENS.get('G
 ##### Settings for Gacco.org's Bulk email #####
 GA_BULK_EMAIL_SEND_SELF_PACED_COURSE_CLOSURE_REMINDER_EMAIL_COMMAND_OUTPUT = ENV_TOKENS.get('GA_BULK_EMAIL_SEND_SELF_PACED_COURSE_CLOSURE_REMINDER_EMAIL_COMMAND_OUTPUT')
 
+##### domain control access list #####
+DOMAIN_CONTROL_ACCESS = ENV_TOKENS.get('DOMAIN_CONTROL_ACCESS', [])
+
 ##### Settings for Gacco.org's app #####
 from ga_app.envs.aws import *
 
-##### domain control access list #####
-DOMAIN_CONTROL_ACCESS = ENV_TOKENS.get('DOMAIN_CONTROL_ACCESS', [])
