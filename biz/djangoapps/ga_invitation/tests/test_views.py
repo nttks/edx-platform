@@ -5,6 +5,7 @@ from mock import patch
 from django.core.urlresolvers import reverse
 from django.test import TestCase, RequestFactory
 from django.utils.crypto import get_random_string
+from django.test.utils import override_settings
 
 from opaque_keys.edx.keys import CourseKey
 
@@ -328,6 +329,28 @@ class InvitationViewsConfirmTest(InvitationViewsTest):
         response = self.assert_request_status_code(405, self._url_confirm(self.contract.invitation_code), 'POST')
         with self.assertRaises(ContractRegister.DoesNotExist):
             ContractRegister.objects.get(user=self.user)
+
+    def test_domain_control_access_pass(self):
+        self.setup_user()
+        with override_settings(DOMAIN_CONTROL_ACCESS=[{self.contract.invitation_code: ['@test.com']}]):
+            response = self.assert_request_status_code(200, self._url_confirm(self.contract.invitation_code))
+            self.assertEqual(ContractRegister.objects.get(user=self.user).status, INPUT_INVITATION_CODE)
+
+    def test_domain_control_access_not_pass(self):
+        self.setup_user()
+        with override_settings(DOMAIN_CONTROL_ACCESS=[{self.contract.invitation_code: ['@tester.com']}]):
+            response = self.assert_request_status_code(403, self._url_confirm(self.contract.invitation_code))
+
+    def test_domain_control_access_register_type_not_pass(self):
+        self.setup_user()
+        with override_settings(DOMAIN_CONTROL_ACCESS=[{self.contract_auth_student_cannot_register.invitation_code: ['@test.com']}]):
+            response = self.assert_request_status_code(404, self._url_confirm(self.contract_auth_student_cannot_register.invitation_code))
+
+    def test_domain_control_access_register_type_not_pass_2(self):
+        self.setup_user()
+        with override_settings(DOMAIN_CONTROL_ACCESS=[{self.contract_auth_student_cannot_register.invitation_code: ['@tester.com']}]):
+            response = self.assert_request_status_code(404, self._url_confirm(
+                self.contract_auth_student_cannot_register.invitation_code))
 
 
 class InvitationViewsRegisterTest(InvitationViewsTest):

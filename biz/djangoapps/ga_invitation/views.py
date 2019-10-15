@@ -1,17 +1,18 @@
 """
 This module is view of invitation.
 """
+import re
 import logging
-
+from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
 from django.db import transaction
-from django.http import Http404, HttpResponseBadRequest
+from django.http import Http404, HttpResponseBadRequest, HttpResponseForbidden
 from django.utils.translation import ugettext as _
 from django.views.decorators.cache import cache_control
 from django.views.decorators.http import require_GET, require_POST
 
-from edxmako.shortcuts import render_to_response
+from edxmako.shortcuts import render_to_response, render_to_string
 
 from student.models import CourseEnrollment
 from util.json_request import JsonResponse
@@ -131,6 +132,12 @@ def confirm(request, invitation_code):
     if not courses:
         log.info('Not found contract detail.')
         raise Http404()
+
+    email = request.user.email
+    domain_control_access = [invites[contract.invitation_code] for invites in settings.DOMAIN_CONTROL_ACCESS if len(invites.get(contract.invitation_code, [])) != 0]
+    domain_control_access = domain_control_access[0] if len(domain_control_access) != 0 else domain_control_access
+    if contract.register_type == 'ERS' and len(domain_control_access) != 0 and re.sub(re.compile('(.*)(?=@)'), '', email) not in domain_control_access:
+        return HttpResponseForbidden(render_to_string('static_templates/403.html', {}))
 
     contract_register, created = ContractRegister.objects.get_or_create(user=request.user, contract=contract)
     if not created and not contract_register.is_registered():
