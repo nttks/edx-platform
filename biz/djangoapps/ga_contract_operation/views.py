@@ -25,13 +25,24 @@ from biz.djangoapps.ga_contract.models import AdditionalInfo, Contract, Contract
 from biz.djangoapps.ga_contract_operation.models import (
     ContractMail, ContractReminderMail,
     ContractTaskHistory, ContractTaskTarget, StudentRegisterTaskTarget,
-    StudentUnregisterTaskTarget, AdditionalInfoUpdateTaskTarget, StudentMemberRegisterTaskTarget
+    StudentUnregisterTaskTarget, AdditionalInfoUpdateTaskTarget, StudentMemberRegisterTaskTarget,
+    ReminderMailTaskHistory, ReminderMailTaskTarget
 )
 from biz.djangoapps.ga_contract_operation.tasks import (
-    personalinfo_mask, student_register, student_unregister, additional_info_update, student_member_register,
-    TASKS, STUDENT_REGISTER, STUDENT_UNREGISTER, PERSONALINFO_MASK, ADDITIONALINFO_UPDATE, STUDENT_MEMBER_REGISTER
+    personalinfo_mask,
+    student_register,
+    student_unregister,
+    additional_info_update,
+    student_member_register,
+    reminder_bulk_email,
+    TASKS, STUDENT_REGISTER,
+    STUDENT_UNREGISTER,
+    PERSONALINFO_MASK,
+    ADDITIONALINFO_UPDATE,
+    STUDENT_MEMBER_REGISTER,
+    REMINDER_BULK_EMAIL
 )
-from biz.djangoapps.ga_contract_operation.utils import get_additional_info_by_contract
+from biz.djangoapps.ga_contract_operation.utils import get_additional_info_by_contract, create_reminder_task_input
 from biz.djangoapps.ga_invitation.models import (
     AdditionalInfoSetting, ContractRegister,
     STATUS as CONTRACT_REGISTER_STATUS, INPUT_INVITATION_CODE, REGISTER_INVITATION_CODE, UNREGISTER_INVITATION_CODE
@@ -107,11 +118,8 @@ def check_contract_register_selection(func):
 @check_course_selection
 @check_organization_group
 def students(request):
-    # total_count, show_list, status, additional_columns = _students_initial_search(request)
-    total_count = 0
-    show_list = []
-    status = {}
-    additional_columns = []
+    total_count, show_list, status, additional_columns = _students_initial_search(request)
+
     member_org_item_list = OrderedDict()
     for i in range(1, 11):
         member_org_item_list['org' + str(i)] = _("Organization") + str(i)
@@ -532,7 +540,7 @@ def bulk_students(request):
     )
 
 
-def _submit_task(request, task_type, task_class, history, additional_info_list=None):
+def _submit_task(request, task_type, task_class, history, additional_info_list=None, reminder_email_flag=False):
     try:
         if 'sendmail_flg' not in request.POST:
             request.sendmail_flg = None
@@ -543,6 +551,9 @@ def _submit_task(request, task_type, task_class, history, additional_info_list=N
         }
         if additional_info_list:
             task_input['additional_info_ids'] = [a.id for a in additional_info_list]
+
+        if reminder_email_flag:
+            task_input = create_reminder_task_input(request, history)
 
         # Check the task running within the same contract.
         validate_task_message = validate_task(request.current_contract)
@@ -610,6 +621,8 @@ def task_history_ajax(request):
                 _task_targets = StudentsRegisterBatchTarget.find_by_history_id_and_message(history.id)
             elif task.task_type == STUDENT_UNREGISTER_BATCH:
                 _task_targets = StudentsRegisterBatchTarget.find_by_history_id_and_message(history.id)
+            elif task.task_type == REMINDER_BULK_EMAIL:
+                _task_targets = ReminderMailTaskTarget.find_by_history_id_and_message(history.id)
         return [
             {
                 'recid': task_target.id,
@@ -617,19 +630,38 @@ def task_history_ajax(request):
             }
             for task_target in _task_targets
         ] if _task_targets else []
-
-    task_histories = [
-        {
-            'recid': i + 1,
-            'task_type': TASKS[task.task_type] if task and task.task_type in TASKS else _('Unknown'),
-            'task_state': _task_state(task),
-            'task_result': _task_result(task),
-            'requester': history.requester.username,
-            'created': to_timezone(history.created).strftime('%Y/%m/%d %H:%M:%S'),
-            'messages': _task_message(task, history),
-        }
-        for i, (history, task) in enumerate(ContractTaskHistory.find_by_contract_with_task(request.current_contract))
-    ]
+    if 'reminder' in request.META.get('PATH_INFO', ''):
+        task_histories = [
+            {
+                'recid': i + 1,
+                'task_type': TASKS[task.task_type] if task and task.task_type in TASKS else _('Unknown'),
+                'task_state': _task_state(task),
+                'task_result': _task_result(task),
+                'requester': history.requester.username,
+                'created': to_timezone(history.created).strftime('%Y/%m/%d %H:%M:%S'),
+                'messages': _task_message(task, history),
+            }
+            for i, (history, task) in enumerate(ReminderMailTaskHistory.find_by_contract_with_task(request.current_contract))
+        ]
+        return JsonResponse({
+            'status': 'success',
+            'total': len(task_histories),
+            'records': task_histories,
+        })
+    else:
+        task_histories = [
+            {
+                'recid': i + 1,
+                'task_type': TASKS[task.task_type] if task and task.task_type in TASKS else _('Unknown'),
+                'task_state': _task_state(task),
+                'task_result': _task_result(task),
+                'requester': history.requester.username,
+                'created': to_timezone(history.created).strftime('%Y/%m/%d %H:%M:%S'),
+                'messages': _task_message(task, history),
+            }
+            for i, (history, task) in
+            enumerate(ContractTaskHistory.find_by_contract_with_task(request.current_contract))
+        ]
     # The structure of the response is in accordance with the specifications of the load function of w2ui.
     return JsonResponse({
         'status': 'success',
@@ -848,6 +880,7 @@ def reminder_mail(request):
             'reminder_mail_contract_id': contract_reminder_mail.contract_id,
             'survey_names_list': resp_survey_names_list,
             'is_status_managed': course_overview.extra.is_status_managed,
+            'reminder_mail_flg': True,
         }
     )
 
@@ -1364,24 +1397,7 @@ def reminder_search_mail_send_ajax(request):
 
     # Check test mail
     is_test = 'is_test' in request.POST and request.POST['is_test'] == "1"
-
-    # Check user ids
-    if is_test:
-        users = [request.user]
-    else:
-        mail_user_emails = []
-        if request.POST['search_user_emails']:
-            mail_user_emails = request.POST['search_user_emails'].split(',')
-        if len(mail_user_emails) == 0:
-            return _error_response(_("Please select user that you want send reminder mail."))
-
-        users = User.objects.filter(email__in=mail_user_emails).select_related('profile')
-        for mail_user_email in mail_user_emails:
-            if mail_user_email not in users.values_list('email', flat=True):
-                error_messages.append(_("{0}:Not found selected user.").format(mail_user_email))
-
-    # Check mail subject
-    mail_subject = request.POST['mail_subject']
+    mail_subject = request.POST.get('mail_subject', '')
     mail_subject_max_length = ContractReminderMail._meta.get_field('mail_subject').max_length
     if not mail_subject or not mail_subject.strip():
         return _error_response(_("Please enter the subject of an e-mail."))
@@ -1389,29 +1405,22 @@ def reminder_search_mail_send_ajax(request):
         return _error_response(_("Subject within {0} characters.").format(mail_subject_max_length))
 
     # Check mail body
-    mail_body = request.POST['mail_body']
+    mail_body = request.POST.get('mail_body', '')
     if not mail_body or not mail_body.strip():
         return _error_response(_("Please enter the body of an e-mail."))
 
     # Check course info
     contract = request.current_contract
     course = request.current_course
-    detail = ContractDetail.find_enabled_by_manager_and_contract_and_course(
-        manager=request.current_manager, contract=contract, course=course).first()
-
-    # Send mail
-    for user in users:
-        expire_datetime = None
-        if is_test:
-            expire_datetime = course.deadline_start
-            try:
-                profile = UserProfile.objects.get(user=request.user)
-                full_name = profile.name
-            except UserProfile.DoesNotExist:
-                full_name = ''
-        else:
-            expire_datetime = course.deadline_start
-            full_name = user.profile.name
+    # Check user ids
+    if is_test:
+        user = request.user
+        expire_datetime = course.deadline_start
+        try:
+            profile = UserProfile.objects.get(user=user)
+            full_name = profile.name
+        except UserProfile.DoesNotExist:
+            full_name = ''
         try:
             send_mail(user, mail_subject.encode('utf-8'), mail_body.encode('utf-8'), {
                 'username': user.username,
@@ -1424,11 +1433,34 @@ def reminder_search_mail_send_ajax(request):
         except Exception as ex:
             log.exception('Failed to send the e-mail.' + ex.message)
             error_messages.append(user.email + ":" + _("Failed to send the e-mail."))
+        return JsonResponse({
+            'info': _("Complete of send the e-mail."),
+            'error_messages': json.dumps(error_messages, cls=EscapedEdxJSONEncoder),
+        })
+    else:
+        mail_user_emails = []
+        if request.POST.get('search_user_emails', ''):
+            mail_user_emails = request.POST['search_user_emails'].split(',')
+        if len(mail_user_emails) == 0:
+            return _error_response(_("Please select user that you want send reminder mail."))
 
-    return JsonResponse({
-        'info': _("Complete of send the e-mail."),
-        'error_messages': json.dumps(error_messages, cls=EscapedEdxJSONEncoder),
-    })
+        users = User.objects.filter(email__in=mail_user_emails).select_related('profile')
+        results = []
+        for user in users:
+            try:
+                index_num = mail_user_emails.index(user.email)
+                email = mail_user_emails.pop(index_num)
+                results += [u'{},{},{},{}'.format(email, user.username, user.profile.name, '')]
+            except:
+                continue
+        if mail_user_emails:
+            for mail_user_email in mail_user_emails:
+                results += [u'{},{},{},{}'.format(mail_user_email, '', '', _("{0}:Not found selected user.").format(mail_user_email))]
+
+        history = ReminderMailTaskHistory.create(contract, request.user)
+        ReminderMailTaskTarget.bulk_create(history, results)
+
+        return _submit_task(request, REMINDER_BULK_EMAIL, reminder_bulk_email, history, reminder_email_flag=True)
 
 
 def check_contract_bulk_operation(func):

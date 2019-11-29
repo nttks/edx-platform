@@ -14,7 +14,8 @@ from django.test.utils import override_settings
 
 from biz.djangoapps.ga_contract_operation.models import ContractMail, ContractTaskHistory
 from biz.djangoapps.ga_contract_operation.tests.factories import ContractTaskHistoryFactory, ContractTaskTargetFactory,\
-    StudentRegisterTaskTargetFactory, StudentUnregisterTaskTargetFactory, StudentMemberRegisterTaskTargetFactory
+    StudentRegisterTaskTargetFactory, StudentUnregisterTaskTargetFactory, StudentMemberRegisterTaskTargetFactory, \
+    ReminderMailTaskHistoryFactory
 from biz.djangoapps.ga_invitation.models import REGISTER_INVITATION_CODE, UNREGISTER_INVITATION_CODE
 from biz.djangoapps.ga_invitation.tests.factories import ContractRegisterFactory
 from biz.djangoapps.ga_invitation.tests.test_views import BizContractTestBase
@@ -76,12 +77,19 @@ class ContractOperationViewTestTaskHistory(BizContractTestBase):
         # Create histories for other contract
         ContractTaskHistoryFactory.create(contract=self.contract_mooc)
 
+        self.reminder = ReminderMailTaskHistoryFactory.create(contract=self.contract, requester=self.user)
+        self.reminder_history = self._create_task('reminder_bulk_email', 'key5', 'task_id5', 'SUCCESS', 1, 1, 1, 0, 0)
+        self.reminder.task_id = self.reminder_history.task_id
+        self.reminder.created = _now - timedelta(seconds=10)
+        self.reminder.save()
+
         with self.skip_check_course_selection(current_contract=self.contract):
             response = self.client.post(self._url_task_history_ajax, {})
 
         self.assertEqual(200, response.status_code)
         data = json.loads(response.content)
         self.assertEqual('success', data['status'])
+        self.assertNotEqual(6, data['total'])
         self.assertEqual(5, data['total'])
         records = data['records']
         self._assert_task_history(records[0], 1, 'Unknown', 'Unknown', self.user.username, histories[4].created)
@@ -105,6 +113,25 @@ class ContractOperationViewTestTaskHistory(BizContractTestBase):
     def test_task_history_not_allowed_method(self):
         response = self.client.get(self._url_task_history_ajax)
         self.assertEqual(405, response.status_code)
+
+    def test_task_history_ajax(self):
+        from ..views import task_history_ajax
+        from django.test import RequestFactory
+        reminder = ReminderMailTaskHistoryFactory.create(contract=self.contract, requester=self.user)
+        reminder_history = self._create_task('reminder_bulk_email', 'key5', 'task_id5', 'SUCCESS', 1, 1, 1, 0, 0)
+        reminder.task_id = reminder_history.task_id
+        reminder.created = datetime.now()
+        reminder.save()
+        data = RequestFactory()
+        data.META = {}
+        data.META['PATH_INFO'] = 'reminder'
+        data.method = 'POST'
+        data.user = self.user
+        response = task_history_ajax(data)
+        json_data = json.loads(response.content)
+        self.assertEqual('success', json_data['status'])
+        self.assertEqual(1, json_data['total'])
+        self.assertEqual('Reminder Bulk Email', json_data['records'][0]['task_type'])
 
 
 @ddt.ddt

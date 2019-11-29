@@ -2384,3 +2384,11 @@ msgstr "内容を確認しました"
 #: biz/templates/ga_invitation/confilm.html:311
 msgid "After confirming the contents, checking 'Contents have been confirmed' and press the 'Register invitation code' button."
 msgstr "内容をご確認のうえ、「内容を確認しました」をチェックし、「登録」ボタンを押してください。"
+
+#: biz/djangoapps/ga_contract_operation/tasks.py:32
+msgid "Reminder Bulk Email"
+msgstr "送信結果"
+
+#: biz/templates/ga_contract_operation/_task_history.html:9
+msgid "Send emails Result"
+msgstr "メール送信結果"

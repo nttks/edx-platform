@@ -7,6 +7,8 @@ from biz.djangoapps.ga_invitation.models import ContractRegister
 from edxmako.shortcuts import render_to_string
 from openedx.core.djangoapps.ga_task.models import Task
 
+from model_utils.models import TimeStampedModel
+
 
 class ContractTaskHistory(models.Model):
 
@@ -384,5 +386,103 @@ class StudentMemberRegisterTaskTarget(ContractTaskTargetBase):
         return cls.objects.filter(
             history_id=history_id,
         )
+
+
+class ReminderMailTaskHistory(TimeStampedModel):
+
+    class Meta:
+        app_label = 'ga_contract_operation'
+
+    contract = models.ForeignKey(Contract)
+    # task_id will use in order to relate with Task instance. This is not required.
+    task_id = models.CharField(max_length=255, db_index=True, null=True)
+    requester = models.ForeignKey(User)
+
+    @classmethod
+    def create(cls, contract, requester):
+        return cls.objects.create(
+            contract=contract,
+            requester=requester
+        )
+
+    @classmethod
+    def find_by_contract(cls, contract):
+        return cls.objects.filter(contract=contract).order_by('-created')
+
+    @classmethod
+    def find_by_contract_with_task(cls, contract):
+        histories = cls.find_by_contract(contract).exclude(task_id__isnull=True).select_related('requester')
+        task_ids = [history.task_id for history in histories]
+        tasks = {task.task_id: task for task in Task.objects.filter(task_id__in=task_ids)}
+        for history in histories:
+            if history.task_id and history.task_id in tasks:
+                yield (history, tasks[history.task_id])
+            else:
+                yield (history, None)
+
+    def link_to_task(self, task):
+        """
+        Link to Task instance.
+
+        :param task: ga_task.Task instance
+        """
+        self.task_id = task.task_id
+        self.save()
+
+
+class ReminderMailTaskTargetBase(TimeStampedModel):
+    """
+    ReminderMail task base
+    """
+    class Meta:
+        app_label = 'ga_contract_operation'
+        abstract = True
+        ordering = ['id']
+
+    history = models.ForeignKey(ReminderMailTaskHistory)
+    message = models.CharField(max_length=1024, null=True)
+    completed = models.BooleanField(default=False)
+
+    @classmethod
+    def find_by_history_id_and_message(cls, history_id):
+        return cls.objects.filter(
+            history_id=history_id,
+            message__isnull=False,
+        )
+
+    def complete(self, message=None):
+        if message:
+            self.message = message
+        self.completed = True
+        self.save()
+
+    def incomplete(self, message):
+        self.message = message
+        self.completed = False
+        self.save()
+
+
+class ReminderMailTaskTarget(ReminderMailTaskTargetBase):
+
+    student_email = models.CharField(max_length=255)
+
+    class Meta:
+        app_label = 'ga_contract_operation'
+
+    @classmethod
+    def bulk_create(cls, history, students):
+        targets = [cls(
+            history=history,
+            student_email=student,
+        ) for student in students]
+        cls.objects.bulk_create(targets)
+
+    @classmethod
+    def find_by_history_id(cls, history_id):
+        return cls.objects.filter(
+            history_id=history_id,
+        )
+
+
 
 
