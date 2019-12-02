@@ -556,10 +556,10 @@ def _submit_task(request, task_type, task_class, history, additional_info_list=N
             task_input = create_reminder_task_input(request, history)
 
         # Check the task running within the same contract.
-        validate_task_message = validate_task(request.current_contract)
+        validate_task_message = validate_task(request.current_contract, reminder_flg=reminder_email_flag)
         if validate_task_message:
             return _error_response(validate_task_message)
-        validate_task_message = validate_task(request.current_organization)
+        validate_task_message = validate_task(request.current_organization, reminder_flg=reminder_email_flag)
         if validate_task_message:
             return _error_response(validate_task_message)
 
