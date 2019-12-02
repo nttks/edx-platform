@@ -124,7 +124,7 @@ class ContractOperationViewTestTaskHistory(BizContractTestBase):
         reminder.save()
         data = RequestFactory()
         data.META = {}
-        data.META['PATH_INFO'] = 'reminder'
+        data.META['HTTP_REFERER'] = 'reminder'
         data.method = 'POST'
         data.user = self.user
         response = task_history_ajax(data)

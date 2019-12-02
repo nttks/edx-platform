@@ -630,7 +630,7 @@ def task_history_ajax(request):
             }
             for task_target in _task_targets
         ] if _task_targets else []
-    if 'reminder' in request.META.get('PATH_INFO', ''):
+    if 'reminder' in request.META.get('HTTP_REFERER', ''):
         task_histories = [
             {
                 'recid': i + 1,
