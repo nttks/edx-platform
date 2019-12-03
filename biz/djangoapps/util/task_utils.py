@@ -55,7 +55,7 @@ def validate_task(key_model, reminder_flg=False):
     :return:
     """
     if reminder_flg:
-        running_tasks = Task.objects.filter(task_key=get_org_task_key(key_model), task_type=REMINDER_BULK_EMAIL).exclude(
+        running_tasks = Task.objects.filter(task_key=get_task_key(key_model), task_type=REMINDER_BULK_EMAIL).exclude(
             task_state__in=READY_STATES)
     elif isinstance(key_model, Organization):
         # Note: Task key of organization was add later.
