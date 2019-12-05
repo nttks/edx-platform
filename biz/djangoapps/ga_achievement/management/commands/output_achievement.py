@@ -106,6 +106,10 @@ class Command(BaseCommand):
 
             columns = [col[0] for col in score_store.get_section_names(total_show=True)]
             __, score_data = score_store.get_data_for_w2ui()
+            if _(ScoreStore.FIELD_EXPIRE_DATE) in columns:
+                columns.remove(_(ScoreStore.FIELD_EXPIRE_DATE))
+            if ScoreStore.FIELD_EXPIRE_DATE in columns:
+                columns.remove(ScoreStore.FIELD_EXPIRE_DATE)
 
             for data in score_data:
                 if data[_('Username')] in user_dict_score:
@@ -133,8 +137,8 @@ class Command(BaseCommand):
                     if column.endswith('___'+key):
                         new_columns.append('"' + section_dict[key] + '_' + column + '__' + _('Score') + '"')
             columns = new_columns
+            # columns = ['"'+col+'__'+_('Score')+'"' for col in columns]
 
-            columns = ['"'+col+'__'+_('Score')+'"' for col in columns]
             strdata = CSV_HEADER + '"' + _('Total Score') + '",' + ','.join(columns) + "\r\n"
             strdata += '\r\n'.join([','.join(x if len(x) != 11 else x + ['"-"'] * len(columns)) for x in
                                     user_dict_score.values()])
