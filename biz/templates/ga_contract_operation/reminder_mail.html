@@ -366,9 +366,9 @@ from biz.djangoapps.ga_contract_operation.models import ContractReminderMail
     }
     .content-wrapper {
         % if is_manager :
-        min-height: 1400px;
+        min-height: 1600px;
         % else :
-        min-height: 850px;
+        min-height: 1050px;
         % endif
     }
     .biz-wrap #grid{
@@ -762,6 +762,8 @@ from biz.djangoapps.ga_contract_operation.models import ContractReminderMail
                     </form>
                 </div>
             </div>
+            <div id="history_sub_area"></div>
+            <%include file="_task_history.html" />
         </div>
     </div>
 </div>

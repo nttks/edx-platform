@@ -5,7 +5,11 @@ from django.core.urlresolvers import reverse
 <div id="task-history-wrapper"  class="gc_data_section">
     <div class="gc_task_history_text">
         <div class="gc_task_history_text_left">
-            <h2>${_("Register Result")}</h2>
+            % if reminder_mail_flg:
+                <h2>${_("Send emails Result")}</h2>
+            % else:
+                <h2>${_("Register Result")}</h2>
+            % endif
         </div>
         <div class="gc_task_history_text_right">
             <span>${_("To check the result, please push the update button.")}</span>

@@ -18,9 +18,9 @@ class ParentCondition(models.Model):
     contract = models.ForeignKey(Contract, db_index=True)
     parent_condition_name = models.CharField(max_length=255)
     setting_type = models.IntegerField(choices=SETTING_TYPES)
-    created = models.DateTimeField(default=datetime.now)
+    created = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(User, related_name='creator_parent_condition')
-    modified = models.DateTimeField(default=datetime.now, null=True)
+    modified = models.DateTimeField(auto_now=True, null=True)
     modified_by = models.ForeignKey(User, null=True, related_name='modifier_parent_condition')
 
     class Meta:

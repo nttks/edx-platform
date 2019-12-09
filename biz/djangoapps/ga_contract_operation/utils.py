@@ -1,5 +1,6 @@
 from collections import defaultdict
 
+from django.utils.translation import ugettext as _
 from biz.djangoapps.ga_contract.models import ContractDetail
 from biz.djangoapps.ga_invitation.models import AdditionalInfoSetting, UNREGISTER_INVITATION_CODE
 from biz.djangoapps.util import mask_utils
@@ -8,6 +9,19 @@ from biz.djangoapps.util.access_utils import has_staff_access
 from openedx.core.djangoapps.course_global.models import CourseGlobalSetting
 from student.models import CourseEnrollment
 
+from biz.djangoapps.ga_contract_operation.models import (
+    ContractMail, ContractReminderMail,
+    ContractTaskHistory, ContractTaskTarget, StudentRegisterTaskTarget,
+    StudentUnregisterTaskTarget, AdditionalInfoUpdateTaskTarget, StudentMemberRegisterTaskTarget
+)
+
+from util.json_request import JsonResponseBadRequest
+
+
+def _error_response(message):
+    return JsonResponseBadRequest({
+        'error': message,
+    })
 
 def get_additional_info_by_contract(contract):
     """
@@ -100,3 +114,18 @@ class PersonalinfoMaskExecutor(object):
             for course_key in self.target_spoc_course_ids:
                 if CourseEnrollment.is_enrolled(contract_register.user, course_key) and not has_staff_access(contract_register.user, course_key):
                     CourseEnrollment.unenroll(contract_register.user, course_key)
+
+
+def create_reminder_task_input(request, history):
+    mail_subject = request.POST.get('mail_subject', '')
+    mail_body = request.POST.get('mail_body', '')
+    contract = request.current_contract
+    course = request.current_course
+    task_input = {
+        'contract_id': contract.id,
+        'course_id': str(course.id),
+        'history_id': history.id,
+        'mail_subject': mail_subject,
+        'mail_body': mail_body
+    }
+    return task_input

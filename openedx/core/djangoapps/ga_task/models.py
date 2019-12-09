@@ -30,7 +30,7 @@ class Task(models.Model):
     """
     task_type = models.CharField(max_length=50, db_index=True)
     task_key = models.CharField(max_length=255, db_index=True)
-    task_input = models.CharField(max_length=255)
+    task_input = models.TextField()
     task_id = models.CharField(max_length=255, db_index=True)  # max_length from celery_taskmeta
     task_state = models.CharField(max_length=50, db_index=True)  # max_length from celery_taskmeta
     task_output = models.CharField(max_length=1024, null=True)
@@ -52,13 +52,13 @@ class Task(models.Model):
 
         json_task_input = json.dumps(task_input)
 
-        # check length of task_input, and return an exception if it's too long:
-        if len(json_task_input) > 255:
-            raise ValueError(
-                "Task input longer than 255: {task_input} for {task_type}".format(
-                    task_input=json_task_input, task_type=task_type
-                )
-            )
+        # # check length of task_input, and return an exception if it's too long:
+        # if len(json_task_input) > 255:
+        #     raise ValueError(
+        #         "Task input longer than 255: {task_input} for {task_type}".format(
+        #             task_input=json_task_input, task_type=task_type
+        #         )
+        #     )
 
         # create the task, then save it:
         task = cls(

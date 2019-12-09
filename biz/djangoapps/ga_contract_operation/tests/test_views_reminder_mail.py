@@ -1532,15 +1532,16 @@ class ContractOperationReminderMailViewTest(BizContractTestBase, BizStoreTestBas
 
         self.assertEqual(200, response.status_code)
         data = json.loads(response.content)
-        self.assertEqual(data['info'], 'Complete of send the e-mail.')
-        self.assertEqual(json.loads(data['error_messages']), [])
-        send_mail.assert_called_with(user1, subject, body.encode('utf-8'), {
-            'username': user1.username,
-            'email_address': user1.email,
-            'fullname': user1.profile.name,
-            'course_name': self.course_self_paced1.display_name,
-            'expire_date': datetime(2016, 1, 5, 0, 0, 0, tzinfo=tzutc()).strftime("%Y-%m-%d"),
-        })
+        # self.assertEqual(data['info'], 'Complete of send the e-mail.')
+        self.assertEqual(data['info'], 'Began the processing of Reminder Bulk Email.Execution status, please check from the task history.')
+        # self.assertEqual(json.loads(data['error_messages']), [])
+        # send_mail.assert_called_with(user1, subject, body.encode('utf-8'), {
+        #     'username': user1.username,
+        #     'email_address': user1.email,
+        #     'fullname': user1.profile.name,
+        #     'course_name': self.course_self_paced1.display_name,
+        #     'expire_date': datetime(2016, 1, 5, 0, 0, 0, tzinfo=tzutc()).strftime("%Y-%m-%d"),
+        # })
 
     @ddt.data(True, False)
     def test_reminder_search_mail_send_ajax_test(self, exist_profile):
@@ -1617,6 +1618,12 @@ class ContractOperationReminderMailViewTest(BizContractTestBase, BizStoreTestBas
         self.assertEqual(data['error'], "Please select user that you want send reminder mail.")
 
     def test_reminder_search_mail_send_ajax_not_exist_email_selected(self):
+        from biz.djangoapps.ga_contract_operation.models import (
+            ContractMail, ContractReminderMail,
+            ContractTaskHistory, ContractTaskTarget, StudentRegisterTaskTarget,
+            StudentUnregisterTaskTarget, AdditionalInfoUpdateTaskTarget, StudentMemberRegisterTaskTarget,
+            ReminderMailTaskHistory, ReminderMailTaskTarget
+        )
         self.setup_user()
         director_manager = self._director_manager
         param = self._create_reminder_search_send_param(emails=['sample@example.com'], subject='Sample', body='Sample')
@@ -1629,9 +1636,11 @@ class ContractOperationReminderMailViewTest(BizContractTestBase, BizStoreTestBas
 
         self.assertEqual(200, response.status_code)
         data = json.loads(response.content)
-        self.assertEqual(data['info'], 'Complete of send the e-mail.')
-        self.assertEqual(json.loads(data['error_messages']),
-                         ['{0}:Not found selected user.'.format('sample@example.com')])
+        # self.assertEqual(data['info'], 'Complete of send the e-mail.')
+        self.assertEqual(data['info'], 'Began the processing of Reminder Bulk Email.Execution status, please check from the task history.')
+        self.assertEqual(ReminderMailTaskTarget.objects.all()[0].student_email, u'sample@example.com,,,sample@example.com:Not found selected user.')
+        # self.assertEqual(json.loads(data['error_messages']),
+        #                  ['{0}:Not found selected user.'.format('sample@example.com')])
 
     def test_reminder_search_mail_send_ajax_empty_mail_subject(self):
         self.setup_user()
@@ -1699,7 +1708,8 @@ class ContractOperationReminderMailViewTest(BizContractTestBase, BizStoreTestBas
 
         self.assertEqual(200, response.status_code)
         data = json.loads(response.content)
-        self.assertEqual(data['info'], 'Complete of send the e-mail.')
-        exception_log.assert_called_with('Failed to send the e-mail.test')
-        self.assertEqual(json.loads(data['error_messages']), ['{0}:Failed to send the e-mail.'.format(user1.email)])
+        # self.assertEqual(data['info'], 'Complete of send the e-mail.')
+        self.assertEqual(data['info'], 'Began the processing of Reminder Bulk Email.Execution status, please check from the task history.')
+        # exception_log.assert_called_with('Failed to send the e-mail.test')
+        # self.assertEqual(json.loads(data['error_messages']), ['{0}:Failed to send the e-mail.'.format(user1.email)])
 

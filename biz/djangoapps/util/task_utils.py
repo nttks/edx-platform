@@ -6,7 +6,7 @@ from django.conf import settings
 from django.utils.translation import ugettext as _
 
 from biz.djangoapps.ga_organization.models import Organization
-from biz.djangoapps.ga_contract_operation.tasks import TASKS as CONTRACT_OPERATION_TASKS
+from biz.djangoapps.ga_contract_operation.tasks import TASKS as CONTRACT_OPERATION_TASKS, REMINDER_BULK_EMAIL
 from biz.djangoapps.gx_member.tasks import TASKS as ORGANIZATION_TASKS
 from openedx.core.djangoapps.ga_task import api as task_api
 from openedx.core.djangoapps.ga_task.models import Task
@@ -48,17 +48,20 @@ def submit_task(request, task_type, task_class, task_input, task_key, queue=None
     return task_api.submit_task(request, task_type, task_class, task_input, task_key, queue)
 
 
-def validate_task(key_model):
+def validate_task(key_model, reminder_flg=False):
     """
     Check specific task is already running.
     :param key_model is instance of Contract or Organization
     :return:
     """
-    if isinstance(key_model, Organization):
+    if reminder_flg:
+        running_tasks = Task.objects.filter(task_key=get_task_key(key_model), task_type=REMINDER_BULK_EMAIL).exclude(
+            task_state__in=READY_STATES)
+    elif isinstance(key_model, Organization):
         # Note: Task key of organization was add later.
-        running_tasks = Task.objects.filter(task_key=get_org_task_key(key_model)).exclude(task_state__in=READY_STATES)
+        running_tasks = Task.objects.filter(task_key=get_org_task_key(key_model)).exclude(task_state__in=READY_STATES).exclude(task_type=REMINDER_BULK_EMAIL)
     else:
-        running_tasks = Task.objects.filter(task_key=get_task_key(key_model)).exclude(task_state__in=READY_STATES)
+        running_tasks = Task.objects.filter(task_key=get_task_key(key_model)).exclude(task_state__in=READY_STATES).exclude(task_type=REMINDER_BULK_EMAIL)
 
     if not running_tasks:
         return None

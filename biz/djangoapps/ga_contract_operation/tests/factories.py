@@ -7,6 +7,7 @@ from student.tests.factories import UserFactory
 from biz.djangoapps.ga_contract_operation.models import (
     ContractMail, ContractReminderMail, AdditionalInfoUpdateTaskTarget,
     ContractTaskHistory, ContractTaskTarget, StudentRegisterTaskTarget, StudentUnregisterTaskTarget, StudentMemberRegisterTaskTarget,
+    ReminderMailTaskTarget, ReminderMailTaskHistory
 )
 
 
@@ -67,3 +68,16 @@ class StudentMemberRegisterTaskTargetFactory(DjangoModelFactory):
     class Meta(object):
         model = StudentMemberRegisterTaskTarget
 
+
+class ReminderMailTaskTargetFactory(DjangoModelFactory):
+    """Factory for the StudentMemberRegisterTaskTarget model"""
+
+    class Meta(object):
+        model = ReminderMailTaskTarget
+
+
+class ReminderMailTaskHistoryFactory(DjangoModelFactory):
+    """Factory for the StudentMemberRegisterTaskTarget model"""
+
+    class Meta(object):
+        model = ReminderMailTaskHistory
