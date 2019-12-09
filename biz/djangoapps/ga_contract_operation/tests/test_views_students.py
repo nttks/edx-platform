@@ -116,10 +116,10 @@ class ContractOperationViewTestStudents(BizContractTestBase):
 
         render_to_response_args = mock_render_to_response.call_args[0]
         self.assertEqual(render_to_response_args[0], 'ga_contract_operation/students.html')
-        # self.assertEqual(render_to_response_args[1]['total_count'], 1050)
-        self.assertEqual(render_to_response_args[1]['total_count'], 0)
-        # self.assertEqual(len(json.loads(render_to_response_args[1]['show_list'])), 1000)
-        self.assertEqual(len(json.loads(render_to_response_args[1]['show_list'])), 0)
+        self.assertEqual(render_to_response_args[1]['total_count'], 1050)
+        # self.assertEqual(render_to_response_args[1]['total_count'], 0)
+        self.assertEqual(len(json.loads(render_to_response_args[1]['show_list'])), 1000)
+        # self.assertEqual(len(json.loads(render_to_response_args[1]['show_list'])), 0)
         self.assertEqual(render_to_response_args[1]['max_show_num_on_page'], 1000)
         self.assertDictEqual(render_to_response_args[1]['member_org_item_list'], OrderedDict([
             ('org1', 'Organization1'), ('org2', 'Organization2'), ('org3', 'Organization3'), ('org4', 'Organization4'),
@@ -128,15 +128,14 @@ class ContractOperationViewTestStudents(BizContractTestBase):
             ('item1', 'Item1'), ('item2', 'Item2'), ('item3', 'Item3'), ('item4', 'Item4'), ('item5', 'Item5'),
             ('item6', 'Item6'), ('item7', 'Item7'), ('item8', 'Item8'), ('item9', 'Item9'), ('item10', 'Item10')
         ]))
-        # self.assertEqual(json.loads(render_to_response_args[1]['additional_columns']), [
-        #     {'field': 'country', 'caption': 'country', 'sortable': True, 'hidden': True, 'size': 5},
-        #     {'field': 'dept', 'caption': 'dept', 'sortable': True, 'hidden': True, 'size': 5}
-        # ])
-        self.assertEqual(json.loads(render_to_response_args[1]['additional_columns']), [])
+        self.assertEqual(json.loads(render_to_response_args[1]['additional_columns']), [
+            {'field': 'country', 'caption': 'country', 'sortable': True, 'hidden': True, 'size': 5},
+            {'field': 'dept', 'caption': 'dept', 'sortable': True, 'hidden': True, 'size': 5}
+        ])
+        # self.assertEqual(json.loads(render_to_response_args[1]['additional_columns']), [])
 
     @ddt.unpack
-    # @ddt.data(("", 0), ("G03", 0), ("G02", 5), ("G01-01", 3), ("G02-01-02", 1))
-    @ddt.data(("", 0), ("G03", 0), ("G02", 0), ("G01-01", 0), ("G02-01-02", 0))
+    @ddt.data(("", 0), ("G03", 0), ("G02", 5), ("G01-01", 3), ("G02-01-02", 1))
     def test_index_manager(self, param_group_code, expect_num):
         self.setup_user()
         manager_manager = self._manager_manager
