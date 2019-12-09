@@ -118,8 +118,10 @@ def check_contract_register_selection(func):
 @check_course_selection
 @check_organization_group
 def students(request):
-    total_count, show_list, status, additional_columns = _students_initial_search(request)
-
+    total_count = 0
+    show_list = []
+    status = {}
+    additional_columns = []
     member_org_item_list = OrderedDict()
     for i in range(1, 11):
         member_org_item_list['org' + str(i)] = _("Organization") + str(i)
