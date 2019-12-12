@@ -54,9 +54,9 @@ def submit_task(request, task_type, task_class, task_input, task_key, queue=None
     """
     Helper method to submit a task.
     """
-    # with outer_atomic():
-    # check to see if task is already running, and reserve it otherwise:
-    task = _reserve_task(task_type, task_key, task_input, request.user)
+    with outer_atomic():
+        # check to see if task is already running, and reserve it otherwise:
+        task = _reserve_task(task_type, task_key, task_input, request.user)
 
     task_args = [task.id]
     task_class.apply_async(task_args, task_id=task.task_id, queue=queue)
