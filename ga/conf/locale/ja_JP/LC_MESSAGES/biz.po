@@ -2392,3 +2392,13 @@ msgstr "送信結果"
 #: biz/templates/ga_contract_operation/_task_history.html:9
 msgid "Send emails Result"
 msgstr "メール送信結果"
+
+#: biz/templates/ga_contract_operation/reminder_mail.html:761
+msgid "Available time for email transmission: 8:00 to 20:00"
+msgstr "※メール送信のご利用可能時間 ：8時～20時"
+
+#: biz/djangoapps/ga_contract_operation/views.py:1396
+msgid ""
+"The email could not be sent because it was out of the available "
+"time.(Available time: 8:00 to 20:00)"
+msgstr "メール送信の利用可能時間外のため、送信できませんでした。(利用可能時間：8時～20時)"

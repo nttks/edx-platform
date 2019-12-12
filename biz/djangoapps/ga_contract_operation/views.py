@@ -884,7 +884,7 @@ def reminder_mail(request):
             'survey_names_list': resp_survey_names_list,
             'is_status_managed': course_overview.extra.is_status_managed,
             'reminder_mail_flg': True,
-            'disable_time': True if 9 <= (datetime.now(pytz.UTC) + timedelta(hours=9)).hour <= 20 else False
+            'disable_time': True if 9 <= datetime.now(pytz.timezone('Asia/Tokyo')).hour < 20 else False
         }
     )
 
@@ -1392,8 +1392,8 @@ def reminder_search_ajax(request):
 @login_required
 @check_course_selection
 def reminder_search_mail_send_ajax(request):
-    # if not 9 <= (datetime.now(pytz.UTC) + timedelta(hours=9)).hour <= 20:
-    #     return _error_response(_("test_comment"))
+    if not 8 <= datetime.now(pytz.timezone('Asia/Tokyo')).hour < 20:
+        return _error_response(_("The email could not be sent because it was out of the available time.(Available time: 8:00 to 20:00)"))
     if not request.current_contract.can_send_submission_reminder or 'contract_id' not in request.POST:
         return _error_response(_("Unauthorized access."))
 

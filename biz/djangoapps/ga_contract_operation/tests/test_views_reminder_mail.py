@@ -1733,4 +1733,4 @@ class ContractOperationReminderMailViewTest(BizContractTestBase, BizStoreTestBas
             response = self.client.post(self._url_search_send_ajax, param)
         self.assertEqual(400, response.status_code)
         data = json.loads(response.content)
-        # self.assertEqual(data['error'], 'Please enter the body of an e-mail.')
+        self.assertEqual(data['error'], 'The email could not be sent because it was out of the available time.(Available time: 8:00 to 20:00)')
