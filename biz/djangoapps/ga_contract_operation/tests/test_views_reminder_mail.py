@@ -1713,3 +1713,21 @@ class ContractOperationReminderMailViewTest(BizContractTestBase, BizStoreTestBas
         # exception_log.assert_called_with('Failed to send the e-mail.test')
         # self.assertEqual(json.loads(data['error_messages']), ['{0}:Failed to send the e-mail.'.format(user1.email)])
 
+    def test_reminder_send_button_disbled(self):
+        self.setup_user()
+        director_manager = self._director_manager
+        subject = "subject {username},{email_address},{fullname},{course_name},{expire_date}"
+        body = "body {username},{email_address},{fullname},{course_name},{expire_date}"
+        param = self._create_reminder_search_send_param(
+            emails=[], subject=subject, body=body, is_test=True)
+        profile = UserProfile.objects.get(user=self.user)
+
+        with self.skip_check_course_selection(current_organization=self.contract_org,
+                                              current_contract=self.contract_submission_reminder,
+                                              current_course=self.course_self_paced1,
+                                              current_manager=director_manager), patch(
+            'biz.djangoapps.ga_contract_operation.views.send_mail') as send_mail:
+            response = self.client.post(self._url_search_send_ajax, param)
+        self.assertEqual(400, response.status_code)
+        data = json.loads(response.content)
+        self.assertEqual(data['error'], 'Please enter the body of an e-mail.')

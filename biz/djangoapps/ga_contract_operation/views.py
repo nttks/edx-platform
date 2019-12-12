@@ -4,8 +4,9 @@ Views for contract_operation feature
 import json
 import logging
 import math
+import pytz
 from collections import OrderedDict
-from datetime import datetime
+from datetime import datetime, timedelta
 from functools import wraps
 
 from celery.states import READY_STATES
@@ -883,6 +884,7 @@ def reminder_mail(request):
             'survey_names_list': resp_survey_names_list,
             'is_status_managed': course_overview.extra.is_status_managed,
             'reminder_mail_flg': True,
+            'disable_time': True if 9 <= (datetime.now(pytz.UTC) + timedelta(hours=9)).hour <= 20 else False
         }
     )
 
@@ -1385,10 +1387,13 @@ def reminder_search_ajax(request):
     })
 
 
+@transaction.non_atomic_requests
 @require_POST
 @login_required
 @check_course_selection
 def reminder_search_mail_send_ajax(request):
+    if not 9 <= (datetime.now(pytz.UTC) + timedelta(hours=9)).hour <= 20:
+        return _error_response(_("test_comment"))
     if not request.current_contract.can_send_submission_reminder or 'contract_id' not in request.POST:
         return _error_response(_("Unauthorized access."))
 
@@ -1460,6 +1465,7 @@ def reminder_search_mail_send_ajax(request):
                 results += [u'{},{},{},{}'.format(mail_user_email, '', '', _("{0}:Not found selected user.").format(mail_user_email))]
 
         history = ReminderMailTaskHistory.create(contract, request.user)
+        log.info('register_students_new_ajax_bulk_create:task_id' + str(history.id))
         ReminderMailTaskTarget.bulk_create(history, results)
 
         return _submit_task(request, REMINDER_BULK_EMAIL, reminder_bulk_email, history, reminder_email_flag=True)
