@@ -1620,12 +1620,7 @@ class ContractOperationReminderMailViewTest(BizContractTestBase, BizStoreTestBas
         self.assertEqual(data['error'], "Please select user that you want send reminder mail.")
 
     def test_reminder_search_mail_send_ajax_not_exist_email_selected(self):
-        from biz.djangoapps.ga_contract_operation.models import (
-            ContractMail, ContractReminderMail,
-            ContractTaskHistory, ContractTaskTarget, StudentRegisterTaskTarget,
-            StudentUnregisterTaskTarget, AdditionalInfoUpdateTaskTarget, StudentMemberRegisterTaskTarget,
-            ReminderMailTaskHistory, ReminderMailTaskTarget
-        )
+        from biz.djangoapps.ga_contract_operation.models import ReminderMailTaskTarget
         self.setup_user()
         director_manager = self._director_manager
         param = self._create_reminder_search_send_param(emails=['sample@example.com'], subject='Sample', body='Sample')
@@ -1638,11 +1633,8 @@ class ContractOperationReminderMailViewTest(BizContractTestBase, BizStoreTestBas
 
         self.assertEqual(200, response.status_code)
         data = json.loads(response.content)
-        # self.assertEqual(data['info'], 'Complete of send the e-mail.')
         self.assertEqual(data['info'], 'Began the processing of Reminder Bulk Email.Execution status, please check from the task history.')
-        self.assertEqual(ReminderMailTaskTarget.objects.all()[0].student_email, u'sample@example.com,,,sample@example.com:Not found selected user.')
-        # self.assertEqual(json.loads(data['error_messages']),
-        #                  ['{0}:Not found selected user.'.format('sample@example.com')])
+        self.assertEqual(ReminderMailTaskTarget.objects.all()[0].student_email, u'sample@example.com,,sample@example.com:Not found selected user.,')
 
     def test_reminder_search_mail_send_ajax_empty_mail_subject(self):
         self.setup_user()

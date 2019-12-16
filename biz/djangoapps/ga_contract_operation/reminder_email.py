@@ -68,12 +68,12 @@ def reminder_bulk_email_customize(entry_id, task_input, action_name):
     for target in targets:
         log.info('reminder search mail to send transaction start')
         task_progress.attempt()
-        if len(target.student_email.split(',')) != 4:
+        if len(target.student_email.split(',', 3)) != 4:
             task_progress.skip()
             log.info('reminder search mail to send transaction skip')
             target.complete('')
             continue
-        email, username, full_name, error_message = target.student_email.split(',')
+        email, username, error_message, full_name = target.student_email.split(',', 3)
         if error_message:
             task_progress.fail()
             target.complete(
