@@ -1457,12 +1457,12 @@ def reminder_search_mail_send_ajax(request):
             try:
                 index_num = mail_user_emails.index(user.email)
                 email = mail_user_emails.pop(index_num)
-                results += [u'{},{},{},{}'.format(email, user.username, user.profile.name, '')]
+                results += [u'{},{},{},{}'.format(email, user.username, '', user.profile.name)]
             except:
                 continue
         if mail_user_emails:
             for mail_user_email in mail_user_emails:
-                results += [u'{},{},{},{}'.format(mail_user_email, '', '', _("{0}:Not found selected user.").format(mail_user_email))]
+                results += [u'{},{},{},{}'.format(mail_user_email, '', _("{0}:Not found selected user.").format(mail_user_email), '')]
 
         history = ReminderMailTaskHistory.create(contract, request.user)
         log.info('register_students_new_ajax_bulk_create:task_id' + str(history.id))

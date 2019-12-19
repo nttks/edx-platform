@@ -128,7 +128,7 @@ class ReminderMailTaskTest(BizViewTestBase, ModuleStoreTestCase, TaskTestMixin):
         user = self.reminder_user
         contract = self._create_contract()
         history = self._create_reminder_task_history(contract=self.contract_submission_reminder)
-        self._create_targets(history=history, students=[u'{},{},{},{}'.format(user.email, user.username, user.profile.name, 'exists error')])
+        self._create_targets(history=history, students=[u'{},{},{},{}'.format(user.email, user.username, 'exists error', user.profile.name)])
 
         self._test_run_with_task(
             reminder_bulk_email,
@@ -148,7 +148,7 @@ class ReminderMailTaskTest(BizViewTestBase, ModuleStoreTestCase, TaskTestMixin):
         contract = self._create_contract()
         history = self._create_reminder_task_history(contract=self.contract_submission_reminder)
         self._create_targets(history=history, students=[
-            u'{},{},{},{}'.format(user.email, user.username, user.profile.name, '')])
+            u'{},{},{},{}'.format(user.email, user.username, '', user.profile.name)])
 
         self._test_run_with_task(
             reminder_bulk_email,
@@ -189,7 +189,7 @@ class ReminderMailTaskTest(BizViewTestBase, ModuleStoreTestCase, TaskTestMixin):
         contract = self._create_contract()
         history = self._create_reminder_task_history(contract=self.contract_submission_reminder)
         self._create_targets(history=history, students=[
-            u'{},{},{},{}'.format(user.email, user.username, user.profile.name, '')])
+            u'{},{},{},{}'.format(user.email, user.username, '', user.profile.name)])
 
         self._test_run_with_task(
             reminder_bulk_email,
