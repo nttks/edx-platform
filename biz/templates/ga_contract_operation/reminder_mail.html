@@ -746,18 +746,18 @@ from biz.djangoapps.ga_contract_operation.models import ContractReminderMail
                         </div>
                         <div class="gc_btn_cta gc_btn_cta_right gc_mt10" style="margin-bottom: 20px;">
                             % if disable_time:
-                                <button class="btn btn-grn" type="button" data-test="0" data-confirm-message='${_("Are you sure you want to send the e-mail?")}'
+                                <button disabled class="btn btn-grn" type="button" data-test="0" data-confirm-message='${_("Are you sure you want to send the e-mail?")}'
                                     data-endpoint="${reverse('biz:contract_operation:reminder_search_mail_send_ajax')}">&#xf003 ${_("Send the e-mail")}</button>
-                                <button class="btn btn-blue" type="button" data-test="1" data-confirm-message='${_("Are you sure you want to send the test e-mail?")}'
+                                <button disabled class="btn btn-blue" type="button" data-test="1" data-confirm-message='${_("Are you sure you want to send the test e-mail?")}'
                                     data-endpoint="${reverse('biz:contract_operation:reminder_search_mail_send_ajax')}">&#xf003 ${_("Send the test e-mail")}</button>
                             % else:
-                                <button class="btn btn-grn" type="button" data-test="0" data-confirm-message='${_("Are you sure you want to send the e-mail?")}'
+                                <button disabled class="btn btn-grn" type="button" data-test="0" data-confirm-message='${_("Are you sure you want to send the e-mail?")}'
                                     data-endpoint="${reverse('biz:contract_operation:reminder_search_mail_send_ajax')}" disabled>&#xf003 ${_("Send the e-mail")}</button>
-                                <button class="btn btn-blue" type="button" data-test="1" data-confirm-message='${_("Are you sure you want to send the test e-mail?")}'
+                                <button disabled class="btn btn-blue" type="button" data-test="1" data-confirm-message='${_("Are you sure you want to send the test e-mail?")}'
                                     data-endpoint="${reverse('biz:contract_operation:reminder_search_mail_send_ajax')}" disabled>&#xf003 ${_("Send the test e-mail")}</button>
                             % endif
                             <p style="font-weight:bold;margin-top: 5px">
-                                ${_("Available time for email transmission: 8:00 to 20:00")}
+                                ${_("* Stop service now")}
                             </p>
                         </div>
                         <div class="gc_reminder_mail_absolute gc_reminder_mail_absolute_other">

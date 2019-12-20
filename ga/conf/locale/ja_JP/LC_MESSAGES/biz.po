@@ -2402,3 +2402,7 @@ msgid ""
 "The email could not be sent because it was out of the available "
 "time.(Available time: 8:00 to 20:00)"
 msgstr "メール送信の利用可能時間外のため、送信できませんでした。(利用可能時間：8時～20時)"
+
+#: biz/djangoapps/ga_contract_operation/views.py
+msgid "* Stop service now"
+msgstr "※現在、サービス停止中"
