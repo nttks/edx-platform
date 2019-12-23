@@ -87,9 +87,9 @@ def reminder_bulk_email_customize(entry_id, task_input, action_name):
                 'course_name': course.display_name.encode('utf-8'),
                 'expire_date': unicode(expire_datetime.strftime("%Y-%m-%d")) if expire_datetime else '',
             }
-            mail_subject = replace_braces(mail_subject, replace_dict)
-            mail_body = replace_braces(mail_body, replace_dict)
-            django_send_mail(mail_subject, mail_body, settings.DEFAULT_FROM_EMAIL, [email])
+            replaced_mail_subject = replace_braces(mail_subject, replace_dict)
+            replaced_mail_body = replace_braces(mail_body, replace_dict)
+            django_send_mail(replaced_mail_subject, replaced_mail_body, settings.DEFAULT_FROM_EMAIL, [email])
             task_progress.success()
         except:
             task_progress.fail()
