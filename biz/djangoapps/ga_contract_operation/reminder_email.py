@@ -64,7 +64,7 @@ def reminder_bulk_email_customize(entry_id, task_input, action_name):
 
     mail_subject, mail_body, course = _get_mail_data(entry.task_input)
     expire_datetime = course.deadline_start
-
+    replaced_mail_subject, replaced_mail_body = ['', '']
     for target in targets:
         log.info('reminder search mail to send transaction start')
         task_progress.attempt()
@@ -97,7 +97,7 @@ def reminder_bulk_email_customize(entry_id, task_input, action_name):
 
         target.complete(
             "{email}:{message}".format(email=email, message=error_message.encode('utf_8')) if error_message else '')
-        log.info('reminder search mail to send complete')
+        log.info('reminder search mail to send complete:' + '\n' + replaced_mail_subject + '\n' + replaced_mail_body)
 
 
     return task_progress.update_task_state()

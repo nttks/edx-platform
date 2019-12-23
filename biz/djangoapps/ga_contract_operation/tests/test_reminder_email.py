@@ -48,6 +48,7 @@ class ReminderMailTaskTest(BizViewTestBase, ModuleStoreTestCase, TaskTestMixin):
             send_submission_reminder=True,
         )
         self.reminder_user = UserFactory.create()
+        self.reminder_user2 = UserFactory.create()
         self.register = ContractRegisterFactory.create(user=self.reminder_user, contract=self.contract_submission_reminder, status=REGISTER_INVITATION_CODE)
         self.enroll = CourseEnrollmentFactory.create(user=self.reminder_user, course_id=self.reminder_course.id, is_active=True, mode='honor')
 
@@ -55,7 +56,7 @@ class ReminderMailTaskTest(BizViewTestBase, ModuleStoreTestCase, TaskTestMixin):
         for student in students:
             ReminderMailTaskTargetFactory.create(history=history, student_email=student, completed=completed)
 
-    def _create_input_entry(self, contract=None, history=None, course_id=None, subject='test mail subject', body='test mail body', error_message=''):
+    def _create_input_entry(self, contract=None, history=None, course_id=None, subject='test mail subject', body='test mail body:{email_address}:{username}:{fullname}', error_message=''):
         task_input = {}
         if contract is not None:
             task_input['contract_id'] = contract.id
@@ -203,3 +204,44 @@ class ReminderMailTaskTest(BizViewTestBase, ModuleStoreTestCase, TaskTestMixin):
         self.assertEqual(0, ReminderMailTaskTarget.objects.filter(history=history, completed=False).count())
         self.assertEqual(1, ReminderMailTaskTarget.objects.filter(history=history, completed=True).count())
         self.assertEqual(user.email + ':' + 'Failed to send the e-mail.', ReminderMailTaskTarget.objects.filter(history=history, completed=True).first().message)
+
+    @patch('biz.djangoapps.ga_contract_operation.reminder_email.django_send_mail')
+    def test_reminder_mail_validation_success(self, mock_mail):
+        user = self.reminder_user
+        user2 = self.reminder_user2
+        contract = self._create_contract()
+        history = self._create_reminder_task_history(contract=self.contract_submission_reminder)
+        self._create_targets(history=history, students=[
+            u'{},{},{},{}'.format(user.email, user.username, '', user.profile.name)])
+        self._create_targets(history=history, students=[
+            u'{},{},{},{}'.format(user2.email, user2.username, '', user2.profile.name)])
+
+        self._test_run_with_task(
+            reminder_bulk_email,
+            'reminder_bulk_email',
+            task_entry=self._create_input_entry(contract=self.contract_submission_reminder, history=history),
+            expected_attempted=2,
+            expected_num_failed=0,
+            expected_num_succeeded=2,
+            expected_total=2,
+        )
+
+        self.assertEqual(0, ReminderMailTaskTarget.objects.filter(history=history, completed=False).count())
+        self.assertEqual(2, ReminderMailTaskTarget.objects.filter(history=history, completed=True).count())
+
+        self.assertEqual(2, mock_mail.call_count)
+        mock_mail.assert_any_call('test mail subject',
+                                  'test mail body:{email_address}:{username}:{fullname}'.format(email_address=user.email,
+                                                                                                username=user.username,
+                                                                                                fullname=user.profile.name
+                                                                                                ),
+                                  'registration@example.com',
+                                  [user.email]
+                                  )
+        mock_mail.assert_any_call('test mail subject',
+                                  'test mail body:{email_address}:{username}:{fullname}'.format(email_address=user2.email,
+                                                                                                username=user2.username,
+                                                                                                fullname=user2.profile.name),
+                                  'registration@example.com',
+                                  [user2.email]
+                                  )
