@@ -50,7 +50,7 @@ class PasswordResetFormNoActive(PasswordResetForm):
         if not len(self.users_cache):
             raise forms.ValidationError(self.error_messages['unknown'])
         else:
-            if not SsoConfig.user_control_process(self.users_cache.first().id):
+            if not SsoConfig.user_control_process_sso(self.users_cache.first().id):
                 raise forms.ValidationError(self.error_messages['unknown'])
         if any((user.password.startswith(UNUSABLE_PASSWORD_PREFIX))
                for user in self.users_cache):

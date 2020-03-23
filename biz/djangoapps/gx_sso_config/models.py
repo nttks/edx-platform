@@ -1,6 +1,10 @@
 from django.db import models
 from biz.djangoapps.ga_organization.models import Organization
 from biz.djangoapps.gx_member.models import Member
+from social.apps.django_app.default.models import UserSocialAuth
+import logging
+
+log = logging.getLogger(__name__)
 
 
 class SsoConfig(models.Model):
@@ -60,4 +64,21 @@ class SsoConfig(models.Model):
                 if member:
                     if cls.objects.filter(org=member.org_id, logout_show=0).exists():
                         return False
+        return True
+
+    @classmethod
+    def user_control_process_sso(cls, user_id):
+        """
+        Restrict items that can be executed by users of the organization registered in SsoConfig.
+        :param user_id:
+        :return:
+        TRUE :
+        FALSE :
+        """
+        if user_id is not None:
+            for member in Member.objects.filter(user_id=long(user_id), is_active=True):
+                if member:
+                    if cls.objects.filter(org=member.org_id).exists():
+                        if UserSocialAuth.objects.filter(user_id=long(user_id), provider="tpa-saml").exists():
+                            return False
         return True
