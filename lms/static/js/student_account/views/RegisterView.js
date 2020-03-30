@@ -119,7 +119,8 @@
             customValidate: function( data ) {
                 var errors = [];
                 // Confirm whether it applies to ng rules.
-                _.every(this.orgUsernameRule, function(rule) {
+                // _.every(this.orgUsernameRule, function(rule) {
+                this.orgUsernameRule.forEach(function(rule){
                     if ((data.username).match(new RegExp('^' + rule, 'gi')) != null) {
                         errors.push(gettext('The user name you entered is already in use.'));
                         return false;
