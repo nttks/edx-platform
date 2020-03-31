@@ -92,9 +92,7 @@ class ChooseModeView(View):
         # in the "honor" track by this point, so we send the user
         # to the dashboard.
         if not CourseMode.has_verified_mode(modes):
-            # if request.GET and request.GET['next']:
-            #     return redirect(request.GET['next'])
-            return redirect(reverse('dashboard'))
+            return redirect(u"/courses/" + unicode(course_key) + u"/info")
 
         # If a user has already paid, redirect them to the dashboard.
         if is_active and (enrollment_mode in CourseMode.VERIFIED_MODES + [CourseMode.NO_ID_PROFESSIONAL_MODE]):
