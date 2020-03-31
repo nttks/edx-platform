@@ -262,7 +262,6 @@ def register(request):
     if additional_errors:
         return JsonResponse({'result': False, 'message': '', 'additional_errors': additional_errors})
 
-    course_one = None
     try:
         with transaction.atomic():
             # ContractRegister
@@ -275,7 +274,6 @@ def register(request):
             # CourseEnrollment
             for detail in contract_details:
                 CourseEnrollment.enroll(request.user, detail.course_id)
-                course_one = detail.course_id
     except Exception:
         log.exception('Can not register invitation code, contract_id(%s), username(%s)', contract.id, request.user.username)
         return JsonResponse({
@@ -285,7 +283,7 @@ def register(request):
             ).format(index_url=reverse('biz:invitation:index'))
         })
 
-    if course_one:
-        return JsonResponse({'result': True, 'href': '/courses/' + str(course_one) + '/info'})
+    if contract_details and len(contract_details) == 1:
+        return JsonResponse({'result': True, 'href': '/courses/' + str(contract_details[0].course_id) + '/info'})
     else:
         return JsonResponse({'result': True, 'href': reverse('dashboard')})
