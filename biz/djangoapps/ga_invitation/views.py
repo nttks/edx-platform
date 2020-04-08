@@ -283,4 +283,7 @@ def register(request):
             ).format(index_url=reverse('biz:invitation:index'))
         })
 
-    return JsonResponse({'result': True, 'href': reverse('dashboard')})
+    if contract_details and len(contract_details) == 1:
+        return JsonResponse({'result': True, 'href': '/courses/' + str(contract_details[0].course_id) + '/info'})
+    else:
+        return JsonResponse({'result': True, 'href': reverse('dashboard')})
