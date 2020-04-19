@@ -891,7 +891,9 @@ def dashboard(request):
         if self_paced_end is not None and self_paced_end < datetime.datetime.now(UTC):
             pop_enrollment.append(enrollment)
             continue
-
+        if extra['terminate_start'] is not None and extra['terminate_start'] < datetime.datetime.now(UTC):
+            pop_enrollment.append(enrollment)
+            continue
         # Set course category1, category2
         course_categories[enrollment.course_id] = [{
             'name': ''.join(extra['course_category'] or []),
