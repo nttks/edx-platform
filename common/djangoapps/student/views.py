@@ -887,7 +887,7 @@ def dashboard(request):
             pop_enrollment.append(enrollment)
             continue
         extra = [i for i in extra_all if i['course_overview'] == str(overview.id)][0]
-        self_paced_end = get_course_end_date_dashboard(enrollment, extra)
+        self_paced_end = get_course_end_date_dashboard(enrollment, extra, overview)
         if self_paced_end is not None and self_paced_end < datetime.datetime.now(UTC):
             pop_enrollment.append(enrollment)
             continue

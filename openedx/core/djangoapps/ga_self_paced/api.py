@@ -59,7 +59,7 @@ def is_course_closed(enrollment):
     return end_date and timezone.now() > end_date
 
 
-def get_course_end_date_dashboard(enrollment, extra):
+def get_course_end_date_dashboard(enrollment, extra, overview):
     if not enrollment:
         return None
     _extra = extra
@@ -68,7 +68,7 @@ def get_course_end_date_dashboard(enrollment, extra):
             _extra['individual_end_hours'] is not None or
             _extra['individual_end_minutes'] is not None)):
         return None
-    individual_end_date = get_individual_date(get_base_date(enrollment), {
+    individual_end_date = get_individual_date(get_base_date_dashboard(enrollment, overview), {
         'days': _extra['individual_end_days'],
         'hours': _extra['individual_end_hours'],
         'minutes': _extra['individual_end_minutes']
@@ -76,3 +76,23 @@ def get_course_end_date_dashboard(enrollment, extra):
     # If course terminate date is earlier than individual end date, then set course terminate date. #2479
     terminate_date = _extra['terminate_start']
     return terminate_date if terminate_date and individual_end_date > terminate_date else individual_end_date
+
+
+def get_base_date_dashboard(enrollment, overview):
+    """
+    Returns the base date for self-paced course.
+
+    If the student has been enrolled before starting course, then base date is
+    course start date. Otherwise, base date is enrollment date.
+
+    Enrollment date is create date of CourseEnrollment. However, in case of paid course,
+    CourseEnrollment are created in the inactive state and become active after payment
+    process is completed. Therefore, use the latest date of histories.
+    """
+    if not enrollment:
+        return None
+    if enrollment.is_paid_course():
+        enrollment_date = enrollment.history.filter(is_active=True, mode=enrollment.mode).latest('history_date').history_date
+    else:
+        enrollment_date = enrollment.created
+    return max(overview.start, enrollment_date)
