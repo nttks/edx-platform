@@ -148,6 +148,7 @@ from biz.djangoapps.util import mask_utils
 from lms.djangoapps.courseware.ga_mongo_utils import PlaybackFinishStore
 from openedx.core.djangoapps.content.ga_course_overviews.models import CourseOverviewExtra
 from openedx.core.djangoapps.content.course_overviews.models import CourseOverview
+from openedx.core.djangoapps.ga_self_paced.api import get_course_end_date_dashboard
 
 log = logging.getLogger("edx.student")
 AUDIT_LOG = logging.getLogger("audit")
@@ -873,15 +874,24 @@ def dashboard(request):
                                                          'course_order',
                                                          'terminate_start',
                                                          'self_paced',
-                                                         'course_overview'))
+                                                         'course_overview',
+                                                         'individual_end_days',
+                                                         'individual_end_hours',
+                                                         'individual_end_minutes'))
     pop_enrollment = []
     for enrollment in course_enrollments:
         overview = [i for i in overviews if enrollment.course_id == i.id]
         overview = overview[0] if overview else overview
-        if not overview or overview.end is not None and overview.end < datetime.datetime.now(UTC) or overview.start > datetime.datetime.now(UTC):
+        if not overview or overview.end is not None and \
+                overview.end < datetime.datetime.now(UTC) or overview.start > datetime.datetime.now(UTC):
             pop_enrollment.append(enrollment)
             continue
         extra = [i for i in extra_all if i['course_overview'] == str(overview.id)][0]
+        self_paced_end = get_course_end_date_dashboard(enrollment, extra)
+        if self_paced_end is not None and self_paced_end < datetime.datetime.now(UTC):
+            pop_enrollment.append(enrollment)
+            continue
+
         # Set course category1, category2
         course_categories[enrollment.course_id] = [{
             'name': ''.join(extra['course_category'] or []),
