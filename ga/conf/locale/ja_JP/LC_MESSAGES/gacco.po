@@ -2135,3 +2135,7 @@ msgstr "を選択してください。"
 #: lms/templates/dashboard.html:273
 msgid "Select this if you want to "
 msgstr "通常版のマイページに切り替える場合は、"
+
+#: lms/templates/dashboard.html:275
+msgid "(Only during classes)"
+msgstr "（開講中のみ）"
