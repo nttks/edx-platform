@@ -36,11 +36,13 @@ def index(request):
 
     # Director
     elif current_manager.is_director() and current_contract.is_available_for_director_or_manager():
-        return redirect(reverse('biz:achievement:score')) if current_course else redirect(reverse('biz:contract_operation:students'))
+        # return redirect(reverse('biz:achievement:score')) if current_course else redirect(reverse('biz:contract_operation:students'))
+        return redirect(reverse('biz:contract_operation:register_students')) if current_course else redirect(reverse('biz:contract_operation:students'))
 
     # Manager
     elif current_manager.is_manager() and current_contract.is_available_for_director_or_manager():
-        return redirect(reverse('biz:achievement:score'))
+        # return redirect(reverse('biz:achievement:score'))
+        return redirect(reverse('biz:contract_operation:students'))
 
     else:
         return HttpResponseForbidden(render_to_string('static_templates/403.html', {}))

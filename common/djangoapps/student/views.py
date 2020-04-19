@@ -142,10 +142,12 @@ from openedx.core.djangoapps.models.course_details import CourseDetails
 from openedx.core.djangoapps.course_global.models import CourseGlobalSetting
 from openedx.core.djangoapps.ga_self_paced import api as self_paced_api
 
-from biz.djangoapps.ga_contract.models import ContractDetail
+from biz.djangoapps.ga_contract.models import ContractDetail, REGISTER_TYPE_DISABLE_REGISTER_BY_STUDENT
 from biz.djangoapps.util import mask_utils
 
 from lms.djangoapps.courseware.ga_mongo_utils import PlaybackFinishStore
+from openedx.core.djangoapps.content.ga_course_overviews.models import CourseOverviewExtra
+from openedx.core.djangoapps.content.course_overviews.models import CourseOverview
 
 log = logging.getLogger("edx.student")
 AUDIT_LOG = logging.getLogger("audit")
@@ -545,7 +547,7 @@ def is_course_blocked(request, redeemed_registration_codes, course_key):
 
 @login_required
 @ensure_csrf_cookie
-def dashboard(request):
+def dashboard2(request):
     user = request.user
 
     platform_name = microsite.get_value("platform_name", settings.PLATFORM_NAME)
@@ -806,6 +808,291 @@ def dashboard(request):
         'search_genre1_list': search_genre1_list,
         'search_genre2_list': search_genre2_list,
         'course_enroll_dates': course_enroll_dates,
+    }
+
+    return render_to_response('dashboard2.html', context)
+
+
+@login_required
+@ensure_csrf_cookie
+def dashboard(request):
+    user = request.user
+
+    platform_name = microsite.get_value("platform_name", settings.PLATFORM_NAME)
+
+    # for microsites, we want to filter and only show enrollments for courses within
+    # the microsites 'ORG'
+    course_org_filter = microsite.get_value('course_org_filter')
+
+    # Let's filter out any courses in an "org" that has been declared to be
+    # in a Microsite
+    org_filter_out_set = microsite.get_all_orgs()
+
+    # remove our current Microsite from the "filter out" list, if applicable
+    if course_org_filter:
+        org_filter_out_set.remove(course_org_filter)
+
+    # Build our (course, enrollment) list for the user, but ignore any courses that no
+    # longer exist (because the course IDs have changed). Still, we don't delete those
+    # enrollments, because it could have been a data push snafu.
+    # course_enrollments = list(get_course_enrollments(user, course_org_filter, org_filter_out_set, sort_order=('-created', '-id')))
+    enrollments = CourseEnrollment.enrollments_for_user(user).order_by('-created', '-id')
+
+
+    # sort the enrollment pairs by the enrollment date
+    enrollments = sorted(enrollments, key=lambda x: x.created, reverse=True)
+    overviews = list(CourseOverview.objects.filter(id__in=[i.course_id for i in enrollments]))
+    # mod order non-global-course before global-course
+    global_courses = CourseGlobalSetting.all_course_id()
+    course_enrollments = [c for c in enrollments if c.course_id not in global_courses] + [
+        c for c in enrollments if c.course_id in global_courses]
+
+    # Retrieve the course modes for each course
+    enrolled_course_ids = [enrollment.course_id for enrollment in course_enrollments]
+    __, unexpired_course_modes = CourseMode.all_and_unexpired_modes_for_courses(enrolled_course_ids)
+    course_modes_by_course = {
+        course_id: {
+            mode.slug: mode
+            for mode in modes
+        }
+        for course_id, modes in unexpired_course_modes.iteritems()
+    }
+
+    course_categories = {}
+    course_orders = {}
+    enroll_statuses = {}
+    course_enroll_dates = {}
+    # attendance_values_dict = AttendanceStatusExecutor.get_attendance_values([e.id for e in course_enrollments])
+
+    extra_all = list(CourseOverviewExtra.objects.filter(course_overview__in=
+                                                        [i for i in overviews]).order_by('course_order').values(
+                                                         'course_category',
+                                                         'course_category2',
+                                                         'course_category_order',
+                                                         'course_category_order2',
+                                                         'course_order',
+                                                         'terminate_start',
+                                                         'self_paced',
+                                                         'course_overview'))
+
+    for enrollment in course_enrollments:
+        overview = [i for i in overviews if enrollment.course_id == i.id][0]
+        extra = [i for i in extra_all if i['course_overview'] == str(overview.id)][0]
+
+        # Set course category1, category2
+        course_categories[enrollment.course_id] = [{
+            'name': ''.join(extra['course_category'] or []),
+            'order': int(extra['course_category_order']) if extra['course_category_order'] else ''
+        }, {
+            'name': extra['course_category2'] or '',
+            'order': int(extra['course_category_order2']) if extra['course_category_order2'] else ''
+        }]
+        # Set course display order
+        course_orders[enrollment.course_id] = int(extra['course_order']) if extra['course_order'] else ''
+
+        course_enroll_dates[enrollment.course_id] = enrollment.created
+        # check attendance status
+        # attribute_value = attendance_values_dict[enrollment.id] if enrollment.id in attendance_values_dict else None
+        # end = extra['terminate_start'] if extra['self_paced'] else overview.end
+
+        # enroll_statuses[enrollment.course_id] = AttendanceStatusExecutor.get_attendance_status(
+        #     start=overview.start, end=end,  course_id=enrollment.course_id,
+        #     is_status_managed=True, user=enrollment.user, attr_value=attribute_value)
+
+    # Set max order when course_order is empty.
+    max_course_orders = max(filter(lambda x: x != '', course_orders.values()) or [0]) + 1
+    course_orders = {
+        key: course_orders[key] if course_orders[key] != '' else max_course_orders
+        for key in course_orders
+    }
+
+    # Create display genre selection by course_categories or course_categories2.
+    search_genre1_list, search_genre2_list = _create_search_genre_list(course_categories)
+
+    # Check to see if the student has recently enrolled in a course.
+    # If so, display a notification message confirming the enrollment.
+    # enrollment_message = _create_recent_enrollment_message(
+    #     course_enrollments, course_modes_by_course
+    # )
+
+    # course_optouts = Optout.objects.filter(user=user).values_list('course_id', flat=True)
+    # course_optouts_force = Optout.objects.filter(user=user, force_disabled=True).values_list('course_id', flat=True)
+
+    message = ""
+    if not user.is_active:
+        message = render_to_string(
+            'registration/activate_account_notice.html',
+            {'email': user.email, 'platform_name': platform_name}
+        )
+
+    # Global staff can see what courses errored on their dashboard
+    staff_access = False
+    errored_courses = {}
+    if has_access(user, 'staff', 'global'):
+        # Show any courses that errored on load
+        staff_access = True
+        errored_courses = modulestore().get_errored_courses()
+
+    show_courseware_links_for = frozenset(
+        enrollment.course_id for enrollment in course_enrollments
+        if has_access(request.user, 'load', [i for i in overviews if i.id == enrollment.course_id][0])
+        and has_access(request.user, 'view_courseware_with_prerequisites', [i for i in overviews if i.id == enrollment.course_id][0])
+    )
+
+    # Get any programs associated with courses being displayed.
+    # This is passed along in the template context to allow rendering of
+    # program-related information on the dashboard.
+    # course_programs = _get_course_programs(user, [enrollment.course_id for enrollment in course_enrollments])
+
+    # Construct a dictionary of course mode information
+    # used to render the course list.  We re-use the course modes dict
+    # we loaded earlier to avoid hitting the database.
+    # course_mode_info = {
+    #     enrollment.course_id: complete_course_mode_info(
+    #         enrollment.course_id, enrollment,
+    #         modes=course_modes_by_course[enrollment.course_id]
+    #     )
+    #     for enrollment in course_enrollments
+    # }
+
+    # Determine the per-course verification status
+    # This is a dictionary in which the keys are course locators
+    # and the values are one of:
+    #
+    # VERIFY_STATUS_NEED_TO_VERIFY
+    # VERIFY_STATUS_SUBMITTED
+    # VERIFY_STATUS_APPROVED
+    # VERIFY_STATUS_MISSED_DEADLINE
+    #
+    # Each of which correspond to a particular message to display
+    # next to the course on the dashboard.
+    #
+    # If a course is not included in this dictionary,
+    # there is no verification messaging to display.
+    # verify_status_by_course = check_verify_status_by_course(user, course_enrollments)
+    # cert_statuses = {
+    #     enrollment.course_id: cert_info(request.user, enrollment.course_overview, enrollment.mode)
+    #     for enrollment in course_enrollments
+    # }
+    # cert_statuses = {}
+    # only show advanced-course-info if course has advanced-course and user does not purchased.
+    # advanced_course_statuses = {
+    #     enrollment.course_id: AdvancedCourseStatus(request, enrollment.course_id)
+    #     for enrollment in course_enrollments
+    # }
+
+    # only show email settings for Mongo course and when bulk email is turned on
+    # show_email_settings_for = frozenset(
+    #     enrollment.course_id for enrollment in course_enrollments if (
+    #         settings.FEATURES['ENABLE_INSTRUCTOR_EMAIL'] and
+    #         modulestore().get_modulestore_type(enrollment.course_id) != ModuleStoreEnum.Type.xml and
+    #         CourseAuthorization.instructor_email_enabled(enrollment.course_id) and
+    #         enrollment.course_id not in global_courses
+    #     )
+    # )
+
+    # only show unenroll settings for not global course and register-type of contract is not register on biz.
+    # cannot_unenroll_courses = global_courses + [d.course_id for d in ContractDetail.find_register_type_disable()]
+    # cannot_unenroll_courses = global_courses + [d.course_id for d in ContractDetail.objects.filter(contract__register_type=REGISTER_TYPE_DISABLE_REGISTER_BY_STUDENT[0], course_id__in=[i.course_overview.id for i in course_enrollments])]
+    # show_unenroll_settings_for = frozenset(
+    #     enrollment.course_id for enrollment in course_enrollments if (
+    #         enrollment.course_id not in cannot_unenroll_courses and
+    #         not CourseMode.has_professional_mode(course_modes_by_course[enrollment.course_id])
+    #     )
+    # )
+
+    # Verification Attempts
+    # Used to generate the "you must reverify for course x" banner
+    # verification_status, verification_msg = SoftwareSecurePhotoVerification.user_status(user)
+
+    # Gets data for midcourse reverifications, if any are necessary or have failed
+    statuses = ["approved", "denied", "pending", "must_reverify"]
+    reverifications = reverification_info(statuses)
+
+    # show_refund_option_for = frozenset(
+    #     enrollment.course_id for enrollment in course_enrollments
+    #     if enrollment.refundable()
+    # )
+
+    # block_courses = frozenset(
+    #     enrollment.course_id for enrollment in course_enrollments
+    #     if is_course_blocked(
+    #         request,
+    #         CourseRegistrationCode.objects.filter(
+    #             course_id=enrollment.course_id,
+    #             registrationcoderedemption__redeemed_by=request.user
+    #         ),
+    #         enrollment.course_id
+    #     ) or (
+    #         is_terminated(enrollment.course_overview, user)
+    #     )
+    # )
+
+    # enrolled_courses_either_paid = frozenset(
+    #     enrollment.course_id for enrollment in course_enrollments
+    #     if enrollment.is_paid_course()
+    # )
+
+    # If there are *any* denied reverifications that have not been toggled off,
+    # we'll display the banner
+    # denied_banner = any(item.display for item in reverifications["denied"])
+
+    # paid_course_order_history_list = paid_course_order_history(user)
+
+    # get list of courses having pre-requisites yet to be completed
+    # courses_having_prerequisites = frozenset(
+    #     enrollment.course_id for enrollment in course_enrollments
+    #     if enrollment.course_overview.pre_requisite_courses
+    # )
+    # courses_requirements_not_met = get_pre_requisite_courses_not_completed(user, courses_having_prerequisites)
+
+    if 'notlive' in request.GET:
+        redirect_message = _("The course you are looking for does not start until {date}.").format(
+            date=request.GET['notlive']
+        )
+    else:
+        redirect_message = ''
+
+    context = {
+        # 'enrollment_message': enrollment_message,
+        'redirect_message': redirect_message,
+        'course_enrollments': course_enrollments,
+        # 'course_optouts': course_optouts,
+        # 'course_optouts_force': course_optouts_force,
+        'message': message,
+        'staff_access': staff_access,
+        'errored_courses': errored_courses,
+        'show_courseware_links_for': show_courseware_links_for,
+        # 'all_course_modes': course_mode_info,
+        # 'cert_statuses': cert_statuses,
+        # 'credit_statuses': _credit_statuses(user, course_enrollments),
+        # 'show_email_settings_for': show_email_settings_for,
+        # 'show_unenroll_settings_for': show_unenroll_settings_for,
+        'reverifications': reverifications,
+        # 'verification_status': verification_status,
+        # 'verification_status_by_course': verify_status_by_course,
+        # 'verification_msg': verification_msg,
+        # 'show_refund_option_for': show_refund_option_for,
+        # 'block_courses': block_courses,
+        # 'denied_banner': denied_banner,
+        'billing_email': settings.PAYMENT_SUPPORT_EMAIL,
+        'user': user,
+        'logout_url': reverse(logout_user),
+        'platform_name': platform_name,
+        # 'enrolled_courses_either_paid': enrolled_courses_either_paid,
+        'provider_states': [],
+        # 'paid_course_order_history_list': paid_course_order_history_list,
+        # 'courses_requirements_not_met': courses_requirements_not_met,
+        'nav_hidden': True,
+        # 'course_programs': course_programs,
+        # 'advanced_course_statuses': advanced_course_statuses,
+        # 'enroll_statuses': enroll_statuses,
+        'course_categories': course_categories,
+        'course_orders': course_orders,
+        'search_genre1_list': search_genre1_list,
+        'search_genre2_list': search_genre2_list,
+        # 'course_enroll_dates': course_enroll_dates,
+        'overviews': overviews,
     }
 
     return render_to_response('dashboard.html', context)

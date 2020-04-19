@@ -196,9 +196,11 @@ def _third_party_auth_context(request, redirect_to):
         "errorMessage": None,
     }
     if third_party_auth.is_enabled():
+        sso_hide_icon = SsoConfig.objects.all().values('idp_slug')
         enableds = []
         for third_party in third_party_auth.provider.Registry.accepting_logins():
-            if not SsoConfig.is_hide_icon(third_party.provider_id):
+            # if not SsoConfig.is_hide_icon(third_party.provider_id):
+            if third_party.provider_id.replace('SAML-', '').replace('saml-','') not in sso_hide_icon:
                 enableds.append(third_party)
         for enabled in enableds:
             info = {

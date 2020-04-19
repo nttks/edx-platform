@@ -20,6 +20,20 @@ import json
 <%block name="bodyclass">view-dashboard is-authenticated</%block>
 <%block name="nav_skip">#my-courses</%block>
 
+<%block name="header_extras">
+% for template_name in ["donation"]:
+<script type="text/template" id="${template_name}-tpl">
+  <%static:include path="dashboard/${template_name}.underscore" />
+</script>
+% endfor
+
+% for template_name in ["dashboard_search_item", "dashboard_search_results", "search_loading", "search_error"]:
+<script type="text/template" id="${template_name}-tpl">
+    <%static:include path="search/${template_name}.underscore" />
+</script>
+% endfor
+</%block>
+
 <%block name="js_extra">
   <script src="${static.url('js/commerce/credit.js')}"></script>
   <%static:js group='dashboard'/>
@@ -241,12 +255,48 @@ import json
   % endif
 </%block>
 
+<div class="dashboard-notifications" tabindex="-1">
+    %if message:
+        <section class="dashboard-banner">
+            ${message}
+        </section>
+    %endif
+
+    %if enrollment_message:
+        <section class="dashboard-banner">
+            ${enrollment_message}
+        </section>
+    %endif
+</div>
 
 <section class="container dashboard" id="dashboard-main">
   <!-- search-block -->
-  <%include file='dashboard/_dashboard_search_block.html' args="search_genre1_list=search_genre1_list,search_genre2_list=search_genre2_list" />
+  <%include file='dashboard/_dashboard_search_block2.html' args="search_genre1_list=search_genre1_list,search_genre2_list=search_genre2_list" />
   <!-- ./search-block -->
+
   <section id="dashboard-sidebar">
+    % if settings.FEATURES.get('ENABLE_DASHBOARD_SEARCH'):
+      <div id="dashboard-search-bar" class="search-bar dashboard-search-bar" role="search" aria-label="Dashboard">
+        <form>
+          <label for="dashboard-search-input">${_('Search Your Courses')}</label>
+          <div class="search-field-wrapper">
+            <input id="dashboard-search-input" type="text" class="search-field"/>
+            <button type="submit" class="search-button" aria-label="${_('Search')}">
+              <i class="icon fa fa-search" aria-hidden="true"></i>
+            </button>
+            <button type="button" class="cancel-button" aria-label="${_('Clear search')}">
+              <i class="icon fa fa-remove" aria-hidden="true"></i>
+            </button>
+          </div>
+        </form>
+      </div>
+    % endif
+
+    % if settings.FEATURES.get('COURSES_ARE_BROWSABLE'):
+     <div class="find-course-button">
+       <a href="${marketing_link('COURSES')}">${_('Find Courses')}</a>
+    </div>
+    % endif
 
     <section class="profile-sidebar" id="profile-sidebar" role="region" aria-label="User info">
       <header class="profile">
@@ -259,6 +309,8 @@ import json
             <span class="copy">${_(u"Click the arrow (▼) on the top right of the screen and go to \"Account Settings\".")}</span>
           </li>
 
+          <%include file='dashboard/_dashboard_status_verification.html' />
+
         </ul>
       </section>
     </section>
@@ -266,11 +318,6 @@ import json
 
   <section class="my-courses" id="my-courses" role="main" aria-label="Content">
     <header class="wrapper-header-courses">
-        <p style="background-color: #E7E7E7;padding: 10px">${_("My page has been switched to the ")}
-            <span style="color: red">${_("simplified version")}</span>
-            ${_(" to concentrate access. Please select the course name to take. Select this if you want to ")}
-            <a href="${reverse('dashboard2')}">${_("switch")}</a>${_(" to the standard version of My Page.")}
-        </p>
       <h2 class="header-courses">${_("My Courses")}</h2>
       <div class="search-box"><input class="js-search" type="search" placeholder="${_("Search...")}"></div>
     </header>
@@ -280,11 +327,23 @@ import json
       <% share_settings = getattr(settings, 'SOCIAL_SHARING_SETTINGS', {}) %>
       % for dashboard_index, enrollment in enumerate(course_enrollments):
         <% show_courseware_link = (enrollment.course_id in show_courseware_links_for) %>
-        <% is_course_blocked = False %>
-        <% course_overview = [i for i in overviews if i.id == enrollment.course_id][0] %>
+        <% cert_status = cert_statuses.get(enrollment.course_id) %>
+        <% can_unenroll = ((not cert_status) or cert_status.get('can_unenroll')) and (enrollment.course_id in show_unenroll_settings_for) %>
+        <% credit_status = credit_statuses.get(enrollment.course_id) %>
+        <% show_email_settings = (enrollment.course_id in show_email_settings_for) %>
+        <% course_mode_info = all_course_modes.get(enrollment.course_id) %>
+        <% show_refund_option = (enrollment.course_id in show_refund_option_for) %>
+        <% is_paid_course = (enrollment.course_id in enrolled_courses_either_paid) %>
+        <% is_course_blocked = (enrollment.course_id in block_courses) %>
+        <% course_verification_status = verification_status_by_course.get(enrollment.course_id, {}) %>
+        <% course_requirements = courses_requirements_not_met.get(enrollment.course_id) %>
+        <% course_program_info = course_programs.get(unicode(enrollment.course_id)) %>
+        <% advanced_course_status = advanced_course_statuses.get(enrollment.course_id) %>
+        <% enroll_status = enroll_statuses[enrollment.course_id] %>
         <% course_category = course_categories[enrollment.course_id] %>
         <% course_order = course_orders[enrollment.course_id] %>
-        <%include file = 'dashboard/_dashboard_course_listing.html' args="course_overview=course_overview, enrollment=enrollment, show_courseware_link=show_courseware_link, is_course_blocked=is_course_blocked, dashboard_index=dashboard_index, user=user, course_category=course_category, course_order=course_order" />
+        <% course_enroll_date = course_enroll_dates[enrollment.course_id] %>
+        <%include file = 'dashboard/_dashboard_course_listing2.html' args="course_overview=enrollment.course_overview, enrollment=enrollment, show_courseware_link=show_courseware_link, cert_status=cert_status, can_unenroll=can_unenroll, credit_status=credit_status, show_email_settings=show_email_settings, course_mode_info=course_mode_info, show_refund_option=show_refund_option, is_paid_course=is_paid_course, is_course_blocked=is_course_blocked, verification_status=course_verification_status, course_requirements=course_requirements, dashboard_index=dashboard_index, share_settings=share_settings, user=user, course_program_info=course_program_info, advanced_course_status=advanced_course_status, enroll_status=enroll_status, course_category=course_category, course_order=course_order, course_enroll_date=course_enroll_date" />
       % endfor
 
       </ul>
