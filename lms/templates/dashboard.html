@@ -268,10 +268,11 @@ import json
     <header class="wrapper-header-courses">
         <p style="background-color: #E7E7E7;padding: 10px">${_("My page has been switched to the ")}
             <span style="color: red">${_("simplified version")}</span>
-            ${_(" to concentrate access. Please select the course name to take. Select this if you want to ")}
+            ${_(" to concentrate access. Please select the course name to take. ")}<br>
+            ${_("Select this if you want to ")}
             <a href="${reverse('dashboard2')}">${_("switch")}</a>${_(" to the standard version of My Page.")}
         </p>
-      <h2 class="header-courses">${_("My Courses")}</h2>
+      <h2 class="header-courses">${_("My Courses")}${_("(Only during classes)")}</h2>
       <div class="search-box"><input class="js-search" type="search" placeholder="${_("Search...")}"></div>
     </header>
 
@@ -284,7 +285,8 @@ import json
         <% course_overview = [i for i in overviews if i.id == enrollment.course_id][0] %>
         <% course_category = course_categories[enrollment.course_id] %>
         <% course_order = course_orders[enrollment.course_id] %>
-        <%include file = 'dashboard/_dashboard_course_listing.html' args="course_overview=course_overview, enrollment=enrollment, show_courseware_link=show_courseware_link, is_course_blocked=is_course_blocked, dashboard_index=dashboard_index, user=user, course_category=course_category, course_order=course_order" />
+        <% course_extra = [i for i in extra_all if i['course_overview'] == str(enrollment.course_id)][0] %>
+        <%include file = 'dashboard/_dashboard_course_listing.html' args="course_overview=course_overview, enrollment=enrollment, show_courseware_link=show_courseware_link, is_course_blocked=is_course_blocked, dashboard_index=dashboard_index, user=user, course_category=course_category, course_order=course_order, course_extra=course_extra" />
       % endfor
 
       </ul>

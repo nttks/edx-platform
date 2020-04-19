@@ -1,12 +1,13 @@
-<%page args="course_overview, enrollment, show_courseware_link, is_course_blocked, course_category, course_order" />
+<%page args="course_overview, enrollment, show_courseware_link, is_course_blocked, course_category, course_order, course_extra" />
 
 <%!
 import pytz
 import urllib
-
 from django.utils.translation import ugettext as _
 from django.core.urlresolvers import reverse
 from markupsafe import escape
+
+from util.date_utils import get_time_display
 %>
 
 <%
@@ -14,13 +15,27 @@ from markupsafe import escape
 %>
 
 <%namespace name='static' file='../static_content.html'/>
-
+<% time_zone = pytz.timezone(settings.TIME_ZONE_DISPLAYED_FOR_DEADLINES) %>
 <li class="course-item"
     data-course-id="${enrollment.course_id}"
     data-course-name="${course_overview.display_name_with_default}"
     data-course-category="${course_category[0]['name']}"
     data-course-category2="${course_category[1]['name']}"
+##     data-course-status="${enroll_status}"
     data-course-order="${course_order}"
+    data-extra="${course_extra}"
+##     data-course-enroll-date="${course_enroll_date}"
+##     % if course_extra and course_extra['self_paced']:
+##         % if not course_overview.has_started():
+##             data-course-start-date="${get_time_display(course_overview.start, coerce_tz=time_zone.zone)}"
+##         % else:
+##             data-course-start-date="${get_time_display(enrollment.get_individual_start_date(), coerce_tz=time_zone.zone)}"
+##         % endif
+##         data-course-end-date="${get_time_display(enrollment.get_individual_end_date(), coerce_tz=time_zone.zone)}"
+##     % else:
+        data-course-start-date="${course_overview.start_datetime_text("DATE_TIME", time_zone)}"
+        data-course-end-date="${course_overview.end_datetime_text("DATE_TIME", time_zone)}"
+##     % endif
     % if unicode(enrollment.course_id) == u'gacco/ht001/2015_00':
         data-force-last="1"
     % else:
