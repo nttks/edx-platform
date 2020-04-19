@@ -878,7 +878,7 @@ def dashboard(request):
     for enrollment in course_enrollments:
         overview = [i for i in overviews if enrollment.course_id == i.id]
         overview = overview[0] if overview else overview
-        if not overview or overview.end is not None and overview.end < datetime.datetime.now(UTC):
+        if not overview or overview.end is not None and overview.end < datetime.datetime.now(UTC) or overview.start > datetime.datetime.now(UTC):
             pop_enrollment.append(enrollment)
             continue
         extra = [i for i in extra_all if i['course_overview'] == str(overview.id)][0]
