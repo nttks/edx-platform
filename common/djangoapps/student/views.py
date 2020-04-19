@@ -874,11 +874,14 @@ def dashboard(request):
                                                          'terminate_start',
                                                          'self_paced',
                                                          'course_overview'))
-
+    pop_enrollment = []
     for enrollment in course_enrollments:
-        overview = [i for i in overviews if enrollment.course_id == i.id][0]
+        overview = [i for i in overviews if enrollment.course_id == i.id]
+        overview = overview[0] if overview else overview
+        if not overview or overview.end is not None and overview.end < datetime.datetime.now(UTC):
+            pop_enrollment.append(enrollment)
+            continue
         extra = [i for i in extra_all if i['course_overview'] == str(overview.id)][0]
-
         # Set course category1, category2
         course_categories[enrollment.course_id] = [{
             'name': ''.join(extra['course_category'] or []),
@@ -899,6 +902,7 @@ def dashboard(request):
         #     start=overview.start, end=end,  course_id=enrollment.course_id,
         #     is_status_managed=True, user=enrollment.user, attr_value=attribute_value)
 
+    course_enrollments = [i for i in course_enrollments if i not in pop_enrollment]
     # Set max order when course_order is empty.
     max_course_orders = max(filter(lambda x: x != '', course_orders.values()) or [0]) + 1
     course_orders = {
@@ -935,7 +939,7 @@ def dashboard(request):
 
     show_courseware_links_for = frozenset(
         enrollment.course_id for enrollment in course_enrollments
-        if has_access(request.user, 'load', [i for i in overviews if i.id == enrollment.course_id][0])
+        if [i for i in overviews if i.id == enrollment.course_id] and has_access(request.user, 'load', [i for i in overviews if i.id == enrollment.course_id][0])
         and has_access(request.user, 'view_courseware_with_prerequisites', [i for i in overviews if i.id == enrollment.course_id][0])
     )
 
@@ -1093,6 +1097,7 @@ def dashboard(request):
         'search_genre2_list': search_genre2_list,
         # 'course_enroll_dates': course_enroll_dates,
         'overviews': overviews,
+        'extra_all': extra_all,
     }
 
     return render_to_response('dashboard.html', context)
