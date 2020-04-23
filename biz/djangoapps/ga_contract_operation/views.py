@@ -178,9 +178,9 @@ def _students_initial_search(request):
 def _contract_register_list_on_page(request, offset=0, limit=CONTRACT_REGISTER_MAX_DISPLAY_NUM):
     option_sql = [
         # set default arguments for sql
+        request.current_contract.id,
         request.current_organization.id,
-        request.current_organization.id,
-        request.current_contract.id
+        request.current_organization.id
     ]
     where_sql = ""
 
@@ -271,16 +271,16 @@ bizuser.login_code, MG.group_name, MG.code, MG.group_code, MG.is_active, MG.is_d
 MG.org1, MG.org2, MG.org3, MG.org4, MG.org5, MG.org6, MG.org7, MG.org8, MG.org9, MG.org10, 
 MG.item1, MG.item2, MG.item3, MG.item4, MG.item5, MG.item6, MG.item7, MG.item8, MG.item9, MG.item10, MG.org_id
 FROM ga_invitation_contractregister as IC
-INNER JOIN auth_user as user ON IC.user_id = user.id 
-LEFT OUTER JOIN auth_userprofile as profile ON user.id = profile.user_id
-LEFT OUTER JOIN ga_login_bizuser as bizuser ON user.id = bizuser.user_id 
+INNER JOIN auth_user as user ON IC.contract_id = %s AND IC.user_id = user.id 
+LEFT OUTER JOIN auth_userprofile as profile ON IC.user_id = profile.user_id
+LEFT OUTER JOIN ga_login_bizuser as bizuser ON IC.user_id = bizuser.user_id 
 LEFT OUTER JOIN (
   SELECT M.id, M.code, M.is_active, M.is_delete, M.group_id, M.org_id, M.user_id, G.group_code, G.group_name, 
          M.org1, M.org2, M.org3, M.org4, M.org5, M.org6, M.org7, M.org8, M.org9, M.org10, 
          M.item1, M.item2, M.item3, M.item4, M.item5, M.item6, M.item7, M.item8, M.item9, M.item10
   FROM gx_member_member as M LEFT OUTER JOIN gx_org_group_group as G 
   ON M.group_id = G.id  AND M.org_id = %s) MG ON IC.user_id = MG.user_id AND MG.org_id = %s 
-WHERE IC.contract_id = %s ''' + where_sql + '''
+WHERE True ''' + where_sql + '''
 ORDER BY IC.id'''
     count_sql = '''SELECT 1 as id, COUNT(*) as cnt FROM (''' + sql + ''') CNT'''
 
@@ -1274,8 +1274,8 @@ def reminder_search_ajax(request):
              M.org1, M.org2, M.org3, M.org4, M.org5, M.org6, M.org7, M.org8, M.org9, M.org10, 
              M.item1, M.item2, M.item3, M.item4, M.item5, M.item6, M.item7, M.item8, M.item9, M.item10
       FROM gx_member_member as M LEFT OUTER JOIN gx_org_group_group as G 
-      ON M.group_id = G.id  AND M.org_id = %s 
-      WHERE M.is_active = 1 AND M.is_delete = 0 
+      ON M.group_id = G.id 
+      WHERE M.org_id = %s AND M.is_active = 1 AND M.is_delete = 0 
     ) MG ON AU.id = MG.user_id AND MG.org_id = %s 
     WHERE CD.contract_id = %s AND SC.course_id = %s ''' + where_sql + '''
     ORDER BY AU.id ASC'''

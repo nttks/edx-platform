@@ -438,13 +438,7 @@ from django.core.urlresolvers import reverse
     </div>
 </div>
 
-
 % if request.current_manager and  request.current_manager.is_director() :
-<%include file="_task_history.html" />
+  <%include file="_task_history.html" />
 % endif
 </%block>
-<script type="text/javascript">
-window.onload = function () {
-    document.getElementById( "initial_override" ).click();
-}
-</script>
