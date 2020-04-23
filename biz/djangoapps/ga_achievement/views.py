@@ -37,7 +37,7 @@ log = logging.getLogger(__name__)
 
 # Note: Max number of score and playback data to display.
 MAX_RECORDS_SEARCH_BY_PLAYBACK = 10000
-
+SIMPLE_DISPLAY_MAX_LIMIT = 100
 
 @require_GET
 @login_required
@@ -77,8 +77,8 @@ def score(request):
         update_status = ''
 
     score_store = ScoreStore(contract_id, unicode(course_id))
-    score_columns, score_records = score_store.get_data_for_w2ui(limit=settings.BIZ_MONGO_LIMIT_RECORDS)
-
+    # score_columns, score_records = score_store.get_data_for_w2ui(limit=settings.BIZ_MONGO_LIMIT_RECORDS)
+    score_columns, score_records = score_store.get_data_for_w2ui(limit=SIMPLE_DISPLAY_MAX_LIMIT)
     hidden_score_columns = score_store.get_section_names()
     score_section_names = [column[0] for column in hidden_score_columns]
 
@@ -162,7 +162,8 @@ def playback(request):
         update_status = ''
 
     playback_store = PlaybackStore(contract_id, unicode(course_id))
-    playback_columns, playback_records = playback_store.get_data_for_w2ui(limit=MAX_RECORDS_SEARCH_BY_PLAYBACK)
+    # playback_columns, playback_records = playback_store.get_data_for_w2ui(limit=MAX_RECORDS_SEARCH_BY_PLAYBACK)
+    playback_columns, playback_records = playback_store.get_data_for_w2ui(limit=SIMPLE_DISPLAY_MAX_LIMIT)
 
     hidden_playback_columns = playback_store.get_section_names()
     playback_section_names = [column[0] for column in hidden_playback_columns]
@@ -560,7 +561,8 @@ def score_search_filter(request, org, contract_id, course_id, manager):
     score_columns, score_records = score_store.get_data_for_w2ui(total_condition=total_condition,
                                                                  section_conditions=section_score_conditions,
                                                                  certificate_status=certificate_status,
-                                                                 limit=settings.BIZ_MONGO_LIMIT_RECORDS)
+                                                                 # limit=settings.BIZ_MONGO_LIMIT_RECORDS)
+                                                                 limit=MAX_RECORDS_SEARCH_BY_PLAYBACK)
     total_records = len(score_records)
 
     # Member

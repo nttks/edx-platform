@@ -471,11 +471,10 @@ def register_students(request):
                 org=org.id, id__in=request.current_organization_visible_group_ids).order_by('group_code')
         ]
     else:
-        # group_list = [
-        #     (grp.group_code, grp.id, grp.group_name) for grp in Group.objects.filter(
-        #         org=request.current_organization.id).order_by('group_code')
-        # ]
-        group_list = [(grp.group_code, grp.id, grp.group_name) for grp in current_organization_group]
+        group_list = [
+            (grp.group_code, grp.id, grp.group_name) for grp in Group.objects.filter(
+                org=request.current_organization.id).order_by('group_code')
+        ]
 
     # listbox_contracts = Contract.find_all_by_user(request.user)
     listbox_contracts = Contract.objects.enabled().filter(
