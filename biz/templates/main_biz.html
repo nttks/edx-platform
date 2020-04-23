@@ -319,6 +319,7 @@ from biz.djangoapps.gx_member.models import Member
                 current_feature = None
             current_organization = getattr(request, 'current_organization', None)
             current_manager = getattr(request, 'current_manager', None)
+            current_manager_values = getattr(request, 'current_manager_values', None)
             current_contract = getattr(request, 'current_contract', None)
             current_course = getattr(request, 'current_course', None)
 
@@ -332,7 +333,8 @@ from biz.djangoapps.gx_member.models import Member
                 <div class="message">
                     <p>${_("Organization not specified")}</p>
                 </div>
-                % elif current_manager.is_director() or current_manager.is_manager():
+##                 % elif current_manager.is_director() or current_manager.is_manager():
+                % elif current_manager_values['permission_name'] in ['director', 'manager']:
                     % if not current_contract:
                     <div class="message">
                         <p>${_("Contract not specified")}</p>
@@ -354,7 +356,7 @@ from biz.djangoapps.gx_member.models import Member
                         % else:
                         <div class="">
                             <label class="biz-icon course">${_("Course Name")}：</label>
-                            <div class="biz-manager">${current_course.course_canonical_name or current_course.display_name | h}</div>
+                            <div class="biz-manager" style="overflow: hidden;text-overflow: ellipsis;">${current_course.course_canonical_name or current_course.display_name | h}</div>
                         </div>
                         % endif
                     % endif
@@ -391,7 +393,7 @@ from biz.djangoapps.gx_member.models import Member
                                     <select id="contract-id" name="contract_id" class="contract-id">
                                         <option value="">--</option>
                                         % for selection_contract in selection_contracts:
-                                        <option value="${selection_contract.id}" class="${selection_contract.contractor_organization.id}">${selection_contract.contract_name | h}</option>
+                                        <option value="${selection_contract.id}" class="${selection_contract.contractor_organization_id}">${selection_contract.contract_name | h}</option>
                                         % endfor
                                     </select>
                                 </div>
@@ -400,7 +402,7 @@ from biz.djangoapps.gx_member.models import Member
                                     <select id="course-id" name="course_id" class="course-id">
                                         <option value="">--</option>
                                         % for selection_contract_detail in selection_contract_details:
-                                        <option value="${selection_contract_detail.course_id}" class="${selection_contract_detail.contract.id}">
+                                        <option value="${selection_contract_detail.course_id}" class="${selection_contract_detail.contract_id}">
                                             ${u'{} ({})'.format(selection_contract_detail.course_name, selection_contract_detail.course_id) | h}
                                         </option>
                                         % endfor
@@ -452,38 +454,47 @@ from biz.djangoapps.gx_member.models import Member
 
             <ul class="menu">
                 ## Platformer or Aggregator
-                % if current_manager and (current_manager.is_platformer() or (current_manager.is_aggregator() and current_contract and current_contract.is_available_for_aggregator())):
+##                 % if current_manager and (current_manager.is_platformer() or (current_manager.is_aggregator() and current_contract and current_contract.is_available_for_aggregator())):
+                % if current_manager and (current_manager_values['permission_name'] == 'platformer' or (current_manager_values['permission_name'] == 'aggregator' and current_contract and current_contract.is_available_for_aggregator())):
                     ## Organization
-                    % if current_manager.can_handle_organization():
+##                     % if current_manager.can_handle_organization():
+                    % if current_manager_values['can_handle_organization']:
                     <li class="${'current' if current_feature == 'organization' else ''}"><a href="${reverse('biz:organization:index')}">${_("Organization List")}</a></li>
                     % endif
 
                     ## Contract
-                    % if current_manager.can_handle_contract():
+##                     % if current_manager.can_handle_contract():
+                    % if current_manager_values['can_handle_contract']:
                     <li class="${'current' if current_feature == 'contract' else ''}"><a href="${reverse('biz:contract:index')}">${_("Contract List")}</a></li>
                     % endif
 
                     ## Manager
-                    % if current_manager.can_handle_manager():
+##                     % if current_manager.can_handle_manager():
+                    % if current_manager_values['can_handle_manager']:
                     <li class="${'current' if current_feature == 'manager' else ''}"><a href="${reverse('biz:manager:index')}">${_("Manager Setting")}</a></li>
                     % endif
 
                 ## Director or Manager
-                % elif current_manager and (current_manager.is_director() or current_manager.is_manager()) and current_contract and current_contract.is_available_for_director_or_manager():
+##                 % elif current_manager and (current_manager.is_director() or current_manager.is_manager()) and current_contract and current_contract.is_available_for_director_or_manager():
+                % elif current_manager and (current_manager_values['permission_name'] in ['director', 'manager']) and current_contract and current_contract.is_available_for_director_or_manager():
                     ## Achievement
-                    % if current_manager.can_handle_achievement() and current_course:
+##                     % if current_manager.can_handle_achievement() and current_course:
+                    % if current_manager_values['can_handle_achievement'] and current_course:
                     <li class="${'current' if current_feature == 'achievement/score' else ''}"><a href="${reverse('biz:achievement:score')}">${_("Score Status")}</a></li>
                     <li class="${'current' if current_feature == 'achievement/playback' else ''}"><a href="${reverse('biz:achievement:playback')}">${_("Playback Status")}</a></li>
                     % endif
 
                     ## Course Operation
-                    % if current_manager.can_handle_achievement() and current_course and current_contract.is_spoc_available:
+##                     % if current_manager.can_handle_achievement() and current_course and current_contract.is_spoc_available:
+                    % if current_manager_values['can_handle_achievement'] and current_course and current_contract.is_spoc_available:
                     <li class="${'current' if current_feature == 'course_operation/survey' else ''}"><a href="${reverse('biz:course_operation:survey')}">${_("Survey Management")}</a></li>
                     % endif
 
                     ## Student
-                    % if current_manager.can_handle_contract_operation():
-                        % if current_manager and (current_manager.is_director()) and current_contract and current_contract.is_available_for_director():
+##                     % if current_manager.can_handle_contract_operation():
+                    % if current_manager_values['can_handle_contract_operation']:
+##                         % if current_manager and (current_manager.is_director()) and current_contract and current_contract.is_available_for_director():
+                        % if current_manager and (current_manager_values['permission_name'] == 'director') and current_contract and current_contract.is_available_for_director():
                             % if current_contract.can_customize_mail:
                     <li class="${'current' if current_feature == 'contract_operation/register_mail' else ''}"><a
                         href="${reverse('biz:contract_operation:register_mail')}">${_("Welcome E-Mail Management")}</a></li>
@@ -493,20 +504,22 @@ from biz.djangoapps.gx_member.models import Member
                     <li class="${'current' if current_feature == 'contract_operation/reminder_mail' else ''}"><a
                         href="${reverse('biz:contract_operation:reminder_mail')}">${_("Reminder Mail Setting")}</a></li>
                         % endif
-                        % if current_manager and (current_manager.is_director()) and current_contract and current_contract.is_available_for_director():
+##                         % if current_manager and (current_manager.is_director()) and current_contract and current_contract.is_available_for_director():
+                        % if current_manager and (current_manager_values['permission_name'] == 'director') and current_contract and current_contract.is_available_for_director():
                         <li class="${'current' if current_feature == 'contract_operation/register_students' else ''}"><a
                            href="${reverse('biz:contract_operation:register_students')}">${_("Register User Management")}</a></li>
                         %endif
                     <li class="${'current' if current_feature == 'contract_operation/students' else ''}"><a
                         href="${reverse('biz:contract_operation:students')}">${_("Contract Register Management")}</a></li>
-                        % if current_manager and (current_manager.is_director()) and current_contract and current_contract.is_available_for_director():
+##                         % if current_manager and (current_manager.is_director()) and current_contract and current_contract.is_available_for_director():
+                        % if current_manager and (current_manager_values['permission_name'] == 'director') and current_contract and current_contract.is_available_for_director():
                        <li class="${'current' if current_feature == 'contract_operation/bulk_students' else ''}"><a
                         href="${reverse('biz:contract_operation:bulk_students')}">${_("User Collective Management")}</a></li>
                         %endif
                     % endif
 
                     ## Manager
-                    % if current_manager.can_handle_manager():
+                    % if current_manager_values['can_handle_manager']:
                     <li class="${'current' if current_feature == 'manager' else ''}"><a href="${reverse('biz:manager:index')}">${_("Manager Setting")}</a></li>
                     <li class="${'current' if current_feature == 'member' else ''}"><a href="${reverse('biz:member:index')}">${_("Member Master")}</a></li>
                     <li class="${'current' if current_feature == 'group' else ''}"><a href="${reverse('biz:group:group_list')}">${_("Organization Master")}</a></li>

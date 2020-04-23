@@ -14,6 +14,7 @@ from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.db import transaction
+from django.db.models import Q
 from django.http import Http404
 from django.utils.translation import ugettext as _
 from django.views.decorators.http import require_GET, require_POST
@@ -421,42 +422,66 @@ def unregister_students_ajax(request, registers):
 def register_students(request):
     org = request.current_organization
     manager = request.current_manager
+    current_manager_values = request.current_manager_values
+    current_manager_contract_type = request.current_manager_contract_type
+    current_organization_group = request.current_organization_group
 
-    org_items = {
-        'org1': Member.find_active_by_org(org=org).exclude(org1='').values('org1').order_by('org1').distinct(),
-        'org2': Member.find_active_by_org(org=org).exclude(org2='').values('org2').order_by('org2').distinct(),
-        'org3': Member.find_active_by_org(org=org).exclude(org3='').values('org3').order_by('org3').distinct(),
-        'org4': Member.find_active_by_org(org=org).exclude(org4='').values('org4').order_by('org4').distinct(),
-        'org5': Member.find_active_by_org(org=org).exclude(org5='').values('org5').order_by('org5').distinct(),
-        'org6': Member.find_active_by_org(org=org).exclude(org6='').values('org6').order_by('org6').distinct(),
-        'org7': Member.find_active_by_org(org=org).exclude(org7='').values('org7').order_by('org7').distinct(),
-        'org8': Member.find_active_by_org(org=org).exclude(org8='').values('org8').order_by('org8').distinct(),
-        'org9': Member.find_active_by_org(org=org).exclude(org9='').values('org9').order_by('org9').distinct(),
-        'org10': Member.find_active_by_org(org=org).exclude(org10='').values('org10').order_by('org10').distinct(),
-        'item1': Member.find_active_by_org(org=org).exclude(item1='').values('item1').order_by('item1').distinct(),
-        'item2': Member.find_active_by_org(org=org).exclude(item2='').values('item2').order_by('item2').distinct(),
-        'item3': Member.find_active_by_org(org=org).exclude(item3='').values('item3').order_by('item3').distinct(),
-        'item4': Member.find_active_by_org(org=org).exclude(item4='').values('item4').order_by('item4').distinct(),
-        'item5': Member.find_active_by_org(org=org).exclude(item5='').values('item5').order_by('item5').distinct(),
-        'item6': Member.find_active_by_org(org=org).exclude(item6='').values('item6').order_by('item6').distinct(),
-        'item7': Member.find_active_by_org(org=org).exclude(item7='').values('item7').order_by('item7').distinct(),
-        'item8': Member.find_active_by_org(org=org).exclude(item8='').values('item8').order_by('item8').distinct(),
-        'item9': Member.find_active_by_org(org=org).exclude(item9='').values('item9').order_by('item9').distinct(),
-        'item10': Member.find_active_by_org(org=org).exclude(item10='').values('item10').order_by('item10').distinct()
-    }
+    org_items = {}
+    for i in range(1, 11):
+        org_items['org' + str(i)] = set()
+        org_items['item' + str(i)] = set()
 
-    if not manager.is_director() and manager.is_manager() and Group.objects.filter(org=org).exists():
+    for i in Member.find_active_by_org(org).values(
+            'org1', 'org2', 'org3', 'org4', 'org5',
+            'org6', 'org7', 'org8', 'org9', 'org10',
+            'item1', 'item2', 'item3', 'item4', 'item5',
+            'item6', 'item7', 'item8', 'item9', 'item10'):
+        for k, v in i.items():
+            if v:
+                org_items[k].add(v)
+    org_items = {k : list(v) for k, v in org_items.items()}
+
+    # org_items = {
+    #     'org1': Member.find_active_by_org(org=org).exclude(org1='').values('org1').order_by('org1').distinct(),
+    #     'org2': Member.find_active_by_org(org=org).exclude(org2='').values('org2').order_by('org2').distinct(),
+    #     'org3': Member.find_active_by_org(org=org).exclude(org3='').values('org3').order_by('org3').distinct(),
+    #     'org4': Member.find_active_by_org(org=org).exclude(org4='').values('org4').order_by('org4').distinct(),
+    #     'org5': Member.find_active_by_org(org=org).exclude(org5='').values('org5').order_by('org5').distinct(),
+    #     'org6': Member.find_active_by_org(org=org).exclude(org6='').values('org6').order_by('org6').distinct(),
+    #     'org7': Member.find_active_by_org(org=org).exclude(org7='').values('org7').order_by('org7').distinct(),
+    #     'org8': Member.find_active_by_org(org=org).exclude(org8='').values('org8').order_by('org8').distinct(),
+    #     'org9': Member.find_active_by_org(org=org).exclude(org9='').values('org9').order_by('org9').distinct(),
+    #     'org10': Member.find_active_by_org(org=org).exclude(org10='').values('org10').order_by('org10').distinct(),
+    #     'item1': Member.find_active_by_org(org=org).exclude(item1='').values('item1').order_by('item1').distinct(),
+    #     'item2': Member.find_active_by_org(org=org).exclude(item2='').values('item2').order_by('item2').distinct(),
+    #     'item3': Member.find_active_by_org(org=org).exclude(item3='').values('item3').order_by('item3').distinct(),
+    #     'item4': Member.find_active_by_org(org=org).exclude(item4='').values('item4').order_by('item4').distinct(),
+    #     'item5': Member.find_active_by_org(org=org).exclude(item5='').values('item5').order_by('item5').distinct(),
+    #     'item6': Member.find_active_by_org(org=org).exclude(item6='').values('item6').order_by('item6').distinct(),
+    #     'item7': Member.find_active_by_org(org=org).exclude(item7='').values('item7').order_by('item7').distinct(),
+    #     'item8': Member.find_active_by_org(org=org).exclude(item8='').values('item8').order_by('item8').distinct(),
+    #     'item9': Member.find_active_by_org(org=org).exclude(item9='').values('item9').order_by('item9').distinct(),
+    #     'item10': Member.find_active_by_org(org=org).exclude(item10='').values('item10').order_by('item10').distinct()
+    # }
+
+    # if not manager.is_director() and manager.is_manager() and Group.objects.filter(org=org).exists():
+    if current_manager_values['permission_name'] == 'manager' and request.current_organization_group is not None:
         group_list = [
             (grp.group_code, grp.id, grp.group_name) for grp in Group.objects.filter(
                 org=org.id, id__in=request.current_organization_visible_group_ids).order_by('group_code')
         ]
     else:
-        group_list = [
-            (grp.group_code, grp.id, grp.group_name) for grp in Group.objects.filter(
-                org=request.current_organization.id).order_by('group_code')
-        ]
+        # group_list = [
+        #     (grp.group_code, grp.id, grp.group_name) for grp in Group.objects.filter(
+        #         org=request.current_organization.id).order_by('group_code')
+        # ]
+        group_list = [(grp.group_code, grp.id, grp.group_name) for grp in current_organization_group]
 
-    listbox_contracts = Contract.find_all_by_user(request.user)
+    # listbox_contracts = Contract.find_all_by_user(request.user)
+    listbox_contracts = Contract.objects.enabled().filter(
+                contractor_organization=current_manager_values['org_id'],
+                contractor_organization__managers__user=request.user,
+                contract_type__in=current_manager_contract_type)
 
     return render_to_response(
         'ga_contract_operation/register_students.html',
