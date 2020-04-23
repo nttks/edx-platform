@@ -426,20 +426,20 @@ def register_students(request):
     current_manager_contract_type = request.current_manager_contract_type
     current_organization_group = request.current_organization_group
 
-    org_items = {}
-    for i in range(1, 11):
-        org_items['org' + str(i)] = set()
-        org_items['item' + str(i)] = set()
-
-    for i in Member.find_active_by_org(org).values(
-            'org1', 'org2', 'org3', 'org4', 'org5',
-            'org6', 'org7', 'org8', 'org9', 'org10',
-            'item1', 'item2', 'item3', 'item4', 'item5',
-            'item6', 'item7', 'item8', 'item9', 'item10'):
-        for k, v in i.items():
-            if v:
-                org_items[k].add(v)
-    org_items = {k : list(v) for k, v in org_items.items()}
+    # org_items = {}
+    # for i in range(1, 11):
+    #     org_items['org' + str(i)] = set()
+    #     org_items['item' + str(i)] = set()
+    #
+    # for i in Member.find_active_by_org(org).values(
+    #         'org1', 'org2', 'org3', 'org4', 'org5',
+    #         'org6', 'org7', 'org8', 'org9', 'org10',
+    #         'item1', 'item2', 'item3', 'item4', 'item5',
+    #         'item6', 'item7', 'item8', 'item9', 'item10'):
+    #     for k, v in i.items():
+    #         if v:
+    #             org_items[k].add(v)
+    # org_items = {k : list(v) for k, v in org_items.items()}
 
     # org_items = {
     #     'org1': Member.find_active_by_org(org=org).exclude(org1='').values('org1').order_by('org1').distinct(),
@@ -490,7 +490,7 @@ def register_students(request):
             'max_length_additional_info_display_name': AdditionalInfo._meta.get_field('display_name').max_length,
             'max_bulk_students_number': settings.BIZ_MAX_BULK_STUDENTS_NUMBER,
             'organization': request.current_organization,
-            'org_items': org_items,
+            # 'org_items': org_items,
             'group_list': group_list,
             'listbox_contracts': listbox_contracts,
         }

@@ -2406,3 +2406,10 @@ msgstr "メール送信の利用可能時間外のため、送信できません
 #: biz/djangoapps/ga_contract_operation/views.py
 msgid "* Stop service now"
 msgstr "※現在、サービス停止中"
+
+#: biz/templates/ga_achievement/playback.html:236
+#: biz/templates/ga_achievement/score.html:237
+msgid ""
+"Maximum display number is 100.<br/>Please refine it to 10,000 or less by "
+"condition search, or use 'Download all' function."
+msgstr "最大表示件数は、100件です。<br/>条件検索により10,000件以内に絞り込むか、「全件ダウンロード」機能をご利用ください。"

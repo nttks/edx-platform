@@ -371,8 +371,10 @@ from biz.djangoapps.ga_invitation.models import REGISTER_INVITATION_CODE
                 search_email: $pnl03.find("#employee_email_list").val(),
             };
             for (var i=1; i < 11; i++) {
-                formData['search_org' + i] = $pnl03.find("#search_org_attr" + i + " option:selected").val();
-                formData['search_grp' + i] = $pnl03.find("#search_grp_attr" + i + " option:selected").val();
+                ##  formData['search_org' + i] = $pnl03.find("#search_org_attr" + i + " option:selected").val();
+                formData['search_org' + i] = $pnl03.find("#search_org_attr" + i).val();
+                ##  formData['search_grp' + i] = $pnl03.find("#search_grp_attr" + i + " option:selected").val();
+                formData['search_grp' + i] = $pnl03.find("#search_grp_attr" + i).val();
             }
 
             $.ajax({
@@ -853,13 +855,14 @@ from biz.djangoapps.ga_invitation.models import REGISTER_INVITATION_CODE
                                 % for i in range(1, 11):
                                 <div class="gc_field">
                                     <label class="gc_field_label" for="search_org_attr${i}">${_("Organization")}${i}</label>
-                                    <select id="search_org_attr${i}" class="gc_field_ipt gc_w15em">
-                                        <option value=""></option>
-                                        % for item in org_items['org' + str(i)]:
+                                    <input id="search_org_attr${i}" class="gc_field_ipt gc_w15em" maxlength="254" type="text">
+##                                     <select id="search_org_attr${i}" class="gc_field_ipt gc_w15em">
+##                                         <option value=""></option>
+##                                         % for item in org_items['org' + str(i)]:
 ##                                         <option value="${item['org' + str(i)]}">${item['org' + str(i)] | h}</option>
-                                        <option value="${item}">${item| h}</option>
-                                        % endfor
-                                    </select>
+##                                         <option value="${item}">${item| h}</option>
+##                                         % endfor
+##                                     </select>
                                 </div>
                                 % endfor;
                             </div>
@@ -867,13 +870,14 @@ from biz.djangoapps.ga_invitation.models import REGISTER_INVITATION_CODE
                                 % for i in range(1, 11):
                                 <div class="gc_field">
                                     <label for="search_grp_attr${i}" class="gc_field_label">${_("Item")}${i}</label>
-                                    <select id="search_grp_attr${i}" class="gc_field_ipt gc_w15em">
-                                        <option value=""></option>
-                                        % for item in org_items['item' + str(i)]:
+                                    <input id="search_grp_attr${i}" class="gc_field_ipt gc_w15em" maxlength="254" type="text">
+##                                     <select id="search_grp_attr${i}" class="gc_field_ipt gc_w15em">
+##                                         <option value=""></option>
+##                                         % for item in org_items['item' + str(i)]:
 ##                                         <option value="${item['item' + str(i)]}">${item['item' + str(i)] | h}</option>
-                                        <option value="${item}">${item | h}</option>
-                                        % endfor
-                                    </select>
+##                                         <option value="${item}">${item | h}</option>
+##                                         % endfor
+##                                     </select>
                                 </div>
                                 % endfor;
                             </div>
