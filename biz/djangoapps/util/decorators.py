@@ -374,7 +374,10 @@ def check_course_selection(func):
                     log.warning(e.messages[0])
                     return _render_403(request)
                 request.current_course = course
-
+                try:
+                    request.current_course.display_name = [i.course_name for i in request.selection_contract_details if i.course_id ==request.current_course.id][0]
+                except:
+                    pass
         # Validate feature permission
         if re.match('^/biz/organization/', request.path):
             # if not manager.can_handle_organization():
