@@ -356,7 +356,7 @@ from biz.djangoapps.gx_member.models import Member
                         % else:
                         <div class="">
                             <label class="biz-icon course">${_("Course Name")}：</label>
-                            <div class="biz-manager" style="overflow: hidden;text-overflow: ellipsis;">${current_course.course_canonical_name or current_course.display_name | h}</div>
+                            <div class="biz-manager" style="overflow: hidden;text-overflow: ellipsis;">${current_course.display_name | h}</div>
                         </div>
                         % endif
                     % endif
