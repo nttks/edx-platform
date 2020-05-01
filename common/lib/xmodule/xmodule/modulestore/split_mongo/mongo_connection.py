@@ -15,7 +15,7 @@ from time import time
 from pymongo.errors import DuplicateKeyError  # pylint: disable=unused-import
 
 try:
-    from django.core.cache import caches, InvalidCacheBackendError
+    from django.core.cache import caches, InvalidCacheBackendError, cache
     DJANGO_AVAILABLE = True
 except ImportError:
     DJANGO_AVAILABLE = False
@@ -410,6 +410,9 @@ class MongoConnection(object):
         """
         Get the course_index from the persistence mechanism whose id is the given key
         """
+        index_cache = cache.get('course_index_' + str(key), None)
+        if index_cache is not None:
+            return index_cache
         with TIMER.timer("get_course_index", key):
             if ignore_case:
                 query = {
@@ -421,7 +424,10 @@ class MongoConnection(object):
                     key_attr: getattr(key, key_attr)
                     for key_attr in ('org', 'course', 'run')
                 }
-            return self.course_index.find_one(query)
+            find_one = self.course_index.find_one(query)
+            cache.set('course_index_' + str(key), find_one, 3600)
+            return find_one
+            # return self.course_index.find_one(query)
 
     def find_matching_course_indexes(self, branch=None, search_targets=None, org_target=None, course_context=None):
         """
