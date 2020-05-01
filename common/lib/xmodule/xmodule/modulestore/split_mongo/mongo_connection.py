@@ -11,6 +11,8 @@ import re
 from contextlib import contextmanager
 from time import time
 
+from django.conf import settings
+
 # Import this just to export it
 from pymongo.errors import DuplicateKeyError  # pylint: disable=unused-import
 
@@ -410,9 +412,10 @@ class MongoConnection(object):
         """
         Get the course_index from the persistence mechanism whose id is the given key
         """
-        index_cache = cache.get('course_index_' + str(key), None)
-        if index_cache is not None:
-            return index_cache
+        if 'lms' in settings.ROOT_URLCONF:
+            index_cache = cache.get('course_index_' + str(key), None)
+            if index_cache is not None:
+                return index_cache
         with TIMER.timer("get_course_index", key):
             if ignore_case:
                 query = {
@@ -425,7 +428,7 @@ class MongoConnection(object):
                     for key_attr in ('org', 'course', 'run')
                 }
             find_one = self.course_index.find_one(query)
-            cache.set('course_index_' + str(key), find_one, 3600)
+            cache.set('course_index_' + str(key), find_one, None)
             return find_one
             # return self.course_index.find_one(query)
 
