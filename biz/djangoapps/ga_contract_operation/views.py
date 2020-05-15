@@ -908,7 +908,7 @@ def reminder_mail(request):
             'survey_names_list': resp_survey_names_list,
             'is_status_managed': course_overview.extra.is_status_managed,
             'reminder_mail_flg': True,
-            'disable_time': True if 9 <= datetime.now(pytz.timezone('Asia/Tokyo')).hour < 20 else False
+            'disable_time': True if 8 <= datetime.now(pytz.timezone('Asia/Tokyo')).hour < 20 else False
         }
     )
 
