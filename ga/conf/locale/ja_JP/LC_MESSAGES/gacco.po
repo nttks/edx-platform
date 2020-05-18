@@ -2139,3 +2139,7 @@ msgstr "通常版のマイページに切り替える場合は、"
 #: lms/templates/dashboard.html:275
 msgid "(Only during classes)"
 msgstr "（開講中のみ）"
+
+#: lms/templates/dashboard.html:274
+msgid "Please download the certificate from the regular version My Page."
+msgstr "※修了証は通常版マイページよりダウンロードをお願いします。"
